@@ -57,6 +57,7 @@ const std::string infile_Forest = "testFile_2015_5p02TeVpp_data_forests.txt";
 
 //default output file name
 const std::string defaultName = "test_output.root"; 
+const std::string outdir="";
 
 //pt binning
 const int ptbins[] = {15, 30, 50, 80, 120, 170, 220, 300, 500};
@@ -107,11 +108,14 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   
-  //basic inf othe screen
+  //basic infothe screen
+  std::cout<<"beginning macro"<<std::endl;
+  std::cout<<std::endl<<"///////////////////"<<std::endl;
   std::cout<<"reading from file "<< startfile << " to file " << endfile<<std::endl;
   std::cout<<"radius = "    << radius<<std::endl;
   std::cout<<"N = "         << N<<std::endl;
-    
+  std::cout<<"///////////////////"<<std::endl<<std::endl;
+
   //initialize tree name array
   std::string dir[N];
   for(int i=0;i<N;i++){
@@ -129,59 +133,44 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   TChain* jetpp[N];
   for(int t = 0;t<N;t++)  jetpp[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
   
+  //add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){
-    instr_Forest>>filename_Forest;    
-    for(int t = 0;t<N;t++)  jetpp[t]->Add(filename_Forest.c_str());
-    
-    if(printDebug){//check that the trees load properly
+    instr_Forest>>filename_Forest;    //grab filename
+    for(int t = 0;t<N;t++)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
+    //check to see if the files are opening right
+    if(printDebug){
       for(int t = 0;t<N;t++){ 
-	std::cout << "Tree loaded  " << string(dir[t]+"/"+trees[t]).data() << std::endl;
-	std::cout << "Entries : "    << jetpp[t]->GetEntries()             << std::endl;
+	if (t == 0) std::cout << "opening file " <<filename_Forest<< std::endl;
+	std::cout << "Tree loaded  " << string(dir[t]+"/"+trees[t]).data() <<std::endl;
+	std::cout << "Entries : "    << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
       }
-      
-//      std::cout << "Tree loaded  " << string(dir[1]+"/"+trees[1]).data() << std::endl;
-//      std::cout << "Entries : " << jetpp[1]->GetEntries() << std::endl;
-//      std::cout << "Tree loaded  " << string(dir[2]+"/"+trees[2]).data() << std::endl;
-//      std::cout << "Entries : " << jetpp[2]->GetEntries() << std::endl;
-//      std::cout << "Tree loaded  " << string(dir[3]+"/"+trees[3]).data() << std::endl;
-//      std::cout << "Entries : " << jetpp[3]->GetEntries() << std::endl;
-//      std::cout << "Tree loaded  " << string(dir[4]+"/"+trees[4]).data() << std::endl;
-//      std::cout << "Entries : " << jetpp[4]->GetEntries() << std::endl;
-//      std::cout << "Tree loaded  " << string(dir[5]+"/"+trees[5]).data() << std::endl;
-//      std::cout << "Entries : " << jetpp[5]->GetEntries() << std::endl;
-//      std::cout << "Tree loaded  " << string(dir[6]+"/"+trees[6]).data() << std::endl;
-//      std::cout << "Entries : " << jetpp[6]->GetEntries() << std::endl;
-//      std::cout << "Tree loaded  " << string(dir[7]+"/"+trees[7]).data() << std::endl;
-//      std::cout << "Entries : " << jetpp[7]->GetEntries() << std::endl; 
-    
     }
-  }
+  }//end input file loop
   
-  //friend jet pp trees to each other
+  //friend tree "t" to all other trees in jetpp array
   for(int t = 0;t<N;t++){ 
     if(t==2) continue;
     else jetpp[2]->AddFriend( jetpp[t] );
   }
-
-  // HiEvtAnalyzer
+ 
+  // set the branch addresses
+  //HiEvtAnalyzer
   ULong64_t evt_F;
   UInt_t run_F;
   UInt_t lumi_F;
   float vz_F;
   
-  // in skimanalysis
+  //in skimanalysis
   int pBeamScrapingFilter_F;
   int pHBHENoiseFilter_F;
   int pprimaryvertexFilter_F;
 
   // in hltanalysis
-  //L1
   int jet40_l1seed_p_F;
   int jet60_l1seed_p_F;
   int jet80_l1seed_p_F;
   int jet100_l1seed_p_F;  
 
-  //HLT
   int jet40_F;
   int jet60_F;
   int jet80_F;
@@ -279,97 +268,53 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   jetpp[6]->SetBranchAddress("pt",&trgObjpt_80);  jetpp[7]->SetBranchAddress("pt",&trgObjpt_100);
 
   // Declare the output File and the necessary histograms after that:
-  // std::string outdir="";
-  // std::string outfile=outdir+kFoname;
+  std::string outfile=outdir+kFoname;
   TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
 
-  TH1F * hJetQA[2][21];
+  //plot jet variables
+  TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){
-    for(int j = 0; j<21; ++j){//woah else if statement, this looks dangerous, dont mess with until i know more
-      if(j==2)      hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),100, -5, +5  );  
+    for(int j = 0; j<N_vars; ++j){
+      if(j<=1) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),500,  0, 500 );
+      else if(j==2) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),100, -5, +5  );  
       else if(j==3) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),100, -4, +4  );
-      else if(j<=1) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),500,  0, 500 );
       else if(j>=4) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),200,  0, 2   );
     }
   }
 
-  TH1F * hVz = new TH1F("hVz","",200, -20, 20);
+  TH1F *hVz = new TH1F("hVz","",200, -20, 20);
+
   TH1F *hpp_TrgObj100[2];
   TH1F *hpp_TrgObj80[2];
   TH1F *hpp_TrgObj60[2];
   TH1F *hpp_TrgObj40[2];
   TH1F *hpp_TrgObjComb[2];
+
   TH1F *hpp_CombJetpT[2];
 
-  // TH1F *hpp_JEC_TrgObj80;
-  // TH1F *hpp_JEC_TrgObj60;
-  // TH1F *hpp_JEC_TrgObj40;
-  // TH1F *hpp_JEC_TrgObjComb;
-
-  // TH1F *hpp_JEC_minus_TrgObj80;
-  // TH1F *hpp_JEC_minus_TrgObj60;
-  // TH1F *hpp_JEC_minus_TrgObj40;
-  // TH1F *hpp_JEC_minus_TrgObjComb;
-
-  // TH1F *hpp_JEC_gaus_TrgObj80;
-  // TH1F *hpp_JEC_gaus_TrgObj60;
-  // TH1F *hpp_JEC_gaus_TrgObj40;
-  // TH1F *hpp_JEC_gaus_TrgObjComb;
   
-  // TH1F *hpp_Smear_TrgObj80;
-  // TH1F *hpp_Smear_TrgObj60;
-  // TH1F *hpp_Smear_TrgObj40;
-  // TH1F *hpp_Smear_TrgObjComb;
-  
-  // TH1F *hpp_anaBin_TrgObj80;
-  // TH1F *hpp_anaBin_TrgObj60;
-  // TH1F *hpp_anaBin_TrgObj40;
-  // TH1F *hpp_anaBin_TrgObjComb;
-
   hpp_TrgObj100[0]  = new TH1F(Form("hpp_HLT100_noJetID_R%d_%s"     , radius, etaWidth), Form("Spectra from  Jet 100 R%d %s ",radius,etaWidth),2000, 0, 2000);
   hpp_TrgObj80[0]   = new TH1F(Form("hpp_HLT80_noJetID_R%d_%s"      , radius, etaWidth), Form("Spectra from  Jet 80 R%d %s " ,radius,etaWidth),2000, 0, 2000);
   hpp_TrgObj60[0]   = new TH1F(Form("hpp_HLT60_noJetID_R%d_%s"      , radius, etaWidth), Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
   hpp_TrgObj40[0]   = new TH1F(Form("hpp_HLT40_noJetID_R%d_%s"      , radius, etaWidth), Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
   hpp_TrgObjComb[0] = new TH1F(Form("hpp_HLTComb_noJetID_R%d_%s"    , radius, etaWidth), Form("Trig Combined Spectra R%d %s ",radius,etaWidth),2000, 0, 2000);
+
+  
   hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_noJetID_R%d_%s", radius, etaWidth), Form("Trig Combined Spectra KurtMethod R%d %s ",radius,etaWidth),2000, 0, 2000);
 
+  
   hpp_TrgObj100[1]  = new TH1F(Form("hpp_HLT100_JetID_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 100 R%d %s ",radius,etaWidth),2000, 0, 2000);
   hpp_TrgObj80[1]   = new TH1F(Form("hpp_HLT80_JetID_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 80 R%d %s ",radius,etaWidth),2000, 0, 2000);
   hpp_TrgObj60[1]   = new TH1F(Form("hpp_HLT60_JetID_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
   hpp_TrgObj40[1]   = new TH1F(Form("hpp_HLT40_JetID_R%d_%s",radius,etaWidth),Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
   hpp_TrgObjComb[1] = new TH1F(Form("hpp_HLTComb_JetID_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_JetID_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra KurtMethod R%d %s ",radius,etaWidth),2000, 0, 2000);
-
-  // hpp_JEC_TrgObj80 = new TH1F(Form("hpp_JEC_HLT80_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_TrgObj60 = new TH1F(Form("hpp_JEC_HLT60_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_TrgObj40 = new TH1F(Form("hpp_JEC_HLT40_R%d_%s",radius,etaWidth),Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_TrgObjComb = new TH1F(Form("hpp_JEC_HLTComb_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra R%d %s ",radius,etaWidth),1000, 0, 1000);
-
-  // hpp_JEC_minus_TrgObj80 = new TH1F(Form("hpp_JEC_minus_HLT80_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_minus_TrgObj60 = new TH1F(Form("hpp_JEC_minus_HLT60_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_minus_TrgObj40 = new TH1F(Form("hpp_JEC_minus_HLT40_R%d_%s",radius,etaWidth),Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_minus_TrgObjComb = new TH1F(Form("hpp_JEC_minus_HLTComb_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra R%d %s ",radius,etaWidth),1000, 0, 1000);
-
-  // hpp_JEC_gaus_TrgObj80 = new TH1F(Form("hpp_JEC_gaus_HLT80_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_gaus_TrgObj60 = new TH1F(Form("hpp_JEC_gaus_HLT60_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_gaus_TrgObj40 = new TH1F(Form("hpp_JEC_gaus_HLT40_R%d_%s",radius,etaWidth),Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_JEC_gaus_TrgObjComb = new TH1F(Form("hpp_JEC_gaus_HLTComb_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra R%d %s ",radius,etaWidth),1000, 0, 1000);
 
   
-  // hpp_Smear_TrgObj80 = new TH1F(Form("hpp_Smear_HLT80_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_Smear_TrgObj60 = new TH1F(Form("hpp_Smear_HLT60_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_Smear_TrgObj40 = new TH1F(Form("hpp_Smear_HLT40_R%d_%s",radius,etaWidth),Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),1000, 0, 1000);
-  // hpp_Smear_TrgObjComb = new TH1F(Form("hpp_Smear_HLTComb_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra R%d %s ",radius,etaWidth),1000, 0, 1000);
+  hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_JetID_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra KurtMethod R%d %s ",radius,etaWidth),2000, 0, 2000);
 
-  // hpp_anaBin_TrgObj80 = new TH1F(Form("hpp_anaBin_HLT80_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 80 R%d %s ",radius,etaWidth),nbins_pt, boundaries_pt);
-  // hpp_anaBin_TrgObj60 = new TH1F(Form("hpp_anaBin_HLT60_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),nbins_pt, boundaries_pt);
-  // hpp_anaBin_TrgObj40 = new TH1F(Form("hpp_anaBin_HLT40_R%d_%s",radius,etaWidth),Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),nbins_pt, boundaries_pt);
-  // hpp_anaBin_TrgObjComb = new TH1F(Form("hpp_anaBin_HLTComb_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra R%d %s ",radius,etaWidth),nbins_pt, boundaries_pt);
-
+  
   Long64_t nentries = jetpp[0]->GetEntries();
-  //Long64_t nGoodEvt = 0;
-  //if(printDebug) nentries = 100;
   Long64_t NEvents = 0;
   Long64_t NEvents_100 = 0;
   Long64_t NEvents_80 = 0;
@@ -378,12 +323,16 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   
   TRandom3 rnd; //wonder what this is for...
   //rnd.SetSeed(endfile);
+  
+  //Long64_t nGoodEvt = 0;
+  //if(printDebug) nentries = 100;
 
   std::cout<<"Running through all the "<<nentries<<" events now"<<std::endl;  
+
   for(int nEvt = 0; nEvt < nentries; ++ nEvt) {//event loop
 
     if(printDebug)std::cout<<"nEvt = "<<nEvt<<std::endl;
-    if(printDebug && nEvt==10)break;
+    if(printDebug && nEvt==10) break;
 
     //grab an entry from each ppjet tree
     for(int i = 0; i<N;++i) jetpp[i]->GetEntry(nEvt);
@@ -394,48 +343,14 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
         pprimaryvertexFilter_F==0 ||
         fabs(vz_F)>15              ) 
       continue;
-    
+
+    //fill vz histo?
     hVz->Fill(vz_F);
     
-    bool is40 = false;
-    bool is60 = false;
-    bool is80 = false;
+    bool is40  = false;
+    bool is60  = false;
+    bool is80  = false;
     bool is100 = false;
-
-    // vector <float> arry_TrgObj;
-    // if(trgObjpt_40->size()!=0)
-    //   for(unsigned i = 0; i<trgObjpt_40->size(); ++i) arry_TrgObj.push_back(trgObjpt_40->at(i));
-    // if(trgObjpt_60->size()!=0) 
-    //   for(unsigned i = 0; i<trgObjpt_60->size(); ++i) arry_TrgObj.push_back(trgObjpt_60->at(i));
-    // if(trgObjpt_80->size()!=0) 
-    //   for(unsigned i = 0; i<trgObjpt_80->size(); ++i) arry_TrgObj.push_back(trgObjpt_80->at(i));
-    // if(trgObjpt_100->size()!=0)
-    //   for(unsigned i = 0; i<trgObjpt_100->size(); ++i) arry_TrgObj.push_back(trgObjpt_100->at(i));
-
-    // // find the max in the array
-    // float TrgObjMax = 0.0;
-    // for(unsigned i = 0; i<arry_TrgObj.size();++i){
-    //   if(arry_TrgObj[i] > TrgObjMax){
-    // 	TrgObjMax = arry_TrgObj[i];
-    //   }
-    // }
-
-    // if(jet40_F && TrgObjMax>=40 && TrgObjMax<60) is40 = true;
-    // if(jet60_F && TrgObjMax>=60 && TrgObjMax<80) is60 = true;
-    // if(jet80_F && TrgObjMax>=80 && TrgObjMax<100) is80 = true;
-    // if(jet100_F && TrgObjMax>=100) is100 = true;
-    // int weight_jet40  = jet40_p_F * jet40_l1seed_p_F; 
-    // int weight_jet60  = jet60_p_F * jet60_l1seed_p_F; 
-    // int weight_jet80  = jet80_p_F * jet80_l1seed_p_F; 
-    // int weight_jet100 = jet100_p_F * jet100_l1seed_p_F;
-
-    // double weight_eS = 1.0;
-    // if(is40) weight_eS = weight_jet40;
-    // if(is60) weight_eS = weight_jet60;
-    // if(is80) weight_eS = weight_jet80;
-    // if(is100) weight_eS = weight_jet100;
-
-    // arry_TrgObj.clear();
 
     //trigger decision boolean array w/ prescale l1 seed 
     bool trgDec[4] = {(bool)jet40_F, (bool)jet60_F, (bool)jet80_F, (bool)jet100_F};
@@ -447,6 +362,9 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
 	break;
       }
     }
+
+    //come up with event weight for later use
+    double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
     
     //loop over objects that pass each trigger
     double triggerPt=0.;
@@ -470,9 +388,6 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
 	if(trgObjpt_100->at(itt)>triggerPt) triggerPt = trgObjpt_100->at(itt);
       }
     }    
-
-    //come up with event weight for later use
-    double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
     
     // check trigger decisions for events + exclusivity between them
     if(trgDec[3] && triggerPt>=100                ) is100 = true;
@@ -495,32 +410,6 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
           pt_F[jet] <= 15       ) continue;     
       
       float recpt = pt_F[jet];
-      // float rawpt = rawpt_F[jet];
-
-
-      // float JEC_upShift   = (float)recpt;
-      // float JEC_downShift = (float)recpt;
-      // float JEC_gaussmear = (float)recpt;
-
-      // if(jet40_F == 1 && jet60_F==0 && jet80_F==0) {
-      // 	hpp_TrgObj40->Fill(recpt, jet40_p_F);
-      // // 	//hpp_JEC_TrgObj40->Fill(recpt * (1 + rnd.Gaus(0, 0.01)), jet40_p_F);
-      // // 	hpp_JEC_TrgObj40->Fill(JEC_upShift, jet40_p_F);
-      // // 	hpp_JEC_minus_TrgObj40->Fill(JEC_downShift, jet40_p_F);
-      // // 	hpp_JEC_gaus_TrgObj40->Fill(JEC_gaussmear, jet40_p_F);
-      // // 	hpp_Smear_TrgObj40->Fill(recpt+ rnd.Gaus(0,0.01), jet40_p_F);
-      // // 	hpp_anaBin_TrgObj40->Fill(recpt, jet40_p_F);
-      // }
-    
-      // if(jet60_F == 1 && jet80_F==0) {
-      // 	hpp_TrgObj60->Fill(recpt);
-      // // 	//hpp_JEC_TrgObj60->Fill(recpt * (1 + rnd.Gaus(0, 0.01)));
-      // // 	hpp_JEC_TrgObj60->Fill(JEC_upShift);
-      // // 	hpp_JEC_minus_TrgObj60->Fill(JEC_downShift);
-      // // 	hpp_JEC_gaus_TrgObj60->Fill(JEC_gaussmear);
-      // // 	hpp_Smear_TrgObj60->Fill(recpt+rnd.Gaus(0,0.01));
-      // // 	hpp_anaBin_TrgObj60->Fill(recpt);
-      // }
 
       if(1){//why raghav why
 	hJetQA[0][0]->Fill(recpt, weight_eS);
@@ -596,16 +485,6 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
 
 	}//end jet id cut
       }//end if(1) 
-
-      // if(jet80_F == 1) {      
-      // 	hpp_TrgObj80->Fill(recpt);
-      // // 	hpp_JEC_TrgObj80->Fill(JEC_upShift);
-      // // 	hpp_JEC_minus_TrgObj80->Fill(JEC_downShift);
-      // // 	hpp_JEC_gaus_TrgObj80->Fill(JEC_gaussmear);
-      // // 	hpp_Smear_TrgObj80->Fill(recpt+rnd.Gaus(0,0.01));
-      // // 	hpp_anaBin_TrgObj80->Fill(recpt);
-      // }      
-
     }// end jet loop
   }// end event loop
   
@@ -618,56 +497,6 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   hpp_TrgObjComb[1]->Add(hpp_TrgObj80[1] );
   hpp_TrgObjComb[1]->Add(hpp_TrgObj60[1] );
   hpp_TrgObjComb[1]->Add(hpp_TrgObj40[1] );
-  
-  // divideBinWidth(hpp_TrgObjComb);
-  // divideBinWidth(hpp_TrgObj80);
-  // divideBinWidth(hpp_TrgObj60);
-  // divideBinWidth(hpp_TrgObj40);
-  
-  // hpp_JEC_TrgObjComb->Add(hpp_JEC_TrgObj80);
-  // hpp_JEC_TrgObjComb->Add(hpp_JEC_TrgObj60);
-  // hpp_JEC_TrgObjComb->Add(hpp_JEC_TrgObj40);
-
-  // divideBinWidth(hpp_JEC_TrgObjComb);
-  // divideBinWidth(hpp_JEC_TrgObj80);
-  // divideBinWidth(hpp_JEC_TrgObj60);
-  // divideBinWidth(hpp_JEC_TrgObj40);
-
-  // hpp_JEC_minus_TrgObjComb->Add(hpp_JEC_minus_TrgObj80);
-  // hpp_JEC_minus_TrgObjComb->Add(hpp_JEC_minus_TrgObj60);
-  // hpp_JEC_minus_TrgObjComb->Add(hpp_JEC_minus_TrgObj40);
-
-  // divideBinWidth(hpp_JEC_minus_TrgObjComb);
-  // divideBinWidth(hpp_JEC_minus_TrgObj80);
-  // divideBinWidth(hpp_JEC_minus_TrgObj60);
-  // divideBinWidth(hpp_JEC_minus_TrgObj40);
-
-  // hpp_JEC_gaus_TrgObjComb->Add(hpp_JEC_gaus_TrgObj80);
-  // hpp_JEC_gaus_TrgObjComb->Add(hpp_JEC_gaus_TrgObj60);
-  // hpp_JEC_gaus_TrgObjComb->Add(hpp_JEC_gaus_TrgObj40);
-
-  // divideBinWidth(hpp_JEC_gaus_TrgObjComb);
-  // divideBinWidth(hpp_JEC_gaus_TrgObj80);
-  // divideBinWidth(hpp_JEC_gaus_TrgObj60);
-  // divideBinWidth(hpp_JEC_gaus_TrgObj40);
-  
-  // hpp_Smear_TrgObjComb->Add(hpp_Smear_TrgObj80);
-  // hpp_Smear_TrgObjComb->Add(hpp_Smear_TrgObj60);
-  // hpp_Smear_TrgObjComb->Add(hpp_Smear_TrgObj40);
-
-  // divideBinWidth(hpp_Smear_TrgObjComb);
-  // divideBinWidth(hpp_Smear_TrgObj80);
-  // divideBinWidth(hpp_Smear_TrgObj60);
-  // divideBinWidth(hpp_Smear_TrgObj40);
-
-  // hpp_anaBin_TrgObjComb->Add(hpp_anaBin_TrgObj80);
-  // hpp_anaBin_TrgObjComb->Add(hpp_anaBin_TrgObj60);
-  // hpp_anaBin_TrgObjComb->Add(hpp_anaBin_TrgObj40);
-
-  // divideBinWidth(hpp_anaBin_TrgObjComb);
-  // divideBinWidth(hpp_anaBin_TrgObj80);
-  // divideBinWidth(hpp_anaBin_TrgObj60);
-  // divideBinWidth(hpp_anaBin_TrgObj40);
   
   hpp_TrgObj40[0]->Print("base");
   hpp_TrgObj60[0]->Print("base");

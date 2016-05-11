@@ -50,13 +50,13 @@ double trigComb(bool *trg, int *pscl, double pt);
 void divideBinWidth(TH1 *h);
 
 //switches
-const bool printDebug = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
+const bool debugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
 
 //filelist to run over
 const std::string infile_Forest = "testFile_2015_5p02TeVpp_data_forests.txt";
 
 //default output file name
-const std::string defaultName = "test_output.root"; 
+const std::string defaultOutputName = "test_output.root"; 
 const std::string outdir="";
 
 //pt binning
@@ -67,7 +67,7 @@ const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;
 static const char *etaWidth = (char*)"20_eta_20";
 
 //root file directories + tree names
-const std::string defDirNames[]={  "hltanalysis"    ,
+const std::string defaultDirNames[]={  "hltanalysis"    ,
 				   "skimanalysis"   ,
 				   "GARBAGE ENTRY"  , //later filled with Form("ak%d%sJetAnalyzer",radius, jetType.c_str()),
 				   //"ppTrack"        ,
@@ -86,7 +86,7 @@ const std::string trees[]={ "HltTree"                    ,
 			    "HLT_AK4CaloJet60_Eta5p1_v"  ,
 			    "HLT_AK4CaloJet80_Eta5p1_v"  ,
 			    "HLT_AK4CaloJet100_Eta5p1_v" };
-const int N = sizeof(defDirNames)/sizeof(std::string);//note, for strings, don't take off 1?
+const int N = sizeof(defaultDirNames)/sizeof(std::string);//note, for strings, don't take off 1?
 
 // Add the Jet ID plots:
 const std::string var[] = {"jtpt" , "rawpt" , "jteta"   , "jtphi", "trkMax", "trkSum"   , "trkHardSum", 
@@ -95,9 +95,11 @@ const std::string var[] = {"jtpt" , "rawpt" , "jteta"   , "jtphi", "trkMax", "tr
 const int N_vars = sizeof(var)/sizeof(std::string);
 
 //RAA_read_data_pp
-int RAA_read_data_pp(int startfile = 0 , int endfile = 1            , 
-		     int radius = 4 , std::string jetType = "PF" , std::string kFoname = defaultName){ 
+int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
+		     int radius = 4 , std::string jetType = "PF" , std::string kFoname = defaultOutputName){ 
   
+  std::cout<<"beginning macro"<<std::endl;
+
   //for timing the script
   //TDatime date;  
   TStopwatch timer;
@@ -108,47 +110,50 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   
-  //basic infothe screen
-  std::cout<<"beginning macro"<<std::endl;
+  //basic info the screen
   std::cout<<std::endl<<"///////////////////"<<std::endl;
   std::cout<<"reading from file "<< startfile << " to file " << endfile<<std::endl;
-  std::cout<<"radius = "    << radius<<std::endl;
-  std::cout<<"N = "         << N<<std::endl;
+  if(debugMode)std::cout<<"radius =  " << radius<<std::endl;
+  if(debugMode)std::cout<<"N trees = " << N<<std::endl;
+  if(debugMode)std::cout<<"N vars  = " << N_vars<<std::endl;
   std::cout<<"///////////////////"<<std::endl<<std::endl;
 
   //initialize tree name array
   std::string dir[N];
-  for(int i=0;i<N;i++){
-    if(i!=2)dir[i]=defDirNames[i];
+  for(int i=0;i<N;++i){
+    if(i!=2)dir[i]=defaultDirNames[i];
     else dir[i]=Form("ak%d%sJetAnalyzer",radius, jetType.c_str()); 
   }
   
+  //chain the trees together
+  TChain* jetpp[N];
+  for(int t = 0;t<N;++t)  jetpp[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
+
   //the file list
   std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   std::string filename_Forest;  
-  
-  for(int ifile = 0;ifile<startfile;ifile++) instr_Forest >> filename_Forest;  //what's this for???
-  
-  //chain the trees together
-  TChain* jetpp[N];
-  for(int t = 0;t<N;t++)  jetpp[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
+
+  //loop to starting file
+  for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
   
   //add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){
     instr_Forest>>filename_Forest;    //grab filename
-    for(int t = 0;t<N;t++)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
+    for(int t = 0;t<N;++t)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
     //check to see if the files are opening right
-    if(printDebug){
-      for(int t = 0;t<N;t++){ 
-	if (t == 0) std::cout << "opening file " <<filename_Forest<< std::endl;
+    if(debugMode){
+      for(int t = 0;t<N;++t){ 
+	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
 	std::cout << "Tree loaded  " << string(dir[t]+"/"+trees[t]).data() <<std::endl;
-	std::cout << "Entries : "    << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
+	//std::cout << "Entries : "    << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
+	if (t==N-1)std::cout << std::endl; 
       }
+      
     }
   }//end input file loop
   
   //friend tree "t" to all other trees in jetpp array
-  for(int t = 0;t<N;t++){ 
+  for(int t = 0;t<N;++t){ 
     if(t==2) continue;
     else jetpp[2]->AddFriend( jetpp[t] );
   }
@@ -320,19 +325,17 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   Long64_t NEvents_80 = 0;
   Long64_t NEvents_60 = 0;
   Long64_t NEvents_40 = 0;    
+  //Long64_t nGoodEvt = 0;
   
   TRandom3 rnd; //wonder what this is for...
-  //rnd.SetSeed(endfile);
-  
-  //Long64_t nGoodEvt = 0;
-  //if(printDebug) nentries = 100;
+  //rnd.SetSeed(endfile);  
 
+  if(debugMode) nentries = 10;
   std::cout<<"Running through all the "<<nentries<<" events now"<<std::endl;  
 
-  for(int nEvt = 0; nEvt < nentries; ++ nEvt) {//event loop
-
-    if(printDebug)std::cout<<"nEvt = "<<nEvt<<std::endl;
-    if(printDebug && nEvt==10) break;
+  for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop
+    
+    if(debugMode)std::cout<<"nEvt = "<<nEvt<<std::endl;
 
     //grab an entry from each ppjet tree
     for(int i = 0; i<N;++i) jetpp[i]->GetEntry(nEvt);
@@ -363,31 +366,32 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
       }
     }
 
-    //come up with event weight for later use
-    double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
-    
     //loop over objects that pass each trigger
     double triggerPt=0.;
+
     if(jet40_F){
-      for(unsigned int itt=0; itt<trgObjpt_40->size(); itt++){
+      for(unsigned int itt=0; itt<trgObjpt_40->size(); ++itt){
 	if(trgObjpt_40->at(itt)>triggerPt) triggerPt = trgObjpt_40->at(itt);
       }
     }
     if(jet60_F){
-      for(unsigned int itt=0; itt<trgObjpt_60->size(); itt++){
+      for(unsigned int itt=0; itt<trgObjpt_60->size(); ++itt){
 	if(trgObjpt_60->at(itt)>triggerPt) triggerPt = trgObjpt_60->at(itt);
       }
     }
     if(jet80_F){
-      for(unsigned int itt=0; itt<trgObjpt_80->size(); itt++){
+      for(unsigned int itt=0; itt<trgObjpt_80->size(); ++itt){
 	if(trgObjpt_80->at(itt)>triggerPt) triggerPt = trgObjpt_80->at(itt);
       }
     }
     if(jet100_F){
-      for(unsigned int itt=0; itt<trgObjpt_100->size(); itt++){
+      for(unsigned int itt=0; itt<trgObjpt_100->size(); ++itt){
 	if(trgObjpt_100->at(itt)>triggerPt) triggerPt = trgObjpt_100->at(itt);
       }
     }    
+
+    //come up with event weight for later use
+    double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
     
     // check trigger decisions for events + exclusivity between them
     if(trgDec[3] && triggerPt>=100                ) is100 = true;
@@ -404,87 +408,85 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
     
     //jet loop
     for(int jet = 0; jet<nref_F; ++jet){
-
+      
       //pt too low or not in barrel, forget it.
       if( fabs(eta_F[jet]) > 2 ||
           pt_F[jet] <= 15       ) continue;     
       
       float recpt = pt_F[jet];
-
-      if(1){//why raghav why
-	hJetQA[0][0]->Fill(recpt, weight_eS);
-	hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
-	hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
-	hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
-	hJetQA[0][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
-	hJetQA[0][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][7]->Fill(chMax_F[jet]/recpt, weight_eS);
-	hJetQA[0][8]->Fill(chSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][10]->Fill(phMax_F[jet]/recpt, weight_eS);
-	hJetQA[0][11]->Fill(phSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][13]->Fill(neMax_F[jet]/recpt, weight_eS);
-	hJetQA[0][14]->Fill(neSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][15]->Fill(eMax_F[jet]/recpt, weight_eS);
-	hJetQA[0][16]->Fill(eSum_F[jet]/recpt, weight_eS);
-	hJetQA[0][17]->Fill(muMax_F[jet]/recpt, weight_eS);
-	hJetQA[0][18]->Fill(muSum_F[jet]/recpt, weight_eS);
-
-	hpp_CombJetpT[0]->Fill(recpt, weight_eS);
-	
-	if(is40)  hpp_TrgObj40[0]->Fill(recpt, treePrescl[0]);
-	if(is60)  hpp_TrgObj60[0]->Fill(recpt, treePrescl[1]);
-	if(is80)  hpp_TrgObj80[0]->Fill(recpt, treePrescl[2]);
-	if(is100) hpp_TrgObj100[0]->Fill(recpt, treePrescl[3]);
-
-	//looking at lead+subleading jet
-	if(jet == 0) {
+      
+      hJetQA[0][0]->Fill(recpt, weight_eS);
+      hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
+      hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
+      hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
+      hJetQA[0][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
+      hJetQA[0][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][7]->Fill(chMax_F[jet]/recpt, weight_eS);
+      hJetQA[0][8]->Fill(chSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][10]->Fill(phMax_F[jet]/recpt, weight_eS);
+      hJetQA[0][11]->Fill(phSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][13]->Fill(neMax_F[jet]/recpt, weight_eS);
+      hJetQA[0][14]->Fill(neSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][15]->Fill(eMax_F[jet]/recpt, weight_eS);
+      hJetQA[0][16]->Fill(eSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][17]->Fill(muMax_F[jet]/recpt, weight_eS);
+      hJetQA[0][18]->Fill(muSum_F[jet]/recpt, weight_eS);
+      
+      hpp_CombJetpT[0]->Fill(recpt, weight_eS);
+      
+      if(is40)  hpp_TrgObj40[0]->Fill(recpt, treePrescl[0]);
+      if(is60)  hpp_TrgObj60[0]->Fill(recpt, treePrescl[1]);
+      if(is80)  hpp_TrgObj80[0]->Fill(recpt, treePrescl[2]);
+      if(is100) hpp_TrgObj100[0]->Fill(recpt, treePrescl[3]);
+      
+      //looking at lead+subleading jet
+      if(jet == 0) {
 	  hJetQA[0][19]->Fill( (float) (pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]) , weight_eS ); // A_j
 	  hJetQA[0][20]->Fill( (float) (pt_F[1]/pt_F[0])                   , weight_eS ); // x_j
-	}
+      }
 
-	// apply JetID
-	if( chSum_F[jet]/recpt > 0    &&    // if  charged hadron pt frac > 0
-	    neSum_F[jet]/recpt < 0.99 &&    // and neutral hadron pt frac < 99%
-	    phSum_F[jet]/recpt < 0.99 &&    // and photon hadron pt frac < 99%
-	    chN_F[jet] > 0             ) {  // and there's a charged particle   
-	  
-	  hJetQA[1][0]->Fill(recpt, weight_eS);
-	  hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
-	  hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
-	  hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
-	  hJetQA[1][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
-	  hJetQA[1][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][7]->Fill(chMax_F[jet]/recpt, weight_eS);
-	  hJetQA[1][8]->Fill(chSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][10]->Fill(phMax_F[jet]/recpt, weight_eS);
-	  hJetQA[1][11]->Fill(phSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][13]->Fill(neMax_F[jet]/recpt, weight_eS);
-	  hJetQA[1][14]->Fill(neSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][15]->Fill(eMax_F[jet]/recpt, weight_eS);
-	  hJetQA[1][16]->Fill(eSum_F[jet]/recpt, weight_eS);
-	  hJetQA[1][17]->Fill(muMax_F[jet]/recpt, weight_eS);
-	  hJetQA[1][18]->Fill(muSum_F[jet]/recpt, weight_eS);
-	  
-	  hpp_CombJetpT[1]->Fill(recpt, weight_eS);
-	  
-	  if(is40)  hpp_TrgObj40[1]->Fill(recpt, treePrescl[0]);
-	  if(is60)  hpp_TrgObj60[1]->Fill(recpt, treePrescl[1]);
-	  if(is80)  hpp_TrgObj80[1]->Fill(recpt, treePrescl[2]);
-	  if(is100) hpp_TrgObj100[1]->Fill(recpt, treePrescl[3]);
-	  
-	  if(jet == 0){
-	    hJetQA[1][19]->Fill((float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]), weight_eS);
-	    hJetQA[1][20]->Fill((float)(pt_F[1]/pt_F[0]), weight_eS);
-	  }  
+      // apply JetID
+      if( chSum_F[jet]/recpt > 0    &&    // if  charged hadron pt frac > 0
+	  neSum_F[jet]/recpt < 0.99 &&    // and neutral hadron pt frac < 99%
+	  phSum_F[jet]/recpt < 0.99 &&    // and photon hadron pt frac < 99%
+	  chN_F[jet] > 0             ) {  // and there's a charged particle   
+	
+	hJetQA[1][0]->Fill(recpt, weight_eS);
+	hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
+	hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
+	hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
+	hJetQA[1][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
+	hJetQA[1][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][7]->Fill(chMax_F[jet]/recpt, weight_eS);
+	hJetQA[1][8]->Fill(chSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][10]->Fill(phMax_F[jet]/recpt, weight_eS);
+	hJetQA[1][11]->Fill(phSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][13]->Fill(neMax_F[jet]/recpt, weight_eS);
+	hJetQA[1][14]->Fill(neSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][15]->Fill(eMax_F[jet]/recpt, weight_eS);
+	hJetQA[1][16]->Fill(eSum_F[jet]/recpt, weight_eS);
+	hJetQA[1][17]->Fill(muMax_F[jet]/recpt, weight_eS);
+	hJetQA[1][18]->Fill(muSum_F[jet]/recpt, weight_eS);
+	
+	hpp_CombJetpT[1]->Fill(recpt, weight_eS);
+	
+	if(is40)  hpp_TrgObj40[1]->Fill(recpt, treePrescl[0]);
+	if(is60)  hpp_TrgObj60[1]->Fill(recpt, treePrescl[1]);
+	if(is80)  hpp_TrgObj80[1]->Fill(recpt, treePrescl[2]);
+	if(is100) hpp_TrgObj100[1]->Fill(recpt, treePrescl[3]);
+	
+	if(jet == 0){
+	  hJetQA[1][19]->Fill((float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]), weight_eS);
+	  hJetQA[1][20]->Fill((float)(pt_F[1]/pt_F[0]), weight_eS);
+	}  
 
-	}//end jet id cut
-      }//end if(1) 
+      }//end jet id cut      
     }// end jet loop
   }// end event loop
   
@@ -503,6 +505,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   hpp_TrgObj80[0]->Print("base");
   hpp_TrgObj100[0]->Print("base");
   hpp_TrgObjComb[0]->Print("base");
+  
   hpp_CombJetpT[0]->Print("base");
   
   hpp_TrgObj40[1]->Print("base");
@@ -510,14 +513,15 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   hpp_TrgObj80[1]->Print("base");
   hpp_TrgObj100[1]->Print("base");
   hpp_TrgObjComb[1]->Print("base");
+
   hpp_CombJetpT[1]->Print("base");
   
-  std::cout<<"Event Summary"<<std::endl;
+  std::cout<<std::endl<<"Event Summary"<<std::endl;
   std::cout<<"Total Number of Events read   = "<<NEvents<<std::endl;
   std::cout<<"Total Number of HLT100 events = "<<NEvents_100<<std::endl;
   std::cout<<"Total Number of HLT80 events = "<<NEvents_80<<std::endl;
   std::cout<<"Total Number of HLT60 events = "<<NEvents_60<<std::endl;
-  std::cout<<"Total Number of HLT40 events = "<<NEvents_40<<std::endl;
+  std::cout<<"Total Number of HLT40 events = "<<NEvents_40<<std::endl<<std::endl;
   
   fout->Write();
 
@@ -528,23 +532,25 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   
   timer.Stop();
 
-  std::cout<<"Macro finished: "<<std::endl;
+  std::cout<<std::endl<<"Macro finished: "<<std::endl;
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
-  std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
+  std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl<<std::endl;
   
   return 0;
 }// end RAA_read_data_pp macro
 
+
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
+
 
 /////////////////////////
 // divide by bin width //
 /////////////////////////
 void divideBinWidth(TH1 *h){
   h->Sumw2();
-  for (int i=0;i<=h->GetNbinsX();i++){
+  for (int i=0;i<=h->GetNbinsX();++i){
     Float_t val = h->GetBinContent(i);
     Float_t valErr = h->GetBinError(i);
     val/=h->GetBinWidth(i);
@@ -570,13 +576,3 @@ double trigComb(bool *trg, int *pscl, double pt){
   
   return weight;
 }
-
-
-
-
-
-
-
-
-
-

@@ -1,8 +1,10 @@
 #!/bin/bash
-# usage: source condor_submit.sh NJobs NFilesPerJob
-# submits NJobs, running over NFilesPerJob
+# usage: source condor_makeTarAndSubmit.sh NJobs NFilesPerJob
 
-##COMPILE CODE AND CREATE TARBALL OF INPUT FILES
+##
+##COMPILE CODE AND CREATE TARBALL OF INPUT FILES##
+##
+
 # compile the script
 root -l <<EOF
 .L RAA_read_data_pp.C+
@@ -18,7 +20,10 @@ rm *.d *.so *.pcm
 
 echo "code compiled and tarball created"
 
+##
 ##CREATE SUBMIT FILE AND SUBMIT TO CONDOR
+##
+
 #inputs to make the run script
 NJobs=$1
 NFilesPerJob=$2

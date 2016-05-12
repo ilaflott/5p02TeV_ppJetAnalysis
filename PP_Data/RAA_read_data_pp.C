@@ -51,7 +51,7 @@ void divideBinWidth(TH1 *h);
 
 //switches
 const bool debugMode     = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
-const bool fastDebugMode = false; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
+const bool fastDebugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
 
 //for convenience during testing, coding, etc.
 const bool atMIT  = true;
@@ -59,7 +59,8 @@ const std::string hadoopDir    = "/mnt/hadoop/cms";
 const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
 
 //filelist to run over
-const std::string infile_Forest = "testFile_2015_5p02TeVpp_data_forests.txt";
+//const std::string infile_Forest = "HighPtJet80_5p02TeV_pp_data_forests.txt";
+const std::string infile_Forest = "testFile_2015_5p02TeVpp_data_forests.txt";//2 files long, for debugging
 
 //default output file name
 const std::string defaultOutputName = "test_output.root"; 

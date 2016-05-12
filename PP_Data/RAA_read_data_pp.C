@@ -51,6 +51,7 @@ void divideBinWidth(TH1 *h);
 
 //switches
 const bool debugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
+const bool fastDebugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
 
 //filelist to run over
 const std::string infile_Forest = "testFile_2015_5p02TeVpp_data_forests.txt";
@@ -67,15 +68,15 @@ const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;
 static const char *etaWidth = (char*)"20_eta_20";
 
 //root file directories + tree names
-const std::string defaultDirNames[]={  "hltanalysis"    ,
-				   "skimanalysis"   ,
-				   "GARBAGE ENTRY"  , //later filled with Form("ak%d%sJetAnalyzer",radius, jetType.c_str()),
-				   //"ppTrack"        ,
-				   "hiEvtAnalyzer"  ,
-				   "hltobject"      , // hlt40
-				   "hltobject"      , // hlt60
-				   "hltobject"      , // hlt80
-				   "hltobject"      }; // hlt100
+const std::string defaultDirNames[]={ "hltanalysis"    ,
+				      "skimanalysis"   ,
+				      "GARBAGE ENTRY"  , //later replaced with Form("ak%d%sJetAnalyzer",radius, jetType.c_str()),
+				      //"ppTrack"        ,
+				      "hiEvtAnalyzer"  ,
+				      "hltobject"      , //hlt40
+				      "hltobject"      , //hlt60
+				      "hltobject"      , //hlt80
+				      "hltobject"      }; //hlt100
 
 const std::string trees[]={ "HltTree"                    ,
 			    "HltTree"                    ,
@@ -86,132 +87,112 @@ const std::string trees[]={ "HltTree"                    ,
 			    "HLT_AK4CaloJet60_Eta5p1_v"  ,
 			    "HLT_AK4CaloJet80_Eta5p1_v"  ,
 			    "HLT_AK4CaloJet100_Eta5p1_v" };
-const int N = sizeof(defaultDirNames)/sizeof(std::string);//note, for strings, don't take off 1?
+const int N_trees = sizeof(defaultDirNames)/sizeof(std::string);//note, for string array, don't take off one
+                                                                //not a C++ reason, just a way the loops are organized in this routine
 
-// Add the Jet ID plots:
+//Add the Jet ID plots:
 const std::string var[] = {"jtpt" , "rawpt" , "jteta"   , "jtphi", "trkMax", "trkSum"   , "trkHardSum", 
 			   "chMax", "chSum", "chHardSum", "phMax", "phSum" , "phHardSum", "neMax"     , 
 			   "neSum", "eMax" , "eSum"     , "muMax", "muSum" ,"Aj"        ,"xj"         };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
+//MAIN BODY OF CODE BEGINS HERE
+
 //RAA_read_data_pp
-int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
-		     int radius = 4 , std::string jetType = "PF" , std::string kFoname = defaultOutputName){ 
+int RAA_read_data_pp(int startfile = 0 , int endfile = 1 ,
+		     int radius = 4 ,    std::string jetType = "PF" , std::string kFoname = defaultOutputName){ 
   
-  std::cout<<"beginning macro"<<std::endl;
+  std::cout<<std::endl<<"beginning macro"<<std::endl;
+  if(debugMode)std::cout<<"debugMode is ON"<<std::endl;
+  if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   //for timing the script
   //TDatime date;  
   TStopwatch timer;
   timer.Start();
   
-  //plto settings for later
+  // plto settings for later
   gStyle->SetOptStat(0);
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   
-  //basic info the screen
+  // basic info the screen
   std::cout<<std::endl<<"///////////////////"<<std::endl;
   std::cout<<"reading from file "<< startfile << " to file " << endfile<<std::endl;
   if(debugMode)std::cout<<"radius =  " << radius<<std::endl;
-  if(debugMode)std::cout<<"N trees = " << N<<std::endl;
+  if(debugMode)std::cout<<"N trees = " << N_trees<<std::endl;
   if(debugMode)std::cout<<"N vars  = " << N_vars<<std::endl;
   std::cout<<"///////////////////"<<std::endl<<std::endl;
 
-  //initialize tree name array
-  std::string dir[N];
-  for(int i=0;i<N;++i){
+  // initialize tree name array
+  std::string dir[N_trees];
+  for(int i=0;i<N_trees;++i){
     if(i!=2)dir[i]=defaultDirNames[i];
     else dir[i]=Form("ak%d%sJetAnalyzer",radius, jetType.c_str()); 
   }
   
-  //chain the trees together
-  TChain* jetpp[N];
-  for(int t = 0;t<N;++t)  jetpp[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
+  // chain the trees together
+  TChain* jetpp[N_trees];
+  for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
 
-  //the file list
+  // the file list
   std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   std::string filename_Forest;  
 
-  //loop to starting file
+  // loop to starting file
   for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
   
-  //add input files to the ppjet tree
+  // add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){
     instr_Forest>>filename_Forest;    //grab filename
-    for(int t = 0;t<N;++t)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
+    for(int t = 0;t<N_trees;++t)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
     //check to see if the files are opening right
     if(debugMode){
-      for(int t = 0;t<N;++t){ 
+      for(int t = 0;t<N_trees;++t){ 
 	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
 	std::cout << "Tree loaded  " << string(dir[t]+"/"+trees[t]).data() <<std::endl;
-	//std::cout << "Entries : "    << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
-	if (t==N-1)std::cout << std::endl; 
+	if(!fastDebugMode)std::cout << "Entries : "    << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
+	if (t==N_trees-1)std::cout << std::endl; 
       }
       
     }
   }//end input file loop
   
-  //friend tree "t" to all other trees in jetpp array
-  for(int t = 0;t<N;++t){ 
+  // make all other trees friends of tree t in jetpp array
+  for(int t = 0;t<N_trees;++t){ 
     if(t==2) continue;
     else jetpp[2]->AddFriend( jetpp[t] );
   }
  
   // set the branch addresses
-  //HiEvtAnalyzer
-  ULong64_t evt_F;
-  UInt_t run_F;
-  UInt_t lumi_F;
-  float vz_F;
+
+  //in HiEvtAnalyzer
+  ULong64_t evt_F;   UInt_t run_F;   UInt_t lumi_F;   float vz_F;
   
   //in skimanalysis
-  int pBeamScrapingFilter_F;
-  int pHBHENoiseFilter_F;
-  int pprimaryvertexFilter_F;
+  int pBeamScrapingFilter_F;   int pHBHENoiseFilter_F;   int pprimaryvertexFilter_F;
 
-  // in hltanalysis
-  int jet40_l1seed_p_F;
-  int jet60_l1seed_p_F;
-  int jet80_l1seed_p_F;
-  int jet100_l1seed_p_F;  
+  //in hltanalysis
+  int jet40_l1seed_p_F;   int jet60_l1seed_p_F;   int jet80_l1seed_p_F;   int jet100_l1seed_p_F;  
+  int jet40_F;            int jet60_F;            int jet80_F;            int jet100_F;
+  int jet40_p_F;          int jet60_p_F;          int jet80_p_F;          int jet100_p_F;
 
-  int jet40_F;
-  int jet60_F;
-  int jet80_F;
-  int jet100_F;
-  int jet40_p_F;
-  int jet60_p_F;
-  int jet80_p_F;
-  int jet100_p_F;
+  //in jet analyzer of choice
+  int nref_F;   
+  float pt_F[1000];   float rawpt_F[1000];   float eta_F[1000];   float phi_F[1000];    float jtpu_F[1000];
 
-  // in jet analyzer of choice
-  int nref_F;
-  float pt_F[1000];
-  float rawpt_F[1000];
-  float eta_F[1000];
-  float phi_F[1000];
-  float chMax_F[1000];
-  float trkMax_F[1000];
-  float chSum_F[1000];  
-
+  //charged particles in jet?
   int chN_F[1000];
-  float phSum_F[1000];
-  float neSum_F[1000];
-  float trkSum_F[1000];
-  float phMax_F[1000];
-  float neMax_F[1000];
-  float eMax_F[1000];
-  float muMax_F[1000];
-  float eSum_F[1000];
-  float muSum_F[1000];
-  float jtpu_F[1000];
-  float chHardMax_F[1000];
-  float trkHardMax_F[1000];
-  float chHardSum_F[1000];
-  float phHardSum_F[1000];
-  float trkHardSum_F[1000];
-  float phHardMax_F[1000];
+
+  //sum variables
+  float chSum_F[1000];   float neSum_F[1000];   float phSum_F[1000];   float trkSum_F[1000];
+  float eSum_F[1000];   float muSum_F[1000];
+  float chHardSum_F[1000];   float phHardSum_F[1000];   float trkHardSum_F[1000];
+
+  //max variables
+  float chMax_F[1000];   float neMax_F[1000];   float phMax_F[1000];   float trkMax_F[1000];  
+  float eMax_F[1000];   float muMax_F[1000];
+  float chHardMax_F[1000];   float phHardMax_F[1000];   float trkHardMax_F[1000];
 
   //hiEvtAnalyzer
   jetpp[3]->SetBranchAddress("evt",&evt_F);
@@ -276,12 +257,12 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   std::vector<float> *trgObjpt_100 = 0;
   jetpp[7]->SetBranchAddress("pt",&trgObjpt_100);
 
-  // Declare the output File and the necessary histograms after that:
+  //  Declare the output File and the necessary histograms after that:
   std::string outfile=outdir+kFoname;
   TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
 
-  //plot jet variables
+  // plot jet variables
   TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){
     for(int j = 0; j<N_vars; ++j){
@@ -299,28 +280,37 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   TH1F *hpp_TrgObj60[2];
   TH1F *hpp_TrgObj40[2];
   TH1F *hpp_TrgObjComb[2];
-
   TH1F *hpp_CombJetpT[2];
-
   
-  hpp_TrgObj100[0]  = new TH1F(Form("hpp_HLT100_noJetID_R%d_%s"     , radius, etaWidth), Form("Spectra from  Jet 100 R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObj80[0]   = new TH1F(Form("hpp_HLT80_noJetID_R%d_%s"      , radius, etaWidth), Form("Spectra from  Jet 80 R%d %s " ,radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObj60[0]   = new TH1F(Form("hpp_HLT60_noJetID_R%d_%s"      , radius, etaWidth), Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObj40[0]   = new TH1F(Form("hpp_HLT40_noJetID_R%d_%s"      , radius, etaWidth), Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObjComb[0] = new TH1F(Form("hpp_HLTComb_noJetID_R%d_%s"    , radius, etaWidth), Form("Trig Combined Spectra R%d %s ",radius,etaWidth),2000, 0, 2000);
 
-  
-  hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_noJetID_R%d_%s", radius, etaWidth), Form("Trig Combined Spectra KurtMethod R%d %s ",radius,etaWidth),2000, 0, 2000);
+  hpp_TrgObj100[0]  = new TH1F(Form("hpp_HLT100_noJetID_R%d_%s"     , radius, etaWidth), 
+			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj80[0]   = new TH1F(Form("hpp_HLT80_noJetID_R%d_%s"     , radius, etaWidth), 
+			       Form("Spectra from  Jet 80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj60[0]   = new TH1F(Form("hpp_HLT60_noJetID_R%d_%s"               , radius, etaWidth), 
+			       Form("Spectra from  Jet 60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj40[0]   = new TH1F(Form("hpp_HLT40_noJetID_R%d_%s"                        , radius, etaWidth), 
+			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObjComb[0] = new TH1F(Form("hpp_HLTComb_noJetID_R%d_%s"    , radius, etaWidth), 
+			       Form("Trig Combined Spectra R%d %s " , radius, etaWidth), 2000, 0, 2000);
 
-  
-  hpp_TrgObj100[1]  = new TH1F(Form("hpp_HLT100_JetID_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 100 R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObj80[1]   = new TH1F(Form("hpp_HLT80_JetID_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 80 R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObj60[1]   = new TH1F(Form("hpp_HLT60_JetID_R%d_%s",radius,etaWidth),Form("Spectra from  Jet 60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObj40[1]   = new TH1F(Form("hpp_HLT40_JetID_R%d_%s",radius,etaWidth),Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s ",radius,etaWidth),2000, 0, 2000);
-  hpp_TrgObjComb[1] = new TH1F(Form("hpp_HLTComb_JetID_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra R%d %s ",radius,etaWidth),2000, 0, 2000);
+  hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_noJetID_R%d_%s"           , radius, etaWidth), 
+			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
 
-  
-  hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_JetID_R%d_%s",radius,etaWidth),Form("Trig Combined Spectra KurtMethod R%d %s ",radius,etaWidth),2000, 0, 2000);
+
+  hpp_TrgObj100[1]  = new TH1F(Form("hpp_HLT100_JetID_R%d_%s"     , radius, etaWidth), 
+			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj80[1]   = new TH1F(Form("hpp_HLT80_JetID_R%d_%s"     , radius, etaWidth), 
+			       Form("Spectra from  Jet 80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj60[1]   = new TH1F(Form("hpp_HLT60_JetID_R%d_%s"               , radius, etaWidth), 
+			       Form("Spectra from  Jet 60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj40[1]   = new TH1F(Form("hpp_HLT40_JetID_R%d_%s"                        , radius, etaWidth), 
+			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObjComb[1] = new TH1F(Form("hpp_HLTComb_JetID_R%d_%s"    , radius, etaWidth), 
+			       Form("Trig Combined Spectra R%d %s " , radius, etaWidth), 2000, 0, 2000);
+
+  hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_JetID_R%d_%s"           , radius, etaWidth), 
+			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
 
   
   Long64_t nentries = jetpp[0]->GetEntries();
@@ -335,23 +325,25 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   //rnd.SetSeed(endfile);  
 
   if(debugMode) nentries = 10;
-  std::cout<<"Running through all the "<<nentries<<" events now"<<std::endl;  
+  if(fastDebugMode) nentries = 1;
+
+  std::cout<<"Running through "<<nentries<<" events"<<std::endl;  
 
   for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop
     
     if(debugMode)std::cout<<"nEvt = "<<nEvt<<std::endl;
 
-    //grab an entry from each ppjet tree
-    for(int i = 0; i<N;++i) jetpp[i]->GetEntry(nEvt);
+    // grab an entry from each ppjet tree
+    for(int i = 0; i<N_trees;++i) jetpp[i]->GetEntry(nEvt);
     
-    //Evt/skim analysis cuts
+    // Evt/skim analysis cuts
     if( pHBHENoiseFilter_F==0     || 
         pBeamScrapingFilter_F==0  || 
         pprimaryvertexFilter_F==0 ||
         fabs(vz_F)>15              ) 
       continue;
 
-    //fill vz histo?
+    // fill vz histo
     hVz->Fill(vz_F);
     
     bool is40  = false;
@@ -359,7 +351,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
     bool is80  = false;
     bool is100 = false;
 
-    //trigger decision boolean array w/ prescale l1 seed 
+    // trigger decision boolean array w/ prescale l1 seed 
     bool trgDec[4] = {(bool)jet40_F, (bool)jet60_F, (bool)jet80_F, (bool)jet100_F};
     int treePrescl[4] = {(jet40_p_F*jet40_l1seed_p_F), (jet60_p_F*jet60_l1seed_p_F), (jet80_p_F*jet80_l1seed_p_F), (jet100_p_F*jet100_l1seed_p_F)};    
     int maxtrg= -1;      
@@ -370,7 +362,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
       }
     }
 
-    //loop over objects that pass each trigger
+    // loop over objects that pass each trigger
     double triggerPt=0.;
 
     if(jet40_F){
@@ -394,7 +386,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
       }
     }    
 
-    //come up with event weight for later use
+    // come up with event weight for later use
     double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
     
     // check trigger decisions for events + exclusivity between them
@@ -413,7 +405,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
     //jet loop
     for(int jet = 0; jet<nref_F; ++jet){
       
-      //pt too low or not in barrel, forget it.
+      // pt too low or not in barrel, forget it.
       if( fabs(eta_F[jet]) > 2 ||
           pt_F[jet] <= 15       ) continue;     
       
@@ -446,17 +438,17 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
       if(is80)  hpp_TrgObj80[0]->Fill(recpt, treePrescl[2]);
       if(is100) hpp_TrgObj100[0]->Fill(recpt, treePrescl[3]);
       
-      //looking at lead+subleading jet
+      // looking at lead+subleading jet
       if(jet == 0) {
-	  hJetQA[0][19]->Fill( (float) (pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]) , weight_eS ); // A_j
-	  hJetQA[0][20]->Fill( (float) (pt_F[1]/pt_F[0])                   , weight_eS ); // x_j
+	  hJetQA[0][19]->Fill( (float) (pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]) , weight_eS ); //A_j
+	  hJetQA[0][20]->Fill( (float) (pt_F[1]/pt_F[0])                   , weight_eS ); //x_j
       }
 
       // apply JetID
-      if( chSum_F[jet]/recpt > 0    &&    // if  charged hadron pt frac > 0
-	  neSum_F[jet]/recpt < 0.99 &&    // and neutral hadron pt frac < 99%
-	  phSum_F[jet]/recpt < 0.99 &&    // and photon hadron pt frac < 99%
-	  chN_F[jet] > 0             ) {  // and there's a charged particle   
+      if( chSum_F[jet]/recpt > 0    &&    //if  charged hadron pt frac > 0
+	  neSum_F[jet]/recpt < 0.99 &&    //and neutral hadron pt frac < 99%
+	  phSum_F[jet]/recpt < 0.99 &&    //and photon hadron pt frac < 99%
+	  chN_F[jet] > 0             ) {  //and there's a charged particle   
 	
 	hJetQA[1][0]->Fill(recpt, weight_eS);
 	hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
@@ -491,8 +483,8 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
 	}  
 
       }//end jet id cut      
-    }// end jet loop
-  }// end event loop
+    }//end jet loop
+  }//end event loop
   
   hpp_TrgObjComb[0]->Add(hpp_TrgObj100[0]);
   hpp_TrgObjComb[0]->Add(hpp_TrgObj80[0] );
@@ -509,7 +501,6 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   hpp_TrgObj80[0]->Print("base");
   hpp_TrgObj100[0]->Print("base");
   hpp_TrgObjComb[0]->Print("base");
-  
   hpp_CombJetpT[0]->Print("base");
   
   hpp_TrgObj40[1]->Print("base");
@@ -517,7 +508,6 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1            ,
   hpp_TrgObj80[1]->Print("base");
   hpp_TrgObj100[1]->Print("base");
   hpp_TrgObjComb[1]->Print("base");
-
   hpp_CombJetpT[1]->Print("base");
   
   std::cout<<std::endl<<"Event Summary"<<std::endl;

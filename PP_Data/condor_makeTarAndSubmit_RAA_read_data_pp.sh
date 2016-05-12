@@ -13,7 +13,7 @@ EOF
 rm run_RAA_read_pp_data.tar
 
 #create tar from filelist and the compiled macro
-tar -zcvf run_RAA_read_pp_data.tar *pp_data*forests.txt RAA_read_data_pp*.*
+tar -zcvf run_RAA_read_pp_data.tar *pp_data_forests.txt RAA_read_data_pp*.*
 
 echo "code compiled and tarball created"
 
@@ -37,6 +37,7 @@ nFiles=`wc -l < $filelist`
 echo "nFiles in list: $nFiles"
 
 counter=0
+NJobsSubmitted=0
 while [ $counter -lt $NJobs ]
 do
 
@@ -90,7 +91,7 @@ EOF
     # submit the job defined in the above submit file
     echo "submitting RAA_read_data_pp job #${counter}..." 
     condor_submit subfile
-    echo "submitted job # $counter"
     counter=$(($counter + 1))
+    echo "submitted job # ${counter} of ${NJobs}"
     rm subfile
 done

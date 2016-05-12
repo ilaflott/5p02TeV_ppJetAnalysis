@@ -36,8 +36,8 @@ root -b -l <<EOF
 .q
 EOF
 
-echo "Copying output files to destination..."
-#mv $outfile /export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/PP_Data/condorOutput
+#destination="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/condor_output/PP_Data"
+echo "Copying output files to ${destination}..."
 mv $outfile $destination
 
 echo "Done!"

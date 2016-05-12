@@ -14,6 +14,7 @@ rm run_RAA_read_pp_data.tar
 
 #create tar from filelist and the compiled macro
 tar -zcvf run_RAA_read_pp_data.tar *pp_data_forests.txt RAA_read_data_pp*.*
+rm *.d *.so *.pcm
 
 echo "code compiled and tarball created"
 

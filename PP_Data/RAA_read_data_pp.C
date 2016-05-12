@@ -51,7 +51,7 @@ void divideBinWidth(TH1 *h);
 
 //switches
 const bool debugMode     = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
-const bool fastDebugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
+const bool fastDebugMode = false; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
 
 //for convenience during testing, coding, etc.
 const bool atMIT  = true;
@@ -60,7 +60,7 @@ const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
 
 //filelist to run over
 //const std::string infile_Forest = "HighPtJet80_5p02TeV_pp_data_forests.txt";
-const std::string infile_Forest = "testFile_2015_5p02TeVpp_data_forests.txt";//2 files long, for debugging
+const std::string infile_Forest = "testFile_2015_5p02TeV_pp_data_forests.txt";//2 files long, for debugging
 
 //default output file name
 const std::string defaultOutputName = "test_output.root"; 
@@ -108,8 +108,7 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //does not include file 1, just file 0, change later if possible
 		     int radius = 4 ,    std::string jetType = "PF" , std::string kFoname = defaultOutputName){ 
   
-  std::cout<<std::endl<<"beginning macro"<<std::endl;
-  if(debugMode)std::cout<<"debugMode is ON"<<std::endl;
+  if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   //for timing the script
@@ -151,9 +150,11 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //does not include fi
   // add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){//input file loop
 
+    if(debugMode)if(ifile==startfile)std::cout<<"infile_Forest is "<<infile_Forest<<std::endl;
+
     instr_Forest>>filename_Forest; //grab filename
 
-    if(debugMode)std::cout<<"filename_Forest is "<<filename_Forest<<std::endl;
+    if(debugMode)std::cout<<"filename_Forest was "<<filename_Forest<<std::endl;
 
     if (atMIT)filename_Forest=hadoopDir+filename_Forest;
     else filename_Forest=xrootdDirect+filename_Forest;
@@ -168,6 +169,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //does not include fi
 	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
 	std::cout << "Tree loaded  " << string(dir[t]+"/"+trees[t]).data() <<std::endl;
 	if(!fastDebugMode)std::cout << "Entries : " << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
+	if(t==N_trees-1)std::cout<<std::endl;
       }
     }
 

@@ -51,10 +51,10 @@ void divideBinWidth(TH1 *h);
 
 //switches
 const bool debugMode     = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
-const bool fastDebugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
+const bool fastDebugMode = false; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
 
 //for convenience during testing, coding, etc.
-const bool atMIT  = false;
+const bool atMIT  = true;
 const std::string hadoopDir    = "/mnt/hadoop/cms";
 const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
 
@@ -104,7 +104,7 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 //MAIN BODY OF CODE BEGINS HERE
 
 //RAA_read_data_pp
-int RAA_read_data_pp(int startfile = 0 , int endfile = 1 ,
+int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //does not include file 1, just file 0, change later if possible
 		     int radius = 4 ,    std::string jetType = "PF" , std::string kFoname = defaultOutputName){ 
   
   std::cout<<std::endl<<"beginning macro"<<std::endl;
@@ -148,8 +148,9 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 ,
   for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
   
   // add input files to the ppjet tree
-  for(int ifile = startfile; ifile<endfile; ++ifile){
-    instr_Forest>>filename_Forest;    //grab filename
+  for(int ifile = startfile; ifile<endfile; ++ifile){//input file loop
+
+    instr_Forest>>filename_Forest; //grab filename
 
     if(debugMode)std::cout<<"filename_Forest is "<<filename_Forest<<std::endl;
 
@@ -159,16 +160,16 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 ,
     if(debugMode)std::cout<<"filename_Forest is now "<<filename_Forest<<std::endl;
 
     for(int t = 0;t<N_trees;++t)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
+
     //check to see if the files are opening right
     if(debugMode){
       for(int t = 0;t<N_trees;++t){ 
 	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
 	std::cout << "Tree loaded  " << string(dir[t]+"/"+trees[t]).data() <<std::endl;
-	if(!fastDebugMode)std::cout << "Entries : "    << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
-	if (t==N_trees-1)std::cout << std::endl; 
+	if(!fastDebugMode)std::cout << "Entries : " << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
       }
-      
     }
+
   }//end input file loop
   
   // make all other trees friends of tree t in jetpp array
@@ -344,7 +345,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 ,
 
   for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop
     
-    if(debugMode)std::cout<<"nEvt = "<<nEvt<<std::endl;
+    if(nEvt%1000==0)std::cout<<"nEvt = "<<nEvt<<std::endl;
 
     // grab an entry from each ppjet tree
     for(int i = 0; i<N_trees;++i) jetpp[i]->GetEntry(nEvt);
@@ -499,6 +500,8 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 ,
     }//end jet loop
   }//end event loop
   
+  std::cout<<std::endl;
+
   hpp_TrgObjComb[0]->Add(hpp_TrgObj100[0]);
   hpp_TrgObjComb[0]->Add(hpp_TrgObj80[0] );
   hpp_TrgObjComb[0]->Add(hpp_TrgObj60[0] );

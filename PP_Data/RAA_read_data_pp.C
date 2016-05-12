@@ -96,9 +96,9 @@ const int N_trees = sizeof(defaultDirNames)/sizeof(std::string);//note, for stri
                                                                 //not a C++ reason, just a way the loops are organized in this routine
 
 //Add the Jet ID plots:
-const std::string var[] = {"jtpt" , "rawpt" , "jteta"   , "jtphi", "trkMax", "trkSum"   , "trkHardSum", 
+const std::string var[] = {"jtpt" , "rawpt", "jteta"    , "jtphi", "trkMax", "trkSum"   , "trkHardSum", 
 			   "chMax", "chSum", "chHardSum", "phMax", "phSum" , "phHardSum", "neMax"     , 
-			   "neSum", "eMax" , "eSum"     , "muMax", "muSum" ,"Aj"        ,"xj"         };
+			   "neSum", "eMax" , "eSum"     , "muMax", "muSum" , "Aj"       , "xj"        };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
 //MAIN BODY OF CODE BEGINS HERE

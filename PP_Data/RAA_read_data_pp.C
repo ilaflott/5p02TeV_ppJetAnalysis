@@ -50,8 +50,13 @@ double trigComb(bool *trg, int *pscl, double pt);
 void divideBinWidth(TH1 *h);
 
 //switches
-const bool debugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
+const bool debugMode     = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
 const bool fastDebugMode = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
+
+//for convenience during testing, coding, etc.
+const bool atMIT  = false;
+const std::string hadoopDir    = "/mnt/hadoop/cms";
+const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
 
 //filelist to run over
 const std::string infile_Forest = "testFile_2015_5p02TeVpp_data_forests.txt";
@@ -145,6 +150,14 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 ,
   // add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){
     instr_Forest>>filename_Forest;    //grab filename
+
+    if(debugMode)std::cout<<"filename_Forest is "<<filename_Forest<<std::endl;
+
+    if (atMIT)filename_Forest=hadoopDir+filename_Forest;
+    else filename_Forest=xrootdDirect+filename_Forest;
+
+    if(debugMode)std::cout<<"filename_Forest is now "<<filename_Forest<<std::endl;
+
     for(int t = 0;t<N_trees;++t)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
     //check to see if the files are opening right
     if(debugMode){

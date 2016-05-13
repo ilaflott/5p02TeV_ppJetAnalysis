@@ -6,17 +6,11 @@
 ## COMPILE + TARBALL INPUT FILES ##
 ###################################
 
-ls -al
-echo "contents before compiling"
-
 # compile the script
 root -l <<EOF
 .L RAA_read_data_pp.C+
 .q
 EOF
-
-ls -al
-echo "contents after compiling"
 
 # remove old tar ball if there and replace with new one
 rm run_RAA_read_pp_data.tar
@@ -24,14 +18,8 @@ rm run_RAA_read_pp_data.tar
 # create tar from filelist and the compiled macro
 tar -zcvf run_RAA_read_pp_data.tar *pp_data_forests.txt RAA_read_data_pp*.*
 
-ls -al
-echo "contents after tarring"
-
 # cleanup
 rm *.d *.so *.pcm
-
-ls -al
-echo "contents after cleanup"
 
 echo "tarball created"
 
@@ -45,7 +33,7 @@ NJobs=$1
 NFilesPerJob=$2
 radius=4
 jetType="PF"
-destination="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/condor_output/PP_Data"
+destination="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/condor_output/PP_Data/RAA_read_data_pp"
 
 # input tarball location
 tardir=`pwd`
@@ -76,7 +64,7 @@ do
     Error="ak$radius-ppData-${startfile}_to_${endfile}.err"
     Output="ak$radius-ppData-${startfile}_to_${endfile}.out"
     Log="ak$radius-ppData-${startfile}_to_${endfile}.log"
-    outfile="5p02TeV_pp_data_ak${radius}${jetType}_20_eta_20_${startfile}_to_${endfile}.root"
+    outfile="5p02TeV_pp_data_ak${radius}${jetType}_20_eta_20_fileNum${startfile}to${endfile}.root"
     
     # create the condor submit file
     cat > subfile <<EOF
@@ -113,6 +101,10 @@ EOF
     echo "submitting RAA_read_data_pp job #${counter}..." 
     condor_submit subfile
     counter=$(($counter + 1))
-    echo "submitted job # ${counter} of ${NJobs}"
+
+    echo "submitted job #${counter} of ${NJobs}"
+
+    # clean up
+    #echo "outfile is ${outfile}"
     rm subfile
 done

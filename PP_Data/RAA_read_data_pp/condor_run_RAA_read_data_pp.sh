@@ -22,6 +22,12 @@ df -h
 echo "gcc verion is..."
 gcc --version
 
+echo "working directory is..."
+pwd
+
+echo "contents before job processing..."
+ls -al
+
 # run script inputs, defined and set in corresponding submit script
 startfile=$1
 endfile=$2
@@ -36,8 +42,8 @@ root -b -l <<EOF
 .q
 EOF
 
-#destination="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/condor_output/PP_Data"
-echo "Copying output files to ${destination}..."
-mv $outfile $destination
+#destination="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/condor_output/PP_Data/RAA_read_data_pp"
+echo "Copying file ${outfile} to ${destination}..."
+mv ${outfile} ${destination}
 
 echo "Done!"

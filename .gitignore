@@ -1,0 +1,10 @@
+*.d
+*.so
+*.pcm
+*.root
+*.tar
+*~
+PP_Data/RAA_read_data_pp/*.txt
+PP_Data/jetThrust/*.txt
+PP_Data/DijetResponse/*.txt
+setupenv.sh

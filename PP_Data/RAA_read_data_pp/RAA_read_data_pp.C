@@ -5,7 +5,7 @@
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later
 
-//C includes			    
+// C includes			    
 #include <cstdlib>		    
 #include <stdio.h>		    
 #include <iostream>		    
@@ -13,14 +13,14 @@
 #include <sstream>		    
 #include <cmath>		    
 				    
-//load/read/write		    
+// load/read/write		    
 #include <TSystem.h>		    
 #include <TProfile.h>		    
 #include <TFile.h>		    
 #include <TTree.h>		    
 #include <TNtuple.h>		    
 				    
-//utilities			    
+// utilities			    
 #include <TChain.h>		    
 #include <TCut.h>		    
 #include <TMath.h>		    
@@ -28,7 +28,7 @@
 #include <TStopwatch.h>		    
 #include <TEventList.h>		    
 				    
-//plotting			    
+// plotting			    
 #include <TStyle.h>		    
 #include <TCanvas.h>		    
 #include <TGraphErrors.h>	    
@@ -37,7 +37,7 @@
 #include <TLatex.h>		    
 #include <TLine.h>		    
 
-//histos				    
+// histos				    
 #include <TH1.h>		    
 #include <TH1F.h>		    
 #include <TF1.h>		    
@@ -45,35 +45,42 @@
 #include <TH2F.h>                   
 #include <TH3.h>		    
 
-//declare helper functions
+// declare helper functions
 double trigComb(bool *trg, int *pscl, double pt);
 void divideBinWidth(TH1 *h);
 
-//switches
-const bool debugMode     = true; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
-const bool fastDebugMode = false; //int iii=0;    /*debug*/    //std::cout<<"here"<<iii<<std::endl;iii++;
 
-//for convenience during testing, coding, etc.
+/////////////////////////////////////
+////////// initializations //////////
+/////////////////////////////////////
+
+// debug
+const bool debugMode     = true; 
+const bool fastDebugMode = false; 
+//int iii=0;
+//std::cout<<"here"<<iii<<std::endl;iii++;
+
+// for convenience during testing, coding, etc.
 const bool atMIT  = true;
 const std::string hadoopDir    = "/mnt/hadoop/cms";
 const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
 
-//filelist to run over
+// filelist to run over
 //const std::string infile_Forest = "HighPtJet80_5p02TeV_pp_data_forests.txt";
-const std::string infile_Forest = "testFile_2015_5p02TeV_pp_data_forests.txt";//2 files long, for debugging
+const std::string infile_Forest = "testFile_2015_5p02TeV_pp_data_forests.txt";//2 files long, for debugging/testing
 
-//default output file name
+// default output file name
 const std::string defaultOutputName = "test_output.root"; 
 const std::string outdir="";
 
-//pt binning
+// pt binning
 const int ptbins[] = {15, 30, 50, 80, 120, 170, 220, 300, 500};
-const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;
+const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
-//eta binning
+// eta binning
 static const char *etaWidth = (char*)"20_eta_20";
 
-//root file directories + tree names
+// root file directories + tree names
 const std::string defaultDirNames[]={ "hltanalysis"    ,
 				      "skimanalysis"   ,
 				      "GARBAGE ENTRY"  , //later replaced with Form("ak%d%sJetAnalyzer",radius, jetType.c_str()),
@@ -93,30 +100,31 @@ const std::string trees[]={ "HltTree"                    ,
 			    "HLT_AK4CaloJet60_Eta5p1_v"  ,
 			    "HLT_AK4CaloJet80_Eta5p1_v"  ,
 			    "HLT_AK4CaloJet100_Eta5p1_v" };
-const int N_trees = sizeof(defaultDirNames)/sizeof(std::string);//note, for string array, don't take off one
-                                                                //not a C++ reason, just a way the loops are organized in this routine
-
-//Add the Jet ID plots:
+const int N_trees = sizeof(defaultDirNames)/sizeof(std::string);
+                                                                
+// Jet variable names
 const std::string var[] = {"jtpt" , "rawpt", "jteta"    , "jtphi", "trkMax", "trkSum"   , "trkHardSum", 
 			   "chMax", "chSum", "chHardSum", "phMax", "phSum" , "phHardSum", "neMax"     , 
 			   "neSum", "eMax" , "eSum"     , "muMax", "muSum" , "Aj"       , "xj"        };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
-//MAIN BODY OF CODE BEGINS HERE
 
-//RAA_read_data_pp
-int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //does not include file 1, just file 0, change later if possible
+////////////////////////////////////////
+////////// read pp data files //////////
+////////////////////////////////////////
+
+int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary, range of files run over doesnt include endfile
 		     int radius = 4 ,    std::string jetType = "PF" , std::string kFoname = defaultOutputName){ 
   
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
-  //for timing the script
-  //TDatime date;  
+  // for timing the script
   TStopwatch timer;
   timer.Start();
-  
-  // plto settings for later
+  //TDatime date;  
+
+  // plot settings for later
   gStyle->SetOptStat(0);
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
@@ -341,7 +349,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //does not include fi
   TRandom3 rnd; //wonder what this is for...
   //rnd.SetSeed(endfile);  
 
-  if(debugMode) nentries = 10;
+  if(debugMode) nentries = 1000;
   if(fastDebugMode) nentries = 1;
 
   std::cout<<"Running through "<<nentries<<" events"<<std::endl;  
@@ -553,9 +561,9 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //does not include fi
 }// end RAA_read_data_pp macro
 
 
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
+//////////////////////////////////////
+////////// helper functions //////////
+//////////////////////////////////////
 
 
 /////////////////////////

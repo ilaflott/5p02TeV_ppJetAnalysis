@@ -1,9 +1,13 @@
 #!/bin/bash
 # usage: source condor_makeTarAndSubmit.sh NJobs NFilesPerJob
 
-##
-##COMPILE CODE AND CREATE TARBALL OF INPUT FILES##
-##
+
+###################################
+## COMPILE + TARBALL INPUT FILES ##
+###################################
+
+ls -al
+echo "contents before compiling"
 
 # compile the script
 root -l <<EOF
@@ -11,39 +15,50 @@ root -l <<EOF
 .q
 EOF
 
-#remove old tar ball if there and replace with new one
+ls -al
+echo "contents after compiling"
+
+# remove old tar ball if there and replace with new one
 rm run_RAA_read_pp_data.tar
 
-#create tar from filelist and the compiled macro
+# create tar from filelist and the compiled macro
 tar -zcvf run_RAA_read_pp_data.tar *pp_data_forests.txt RAA_read_data_pp*.*
+
+ls -al
+echo "contents after tarring"
+
+# cleanup
 rm *.d *.so *.pcm
 
-echo "code compiled and tarball created"
+ls -al
+echo "contents after cleanup"
 
-##
-##CREATE SUBMIT FILE AND SUBMIT TO CONDOR
-##
+echo "tarball created"
 
-#inputs to make the run script
+
+#############################################
+## CREATE SUBMIT FILE AND SUBMIT TO CONDOR ##
+#############################################
+
+# inputs to make the run script
 NJobs=$1
 NFilesPerJob=$2
 radius=4
 jetType="PF"
 destination="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/condor_output/PP_Data"
 
-#input tarball location
+# input tarball location
 tardir=`pwd`
 
-#load the filelist to determine job splitting, should match filelist in tarball
+# load the filelist to determine job splitting, should match filelist in tarball
 #filelist=HighPtJet80_5p02TeV_pp_data_forests.txt
 filelist=testFile_2015_5p02TeV_pp_data_forests.txt
 
-#one condor job submit per NFilesPerJob until we submit NJobs
+# one condor job submit per NFilesPerJob until we submit NJobs
 nFiles=`wc -l < $filelist`
 echo "nFiles in list: $nFiles"
 
 counter=0
-NJobsSubmitted=0
 while [ $counter -lt $NJobs ]
 do
 
@@ -68,12 +83,12 @@ do
 
 Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
-#tell condor where grid certificate is
+# tell condor where grid certificate is
 #x509userproxy=/tmp/x509up_u2142
 # tell it what to run
 Executable     = condor_run_RAA_read_data_pp.sh
 +AccountingGroup = "group_cmshi.ilaflott"
-#arguments for the run script
+# arguments for the run script
 Arguments      = $startfile $endfile $radius $jetType $outfile $destination
 # input files to run script, none in this case
 Input          = /dev/null

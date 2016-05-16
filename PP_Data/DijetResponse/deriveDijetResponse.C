@@ -16,16 +16,28 @@
 #include "TH1F.h"
 
 //declare helper functions
-int findEtaBin(float eta, int nbins_eta, double* xbins_eta);
-int findPtBin(float pt, int nbins_pt, double* xbins_pt);
+int findEtaBin(float eta, int nbins_eta, const double* xbins_eta);
+int findPtBin(float pt, int nbins_pt, const double* xbins_pt);
 
-TLorentzVector findMissEt(int nPFpart, int* pfId,   float* pfPt,    float* pfEta, float* pfPhi,
+//TLorentzVector findMissEt(int nPFpart, int* pfId,   float* pfPt_,    float* pfEta, float* pfPhi,
+TLorentzVector findMissEt(int nPFpart_, vector<int>* pfId_,   vector<float>* pfPt_,    vector<float>* pfEta_, vector<float>* pfPhi_,
                           int nref,    float* pt_F, float* rawpt_F, float* eta_F, float* phi_F, float* m_F,
                           float* eSum, float *phoSum);
 
+
+/////////////////////////////////////
+////////// initializations //////////
+/////////////////////////////////////
+
+// debug
+const bool debugMode     = true; 
+//const bool fastDebugMode = false; 
+//int iii=0;
+//std::cout<<"here"<<iii<<std::endl;iii++;
+
 //filelist to run over
 const std::string pp_MC_filelist   ="";
-const std::string pp_data_filelist ="testFile_2015_5p02TeVpp_data_forests.txt";
+const std::string pp_data_filelist ="testFile_2015_5p02TeV_pp_data_forests.txt";
 
 //for convenience during testing, coding, etc.
 const bool atMIT  = true;
@@ -57,12 +69,26 @@ const double xbins_eta[] = {-5.191, -4.716, -4.363, -4.013,
 			    4.363,  4.716,  5.191};
 const int nbins_eta = sizeof(xbins_eta)/sizeof(double)-1;
 
-const int color[] = {1,2,4,8,20};
+const int colors[] = {1,2,4,8,20};
 const int N_colors= sizeof(colors)/sizeof(int);
 
-// derive Dijet Response
-void deriveDijetResponse(int startfile = 0, int endfile = 1,
-                         int radius = 4, int isMC = 0, std::string out = defaultOutputName){
+
+///////////////////////////////////////////
+////////// derive dijet response //////////
+///////////////////////////////////////////
+
+int deriveDijetResponse(int startfile = 0, int endfile = 1,
+			int radius = 4, int isMC = 0, std::string out = defaultOutputName){
+
+  if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
+
+  std::cout<<std::endl<<"///////////////////"<<std::endl;
+  std::cout<<"reading from file "<< startfile << " to file " << endfile<<std::endl;
+  if(debugMode)std::cout<<"radius =  " << radius<<std::endl;
+  if(debugMode)std::cout<<"n pt bins   = " << nbins_pt<<std::endl;
+  if(debugMode)std::cout<<"n eta bins  = " << nbins_eta<<std::endl;
+  std::cout<<"///////////////////"<<std::endl<<std::endl;  
+
 
   // TH1F *hRelResponse[nbins_pt];
   // TH1F *hMPFResponse[nbins_pt];  
@@ -87,9 +113,10 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
     }//end eta loop
   }//end pt loop
 
+
   double avgA[nbins_pt][nbins_eta];
   TH1D *h_avgA[nbins_pt][nbins_eta];
-  int nEntries[nbins_pt][nbins_eta];
+  int nEntries[nbins_pt][nbins_eta];//nEntries imples nEntriesA, i think
   TH1D *h_nEntries[nbins_pt][nbins_eta];
 
   double avgB[nbins_pt][nbins_eta];
@@ -120,6 +147,7 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
     }//end etaloop
   }//end pt loop
   
+
   //input files + ifstream
   std::string infile_Forest;
   if(isMC) infile_Forest = pp_MC_filelist;
@@ -135,9 +163,13 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
 
     //signal(SIGINT,break);		
     instr_Forest>>filename_Forest;//grab file
-
-    cout << "opening file + trees" << endl;
-
+    if(atMIT)filename_Forest=hadoopDir+filename_Forest;
+    else filename_Forest=xrootdDirect+filename_Forest;
+    
+    std::cout << "opening file + trees" << std::endl;
+    
+    if(debugMode)std::cout<<"filename_Forest is "<<filename_Forest<<std::endl;
+    
     TFile *fin = TFile::Open(filename_Forest.c_str());
     TTree *jtTree  = (TTree*)fin->Get( Form("ak%dPFJetAnalyzer/t",radius) );
     TTree *pfTree  = (TTree*)fin->Get( "pfcandAnalyzer/pfTree"            );
@@ -147,9 +179,11 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
     float pt_F[1000],  eta_F[1000],  phi_F[1000], rawpt_F[1000], m_F[1000];
     float eSum[1000], phoSum[1000];
 
-    int nPFpart;
-    int pfId[10000];
-    float pfPt[10000], pfEta[10000], pfPhi[10000];
+    int nPFpart_;
+    //int pfId[10000];
+    //float pfPt[10000], pfEta[10000], pfPhi[10000];
+    vector<int> *pfId_;
+    vector<float> *pfPt_=0, *pfEta_=0, *pfPhi_=0;
     
     int nPho;
     vector<float> *phoEt=0, *phoEta=0, *phoPhi=0; 
@@ -163,48 +197,57 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
     jtTree->SetBranchAddress("eSum",&eSum);
     jtTree->SetBranchAddress("photonSum",&phoSum);
 
-    pfTree->SetBranchAddress("nPFpart",&nPFpart);
-    pfTree->SetBranchAddress("pfPt",pfPt);
-    pfTree->SetBranchAddress("pfEta",pfEta);
-    pfTree->SetBranchAddress("pfPhi",pfPhi);
-    pfTree->SetBranchAddress("pfId",pfId);
+    pfTree->SetBranchAddress("nPFpart",&nPFpart_);
+    pfTree->SetBranchAddress("pfId",&pfId_);
+    pfTree->SetBranchAddress("pfPt",&pfPt_);//added ampersand to switch from float to vector<float>*
+    pfTree->SetBranchAddress("pfEta",&pfEta_);
+    pfTree->SetBranchAddress("pfPhi",&pfPhi_);
 
     phoTree->SetBranchAddress("nPho",&nPho);
     phoTree->SetBranchAddress("phoEt",&phoEt);
     phoTree->SetBranchAddress("phoEta",&phoEta);
     phoTree->SetBranchAddress("phoPhi",&phoPhi);
 
-    cout << "file entries: "<< jtTree->GetEntries() << endl;
     int totalEntries = 0;
+    int jetEntries = jtTree->GetEntries();
+    std::cout << "jet entries: "<< jetEntries << std::endl;
+
+    int iii=0;
+    std::cout<<"here"<<iii<<std::endl;iii++;
 
     // loop over jet tree entries
-    for(int ientry=0; ientry<jtTree->GetEntries(); ientry++){//jet loop
+    for(int ientry=0; ientry<jetEntries; ientry++){//jet loop
       
       //for(int ientry=0; ientry<2000000; ientry++){
       jtTree->GetEntry(ientry);
+     
       pfTree->GetEntry(ientry);
-      phoTree->GetEntry(ientry);
+      std::cout<<"here"<<iii<<std::endl;iii++;
+      if(debugMode)std::cout<<"successfully grabbed entry from pftree"<<std::endl;
 
+      phoTree->GetEntry(ientry);
+      
       //signal(SIGINT,break);
       totalEntries++;
-      if(nPFpart > 10000 || nref > 1000) cout << " warning! nPF: "<< nPFpart << " and njet: "<< nref << endl;
-      if(totalEntries && totalEntries%100000==0) cout << "entry: "<< ientry << endl;
-      
+      if(nPFpart_ > 10000 || nref > 1000) std::cout << " warning! nPF: "<< nPFpart_ << " and njet: "<< nref << std::endl;
+      if(totalEntries%100000==0) std::cout << "entry: "<< ientry << std::endl;
+
       //first look for photon balance (AN2013-179 / JME-13-004)
       for(int i=0; i<nPho; i++){//loop over photons?
 	if(phoEt->at(i)>30 && abs(phoEta->at(i))<1.4442){//some photon cut
-	  //cout << "photon found, Et: " << phoEt->at(i) << endl;
+	  //std::cout << "photon found, Et: " << phoEt->at(i) << std::endl;
 	  for(int ijet=0; ijet<nref-1; ijet++){//loop over jets
 	    
 	    if(pt_F[ijet]<minJetPt) continue;
 	    if(abs(phoPhi->at(i)-phi_F[ijet])>2.95 && pt_F[ijet+1]/phoEt->at(i)<0.2){//some photon+jet cut
-	      //cout << "jet photon pair found" << endl;
+	      //std::cout << "jet photon pair found" << std::endl;
 
-	      TLorentzVector missEt = findMissEt(nPFpart, pfId, pfPt, pfEta, pfPhi, 
+	      TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_, 
 						 nref, pt_F, rawpt_F, eta_F, phi_F, m_F, 
 						 eSum, phoSum);
 	      int etaBin = findEtaBin(phoEta->at(i),nbins_eta,xbins_eta);
 	      int ptBin = findPtBin(phoEt->at(i),nbins_pt,xbins_pt);
+
 	      TLorentzVector phoVec(phoEt->at(i),phoEta->at(i),phoPhi->at(i),0.);
 	      double num = missEt.Dot(phoVec);
 
@@ -252,7 +295,7 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
 	int etaBin = findEtaBin(eta_F[pJet],nbins_eta,xbins_eta);
 	int ptBin = findPtBin(avgPt,nbins_pt,xbins_pt);
 
-	//if(etaBin>xbins_eta[nbins_eta] || ptBin>xbins_pt[nbins_pt]) cout << "OH NO! Bin Mismatch!" << endl;
+	//if(etaBin>xbins_eta[nbins_eta] || ptBin>xbins_pt[nbins_pt]) std::cout << "OH NO! Bin Mismatch!" << std::endl;
 	avgA[ptBin][etaBin] += 0.5*(pt_F[pJet]-pt_F[rJet])/avgPt;
 	h_avgA[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
 	avgAHisto[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
@@ -260,7 +303,9 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
 	h_nEntries[ptBin][etaBin]->Fill(1);
 
 	//Starting MPF Method
-	TLorentzVector missEt = findMissEt(nPFpart, pfId, pfPt, pfEta, pfPhi, nref, pt_F, rawpt_F, eta_F, phi_F, m_F, eSum, phoSum);
+	TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_, 
+					   nref, pt_F, rawpt_F, eta_F, phi_F, m_F, 
+					   eSum, phoSum);
 
 	for(int i=0; i<nref; i++){//loop over jets again?
 	  int etaBin = findEtaBin(eta_F[pJet],nbins_eta,xbins_eta);
@@ -301,19 +346,19 @@ void deriveDijetResponse(int startfile = 0, int endfile = 1,
   }
 
   fout->Close();
+  return 0;
 }
 
-  
-}// end deriveDijetResponse
 
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
+//////////////////////////////////////
+////////// helper functions //////////
+//////////////////////////////////////
+
 
 ////////////////
 // findEtaBin //
 ////////////////
-int findEtaBin(float eta, int nbins_eta, double* xbins_eta){
+int findEtaBin(float eta, int nbins_eta, const double* xbins_eta){
   for(int i=0; i<nbins_eta; i++){
     if(eta<xbins_eta[i+1]) return i;
   }
@@ -323,7 +368,7 @@ int findEtaBin(float eta, int nbins_eta, double* xbins_eta){
 ///////////////
 // findPtBin //
 ///////////////
-int findPtBin(float pt, int nbins_pt, double* xbins_pt){
+int findPtBin(float pt, int nbins_pt, const double* xbins_pt){
   for(int i=0; i<nbins_pt; i++){
     if(pt<xbins_pt[i+1]) return i;
   }
@@ -333,17 +378,19 @@ int findPtBin(float pt, int nbins_pt, double* xbins_pt){
 ////////////////
 // findMissEt //
 ////////////////
-TLorentzVector findMissEt(int nPFpart, int* pfId, float* pfPt, float* pfEta, float* pfPhi,
+TLorentzVector findMissEt(int nPFpart_, vector<int> * pfId_, vector<float> * pfPt_, vector<float> * pfEta_, vector<float> * pfPhi_,
                           int nref, float* pt_F, float* rawpt_F, float* eta_F, float* phi_F, float* m_F,
                           float* eSum, float *phoSum){
   TLorentzVector missEt(0,0,0,0);
 
-  for(int i=0; i<nPFpart; i++){//begin PF particle loop
+  for(int i=0; i<nPFpart_; i++){//begin PF particle loop
     TLorentzVector pfp;
     double pfMass=0;
 
-    if(pfId[i]==1 || pfId[i]==4){ pfMass = 0.1395702; }
-    pfp.SetPtEtaPhiM(pfPt[i],pfEta[i],pfPhi[i],pfMass);
+    if(pfId_->at(i)==1 || pfId_->at(i)==4){ pfMass = 0.1395702; }
+    //    pfp.SetPtEtaPhiM(pfPt[i],pfEta[i],pfPhi[i],pfMass);
+    pfp.SetPtEtaPhiM(pfPt_->at(i),pfEta_->at(i),pfPhi_->at(i),pfMass);
+
     pfp.SetPz(0.); //2d projection in x-y plane
     missEt += pfp;
   }//end PF particle loop
@@ -367,7 +414,7 @@ TLorentzVector findMissEt(int nPFpart, int* pfId, float* pfPt, float* pfEta, flo
   missEt*=-1;
   missEt.SetE(0.);  //really only care about the eT (not full E)
 
-  //cout << "missEt:  Mag: " << missEt.Mag() << endl;
+  //std::cout << "missEt:  Mag: " << missEt.Mag() << std::endl;
   //missEt.Print();
 
   return missEt;

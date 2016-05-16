@@ -4,6 +4,14 @@
 // Apr 29th 2016
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later
+// compile with...
+// g++ RAA_read_data_pp.C $(root-config --cflags --libs) -Werror -Wall -O2 -o RAA_read_data_pp.exe
+
+
+
+///////////////////////////////////////////
+////////// includes/preprocessor //////////
+///////////////////////////////////////////
 
 // C includes			    
 #include <cstdlib>		    
@@ -38,40 +46,25 @@
 #include <TLine.h>		    
 
 // histos				    
-#include <TH1.h>		    
-#include <TH1F.h>		    
 #include <TF1.h>		    
+#include <TH1.h>		    
 #include <TH2.h>		    
-#include <TH2F.h>                   
 #include <TH3.h>		    
+#include <TH1F.h>		    
+#include <TH2F.h>                   
+
+///////////////////////////////////////////////
+////////// (initializa/declara)tions //////////
+///////////////////////////////////////////////
 
 // declare helper functions
 double trigComb(bool *trg, int *pscl, double pt);
 void divideBinWidth(TH1 *h);
 
-
-/////////////////////////////////////
-////////// initializations //////////
-/////////////////////////////////////
-
-// debug
-const bool debugMode     = true; 
-const bool fastDebugMode = false; 
-//int iii=0;
-//std::cout<<"here"<<iii<<std::endl;iii++;
-
 // for convenience during testing, coding, etc.
 const bool atMIT  = true;
 const std::string hadoopDir    = "/mnt/hadoop/cms";
 const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
-
-// filelist to run over
-//const std::string infile_Forest = "HighPtJet80_5p02TeV_pp_data_forests.txt";
-const std::string infile_Forest = "testFile_2015_5p02TeV_pp_data_forests.txt";//2 files long, for debugging/testing
-
-// default output file name
-const std::string defaultOutputName = "test_output.root"; 
-const std::string outdir="";
 
 // pt binning
 const int ptbins[] = {15, 30, 50, 80, 120, 170, 220, 300, 500};
@@ -81,15 +74,15 @@ const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of
 static const char *etaWidth = (char*)"20_eta_20";
 
 // root file directories + tree names
-const std::string defaultDirNames[]={ "hltanalysis"    ,
-				      "skimanalysis"   ,
-				      "GARBAGE ENTRY"  , //later replaced with Form("ak%d%sJetAnalyzer",radius, jetType.c_str()),
-				      //"ppTrack"        ,
-				      "hiEvtAnalyzer"  ,
-				      "hltobject"      , //hlt40
-				      "hltobject"      , //hlt60
-				      "hltobject"      , //hlt80
-				      "hltobject"      }; //hlt100
+const std::string defaultDirNames[]={ "hltanalysis"   ,
+				      "skimanalysis"  ,
+				      "GARBAGE ENTRY" , //later replaced with Form("ak%d%sJetAnalyzer",radius, jetType.c_str()),
+				      //"ppTrack"       ,
+				      "hiEvtAnalyzer" ,
+				      "hltobject"     , //hlt40
+				      "hltobject"     , //hlt60
+				      "hltobject"     , //hlt80
+				      "hltobject"     }; //hlt100
 
 const std::string trees[]={ "HltTree"                    ,
 			    "HltTree"                    ,
@@ -103,20 +96,44 @@ const std::string trees[]={ "HltTree"                    ,
 const int N_trees = sizeof(defaultDirNames)/sizeof(std::string);
                                                                 
 // Jet variable names
-const std::string var[] = {"jtpt" , "rawpt", "jteta"    , "jtphi", "trkMax", "trkSum"   , "trkHardSum", 
-			   "chMax", "chSum", "chHardSum", "phMax", "phSum" , "phHardSum", "neMax"     , 
-			   "neSum", "eMax" , "eSum"     , "muMax", "muSum" , "Aj"       , "xj"        };
+const std::string var[] = {"jtpt" , "rawpt", "jteta"    , "jtphi", "trkMax", "trkSum"   , "trkHardSum" , 
+			   "chMax", "chSum", "chHardSum", "phMax", "phSum" , "phHardSum", "neMax"      , 
+			   "neSum", "eMax" , "eSum"     , "muMax", "muSum" , "Aj"       , "xj"         };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
 
-////////////////////////////////////////
-////////// read pp data files //////////
-////////////////////////////////////////
 
-int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary, range of files run over doesnt include endfile
-		     int radius = 4 ,    std::string jetType = "PF" , std::string kFoname = defaultOutputName){ 
-  
+//////////////////////////////////////
+////////// RAA read pp data //////////
+//////////////////////////////////////
+
+// default inputs to the routine
+/////
+const int defaultStartFile=0;
+const int defaultEndFile=1; //exclusive boundary, range of files run over doesnt include endfile
+const std::string defaultInFilelist = "HighPtJet80_5p02TeV_pp_data_forests.txt";
+/////
+const int defaultRadius=4;
+const std::string defaultJetType="PF";
+/////
+const std::string defaultOutputName = "test_output.root"; 
+const bool defaultDebugMode = true; 
+/////
+
+// other defaults, related to inputs, but not input
+const std::string debugFilelist = "testFile_2015_5p02TeV_pp_data_forests.txt";//2 files long, for debugging/testing
+const std::string outdir="";
+//const int iii=0; 
+//std::cout<<"here"<<iii<<std::endl;iii++;//kill/yank this line for quick debugging
+
+// the macro
+int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEndFile , std::string infile_Forest = defaultInFilelist ,
+		     int radius = defaultRadius , std::string jetType = defaultJetType , 
+		     std::string kFoname = defaultOutputName , bool debugMode = defaultDebugMode ){ 
+
+  // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
+  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   // for timing the script
@@ -146,9 +163,11 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary,
   
   // chain the trees together
   TChain* jetpp[N_trees];
-  for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
+  for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain(std::string(dir[t]+"/"+trees[t]).data());
 
   // the file list
+  if(debugMode)infile_Forest=debugFilelist;
+  //else infile_Forest=inFilelist;
   std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   std::string filename_Forest;  
 
@@ -159,9 +178,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary,
   for(int ifile = startfile; ifile<endfile; ++ifile){//input file loop
 
     if(debugMode)if(ifile==startfile)std::cout<<"infile_Forest is "<<infile_Forest<<std::endl;
-
     instr_Forest>>filename_Forest; //grab filename
-
     if(debugMode)std::cout<<"filename_Forest was "<<filename_Forest<<std::endl;
 
     if (atMIT)filename_Forest=hadoopDir+filename_Forest;
@@ -175,7 +192,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary,
     if(debugMode){
       for(int t = 0;t<N_trees;++t){ 
 	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
-	std::cout << "Tree loaded  " << string(dir[t]+"/"+trees[t]).data() <<std::endl;
+	std::cout << "Tree loaded  " << std::string(dir[t]+"/"+trees[t]).data() <<std::endl;
 	if(!fastDebugMode)std::cout << "Entries : " << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
 	if(t==N_trees-1)std::cout<<std::endl;
       }
@@ -217,7 +234,7 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary,
   //max variables
   float chMax_F[1000];   float neMax_F[1000];   float phMax_F[1000];   float trkMax_F[1000];  
   float eMax_F[1000];   float muMax_F[1000];
-  float chHardMax_F[1000];   float phHardMax_F[1000];   float trkHardMax_F[1000];
+  //float chHardMax_F[1000];   float phHardMax_F[1000];   float trkHardMax_F[1000];
 
   //hiEvtAnalyzer
   jetpp[3]->SetBranchAddress("evt",&evt_F);
@@ -346,17 +363,14 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary,
   Long64_t NEvents_40 = 0;    
   //Long64_t nGoodEvt = 0;
   
-  TRandom3 rnd; //wonder what this is for...
-  //rnd.SetSeed(endfile);  
-
   if(debugMode) nentries = 1000;
-  if(fastDebugMode) nentries = 1;
+  if(fastDebugMode) nentries = 10;
 
+  // now loop over the events
   std::cout<<"Running through "<<nentries<<" events"<<std::endl;  
-
   for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop
     
-    if(nEvt%1000==0)std::cout<<"nEvt = "<<nEvt<<std::endl;
+    if(nEvt%10000==0)std::cout<<"nEvt = "<<nEvt<<std::endl;
 
     // grab an entry from each ppjet tree
     for(int i = 0; i<N_trees;++i) jetpp[i]->GetEntry(nEvt);
@@ -379,13 +393,14 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary,
     // trigger decision boolean array w/ prescale l1 seed 
     bool trgDec[4] = {(bool)jet40_F, (bool)jet60_F, (bool)jet80_F, (bool)jet100_F};
     int treePrescl[4] = {(jet40_p_F*jet40_l1seed_p_F), (jet60_p_F*jet60_l1seed_p_F), (jet80_p_F*jet80_l1seed_p_F), (jet100_p_F*jet100_l1seed_p_F)};    
-    int maxtrg= -1;      
-    for(int ii=4; ii>=0; ii--){
-      if(trgDec[ii]==1){
-	maxtrg=ii;
-	break;
-      }
-    }
+
+    //int maxtrg= -1;      
+    //for(int ii=4; ii>=0; ii--){
+    //  if(trgDec[ii]==1){
+    //	maxtrg=ii;
+    //	break;
+    //  }
+    //}
 
     // loop over objects that pass each trigger
     double triggerPt=0.;
@@ -561,6 +576,34 @@ int RAA_read_data_pp(int startfile = 0 , int endfile = 1 , //exclusive boundary,
 }// end RAA_read_data_pp macro
 
 
+//////////
+// main //
+//////////
+// acts as the frontend control for .exe file
+// note, argc->argument count, argv->argument vector
+int main(int argc, char *argv[]){
+  
+  int rStatus = 1;
+
+  // error conditions
+  if(argc!=8 && argc!=1){
+    std::cout<<"for tests on default inputs, do..." <<std::endl;
+    std::cout<<"./RAA_read_data_pp.exe"<<std::endl<<std::endl;
+    std::cout<<"for actually running, do..."<<std::endl;
+    std::cout<<"./RAA_read_data_pp.exe <startFile> <endFile> <inputFileList> <jetRadius> <jetType> <outputFilename> <debugMode>"<<std::endl<<std::endl;
+    return rStatus;
+  }
+  
+  rStatus=-1;
+
+  if(argc==1) rStatus = RAA_read_data_pp();
+  else        rStatus = RAA_read_data_pp( atoi(argv[1]), atoi(argv[2]), argv[3], atoi(argv[4]), argv[5], argv[6] , (bool) atoi(argv[7]) );
+  
+  return rStatus;
+}
+
+
+
 //////////////////////////////////////
 ////////// helper functions //////////
 //////////////////////////////////////
@@ -582,6 +625,7 @@ void divideBinWidth(TH1 *h){
   h->GetXaxis()->CenterTitle();
   h->GetYaxis()->CenterTitle();
 }
+
 
 /////////////////////////
 // trigger combination //

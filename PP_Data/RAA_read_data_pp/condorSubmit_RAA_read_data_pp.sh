@@ -21,8 +21,6 @@ filelist=$3
 debug=$4
 
 # cmsenv for condor
-#export SCRAM_ARCH=slc6_amd64_gcc491
-#source /osg/app/cmssoft/cms/cmsset_default.sh
 echo "cmsenv'ing..."
 cd /cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_5_8/src
 cmsenv
@@ -80,20 +78,17 @@ Output         = ${logFileDir}/$Output
 Log            = ${logFileDir}/$Log
 # get the environment (path, etc.)
 GetEnv         = True
-# prefer to run on fast computers
+# prefer to run on fast, 64 bit computers
 Rank           = kflops
-# only run on 64 bit computers
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
 transfer_input_files = ${filelist},RAA_read_data_pp.exe
 when_to_transfer_output = ON_EXIT
-# specify any extra input files (for example, an orcarc file)
 Queue
 EOF
 
     # submit the job defined in the above submit file
     NthJob=$(($NthJob + 1))
     echo "submitting RAA_read_data_pp job ${NthJob} of ${NJobs}"
-    condor_submit ${logFileDir}/subfile
-    
+    condor_submit ${logFileDir}/subfile    
 done

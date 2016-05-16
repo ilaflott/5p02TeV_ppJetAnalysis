@@ -111,7 +111,7 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 /////
 const int defaultStartFile=0;
 const int defaultEndFile=1; //exclusive boundary, range of files run over doesnt include endfile
-const std::string defaultInFilelist = "HighPtJet80_5p02TeV_pp_data_forests.txt";
+const std::string defaultInFilelist = "debugFileList_2Files.txt";//"HighPtJet80_5p02TeV_pp_data_forests.txt";
 /////
 const int defaultRadius=4;
 const std::string defaultJetType="PF";
@@ -120,12 +120,6 @@ const std::string defaultOutputName = "test_output.root";
 const bool defaultDebugMode = true; 
 /////
 
-// other defaults, related to inputs, but not input
-const std::string debugFilelist = "testFile_2015_5p02TeV_pp_data_forests.txt";//2 files long, for debugging/testing
-const std::string outdir="";
-//const int iii=0; 
-//std::cout<<"here"<<iii<<std::endl;iii++;//kill/yank this line for quick debugging
-
 // the macro
 int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEndFile , std::string infile_Forest = defaultInFilelist ,
 		     int radius = defaultRadius , std::string jetType = defaultJetType , 
@@ -133,7 +127,7 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 
   // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
+  const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   // for timing the script
@@ -165,19 +159,15 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   TChain* jetpp[N_trees];
   for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain(std::string(dir[t]+"/"+trees[t]).data());
 
-  // the file list
-  if(debugMode)infile_Forest=debugFilelist;
-  //else infile_Forest=inFilelist;
+  // open filelist, loop to the starting file
   std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   std::string filename_Forest;  
-
-  // loop to starting file
+  if(debugMode)std::cout<<"filelist used is "<<infile_Forest<<std::endl;
   for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
   
   // add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){//input file loop
 
-    if(debugMode)if(ifile==startfile)std::cout<<"infile_Forest is "<<infile_Forest<<std::endl;
     instr_Forest>>filename_Forest; //grab filename
     if(debugMode)std::cout<<"filename_Forest was "<<filename_Forest<<std::endl;
 
@@ -193,7 +183,7 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
       for(int t = 0;t<N_trees;++t){ 
 	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
 	std::cout << "Tree loaded  " << std::string(dir[t]+"/"+trees[t]).data() <<std::endl;
-	if(!fastDebugMode)std::cout << "Entries : " << jetpp[t]->GetEntries()             <<std::endl<<std::endl;
+	if(!fastDebugMode)std::cout << "Entries : " << jetpp[t]->GetEntries() <<std::endl<<std::endl;
 	if(t==N_trees-1)std::cout<<std::endl;
       }
     }
@@ -207,7 +197,6 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   }
  
   // set the branch addresses
-
   //in HiEvtAnalyzer
   ULong64_t evt_F;   UInt_t run_F;   UInt_t lumi_F;   float vz_F;
   
@@ -300,7 +289,7 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   jetpp[7]->SetBranchAddress("pt",&trgObjpt_100);
 
   //  Declare the output File and the necessary histograms after that:
-  std::string outfile=outdir+kFoname;
+  std::string outfile=kFoname;
   TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
 
@@ -335,7 +324,6 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
   hpp_TrgObjComb[0] = new TH1F(Form("hpp_HLTComb_noJetID_R%d_%s"    , radius, etaWidth), 
 			       Form("Trig Combined Spectra R%d %s " , radius, etaWidth), 2000, 0, 2000);
-
   hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_noJetID_R%d_%s"           , radius, etaWidth), 
 			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
 
@@ -350,7 +338,6 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
   hpp_TrgObjComb[1] = new TH1F(Form("hpp_HLTComb_JetID_R%d_%s"      , radius, etaWidth), 
 			       Form("Trig Combined Spectra R%d %s " , radius, etaWidth), 2000, 0, 2000);
-
   hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_JetID_R%d_%s"             , radius, etaWidth), 
 			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
 
@@ -597,8 +584,15 @@ int main(int argc, char *argv[]){
   rStatus=-1;
 
   if(argc==1) rStatus = RAA_read_data_pp();
-  else        rStatus = RAA_read_data_pp( atoi(argv[1]), atoi(argv[2]), argv[3], atoi(argv[4]), argv[5], argv[6] , (bool) atoi(argv[7]) );
-  
+  else{
+    int startfile= atoi(argv[1]); int endfile= atoi(argv[2]); std::string inputFileList=argv[3];
+    int jetRadius= atoi(argv[4]); std::string jetType=argv[5];
+    std::string outputFileName=argv[6]; bool debug=(bool)atoi(argv[7]);      
+
+    rStatus = RAA_read_data_pp( startfile, endfile, inputFileList,
+				jetRadius, jetType,
+				outputFileName, debug);
+  }
   return rStatus;
 }
 

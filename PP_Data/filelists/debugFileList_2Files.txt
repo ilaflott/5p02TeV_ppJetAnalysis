@@ -1,0 +1,2 @@
+/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_87.root
+/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_86.root

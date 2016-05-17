@@ -1,6 +1,6 @@
 // original author: Raghav Kunnawalkam Elayavalli
 // Nov 24th 2015
-// destroyed by Ian Laflotte
+// Overhaul, Ian Laflotte
 // Apr 29th 2016
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later
@@ -53,7 +53,7 @@
 #include <TH1F.h>		    
 #include <TH2F.h>                   
 
-///////////////////////////////////////////////
+//////////////////////////////////////////////
 ////////// (initializa/declara)tions //////////
 ///////////////////////////////////////////////
 
@@ -111,7 +111,7 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 /////
 const int defaultStartFile=0;
 const int defaultEndFile=1; //exclusive boundary, range of files run over doesnt include endfile
-const std::string defaultInFilelist = "debugFileList_2Files.txt";//"HighPtJet80_5p02TeV_pp_data_forests.txt";
+const std::string defaultInFilelist = "5p02TeV_HighPtJet80_2Files_debug_forests.txt";
 /////
 const int defaultRadius=4;
 const std::string defaultJetType="PF";
@@ -119,6 +119,8 @@ const std::string defaultJetType="PF";
 const std::string defaultOutputName = "test_output.root"; 
 const bool defaultDebugMode = true; 
 /////
+//int iii=0;
+//std::cout<<"here"<<iii<<std::endl;iii++;
 
 // the macro
 int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEndFile , std::string infile_Forest = defaultInFilelist ,
@@ -127,7 +129,7 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 
   // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
+  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   // for timing the script
@@ -168,17 +170,15 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   // add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){//input file loop
 
-    instr_Forest>>filename_Forest; //grab filename
-    if(debugMode)std::cout<<"filename_Forest was "<<filename_Forest<<std::endl;
-
+    //grab filename
+    instr_Forest>>filename_Forest; 
     if (atMIT)filename_Forest=hadoopDir+filename_Forest;
     else filename_Forest=xrootdDirect+filename_Forest;
 
-    if(debugMode)std::cout<<"filename_Forest is now "<<filename_Forest<<std::endl;
+    // add each file to TChain
+    for(int t = 0;t<N_trees;++t)  jetpp[t]->Add(filename_Forest.c_str());
 
-    for(int t = 0;t<N_trees;++t)  jetpp[t]->Add(filename_Forest.c_str());//add file name to each tree we want to grab info from
-
-    //check to see if the files are opening right
+    // check if files are opening right
     if(debugMode){
       for(int t = 0;t<N_trees;++t){ 
 	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
@@ -187,10 +187,9 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 	if(t==N_trees-1)std::cout<<std::endl;
       }
     }
-
   }//end input file loop
   
-  // make all other trees friends of tree t in jetpp array
+  // make all other trees in jetpp raay friends of tree t a.k.a. jetpp[2]
   for(int t = 0;t<N_trees;++t){ 
     if(t==2) continue;
     else jetpp[2]->AddFriend( jetpp[t] );
@@ -210,7 +209,8 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 
   //in jet analyzer of choice
   int nref_F;   
-  float pt_F[1000];   float rawpt_F[1000];   float eta_F[1000];   float phi_F[1000];    float jtpu_F[1000];
+  float pt_F[1000];   float rawpt_F[1000];   
+  float eta_F[1000];   float phi_F[1000];    float jtpu_F[1000];
 
   //charged particles in jet?
   int chN_F[1000];
@@ -297,10 +297,14 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){
     for(int j = 0; j<N_vars; ++j){
-      if(j<=1) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),500,  0, 500 );
-      else if(j==2) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),100, -5, +5  );
-      else if(j==3) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),100, -4, +4  );
-      else if(j>=4) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),Form(";%s;",var[j].c_str()),200,  0, 2   );
+      if(j<=1) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
+				       Form(";%s;",var[j].c_str()),500,  0, 500 );
+      else if(j==2) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
+					    Form(";%s;",var[j].c_str()),100, -5, +5  );
+      else if(j==3) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
+					    Form(";%s;",var[j].c_str()),100, -4, +4  );
+      else if(j>=4) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
+					    Form(";%s;",var[j].c_str()),200,  0, 2   );
     }
   }
 
@@ -378,8 +382,14 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
     bool is100 = false;
 
     // trigger decision boolean array w/ prescale l1 seed 
-    bool trgDec[4] = {(bool)jet40_F, (bool)jet60_F, (bool)jet80_F, (bool)jet100_F};
-    int treePrescl[4] = {(jet40_p_F*jet40_l1seed_p_F), (jet60_p_F*jet60_l1seed_p_F), (jet80_p_F*jet80_l1seed_p_F), (jet100_p_F*jet100_l1seed_p_F)};    
+    bool trgDec[4] = {(bool)jet40_F, 
+		      (bool)jet60_F, 
+		      (bool)jet80_F, 
+		      (bool)jet100_F};
+    int treePrescl[4] = {(jet40_p_F*jet40_l1seed_p_F), 
+			 (jet60_p_F*jet60_l1seed_p_F), 
+			 (jet80_p_F*jet80_l1seed_p_F), 
+			 (jet100_p_F*jet100_l1seed_p_F)};    
 
     //int maxtrg= -1;      
     //for(int ii=4; ii>=0; ii--){
@@ -567,24 +577,27 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 // main //
 //////////
 // acts as the frontend control for .exe file
-// note, argc->argument count, argv->argument vector
 int main(int argc, char *argv[]){
   
   int rStatus = 1;
 
-  // error conditions
+  // error conditions, check argument count
   if(argc!=8 && argc!=1){
+
     std::cout<<"for tests on default inputs, do..." <<std::endl;
     std::cout<<"./RAA_read_data_pp.exe"<<std::endl<<std::endl;
+
     std::cout<<"for actually running, do..."<<std::endl;
-    std::cout<<"./RAA_read_data_pp.exe <startFile> <endFile> <inputFileList> <jetRadius> <jetType> <outputFilename> <debugMode>"<<std::endl<<std::endl;
+    std::cout<<"./RAA_read_data_pp.exe <startFile> <endFile> <inputFileList> ";
+    std::cout<<"<jetRadius> <jetType> <outputFilename> <debugMode>"<<std::endl<<std::endl;
+
     return rStatus;
   }
   
   rStatus=-1;
 
   if(argc==1) rStatus = RAA_read_data_pp();
-  else{
+  else{//read the argument vector
     int startfile= atoi(argv[1]); int endfile= atoi(argv[2]); std::string inputFileList=argv[3];
     int jetRadius= atoi(argv[4]); std::string jetType=argv[5];
     std::string outputFileName=argv[6]; bool debug=(bool)atoi(argv[7]);      

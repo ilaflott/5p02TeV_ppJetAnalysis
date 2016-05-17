@@ -28,15 +28,11 @@ radius=$4
 jetType=$5 
 outfile=$6 
 debug=$7
-
-# inputs for run script
 destination=$8
-#destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/condor_output/PP_Data/RAA_read_data_pp"
 
 echo "Processing..."
 ./RAA_read_data_pp.exe $startfile $endfile "${filelist}" $radius "${jetType}" "${outfile}" $debug
 
 #echo "Copying file ${outfile} to ${destination}..."
 #mv ${outfile} ${destination}
-
 echo "Done!"

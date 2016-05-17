@@ -1,7 +1,5 @@
-// Orginally Written by K. Jung
-// December 2015
-// Destroyed By Ian Laflotte
-// May 1st 2016
+// Originally written by: Kurt Jung, December 2015
+// edits, Ian Laflotte, May 1st 2016
 // Plotting macro to simply sum all the stuff in the deriveDijetResponse macro
 // usage: hadd deriveDijetResponse output files, feed hadd'd root file into this macro
 
@@ -53,7 +51,7 @@ using namespace std;
 void sumDijetResponse(std::string filename="relDijetResponse_data_calo.root", int isMC= 0){
 
   // decide if histograms are to be drawn
-D  bool doDraw = false;
+  bool doDraw = false;
   
  //pt and eta binning arrays
 
@@ -150,8 +148,6 @@ D  bool doDraw = false;
     }//end eta loop
   }//end pt loop
   
-
-
   //open an output file for output plots if desired
   TFile *fout = new TFile(Form("simplePlots_%disMC.root",isMC),"recreate");
   fout->cd();

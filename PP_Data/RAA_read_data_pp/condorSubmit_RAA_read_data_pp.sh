@@ -4,21 +4,30 @@
 if [[ $# -ne 4 ]]
 then
     echo "Usage is... "
-    echo "source condor_makeTarAndSubmit.sh <NJobs> <NFilesPerJob> <inputFileList> <debug>"
+    echo "source condor_makeTarAndSubmit.sh <NJobs> <NFilesPerJob> <filelistIn> <debug>"
     return 1
 fi
-
-# make log folder for this submission
-now="submit_$(date +"%Y-%m-%d__%H_%M_%S")"
-logFileDir="${PWD}/condorLogs/${now}"
-mkdir $logFileDir
-echo "log files in ${logFileDir}"
 
 # input arguments to submit script
 NJobs=$1
 NFilesPerJob=$2
-filelist=$3
+filelistIn=$3
 debug=$4
+
+# additional inputs to the run script and .exe, these don't change too much
+destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/RAA_read_data_pp"
+radius=4
+jetType="PF"
+
+# create output folder/logfileNames with name based on filelist
+filelist=${filelistIn##*/} #removes longest match for "*/" from start of string
+listSubStr=${filelist%_*} #removes shortest match for "_*" from end of string
+jobName="${listSubStr}_ak${radius}${jetType}"
+now="${jobName}_$(date +"%Y-%m-%d__%H_%M_%S")"
+logFileDir="${PWD}/condorOutput/${now}"
+
+mkdir $logFileDir
+echo "log files in ${logFileDir}"
 
 # cmsenv for condor
 echo "cmsenv'ing..."
@@ -31,15 +40,9 @@ echo "compiling..."
 g++ RAA_read_data_pp.C $(root-config --cflags --libs) -Werror -Wall -O2 -o RAA_read_data_pp.exe || return 1
 cp RAA_read_data_pp.exe "$logFileDir"
 
-# additional inputs to the run script and .exe, these don't change too much
-destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/RAA_read_data_pp"
-radius=4
-jetType="PF"
-
 # one condor job submit per NFilesPerJob until we submit NJobs
-nFiles=`wc -l < $filelist`
+nFiles=`wc -l < $filelistIn`
 echo "nFiles in list: $nFiles"
-
 
 ####################################
 ## CREATE SUBMIT FILE(S) + SUBMIT ##
@@ -52,17 +55,18 @@ do
     startfile=$(( $NthJob * $NFilesPerJob ))
     endfile=$(( ($NthJob + 1) * $NFilesPerJob ))
 
-    # check for end of filelist
+    # check for end of file list
     if [ $endfile -gt $nFiles ]; then
-        let endfile=$nFiles
-        let NthJob=$NJobs
+        let endfile=$nFiles #last file for this submission is the last one in the list
+        let NthJob=$(($NJobs - 1)) #last job submission for this loop
     fi
 
     # define output names for job submission
-    Error="ak$radius-ppData-${startfile}_to_${endfile}.err"
-    Output="ak$radius-ppData-${startfile}_to_${endfile}.out"
-    Log="ak$radius-ppData-${startfile}_to_${endfile}.log"
-    outfile="5p02TeV_pp_data_ak${radius}${jetType}_20_eta_20_fileNum${startfile}to${endfile}.root"
+    fileRange="${startfile}to${endfile}"
+    Error="${jobName}-${fileRange}.err"
+    Output="${jobName}-${fileRange}.out"
+    Log="${jobName}-${fileRange}.log"
+    outfile="${jobName}-${fileRange}.root"
     
     # create the condor submit file
     cat > ${logFileDir}/subfile <<EOF
@@ -82,7 +86,7 @@ GetEnv         = True
 Rank           = kflops
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
-transfer_input_files = ${filelist},RAA_read_data_pp.exe
+transfer_input_files = ${filelistIn},RAA_read_data_pp.exe
 when_to_transfer_output = ON_EXIT
 Queue
 EOF

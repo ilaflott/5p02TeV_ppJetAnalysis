@@ -22,7 +22,7 @@ jetType="PF"
 # create output folder/logfileNames with name based on filelist
 filelist=${filelistIn##*/} #removes longest match for "*/" from start of string #echo "filelist is ${filelist}" #debug
 listSubStr=${filelist%_*} #removes shortest match for "_*" from end of string #echo "listSubStr is ${listSubStr}" #debug
-jobName="${listSubStr}_ak${radius}${jetType}"
+jobName="readData_pp_${listSubStr}_ak${radius}${jetType}"
 now="${jobName}_$(date +"%Y-%m-%d__%H_%M_%S")"
 
 logFileDir="${PWD}/condorOutput/${now}"

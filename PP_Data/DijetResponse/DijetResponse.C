@@ -48,13 +48,14 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 			int radius = 4, bool isMC = defIsMCderive, 
 			std::string outfile = defOutputName, bool debugMode = defDebugMode ){
 
-  if(debugMode)std::cout<<"debugMode is ON"<<std::endl;
+  if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
+  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
+  if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   std::cout<<std::endl<<"///////////////////"<<std::endl;
-  std::cout<<"reading from file "<< startfile << " to file " << endfile<<std::endl;
+  std::cout<<"reading files "<< startfile << " to " << endfile<<std::endl;
   if(debugMode)std::cout<<"radius =  " << radius<<std::endl;
-  if(debugMode)std::cout<<"n pt bins   = " << nbins_pt<<std::endl;
-  if(debugMode)std::cout<<"n eta bins  = " << nbins_eta<<std::endl;
+  if(debugMode)std::cout<<"isMC   = " << isMC <<std::endl;
   std::cout<<"///////////////////"<<std::endl<<std::endl;  
 
   // TH1F *hRelResponse[nbins_pt];
@@ -119,7 +120,7 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
   std::string filename_Forest;  
   if(debugMode)std::cout<<"filelist used is "<<infile_Forest<<std::endl;
   for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
-  std::cout << "opening file + trees" << std::endl;
+
   
   //loop over files 
   for(int ifile = startfile; ifile<endfile; ++ifile){//file loop
@@ -127,7 +128,8 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
     instr_Forest>>filename_Forest;//grab file
     if(atMIT)filename_Forest=hadoopDir+filename_Forest;
     else filename_Forest=xrootdDirect+filename_Forest;
-    if(debugMode)std::cout<<"opening file "<<filename_Forest<<std::endl;
+
+    std::cout<<"opening trees from file "<<filename_Forest<<std::endl;
     
     TFile *fin = TFile::Open(filename_Forest.c_str());
     TTree *jtTree  = (TTree*)fin->Get( Form("ak%dPFJetAnalyzer/t",radius) );
@@ -167,16 +169,12 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
     phoTree->SetBranchAddress("phoEta",&phoEta);
     phoTree->SetBranchAddress("phoPhi",&phoPhi);
 
-    int jetEntries = jtTree->GetEntries();
-    //std::cout<<"Num. Jet Entries = "<<jetEntries< std::endl;
-    std::cout<<"jetEntries = "<<jetEntries<<std::endl;
-
-
-    if(debugMode)jetEntries=1000;
-    if(debugMode) std::cout<< "jetEntries = "<< jetEntries << std::endl; 
-
     // loop over jets
-    if(debugMode)std::cout<<"beginning jet loop"<< std::endl;    
+    int jetEntries=jtTree->GetEntries();
+    if(fastDebugMode)jetEntries=1000;
+    if(debugMode)std::cout<<"jetEntries = "<< jetEntries <<std::endl;
+
+    std::cout<<"beginning jet loop..."<< std::endl;    
     for(int ientry=0; ientry<jetEntries; ientry++){//jet loop
 
       jtTree->GetEntry(ientry);
@@ -187,16 +185,17 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
       if(nPFpart_>10000) std::cout<<"warning! nPF: "<<nPFpart_<<std::endl;
       const double minJetPt = 40;
       
-      for(int i=0; i<nPho; i++){//loop over photons, look for photon
+      for(int i=0; i<nPho; i++){//loop over photons
 	if(phoEt->at(i)>30 && abs(phoEta->at(i))<1.4442){//photons cut
-	  if(debugMode)std::cout << "photon found, Et: " << phoEt->at(i) << std::endl;
+	  //if(debugMode)std::cout << "photon found, Et: " << phoEt->at(i) << std::endl;
+
 	  //find a corresponding jet
 	  for(int ijet=0; ijet<nref-1; ijet++){//loop over jets	   
 	    if( pt_F[ijet]>=minJetPt && //jet cut
 		abs(phoPhi->at(i)-phi_F[ijet])>2.95 && //angular separation photon+jet
 		pt_F[ijet+1]/phoEt->at(i)<0.2 ){//jetpt/phoEt ratio
-
 	      if(debugMode)std::cout << "jet photon pair found" << std::endl;	    
+
 	      TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, 
 						 pfEta_, pfPhi_, 
 						 eSum, phoSum, 
@@ -220,12 +219,11 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 
       // standard Rrel method
       if(nref>=2){//jet cut
-	if(debugMode)std::cout<<"two or more jets!"<<std::endl;
- 
+
+	//if(debugMode)std::cout<<"two or more jets!"<<std::endl;
 	int rJet, pJet;
 	if( abs(eta_F[0])<1.3 && abs(eta_F[1])<1.3 ){ 
-	  pJet = rand()%2;
-	  rJet = (pJet+1)%2;
+	  pJet = rand()%2;  rJet = (pJet+1)%2;
 	}
 	else if( abs(eta_F[0])<1.3 && abs(eta_F[1])<5. ){
 	  pJet = 1; rJet = 0;
@@ -244,7 +242,6 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 
 	if(pt_F[rJet]<minJetPt) continue;
 
-	// phi matching
 	double dphi = abs(phi_F[rJet]-phi_F[pJet]);
 	if(dphi>(2*3.14159)) dphi-=(2*3.14159);
 	if(dphi < 2.7) continue;
@@ -277,7 +274,7 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 	}//end jet loop
       }//end 2 or more jets req
     }//exit jet loop
-
+    std::cout<<std::endl;
     fin->Close();
   }//end file loop
 
@@ -286,6 +283,7 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
   fout->cd();
 
   // write histos in serarate pt/eta bins
+  if(debugMode)std::cout<< "writing histograms to file" <<std::endl;
   for(int i=0; i<nbins_pt; i++){
     for(int j=0; j<nbins_eta; j++){
 
@@ -527,15 +525,17 @@ int main(int argc, char *argv[]){
     rStatus=-1;
     int startfile=atoi(argv[2]); int endfile=atoi(argv[3]); std::string inputFileList=argv[4];
     int jetRadius=atoi(argv[5]); bool isMC=(bool)atoi(argv[6]); 
-    std::string outputFileName=argv[7]; bool debug=(bool)atoi(argv[7]);      
+    std::string outputFileName=argv[7]; bool debug=(bool)atoi(argv[8]);      
     rStatus = deriveDijetResponse( startfile, endfile, inputFileList,
 				   jetRadius, isMC,
-				   outputFileName, debug);    return rStatus;
+				   outputFileName, debug);    
+    return rStatus;
   }
   else if( argc==5 && doSum ){   // expected use for sumDijetResponse
     rStatus=-1;
     std::string inputFileName=argv[2]; bool isMC=(bool)atoi(argv[3]); bool doDraw=(bool)atoi(argv[4]);
-    rStatus = sumDijetResponse( inputFileName, isMC, doDraw);    return rStatus;
+    rStatus = sumDijetResponse( inputFileName, isMC, doDraw);    
+    return rStatus;
   }
   else {  // inputs don't match any expected use cases
     std::cout<<"not enough arguments ";//<<std::endl;

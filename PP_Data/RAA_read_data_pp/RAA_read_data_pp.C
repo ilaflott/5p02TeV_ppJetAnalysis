@@ -7,27 +7,22 @@
 // compile with...
 // g++ RAA_read_data_pp.C $(root-config --cflags --libs) -Werror -Wall -O2 -o RAA_read_data_pp.exe
 
-
-
 ///////////////////////////////////////////
 ////////// includes/preprocessor //////////
 ///////////////////////////////////////////
 
 // C includes			    
 #include <cstdlib>		    
-#include <stdio.h>		    
+#include <cstdio>		    
+#include <cmath>		    
 #include <iostream>		    
 #include <fstream>		    
-#include <sstream>		    
-#include <cmath>		    
-				    
 // load/read/write		    
 #include <TSystem.h>		    
 #include <TProfile.h>		    
 #include <TFile.h>		    
 #include <TTree.h>		    
 #include <TNtuple.h>		    
-				    
 // utilities			    
 #include <TChain.h>		    
 #include <TCut.h>		    
@@ -35,7 +30,6 @@
 #include <TRandom3.h>		    
 #include <TStopwatch.h>		    
 #include <TEventList.h>		    
-				    
 // plotting			    
 #include <TStyle.h>		    
 #include <TCanvas.h>		    
@@ -44,7 +38,6 @@
 #include <TLegend.h>		    
 #include <TLatex.h>		    
 #include <TLine.h>		    
-
 // histos				    
 #include <TF1.h>		    
 #include <TH1.h>		    
@@ -52,56 +45,8 @@
 #include <TH3.h>		    
 #include <TH1F.h>		    
 #include <TH2F.h>                   
-
-//////////////////////////////////////////////
-////////// (initializa/declara)tions //////////
-///////////////////////////////////////////////
-
-// declare helper functions
-double trigComb(bool *trg, int *pscl, double pt);
-void divideBinWidth(TH1 *h);
-
-// for convenience during testing, coding, etc.
-const bool atMIT  = true;
-const std::string hadoopDir    = "/mnt/hadoop/cms";
-const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
-
-// pt binning
-const int ptbins[] = {15, 30, 50, 80, 120, 170, 220, 300, 500};
-const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
-
-// eta binning
-static const char *etaWidth = (char*)"20_eta_20";
-
-// root file directories + tree names
-const std::string defaultDirNames[]={ "hltanalysis"   ,
-				      "skimanalysis"  ,
-				      "GARBAGE ENTRY" , //later replaced with Form("ak%d%sJetAnalyzer",radius, jetType.c_str()),
-				      //"ppTrack"       ,
-				      "hiEvtAnalyzer" ,
-				      "hltobject"     , //hlt40
-				      "hltobject"     , //hlt60
-				      "hltobject"     , //hlt80
-				      "hltobject"     }; //hlt100
-
-const std::string trees[]={ "HltTree"                    ,
-			    "HltTree"                    ,
-			    "t"                          , 
-			    //"trackTree"                  ,
-			    "HiTree"                     ,
-			    "HLT_AK4CaloJet40_Eta5p1_v"  ,
-			    "HLT_AK4CaloJet60_Eta5p1_v"  ,
-			    "HLT_AK4CaloJet80_Eta5p1_v"  ,
-			    "HLT_AK4CaloJet100_Eta5p1_v" };
-const int N_trees = sizeof(defaultDirNames)/sizeof(std::string);
-                                                                
-// Jet variable names
-const std::string var[] = {"jtpt" , "rawpt", "jteta"    , "jtphi", "trkMax", "trkSum"   , "trkHardSum" , 
-			   "chMax", "chSum", "chHardSum", "phMax", "phSum" , "phHardSum", "neMax"      , 
-			   "neSum", "eMax" , "eSum"     , "muMax", "muSum" , "Aj"       , "xj"         };
-const int N_vars = sizeof(var)/sizeof(std::string);
-
-
+// initizations and declarations
+#include "RAA_read_data_pp.h"
 
 //////////////////////////////////////
 ////////// RAA read pp data //////////
@@ -109,23 +54,23 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 
 // default inputs to the routine
 /////
-const int defaultStartFile=0;
-const int defaultEndFile=1; //exclusive boundary, range of files run over doesnt include endfile
-const std::string defaultInFilelist = "5p02TeV_HighPtJet80_2Files_debug_forests.txt";
+const int defStartFile=0;
+const int defEndFile=1; //exclusive boundary, range of files run over doesnt include endfile
+const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_2Files_debug_forests.txt";
 /////
-const int defaultRadius=4;
-const std::string defaultJetType="PF";
+const int defRadius=4;
+const std::string defJetType="PF";
 /////
-const std::string defaultOutputName = "test_output.root"; 
-const bool defaultDebugMode = true; 
+const std::string defOutputName = "test_output.root"; 
+const bool defDebugMode = true; 
 /////
 //int iii=0;
 //std::cout<<"here"<<iii<<std::endl;iii++;
 
 // the macro
-int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEndFile , std::string infile_Forest = defaultInFilelist ,
-		     int radius = defaultRadius , std::string jetType = defaultJetType , 
-		     std::string kFoname = defaultOutputName , bool debugMode = defaultDebugMode ){ 
+int RAA_read_data_pp(int startfile = defStartFile , int endfile = defEndFile , std::string inFilelist = defInFilelist ,
+		     int radius = defRadius , std::string jetType = defJetType , 
+		     std::string outfile = defOutputName , bool debugMode = defDebugMode ){ 
 
   // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
@@ -150,150 +95,150 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   if(debugMode)std::cout<<"N vars  = " << N_vars<<std::endl;
   std::cout<<"///////////////////"<<std::endl<<std::endl;
 
-  // initialize tree name array
-  std::string dir[N_trees];
-  for(int i=0;i<N_trees;++i){
-    if(i!=2)dir[i]=defaultDirNames[i];
-    else dir[i]=Form("ak%d%sJetAnalyzer",radius, jetType.c_str()); 
-  }
+  // form jetTreeName, initialize tree name array
+  std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
+  std::string trees[N_trees];
+  trees[0]=jetTreeName;
+  for(int i=1;i<N_trees;++i)trees[i]=treeNames[i];
+  if(debugMode)std::cout<<"the jet tree is "<<trees[0]<<std::endl;
   
   // chain the trees together
   TChain* jetpp[N_trees];
-  for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain(std::string(dir[t]+"/"+trees[t]).data());
-
+  for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain( trees[t].data() );
+  
   // open filelist, loop to the starting file
-  std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
+  if(debugMode)std::cout<<"filelist used is "<<inFilelist<<std::endl;
+  std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
   std::string filename_Forest;  
-  if(debugMode)std::cout<<"filelist used is "<<infile_Forest<<std::endl;
   for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
   
   // add input files to the ppjet tree
   for(int ifile = startfile; ifile<endfile; ++ifile){//input file loop
 
-    //grab filename
+    // grab filename + create full path to the filename, add file to the TCh
     instr_Forest>>filename_Forest; 
     if (atMIT)filename_Forest=hadoopDir+filename_Forest;
     else filename_Forest=xrootdDirect+filename_Forest;
 
-    // add each file to TChain
-    for(int t = 0;t<N_trees;++t)  jetpp[t]->Add(filename_Forest.c_str());
-
-    // check if files are opening right
-    if(debugMode){
-      for(int t = 0;t<N_trees;++t){ 
-	if (t == 0) std::cout << "opening file " <<filename_Forest <<std::endl<<std::endl;
-	std::cout << "Tree loaded  " << std::string(dir[t]+"/"+trees[t]).data() <<std::endl;
-	if(!fastDebugMode)std::cout << "Entries : " << jetpp[t]->GetEntries() <<std::endl<<std::endl;
-	if(t==N_trees-1)std::cout<<std::endl;
-      }
+    // add files to the trees
+    if(debugMode)std::cout << "adding file " <<filename_Forest <<" to TChains..."<<std::endl;
+    for(int t = 0;t<N_trees;++t){
+      jetpp[t]->Add(filename_Forest.c_str());
+      if(!fastDebugMode) std::cout<<"loaded tree "<<trees[t]<<std::endl 
+				  <<"Entries : "<<jetpp[t]->GetEntries()<<std::endl<<std::endl;
     }
   }//end input file loop
   
-  // make all other trees in jetpp raay friends of tree t a.k.a. jetpp[2]
-  for(int t = 0;t<N_trees;++t){ 
-    if(t==2) continue;
-    else jetpp[2]->AddFriend( jetpp[t] );
-  }
- 
-  // set the branch addresses
-  //in HiEvtAnalyzer
-  ULong64_t evt_F;   UInt_t run_F;   UInt_t lumi_F;   float vz_F;
+  // friend all trees to jet analyzer tree in jetpp[0]
+  for(int t = 1;t<N_trees;++t)jetpp[0]->AddFriend( jetpp[t] );
   
-  //in skimanalysis
-  int pBeamScrapingFilter_F;   int pHBHENoiseFilter_F;   int pprimaryvertexFilter_F;
+  // declare variables to tree branches
+  //ak${radius}${jetType}JetAnalyzer
+  //jets
+  int nref_F;  
+  float pt_F[1000];     float eta_F[1000];  float phi_F[1000]; 
+  float rawpt_F[1000];  float jtpu_F[1000];
+  //charged particles
+  int chN_F[1000];  
+  float chSum_F[1000]; float chHardSum_F[1000];  float chMax_F[1000];  //float chHardMax_F[1000];   
+  //tracks
+  float trkSum_F[1000];  float trkHardSum_F[1000];  float trkMax_F[1000];  //float trkHardMax_F[1000];
+  //photons
+  float phSum_F[1000];  float phHardSum_F[1000];  float phMax_F[1000];  //float phHardMax_F[1000];   
+  //e, mu, neutral particles
+  float eSum_F[1000];  float eMax_F[1000];  
+  float muSum_F[1000];  float muMax_F[1000];  
+  float neSum_F[1000];  float neMax_F[1000];   
 
-  //in hltanalysis
-  int jet40_l1seed_p_F;   int jet60_l1seed_p_F;   int jet80_l1seed_p_F;   int jet100_l1seed_p_F;  
-  int jet40_F;            int jet60_F;            int jet80_F;            int jet100_F;
-  int jet40_p_F;          int jet60_p_F;          int jet80_p_F;          int jet100_p_F;
-
-  //in jet analyzer of choice
-  int nref_F;   
-  float pt_F[1000];   float rawpt_F[1000];   
-  float eta_F[1000];   float phi_F[1000];    float jtpu_F[1000];
-
-  //charged particles in jet?
-  int chN_F[1000];
-
-  //sum variables
-  float chSum_F[1000];   float neSum_F[1000];   float phSum_F[1000];   float trkSum_F[1000];
-  float eSum_F[1000];   float muSum_F[1000];
-  float chHardSum_F[1000];   float phHardSum_F[1000];   float trkHardSum_F[1000];
-
-  //max variables
-  float chMax_F[1000];   float neMax_F[1000];   float phMax_F[1000];   float trkMax_F[1000];  
-  float eMax_F[1000];   float muMax_F[1000];
-  //float chHardMax_F[1000];   float phHardMax_F[1000];   float trkHardMax_F[1000];
-
-  //hiEvtAnalyzer
-  jetpp[3]->SetBranchAddress("evt",&evt_F);
-  jetpp[3]->SetBranchAddress("run",&run_F);
-  jetpp[3]->SetBranchAddress("lumi",&lumi_F);
-  jetpp[3]->SetBranchAddress("vz",&vz_F);
+  //HiEvtAnalyzer
+  ULong64_t evt_F;   UInt_t run_F;   UInt_t lumi_F;   float vz_F;
 
   //skimanalysis
-  jetpp[1]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_F);
-  jetpp[1]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_F);
-  jetpp[1]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_F);
+  int pBeamScrapingFilter_F;   int pHBHENoiseFilter_F;   int pprimaryvertexFilter_F;
 
   //hltanalysis
-  jetpp[0]->SetBranchAddress("L1_SingleJet28_BptxAND_Prescl",&jet40_l1seed_p_F);
-  jetpp[0]->SetBranchAddress("L1_SingleJet40_BptxAND_Prescl",&jet60_l1seed_p_F);
-  jetpp[0]->SetBranchAddress("L1_SingleJet48_BptxAND_Prescl",&jet80_l1seed_p_F);
-  jetpp[0]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&jet100_l1seed_p_F);
+  //L1
+  int jet40_l1seed_p_F;  int jet60_l1seed_p_F;  int jet80_l1seed_p_F;  int jet100_l1seed_p_F;  
+  //HLT
+  int jet40_F;    int jet60_F;    int jet80_F;    int jet100_F;        
+  int jet40_p_F;  int jet60_p_F;  int jet80_p_F;  int jet100_p_F;         
 
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1",&jet40_F);
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1_Prescl",&jet40_p_F);
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet60_Eta5p1_v1",&jet60_F);
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet60_Eta5p1_v1_Prescl",&jet60_p_F);
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&jet80_F);
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1_Prescl",&jet80_p_F);
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1",&jet100_F);
-  jetpp[0]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1_Prescl",&jet100_p_F);
-
-  //ak%d%sJetAnalyzer
-  jetpp[2]->SetBranchAddress("nref",&nref_F);
-  jetpp[2]->SetBranchAddress("jtpt",&pt_F);
-  jetpp[2]->SetBranchAddress("jteta",&eta_F);
-  jetpp[2]->SetBranchAddress("jtphi",&phi_F);
-  jetpp[2]->SetBranchAddress("rawpt",&rawpt_F);
-  jetpp[2]->SetBranchAddress("jtpu",&jtpu_F);
-  jetpp[2]->SetBranchAddress("chargedMax",&chMax_F);
-  jetpp[2]->SetBranchAddress("chargedSum",&chSum_F);
-  jetpp[2]->SetBranchAddress("chargedN",&chN_F);
-  //jetpp[2]->SetBranchAddress("chargedHardMax",&chMax_F);
-  jetpp[2]->SetBranchAddress("chargedHardSum",&chSum_F);
-  jetpp[2]->SetBranchAddress("trackMax",&trkMax_F);
-  jetpp[2]->SetBranchAddress("trackSum",&trkSum_F);
-  //jetpp[2]->SetBranchAddress("trackHardMax",&trkMax_F);
-  jetpp[2]->SetBranchAddress("trackHardSum",&trkSum_F);
-  jetpp[2]->SetBranchAddress("photonMax",&phMax_F);
-  jetpp[2]->SetBranchAddress("photonSum",&phSum_F);
-  //jetpp[2]->SetBranchAddress("photonHardMax",&phMax_F);
-  jetpp[2]->SetBranchAddress("photonHardSum",&phSum_F);
-  jetpp[2]->SetBranchAddress("neutralMax",&neMax_F);
-  jetpp[2]->SetBranchAddress("neutralSum",&neSum_F);
-  jetpp[2]->SetBranchAddress("eSum",&eSum_F);
-  jetpp[2]->SetBranchAddress("eMax",&eMax_F);
-  jetpp[2]->SetBranchAddress("muSum",&muSum_F);
-  jetpp[2]->SetBranchAddress("muMax",&muMax_F);
-    
-  //for specific HLT branches
+  //currently: HLT_AK${radius}CaloJet${trgObjpt}_Eta${}_v
+  // for specific trigger objects, see trees[4,5,6,7] in header
   std::vector<float> *trgObjpt_40 = 0;   
-  jetpp[4]->SetBranchAddress("pt",&trgObjpt_40);  
   std::vector<float> *trgObjpt_60 = 0;   
-  jetpp[5]->SetBranchAddress("pt",&trgObjpt_60);  
   std::vector<float> *trgObjpt_80 = 0;   
-  jetpp[6]->SetBranchAddress("pt",&trgObjpt_80);  
   std::vector<float> *trgObjpt_100 = 0;
+
+  // set branch addresses and point them to above variables
+  //ak${radius}${jetType}JetAnalyzer
+  //jets
+  jetpp[0]->SetBranchAddress("nref",&nref_F);
+  jetpp[0]->SetBranchAddress("jtpt",&pt_F);
+  jetpp[0]->SetBranchAddress("jteta",&eta_F);
+  jetpp[0]->SetBranchAddress("jtphi",&phi_F);
+  jetpp[0]->SetBranchAddress("rawpt",&rawpt_F);
+  jetpp[0]->SetBranchAddress("jtpu",&jtpu_F);
+  //charged particles
+  jetpp[0]->SetBranchAddress("chargedN",&chN_F);
+  jetpp[0]->SetBranchAddress("chargedSum",&chSum_F);
+  jetpp[0]->SetBranchAddress("chargedHardSum",&chHardSum_F);
+  jetpp[0]->SetBranchAddress("chargedMax",&chMax_F);  //  jetpp[0]->SetBranchAddress("chargedHardMax",&chMax_F);
+  //tracks
+  jetpp[0]->SetBranchAddress("trackSum",&trkSum_F);
+  jetpp[0]->SetBranchAddress("trackHardSum",&trkHardSum_F);
+  jetpp[0]->SetBranchAddress("trackMax",&trkMax_F);  //  jetpp[0]->SetBranchAddress("trackHardMax",&trkMax_F);
+  //photons
+  jetpp[0]->SetBranchAddress("photonSum",&phSum_F);
+  jetpp[0]->SetBranchAddress("photonHardSum",&phHardSum_F);
+  jetpp[0]->SetBranchAddress("photonMax",&phMax_F);  //  jetpp[0]->SetBranchAddress("photonHardMax",&phMax_F);
+  //leptons
+  jetpp[0]->SetBranchAddress("eSum",&eSum_F);
+  jetpp[0]->SetBranchAddress("eMax",&eMax_F);
+  jetpp[0]->SetBranchAddress("muSum",&muSum_F);
+  jetpp[0]->SetBranchAddress("muMax",&muMax_F);
+  //neutral partcles assoc. w/ jet
+  jetpp[0]->SetBranchAddress("neutralSum",&neSum_F);
+  jetpp[0]->SetBranchAddress("neutralMax",&neMax_F);
+
+  //hiEvtAnalyzer
+  jetpp[1]->SetBranchAddress("evt",&evt_F);
+  jetpp[1]->SetBranchAddress("run",&run_F);
+  jetpp[1]->SetBranchAddress("lumi",&lumi_F);
+  jetpp[1]->SetBranchAddress("vz",&vz_F);
+
+  //skimanalysis
+  jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_F);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_F);
+  jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_F);
+
+  //hltanalysis
+  //L1
+  jetpp[3]->SetBranchAddress("L1_SingleJet28_BptxAND_Prescl",&jet40_l1seed_p_F);
+  jetpp[3]->SetBranchAddress("L1_SingleJet40_BptxAND_Prescl",&jet60_l1seed_p_F);
+  jetpp[3]->SetBranchAddress("L1_SingleJet48_BptxAND_Prescl",&jet80_l1seed_p_F);
+  jetpp[3]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&jet100_l1seed_p_F);
+  //HLT
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1",&jet40_F);
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1_Prescl",&jet40_p_F);
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet60_Eta5p1_v1",&jet60_F);
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet60_Eta5p1_v1_Prescl",&jet60_p_F);
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&jet80_F);
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1_Prescl",&jet80_p_F);
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1",&jet100_F);
+  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1_Prescl",&jet100_p_F);
+
+  //specific HLT path braches (see trees[] in header)
+  jetpp[4]->SetBranchAddress("pt",&trgObjpt_40);  
+  jetpp[5]->SetBranchAddress("pt",&trgObjpt_60);  
+  jetpp[6]->SetBranchAddress("pt",&trgObjpt_80);  
   jetpp[7]->SetBranchAddress("pt",&trgObjpt_100);
 
-  //  Declare the output File and the necessary histograms after that:
-  std::string outfile=kFoname;
-  TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
+  // Declare the output File and the necessary histograms after that:
+  TFile *fout = new TFile(outfile.c_str(),"RECREATE");
   fout->cd();
 
-  // plot jet variables
+  // book jet variable histograms
   TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){
     for(int j = 0; j<N_vars; ++j){
@@ -308,8 +253,11 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
     }
   }
 
-  TH1F *hVz = new TH1F("hVz","",200, -20, 20);
+  // for vertex position, can use for vz weighting
+  TH1F *hVz;
+  hVz = new TH1F("hVz","",200, -20, 20);
 
+  // for trigger objects
   TH1F *hpp_TrgObj100[2];
   TH1F *hpp_TrgObj80[2];
   TH1F *hpp_TrgObj60[2];
@@ -317,7 +265,6 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   TH1F *hpp_TrgObjComb[2];
   TH1F *hpp_CombJetpT[2];
   
-
   hpp_TrgObj100[0]  = new TH1F(Form("hpp_HLT100_noJetID_R%d_%s"     , radius, etaWidth), 
 			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
   hpp_TrgObj80[0]   = new TH1F(Form("hpp_HLT80_noJetID_R%d_%s"     , radius, etaWidth), 
@@ -330,7 +277,6 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
 			       Form("Trig Combined Spectra R%d %s " , radius, etaWidth), 2000, 0, 2000);
   hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_noJetID_R%d_%s"           , radius, etaWidth), 
 			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
-
 
   hpp_TrgObj100[1]  = new TH1F(Form("hpp_HLT100_JetID_R%d_%s"       , radius, etaWidth), 
 			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
@@ -345,8 +291,8 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_JetID_R%d_%s"             , radius, etaWidth), 
 			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
 
-  
-  Long64_t nentries = jetpp[0]->GetEntries();
+
+  // for trigger counts+weighting later
   Long64_t NEvents = 0;
   Long64_t NEvents_100 = 0;
   Long64_t NEvents_80 = 0;
@@ -354,19 +300,17 @@ int RAA_read_data_pp(int startfile = defaultStartFile , int endfile = defaultEnd
   Long64_t NEvents_40 = 0;    
   //Long64_t nGoodEvt = 0;
   
-  if(debugMode) nentries = 1000;
-  if(fastDebugMode) nentries = 10;
-
   // now loop over the events
+  Long64_t nentries = jetpp[0]->GetEntries();
+  if(debugMode) nentries = 1000;  if(fastDebugMode) nentries = 10;
   std::cout<<"Running through "<<nentries<<" events"<<std::endl;  
-  for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop
-    
+
+  for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop   
+
     if(nEvt%10000==0)std::cout<<"nEvt = "<<nEvt<<std::endl;
 
-    // grab an entry from each ppjet tree
+    // grab an entry and implement basic event selection
     for(int i = 0; i<N_trees;++i) jetpp[i]->GetEntry(nEvt);
-    
-    // Evt/skim analysis cuts
     if( pHBHENoiseFilter_F==0     || 
         pBeamScrapingFilter_F==0  || 
         pprimaryvertexFilter_F==0 ||
@@ -601,50 +545,9 @@ int main(int argc, char *argv[]){
     int startfile= atoi(argv[1]); int endfile= atoi(argv[2]); std::string inputFileList=argv[3];
     int jetRadius= atoi(argv[4]); std::string jetType=argv[5];
     std::string outputFileName=argv[6]; bool debug=(bool)atoi(argv[7]);      
-
     rStatus = RAA_read_data_pp( startfile, endfile, inputFileList,
 				jetRadius, jetType,
 				outputFileName, debug);
   }
   return rStatus;
-}
-
-
-
-//////////////////////////////////////
-////////// helper functions //////////
-//////////////////////////////////////
-
-
-/////////////////////////
-// divide by bin width //
-/////////////////////////
-void divideBinWidth(TH1 *h){
-  h->Sumw2();
-  for (int i=0;i<=h->GetNbinsX();++i){
-    Float_t val = h->GetBinContent(i);
-    Float_t valErr = h->GetBinError(i);
-    val/=h->GetBinWidth(i);
-    valErr/=h->GetBinWidth(i);
-    h->SetBinContent(i,val);
-    h->SetBinError(i,valErr);
-  }//binsX loop 
-  h->GetXaxis()->CenterTitle();
-  h->GetYaxis()->CenterTitle();
-}
-
-
-/////////////////////////
-// trigger combination //
-/////////////////////////
-double trigComb(bool *trg, int *pscl, double pt){
-
-  double weight=0;
-
-  if(trg[3] && pt>=100 )          weight = pscl[3];
-  if(trg[2] && pt>=80  && pt<100) weight = pscl[2];
-  if(trg[1] && pt>=60  && pt<80 ) weight = pscl[1];
-  if(trg[0] && pt>=40  && pt<60 ) weight = pscl[0];
-  
-  return weight;
 }

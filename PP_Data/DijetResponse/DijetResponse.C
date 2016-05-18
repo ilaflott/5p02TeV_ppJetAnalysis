@@ -9,94 +9,44 @@
 ///////////////////////////////////////////
 
 // C includes			    
+#include <cstdlib>
 #include <iostream>
+#include <unistd.h>
 #include <fstream>
 #include <vector>
-#include <stdlib.h>
-#include <unistd.h>
-
 // ROOT includes
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TLorentzVector.h"
+#include "TCanvas.h"
+#include "TLegend.h"
 #include "TH1F.h"
+// custom
+#include "DijetResponse.h"
 
-
-
-///////////////////////////////////////////////
-////////// (initializa/declara)tions //////////
-///////////////////////////////////////////////
-
-// helper functions
-int findEtaBin(float eta, int nbins_eta, const double* xbins_eta);
-int findPtBin(float pt, int nbins_pt, const double* xbins_pt);
-TLorentzVector findMissEt(int nPFpart_, std::vector<int>* pfId_, std::vector<float>* pfPt_, 
-			  std::vector<float>* pfEta_, std::vector<float>* pfPhi_,
-			  float* eSum, float *phoSum,            
-			  int nref,    float* pt_F, float* rawpt_F, 
-			  float* eta_F, float* phi_F, float* m_F);
-// main macros
-int deriveDijetResponse(int startfile, int endfile, std::string infile_Forest,
-			int radius, bool isMC, 
-			std::string outfile, bool debugMode);
-int sumDijetResponse(std::string filename, bool isMC);
-
-//for convenience during testing, coding, etc.
-const bool atMIT  = true;
-const std::string hadoopDir    = "/mnt/hadoop/cms";
-const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
-
-//initializations
-const double minJetPt = 40;
-
-const double xbins_pt[] = {40, 60, 80, 110, 200, 1000};
-const int nbins_pt = sizeof(xbins_pt)/sizeof(double)-1;
-
-const double xbins_eta[] = {-5.191, -4.716, -4.363, -4.013,
-			    -3.664, -3.314, -2.964,
-			    -2.650, -2.322, -2.043, -1.830,
-			    -1.653, -1.479, -1.305,
-			    -1.131, -0.957, -0.783, -0.609,
-			    -0.435, -0.261, -0.087,
-			    0.000,
-			    0.087,  0.261,  0.435, 0.609,
-			    0.783,  0.957,  1.131, 
-			    1.305,  1.479,  1.653,  1.830,
-			    2.043,  2.322,  2.650, 
-			    2.964,  3.314,   3.664, 4.013,
-			    4.363,  4.716,  5.191};
-const int nbins_eta = sizeof(xbins_eta)/sizeof(double)-1;
-
-const int colors[] = {1,2,4,8,20};
-const int N_colors= sizeof(colors)/sizeof(int);
-
-
-
-///////////////////////////////////////////
-////////// derive dijet response //////////
-///////////////////////////////////////////
-// default inputs to the routine
+// deriveDijetResponse
+// default inputs
 /////
-const int defaultStartFile=0;
-const int defaultEndFile=1; //exclusive boundary, range of files run over doesnt include endfile
-const std::string defaultInFilelist = "debugFileList_2Files.txt";//"HighPtJet80_5p02TeV_pp_data_forests.txt";
+const int defStartFile=0;
+const int defEndFile=1; //exclusive boundary, range of files run over doesnt include endfile
+const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_2Files_debug_forests.txt";
 /////
-const int defaultRadius=4;
-const bool defaultIsMC=false;
+const int defRadius=4;
+const bool defIsMCderive=false;
 /////
-const std::string defaultOutputName = "test_output.root"; 
-const bool defaultDebugMode = true; 
+const std::string defOutputName = "test_output.root"; 
+const bool defDebugMode = true; 
 /////
 //const std::string pp_MC_filelist   ="";
 //const std::string pp_data_filelist ="testFile_2015_5p02TeV_pp_data_forests.txt";
-int iii=0;
+//int iii=0;
 //std::cout<<"here"<<iii<<std::endl;iii++;
 
 // the macro
-int deriveDijetResponse(int startfile = defaultStartFile, int endfile = defaultEndFile, std::string infile_Forest=defaultInFilelist,
-			int radius = 4, bool isMC = defaultIsMC, 
-			std::string outfile = defaultOutputName, bool debugMode = defaultDebugMode ){
+int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, std::string infile_Forest=defInFilelist,
+			int radius = 4, bool isMC = defIsMCderive, 
+			std::string outfile = defOutputName, bool debugMode = defDebugMode ){
 
   if(debugMode)std::cout<<"debugMode is ON"<<std::endl;
 
@@ -221,11 +171,12 @@ int deriveDijetResponse(int startfile = defaultStartFile, int endfile = defaultE
     //std::cout<<"Num. Jet Entries = "<<jetEntries< std::endl;
     std::cout<<"jetEntries = "<<jetEntries<<std::endl;
 
-    if(jetEntries > 1000 && debugMode) std::cout<< " warning! jetEntries= "<< jetEntries << std::endl; 
+
     if(debugMode)jetEntries=1000;
-    if(debugMode)std::cout<<"beginning jet loop"<< std::endl;    
+    if(debugMode) std::cout<< "jetEntries = "<< jetEntries << std::endl; 
 
     // loop over jets
+    if(debugMode)std::cout<<"beginning jet loop"<< std::endl;    
     for(int ientry=0; ientry<jetEntries; ientry++){//jet loop
 
       jtTree->GetEntry(ientry);
@@ -233,8 +184,9 @@ int deriveDijetResponse(int startfile = defaultStartFile, int endfile = defaultE
       //if(debugMode)std::cout<<"successfully grabbed entry from pftree"<<std::endl;
       phoTree->GetEntry(ientry);
 
-      if(nPFpart_>10000 && debugMode) std::cout << " warning! nPF: "<< nPFpart_ << std::endl;
-
+      if(nPFpart_>10000) std::cout<<"warning! nPF: "<<nPFpart_<<std::endl;
+      const double minJetPt = 40;
+      
       for(int i=0; i<nPho; i++){//loop over photons, look for photon
 	if(phoEt->at(i)>30 && abs(phoEta->at(i))<1.4442){//photons cut
 	  if(debugMode)std::cout << "photon found, Et: " << phoEt->at(i) << std::endl;
@@ -250,8 +202,8 @@ int deriveDijetResponse(int startfile = defaultStartFile, int endfile = defaultE
 						 eSum, phoSum, 
 						 nref, pt_F, rawpt_F, 
 						 eta_F, phi_F, m_F);
-	      int etaBin = findEtaBin(phoEta->at(i),nbins_eta,xbins_eta);
-	      int ptBin = findPtBin(phoEt->at(i),nbins_pt,xbins_pt);
+	      int etaBin = findBin(phoEta->at(i),nbins_eta,xbins_eta);
+	      int ptBin = findBin(phoEt->at(i),nbins_pt,xbins_pt);
 	      TLorentzVector phoVec(phoEt->at(i),phoEta->at(i),phoPhi->at(i),0.);
 	      double num = missEt.Dot(phoVec);
 	      
@@ -298,8 +250,8 @@ int deriveDijetResponse(int startfile = defaultStartFile, int endfile = defaultE
 	if(dphi < 2.7) continue;
 
 	// find the bin the jet belongs to
-	int etaBin = findEtaBin(eta_F[pJet],nbins_eta,xbins_eta);
-	int ptBin = findPtBin(avgPt,nbins_pt,xbins_pt);
+	int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
+	int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
 	//if(etaBin>xbins_eta[nbins_eta] || ptBin>xbins_pt[nbins_pt]) std::cout << "OH NO! Bin Mismatch!" << std::endl;
 	avgA[ptBin][etaBin] += 0.5*(pt_F[pJet]-pt_F[rJet])/avgPt;
 	h_avgA[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
@@ -314,8 +266,8 @@ int deriveDijetResponse(int startfile = defaultStartFile, int endfile = defaultE
 					   nref, pt_F, rawpt_F, 
 					   eta_F, phi_F, m_F);
 	for(int i=0; i<nref; i++){//jet loop
-	  int etaBin = findEtaBin(eta_F[pJet],nbins_eta,xbins_eta);
-	  int ptBin = findPtBin(avgPt,nbins_pt,xbins_pt);
+	  int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
+	  int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
 	  TLorentzVector jetVec(pt_F[rJet],eta_F[rJet],phi_F[rJet],m_F[rJet]);
 	  avgB[ptBin][etaBin] += (missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag()));
 	  h_avgB[ptBin][etaBin]->Fill((missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag())));
@@ -356,146 +308,223 @@ int deriveDijetResponse(int startfile = defaultStartFile, int endfile = defaultE
 } //end deriveDijetResponse
 
 
-
-////////////////////////////////////////
-////////// sum dijet response //////////
-////////////////////////////////////////
-
-// default inputs to the routine
+// sumDijetResponse
+// default inputs
 /////
-const std::string defaultSumInput="relDijetResponse_data_calo.root";
+const std::string defSumInput="relDijetResponse_data_calo.root";
+const bool defIsMCsum=false;
+const bool defDoDraw=false;
 /////
 
 // the macro
-int sumDijetResponse(std::string filename=defaultSumInput , bool isMC=defaultIsMC ){
-  //garbage commands for test/debug
-  filename+="1";
-  bool haha=true&&isMC;
-  std::cout<<haha;
-  //garbage command for test/debug
-  return 0;
-}
+int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , bool doDraw=defDoDraw ){
 
+  TH1F *hRelResponse[nbins_pt];// Rel
+  TH1F *hMPFResponse[nbins_pt];// MPF
 
+  //TH1F *hAbsPhoResponse[nbins_pt]; // AbsPho
+  //TH1F *hMPFAbsPhoResponse[nbins_pt]; // MPFAbsPho
+  //TH1F *hAvgAbsPhoResponse[nbins_pt][nbins_eta]; //AvgAbsPho
 
-///////////////
-//// findBin //
-///////////////
-//int findBin(float value, const double* xbins){
-//  int nbins = sizeof(xbins)/sizeof(double)-1;
-//  for(int i=0; i<nbins; i++) if(value<xbins[i+1]) return i;
-//  return nbins_eta-1;
-//}
+  TH1F *avgAHisto[nbins_pt][nbins_eta]; // avg A
+  TH1F *avgBHisto[nbins_pt][nbins_eta]; // avg B
 
-////////////////
-// findEtaBin //
-////////////////
-int findEtaBin(float eta, 
-	       int nbins_eta, const double* xbins_eta){
-  for(int i=0; i<nbins_eta; i++) if(eta<xbins_eta[i+1]) return i;
-  return nbins_eta-1;
-}
+  //indicate the type of thing we're reading
+  std::string type = "";
+  if(!isMC) type = "Data"; 
+  else type = "PYTHIA_CUETP8M1";
 
-///////////////
-// findPtBin //
-///////////////
-int findPtBin(float pt, 
-	      int nbins_pt, const double* xbins_pt){
-  for(int i=0; i<nbins_pt; i++) if(pt<xbins_pt[i+1]) return i;  
-  return nbins_pt-1;
-}
-
-////////////////
-// findMissEt //
-////////////////
-TLorentzVector findMissEt(int nPFpart_, std::vector<int> * pfId_, std::vector<float> * pfPt_, 
-			  std::vector<float> * pfEta_, std::vector<float> * pfPhi_,
-			  float* eSum, float *phoSum,
-                          int nref, float* pt_F, float* rawpt_F, 
-			  float* eta_F, float* phi_F, float* m_F){
+  //open the file
+  TFile *fin = new TFile(filename.c_str());
   
-  // missEt = - Sum(Et you can see)
-  TLorentzVector missEt(0,0,0,0);
+  //array initializing
+  for(int i=0; i<nbins_pt; i++){ //pt loop initializes response histo arrays
+    std::cout<<i<<std::endl;
 
-  //missing Et from particles
-  for(int i=0; i<nPFpart_; i++){//PF Loop
-    TLorentzVector pfp;
-    double pfMass=0;
-    if(pfId_->at(i)==1 || pfId_->at(i)==4) pfMass = 0.1395702; 
-    //pfp.SetPtEtaPhiM(pfPt[i],pfEta[i],pfPhi[i],pfMass);
-    pfp.SetPtEtaPhiM(pfPt_->at(i),pfEta_->at(i),pfPhi_->at(i),pfMass);
-    pfp.SetPz(0.); //2d projection in x-y plane
-    missEt += pfp;
-  }//end PF loop
+    hRelResponse[i] = new TH1F(Form("hRelResponse_pt%d",i),"",nbins_eta,xbins_eta);
+    hMPFResponse[i] = new TH1F(Form("hMPFResponse_pt%d",i),"",nbins_eta,xbins_eta);
+    //hAbsPhoResponse[i] = new TH1F(Form("hAbsPhoResponse_pt%d",i),"",nbins_eta,xbins_eta);
+    //hMPFAbsPhoResponse[i] = new TH1F(Form("hMPFAbsPhoResponse_pt%d",i),"",nbins_eta,xbins_eta);
+
+    for(int j=0; j<nbins_eta; j++){//eta loop gets+clones avgAB histos from the input file
+      std::cout<<j<<std::endl;
+
+      avgAHisto[i][j] = (TH1F*)fin->Get( Form("avgAHisto_pt%d_eta%d",i,j) )->Clone(Form("avgAHisto_pt%d_eta%d",i,j));
+      avgBHisto[i][j] = (TH1F*)fin->Get( Form("avgBHisto_pt%d_eta%d",i,j) )->Clone(Form("avgBHisto_pt%d_eta%d",i,j));
+      //hAvgAbsPhoResponse[i][j] = (TH1F*)fin->Get(Form("hAvgAbsPhoResponse_pt%d_eta%d",i,j))->Clone(Form("hAvgAbsPhoResponse_pt%d_eta%d",i,j));
+
+    }//end eta loop
+  }//end pt loop
+
+  //
+  for(int i=0; i<nbins_pt; i++){//pt loop
+    for(int j=0; j<nbins_eta; j++){//eta loop
+      std::cout<<i<<" "<<j<<std::endl;
+    
+      //Ahisto stuff
+      hRelResponse[i]->SetBinContent( j+1, ( 1+avgAHisto[i][j]->GetMean() )/( 1-avgAHisto[i][j]->GetMean() ) );
+      hRelResponse[i]->SetBinError( j+1 , (hRelResponse[i]->GetBinContent(j+1)) * (1./sqrt(avgAHisto[i][j]->GetEntries()) ) );
+
+      //Bhisto stuff
+      hMPFResponse[i]->SetBinContent( j+1 ,(1+avgBHisto[i][j]->GetMean())/(1-avgBHisto[i][j]->GetMean()));
+      hMPFResponse[i]->SetBinError( j+1 ,hMPFResponse[i]->GetBinContent(j+1)*(1./sqrt(avgBHisto[i][j]->GetEntries())));
+
+      //PhoResponse stuff
+      //hMPFAbsPhoResponse[i]->SetBinContent( j+1 ,hAvgAbsPhoResponse[i][j]->GetMean());
+      //hMPFAbsPhoResponse[i]->SetBinError( j+1 ,hMPFAbsPhoResponse[i]->GetBinContent(j+1)*(1./sqrt(hAvgAbsPhoResponse[i][j]->GetEntries())));
+
+      //count entries in avg AB histos
+      int totEntriesA=0, totEntriesB=0;
+      //int totEntriesAbs=0;
+
+      for(int j=0; j<nbins_eta; j++){//eta loop
+
+	totEntriesA+=avgAHisto[i][j]->GetEntries(); 
+	totEntriesB+=avgBHisto[i][j]->GetEntries();
+	//totEntriesAbs+=hAvgAbsPhoResponse[i][j]->GetEntries();
+
+      }//eta loop
+
+      //set entries in Rel/MPF response histo arrays after filling because... why?
+      hRelResponse[i]->SetEntries(totEntriesA);
+      hMPFResponse[i]->SetEntries(totEntriesB);
+      //hMPFAbsPhoResponse[i]->SetEntries(totEntriesAbs);
+
+    }//end eta loop
+  }//end pt loop
   
-  //missing Et from jets
-  for(int i=0; i<nref; i++){//begin jet loop
-    if(pt_F[i]<=15) continue;//quick cut before expensive computations
-    TLorentzVector jtTmp(pt_F[i],eta_F[i],phi_F[i],m_F[i]);
-    double jetEnergy=jtTmp.E();
-    if( (eSum[i]+phoSum[i])/jetEnergy<0.9 ){
-      TLorentzVector jt;
-      jt.SetPtEtaPhiM(pt_F[i]-rawpt_F[i],eta_F[i],phi_F[i],m_F[i]);
-      jt.SetPz(0.); //project to x-y plane
-      missEt += jt;
+  //open an output file for output plots if desired
+  TFile *fout = new TFile(Form("simplePlots_%disMC.root",isMC),"recreate");
+  fout->cd();
+
+  //color matrix for later
+  int color[5] = {1,2,4,8,20};
+
+  for(int i=0; i<nbins_pt; i++){//pt loop
+    std::cout<<i<<std::endl;
+
+    hRelResponse[i]->SetMarkerColor(color[i]);
+    hRelResponse[i]->SetLineColor(color[i]);
+    hRelResponse[i]->SetTitle(Form("Rel, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
+    hRelResponse[i]->Write();
+
+    hMPFResponse[i]->SetMarkerColor(color[i]);
+    hMPFResponse[i]->SetLineColor(color[i]);
+    hMPFResponse[i]->SetMarkerStyle(21);
+    hMPFResponse[i]->SetLineStyle(2);
+    //    hRelResponse[i]->SetTitle(Form("MPF, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
+    hMPFResponse[i]->SetTitle(Form("MPF, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
+    hMPFResponse[i]->Write();
+
+    // hMPFAbsPhoResponse[i]->SetMarkerColor(color[i]);
+    // hMPFAbsPhoResponse[i]->SetLineColor(color[i]);
+    // hMPFAbsPhoResponse[i]->SetTitle(Form("MPF Abs, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
+    // hMPFAbsPhoResponse[i]->Write();
+  }//end pt loop
+
+
+  if(!doDraw) std::cout<<"not going to draw histograms"<<std::endl;
+  else{
+    std::cout<<"going to draw histograms"<<std::endl;
+
+    TCanvas *c0 = new TCanvas("c0","",600,600);
+    TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
+
+    hRelResponse[0]->Draw();
+    l0->AddEntry(hRelResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
+
+    for(int i=1; i<nbins_pt; i++){
+      std::cout<<i<<std::endl;
+      hRelResponse[i]->Draw("same");
+      if(isMC) l0->AddEntry("",Form("%s",type.c_str()),"");
+      l0->AddEntry(hRelResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
     }
-  }//end jet loop
 
-//  //missing Et from jets
-//  for(int i=0; i<nref; i++){//begin jet loop
-//    if(pf_F[i]<=15) continue;//quick cut before expensive computations
-//    TLorentzVector jt(pt_F[i],eta_F[i],phi_F[i],m_F[i]);
-//    if( (eSum[i]+phoSum[i])/jt.E()<0.9 ){
-//      jt.SetPtEtaPhiM(pt_F[i]-rawpt_F[i],eta_F[i],phi_F[i],m_F[i]);
-//      jt.SetPz(0.); //project to x-y plane
-//      missEt += jt;
-//    }
-//  }//end jet loop
+    l0->Draw("Same");
+    std::cout<<"saving c0"<<std::endl;
+    //c0->SaveAs("test.png");
+    //sprintf("Relresponse_%s.pdf",type.c_str());
+    //std::cout<<type.c_str()<<std::endl;
+    c0->SaveAs("test.pdf");
+    std::cout<<"after savng"<<std::endl;
+    //Printf("c0 saved");
 
-  missEt*=-1; // rotate 180 deg, to get missing Et, 
-  missEt.SetE(0.);  // only care about Et, not E
-  //std::cout << "missEt:  Mag: " << missEt.Mag() << std::endl;  
-  return missEt;
-}
+    TCanvas *c1 = new TCanvas("c1","",600,600);
+    c1->cd();
+
+    TLegend *l1 = new TLegend(0.4,0.8,0.7,0.9);
+    hMPFResponse[0]->Draw();
+    l1->AddEntry(hMPFResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
+
+    for(int i=1; i<nbins_pt; i++){
+      std::cout<<i<<std::endl;
+      hMPFResponse[i]->Draw("same");
+      if(isMC) l1->AddEntry("",Form("%s",type.c_str()),"");
+      l1->AddEntry(hMPFResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
+    }
+    l1->Draw("Same");
+
+    std::cout<<"saving c1"<<std::endl;
+    c1->SaveAs(Form("MPFresponse_%s.pdf",type.c_str()),"RECREATE");
+
+    // TCanvas *c2 = new TCanvas("c2","",600,600);
+    // c2->cd();
+    // hMPFAbsPhoResponse[0]->Draw();
+    //
+    // TLegend *l2 = new TLegend(0.4,0.8,0.7,0.9);
+    // l2->AddEntry(hMPFAbsPhoResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
+    //
+    // for(int i=1; i<nbins_pt; i++){
+    //   std::cout<<i<<std::endl;
+    //   hMPFAbsPhoResponse[i]->Draw("same");
+    //   if(isMC) l1->AddEntry("",Form("%s",type.c_str()),"");
+    //   l2->AddEntry(hMPFAbsPhoResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
+    // }
+    //
+    // l2->Draw("Same");
+    // std::cout<<"saving c2"<<std::endl;
+    // c2->SaveAs(Form("MPFABSPhoresponse_%s.pdf",type.c_str()),"RECREATE");
+  }
+
+  //close the output file
+  fout->Close();
+  return 0;
+} //end sumDijetResponse
 
 
 //////////////////////////
 ////////// main //////////
 //////////////////////////
 // acts as the frontend control for .exe file
-// could use some improvement
-// note, argc->argument count, argv->argument vector
 int main(int argc, char *argv[]){
 
-  std::cout<<std::endl;
-  int rStatus = 1;  
+  int rStatus = 1;   
 
-  // no input, error!
-  if( argc==1 ) {
-    std::cout<<"no input, give at least one argument"<<std::endl<<std::endl;
+  // bad input errors
+  if( argc==1 ) {   // no input arguments
+    std::cout<<"need at least 1 argument, to test with defaults, do..."<<std::endl;
+    std::cout<<"./DijetResponse.exe <function>"<<std::endl<<std::endl;
     return rStatus;
   } 
   
-  // non-existant function called, error!
   bool doDerive=(atoi(argv[1])==0);
   bool doSum=(atoi(argv[1])==1);    
-  if(!doDerive && !doSum ){
-    std::cout<<"bad input, first argument must be either... "<<std::endl;
-    std::cout<<"0 for deriveDijetResponse"<<std::endl;
-    std::cout<<"1 for sumDijetResponse"<<std::endl<<std::endl;
+  if(!doDerive && !doSum ){  // non-existant function called
+    std::cout<<"bad value for <function>"<<std::endl;
+    std::cout<<"use 0 for deriveDijetResponse"<<std::endl;
+    std::cout<<"use 1 for sumDijetResponse"<<std::endl<<std::endl;
+    return rStatus;
   }  
   
-  // expected use for default-value tests
-  if( argc==2 ){ 
+  // expected usage cases
+  if( argc==2 ){   // expected use for default-value tests
     rStatus=-1;
     if(doDerive) rStatus=deriveDijetResponse();
     if(doSum) rStatus=sumDijetResponse();
     return rStatus;
   }
-  // expected use for deriveDijetResponse
-  else if( argc==9 && doDerive ){ 
+  else if( argc==9 && doDerive ){   // expected use for deriveDijetResponse
     rStatus=-1;
-
     int startfile=atoi(argv[2]); int endfile=atoi(argv[3]); std::string inputFileList=argv[4];
     int jetRadius=atoi(argv[5]); bool isMC=(bool)atoi(argv[6]); 
     std::string outputFileName=argv[7]; bool debug=(bool)atoi(argv[7]);      
@@ -503,27 +532,24 @@ int main(int argc, char *argv[]){
 				   jetRadius, isMC,
 				   outputFileName, debug);    return rStatus;
   }
-  // expected use for sumDijetResponse
-  else if( argc==4 && doSum ){ 
+  else if( argc==5 && doSum ){   // expected use for sumDijetResponse
     rStatus=-1;
-    std::string inputFileName=argv[2]; bool isMC=(bool)atoi(argv[3]);
-    rStatus = sumDijetResponse( inputFileName, isMC);    return rStatus;
+    std::string inputFileName=argv[2]; bool isMC=(bool)atoi(argv[3]); bool doDraw=(bool)atoi(argv[4]);
+    rStatus = sumDijetResponse( inputFileName, isMC, doDraw);    return rStatus;
   }
-  // inputs don't match any expected use cases
-  else {
-    std::cout<<"to test the script with defaults, do..."<<std::endl;
-    std::cout<<"./DijetResponse.exe <function>"<<std::endl<<std::endl;
+  else {  // inputs don't match any expected use cases
+    std::cout<<"not enough arguments ";//<<std::endl;
     if (doDerive){
       std::cout<<"for deriveDijetResponse, do..."<<std::endl;
       std::cout<<"./DijetResponse.exe 0 ";
-      std::cout<<"<startfile> <endfile> <inputFileList> <jetRadius> <isMC> <outputFileName> <debug>"<<std::endl<<std::endl;
+      std::cout<<"<startfile> <endfile> <inputFileList> <jetRadius> <isMC> <outputFileName> <debug>";
     }
     if (doSum){
       std::cout<<"for sumDijetResponse, do..."<<std::endl;
       std::cout<<"./DijetResponse.exe 1 ";
-      std::cout<<"<inputFile> <isMC>"<<std::endl<<std::endl;
+      std::cout<<"<inputFile> <isMC> <doDraw>";
     }
+    std::cout<<std::endl<<std::endl;
     return rStatus;
   }
-
-}
+}//end main

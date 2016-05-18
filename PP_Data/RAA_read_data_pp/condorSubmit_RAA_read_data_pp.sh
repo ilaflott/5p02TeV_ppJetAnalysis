@@ -11,7 +11,7 @@ fi
 # input arguments to submit script
 NJobs=$1
 NFilesPerJob=$2
-filelistIn=$3
+filelistIn=$3  #echo "filelistIn is ${filelistIn}" #debug
 debug=$4
 
 # additional inputs to the run script and .exe, these don't change too much
@@ -20,12 +20,12 @@ radius=4
 jetType="PF"
 
 # create output folder/logfileNames with name based on filelist
-filelist=${filelistIn##*/} #removes longest match for "*/" from start of string
-listSubStr=${filelist%_*} #removes shortest match for "_*" from end of string
+filelist=${filelistIn##*/} #removes longest match for "*/" from start of string #echo "filelist is ${filelist}" #debug
+listSubStr=${filelist%_*} #removes shortest match for "_*" from end of string #echo "listSubStr is ${listSubStr}" #debug
 jobName="${listSubStr}_ak${radius}${jetType}"
 now="${jobName}_$(date +"%Y-%m-%d__%H_%M_%S")"
-logFileDir="${PWD}/condorOutput/${now}"
 
+logFileDir="${PWD}/condorOutput/${now}"
 mkdir $logFileDir
 echo "log files in ${logFileDir}"
 
@@ -94,5 +94,5 @@ EOF
     # submit the job defined in the above submit file
     NthJob=$(($NthJob + 1))
     echo "submitting RAA_read_data_pp job ${NthJob} of ${NJobs}"
-    condor_submit ${logFileDir}/subfile    
+    #condor_submit ${logFileDir}/subfile    
 done

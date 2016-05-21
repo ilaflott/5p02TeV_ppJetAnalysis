@@ -15,13 +15,13 @@
 #include <fstream>
 #include <vector>
 // ROOT includes
-#include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
-#include "TLorentzVector.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TH1F.h"
+#include <TFile.h>
+#include <TTree.h>
+#include <TChain.h>
+#include <TLorentzVector.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TH1F.h>
 // custom
 #include "DijetResponse.h"
 
@@ -43,6 +43,7 @@ const bool defDebugMode = true;
 //int iii=0;
 //std::cout<<"here"<<iii<<std::endl;iii++;
 
+  // derive dijet response is making empty avgA histos
 // the macro
 int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, std::string infile_Forest=defInFilelist,
 			int radius = 4, bool isMC = defIsMCderive, 
@@ -184,18 +185,19 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 
       if(nPFpart_>10000) std::cout<<"warning! nPF: "<<nPFpart_<<std::endl;
       const double minJetPt = 40;
-      
-      for(int i=0; i<nPho; i++){//loop over photons
-	if(phoEt->at(i)>30 && abs(phoEta->at(i))<1.4442){//photons cut
-	  //if(debugMode)std::cout << "photon found, Et: " << phoEt->at(i) << std::endl;
 
-	  //find a corresponding jet
-	  for(int ijet=0; ijet<nref-1; ijet++){//loop over jets	   
-	    if( pt_F[ijet]>=minJetPt && //jet cut
-		abs(phoPhi->at(i)-phi_F[ijet])>2.95 && //angular separation photon+jet
+      // avgPhoResponse histo stuff
+      // loop over photons in jet with min pt of 30 and in barrel
+      for(int i=0; i<nPho; i++){
+	if(phoEt->at(i)>30 && abs(phoEta->at(i))<1.4442){
+	  // the jet that the photon actually corresponds to?
+	  // why only loop up to nref-1?
+	  for(int ijet=0; ijet<nref-1; ijet++){
+	    if( pt_F[ijet]>=minJetPt && //jetpt cut
+		abs(phoPhi->at(i)-phi_F[ijet])>2.95 && //angular separation between the +jet
 		pt_F[ijet+1]/phoEt->at(i)<0.2 ){//jetpt/phoEt ratio
-	      if(debugMode)std::cout << "jet photon pair found" << std::endl;	    
 
+	      if(debugMode)std::cout << "jet photon pair found" << std::endl;	    
 	      TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, 
 						 pfEta_, pfPhi_, 
 						 eSum, phoSum, 
@@ -206,24 +208,26 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 	      TLorentzVector phoVec(phoEt->at(i),phoEta->at(i),phoPhi->at(i),0.);
 	      double num = missEt.Dot(phoVec);
 	      
+	      nEntriesAbs[ptBin][etaBin]++;
+	      h_nEntriesAbs[ptBin][etaBin]->Fill(1);
 	      avgAbsPhoResponse[ptBin][etaBin] += (1+(num/phoVec.Dot(phoVec)));
 	      h_avgAbsPhoResponse[ptBin][etaBin]->Fill((1+(num/phoVec.Dot(phoVec))));
 	      hAvgAbsPhoResponse[ptBin][etaBin]->Fill(1+(num/phoVec.Dot(phoVec)));
-	      nEntriesAbs[ptBin][etaBin]++;
-	      h_nEntriesAbs[ptBin][etaBin]->Fill(1);
-
 	    }//end photon+jetcut
 	  }//end jet loop
 	}//end photon cut
       }//end photon loop
 
-      // standard Rrel method
-      if(nref>=2){//jet cut
+      // standard Rrel method, need at least two jets
+      // avgA and avgB histos
+      if(nref>=2){
 
-	//if(debugMode)std::cout<<"two or more jets!"<<std::endl;
+	// assign two highest pt jets as rJet or pJet using eta/random# critera
 	int rJet, pJet;
 	if( abs(eta_F[0])<1.3 && abs(eta_F[1])<1.3 ){ 
-	  pJet = rand()%2;  rJet = (pJet+1)%2;
+	  double random=rand();
+	  if(debugMode)std::cout<< "rand() is "<<random <<std::endl;
+	  pJet = random%2;  rJet = (random+1)%2;
 	}
 	else if( abs(eta_F[0])<1.3 && abs(eta_F[1])<5. ){
 	  pJet = 1; rJet = 0;
@@ -232,36 +236,38 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 	  pJet = 0; rJet = 1;
 	}
 	else continue;
+	if(debugMode)std::cout<< "rJet is "<<rJet<<" and pJet is "<<pJet <<std::endl;
 	
+	// minjetpt cut
+	if(pt_F[rJet]<minJetPt) continue;
+
+	// angular separation cut
+	double dphi = abs(phi_F[rJet]-phi_F[pJet]);
+	if(dphi>(2*3.14159)) dphi-=(2*3.14159);
+	if(dphi < 2.7) continue;
+
+	// rejection criteria for events w/ third jets
 	double avgPt = 0.5*(pt_F[rJet]+pt_F[pJet]);
-	if(nref>2){//3 or more jets
+	if(nref>2){// 3 or more jets
 	  if(pt_F[2]/avgPt > 0.2){
 	    continue;
 	  }
 	}
 
-	if(pt_F[rJet]<minJetPt) continue;
-
-	double dphi = abs(phi_F[rJet]-phi_F[pJet]);
-	if(dphi>(2*3.14159)) dphi-=(2*3.14159);
-	if(dphi < 2.7) continue;
-
 	// find the bin the jet belongs to
 	int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
 	int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
-	//if(etaBin>xbins_eta[nbins_eta] || ptBin>xbins_pt[nbins_pt]) std::cout << "OH NO! Bin Mismatch!" << std::endl;
+
+	// avgA stuff
+	nEntries[ptBin][etaBin]++;
+	h_nEntries[ptBin][etaBin]->Fill(1);
 	avgA[ptBin][etaBin] += 0.5*(pt_F[pJet]-pt_F[rJet])/avgPt;
 	h_avgA[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
 	avgAHisto[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
-	nEntries[ptBin][etaBin]++;
-	h_nEntries[ptBin][etaBin]->Fill(1);
 
-	// Starting MPF Method, missET and a jet loop
-	TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, 
-					   pfEta_, pfPhi_, 
-					   eSum, phoSum,
-					   nref, pt_F, rawpt_F, 
-					   eta_F, phi_F, m_F);
+	// avgB stuff, MPF Method, jet loop and missEt
+	TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_, eSum, phoSum,
+					   nref, pt_F, rawpt_F, eta_F, phi_F, m_F);
 	for(int i=0; i<nref; i++){//jet loop
 	  int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
 	  int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
@@ -272,6 +278,7 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 	  nEntriesB[ptBin][etaBin]++;
 	  h_nEntriesB[ptBin][etaBin]->Fill(1);
 	}//end jet loop
+
       }//end 2 or more jets req
     }//exit jet loop
     std::cout<<std::endl;
@@ -287,20 +294,22 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
   for(int i=0; i<nbins_pt; i++){
     for(int j=0; j<nbins_eta; j++){
 
+      //write the avgA stuff
       avgAHisto[i][j]->Write();
-      avgBHisto[i][j]->Write();
-      hAvgAbsPhoResponse[i][j]->Write();
-
       h_avgA[i][j]->Write();
       h_nEntries[i][j]->Write();
+
+      //write the avgB stuff
+      avgBHisto[i][j]->Write();
       h_avgB[i][j]->Write();
       h_nEntriesB[i][j]->Write();
-      h_avgAbsPhoResponse[i][j]->Write();
 
+      //write the AbsPhoResponse stuff
+      hAvgAbsPhoResponse[i][j]->Write();
+      h_avgAbsPhoResponse[i][j]->Write();
       h_nEntriesAbs[i][j]->Write();
     }
   }
-
   fout->Close();
   return 0;
 } //end deriveDijetResponse
@@ -309,182 +318,193 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 // sumDijetResponse
 // default inputs
 /////
-const std::string defSumInput="relDijetResponse_data_calo.root";
+const std::string defSumInput="testInput_sum_DijetResponse_5p02TeV_HighPtJet80_ak4-0to40.root";
 const bool defIsMCsum=false;
-const bool defDoDraw=false;
+const bool defDoDraw=true;
+const bool defDebugModeSum=true;
 /////
 
+  // this part doesnt work likely because the previous part isn't working as expected
+  // derive dijet response is making empty avgA histos
 // the macro
-int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , bool doDraw=defDoDraw ){
+int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , bool doDraw=defDoDraw , bool debugMode=defDebugModeSum){
 
+  if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
+  const bool loopDebugMode = (debugMode)&&true; //if debugMode is off, shouldn't be on
+  if(loopDebugMode)std::cout<<"loopDebugMode is ON"<<std::endl;
+  
+  std::cout<<std::endl<<"///////////////////"<<std::endl;
+  if(debugMode)std::cout<<"input file is  " << filename<<std::endl;
+  if(debugMode)std::cout<<"isMC is        " << isMC <<std::endl;
+  if(debugMode)std::cout<<"doDraw is      " << doDraw<<std::endl;
+  std::cout<<"///////////////////"<<std::endl<<std::endl;  
+  
   TH1F *hRelResponse[nbins_pt];// Rel
-  TH1F *hMPFResponse[nbins_pt];// MPF
-
+  //TH1F *hMPFResponse[nbins_pt];// MPF
   //TH1F *hAbsPhoResponse[nbins_pt]; // AbsPho
   //TH1F *hMPFAbsPhoResponse[nbins_pt]; // MPFAbsPho
   //TH1F *hAvgAbsPhoResponse[nbins_pt][nbins_eta]; //AvgAbsPho
 
   TH1F *avgAHisto[nbins_pt][nbins_eta]; // avg A
-  TH1F *avgBHisto[nbins_pt][nbins_eta]; // avg B
+  //  TH1F *avgBHisto[nbins_pt][nbins_eta]; // avg B
 
   //indicate the type of thing we're reading
   std::string type = "";
   if(!isMC) type = "Data"; 
   else type = "PYTHIA_CUETP8M1";
 
+  if(loopDebugMode)std::cout<<"nbins_pt = " << nbins_pt << std::endl;
+  if(loopDebugMode)std::cout<<"nbins_eta = " << nbins_eta << std::endl;
+
   //open the file
+  if(debugMode)std::cout<< "filename is " << filename <<std::endl;
   TFile *fin = new TFile(filename.c_str());
   
   //array initializing
+  if(debugMode)std::cout<<"booking response histo..." << std::endl;
   for(int i=0; i<nbins_pt; i++){ //pt loop initializes response histo arrays
-    std::cout<<i<<std::endl;
+    
 
-    hRelResponse[i] = new TH1F(Form("hRelResponse_pt%d",i),"",nbins_eta,xbins_eta);
-    hMPFResponse[i] = new TH1F(Form("hMPFResponse_pt%d",i),"",nbins_eta,xbins_eta);
+    std::string  hRelResponseTitle="hRelResponse_pt"+std::to_string(i);
+    if(loopDebugMode)std::cout<<"pt bin i = "<<i<<" < nbins_pt = "<<nbins_pt<<std::endl;
+    if(loopDebugMode)std::cout<<"hRelRepsonseTitle = "<<hRelResponseTitle<<std::endl;
+
+    hRelResponse[i] = new TH1F(hRelResponseTitle.c_str(),"",nbins_eta,xbins_eta);
+    //hMPFResponse[i] = new TH1F(Form("hMPFResponse_pt%d",i),"",nbins_eta,xbins_eta);
     //hAbsPhoResponse[i] = new TH1F(Form("hAbsPhoResponse_pt%d",i),"",nbins_eta,xbins_eta);
     //hMPFAbsPhoResponse[i] = new TH1F(Form("hMPFAbsPhoResponse_pt%d",i),"",nbins_eta,xbins_eta);
 
+    if(debugMode)std::cout<<"getting A and B histos from file..." << std::endl;
     for(int j=0; j<nbins_eta; j++){//eta loop gets+clones avgAB histos from the input file
-      std::cout<<j<<std::endl;
+      std::string avgAHistTitle="avgAHisto_pt"+std::to_string(i)+"_eta"+std::to_string(j);
+      if(loopDebugMode)std::cout<<"eta bin j = "<<j<<" < nbins_eta = "<<nbins_eta<<std::endl;
+      if(loopDebugMode)std::cout<<"avgAHistTitle = "<<avgAHistTitle<<std::endl;
+      avgAHisto[i][j] = (TH1F*)fin->Get( avgAHistTitle.c_str() )->Clone( avgAHistTitle.c_str() );
+      //avgBHisto[i][j] = (TH1F*)fin->Get( Form("avgBHisto_pt%d_eta%d",i,j) )->Clone(Form("avgBHisto_pt%d_eta%d",i,j));
 
-      avgAHisto[i][j] = (TH1F*)fin->Get( Form("avgAHisto_pt%d_eta%d",i,j) )->Clone(Form("avgAHisto_pt%d_eta%d",i,j));
-      avgBHisto[i][j] = (TH1F*)fin->Get( Form("avgBHisto_pt%d_eta%d",i,j) )->Clone(Form("avgBHisto_pt%d_eta%d",i,j));
       //hAvgAbsPhoResponse[i][j] = (TH1F*)fin->Get(Form("hAvgAbsPhoResponse_pt%d_eta%d",i,j))->Clone(Form("hAvgAbsPhoResponse_pt%d_eta%d",i,j));
 
     }//end eta loop
   }//end pt loop
 
-  //
+  if(debugMode)std::cout<<"Response = (1+avgA)/(1-avgA), setting content+error..." << std::endl;
   for(int i=0; i<nbins_pt; i++){//pt loop
     for(int j=0; j<nbins_eta; j++){//eta loop
-      std::cout<<i<<" "<<j<<std::endl;
     
       //Ahisto stuff
-      hRelResponse[i]->SetBinContent( j+1, ( 1+avgAHisto[i][j]->GetMean() )/( 1-avgAHisto[i][j]->GetMean() ) );
-      hRelResponse[i]->SetBinError( j+1 , (hRelResponse[i]->GetBinContent(j+1)) * (1./sqrt(avgAHisto[i][j]->GetEntries()) ) );
+      hRelResponse[i]->SetBinContent( j+1 , (1+avgAHisto[i][j]->GetMean())/(1-avgAHisto[i][j]->GetMean()) );
+      hRelResponse[i]->SetBinError( j+1 , (hRelResponse[i]->GetBinContent(j+1))*(1./sqrt(avgAHisto[i][j]->GetEntries())) );
 
       //Bhisto stuff
-      hMPFResponse[i]->SetBinContent( j+1 ,(1+avgBHisto[i][j]->GetMean())/(1-avgBHisto[i][j]->GetMean()));
-      hMPFResponse[i]->SetBinError( j+1 ,hMPFResponse[i]->GetBinContent(j+1)*(1./sqrt(avgBHisto[i][j]->GetEntries())));
+      //hMPFResponse[i]->SetBinContent( j+1 , (1+avgBHisto[i][j]->GetMean())/(1-avgBHisto[i][j]->GetMean()) );
+      //hMPFResponse[i]->SetBinError( j+1 , (hMPFResponse[i]->GetBinContent(j+1))*(1./sqrt(avgBHisto[i][j]->GetEntries())) );
 
-      //PhoResponse stuff
       //hMPFAbsPhoResponse[i]->SetBinContent( j+1 ,hAvgAbsPhoResponse[i][j]->GetMean());
       //hMPFAbsPhoResponse[i]->SetBinError( j+1 ,hMPFAbsPhoResponse[i]->GetBinContent(j+1)*(1./sqrt(hAvgAbsPhoResponse[i][j]->GetEntries())));
 
       //count entries in avg AB histos
-      int totEntriesA=0, totEntriesB=0;
+      int totEntriesA=0;
+      //int totEntriesB=0;
       //int totEntriesAbs=0;
 
       for(int j=0; j<nbins_eta; j++){//eta loop
 
 	totEntriesA+=avgAHisto[i][j]->GetEntries(); 
-	totEntriesB+=avgBHisto[i][j]->GetEntries();
+	//totEntriesB+=avgBHisto[i][j]->GetEntries();
 	//totEntriesAbs+=hAvgAbsPhoResponse[i][j]->GetEntries();
 
       }//eta loop
 
       //set entries in Rel/MPF response histo arrays after filling because... why?
       hRelResponse[i]->SetEntries(totEntriesA);
-      hMPFResponse[i]->SetEntries(totEntriesB);
+
+      //hMPFResponse[i]->SetEntries(totEntriesB);
       //hMPFAbsPhoResponse[i]->SetEntries(totEntriesAbs);
 
     }//end eta loop
   }//end pt loop
   
   //open an output file for output plots if desired
-  TFile *fout = new TFile(Form("simplePlots_%disMC.root",isMC),"recreate");
+  if(debugMode)std::cout<<"opening output file + cd()..." << std::endl;
+  TFile *fout = new TFile("simplePlots.root","RECREATE");
   fout->cd();
 
-  //color matrix for later
-  int color[5] = {1,2,4,8,20};
-
+  if(debugMode)std::cout<<"setting properties of output histo..." << std::endl;
   for(int i=0; i<nbins_pt; i++){//pt loop
     std::cout<<i<<std::endl;
 
-    hRelResponse[i]->SetMarkerColor(color[i]);
-    hRelResponse[i]->SetLineColor(color[i]);
+    hRelResponse[i]->SetMarkerColor(colors[i]);
+    hRelResponse[i]->SetLineColor(colors[i]);
     hRelResponse[i]->SetTitle(Form("Rel, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
     hRelResponse[i]->Write();
 
-    hMPFResponse[i]->SetMarkerColor(color[i]);
-    hMPFResponse[i]->SetLineColor(color[i]);
-    hMPFResponse[i]->SetMarkerStyle(21);
-    hMPFResponse[i]->SetLineStyle(2);
-    //    hRelResponse[i]->SetTitle(Form("MPF, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
-    hMPFResponse[i]->SetTitle(Form("MPF, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
-    hMPFResponse[i]->Write();
+    //hMPFResponse[i]->SetMarkerColor(colors[i]);
+    //hMPFResponse[i]->SetLineColor(colors[i]);
+    //hMPFResponse[i]->SetMarkerStyle(21);
+    //hMPFResponse[i]->SetLineStyle(2);
+    //hRelResponse[i]->SetTitle(Form("MPF, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
+    //hMPFResponse[i]->SetTitle(Form("MPF, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
+    //hMPFResponse[i]->Write();
 
-    // hMPFAbsPhoResponse[i]->SetMarkerColor(color[i]);
-    // hMPFAbsPhoResponse[i]->SetLineColor(color[i]);
+    // hMPFAbsPhoResponse[i]->SetMarkerColor(colors[i]);
+    // hMPFAbsPhoResponse[i]->SetLineColor(colors[i]);
     // hMPFAbsPhoResponse[i]->SetTitle(Form("MPF Abs, %g<p_{T}<%g GeV",xbins_pt[i],xbins_pt[i+1]));
     // hMPFAbsPhoResponse[i]->Write();
   }//end pt loop
 
-
-  if(!doDraw) std::cout<<"not going to draw histograms"<<std::endl;
+  if(!doDraw) std::cout<<"not drawing histograms"<<std::endl;
   else{
-    std::cout<<"going to draw histograms"<<std::endl;
 
-    TCanvas *c0 = new TCanvas("c0","",600,600);
-    TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
+     std::cout<<"going to draw c0..."<<std::endl;
+     TCanvas *c0 = new TCanvas("c0","",600,600);
+     c0->cd();
+     hRelResponse[0]->Draw();
+     TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
+     l0->AddEntry(hRelResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
+//     for(int i=1; i<nbins_pt; i++){
+//       std::cout<<i<<std::endl;
+//       hRelResponse[i]->Draw("same");
+//       if(isMC) l0->AddEntry("",Form("%s",type.c_str()),"");
+//       l0->AddEntry(hRelResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
+//     }
+     l0->Draw("same");
+     std::cout<<"saving c0.."<<std::endl;
+     //c0->Print("test.png","png");
+     c0->SaveAs(Form("hRelResponse_%s.pdf",type.c_str()),"RECREATE");
 
-    hRelResponse[0]->Draw();
-    l0->AddEntry(hRelResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
+     // std::cout<<"going to draw c1..."<<std::endl;
+     // TCanvas *c1 = new TCanvas("c1","",600,600);
+     // c1->cd();
+     // hMPFResponse[0]->Draw();
+     // TLegend *l1 = new TLegend(0.4,0.8,0.7,0.9);
+     // l1->AddEntry(hMPFResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
+     // for(int i=1; i<nbins_pt; i++){
+     //   std::cout<<i<<std::endl;
+     //   hMPFResponse[i]->Draw("same");
+     //   if(isMC) l1->AddEntry("",Form("%s",type.c_str()),"");
+     //   l1->AddEntry(hMPFResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
+     // }
+     // l1->Draw("Same");
+     // std::cout<<"saving c1"<<std::endl;
+     // c1->SaveAs(Form("MPFresponse_%s.pdf",type.c_str()),"RECREATE");
 
-    for(int i=1; i<nbins_pt; i++){
-      std::cout<<i<<std::endl;
-      hRelResponse[i]->Draw("same");
-      if(isMC) l0->AddEntry("",Form("%s",type.c_str()),"");
-      l0->AddEntry(hRelResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
-    }
-
-    l0->Draw("Same");
-    std::cout<<"saving c0"<<std::endl;
-    //c0->SaveAs("test.png");
-    //sprintf("Relresponse_%s.pdf",type.c_str());
-    //std::cout<<type.c_str()<<std::endl;
-    c0->SaveAs("test.pdf");
-    std::cout<<"after savng"<<std::endl;
-    //Printf("c0 saved");
-
-    TCanvas *c1 = new TCanvas("c1","",600,600);
-    c1->cd();
-
-    TLegend *l1 = new TLegend(0.4,0.8,0.7,0.9);
-    hMPFResponse[0]->Draw();
-    l1->AddEntry(hMPFResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
-
-    for(int i=1; i<nbins_pt; i++){
-      std::cout<<i<<std::endl;
-      hMPFResponse[i]->Draw("same");
-      if(isMC) l1->AddEntry("",Form("%s",type.c_str()),"");
-      l1->AddEntry(hMPFResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
-    }
-    l1->Draw("Same");
-
-    std::cout<<"saving c1"<<std::endl;
-    c1->SaveAs(Form("MPFresponse_%s.pdf",type.c_str()),"RECREATE");
-
-    // TCanvas *c2 = new TCanvas("c2","",600,600);
-    // c2->cd();
-    // hMPFAbsPhoResponse[0]->Draw();
-    //
-    // TLegend *l2 = new TLegend(0.4,0.8,0.7,0.9);
-    // l2->AddEntry(hMPFAbsPhoResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));
-    //
-    // for(int i=1; i<nbins_pt; i++){
-    //   std::cout<<i<<std::endl;
-    //   hMPFAbsPhoResponse[i]->Draw("same");
-    //   if(isMC) l1->AddEntry("",Form("%s",type.c_str()),"");
-    //   l2->AddEntry(hMPFAbsPhoResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
-    // }
-    //
-    // l2->Draw("Same");
-    // std::cout<<"saving c2"<<std::endl;
-    // c2->SaveAs(Form("MPFABSPhoresponse_%s.pdf",type.c_str()),"RECREATE");
+     // std::cout<<"going to draw c2..."<<std::endl;
+     // TCanvas *c2 = new TCanvas("c2","",600,600);
+     // c2->cd();
+     // hMPFAbsPhoResponse[0]->Draw();
+     // TLegend *l2 = new TLegend(0.4,0.8,0.7,0.9);
+     // l2->AddEntry(hMPFAbsPhoResponse[0],Form("%g<p_{T}<%g",xbins_pt[0],xbins_pt[1]));    
+     // for(int i=1; i<nbins_pt; i++){
+     //   std::cout<<i<<std::endl;
+     //   hMPFAbsPhoResponse[i]->Draw("same");
+     //   if(isMC) l1->AddEntry("",Form("%s",type.c_str()),"");
+     //   l2->AddEntry(hMPFAbsPhoResponse[i],Form("%g<p_{T}<%g",xbins_pt[i],xbins_pt[i+1]));
+     // }    
+     // l2->Draw("Same");
+     // std::cout<<"saving c2"<<std::endl;
+     // c2->SaveAs(Form("MPFABSPhoresponse_%s.pdf",type.c_str()),"RECREATE");
   }
 
-  //close the output file
   fout->Close();
   return 0;
 } //end sumDijetResponse
@@ -521,7 +541,7 @@ int main(int argc, char *argv[]){
     if(doSum) rStatus=sumDijetResponse();
     return rStatus;
   }
-  else if( argc==9 && doDerive ){   // expected use for deriveDijetResponse
+  else if( argc==deriveRespArgCount && doDerive ){   // expected use for deriveDijetResponse
     rStatus=-1;
     int startfile=atoi(argv[2]); int endfile=atoi(argv[3]); std::string inputFileList=argv[4];
     int jetRadius=atoi(argv[5]); bool isMC=(bool)atoi(argv[6]); 
@@ -531,10 +551,10 @@ int main(int argc, char *argv[]){
 				   outputFileName, debug);    
     return rStatus;
   }
-  else if( argc==5 && doSum ){   // expected use for sumDijetResponse
+  else if( argc==sumRespArgCount && doSum ){   // expected use for sumDijetResponse
     rStatus=-1;
-    std::string inputFileName=argv[2]; bool isMC=(bool)atoi(argv[3]); bool doDraw=(bool)atoi(argv[4]);
-    rStatus = sumDijetResponse( inputFileName, isMC, doDraw);    
+    std::string inputFileName=argv[2]; bool isMC=(bool)atoi(argv[3]); bool doDraw=(bool)atoi(argv[4]); bool debugMode=(bool)atoi(argv[5]);
+    rStatus = sumDijetResponse( inputFileName, isMC, doDraw, debugMode);    
     return rStatus;
   }
   else {  // inputs don't match any expected use cases
@@ -547,7 +567,7 @@ int main(int argc, char *argv[]){
     if (doSum){
       std::cout<<"for sumDijetResponse, do..."<<std::endl;
       std::cout<<"./DijetResponse.exe 1 ";
-      std::cout<<"<inputFile> <isMC> <doDraw>";
+      std::cout<<"<inputFile> <isMC> <doDraw> <debugMode>";
     }
     std::cout<<std::endl<<std::endl;
     return rStatus;

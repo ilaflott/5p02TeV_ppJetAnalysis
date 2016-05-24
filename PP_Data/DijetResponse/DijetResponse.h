@@ -12,8 +12,10 @@ int deriveDijetResponse(int startfile, int endfile, std::string infile_Forest,
                         int radius, bool isMC,
                         std::string outfile, bool debugMode);
 const int deriveRespArgCount=7+2;
-int sumDijetResponse(std::string filename, bool isMC, bool doDraw, bool debugMode);
-const int sumRespArgCount=4+2;
+
+//int sumDijetResponse(std::string filename, bool isMC, bool doDraw, std::string outFileName, bool debugMode);
+int sumDijetResponse(std::string filename, bool isMC, std::string outFileName, bool debugMode);
+const int sumRespArgCount=5+2;
 
 // helper functions
 int findBin(float value, int nbins, const double* xbins);

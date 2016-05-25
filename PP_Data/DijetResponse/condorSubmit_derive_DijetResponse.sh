@@ -20,12 +20,13 @@ radius=4
 isMC=0
 
 # create output folder/logfileNames with name based on filelist
-filelist=${filelistIn##*/} #removes longest match for "*/" from start of string #echo "filelist is ${filelist}" #debug
-listSubStr=${filelist%_*} #removes shortest match for "_*" from end of string #echo "listSubStr is ${listSubStr}" #debug
-jobName="derive_DijetResponse_${listSubStr}_ak${radius}${jetType}"
-now="${jobName}_$(date +"%Y-%m-%d__%H_%M_%S")"
-
-logFileDir="${PWD}/condorOutput/${now}"
+filelist=${filelistIn##*/} #../filelists/5p02TeV_trig_forests.txt -> 5p02TeV_trig_forests.txt
+filelistTitle=${filelist%_*} #5p02TeV_trig_forests.txt -> 5p02TeV_trig
+energy=${listSubStr%_*}
+trig=${listSubStr#*_}
+dirName="deriveResponse_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
+outName="${trig}_ak${radius}${jetType}"
+logFileDir="${PWD}/outputCondor/${dirName}"
 mkdir $logFileDir
 echo "log files in ${logFileDir}"
 
@@ -38,7 +39,7 @@ cd -
 # compile code executable
 echo "compiling..."
 g++ DijetResponse.C $(root-config --cflags --libs) -Werror -Wall -O2 -o DijetResponse.exe || return 1
-cp DijetResponse.exe "$logFileDir"
+cp DijetResponse.* "$logFileDir"
 
 # one condor job submit per NFilesPerJob until we submit NJobs
 nFiles=`wc -l < $filelistIn`
@@ -63,10 +64,10 @@ do
 
     # define output names for job submission
     fileRange="${startfile}to${endfile}"
-    Error="${jobName}-${fileRange}.err"
-    Output="${jobName}-${fileRange}.out"
-    Log="${jobName}-${fileRange}.log"
-    outfile="${jobName}-${fileRange}.root"
+    Error="${outName}-${fileRange}.err"
+    Output="${outName}-${fileRange}.out"
+    Log="${outName}-${fileRange}.log"
+    outfile="${outName}-${fileRange}.root"
     
     # create the condor submit file
     cat > ${logFileDir}/subfile <<EOF
@@ -95,4 +96,5 @@ EOF
     NthJob=$(($NthJob + 1))
     echo "submitting derive DijetResponse job ${NthJob} of ${NJobs}"
     condor_submit ${logFileDir}/subfile    
+    sleep 1s
 done

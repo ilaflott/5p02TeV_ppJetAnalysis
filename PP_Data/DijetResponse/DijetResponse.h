@@ -92,7 +92,6 @@ for(int i=0; i<nPFpart_; i++){//PF Loop
 //missing Et from jets
 for(int i=0; i<nref; i++){//begin jet loop
   if(pt_F[i]<=15) continue;//quick cut before expensive computations
-
   TLorentzVector jtTmp(pt_F[i],eta_F[i],phi_F[i],m_F[i]);
   double jetEnergy=jtTmp.E();
   if( (eSum[i]+phoSum[i])/jetEnergy<0.9 ){

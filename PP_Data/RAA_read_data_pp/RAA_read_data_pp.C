@@ -11,25 +11,26 @@
 ////////// includes/preprocessor //////////
 ///////////////////////////////////////////
 
-// C includes			    
+// C++, C, etc.			    
 #include <cstdlib>		    
 #include <cstdio>		    
-#include <cmath>		    
 #include <iostream>		    
 #include <fstream>		    
-// load/read/write		    
+#include <cmath>		    
+// ROOTSYS
 #include <TSystem.h>		    
 #include <TProfile.h>		    
+// I/O
+#include <TChain.h>		    
 #include <TFile.h>		    
 #include <TTree.h>		    
 #include <TNtuple.h>		    
-// utilities			    
-#include <TChain.h>		    
+#include <TEventList.h>		    
 #include <TCut.h>		    
+// utilities			    
 #include <TMath.h>		    
 #include <TRandom3.h>		    
 #include <TStopwatch.h>		    
-#include <TEventList.h>		    
 // plotting			    
 #include <TStyle.h>		    
 #include <TCanvas.h>		    
@@ -39,13 +40,13 @@
 #include <TLatex.h>		    
 #include <TLine.h>		    
 // histos				    
-#include <TF1.h>		    
 #include <TH1.h>		    
 #include <TH2.h>		    
 #include <TH3.h>		    
 #include <TH1F.h>		    
 #include <TH2F.h>                   
-// initizations and declarations
+#include <TF1.h>		    
+// custom header
 #include "RAA_read_data_pp.h"
 
 //////////////////////////////////////
@@ -61,53 +62,52 @@ const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_2Files_debug
 const int defRadius=4;
 const std::string defJetType="PF";
 /////
-const std::string defOutputName = "test_output.root"; 
+const std::string defOutputName = "read_pp_dataOut_1file.root"; 
 const bool defDebugMode = true; 
 /////
 //int iii=0;
 //std::cout<<"here"<<iii<<std::endl;iii++;
-
 // the macro
+
 int RAA_read_data_pp(int startfile = defStartFile , int endfile = defEndFile , std::string inFilelist = defInFilelist ,
 		     int radius = defRadius , std::string jetType = defJetType , 
 		     std::string outfile = defOutputName , bool debugMode = defDebugMode ){ 
+
+  // for monitoring performance
+  TStopwatch timer;  timer.Start();
 
   // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
   const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
-  // for timing the script
-  TStopwatch timer;
-  timer.Start();
-  //TDatime date;  
+  // basic info the screen
+  std::cout<<std::endl<<"///////////////////"<<std::endl;
+  std::cout<<"reading from file "<< startfile << " to file " << endfile<<std::endl;
+  std::cout<<"radius =  " << radius<<std::endl;
+  std::cout<<"jetType =  " << jetType<<std::endl;
+  if(debugMode)std::cout<<"N trees = " << N_trees<<std::endl;
+  if(debugMode)std::cout<<"N vars  = " << N_vars<<std::endl;
+  std::cout<<"///////////////////"<<std::endl<<std::endl;
 
   // plot settings for later
   gStyle->SetOptStat(0);
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   
-  // basic info the screen
-  std::cout<<std::endl<<"///////////////////"<<std::endl;
-  std::cout<<"reading from file "<< startfile << " to file " << endfile<<std::endl;
-  if(debugMode)std::cout<<"radius =  " << radius<<std::endl;
-  if(debugMode)std::cout<<"N trees = " << N_trees<<std::endl;
-  if(debugMode)std::cout<<"N vars  = " << N_vars<<std::endl;
-  std::cout<<"///////////////////"<<std::endl<<std::endl;
-
   // form jetTreeName, initialize tree name array
-  std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
   std::string trees[N_trees];
+  std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
   trees[0]=jetTreeName;
+  if(debugMode)std::cout<<"looking at jetTree "<<trees[0]<<std::endl;
   for(int i=1;i<N_trees;++i)trees[i]=treeNames[i];
-  if(debugMode)std::cout<<"the jet tree is "<<trees[0]<<std::endl;
   
   // chain the trees together
   TChain* jetpp[N_trees];
   for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain( trees[t].data() );
   
   // open filelist, loop to the starting file
-  if(debugMode)std::cout<<"filelist used is "<<inFilelist<<std::endl;
+  std::cout<<"filelist used is "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
   std::string filename_Forest;  
   for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
@@ -117,15 +117,15 @@ int RAA_read_data_pp(int startfile = defStartFile , int endfile = defEndFile , s
 
     // grab filename + create full path to the filename, add file to the TCh
     instr_Forest>>filename_Forest; 
-    if (atMIT)filename_Forest=hadoopDir+filename_Forest;
+    if(atMIT) filename_Forest=hadoopDir+filename_Forest;
     else filename_Forest=xrootdDirect+filename_Forest;
 
     // add files to the trees
-    if(debugMode)std::cout << "adding file " <<filename_Forest <<" to TChains..."<<std::endl;
+    std::cout << "adding file " <<filename_Forest <<" to TChain..."<<std::endl;
     for(int t = 0;t<N_trees;++t){
       jetpp[t]->Add(filename_Forest.c_str());
-      if(!fastDebugMode) std::cout<<"loaded tree "<<trees[t]<<std::endl 
-				  <<"Entries : "<<jetpp[t]->GetEntries()<<std::endl<<std::endl;
+      if(debugMode)std::cout<<"loaded tree "<<trees[t]<<std::endl ;
+      if(debugMode&&!(fastDebugMode))std::cout<<"TChain for this tree has Entries: "<<jetpp[t]->GetEntries()<<std::endl ;
     }
   }//end input file loop
   
@@ -242,12 +242,16 @@ int RAA_read_data_pp(int startfile = defStartFile , int endfile = defEndFile , s
   TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){
     for(int j = 0; j<N_vars; ++j){
+      //jtpt and rawpt special binning for QA
       if(j<=1) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
 				       Form(";%s;",var[j].c_str()),500,  0, 500 );
+      //jteta special binning for QA
       else if(j==2) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
 					    Form(";%s;",var[j].c_str()),100, -5, +5  );
+      //jtphi special binning for QA
       else if(j==3) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
 					    Form(";%s;",var[j].c_str()),100, -4, +4  );
+      //same binning for all other QA
       else if(j>=4) hJetQA[k][j] = new TH1F(Form("hJetQA_%dwJetID_%s",k,var[j].c_str()),
 					    Form(";%s;",var[j].c_str()),200,  0, 2   );
     }
@@ -258,6 +262,7 @@ int RAA_read_data_pp(int startfile = defStartFile , int endfile = defEndFile , s
   hVz = new TH1F("hVz","",200, -20, 20);
 
   // for trigger objects
+  // consider renaming h_ppTrgObj, 'hpp' confusing
   TH1F *hpp_TrgObj100[2];
   TH1F *hpp_TrgObj80[2];
   TH1F *hpp_TrgObj60[2];
@@ -300,11 +305,11 @@ int RAA_read_data_pp(int startfile = defStartFile , int endfile = defEndFile , s
   Long64_t NEvents_40 = 0;    
   //Long64_t nGoodEvt = 0;
   
-  // now loop over the events
   Long64_t nentries = jetpp[0]->GetEntries();
   if(debugMode) nentries = 1000;  if(fastDebugMode) nentries = 10;
   std::cout<<"Running through "<<nentries<<" events"<<std::endl;  
 
+  // now loop over the events
   for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop   
 
     if(nEvt%10000==0)std::cout<<"nEvt = "<<nEvt<<std::endl;
@@ -326,14 +331,18 @@ int RAA_read_data_pp(int startfile = defStartFile , int endfile = defEndFile , s
     bool is100 = false;
 
     // trigger decision boolean array w/ prescale l1 seed 
-    bool trgDec[4] = {(bool)jet40_F, 
-		      (bool)jet60_F, 
-		      (bool)jet80_F, 
-		      (bool)jet100_F};
-    int treePrescl[4] = {(jet40_p_F*jet40_l1seed_p_F), 
-			 (jet60_p_F*jet60_l1seed_p_F), 
-			 (jet80_p_F*jet80_l1seed_p_F), 
-			 (jet100_p_F*jet100_l1seed_p_F)};    
+    bool trgDec[4]={
+      (bool)jet40_F, 
+      (bool)jet60_F, 
+      (bool)jet80_F, 
+      (bool)jet100_F
+    };
+    int treePrescl[4]={
+      (jet40_p_F*jet40_l1seed_p_F), 
+      (jet60_p_F*jet60_l1seed_p_F), 
+      (jet80_p_F*jet80_l1seed_p_F), 
+      (jet100_p_F*jet100_l1seed_p_F)
+    };    
 
     //int maxtrg= -1;      
     //for(int ii=4; ii>=0; ii--){
@@ -529,17 +538,20 @@ int main(int argc, char *argv[]){
   if(argc!=8 && argc!=1){
 
     std::cout<<"for tests on default inputs, do..." <<std::endl;
-    std::cout<<"./RAA_read_data_pp.exe"<<std::endl<<std::endl;
+    std::cout<<"./RAA_read_data_pp.exe";
+    std::cout<<std::endl<<std::endl;
 
     std::cout<<"for actually running, do..."<<std::endl;
-    std::cout<<"./RAA_read_data_pp.exe <startFile> <endFile> <inputFileList> ";
-    std::cout<<"<jetRadius> <jetType> <outputFilename> <debugMode>"<<std::endl<<std::endl;
+    std::cout<<"./RAA_read_data_pp.exe ";
+    std::cout<<"<startFile> <endFile> <inputFileList> ";
+    std::cout<<"<jetRadius> <jetType> ";
+    std::cout<<"<outputFilename> <debugMode> ";
+    std::cout<<std::endl<<std::endl;
 
     return rStatus;
   }
   
   rStatus=-1;
-
   if(argc==1) rStatus = RAA_read_data_pp();
   else{//read the argument vector
     int startfile= atoi(argv[1]); int endfile= atoi(argv[2]); std::string inputFileList=argv[3];

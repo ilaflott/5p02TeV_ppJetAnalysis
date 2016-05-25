@@ -21,6 +21,7 @@
 #include <TLorentzVector.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <TAxis.h>
 #include <TH1F.h>
 // custom
 #include "DijetResponse.h"
@@ -179,10 +180,9 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
       phoTree->GetEntry(ientry);
 
       if(nPFpart_>10000) std::cout<<"warning! nPF: "<<nPFpart_<<std::endl;
-      const double minJetPt = 40;
 
       //// avgPhoResponse histo stuff
-      //// loop over photons in jet with min pt of 30 and in barrel
+      //// find response of detector to jet with particle-flow photon
       //for(int i=0; i<nPho; i++){
       //	if(phoEt->at(i)>30 && abs(phoEta->at(i))<1.4442){
       //	  // the jet that the photon actually corresponds to?
@@ -219,12 +219,12 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 
       // standard Rrel method, need at least two jets
       // avgA and avgB histos
-      if(nref>=2){
+      if(nref>1){
 
 	// assign two highest pt jets as rJet or pJet using eta/random# critera
 	int rJet, pJet;
 	if( abs(eta_F[0])<1.3 && abs(eta_F[1])<1.3 ){ 
-	  int randInt=rand();
+	  int randInt=rand();// pseudorandom at best, fix with srand() in future, results could be slightly different
 	  //if(debugMode)std::cout<< "rand() gave "<<randInt <<std::endl;
 	  pJet = randInt%2;  rJet = (randInt+1)%2;
 	}
@@ -234,54 +234,49 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
 	else if( abs(eta_F[1])<1.3 && abs(eta_F[0])<5. ){
 	  pJet = 0; rJet = 1;
 	}
-	else continue;
+	else continue; //does this skip to the end of the scope of the if statement, or the parent for statement? why do i find this confusing now?
 	//if(debugMode)std::cout<< "rJet is "<<rJet<<" and pJet is "<<pJet <<std::endl;
 	
 	// minjetpt cut
-	if(pt_F[rJet]<minJetPt) continue;
+	const double jtptMin = 40;
+	if(pt_F[rJet]<jtptMin) continue;
 
 	// angular separation cut
 	double dphi = abs(phi_F[rJet]-phi_F[pJet]);
 	if(dphi>(2*3.14159)) dphi-=(2*3.14159);
-	if(dphi < 2.7) continue;
+	const double dphiMin=2.7;
+	if(dphi < dphiMin) continue;
 
 	// rejection criteria for events w/ third jets
 	double avgPt = 0.5*(pt_F[rJet]+pt_F[pJet]);
-	if(nref>2){// 3 or more jets
-	  if(pt_F[2]/avgPt > 0.2){
-	    continue;
-	  }
-	}
+	if( nref>2 && 
+	    pt_F[2]/avgPt>0.2 )continue;
 
 	// find the bin the jet belongs to
 	int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
 	int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
 
-	// avgA stuff
+	// histA stuff, DIJET ASYMMETRY DIST
 	nEntriesA[ptBin][etaBin]++;
-	avgA[ptBin][etaBin] += (pt_F[pJet]-pt_F[rJet])/(pt_F[pJet]+pt_F[rJet]);
-	//avgA[ptBin][etaBin] += 0.5*(pt_F[pJet]-pt_F[rJet])/avgPt;
-
-	//if(debugMode)std::cout<<"avgA = "<< avgA[ptBin][etaBin]<<std::endl;
-	
-
+	avgA[ptBin][etaBin] += 0.5*(pt_F[pJet]-pt_F[rJet])/avgPt;
 	h_nEntriesA[ptBin][etaBin]->Fill(1);
 	h_avgA[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
 	avgAHisto[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
 
-	// avgB stuff, MPF Method, jet loop and missEt
-	//TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_, eSum, phoSum,
-	//				   nref, pt_F, rawpt_F, eta_F, phi_F, m_F);
-	//for(int i=0; i<nref; i++){//jet loop
-	//  int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
-	//  int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
-	//  TLorentzVector jetVec(pt_F[rJet],eta_F[rJet],phi_F[rJet],m_F[rJet]);
-	//  avgB[ptBin][etaBin] += (missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag()));
-	//  h_avgB[ptBin][etaBin]->Fill((missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag())));
-	//  avgBHisto[ptBin][etaBin]->Fill((missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag())));
-	//  nEntriesB[ptBin][etaBin]++;
-	//  h_nEntriesB[ptBin][etaBin]->Fill(1);
-	//}//end jet loop
+	// histB stuff, "MPF Method", jet loop and missEt
+	TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_, eSum, phoSum,
+					   nref, pt_F, rawpt_F, eta_F, phi_F, m_F);
+	for(int i=0; i<nref; i++){//jet loop
+	  int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
+	  int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
+
+	  TLorentzVector jetVec(pt_F[rJet],eta_F[rJet],phi_F[rJet],m_F[rJet]);
+	  avgB[ptBin][etaBin] += (missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag()));
+	  h_avgB[ptBin][etaBin]->Fill((missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag())));
+	  avgBHisto[ptBin][etaBin]->Fill((missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag())));
+	  nEntriesB[ptBin][etaBin]++;
+	  h_nEntriesB[ptBin][etaBin]->Fill(1);
+	}//end jet loop
 
       }//end 2 or more jets req
     }//exit jet loop
@@ -331,9 +326,6 @@ const std::string defSumOutput="sumResponseOut.root";
 const bool defDebugModeSum=true;
 /////
 
-  // this part doesnt work likely because the previous part isn't working as expected?
-  // derive dijet response is making empty avgA histos
-
 // the macro
 int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , bool doDraw=defDoDraw , std::string outFileName = defSumOutput, bool debugMode=defDebugModeSum){
 //int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , std::string outFileName = defSumOutput, bool debugMode=defDebugModeSum){
@@ -364,8 +356,8 @@ int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , b
   for(int i=0; i<nbins_pt; i++){//pt loop
 
     int totEntriesA_ptbin_i=0;
-    std::string  hRelResponseTitle="hRelResponse_pt"+std::to_string(i);
-    TH1F* hRelResponse_i = new TH1F(hRelResponseTitle.c_str(),"",nbins_eta,xbins_eta);
+    std::string  hRelResponseTitle_i="hRelResponse_pt"+std::to_string(i);
+    TH1F* hRelResponse_i = new TH1F(hRelResponseTitle_i.c_str(),"",nbins_eta,xbins_eta);
 
     //int totEntriesB_ptbin_i=0;
     //hMPFResponse_i = new TH1F(Form("hMPFResponse_pt%d",i),"",nbins_eta,xbins_eta);
@@ -381,15 +373,15 @@ int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , b
       //// avgA and hRelResponse ////
       ///////////////////////////////
 
-      std::string avgAHistTitle="avgAHisto_pt"+std::to_string(i)+"_eta"+std::to_string(j);
-      TH1F* avgAHisto = (TH1F*)fin->Get( avgAHistTitle.c_str() );
+      std::string avgAHistTitle_ij="avgAHisto_pt"+std::to_string(i)+"_eta"+std::to_string(j);
+      TH1F* avgAHisto_ij = (TH1F*)fin->Get( avgAHistTitle_ij.c_str() );
 
       //avgA[i][j] = avgA[i][j]/(double)nEntries[i][j];
 
-      float avgAMean_ij=avgAHisto->GetMean();
-      int avgAEntries_ij=avgAHisto->GetEntries(); 
+      float avgAMean_ij=avgAHisto_ij->GetMean();
+      int avgAEntries_ij=avgAHisto_ij->GetEntries(); 
 
-      if(loopDebugMode)std::cout<< "avgAHistTitle    = " << avgAHistTitle<< std::endl;
+      if(loopDebugMode)std::cout<< "avgAHistTitle    = " << avgAHistTitle_ij<< std::endl;
       if(loopDebugMode)std::cout<< "avgAMean_ij , avgAEntries_ij  =  " << avgAMean_ij <<",   "<< avgAEntries_ij << std::endl;
       
       float hRelResponse_i_jadd1 = ( (1+avgAMean_ij) / (1-avgAMean_ij) );
@@ -472,16 +464,22 @@ int sumDijetResponse(std::string filename=defSumInput , bool isMC=defIsMCsum , b
   }//end pt loop
 
   if(doDraw){
+    std::cout<<"drawing all plots on one figure..."<<std::endl;
 
     //// avgA and hRelResponse ////
+    std::cout<<"drawing hRelResponse_all..."<<std::endl;
     TCanvas *c0 = new TCanvas("hRelResponse_all","Rel, all avail. p_{t}",600,600);
     TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
     c0->cd(); 
 
     for(int i=0;i<nbins_pt;++i){
-      std::string  hRelResponseTitle="hRelResponse_pt"+std::to_string(i);
-      TH1F* hRelResponse_i = (TH1F*)fout->Get( hRelResponseTitle.c_str() );
-
+      std::string  hRelResponseTitle_i="hRelResponse_pt"+std::to_string(i);
+      TH1F* hRelResponse_i = (TH1F*)(fout->Get(hRelResponseTitle_i.c_str())->Clone()) ;
+      if(i==0){//canvas prefers the first histrogram draw for things like title, range, etc.
+	hRelResponse_i->SetTitle("Rel, all pt Bins");
+	TAxis* theYAxis=hRelResponse_i->GetYaxis();
+	theYAxis->SetRangeUser(0.,2.75);
+      }
       std::string type = "";
       if(!isMC) type = "Data"; 
       else type = "PYTHIA_CUETP8M1";      

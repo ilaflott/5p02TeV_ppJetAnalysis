@@ -20,12 +20,15 @@ radius=4
 jetType="PF"
 
 # create output folder/logfileNames with name based on filelist
-filelist=${filelistIn##*/} #removes longest match for "*/" from start of string #echo "filelist is ${filelist}" #debug
-listSubStr=${filelist%_*} #removes shortest match for "_*" from end of string #echo "listSubStr is ${listSubStr}" #debug
-jobName="readData_pp_${listSubStr}_ak${radius}${jetType}"
-now="${jobName}_$(date +"%Y-%m-%d__%H_%M_%S")"
+filelist=${filelistIn##*/} #../filelists/5p02TeV_trig_forests.txt -> 5p02TeV_trig_forests.txt 
+filelistTitle=${filelist%_*} #5p02TeV_trig_forests.txt -> 5p02TeV_trig
+energy=${listSubStr%_*}
+trig=${listSubStr#*_}
+dirName="read_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
+outName="${trig}_ak${radius}${jetType}"
 
-logFileDir="${PWD}/condorOutput/${now}"
+
+logFileDir="${PWD}/outputCondor/${dirName}"
 mkdir $logFileDir
 echo "log files in ${logFileDir}"
 
@@ -38,11 +41,11 @@ cd -
 # compile code executable
 echo "compiling..."
 g++ RAA_read_data_pp.C $(root-config --cflags --libs) -Werror -Wall -O2 -o RAA_read_data_pp.exe || return 1
-cp RAA_read_data_pp.exe "$logFileDir"
+cp RAA_read_data_pp.* "${logFileDir}"
 
 # one condor job submit per NFilesPerJob until we submit NJobs
 nFiles=`wc -l < $filelistIn`
-echo "nFiles in list: $nFiles"
+echo "nFiles in list: ${nFiles}"
 
 ####################################
 ## CREATE SUBMIT FILE(S) + SUBMIT ##
@@ -63,10 +66,10 @@ do
 
     # define output names for job submission
     fileRange="${startfile}to${endfile}"
-    Error="${jobName}-${fileRange}.err"
-    Output="${jobName}-${fileRange}.out"
-    Log="${jobName}-${fileRange}.log"
-    outfile="${jobName}-${fileRange}.root"
+    Error="${outName}-${fileRange}.err"
+    Output="${outName}-${fileRange}.out"
+    Log="${outName}-${fileRange}.log"
+    outfile="${outName}-${fileRange}.root"
     
     # create the condor submit file
     cat > ${logFileDir}/subfile <<EOF
@@ -94,5 +97,6 @@ EOF
     # submit the job defined in the above submit file
     NthJob=$(($NthJob + 1))
     echo "submitting RAA_read_data_pp job ${NthJob} of ${NJobs}"
-    #condor_submit ${logFileDir}/subfile    
+    condor_submit ${logFileDir}/subfile    
+    sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done

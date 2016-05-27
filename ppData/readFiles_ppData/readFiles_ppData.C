@@ -112,7 +112,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
   for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
   
   // add input files to the ppjet tree, inclusive boundary
-  for(int ifile = startfile; ifile<endfile+1; ++ifile){//input file loop
+  for(int ifile = startfile; ifile<=endfile; ++ifile){//input file loop
 
     // grab filename + create full path to the filename, add file to the TCh
     instr_Forest>>filename_Forest; 

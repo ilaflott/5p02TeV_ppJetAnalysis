@@ -2,11 +2,6 @@
 // Overhaul, Ian Laflotte, May 1st 2016
 // Macro for deriving the dijet relative and absolute response from pp data/MC forests
 // Uses JME-13-004 as a reference - "A" and "B" formulae are defined there
-//first look for photon balance (AN2013-179 / JME-13-004)
-
-///////////////////////////////////////////
-////////// includes/preprocessor //////////
-///////////////////////////////////////////
 
 // C includes			    
 #include <cstdlib>
@@ -26,30 +21,32 @@
 // custom
 #include "DijetResponse.h"
 
-// deriveDijetResponse // default inputs
+
+// deriveResponse // default inputs
 /////
 const int defStartFile=0;
 const int defEndFile=2; //exclusive boundary, range of files run over doesnt include endfile
-const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_Files1to9_debug_forests.txt";
+/////
+const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
+const std::string defDeriveOutputName = "deriveResponse_defOut.root"; 
 /////
 const int defRadius=4;
 const bool defIsMCderive=false;
-/////
-const std::string defDeriveOutputName = "deriveResponse_defOut.root"; 
 const bool defDebugMode = true; 
+
 
 // sumDijetResponse // default inputs
 /////
 const std::string defSumInput="deriveResponse_defOut.root";
+const std::string defSumOutput="sumResponse_defOut.root";
 const bool defIsMCsum=false;
 const bool defDoDraw=true;
-const std::string defSumOutput="sumResponse_defOut.root";
 const bool defDebugModeSum=true;
 
 
-////// deriveDijetResponse //////
+////// deriveResponse //////
 // looks at observables in pt/eta bins for later use
-int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile, 
+int deriveResponse(int startfile = defStartFile, int endfile = defEndFile, 
 			std::string infile_Forest=defInFilelist, std::string outfile = defDeriveOutputName,
 			int radius = 4, bool isMC = defIsMCderive, bool debugMode = defDebugMode ){
 
@@ -116,7 +113,7 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile,
   
   // loop over specified files 
   std::cout<<"looping over specified files..."<<std::endl;
-  for(int ifile = startfile; ifile<endfile; ++ifile){//file loop
+  for(int ifile = startfile; ifile<=endfile; ++ifile){//file loop
     // grab+open file
     instr_Forest>>filename_Forest;
     //if(atMIT)filename_Forest=hadoopDir+filename_Forest;
@@ -149,12 +146,14 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile,
     jtTree->SetBranchAddress("jtphi",     phi_F   );
     jtTree->SetBranchAddress("jtm",       m_F     );
     jtTree->SetBranchAddress("rawpt",     rawpt_F );
-    jtTree->SetBranchAddress("eSum",      &eSum   ); //why & ?!
-    jtTree->SetBranchAddress("photonSum", &phoSum ); //why & ?!
+    //jtTree->SetBranchAddress("eSum",      &eSum   ); //why & ?!
+    //jtTree->SetBranchAddress("photonSum", &phoSum ); //why & ?
+    jtTree->SetBranchAddress("eSum",      eSum   ); //why & ?!
+    jtTree->SetBranchAddress("photonSum", phoSum ); //why & ?!
 
     pfTree->SetBranchAddress("nPFpart", &nPFpart_);
     pfTree->SetBranchAddress("pfId",    &pfId_);
-    pfTree->SetBranchAddress("pfPt",    &pfPt_);//added ampersand to switch from float to vector<float>*
+    pfTree->SetBranchAddress("pfPt",    &pfPt_);//added ampersand to switch from float array to vector<float>*
     pfTree->SetBranchAddress("pfEta",   &pfEta_);
     pfTree->SetBranchAddress("pfPhi",   &pfPhi_);
 
@@ -215,15 +214,15 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile,
       int rJet, pJet;
       if( abs(eta_F[0])<1.3 && abs(eta_F[1])<1.3 ){ 
 	int randInt=rand();// pseudorandom at best, fix with srand() in future?
-	if(debugMode)std::cout<< "rand() gave "<<randInt <<std::endl;
+	//if(debugMode)std::cout<< "rand() gave "<<randInt <<std::endl;
 	pJet = randInt%2;  rJet = (randInt+1)%2;
       }
       else if( abs(eta_F[0])<1.3 && abs(eta_F[1])<5. ) { pJet = 1; rJet = 0; }
       else if( abs(eta_F[1])<1.3 && abs(eta_F[0])<5. ) { pJet = 0; rJet = 1; }
       else continue; //skip to the end of the scope of the if statement?
-      //or the parent for statement?
+                     //or the parent for statement? check this...
       
-      if(debugMode)std::cout<< "rJet is "<<rJet<<" and pJet is "<<pJet <<std::endl;
+      //if(debugMode)std::cout<< "rJet is "<<rJet<<" and pJet is "<<pJet <<std::endl;
       
       // minjetpt cut
       const double jtptMin = 40;
@@ -252,6 +251,7 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile,
       avgAHisto[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
       
       // histB stuff, "MPF Method", uses missEt
+      if(debugMode)std::cout<<"calling findMissEt.."<<std::endl;
       TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_, 
 					 nref, pt_F, eta_F, phi_F, 		  
 					 m_F, rawpt_F, eSum, phoSum);           
@@ -296,16 +296,16 @@ int deriveDijetResponse(int startfile = defStartFile, int endfile = defEndFile,
   std::cout<< "closing file "<< outfile <<std::endl;
   fout->Close();
   return 0;
-} //end deriveDijetResponse
+} //end deriveResponse
 
 
 ////// sumDijetResponse //////
-// sums up output histos over eta bins from deriveDijetResponse
-int sumDijetResponse(std::string filename=defSumInput, std::string outFileName=defSumOutput,
+// sums up output histos over eta bins from deriveResponse
+int sumResponse(std::string filename=defSumInput, std::string outFileName=defSumOutput,
 		     bool isMC=defIsMCsum , bool doDraw=defDoDraw ,  bool debugMode=defDebugModeSum){
   
   // debug mode
-  const bool loopDebugMode = (debugMode)&&true;
+  const bool loopDebugMode = (debugMode)&&false;
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
   if(loopDebugMode)std::cout<<"loopDebugMode is ON"<<std::endl;
   std::cout<<std::endl<<"///////////////////"<<std::endl;
@@ -430,7 +430,7 @@ int sumDijetResponse(std::string filename=defSumInput, std::string outFileName=d
   }//end pt loop
 
   if(doDraw){
-    
+    if(debugMode)std::cout<<"drawing all responses.."<<std::endl;
     //// avgA and hRelResponse ////
     TCanvas *c0 = new TCanvas("hRelResponse_all","Rel, all avail. p_{t}",600,600);
     TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
@@ -509,7 +509,7 @@ int sumDijetResponse(std::string filename=defSumInput, std::string outFileName=d
   std::cout<< "closing..."<<std::endl;  
   fout->Close();
   return 0;  
-} //end sumDijetResponse
+} //end sumResponse
 
 
 ////// main //////
@@ -528,8 +528,8 @@ int main(int argc, char *argv[]){
   bool doSum=(atoi(argv[1])==1);    
   if(!doDerive && !doSum ){//bad first argument, error
     std::cout<<"bad value for <function>!"<<std::endl;
-    std::cout<<"use 0 for deriveDijetResponse"<<std::endl;
-    std::cout<<"use 1 for sumDijetResponse"<<std::endl;
+    std::cout<<"use 0 for deriveResponse"<<std::endl;
+    std::cout<<"use 1 for sumResponse"<<std::endl;
     std::cout<<"rStatus="<<rStatus<<std::endl<<std::endl;
     return rStatus;
   }  
@@ -537,27 +537,27 @@ int main(int argc, char *argv[]){
   // expected usage
   if( argc==2 ){//default case
     rStatus=1;
-    if(doDerive) rStatus=deriveDijetResponse();
-    if(doSum) rStatus=sumDijetResponse();
+    if(doDerive) rStatus=deriveResponse();
+    if(doSum) rStatus=sumResponse();
     std::cout<<"rStatus="<<rStatus<<std::endl<<std::endl;
     return rStatus;
   }
-  else if( argc==deriveRespArgCount && doDerive ){//deriveDijetResponse case
+  else if( argc==deriveRespArgCount && doDerive ){//deriveResponse case
     rStatus=1;
     int startfile=atoi(argv[2]); int endfile=atoi(argv[3]); 
     std::string inputFileList=argv[4]; std::string outputFileName=argv[5]; 
     int jetRadius=atoi(argv[6]); bool isMC=(bool)atoi(argv[7]); bool debug=(bool)atoi(argv[8]);      
-    rStatus = deriveDijetResponse( startfile, endfile, 
+    rStatus = deriveResponse( startfile, endfile, 
 				   inputFileList, outputFileName,
 				   jetRadius, isMC, debug         );    
     std::cout<<"rStatus="<<rStatus<<std::endl<<std::endl;
     return rStatus;
   }
-  else if( argc==sumRespArgCount && doSum ){//sumDijetResponse case
+  else if( argc==sumRespArgCount && doSum ){//sumResponse case
     rStatus=1;
     std::string inputFileName=argv[2]; std::string outFileName=argv[3];
     bool isMC=(bool)atoi(argv[4]); bool doDraw=(bool)atoi(argv[5]);  bool debugMode=(bool)atoi(argv[6]);
-    rStatus = sumDijetResponse( inputFileName, outFileName, 
+    rStatus = sumResponse( inputFileName, outFileName, 
 				isMC, doDraw, debugMode     );    
     std::cout<<"rStatus="<<rStatus<<std::endl<<std::endl;
     return rStatus;
@@ -566,21 +566,16 @@ int main(int argc, char *argv[]){
     std::cout<<"not enough arguments ";//<<std::endl;
     std::cout<<"to use default arguments as inputs, do ./DijetResponse.exe <function> "<<std::endl<<std::endl;    
     if (doDerive){
-      std::cout<<"for deriveDijetResponse, do..."<<std::endl;
+      std::cout<<"for deriveResponse, do..."<<std::endl;
       std::cout<<"./DijetResponse.exe 0 ";
       std::cout<<"<startfile> <endfile> <inputFileList> <outputFileName> <jetRadius> <isMC> <debug>"<<std::endl;
     }
     if (doSum){
-      std::cout<<"for sumDijetResponse, do..."<<std::endl;
+      std::cout<<"for sumResponse, do..."<<std::endl;
       std::cout<<"./DijetResponse.exe 1 ";
       std::cout<<"<inputFile> <outputFile> <isMC> <doDraw> <debugMode>"<<std::endl;
     }
     std::cout<<"rStatus="<<rStatus<<std::endl<<std::endl;
     return rStatus;
   }
-}//end main
-
-
-//for debugging....
-//int iii=0;
-//std::cout<<"here"<<iii<<std::endl;iii++;
+}// end main

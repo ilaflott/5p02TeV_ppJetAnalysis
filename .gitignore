@@ -1,9 +1,12 @@
 *.d
 *.so
 *.pcm
+*.exe
+*.log
+*.err
+*.out
 *.root
 *.tar
 *~
 *#
 setupenv.sh
-*/*/*Condor*

@@ -4,4 +4,6 @@
 *.root
 *.tar
 *~
+*#
 setupenv.sh
+*/*/*Condor*

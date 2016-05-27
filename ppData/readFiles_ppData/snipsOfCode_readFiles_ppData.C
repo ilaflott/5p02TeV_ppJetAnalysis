@@ -85,6 +85,15 @@
 ////////////////////////////
 //RAA_read_data_pp snips//
 /////////////////////////////
+    // still don't know why this was here in original code
+    // scared to get rid of it completely
+    //int maxtrg= -1;      
+    //for(int ii=4; ii>=0; ii--){
+    //  if(trgDec[ii]==1){
+    //	maxtrg=ii;
+    //	break;
+    //  }
+    //}
 
 // //INITIALIZATIONS
 // //switches

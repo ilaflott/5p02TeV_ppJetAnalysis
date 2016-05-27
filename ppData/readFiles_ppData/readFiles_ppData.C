@@ -14,9 +14,10 @@
 // C++, C, etc.			    
 #include <cstdlib>		    
 #include <cstdio>		    
+#include <cassert>
+#include <cmath>		    
 #include <iostream>		    
 #include <fstream>		    
-#include <cmath>		    
 // ROOTSYS
 #include <TSystem.h>		    
 #include <TProfile.h>		    
@@ -64,12 +65,40 @@ const std::string defJetType="PF";
 /////
 const std::string defOutputName = "readFiles_ppData_defOut.root"; 
 const bool defDebugMode = true; 
-/////
-//int iii=0;
-//std::cout<<"here"<<iii<<std::endl;iii++;
-// the macro
 
-int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
+// old code i don't want in body, may be deleting soon
+/////
+// for debugging dijet asymmetry stuff
+//float leadjetpt_lastEvent =0;//debug
+//float   subjtpt_lastEvent =0;//debug
+//float   A_j_lastEvent     =0;//debug
+//float   x_j_lastEvent     =0;//debug
+//if(nref_F<=1){
+//  std::cout<<"not enough jets!"<<std::endl;
+//  std::cout<<"pt_F[0]="<<pt_F[0]<<std::endl;
+//  std::cout<<"pt_F[1]="<<pt_F[1]<<std::endl;
+//  std::cout<<"A_j= "<<A_j<<std::endl;
+//  std::cout<<"x_j= "<<x_j<<std::endl;
+//  std::cout<<"from previous event... pt_F[0]=" <<leadjetpt_lastEvent <<std::endl;
+//  std::cout<<"from previous event... pt_F[1]=" <<subjtpt_lastEvent   <<std::endl;
+//  std::cout<<"from previous event... A_j= "    <<A_j_lastEvent       <<std::endl;
+//  std::cout<<"from previous event... x_j= "    <<x_j_lastEvent       <<std::endl;
+//  std::cout<<"ending loop on event #"<<nEvt<<std::endl;
+//  assert(nref_F>1);//isn't nref<=1 sometimes? how has this not crashed yet? 	
+//}
+//leadjetpt_lastEvent =pt_F[0];
+//subjtpt_lastEvent   =pt_F[1];
+//A_j_lastEvent       =A_j;
+//x_j_lastEvent       =x_j;
+
+// filelist manipulation
+//for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;  
+//if(atMIT) filename_Forest=hadoopDir+filename_Forest;
+//else filename_Forest=xrootdDirect+filename_Forest;
+
+/////
+int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , 
+		     std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
 		     int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode ){ 
 
   // for monitoring performance
@@ -77,7 +106,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
 
   // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
+  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   // basic info the screen
@@ -101,30 +130,23 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
   if(debugMode)std::cout<<"looking at jetTree "<<trees[0]<<std::endl;
   for(int i=1;i<N_trees;++i)trees[i]=treeNames[i];
   
-  // chain the trees together
+  // declare TChains for each tree we're interested in
   TChain* jetpp[N_trees];
   for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain( trees[t].data() );
   
-  // open filelist, loop to the starting file
+  // open filelist
   std::cout<<"filelist used is "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
   std::string filename_Forest;  
-  for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;
-  
-  // add input files to the ppjet tree, inclusive boundary
-  for(int ifile = startfile; ifile<=endfile; ++ifile){//input file loop
 
-    // grab filename + create full path to the filename, add file to the TCh
+  // add input files in specified range to each pp jet tree
+  for(int ifile = 0; ifile<=endfile; ++ifile){//input file loop, includes starting+ending boundary file
     instr_Forest>>filename_Forest; 
-    //if(atMIT) filename_Forest=hadoopDir+filename_Forest;
-    //else filename_Forest=xrootdDirect+filename_Forest;
-
-    // add files to the trees
-    std::cout << "adding file " <<filename_Forest <<" to TChain..."<<std::endl;
+    if(ifile<startfile)continue;
+    std::cout << "adding file #"<<ifile<<" to TChain"<<std::endl;
     for(int t = 0;t<N_trees;++t){
+      if(debugMode)std::cout << "adding to TChain/tree "<<trees[t]<<std::endl;
       jetpp[t]->Add(filename_Forest.c_str());
-      if(debugMode)std::cout<<"read file# "<<ifile<<" and loaded "<<trees[t]<<std::endl ;
-      if(debugMode&&!(fastDebugMode))std::cout<<"this tree has Entries: "<<jetpp[t]->GetEntries()<<std::endl ;
     }
   }//end input file loop
   
@@ -170,7 +192,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
   std::vector<float> *trgObjpt_100 = 0;
 
   // set branch addresses for the input file treesp, map them to above variables
-  //ak${radius}${jetType}JetAnalyzer
+  // ak${radius}${jetType}JetAnalyzer
   //jets
   jetpp[0]->SetBranchAddress("nref",&nref_F);
   jetpp[0]->SetBranchAddress("jtpt",&pt_F);
@@ -200,18 +222,18 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
   jetpp[0]->SetBranchAddress("neutralSum",&neSum_F);
   jetpp[0]->SetBranchAddress("neutralMax",&neMax_F);
 
-  //hiEvtAnalyzer
+  // hiEvtAnalyzer
   jetpp[1]->SetBranchAddress("evt",&evt_F);
   jetpp[1]->SetBranchAddress("run",&run_F);
   jetpp[1]->SetBranchAddress("lumi",&lumi_F);
   jetpp[1]->SetBranchAddress("vz",&vz_F);
 
-  //skimanalysis
+  // skimanalysis
   jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_F);
   jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_F);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_F);
 
-  //hltanalysis
+  // hltanalysis
   //L1 prescales
   jetpp[3]->SetBranchAddress("L1_SingleJet28_BptxAND_Prescl",&jet40_l1seed_p_F);
   jetpp[3]->SetBranchAddress("L1_SingleJet40_BptxAND_Prescl",&jet60_l1seed_p_F);
@@ -226,8 +248,10 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
   jetpp[3]->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1_Prescl",&jet80_p_F);
   jetpp[3]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1",&jet100_F);
   jetpp[3]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1_Prescl",&jet100_p_F);
-  //specific HLT path trees, one path one tree, one pt branch (see trees[] in header)
-  // trgObjpt_40 is filled with jet pt?
+
+  // specific HLT path trees
+  //ONE path ONE tree ONE pt branch (see trees[] in header)
+  //e.g. trgObjpt_40 is filled with jet pt from the specific jet40 HLT tree/branch 
   jetpp[4]->SetBranchAddress("pt",&trgObjpt_40);
   jetpp[5]->SetBranchAddress("pt",&trgObjpt_60);  
   jetpp[6]->SetBranchAddress("pt",&trgObjpt_80);  
@@ -262,101 +286,79 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
   hVz = new TH1F("hVz","",200, -20, 20);
 
   // for triggerpt spectra before/after jetID
-  // consider renaming h_ppTrgObj, 'hpp' confusing
-  TH1F *hpp_TrgObj100[2];
-  TH1F *hpp_TrgObj80[2];
-  TH1F *hpp_TrgObj60[2];
+  //consider renaming h_ppTrgObj, 'hpp' confusing
   TH1F *hpp_TrgObj40[2];
+  TH1F *hpp_TrgObj60[2];
+  TH1F *hpp_TrgObj80[2];
+  TH1F *hpp_TrgObj100[2];
   TH1F *hpp_TrgObjComb[2];
   TH1F *hpp_CombJetpT[2];
   
-  hpp_TrgObj100[0]  = new TH1F(Form("hpp_HLT100_noJetID_R%d_%s"     , radius, etaWidth), 
-			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
-  hpp_TrgObj80[0]   = new TH1F(Form("hpp_HLT80_noJetID_R%d_%s"     , radius, etaWidth), 
-			       Form("Spectra from  Jet 80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
-  hpp_TrgObj60[0]   = new TH1F(Form("hpp_HLT60_noJetID_R%d_%s"               , radius, etaWidth), 
-			       Form("Spectra from  Jet 60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  //40, 60, 80, 100
   hpp_TrgObj40[0]   = new TH1F(Form("hpp_HLT40_noJetID_R%d_%s"                        , radius, etaWidth), 
 			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj60[0]   = new TH1F(Form("hpp_HLT60_noJetID_R%d_%s"               , radius, etaWidth), 
+			       Form("Spectra from  Jet 60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj80[0]   = new TH1F(Form("hpp_HLT80_noJetID_R%d_%s"     , radius, etaWidth), 
+			       Form("Spectra from  Jet 80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj100[0]  = new TH1F(Form("hpp_HLT100_noJetID_R%d_%s"     , radius, etaWidth), 
+			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  //combined
   hpp_TrgObjComb[0] = new TH1F(Form("hpp_HLTComb_noJetID_R%d_%s"    , radius, etaWidth), 
 			       Form("Trig Combined Spectra R%d %s " , radius, etaWidth), 2000, 0, 2000);
   hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_noJetID_R%d_%s"           , radius, etaWidth), 
 			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
-
-  hpp_TrgObj100[1]  = new TH1F(Form("hpp_HLT100_JetID_R%d_%s"       , radius, etaWidth), 
-			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
-  hpp_TrgObj80[1]   = new TH1F(Form("hpp_HLT80_JetID_R%d_%s"       , radius, etaWidth), 
-			       Form("Spectra from  Jet 80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
-  hpp_TrgObj60[1]   = new TH1F(Form("hpp_HLT60_JetID_R%d_%s"                 , radius, etaWidth), 
-			       Form("Spectra from  Jet 60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  //40, 60, 80, 100
   hpp_TrgObj40[1]   = new TH1F(Form("hpp_HLT40_JetID_R%d_%s"                          , radius, etaWidth), 
 			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj60[1]   = new TH1F(Form("hpp_HLT60_JetID_R%d_%s"                 , radius, etaWidth), 
+			       Form("Spectra from  Jet 60 && !jet80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj80[1]   = new TH1F(Form("hpp_HLT80_JetID_R%d_%s"       , radius, etaWidth), 
+			       Form("Spectra from  Jet 80 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  hpp_TrgObj100[1]  = new TH1F(Form("hpp_HLT100_JetID_R%d_%s"       , radius, etaWidth), 
+			       Form("Spectra from  Jet 100 R%d %s " , radius, etaWidth), 2000, 0, 2000);
+  //combined
   hpp_TrgObjComb[1] = new TH1F(Form("hpp_HLTComb_JetID_R%d_%s"      , radius, etaWidth), 
 			       Form("Trig Combined Spectra R%d %s " , radius, etaWidth), 2000, 0, 2000);
   hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_JetID_R%d_%s"             , radius, etaWidth), 
 			       Form("Trig Combined Spectra KurtMethod R%d %s " , radius, etaWidth), 2000, 0, 2000);
 
-
-  // trigger counts for weighting later
-  Long64_t NEvents = 0;
-  Long64_t NEvents_100 = 0;
-  Long64_t NEvents_80 = 0;
-  Long64_t NEvents_60 = 0;
-  Long64_t NEvents_40 = 0;    
-  //Long64_t nGoodEvt = 0;
-  
+  // for counting
+  Long64_t NEvents_40=0, NEvents_60=0, NEvents_80=0, NEvents_100=0;//trigger counts
+  Long64_t NEvents=0;//post-skim event counts
   Long64_t nentries = jetpp[0]->GetEntries();
-  if(debugMode) nentries = 1000;  if(fastDebugMode) nentries = 10;
-  std::cout<<"Running through "<<nentries<<" events"<<std::endl;  
 
-  // now loop over the events
+  if(debugMode) nentries = 1000*(endfile-startfile+1);  
+  if(fastDebugMode) nentries = 10*(endfile-startfile+1);
+
+  int NEvents_w2Jets_woQACut=0,       NEvents_wo2Jets_woQACut=0;
+  int NEvents_w2Jets_wQACut=0,        NEvents_wo2Jets_wQACut=0; 
+  int NEvents_w2Jets_wQACut_wJetID=0, NEvents_wo2Jets_wQACut_wJetID=0;
+
+  // EVENT LOOP
+  std::cout<<"looping over "<<nentries<<" events"<<std::endl;  
   for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop   
-    
+
     // grab entry from each tree 
     for(int i=0;i<N_trees; ++i)jetpp[i]->GetEntry(nEvt);
     if(debugMode&&nEvt%1000==0)std::cout<<"nEvt = "<<nEvt<<std::endl;
-    
+
     // skim/HiEvtAnalysis criteria
-    for(int i = 0; i<N_trees;++i) jetpp[i]->GetEntry(nEvt);
-    if( pHBHENoiseFilter_F==0     || 
-        pBeamScrapingFilter_F==0  || 
-        pprimaryvertexFilter_F==0 ||
-        fabs(vz_F)>15              ) 
-      continue;
+    if( pHBHENoiseFilter_F==0     || //skim 
+        pBeamScrapingFilter_F==0  || //skim
+        pprimaryvertexFilter_F==0 || //skim
+        fabs(vz_F)>15              ) continue;
 
     // fill vz histo
     hVz->Fill(vz_F);
     
-    bool is40  = false;
-    bool is60  = false;
-    bool is80  = false;
-    bool is100 = false;
-
-    // trigger decision boolean array w/ prescale + l1 decision
-    bool trgDec[4]={//l1 jetpt bits
-      (bool)jet40_F, 
-      (bool)jet60_F, 
-      (bool)jet80_F, 
-      (bool)jet100_F
-    };
-    int treePrescl[4]={//if bit 0, prescale for that l1 bit is 0
-      (jet40_p_F*jet40_l1seed_p_F), 
-      (jet60_p_F*jet60_l1seed_p_F), 
-      (jet80_p_F*jet80_l1seed_p_F), 
-      (jet100_p_F*jet100_l1seed_p_F)
-    };    
+    // total prescale array
+    int treePrescl[4]={ (jet40_p_F*jet40_l1seed_p_F), (jet60_p_F*jet60_l1seed_p_F), 
+			(jet80_p_F*jet80_l1seed_p_F), (jet100_p_F*jet100_l1seed_p_F) };    
+    // HLT decision array
+    bool trgDec[4]={ (bool)jet40_F, (bool)jet60_F, (bool)jet80_F, (bool)jet100_F  };
     
-    // still don't know why this was here in original code
-    // scared to get rid of it completely
-    //int maxtrg= -1;      
-    //for(int ii=4; ii>=0; ii--){
-    //  if(trgDec[ii]==1){
-    //	maxtrg=ii;
-    //	break;
-    //  }
-    //}
-
-    // prefer highPt l1 trigger for jet if it matches multiple l1jet pt criteria
+    // prefer highPt l1 trigger for jet if it matches multiple l1jet pt criteria, then compute weight
     double triggerPt=0.;
     if(jet40_F){
       for(unsigned int itt=0; itt<trgObjpt_40->size(); ++itt){
@@ -378,32 +380,31 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
 	if(trgObjpt_100->at(itt) > triggerPt) triggerPt = trgObjpt_100->at(itt);
       }
     }    
-
-    // come up with event weight for later use, trigComb returns weight for that event, given it's HLT, prescale(s), and trigPt
     double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
     
-    // check trigger decisions for events + exclusivity between them
-    if(trgDec[3] && triggerPt>=100                ) is100 = true;
-    if(trgDec[2] && triggerPt>=80 && triggerPt<100) is80  = true;
-    if(trgDec[1] && triggerPt>=60 && triggerPt<80 ) is60  = true;
-    if(trgDec[0] && triggerPt>=40 && triggerPt<60 ) is40  = true;
-
-    // count events and events per each trigger
-    NEvents++;
-    if(is100) NEvents_100++;
-    if(is80)  NEvents_80++;
-    if(is60)  NEvents_60++;
-    if(is40)  NEvents_40++;
+    // check trigger decisions for events + exclusivity between them, count events
+    bool is40  = false, is60  = false, is80  = false, is100 = false;
+    if(trgDec[0] && triggerPt>=40 && triggerPt<60 ) is40  = true;    if(is40)  NEvents_40++;
+    if(trgDec[1] && triggerPt>=60 && triggerPt<80 ) is60  = true;    if(is60)  NEvents_60++;
+    if(trgDec[2] && triggerPt>=80 && triggerPt<100) is80  = true;    if(is80)  NEvents_80++;
+    if(trgDec[3] && triggerPt>=100                ) is100 = true;    if(is100) NEvents_100++;
+    if(true)  NEvents++;
     
-    // loop over jets in the event
-    for(int jet = 0; jet<nref_F; ++jet){
+    // JET LOOP 
+    for(int jet = 0; jet<nref_F; ++jet){//jet loop
+
+      if(debugMode)if(jet==0&&nref_F>1)  NEvents_w2Jets_woQACut++; 
+      if(debugMode)if(jet==0&&nref_F<=1) NEvents_wo2Jets_woQACut++; 
 
       // pt is too low or not in barrel, toss jet
       if( fabs(eta_F[jet]) > 2 ||
           pt_F[jet] <= 15       ) continue;     
       
-      float recpt = pt_F[jet];//reco pt for this jet,
+      if(debugMode)if(jet==0&&nref_F>1)  NEvents_w2Jets_wQACut++; 
+      if(debugMode)if(jet==0&&nref_F<=1) NEvents_wo2Jets_wQACut++; 
       
+      // jetQA noJetID
+      float recpt = pt_F[jet];
       hJetQA[0][0]->Fill(recpt, weight_eS);
       hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
       hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
@@ -430,50 +431,61 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
       if(is100) hpp_TrgObj100[0]->Fill(recpt, treePrescl[3]);
       if(true)  hpp_CombJetpT[0]->Fill(recpt, weight_eS);//recpt here is weighted-weighted
       
-      // dijet imbalance, dijet pt ratio computation
-      if(jet == 0 ) {//feel like i should add &&nref>1 req
-	  hJetQA[0][19]->Fill( (float) (pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]) , weight_eS ); //A_j
-	  hJetQA[0][20]->Fill( (float) (pt_F[1]/pt_F[0])                   , weight_eS ); //x_j
+      // dijet imbalance, pt ratio computation, lead+sublead jet
+      if( jet==0 && nref_F>1 ) {
+	float A_j=(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
+	float x_j=(pt_F[1]/pt_F[0]); 	
+	hJetQA[0][19]->Fill( A_j , weight_eS ); 
+	hJetQA[0][20]->Fill( x_j , weight_eS ); 
+      	//hJetQA[0][19]->Fill((float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]), weight_eS);
+	//hJetQA[0][20]->Fill((float)(pt_F[1]/pt_F[0]), weight_eS);
       }
 
       // apply JetID
-      //I should really do this with just a flag instead of a 2xN_vars array, but no time to fix it...
-      if( chSum_F[jet]/recpt > 0    &&    // if  charged hadron pt frac > 0 and 
-	  neSum_F[jet]/recpt < 0.99 &&    // neutral hadron pt frac < 99%   and 
-	  phSum_F[jet]/recpt < 0.99 &&    // photon hadron pt frac < 99%	   and 
-	  chN_F[jet] > 0             ) {  // there's a charged particle   
-	
-	hJetQA[1][0]->Fill(recpt, weight_eS);
-	hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
-	hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
-	hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
-	hJetQA[1][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
-	hJetQA[1][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][7]->Fill(chMax_F[jet]/recpt, weight_eS);
-	hJetQA[1][8]->Fill(chSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][10]->Fill(phMax_F[jet]/recpt, weight_eS);
-	hJetQA[1][11]->Fill(phSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][13]->Fill(neMax_F[jet]/recpt, weight_eS);
-	hJetQA[1][14]->Fill(neSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][15]->Fill(eMax_F[jet]/recpt, weight_eS);
-	hJetQA[1][16]->Fill(eSum_F[jet]/recpt, weight_eS);
-	hJetQA[1][17]->Fill(muMax_F[jet]/recpt, weight_eS);
-	hJetQA[1][18]->Fill(muSum_F[jet]/recpt, weight_eS);
-	
-	if(is40)  hpp_TrgObj40[1]->Fill(recpt, treePrescl[0]);
-	if(is60)  hpp_TrgObj60[1]->Fill(recpt, treePrescl[1]);
-	if(is80)  hpp_TrgObj80[1]->Fill(recpt, treePrescl[2]);
-	if(is100) hpp_TrgObj100[1]->Fill(recpt, treePrescl[3]);
-	if(true)hpp_CombJetpT[1]->Fill(recpt, weight_eS);
-	
-	if(jet == 0){//feel like i should add &&nref>1 req
-	  hJetQA[1][19]->Fill((float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]), weight_eS);
-	  hJetQA[1][20]->Fill((float)(pt_F[1]/pt_F[0]), weight_eS);
-	}  
-      }//end jet id cut      
+      if (chSum_F[jet]/recpt <= 0    ||
+          neSum_F[jet]/recpt >= 0.99 || 
+          phSum_F[jet]/recpt >= 0.99 ||
+          chN_F[jet] <= 0             ) continue;
+      
+      if(debugMode)if(jet==0&&nref_F>1)  NEvents_w2Jets_wQACut_wJetID++; 
+      if(debugMode)if(jet==0&&nref_F<=1) NEvents_wo2Jets_wQACut_wJetID++; 
+      
+      // jetQA wJetID
+      hJetQA[1][0]->Fill(recpt, weight_eS);
+      hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
+      hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
+      hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
+      hJetQA[1][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
+      hJetQA[1][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][7]->Fill(chMax_F[jet]/recpt, weight_eS);
+      hJetQA[1][8]->Fill(chSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][10]->Fill(phMax_F[jet]/recpt, weight_eS);
+      hJetQA[1][11]->Fill(phSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][13]->Fill(neMax_F[jet]/recpt, weight_eS);
+      hJetQA[1][14]->Fill(neSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][15]->Fill(eMax_F[jet]/recpt, weight_eS);
+      hJetQA[1][16]->Fill(eSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][17]->Fill(muMax_F[jet]/recpt, weight_eS);
+      hJetQA[1][18]->Fill(muSum_F[jet]/recpt, weight_eS);
+      
+      if(is40)  hpp_TrgObj40[1]->Fill(recpt, treePrescl[0]);
+      if(is60)  hpp_TrgObj60[1]->Fill(recpt, treePrescl[1]);
+      if(is80)  hpp_TrgObj80[1]->Fill(recpt, treePrescl[2]);
+      if(is100) hpp_TrgObj100[1]->Fill(recpt, treePrescl[3]);
+      if(true)  hpp_CombJetpT[1]->Fill(recpt, weight_eS);
+      
+      if( jet==0 && nref_F>1 ){
+	float A_j=(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
+	float x_j=(pt_F[1]/pt_F[0]); 	
+	hJetQA[1][19]->Fill( A_j , weight_eS ); 
+	hJetQA[1][20]->Fill( x_j , weight_eS ); 
+	//hJetQA[1][19]->Fill((float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]), weight_eS);
+	//hJetQA[1][20]->Fill((float)(pt_F[1]/pt_F[0]), weight_eS);
+      }
+      
     }//end jet loop
   }//end event loop
   std::cout<<std::endl;
@@ -506,17 +518,26 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
   hpp_TrgObjComb[1]->Print("base");
   hpp_CombJetpT[1]->Print("base");
   
-  std::cout<<std::endl<<"Event Summary"<<std::endl;
-  std::cout<<"Total Number of Events read   = "<<NEvents<<std::endl;
-  std::cout<<"Total Number of HLT100 events = "<<NEvents_100<<std::endl;
-  std::cout<<"Total Number of HLT80 events = "<<NEvents_80<<std::endl;
-  std::cout<<"Total Number of HLT60 events = "<<NEvents_60<<std::endl;
-  std::cout<<"Total Number of HLT40 events = "<<NEvents_40<<std::endl<<std::endl;
+  std::cout<<std::endl<<"Job Event-Loop Summary"<<std::endl;
+  if(debugMode)std::cout<<"Total Number of Events read preskim  = "<<nentries<<std::endl;
+  std::cout<<"Total Number of Events read          = "<<NEvents<<std::endl<<std::endl;
+  
+  if(debugMode)std::cout<<"NEvts w jets 0and1, before QA cut      = "<<NEvents_w2Jets_woQACut       <<std::endl;
+  if(debugMode)std::cout<<"NEvts w jets 0and1, after QA cut     = "<<NEvents_w2Jets_wQACut        <<std::endl;
+  if(debugMode)std::cout<<"NEvts w jets 0and1, after QA+ID cuts = "<<NEvents_w2Jets_wQACut_wJetID <<std::endl<<std::endl;
+  if(debugMode)std::cout<<"NEvts w/o jets 0and1, before QA cut      = "<<NEvents_wo2Jets_woQACut       <<std::endl;
+  if(debugMode)std::cout<<"NEvts w/o jets 0and1, after QA cut     = "<<NEvents_wo2Jets_wQACut        <<std::endl;
+  if(debugMode)std::cout<<"NEvts w/o jets 0and1, after QA+ID cuts = "<<NEvents_wo2Jets_wQACut_wJetID <<std::endl<<std::endl;
+  
+  std::cout<<"Total Number of HLT40 events  = "<<NEvents_40<<std::endl;
+  std::cout<<"Total Number of HLT60 events  = "<<NEvents_60<<std::endl;
+  std::cout<<"Total Number of HLT80 events  = "<<NEvents_80<<std::endl;
+  std::cout<<"Total Number of HLT100 events = "<<NEvents_100<<std::endl<<std::endl;
   
   std::cout<<"writing output file..."<<std::endl;
   fout->Write();
 
-  if(debugMode)std::cout<<"clearing trgObjpt..."<<std::endl<<std::endl;
+  if(debugMode)std::cout<<"clearing trgObjpt..."<<std::endl;
   trgObjpt_40->clear();
   trgObjpt_60->clear();
   trgObjpt_80->clear();
@@ -526,8 +547,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
 
   std::cout<<std::endl<<"readFiles_ppData finished."<<std::endl;
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
-  std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl<<std::endl;
-  
+  std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   return 0;
 }// end readFiles_ppData
 
@@ -535,8 +555,8 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , s
 // acts as the frontend control for .exe file
 int main(int argc, char *argv[]){
   
-  int rStatus = -1;
   // error, not enough arguments
+  int rStatus = -1;
   if(argc!=8 && argc!=1){
     std::cout<<"for tests on default inputs, do..." <<std::endl;
     std::cout<<"./readFiles_ppData.exe";
@@ -546,6 +566,7 @@ int main(int argc, char *argv[]){
     std::cout<<"<startFile> <endFile> <inputFileList> <outputFilename> ";
     std::cout<<"<jetRadius> <jetType> <debugMode>";
     std::cout<<std::endl<<std::endl;
+    std::cout<<"rStatus="<<rStatus<<std::endl;
     return rStatus;
   }
   
@@ -554,9 +575,13 @@ int main(int argc, char *argv[]){
   if(argc==1) rStatus = readFiles_ppData();
   else{//read input argument vector
     int startfile= atoi(argv[1]); int endfile= atoi(argv[2]); std::string inputFileList=argv[3]; std::string outputFileName=argv[4];
-    int jetRadius= atoi(argv[4]); std::string jetType=argv[6];     bool debug=(bool)atoi(argv[7]);      
+    int jetRadius= atoi(argv[5]); std::string jetType=argv[6];     bool debug=(bool)atoi(argv[7]);      
     rStatus = readFiles_ppData( startfile, endfile, inputFileList, outputFileName,
 				jetRadius, jetType, debug);
   }
+  std::cout<<"rStatus="<<rStatus<<std::endl;
   return rStatus;
 }
+
+
+

@@ -1,0 +1,74 @@
+
+----------------------------------------------------
+Job started on Tue May 24 14:00:19 EDT 2016 at WN: t2bat0009.cmsaf.mit.edu 
+Job is running on Linux t2bat0009.cmsaf.mit.edu 2.6.32-573.8.1.el6.x86_64 #1 SMP Tue Nov 10 05:29:11 CST 2015 x86_64 x86_64 x86_64 GNU/Linux
+----------------------------------------------------
+
+free disk space is...
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sda3              63G  2.6G   58G   5% /
+tmpfs                  48G     0   48G   0% /dev/shm
+/dev/sda1             240M   41M  187M  18% /boot
+/dev/sda5             728G   74G  655G  11% /export/data1
+/dev/sdc1             3.6T  3.3T  306G  92% /export/00c
+/dev/sdb1             3.6T  3.4T  282G  93% /export/00b
+/dev/sdd1             3.6T  3.4T  273G  93% /export/00d
+fuse_dfs              6.5P  5.8P  683T  90% /mnt/hadoop
+cvmfs2                 98G   63G   35G  65% /cvmfs/cms.cern.ch
+cvmfs2                 98G   63G   35G  65% /cvmfs/ams.cern.ch
+t2srv0004:/export/db  135G  187M  135G   1% /net/t2srv0004/db
+hisrv0001:/export/home
+                      2.0T  453G  1.5T  24% /net/hisrv0001/home
+
+root directory is...
+/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/root/6.02.12/
+
+working directory is...
+/export/data1/condor/execute/dir_22630
+
+contents before job processing is...
+total 156
+drwx------  2 ilaflott ilaflott  4096 May 24 14:00 .
+drwxr-xr-x 13 condor   root      4096 May 24 14:00 ..
+-rwx------  1 ilaflott ilaflott    48 May 24 14:00 .chirp.config
+-rw-r--r--  1 condor   condor   37071 May 24 14:00 .job.ad
+-rw-r--r--  1 condor   condor    6207 May 24 14:00 .machine.ad
+-rw-r--r--  1 ilaflott ilaflott 32988 May 24 14:00 5p02TeV_HighPtJet80_forests.txt
+-rwxrwxr-x  1 ilaflott ilaflott 51221 May 24 14:00 DijetResponse.exe
+-rw-r--r--  1 ilaflott ilaflott     0 May 24 14:00 _condor_stderr
+-rw-r--r--  1 ilaflott ilaflott  1287 May 24 14:00 _condor_stdout
+-rwxr-xr-x  1 ilaflott ilaflott   785 May 24 14:00 condor_exec.exe
+
+Processing...
+
+///////////////////
+reading files 234 to 247
+///////////////////
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+Done!

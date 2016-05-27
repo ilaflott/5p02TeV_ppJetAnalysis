@@ -1,0 +1,75 @@
+
+----------------------------------------------------
+Job started on Tue May 24 13:59:48 EDT 2016 at WN: hibat0056.cmsaf.mit.edu 
+Job is running on Linux hibat0056.cmsaf.mit.edu 2.6.32-358.el6.x86_64 #1 SMP Fri Feb 22 20:37:17 CST 2013 x86_64 x86_64 x86_64 GNU/Linux
+----------------------------------------------------
+
+free disk space is...
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sda3              20G  3.4G   16G  18% /
+tmpfs                  24G     0   24G   0% /dev/shm
+/dev/sda1              97M   32M   61M  35% /boot
+/dev/sda4             874G   96G  778G  11% /export/data1
+/dev/sdb1             1.8T  1.7T  112G  94% /export/00b
+/dev/sdc1             1.8T  1.7T  115G  94% /export/00c
+/dev/sdd1             1.8T  1.7T  108G  95% /export/00d
+/dev/sde1             1.8T  1.7T  107G  95% /export/00e
+/dev/sdf1             1.8T  1.7T  109G  95% /export/00f
+fuse_dfs              6.5P  5.8P  683T  90% /mnt/hadoop
+cvmfs2                 98G   77G   22G  79% /cvmfs/cms.cern.ch
+t2srv0004:/export/db  135G  187M  135G   1% /net/t2srv0004/db
+cvmfs2                 98G   77G   22G  79% /cvmfs/ams.cern.ch
+cvmfs2                 98G   77G   22G  79% /cvmfs/cms-ib.cern.ch
+
+root directory is...
+/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/root/6.02.12/
+
+working directory is...
+/export/data1/condor/execute/dir_30277
+
+contents before job processing is...
+total 156
+drwx------  2 ilaflott ilaflott  4096 May 24 13:59 .
+drwxr-xr-x 10 condor   root      4096 May 24 13:59 ..
+-rwx------  1 ilaflott ilaflott    49 May 24 13:59 .chirp.config
+-rw-r--r--  1 condor   condor   37074 May 24 13:59 .job.ad
+-rw-r--r--  1 condor   condor    6207 May 24 13:59 .machine.ad
+-rw-r--r--  1 ilaflott ilaflott 32988 May 24 13:59 5p02TeV_HighPtJet80_forests.txt
+-rwxrwxr-x  1 ilaflott ilaflott 51221 May 24 13:59 DijetResponse.exe
+-rw-r--r--  1 ilaflott ilaflott     0 May 24 13:59 _condor_stderr
+-rw-r--r--  1 ilaflott ilaflott  1374 May 24 13:59 _condor_stdout
+-rwxr-xr-x  1 ilaflott ilaflott   785 May 24 13:59 condor_exec.exe
+
+Processing...
+
+///////////////////
+reading files 195 to 208
+///////////////////
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+beginning jet loop...
+
+Done!

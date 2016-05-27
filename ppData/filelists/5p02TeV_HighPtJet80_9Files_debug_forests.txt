@@ -1,0 +1,9 @@
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_1.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_2.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_3.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_4.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_5.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_6.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_7.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_8.root
+/mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_9.root

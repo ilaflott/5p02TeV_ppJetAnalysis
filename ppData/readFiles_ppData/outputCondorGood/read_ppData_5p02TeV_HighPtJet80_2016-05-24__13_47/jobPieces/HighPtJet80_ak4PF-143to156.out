@@ -1,0 +1,221 @@
+
+----------------------------------------------------
+Job started on Tue May 24 13:48:16 EDT 2016 at WN: t2bat0257.cmsaf.mit.edu 
+Job is running on Linux t2bat0257.cmsaf.mit.edu 2.6.32-358.el6.x86_64 #1 SMP Fri Feb 22 20:37:17 CST 2013 x86_64 x86_64 x86_64 GNU/Linux
+----------------------------------------------------
+
+free disk space is...
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sda3              20G  3.2G   16G  17% /
+tmpfs                  12G     0   12G   0% /dev/shm
+/dev/sda1              97M   32M   61M  35% /boot
+/dev/sda4             874G   63G  811G   8% /export/data1
+/dev/sdb1             1.8T  1.7T  118G  94% /export/00b
+/dev/sdc1             1.8T  1.7T   98G  95% /export/00c
+/dev/sdd1             1.8T  1.7T  115G  94% /export/00d
+/dev/sde1             1.8T  1.7T  102G  95% /export/00e
+/dev/sdf1             1.8T  1.7T  104G  95% /export/00f
+fuse_dfs              6.5P  5.8P  684T  90% /mnt/hadoop
+t2srv0004:/export/db  135G  187M  135G   1% /net/t2srv0004/db
+cvmfs2                 98G   59G   40G  60% /cvmfs/cms.cern.ch
+cvmfs2                 98G   59G   40G  60% /cvmfs/ams.cern.ch
+cvmfs2                 98G   59G   40G  60% /cvmfs/cvmfs.cmsaf.mit.edu
+cvmfs2                 98G   59G   40G  60% /cvmfs/cms-ib.cern.ch
+
+root directory is...
+/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/root/6.02.12/
+
+working directory is...
+/export/data1/condor/execute/dir_26414
+
+contents before job processing is...
+total 164
+drwx------ 2 ilaflott ilaflott  4096 May 24 13:48 .
+drwxr-xr-x 7 condor   root      4096 May 24 13:48 ..
+-rwx------ 1 ilaflott ilaflott    48 May 24 13:48 .chirp.config
+-rw-r--r-- 1 condor   condor   37075 May 24 13:48 .job.ad
+-rw-r--r-- 1 condor   condor    6203 May 24 13:48 .machine.ad
+-rw-r--r-- 1 ilaflott ilaflott 32988 May 24 13:48 5p02TeV_HighPtJet80_forests.txt
+-rwxrwxr-x 1 ilaflott ilaflott 59014 May 24 13:48 RAA_read_data_pp.exe
+-rw-r--r-- 1 ilaflott ilaflott     0 May 24 13:48 _condor_stderr
+-rw-r--r-- 1 ilaflott ilaflott  1445 May 24 13:48 _condor_stdout
+-rwxr-xr-x 1 ilaflott ilaflott   795 May 24 13:48 condor_exec.exe
+
+Processing...
+
+///////////////////
+reading from file 143 to file 156
+radius =  4
+jetType =  PF
+///////////////////
+
+filelist used is 5p02TeV_HighPtJet80_forests.txt
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_228.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_229.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_23.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_230.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_231.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_232.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_233.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_234.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_235.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_236.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_237.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_238.root to TChain...
+adding file /mnt/hadoop/cms/store/user/abaty/transferTargetDirectories/2015pp_HighPtJet80/HiForestAOD_239.root to TChain...
+Running through 1031065 events
+nEvt = 0
+nEvt = 10000
+nEvt = 20000
+nEvt = 30000
+nEvt = 40000
+nEvt = 50000
+nEvt = 60000
+nEvt = 70000
+nEvt = 80000
+nEvt = 90000
+nEvt = 100000
+nEvt = 110000
+nEvt = 120000
+nEvt = 130000
+nEvt = 140000
+nEvt = 150000
+nEvt = 160000
+nEvt = 170000
+nEvt = 180000
+nEvt = 190000
+nEvt = 200000
+nEvt = 210000
+nEvt = 220000
+nEvt = 230000
+nEvt = 240000
+nEvt = 250000
+nEvt = 260000
+nEvt = 270000
+nEvt = 280000
+nEvt = 290000
+nEvt = 300000
+nEvt = 310000
+nEvt = 320000
+nEvt = 330000
+nEvt = 340000
+nEvt = 350000
+nEvt = 360000
+nEvt = 370000
+nEvt = 380000
+nEvt = 390000
+nEvt = 400000
+nEvt = 410000
+nEvt = 420000
+nEvt = 430000
+nEvt = 440000
+nEvt = 450000
+nEvt = 460000
+nEvt = 470000
+nEvt = 480000
+nEvt = 490000
+nEvt = 500000
+nEvt = 510000
+nEvt = 520000
+nEvt = 530000
+nEvt = 540000
+nEvt = 550000
+nEvt = 560000
+nEvt = 570000
+nEvt = 580000
+nEvt = 590000
+nEvt = 600000
+nEvt = 610000
+nEvt = 620000
+nEvt = 630000
+nEvt = 640000
+nEvt = 650000
+nEvt = 660000
+nEvt = 670000
+nEvt = 680000
+nEvt = 690000
+nEvt = 700000
+nEvt = 710000
+nEvt = 720000
+nEvt = 730000
+nEvt = 740000
+nEvt = 750000
+nEvt = 760000
+nEvt = 770000
+nEvt = 780000
+nEvt = 790000
+nEvt = 800000
+nEvt = 810000
+nEvt = 820000
+nEvt = 830000
+nEvt = 840000
+nEvt = 850000
+nEvt = 860000
+nEvt = 870000
+nEvt = 880000
+nEvt = 890000
+nEvt = 900000
+nEvt = 910000
+nEvt = 920000
+nEvt = 930000
+nEvt = 940000
+nEvt = 950000
+nEvt = 960000
+nEvt = 970000
+nEvt = 980000
+nEvt = 990000
+nEvt = 1000000
+nEvt = 1010000
+nEvt = 1020000
+nEvt = 1030000
+
+TH1.Print Name  = hpp_HLT40_noJetID_R4_20_eta_20, Entries= 0, Total sum= 0
+          Title = Spectra from Jet 40 && !jet60 && !jet80 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLT60_noJetID_R4_20_eta_20, Entries= 0, Total sum= 0
+          Title = Spectra from  Jet 60 && !jet80 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLT80_noJetID_R4_20_eta_20, Entries= 0, Total sum= 0
+          Title = Spectra from  Jet 80 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLT100_noJetID_R4_20_eta_20, Entries= 169974, Total sum= 169974
+          Title = Spectra from  Jet 100 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLTComb_noJetID_R4_20_eta_20, Entries= 169974, Total sum= 169974
+          Title = Trig Combined Spectra R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_TrgCombTest_noJetID_R4_20_eta_20, Entries= 2606311, Total sum= 169974
+          Title = Trig Combined Spectra KurtMethod R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLT40_JetID_R4_20_eta_20, Entries= 0, Total sum= 0
+          Title = Spectra from Jet 40 && !jet60 && !jet80 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLT60_JetID_R4_20_eta_20, Entries= 0, Total sum= 0
+          Title = Spectra from  Jet 60 && !jet80 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLT80_JetID_R4_20_eta_20, Entries= 0, Total sum= 0
+          Title = Spectra from  Jet 80 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLT100_JetID_R4_20_eta_20, Entries= 169323, Total sum= 169323
+          Title = Spectra from  Jet 100 R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_HLTComb_JetID_R4_20_eta_20, Entries= 169323, Total sum= 169323
+          Title = Trig Combined Spectra R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+TH1.Print Name  = hpp_TrgCombTest_JetID_R4_20_eta_20, Entries= 2596780, Total sum= 169323
+          Title = Trig Combined Spectra KurtMethod R4 20_eta_20 
+          NbinsX= 2000, xmin= 0, xmax=2000
+
+Event Summary
+Total Number of Events read   = 1013777
+Total Number of HLT100 events = 59938
+Total Number of HLT80 events = 0
+Total Number of HLT60 events = 0
+Total Number of HLT40 events = 0
+
+
+Macro finished: 
+CPU time (min)  = 4.17767
+Real time (min) = 5.92692
+
+Done!

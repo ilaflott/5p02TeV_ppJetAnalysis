@@ -24,15 +24,16 @@ echo ""
 startfile=$1
 endfile=$2
 filelist=$3
+outfile=$6 
 radius=$4 
 jetType=$5 
-outfile=$6 
 debug=$7
-destination=$8
+#destination=$8
 
 echo "Processing..."
-./RAA_read_data_pp.exe $startfile $endfile "${filelist}" $radius "${jetType}" "${outfile}" $debug
+./readFiles_ppData.exe $startfile $endfile "${filelist}" "${outfile}" $radius "${jetType}" $debug
 
 #echo "Copying file ${outfile} to ${destination}..."
 #mv ${outfile} ${destination}
-echo "Done!"
+
+echo "Job done!"

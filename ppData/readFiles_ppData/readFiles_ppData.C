@@ -106,7 +106,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
 
   // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
+  const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   // basic info the screen
@@ -139,17 +139,22 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
   std::string filename_Forest;  
 
-  // add input files in specified range to each pp jet tree
-  for(int ifile = 0; ifile<=endfile; ++ifile){//input file loop, includes starting+ending boundary file
+  // add files, including startfile+endfile, to chains
+  std::string lastFileAdded=""; bool treesAdded=false;
+  for(int ifile = 0; ifile<=endfile; ++ifile){//file loop
+    // loop to starting file, check for end of filelist
     instr_Forest>>filename_Forest; 
-    if(ifile<startfile)continue;
-    std::cout << "adding file #"<<ifile<<" to TChain"<<std::endl;
-    for(int t = 0;t<N_trees;++t){
-      if(debugMode)std::cout << "adding to TChain/tree "<<trees[t]<<std::endl;
-      jetpp[t]->Add(filename_Forest.c_str());
+    if(ifile<startfile){lastFileAdded=filename_Forest;continue;}
+    if(filename_Forest==lastFileAdded)break;//end of filelist condition
+    std::cout<<"adding file #"<<ifile;  if(debugMode)std::cout<<" "<<filename_Forest;  std::cout<<" to TChain"<<std::endl;
+    for(int t = 0;t<N_trees;++t){ 
+      if(debugMode)std::cout << "adding file to TChain of tree "<<trees[t]<<std::endl;
+      jetpp[t]->Add(filename_Forest.c_str()); treesAdded=true;
     }
-  }//end input file loop
-  
+    lastFileAdded=filename_Forest;
+  }//end file loop
+  assert(treesAdded);//avoid segfault later
+
   // friend all trees to jet analyzer tree in jetpp[0]
   for(int t = 1;t<N_trees;++t)jetpp[0]->AddFriend( jetpp[t] );
   

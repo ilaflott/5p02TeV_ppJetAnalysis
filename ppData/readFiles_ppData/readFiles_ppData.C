@@ -106,7 +106,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
 
   // debug mode settings+warnings
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
+  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   // basic info the screen

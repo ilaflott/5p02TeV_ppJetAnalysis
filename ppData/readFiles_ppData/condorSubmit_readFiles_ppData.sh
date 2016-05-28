@@ -35,6 +35,8 @@ fi
 echo ""
 echo "# of files in list: ${nFiles}"
 echo "you requested ${NJobs} jobs with ${NFilesPerJob} files per job"
+NFilesRequested=$(( $NJobs * $NFilesPerJob ))
+echo "${NFilesRequested} for jobs to run"
 echo "starting at file position ${startFilePos}..."
 echo ""
 
@@ -52,7 +54,7 @@ dirName="readFiles_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
 logFileDir="${PWD}/outputCondor/${dirName}"
 mkdir $logFileDir
-echo "log files in ${PWD}/outputCondor"
+echo "log files in outputCondor/${dirName}"
 
 # cmsenv for condor
 echo "cmsenv'ing..."
@@ -66,8 +68,10 @@ g++ readFiles_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readF
 cp readFiles_ppData.* "${logFileDir}"
 
 ### CREATE NAMES AND FILES, THEN SUBMIT ###
+
 NthJob=0
 filelistLength=$nFiles
+lastFilePos=$(( $filelistLength-1 ))
 startfile=0
 endfile=0
 #echo "startfile is ${startfile}" 
@@ -75,7 +79,7 @@ endfile=0
 while [ $NthJob -lt $NJobs ]
 do 
     echo ""
-    echo "SUBMITTING JOB # ${NthJob}"
+    echo "SPLITTING FILES FOR JOB #${NthJob}"
 
     # start/end file 
     if [[ $NthJob -le 0 ]]
@@ -88,16 +92,16 @@ do
 	endfile=$(( $startfile + $NFilesPerJob ))
 	endfile=$(( $endfile - 1 ))
     fi
-    #echo "startfile is ${startfile}" 
-    #echo "endfile is ${endfile}"     
-
+    echo "startfile is ${startfile}" 
     # check; end of filelist
-    if [ $endfile -ge $lastFilePos ]; 
+    if [[ $endfile -ge $lastFilePos ]] 
     then 
 	echo "end of filelist!"
 	let endfile=$lastFilePos
 	let NthJob=$(( $NJobs - 1 )) 
     fi
+    echo "endfile is ${endfile}"     
+
     
     # for next job
     NthJob=$(($NthJob + 1))

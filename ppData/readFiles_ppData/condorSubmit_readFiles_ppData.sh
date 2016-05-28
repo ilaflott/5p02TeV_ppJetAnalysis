@@ -1,18 +1,42 @@
 #!/bin/bash
 
-# error condition
-if [[ $# -ne 4 ]]
+# error conditions 
+if [[ $# -ne 5 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condor_makeTarAndSubmit.sh <NJobs> <NFilesPerJob> <filelistIn> <debug>"
+    echo "source condorSubmit_ppData.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
+    return 1
+elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
+then
+    echo "non integer <startFilePos>, exit"
+    return 1
+elif [[ $3 -lt 0 ]] # check for valid startFilePos
+then
+    echo "bad <startFilePos>, exit"
+    echo "0 <= <startFilePos> <= nFiles-1"
     return 1
 fi
 
 # input arguments to submit script
 NJobs=$1
 NFilesPerJob=$2
-filelistIn=$3  #echo "filelistIn is ${filelistIn}" #debug
-debug=$4
+startFilePos=$3
+filelistIn=$4  #echo "filelistIn is ${filelistIn}" #debug
+debug=$5
+
+# one condor job submit per NFilesPerJob until we submit NJobs
+nFiles=`wc -l < $filelistIn`
+if [[ $startFilePos -ge $nFiles ]]
+then
+    echo "<startFilePos> too big, exit"
+    echo "0 <= <startFilePos> < ${nFiles}"
+    return 1
+fi
+echo ""
+echo "# of files in list: ${nFiles}"
+echo "you requested ${NJobs} jobs with ${NFilesPerJob} files per job"
+echo "starting at file position ${startFilePos}..."
+echo ""
 
 # additional inputs to the run script and .exe, these don't change too much
 destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/readFiles_ppData"
@@ -28,7 +52,7 @@ dirName="readFiles_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
 logFileDir="${PWD}/outputCondor/${dirName}"
 mkdir $logFileDir
-echo "log files in ${logFileDir}"
+echo "log files in ${PWD}/outputCondor"
 
 # cmsenv for condor
 echo "cmsenv'ing..."
@@ -41,26 +65,42 @@ echo "compiling..."
 g++ readFiles_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readFiles_ppData.exe || return 1
 cp readFiles_ppData.* "${logFileDir}"
 
-# one condor job submit per NFilesPerJob until we submit NJobs
-nFiles=`wc -l < $filelistIn`
-echo "nFiles in list: ${nFiles}"
-
 ### CREATE NAMES AND FILES, THEN SUBMIT ###
 NthJob=0
-counter=0
+filelistLength=$nFiles
+startfile=0
+endfile=0
+#echo "startfile is ${startfile}" 
+#echo "endfile is ${endfile}"     
 while [ $NthJob -lt $NJobs ]
-do
-    
-    # job splitting
-    startfile=$(( $NthJob * $NFilesPerJob ))
-    endfile=$(( ($NthJob + 1) * $NFilesPerJob ))
-    if [ $endfile -gt $nFiles ]; then #check for end of filelist
-        let endfile=$nFiles 
-        let NthJob=$(($NJobs - 1)) 
+do 
+    echo ""
+    echo "SUBMITTING JOB # ${NthJob}"
+
+    # start/end file 
+    if [[ $NthJob -le 0 ]]
+    then
+	startfile=$startFilePos
+	endfile=$(( $startfile + $NFilesPerJob ))
+	endfile=$(( $endfile - 1 ))
+    else 
+	startfile=$(( $endfile + 1 ))
+	endfile=$(( $startfile + $NFilesPerJob ))
+	endfile=$(( $endfile - 1 ))
     fi
-    endfile=$(($endfile - 1)) #for inclusive boundary 
-    #echo "startfile is ${startfile}"
-    #echo "endfile is ${endfile}"
+    #echo "startfile is ${startfile}" 
+    #echo "endfile is ${endfile}"     
+
+    # check; end of filelist
+    if [ $endfile -ge $lastFilePos ]; 
+    then 
+	echo "end of filelist!"
+	let endfile=$lastFilePos
+	let NthJob=$(( $NJobs - 1 )) 
+    fi
+    
+    # for next job
+    NthJob=$(($NthJob + 1))
 
     # define output names for job submission
     fileRange="${startfile}to${endfile}"
@@ -93,9 +133,8 @@ Queue
 EOF
 
     # submit the job defined in the above submit file
-    NthJob=$(($NthJob + 1))
-    echo "submitting readFiles_ppData job #${counter}"
-    counter=$(($counter + 1))
-    #condor_submit ${logFileDir}/subfile    
-    #sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    echo "running files #${startfile} to #${endfile}"
+    echo "submitting readFiles_ppData job..."
+    condor_submit ${logFileDir}/subfile    
+    sleep 0.5s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done

@@ -24,9 +24,9 @@ echo ""
 startfile=$1
 endfile=$2
 filelist=$3
-outfile=$6 
-radius=$4 
-jetType=$5 
+outfile=$4
+radius=$5 
+jetType=$6 
 debug=$7
 #destination=$8
 

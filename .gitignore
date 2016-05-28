@@ -12,9 +12,15 @@
 ./setupenv.sh
 ./deprecated_RAA_5p02_code
 ./ppMC/filelists/old
+./ppData/readFiles_ppData/saved_outputCondor
+./ppData/readFiles_ppData/saved_outputCondor/*
+./ppData/readFiles_ppData/saved_outputCondor/*/
+./ppData/DijetResponse/outputCondorGood
 ./ppData/DijetResponse/outputCondorGood/*
 ./ppData/DijetResponse/outputCondorGood/*/
+./ppData/DijetResponse/outputCondor
 ./ppData/DijetResponse/outputCondor/*
 ./ppData/DijetResponse/outputCondor/*/
-./ppData/DijetResponse/quickScripts/*
+./ppData/DijetResponse/quickScripts
+./ppData/DijetResponse/quickScripts/
 ./ppData/DijetResponse/quickScripts/*

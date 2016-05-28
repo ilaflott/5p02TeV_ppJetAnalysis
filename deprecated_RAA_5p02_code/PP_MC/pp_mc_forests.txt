@@ -1,8 +1,0 @@
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/0.root
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/1.root
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/2.root
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/3.root
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/4.root
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/5.root
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/6.root
-/mnt/hadoop/cms/store/user/pawan/PYTHIA_QCD80_TuneCUETP8M1_cfi_RECODEBUGpp_757p1_TAGSignalPP/7.root

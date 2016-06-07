@@ -3,55 +3,18 @@
 // Macro for deriving the dijet relative and absolute response from pp data/MC forests
 // Uses JME-13-004 as a reference - "A" and "B" formulae are defined there
 
-// C includes			    
-#include <cstdlib>
-#include <iostream>
-#include <unistd.h>
-#include <fstream>
-#include <vector>
-// ROOT includes
-#include <TFile.h>
-#include <TTree.h>
-#include <TChain.h>
-#include <TLorentzVector.h>
-#include <TCanvas.h>
-#include <TLegend.h>
-#include <TAxis.h>
-#include <TH1F.h>
-// custom
+
 #include "DijetResponse.h"
 
 
-// deriveResponse // default inputs
-/////
-const int defStartFile=0;
-const int defEndFile=2; //exclusive boundary, range of files run over doesnt include endfile
-/////
-const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
-const std::string defDeriveOutputName = "deriveResponse_defOut.root"; 
-/////
-const int defRadius=4;
-const bool defIsMCderive=false;
-const bool defDebugMode = true; 
-
-
-// sumDijetResponse // default inputs
-/////
-const std::string defSumInput="deriveResponse_defOut.root";
-const std::string defSumOutput="sumResponse_defOut.root";
-const bool defIsMCsum=false;
-const bool defDoDraw=true;
-const bool defDebugModeSum=true;
-
-
-////// deriveResponse //////
-// looks at observables in pt/eta bins for later use
-int deriveResponse(int startfile = defStartFile, int endfile = defEndFile, 
-			std::string infile_Forest=defInFilelist, std::string outfile = defDeriveOutputName,
-			int radius = 4, bool isMC = defIsMCderive, bool debugMode = defDebugMode ){
+//// deriveResponse
+// ---------------------------------------------------------------------------------------------------------------
+// writes nbins_pt*nbins_eta "Response Histos" in each pt,eta bin
+int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::string outfile, // I/O
+		   int radius, bool isMC, bool debugMode){ // other
 
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
+  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   std::cout<<std::endl<<"///////////////////"<<std::endl;
@@ -74,12 +37,12 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
   TH1D *h_nEntriesB[nbins_pt][nbins_eta];
   TH1D *h_avgB[nbins_pt][nbins_eta];
   
-  //// for hMPFAbsPhoRespons
-  //int nEntriesAbsPho[nbins_pt][nbins_eta];  
-  //double avgAbsPho[nbins_pt][nbins_eta];
-  //TH1F *avgAbsPhoHisto[nbins_pt][nbins_eta];  
-  //TH1D *h_nEntriesAbsPho[nbins_pt][nbins_eta];
-  //TH1D *h_avgAbsPho[nbins_pt][nbins_eta];
+  // for hMPFAbsPhoRespons
+  int nEntriesAbsPho[nbins_pt][nbins_eta];  
+  double avgAbsPho[nbins_pt][nbins_eta];
+  TH1F *avgAbsPhoHisto[nbins_pt][nbins_eta];  
+  TH1D *h_nEntriesAbsPho[nbins_pt][nbins_eta];
+  TH1D *h_avgAbsPho[nbins_pt][nbins_eta];
   
   // book histos and initialize arrays
   for(int i=0; i<nbins_pt; i++){//pt loop
@@ -96,12 +59,12 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
       avgBHisto[i][j]   = new TH1F( Form( "avgBHisto_pt%d_eta%d",i,j),"",50,-1,1);
       h_avgB[i][j]      = new TH1D( Form( "h_avgB_%d_%d",i,j)        ,"",2, 0, 2);
       h_nEntriesB[i][j] = new TH1D( Form( "h_nEntriesB_%d_%d",i,j)   ,"",2, 0, 2);
-      //// avgAbsPho
-      //nEntriesAbsPho[i][j] = 0;
-      //avgAbsPho[i][j]      = 0;      
-      //avgAbsPhoHisto[i][j]   = new TH1F( Form( "avgAbsPhoHisto_pt%d_eta%d",i,j), "", 50, -1, 1);
-      //h_avgAbsPho[i][j]      = new TH1D( Form( "h_avgAbsPho_%d_%d",i,j),         "", 2,  0,  2);
-      //h_nEntriesAbsPho[i][j] = new TH1D( Form( "h_nEntriesAbsPho_%d_%d",i,j),    "", 2,  0,  2);
+      // avgAbsPho
+      nEntriesAbsPho[i][j] = 0;
+      avgAbsPho[i][j]      = 0;      
+      avgAbsPhoHisto[i][j]   = new TH1F( Form( "avgAbsPhoHisto_pt%d_eta%d",i,j), "", 50, -1, 1);
+      h_avgAbsPho[i][j]      = new TH1D( Form( "h_avgAbsPho_%d_%d",i,j),         "", 2,  0,  2);
+      h_nEntriesAbsPho[i][j] = new TH1D( Form( "h_nEntriesAbsPho_%d_%d",i,j),    "", 2,  0,  2);
     }//end eta loop
   }//end pt loop
   
@@ -114,10 +77,9 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
   // loop over specified files 
   std::cout<<"looping over specified files..."<<std::endl;
   for(int ifile = startfile; ifile<=endfile; ++ifile){//file loop
+
     // grab+open file
     instr_Forest>>filename_Forest;
-    //if(atMIT)filename_Forest=hadoopDir+filename_Forest;
-    //else filename_Forest=xrootdDirect+filename_Forest;
     if(debugMode)std::cout<<"opening trees from file "<<filename_Forest<<std::endl;    
     TFile *fin = TFile::Open(filename_Forest.c_str());
 
@@ -162,70 +124,87 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
     phoTree->SetBranchAddress("phoEta", &phoEta);
     phoTree->SetBranchAddress("phoPhi", &phoPhi);
 
-    // grab jet tree entries
+    // grab jet tree entries, loop over jets
+    const double jtptMin = 40;
     int jetEntries=jtTree->GetEntries();
-    if(fastDebugMode)jetEntries=100;
-    if(debugMode)std::cout<<"jetEntries = "<< jetEntries <<std::endl;
-
-    // loop over jets
-    if(debugMode)std::cout<<"beginning jet loop..."<< std::endl;    
+    if(fastDebugMode) jetEntries=100;
+    if(debugMode) std::cout<<"jetEntries = "<< jetEntries <<std::endl;
+    if(debugMode) std::cout<<"beginning jet loop..."<< std::endl;    
     for(int ientry=0; ientry<jetEntries; ientry++){//jet loop
+
       // get a jet entry from the trees
       jtTree->GetEntry(ientry);
       phoTree->GetEntry(ientry);//switched order from jet pf pho to jet pho pf, shouldnt cause problems...
       pfTree->GetEntry(ientry);
+
       if(debugMode&&ientry%50==0)std::cout<<"successfully grabbed entry from pftree"<<std::endl;
       if(debugMode&&nPFpart_>10000) std::cout<<"warning! nPF: "<<nPFpart_<<std::endl;
 
-      //// avgPhoResponse histo stuff
-      //// find response of detector to jet with particle-flow photon
-      //for(int i=0; i<nPho; i++){
-      //	if(phoEt->at(i)>30 && abs(phoEta->at(i))<1.4442){
-      //	  // the jet that the photon actually corresponds to?
-      //	  // why only loop up to nref-1?
-      //	  for(int ijet=0; ijet<nref-1; ijet++){
-      //	    if( pt_F[ijet]>=minJetPt && //jetpt cut
-      //		abs(phoPhi->at(i)-phi_F[ijet])>2.95 && //angular separation between the +jet
-      //		pt_F[ijet+1]/phoEt->at(i)<0.2 ){//jetpt/phoEt ratio
-      //	      if(debugMode)std::cout << "jet photon pair found" << std::endl;	    
-      //	      TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_,
-      //							 nref, pt_F, eta_F, phi_F, 		  
-      //                                                         m_F, rawpt_F, eSum, phoSum);           
-      //	      int etaBin = findBin(phoEta->at(i),nbins_eta,xbins_eta);
-      //	      int ptBin = findBin(phoEt->at(i),nbins_pt,xbins_pt);
-      //	      TLorentzVector phoVec(phoEt->at(i),phoEta->at(i),phoPhi->at(i),0.);
-      //	      double num = missEt.Dot(phoVec);
-      //	      nEntriesAbs[ptBin][etaBin]++;
-      //	      avgAbsPhoResponse[ptBin][etaBin] += (1+(num/phoVec.Dot(phoVec)));
-      //	      if(debugMode)std::cout<<"avgAbsPhoResponse = "<< avgAbsPhoResponse[ptBin][etaBin]<<std::endl;
-      //	      if(debugMode)std::cout<<"for [ptBin][etaBin]=]["<<ptBin<<"]["<<etaBin<<"]"<<std::endl;
-      //	      h_nEntriesAbs[ptBin][etaBin]->Fill(1);
-      //	      h_avgAbsPhoResponse[ptBin][etaBin]->Fill((1+(num/phoVec.Dot(phoVec))));
-      //	      hAvgAbsPhoResponse[ptBin][etaBin]->Fill(1+(num/phoVec.Dot(phoVec)));
-      //	    }//end photon+jetcut
-      //	  }//end jet loop
-      //	}//end photon cut
-      //}//end photon loop
-      //// end avgPhoResponse histo stuff
 
-      // avgA and avgB histos below this point
-      if(nref<=1)continue;
-      // assign two highest pt jets as rJet or pJet using eta/random# critera
+      // avgAbsPho histo stuff
+      // find response of detector to jet with particle-flow photon
+      if(debugMode)std::cout << "looping over photons...." << std::endl;	    
+      for(int i=0; i<nPho; i++){// photon loop
+	// check photon quality, if we found a good one, loop over jets!
+	float photonEt=phoEt->at(i); 
+	float photonEta=phoEta->at(i); 
+	if( photonEt<=30 ||
+	    abs(photonEta)>=1.4442 )continue;
+	if(debugMode)std::cout << "quality photon found, looping over jets..." << std::endl;	    
+	for(int ijet=0; ijet<jetEntries; ijet++){// jet loop
+	  // check jet pt, angular sepataion, jet energy/momentum
+	  float photonPhi=phoPhi->at(i);
+	  if( pt_F[ijet]<jtptMin ||         // jetpt cut
+              abs(photonPhi-phi_F[ijet])<=2.95 || //angular separation between the +jet
+              pt_F[ijet+1]/photonEt>=0.2 ) continue;
+	  if(debugMode)std::cout << "jet-photon pair found!!! computing dot products..." << std::endl;	    
+	  // missEt+findBin for this photon/jet pair event
+	  TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_,
+					     nref, pt_F, eta_F, phi_F, 		  
+					     m_F, rawpt_F, eSum, phoSum);           
+	  int etaBin = findBin(photonEta,nbins_eta,xbins_eta);
+	  int ptBin = findBin(photonEt,nbins_pt,xbins_pt);
+	  // dot products
+	  TLorentzVector phoVec(photonEt,photonEta,photonPhi, 0.);
+	  double missEtDotPhoVec = missEt.Dot(phoVec);
+	  double phoVecMagSq=phoVec.Dot(phoVec);
+	  double absPho=1+missEtDotPhoVec/phoVecMagSq;
+	  // fill
+	  nEntriesAbsPho[ptBin][etaBin]++;
+	  avgAbsPho[ptBin][etaBin] += ( absPho );
+	  h_nEntriesAbsPho[ptBin][etaBin]->Fill(1);
+	  h_avgAbsPho[ptBin][etaBin]->Fill( absPho );
+	  //h_avgAbsPho[ptBin][etaBin]->Fill(1+(num/phoVec.Dot(phoVec)));
+	  if(debugMode)std::cout<<"for photon #"<<i<<" and jet #"<<ijet<<std::endl;
+	  if(debugMode)std::cout<<"in bins [ptBin][etaBin]=]["<<ptBin<<"]["<<etaBin<<"]...."<<std::endl;
+	  if(debugMode)std::cout<<"missEt dot phoVec = "<< missEtDotPhoVec<<std::endl;
+	  if(debugMode)std::cout<<"phoVec mag^2 = "     << phoVecMagSq<<std::endl;
+	  if(debugMode)std::cout<<"absPho = "           << absPho<<std::endl;
+	  if(debugMode)std::cout<<"nEntriesAbsPho = "<< nEntriesAbsPho[ptBin][etaBin]<<std::endl;
+	}//end jet loop
+      }//end photon loop
+      // end avgAbsPho histo stuff
+
+
+      // avgA and avgB histo stuff
+      // need lead+sublead jets
+      if(nref<2)continue;
+
+      // randomly assign lead/sublead jet depending on eta distribution
       int rJet, pJet;
+      // rand() is pseudorandom at best according to internet 
+      // fix with srand() in future?
       if( abs(eta_F[0])<1.3 && abs(eta_F[1])<1.3 ){ 
-	int randInt=rand();// pseudorandom at best, fix with srand() in future?
+	int randInt=rand();
 	//if(debugMode)std::cout<< "rand() gave "<<randInt <<std::endl;
 	pJet = randInt%2;  rJet = (randInt+1)%2;
-      }
+      } 
       else if( abs(eta_F[0])<1.3 && abs(eta_F[1])<5. ) { pJet = 1; rJet = 0; }
       else if( abs(eta_F[1])<1.3 && abs(eta_F[0])<5. ) { pJet = 0; rJet = 1; }
-      else continue; //skip to the end of the scope of the if statement?
-                     //or the parent for statement? check this...
-      
+      else continue;// lead/sublead jets no good, next event!
       //if(debugMode)std::cout<< "rJet is "<<rJet<<" and pJet is "<<pJet <<std::endl;
       
       // minjetpt cut
-      const double jtptMin = 40;
       if(pt_F[rJet]<jtptMin) continue;
       
       // angular separation cut
@@ -243,13 +222,17 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
       int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
       int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
       
-      // histA stuff, use dijet asymmetry
+      // avgA histo stuff
+      // uses dijet asymmetry
       nEntriesA[ptBin][etaBin]++;
       avgA[ptBin][etaBin] += 0.5*(pt_F[pJet]-pt_F[rJet])/avgPt;
       h_nEntriesA[ptBin][etaBin]->Fill(1);
       h_avgA[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
       avgAHisto[ptBin][etaBin]->Fill(0.5*(pt_F[pJet]-pt_F[rJet])/avgPt);
-      
+      // end avgA histo stuff
+
+
+      // avgB histo stuff
       // histB stuff, "MPF Method", uses missEt
       if(debugMode)std::cout<<"calling findMissEt.."<<std::endl;
       TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_, 
@@ -259,12 +242,17 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
 	int etaBin = findBin(eta_F[pJet],nbins_eta,xbins_eta);
 	int ptBin = findBin(avgPt,nbins_pt,xbins_pt);
 	TLorentzVector jetVec(pt_F[rJet],eta_F[rJet],phi_F[rJet],m_F[rJet]);
+	
 	avgB[ptBin][etaBin] += (missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag()));
 	h_avgB[ptBin][etaBin]->Fill((missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag())));
 	avgBHisto[ptBin][etaBin]->Fill((missEt.Dot(jetVec) / ( 2*avgPt * jetVec.Mag())));
 	nEntriesB[ptBin][etaBin]++;
 	h_nEntriesB[ptBin][etaBin]->Fill(1);
       }//end second jet loop
+      // end avgB histo stuff
+      // end avgA and avgB histo stuff
+
+
     }//exit jet loop
     if(debugMode)std::cout<<std::endl;
     fin->Close();
@@ -287,10 +275,10 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
       avgBHisto[i][j]->Write();
       h_avgB[i][j]->Write();
       h_nEntriesB[i][j]->Write();
-      //// write the AbsPhoResponse stuff
-      //hAvgAbsPhoResponse[i][j]->Write();
-      //h_avgAbsPhoResponse[i][j]->Write();
-      //h_nEntriesAbs[i][j]->Write();
+      // write the avgAbsPho stuff
+      avgAbsPhoHisto[i][j]->Write();
+      h_avgAbsPho[i][j]->Write();
+      h_nEntriesAbsPho[i][j]->Write();
     }
   }
   std::cout<< "closing file "<< outfile <<std::endl;
@@ -299,10 +287,13 @@ int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
 } //end deriveResponse
 
 
-////// sumDijetResponse //////
-// sums up output histos over eta bins from deriveResponse
-int sumResponse(std::string filename=defSumInput, std::string outFileName=defSumOutput,
-		     bool isMC=defIsMCsum , bool doDraw=defDoDraw ,  bool debugMode=defDebugModeSum){
+//// sumResponse
+// ---------------------------------------------------------------------------------------------------------------
+// reads output file with "Response Histos" in each pt,eta bin
+// derives total response in each pt bin by summing the histos over eta bins
+// doDraw option allows one to print the histos directly from the routine
+int sumResponse(std::string filename, std::string outFileName,
+                bool isMC, bool doDraw, bool debugMode){
   
   // debug mode
   const bool loopDebugMode = (debugMode)&&false;
@@ -512,8 +503,9 @@ int sumResponse(std::string filename=defSumInput, std::string outFileName=defSum
 } //end sumResponse
 
 
-////// main //////
-// frontend control for compiled executable, calls macros
+//// main
+// ---------------------------------------------------------------------------------------------------------------
+// front-end/steering/control for .exe file
 int main(int argc, char *argv[]){
 
   // rStatus=-1 for bad input, 1 for not finishing job of choice

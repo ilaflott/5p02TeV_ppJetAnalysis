@@ -24,3 +24,6 @@
 ./ppData/DijetResponse/quickScripts
 ./ppData/DijetResponse/quickScripts/
 ./ppData/DijetResponse/quickScripts/*
+./deprecated_RAA_5p02_code
+./deprecated_RAA_5p02_code/*
+./deprecated_RAA_5p02_code/*/

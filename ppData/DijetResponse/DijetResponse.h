@@ -1,3 +1,9 @@
+// Originally written by: Kurt Jung, December 2015
+// Overhaul, Ian Laflotte, May 1st 2016
+// Macro for deriving the dijet relative and absolute response from pp data/MC forests
+// Uses JME-13-004 as a reference - "A" and "B" formulae are defined there
+
+
 // C includes
 #include <cstdlib>
 #include <iostream>

@@ -8,7 +8,7 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
 		   int radius, bool isMC, bool debugMode){ // other
 
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
+  const bool fastDebugMode = (debugMode&&false); //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   std::cout<<std::endl<<"///////////////////"<<std::endl;
@@ -118,11 +118,11 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
 
     // grab jet tree entries, loop over jets
     const double jtptMin = 40;
-    int jetEntries=jtTree->GetEntries();
-    if(fastDebugMode) jetEntries=100;
-    if(debugMode) std::cout<<"jetEntries = "<< jetEntries <<std::endl;
+    int jetEvents=jtTree->GetEntries();
+    //if(fastDebugMode) jetEvents=100;
+    if(debugMode) std::cout<<"jetEvents = "<< jetEvents <<std::endl;
     if(debugMode) std::cout<<"beginning jet loop..."<< std::endl;    
-    for(int ientry=0; ientry<jetEntries; ientry++){//jet loop
+    for(int ientry=0; ientry<jetEvents; ientry++){//jet loop
 
       // get a jet entry from the trees
       jtTree->GetEntry(ientry);
@@ -143,14 +143,13 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
 	bool foundPair=false;
 	if( photonEt<=30 ||
 	    abs(photonEta)>=1.4442 )continue;
-	if(debugMode&&!foundPhoton)std::cout << "at least one photon for this jet..." << std::endl; 
+	if(debugMode&&!foundPhoton&&ientry%100==0)std::cout << "at least one photon for this jet..." << std::endl; 
 	if(!foundPhoton)foundPhoton=true;
-	//used to only loop up to nref-1 = jetEntries-1, why?
-	for(int ijet=0; ijet<jetEntries; ijet++){// jet loop
+	for(int ijet=0; ijet<nref-1; ijet++){// loop over jets in event
 	  if( pt_F[ijet]<jtptMin ||         // jetpt cut
               abs(photonPhi-phi_F[ijet])<=2.95 || //angular separation between the +jet
               pt_F[ijet+1]/photonEt>=0.2 ) continue;
-	  if(debugMode&&!foundPair)std::cout << "at least one jet-photon pair found" << std::endl; 
+	  if(debugMode&&!foundPair&&ientry%100==0)std::cout << "at least one jet-photon pair found" << std::endl; 
 	  if(!foundPair)foundPair=true;
 	  // missEt+findBin for this photon/jet pair event
 	  TLorentzVector missEt = findMissEt(nPFpart_, pfId_, pfPt_, pfEta_, pfPhi_,

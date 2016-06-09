@@ -150,3 +150,65 @@ TLorentzVector findMissEt(int nPFpart_,
   
 
 }
+
+// missEt = - Sum(Et you can see), i need a better description
+// this version uses array as input for PF particles
+TLorentzVector findMissEt(int nPFpart_,  								    
+			  int *pfId_, float *pfPt_, 				    
+			  float *pfEta_, float *pfPhi_, 			    
+			  int nref, float *pt_F,  float *eta_F, float *phi_F, 			     
+			  float *m_F, float *rawpt_F, float *eSum,  float *phoSum){                           
+
+  bool missEtDebugMode=false;
+  if(missEtDebugMode)std::cout<<std::endl<<"missEtDebugMode is ON"<<std::endl;
+
+  //missing Et from particles  
+  TLorentzVector missEt(0,0,0,0);
+  for(int i=0; i<nPFpart_; i++){//PF Loop
+    if(missEtDebugMode&&i==0)std::cout<<std::endl<<"in findMissEt's PF loop: "<<std::endl;
+    TLorentzVector pfp;
+    double pfMass=0;
+    if(pfId_[i]==1 || pfId_[i]==4) pfMass = 0.1395702;//pi+/- meson, is this always justified?
+    //pfp.SetPtEtaPhiM(pfPt[i],pfEta[i],pfPhi[i],pfMass);
+    pfp.SetPtEtaPhiM(pfPt_[i],pfEta_[i],pfPhi_[i],pfMass);
+    if(missEtDebugMode &&(i%100==0)) std::cout<<"pfPt  [i="<<i<<"]  =  "<<pfPt_[i]<<std::endl;
+    if(missEtDebugMode &&(i%100==0)) std::cout<<"pfEta [i="<<i<<"]  =  "<<pfEta_[i]<<std::endl;
+    if(missEtDebugMode &&(i%100==0)) std::cout<<"pfPhi [i="<<i<<"]  =  "<<pfPhi_[i]<<std::endl;
+    if(missEtDebugMode &&(i%100==0)) std::cout<<"pfMass[i="<<i<<"]  =  "<<pfMass<<std::endl;
+    pfp.SetPz(0.); //2d projection in x-y plane
+    missEt += pfp;
+  }//end PF loop
+  
+  //missing Et from jets
+  for(int i=0; i<nref; i++){//begin jet loop
+    if(missEtDebugMode&&i==0)std::cout<<std::endl<<"in findMissEt's jet loop"<<std::endl;
+    if(pt_F[i]<=15) continue;
+    TLorentzVector jtTmp(pt_F[i],eta_F[i],phi_F[i],m_F[i]);
+    double jetEnergy=jtTmp.E();
+    if(missEtDebugMode&&(i%10==0))std::cout<<"eSum[i="<<i<<"] = "<<eSum[i]<<std::endl;
+    if( (eSum[i]+phoSum[i])/jetEnergy<0.9 ){
+      TLorentzVector jt;
+      jt.SetPtEtaPhiM(pt_F[i]-rawpt_F[i],eta_F[i],phi_F[i],m_F[i]);
+      jt.SetPz(0.); //project to x-y plane
+      missEt += jt;
+    }
+  }//end jet loop
+  
+  missEt*=-1; // rotate 180 deg, to get missing Et,
+  missEt.SetE(0.);  // only care about Et, not E
+  return missEt;
+
+  // old, consider removing
+  ////missing Et from jets
+  //for(int i=0; i<nref; i++){//begin jet loop
+  //  if(pf_F[i]<=15) continue;//quick cut before expensive computations
+  //  TLorentzVector jt(pt_F[i],eta_F[i],phi_F[i],m_F[i]);
+  //  if( (eSum[i]+phoSum[i])/jt.E()<0.9 ){
+  //    jt.SetPtEtaPhiM(pt_F[i]-rawpt_F[i],eta_F[i],phi_F[i],m_F[i]);
+  //    jt.SetPz(0.); //project to x-y plane
+  //    missEt += jt;
+  //  }
+  //}//end jet loop
+  
+
+}

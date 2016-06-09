@@ -1,1 +1,0 @@
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/kjung/pp5TeV_HighPtLowerJet_AOD_cmssw758_15Jan2015/HighPtLowerJets/crab_pp5Tev_LowerJet_15Jan15/160115_160404/0000/HiForestAOD_296.root

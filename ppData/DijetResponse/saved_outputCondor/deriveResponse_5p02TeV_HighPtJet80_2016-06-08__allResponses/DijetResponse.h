@@ -91,7 +91,6 @@ int findBin(float value, int nbins, const double *xbins){
 
 
 // missEt = - Sum(Et you can see), i need a better description
-// this method uses vector storage for particle flow particles
 TLorentzVector findMissEt(int nPFpart_,  								    
 			  std::vector<int> *pfId_, std::vector<float> *pfPt_, 				    
 			  std::vector<float> *pfEta_, std::vector<float> *pfPhi_, 			    
@@ -153,7 +152,7 @@ TLorentzVector findMissEt(int nPFpart_,
 }
 
 // missEt = - Sum(Et you can see), i need a better description
-// this version uses a pointer to the start of PF particle arrays as input
+// this version uses array as input for PF particles
 TLorentzVector findMissEt(int nPFpart_,  								    
 			  int *pfId_, float *pfPt_, 				    
 			  float *pfEta_, float *pfPhi_, 			    

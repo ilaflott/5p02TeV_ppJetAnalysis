@@ -89,28 +89,25 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
     float rawpt_F[1000], m_F[1000], eSum[1000], phoSum[1000];
     //pfTree
     int nPFpart_;
-    int pfId_[10000];				       
-    float pfPt_[10000], pfEta_[10000], pfPhi_[10000];
-    //std::vector<int> *pfId_;                          //HighPtJet80 dataset only         
-    //std::vector<float> *pfPt_=0, *pfEta_=0, *pfPhi_=0;	    
-
+    std::vector<int> *pfId_;                                //int pfId[10000];				       
+    std::vector<float> *pfPt_=0, *pfEta_=0, *pfPhi_=0;	    //float pfPt[10000], pfEta[10000], pfPhi[10000];
     //phoTree
     int nPho;
     std::vector<float> *phoEt=0, *phoEta=0, *phoPhi=0; 
 
     // branch addresses
     jtTree->SetBranchAddress("nref",      &nref   );
-    jtTree->SetBranchAddress("jtpt",      &pt_F    );
-    jtTree->SetBranchAddress("jteta",     &eta_F   );
-    jtTree->SetBranchAddress("jtphi",     &phi_F   );
-    jtTree->SetBranchAddress("jtm",       &m_F     );
-    jtTree->SetBranchAddress("rawpt",     &rawpt_F );
-    jtTree->SetBranchAddress("eSum",      &eSum    );  
-    jtTree->SetBranchAddress("photonSum", &phoSum  );  
+    jtTree->SetBranchAddress("jtpt",      pt_F    );
+    jtTree->SetBranchAddress("jteta",     eta_F   );
+    jtTree->SetBranchAddress("jtphi",     phi_F   );
+    jtTree->SetBranchAddress("jtm",       m_F     );
+    jtTree->SetBranchAddress("rawpt",     rawpt_F );
+    jtTree->SetBranchAddress("eSum",      eSum    );  //jtTree->SetBranchAddress("eSum",      &eSum   ); 
+    jtTree->SetBranchAddress("photonSum", phoSum  );  //jtTree->SetBranchAddress("photonSum", &phoSum ); 
 
     pfTree->SetBranchAddress("nPFpart", &nPFpart_);
     pfTree->SetBranchAddress("pfId",    &pfId_);
-    pfTree->SetBranchAddress("pfPt",    &pfPt_);
+    pfTree->SetBranchAddress("pfPt",    &pfPt_);//added ampersand to switch from float array to vector<float>*
     pfTree->SetBranchAddress("pfEta",   &pfEta_);
     pfTree->SetBranchAddress("pfPhi",   &pfPhi_);
 
@@ -120,18 +117,19 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
     phoTree->SetBranchAddress("phoPhi", &phoPhi);
 
     // grab jet tree entries, loop over jets
-    const double jtptMin = 40.;
+    const double jtptMin = 40;
     int jetEvents=jtTree->GetEntries();
+    //if(fastDebugMode) jetEvents=100;
     if(debugMode) std::cout<<"jetEvents = "<< jetEvents <<std::endl;
     if(debugMode) std::cout<<"beginning jet loop..."<< std::endl;    
     for(int ientry=0; ientry<jetEvents; ientry++){//jet loop
 
       // get a jet entry from the trees
       jtTree->GetEntry(ientry);
-      phoTree->GetEntry(ientry);
+      phoTree->GetEntry(ientry);//switched order from jet pf pho to jet pho pf, shouldnt cause problems...
       pfTree->GetEntry(ientry);
-      if(nPFpart_>10000) std::cout<<"warning! nPF: "<<nPFpart_<<std::endl;
-      if(nPFpart_>10000) nPFpart_=10000;
+      //if(debugMode)std::cout<<"successfully grabbed entry from pftree"<<std::endl;
+      if(debugMode&&nPFpart_>10000) std::cout<<"warning! nPF: "<<nPFpart_<<std::endl;
 
       // avgAbsPho histo stuff //
       // doesn't quite come out with sensible numbers at the moment

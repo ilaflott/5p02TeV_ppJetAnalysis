@@ -3,7 +3,7 @@
 
 //// deriveResponse
 // ---------------------------------------------------------------------------------------------------------------
-// writes nbins_pt*nbins_eta "Response Histos" in each pt,eta bin
+// writes nbins_pt*nbins_eta histograms of a quantity, e.g. dijet momentum ratio, for use in sumResponse
 int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::string outfile, // I/O
 		   int radius, bool isMC, bool debugMode){ // other
 
@@ -283,8 +283,9 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
 
 //// sumResponse
 // ---------------------------------------------------------------------------------------------------------------
-// reads output file with "Response Histos" in each pt,eta bin
+// reads output from deriveResponse in each eta, pt bin
 // derives total response in each pt bin by summing the histos over eta bins
+// each response corresponds to different physical quantity,e.g. avgA->dijet asymmetry 
 // doDraw option allows one to print the histos directly from the routine
 int sumResponse(std::string filename, std::string outFileName,
                 bool isMC, bool doDraw, bool debugMode){
@@ -339,10 +340,10 @@ int sumResponse(std::string filename, std::string outFileName,
       if(loopDebugMode)std::cout<< "hRelResponse_i_jadd1 = " << hRelResponse_i_jadd1 << std::endl;
       if(loopDebugMode)std::cout<< "hRelResponse_i_jadd1_err = " << hRelResponse_i_jadd1_err << std::endl;
       // protect against NaN
-      if(avgAEntries_ij!=0) hRelResponse_i->SetBinContent( j+1 , hRelResponse_i_jadd1 );     
-      else hRelResponse_i->SetBinContent( j+1 , 0 );
-      if(avgAEntries_ij!=0) hRelResponse_i->SetBinError( j+1 , hRelResponse_i_jadd1_err );
-      else hRelResponse_i->SetBinError( j+1 , 0 );
+      if(avgAEntries_ij==0) hRelResponse_i->SetBinContent( j+1 , 0 );
+      else hRelResponse_i->SetBinContent( j+1 , hRelResponse_i_jadd1 );     
+      if(avgAEntries_ij==0) hRelResponse_i->SetBinError( j+1 , 0 );
+      else hRelResponse_i->SetBinError( j+1 , hRelResponse_i_jadd1_err );
       totEntriesA_ptbin_i+=avgAEntries_ij;    
 
       //// avgB and hMPFResponse ////
@@ -358,10 +359,10 @@ int sumResponse(std::string filename, std::string outFileName,
       if(loopDebugMode)std::cout<< "hMPFResponse_i_jadd1 = " << hMPFResponse_i_jadd1 << std::endl;
       if(loopDebugMode)std::cout<< "hMPFResponse_i_jadd1_err = " << hMPFResponse_i_jadd1_err << std::endl;
       // protect against NaN
-      if(avgBEntries_ij!=0) hMPFResponse_i->SetBinContent( j+1 , hMPFResponse_i_jadd1 );     
-      else hMPFResponse_i->SetBinContent( j+1 , 0 );
-      if(avgBEntries_ij!=0) hMPFResponse_i->SetBinError( j+1 , hMPFResponse_i_jadd1_err );
-      else hMPFResponse_i->SetBinError( j+1 , 0 );
+      if(avgBEntries_ij==0) hMPFResponse_i->SetBinContent( j+1 , 0 );
+      else hMPFResponse_i->SetBinContent( j+1 , hMPFResponse_i_jadd1 );     
+      if(avgBEntries_i==0) hMPFResponse_i->SetBinError( j+1 , 0 );
+      else hMPFResponse_i->SetBinError( j+1 , hMPFResponse_i_jadd1_err );
       totEntriesB_ptbin_i+=avgBEntries_ij;    
 
       //// avgAbsPho and hMPFAbsPhoResponse ////
@@ -378,10 +379,10 @@ int sumResponse(std::string filename, std::string outFileName,
       if(loopDebugMode)std::cout<< "hMPFAbsPhoResponse_i_jadd1 = " << hMPFAbsPhoResponse_i_jadd1 << std::endl;
       if(loopDebugMode)std::cout<< "hMPFAbsPhoResponse_i_jadd1_err = " << hMPFAbsPhoResponse_i_jadd1_err << std::endl;
       // protect against NaN
-      if(avgAbsPhoEntries_ij!=0) hMPFAbsPhoResponse_i->SetBinContent( j+1 , hMPFAbsPhoResponse_i_jadd1 );     
-      else hMPFAbsPhoResponse_i->SetBinContent( j+1 , 0 );
-      if(avgAbsPhoEntries_ij!=0) hMPFAbsPhoResponse_i->SetBinError( j+1 , hMPFAbsPhoResponse_i_jadd1_err );
-      else hMPFAbsPhoResponse_i->SetBinError( j+1 , 0 );
+      if(avgAbsPhoEntries_ij==0) hMPFAbsPhoResponse_i->SetBinContent( j+1 , 0 );
+      else hMPFAbsPhoResponse_i->SetBinContent( j+1 , hMPFAbsPhoResponse_i_jadd1 );     
+      if(avgAbsPhoEntries_ij==0) hMPFAbsPhoResponse_i->SetBinError( j+1 , 0 );
+      else hMPFAbsPhoResponse_i->SetBinError( j+1 , hMPFAbsPhoResponse_i_jadd1_err );
       totEntriesAbsPho_ptbin_i+=avgAbsPhoEntries_ij;    
     }//end eta loop
 
@@ -418,12 +419,13 @@ int sumResponse(std::string filename, std::string outFileName,
 
   if(doDraw){
     if(debugMode)std::cout<<"drawing all responses.."<<std::endl;
+
     //// avgA and hRelResponse ////
     TCanvas *c0 = new TCanvas("hRelResponse_all","Rel, all avail. pt",600,600);
-    TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
     c0->cd(); 
     std::cout<<"drawing hRelResponse_all..."<<std::endl;
     for(int i=0;i<nbins_pt;++i){ 
+      TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
       std::string  hRelResponseTitle_i="hRelResponse_pt"+std::to_string(i);
       if(loopDebugMode)std::cout<<"drawing "<<hRelResponseTitle_i<<std::endl;
       TH1F* hRelResponse_i = (TH1F*)(fout->Get(hRelResponseTitle_i.c_str())->Clone()) ;
@@ -441,12 +443,15 @@ int sumResponse(std::string filename, std::string outFileName,
       l0->AddEntry(hRelResponse_i,legTitle.c_str());
     }
     l0->Draw("same");
-
+    if(debugMode)std::cout<<"saving c0.."<<std::endl;
+    c0->Write();
+    c0->Close();
+    
     //// avgB and hMPFResponse ////    
     TCanvas *c1 = new TCanvas("hMPFResponse_all","MPF, all avail. pt",600,600);
-    TLegend *l1 = new TLegend(0.4,0.8,0.7,0.9);
     c1->cd(); 
     std::cout<<"drawing hMPFResponse_all..."<<std::endl;
+    TLegend *l1 = new TLegend(0.4,0.8,0.7,0.9);
     for(int i=0;i<nbins_pt;++i){ 
       std::string  hMPFResponseTitle_i="hMPFResponse_pt"+std::to_string(i);
       if(loopDebugMode)std::cout<<"drawing "<<hMPFResponseTitle_i<<std::endl;
@@ -465,12 +470,16 @@ int sumResponse(std::string filename, std::string outFileName,
       l1->AddEntry(hMPFResponse_i,legTitle.c_str());
     }
     l1->Draw("same");
+    if(debugMode)std::cout<<"saving c1.."<<std::endl;
+    c1->Write();
+    c1->Close();
+
 
     //// avgAbsPho and hMPFAbsPhoResponse ////    
     TCanvas *c2 = new TCanvas("hMPFAbsPhoResponse_all","MPFAbsPho, all avail. pt",600,600);
-    TLegend *l2 = new TLegend(0.4,0.8,0.7,0.9);
     c2->cd(); 
     std::cout<<"drawing hMPFAbsPhoResponse_all..."<<std::endl;
+    TLegend *l2 = new TLegend(0.4,0.8,0.7,0.9);
     for(int i=0;i<nbins_pt;++i){ 
       std::string  hMPFAbsPhoResponseTitle_i="hMPFAbsPhoResponse_pt"+std::to_string(i);
       if(loopDebugMode)std::cout<<"drawing "<<hMPFAbsPhoResponseTitle_i<<std::endl;
@@ -489,19 +498,11 @@ int sumResponse(std::string filename, std::string outFileName,
       l2->AddEntry(hMPFAbsPhoResponse_i,legTitle.c_str());
     }
     l2->Draw("same");
-
-    // write the drawn canvases to the output file
-    fout->cd();
-    if(debugMode)std::cout<<"saving c0.."<<std::endl;
-    c0->Write();
-    if(debugMode)std::cout<<"saving c1.."<<std::endl;
-    c1->Write();
     if(debugMode)std::cout<<"saving c2.."<<std::endl;
     c2->Write();
+    c2->Close();
   }//end doDraw section
-
   std::cout<< "output file "<<outFileName<<" written"<<std::endl;  
-  std::cout<< "closing..."<<std::endl;  
   fout->Close();
   return 0;  
 } //end sumResponse

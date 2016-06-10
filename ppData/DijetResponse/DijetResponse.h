@@ -6,6 +6,7 @@
 
 // C includes
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <unistd.h>
 #include <fstream>

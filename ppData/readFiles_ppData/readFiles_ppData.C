@@ -1,105 +1,10 @@
-// original author: Raghav Kunnawalkam Elayavalli
-// Nov 24th 2015
-// Overhaul, Ian Laflotte
-// Apr 29th 2016
-// reads and writes jets from pp data forest files
-// for producing quality assurance spectra, and for unfolding later
-// compile with...
-// g++ RAA_read_data_pp.C $(root-config --cflags --libs) -Werror -Wall -O2 -o RAA_read_data_pp.exe
-
-///////////////////////////////////////////
-////////// includes/preprocessor //////////
-///////////////////////////////////////////
-
-// C++, C, etc.			    
-#include <cstdlib>		    
-#include <cstdio>		    
-#include <cassert>
-#include <cmath>		    
-#include <iostream>		    
-#include <fstream>		    
-// ROOTSYS
-#include <TSystem.h>		    
-#include <TProfile.h>		    
-// I/O
-#include <TChain.h>		    
-#include <TFile.h>		    
-#include <TTree.h>		    
-#include <TNtuple.h>		    
-#include <TEventList.h>		    
-#include <TCut.h>		    
-// utilities			    
-#include <TMath.h>		    
-#include <TRandom3.h>		    
-#include <TStopwatch.h>		    
-// plotting			    
-#include <TStyle.h>		    
-#include <TCanvas.h>		    
-#include <TGraphErrors.h>	    
-#include <TGraphAsymmErrors.h>	    
-#include <TLegend.h>		    
-#include <TLatex.h>		    
-#include <TLine.h>		    
-// histos				    
-#include <TH1.h>		    
-#include <TH2.h>		    
-#include <TH3.h>		    
-#include <TH1F.h>		    
-#include <TH2F.h>                   
-#include <TF1.h>		    
 // custom header
 #include "readFiles_ppData.h"
 
-//////////////////////////////////////
-////////// readFiles_ppData //////////
-//////////////////////////////////////
-
-// default inputs to the routine
-/////
-const int defStartFile=0;
-const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
-/////
-const int defRadius=4;
-const std::string defJetType="PF";
-/////
-const std::string defOutputName = "readFiles_ppData_defOut.root"; 
-const bool defDebugMode = true; 
-
-// old code i don't want in body, may be deleting soon
-/////
-// for debugging dijet asymmetry stuff
-//float leadjetpt_lastEvent =0;//debug
-//float   subjtpt_lastEvent =0;//debug
-//float   A_j_lastEvent     =0;//debug
-//float   x_j_lastEvent     =0;//debug
-//if(nref_F<=1){
-//  std::cout<<"not enough jets!"<<std::endl;
-//  std::cout<<"pt_F[0]="<<pt_F[0]<<std::endl;
-//  std::cout<<"pt_F[1]="<<pt_F[1]<<std::endl;
-//  std::cout<<"A_j= "<<A_j<<std::endl;
-//  std::cout<<"x_j= "<<x_j<<std::endl;
-//  std::cout<<"from previous event... pt_F[0]=" <<leadjetpt_lastEvent <<std::endl;
-//  std::cout<<"from previous event... pt_F[1]=" <<subjtpt_lastEvent   <<std::endl;
-//  std::cout<<"from previous event... A_j= "    <<A_j_lastEvent       <<std::endl;
-//  std::cout<<"from previous event... x_j= "    <<x_j_lastEvent       <<std::endl;
-//  std::cout<<"ending loop on event #"<<nEvt<<std::endl;
-//  assert(nref_F>1);//isn't nref<=1 sometimes? how has this not crashed yet? 	
-//}
-//leadjetpt_lastEvent =pt_F[0];
-//subjtpt_lastEvent   =pt_F[1];
-//A_j_lastEvent       =A_j;
-//x_j_lastEvent       =x_j;
-
-// filelist manipulation
-//for(int ifile = 0;ifile<startfile;++ifile) instr_Forest >> filename_Forest;  
-//if(atMIT) filename_Forest=hadoopDir+filename_Forest;
-//else filename_Forest=xrootdDirect+filename_Forest;
-
-/////
-int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile , 
-		     std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
-		     int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode ){ 
+//// readFiles_ppData
+// ---------------------------------------------------------------------------------------------------------------
+int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std::string outfile ,
+		     int radius , std::string jetType , bool debugMode ){ 
 
   // for monitoring performance
   TStopwatch timer;  timer.Start();
@@ -146,11 +51,8 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
     instr_Forest>>filename_Forest; 
     if(ifile<startfile){lastFileAdded=filename_Forest;continue;}
     if(filename_Forest==lastFileAdded){std::cout<<"end of filelist!"<<std::endl;break;}//end of filelist condition
-    std::cout<<"adding file #"<<ifile;  if(debugMode)std::cout<<" "<<filename_Forest;  std::cout<<" to TChain"<<std::endl;
-    for(int t = 0;t<N_trees;++t){ 
-      if(debugMode)std::cout << "adding file to TChain of tree "<<trees[t]<<std::endl;
-      jetpp[t]->Add(filename_Forest.c_str()); treesAdded=true;
-    }
+    std::cout<<"adding file #"<<ifile;  if(debugMode)std::cout<<" "<<filename_Forest;  std::cout<<" to TChain(s)"<<std::endl;
+    for(int t = 0;t<N_trees;++t){ jetpp[t]->Add(filename_Forest.c_str()); treesAdded=true; }
     lastFileAdded=filename_Forest;
   }//end file loop
   assert(treesAdded);//avoid segfault later
@@ -191,10 +93,10 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
 
   // four trees, four specific HLT trigger pt objects
   //currently (5/26/16): HLT_AK${radius}CaloJet${trgObjpt}_Eta${}_v
-  std::vector<float> *trgObjpt_40  = 0;   
-  std::vector<float> *trgObjpt_60  = 0;   
-  std::vector<float> *trgObjpt_80  = 0;   
-  std::vector<float> *trgObjpt_100 = 0;
+  std::vector<double> *trgObjpt_40  ;   
+  std::vector<double> *trgObjpt_60  ;   
+  std::vector<double> *trgObjpt_80  ;   
+  std::vector<double> *trgObjpt_100 ;
 
   // set branch addresses for the input file treesp, map them to above variables
   // ak${radius}${jetType}JetAnalyzer
@@ -209,15 +111,15 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
   jetpp[0]->SetBranchAddress("chargedN",&chN_F);
   jetpp[0]->SetBranchAddress("chargedSum",&chSum_F);
   jetpp[0]->SetBranchAddress("chargedHardSum",&chHardSum_F);
-  jetpp[0]->SetBranchAddress("chargedMax",&chMax_F);  //  jetpp[0]->SetBranchAddress("chargedHardMax",&chMax_F);
+  jetpp[0]->SetBranchAddress("chargedMax",&chMax_F);  
   //tracks
   jetpp[0]->SetBranchAddress("trackSum",&trkSum_F);
   jetpp[0]->SetBranchAddress("trackHardSum",&trkHardSum_F);
-  jetpp[0]->SetBranchAddress("trackMax",&trkMax_F);  //  jetpp[0]->SetBranchAddress("trackHardMax",&trkMax_F);
+  jetpp[0]->SetBranchAddress("trackMax",&trkMax_F);  
   //photons
   jetpp[0]->SetBranchAddress("photonSum",&phSum_F);
   jetpp[0]->SetBranchAddress("photonHardSum",&phHardSum_F);
-  jetpp[0]->SetBranchAddress("photonMax",&phMax_F);  //  jetpp[0]->SetBranchAddress("photonHardMax",&phMax_F);
+  jetpp[0]->SetBranchAddress("photonMax",&phMax_F);  
   //leptons
   jetpp[0]->SetBranchAddress("eSum",&eSum_F);
   jetpp[0]->SetBranchAddress("eMax",&eMax_F);
@@ -239,12 +141,10 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_F);
 
   // hltanalysis
-  //L1 prescales
   jetpp[3]->SetBranchAddress("L1_SingleJet28_BptxAND_Prescl",&jet40_l1seed_p_F);
   jetpp[3]->SetBranchAddress("L1_SingleJet40_BptxAND_Prescl",&jet60_l1seed_p_F);
   jetpp[3]->SetBranchAddress("L1_SingleJet48_BptxAND_Prescl",&jet80_l1seed_p_F);
   jetpp[3]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&jet100_l1seed_p_F);
-  //HLT decisions+prescales
   jetpp[3]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1",&jet40_F);
   jetpp[3]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1_Prescl",&jet40_p_F);
   jetpp[3]->SetBranchAddress("HLT_AK4CaloJet60_Eta5p1_v1",&jet60_F);
@@ -353,7 +253,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
         pBeamScrapingFilter_F==0  || //skim
         pprimaryvertexFilter_F==0 || //skim
         fabs(vz_F)>15              ) continue;
-
+    
     // fill vz histo
     hVz->Fill(vz_F);
     
@@ -365,34 +265,57 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
     
     // prefer highPt l1 trigger for jet if it matches multiple l1jet pt criteria, then compute weight
     double triggerPt=0.;
+    unsigned int trgObj40_size =trgObjpt_40->size();
+    unsigned int trgObj60_size =trgObjpt_60->size();
+    unsigned int trgObj80_size =trgObjpt_80->size();
+    unsigned int trgObj100_size=trgObjpt_100->size();
+    
     if(jet40_F){
-      for(unsigned int itt=0; itt<trgObjpt_40->size(); ++itt){
+      for(unsigned int itt=0; itt<trgObj40_size; ++itt){
 	if(trgObjpt_40->at(itt) > triggerPt) triggerPt = trgObjpt_40->at(itt);
       }
     }
     if(jet60_F){
-      for(unsigned int itt=0; itt<trgObjpt_60->size(); ++itt){
+      for(unsigned int itt=0; itt<trgObj60_size; ++itt){
 	if(trgObjpt_60->at(itt) > triggerPt) triggerPt = trgObjpt_60->at(itt);
       }
     }
     if(jet80_F){
-      for(unsigned int itt=0; itt<trgObjpt_80->size(); ++itt){
-	if(trgObjpt_80->at(itt) > triggerPt) triggerPt = trgObjpt_80->at(itt);
+      for(unsigned int itt=0; itt<trgObj80_size; ++itt){
+    	if(trgObjpt_80->at(itt) > triggerPt) triggerPt = trgObjpt_80->at(itt);
       }
     }
     if(jet100_F){
-      for(unsigned int itt=0; itt<trgObjpt_100->size(); ++itt){
-	if(trgObjpt_100->at(itt) > triggerPt) triggerPt = trgObjpt_100->at(itt);
+      for(unsigned int itt=0; itt<trgObj100_size; ++itt){
+    	if(trgObjpt_100->at(itt) > triggerPt) triggerPt = trgObjpt_100->at(itt);
       }
     }    
+
     double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
-    
+
+    if(debugMode&&nEvt%250==0)std::cout <<"triggerPt ="<<triggerPt<<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 40, trgDec[0]  = "<< trgDec[0]  <<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 60, trgDec[1]  = "<< trgDec[1]  <<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 80, trgDec[2]  = "<< trgDec[2]  <<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 100, trgDec[3] = "<< trgDec[3]  <<std::endl<<std::endl;
+
     // check trigger decisions for events + exclusivity between them, count events
     bool is40  = false, is60  = false, is80  = false, is100 = false;
-    if(trgDec[0] && triggerPt>=40 && triggerPt<60 ) is40  = true;    if(is40)  NEvents_40++;
-    if(trgDec[1] && triggerPt>=60 && triggerPt<80 ) is60  = true;    if(is60)  NEvents_60++;
-    if(trgDec[2] && triggerPt>=80 && triggerPt<100) is80  = true;    if(is80)  NEvents_80++;
-    if(trgDec[3] && triggerPt>=100                ) is100 = true;    if(is100) NEvents_100++;
+    if(trgDec[0] && triggerPt>=40 && triggerPt<60 ) is40  = true;    
+    if(trgDec[1] && triggerPt>=60 && triggerPt<80 ) is60  = true;    
+    if(trgDec[2] && triggerPt>=80 && triggerPt<100) is80  = true;    
+    if(trgDec[3] && triggerPt>=100                ) is100 = true;    
+
+    if(debugMode&&nEvt%250==0)std::cout<<"after checking trigger pt "<<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 40,  is40  = "<< is40  <<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 60,  is60  = "<< is60  <<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 80,  is80  = "<< is80  <<std::endl;
+    if(debugMode&&nEvt%250==0)std::cout<<"jet 100, is100 = "<< is100  <<std::endl<<std::endl;
+
+    if(is40)  NEvents_40++; 
+    if(is60)  NEvents_60++; 
+    if(is80)  NEvents_80++; 
+    if(is100) NEvents_100++;
     if(true)  NEvents++;
     
     // JET LOOP 
@@ -429,6 +352,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
       hJetQA[0][16]->Fill(eSum_F[jet]/recpt, weight_eS);
       hJetQA[0][17]->Fill(muMax_F[jet]/recpt, weight_eS);
       hJetQA[0][18]->Fill(muSum_F[jet]/recpt, weight_eS);
+
       
       if(is40)  hpp_TrgObj40[0]->Fill(recpt, treePrescl[0]);//recpt here+below prescale weighted
       if(is60)  hpp_TrgObj60[0]->Fill(recpt, treePrescl[1]);
@@ -476,19 +400,18 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
       hJetQA[1][17]->Fill(muMax_F[jet]/recpt, weight_eS);
       hJetQA[1][18]->Fill(muSum_F[jet]/recpt, weight_eS);
       
-      if(is40)  hpp_TrgObj40[1]->Fill(recpt, treePrescl[0]);
-      if(is60)  hpp_TrgObj60[1]->Fill(recpt, treePrescl[1]);
-      if(is80)  hpp_TrgObj80[1]->Fill(recpt, treePrescl[2]);
+      if(is40 )  hpp_TrgObj40[1]->Fill(recpt, treePrescl[0]);
+      if(is60 )  hpp_TrgObj60[1]->Fill(recpt, treePrescl[1]);
+      if(is80 )  hpp_TrgObj80[1]->Fill(recpt, treePrescl[2]);
       if(is100) hpp_TrgObj100[1]->Fill(recpt, treePrescl[3]);
       if(true)  hpp_CombJetpT[1]->Fill(recpt, weight_eS);
-      
+
+
       if( jet==0 && nref_F>1 ){
 	float A_j=(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
 	float x_j=(pt_F[1]/pt_F[0]); 	
 	hJetQA[1][19]->Fill( A_j , weight_eS ); 
 	hJetQA[1][20]->Fill( x_j , weight_eS ); 
-	//hJetQA[1][19]->Fill((float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]), weight_eS);
-	//hJetQA[1][20]->Fill((float)(pt_F[1]/pt_F[0]), weight_eS);
       }
       
     }//end jet loop
@@ -542,12 +465,12 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
   std::cout<<"writing output file..."<<std::endl;
   fout->Write();
 
-  if(debugMode)std::cout<<"clearing trgObjpt..."<<std::endl;
+  if(debugMode)std::cout<<"misc clean up.."<<std::endl;
   trgObjpt_40->clear();
   trgObjpt_60->clear();
   trgObjpt_80->clear();
   trgObjpt_100->clear();
-  
+
   timer.Stop();
 
   std::cout<<std::endl<<"readFiles_ppData finished."<<std::endl;
@@ -555,6 +478,7 @@ int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   return 0;
 }// end readFiles_ppData
+
 
 ////// main //////
 // acts as the frontend control for .exe file

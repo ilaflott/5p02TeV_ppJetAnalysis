@@ -13,8 +13,8 @@ then
     return 1
 elif [[ $3 -lt 0 ]] 
 then
-    echo "bad integer input"
-    echo "0 <= integer input"
+    echo "bad 3rd argument"
+    echo "0 <= <startFilePos> <= nFiles-1"
     return 1
 fi
 

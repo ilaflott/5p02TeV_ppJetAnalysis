@@ -1,9 +1,78 @@
-////////// (initializa/declara)tions //////////
+// original author: Raghav Kunnawalkam Elayavalli
+// Nov 24th 2015
+// Overhaul, Ian Laflotte
+// Apr 29th 2016
+// reads and writes jets from pp data forest files
+// for producing quality assurance spectra, and for unfolding later
+// compile with...
+// g++ RAA_read_data_pp.C $(root-config --cflags --libs) -Werror -Wall -O2 -o RAA_read_data_pp.exe
 
-// declare helper functions
+////////// (initializa/declara)tions //////////
+// C++, C, etc.
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+// ROOTSYS
+#include <TSystem.h>
+#include <TProfile.h>
+// I/O
+#include <TChain.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TNtuple.h>
+#include <TEventList.h>
+#include <TCut.h>
+// utilities
+#include <TMath.h>
+#include <TRandom3.h>
+#include <TStopwatch.h>
+// plotting
+#include <TStyle.h>
+#include <TCanvas.h>
+#include <TGraphErrors.h>
+#include <TGraphAsymmErrors.h>
+#include <TLegend.h>
+#include <TLatex.h>
+#include <TLine.h>
+// histos
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TF1.h>
+
+//// FUNCTIONS
+// ---------------------------------------------------------------------------------------------------------------
+// define "main" functions, their default inputs, number of input arguments in this section
+
+//// main
+const int minArgs=1;
+
+//// readFiles_ppData
+const int defStartFile=0;
+const int defEndFile=1; //inclusive boundary
+const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
+const int defRadius=4;
+const std::string defJetType="PF";
+const std::string defOutputName = "readFiles_ppData_defOut.root";
+const bool defDebugMode = true;
+int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
+                     std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
+                     int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode );
+const int readFilesArgCount=7+minArgs;
+
+//// helper functions
 double trigComb(bool *trg, int *pscl, double pt);
 void divideBinWidth(TH1 *h);
 float deltaphi(float phi1, float phi2);
+
+//// CONSTANTS
+// ---------------------------------------------------------------------------------------------------------------
+// useful, code/function-wide constants
 
 // for convenience during testing, coding, etc.
 const bool atMIT = true;
@@ -74,20 +143,17 @@ const std::string var[] = {
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
-
 //static const std::string trigNames[] = { "HLT40","HLT60","HLT80","HLT100","Combined" };
 const std::string trigNames[] = { "HLT40","HLT60","HLT80","HLT100","Combined" };
 //static const int trigValue = 5;
 const int trigValue=sizeof(trigNames)/sizeof(std::string);
 //static const int N_trigs=sizeof(trigNames)/sizeof(std::string);
 
-//////////////////////////////////////
-////////// helper functions //////////
-//////////////////////////////////////
+//// HELPER FUNCTIONS
+// ---------------------------------------------------------------------------------------------------------------
+// mini functions not called by the frontend/main
 
-/////////////////////////
 // divide by bin width //
-/////////////////////////
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop 
@@ -103,9 +169,7 @@ void divideBinWidth(TH1 *h){
   return;
 }
 
-/////////////////////////
 // trigger combination //
-/////////////////////////
 double trigComb(bool *trg, int *pscl, double pt){
   double weight=0;
   if(trg[3] && pt>=100 )          weight = pscl[3];
@@ -115,9 +179,7 @@ double trigComb(bool *trg, int *pscl, double pt){
   return weight;
 }
 
-///////////////
 // delta phi //
-///////////////
 float deltaphi(float phi1, float phi2){
   float pi=TMath::Pi(); 
   float dphi=TMath::Abs(phi1-phi2);

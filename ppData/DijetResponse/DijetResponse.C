@@ -7,6 +7,9 @@
 int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::string outfile, // I/O
 		   int radius, bool isMC, bool debugMode){ // other
 
+  // set random seed
+  srand(time( NULL ));
+  
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
   const bool fastDebugMode = (debugMode&&false); //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
@@ -186,8 +189,6 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
 
       // randomly assign lead/sublead jet depending on eta distribution
       int rJet, pJet;
-      // rand() is pseudorandom at best according to internet 
-      // fix with srand() in future?
       if( abs(eta_F[0])<1.3 && abs(eta_F[1])<1.3 ){ 
 	int randInt=rand();
 	//if(debugMode)std::cout<< "rand() gave "<<randInt <<std::endl;

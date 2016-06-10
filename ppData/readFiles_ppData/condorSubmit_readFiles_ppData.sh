@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo ""
 # error conditions 
 if [[ $# -ne 5 ]] # not enough arguments
 then
@@ -12,7 +13,7 @@ then
     return 1
 elif [[ $3 -lt 0 ]] # check for valid startFilePos
 then
-    echo "bad <startFilePos>, exit"
+    echo "bad third argument"
     echo "0 <= <startFilePos> <= nFiles-1"
     return 1
 fi
@@ -26,17 +27,26 @@ debug=$5
 
 # one condor job submit per NFilesPerJob until we submit NJobs
 nFiles=`wc -l < $filelistIn`
-if [[ $startFilePos -ge $nFiles ]]
+if [[ $NJobs -eq -1 ]]
 then
-    echo "<startFilePos> too big, exit"
-    echo "0 <= <startFilePos> < ${nFiles}"
-    return 1
+    echo "submitting jobs for all files in list"
+    NJobs=$(( $nFiles / $NFilesPerJob ))
+    if [[ $(( $nFiles % $NFilesPerJob ))  -gt 0 ]]
+    then
+    NJobs=$(( $NJobs + 1 ))
+    fi
+    startFilePos=0
+elif [[ $startFilePos -ge $nFiles ]]
+then
+    echo "bad <startFilePos>, exit"
+    echo "0 <= <startFilePos> < nFiles-1"
+    return
 fi
-echo ""
-echo "# of files in list: ${nFiles}"
-echo "you requested ${NJobs} jobs with ${NFilesPerJob} files per job"
+
+# some debug info, just in case
 NFilesRequested=$(( $NJobs * $NFilesPerJob ))
-echo "${NFilesRequested} for jobs to run"
+echo "require ${NFilesRequested} files for ${NJobs} jobs"
+echo "# of files in list: ${nFiles}"
 echo "starting at file position ${startFilePos}..."
 echo ""
 
@@ -53,6 +63,9 @@ trig=${filelistTitle#*_} #echo "trig is ${trig}"
 dirName="readFiles_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
 logFileDir="${PWD}/outputCondor/${dirName}"
+if [ -d "${logFileDir}" ]; then
+    rm -rf "${logFileDir}"
+fi
 mkdir $logFileDir
 echo "log files in outputCondor/${dirName}"
 
@@ -66,16 +79,16 @@ cd -
 echo "compiling..."
 g++ readFiles_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readFiles_ppData.exe || return 1
 cp readFiles_ppData.* "${logFileDir}"
+cp condorRun_readFiles_ppData.sh "${logFileDir}"
+cp ${filelistIn} "${logFileDir}"
+cd ${logFileDir}
 
 ### CREATE NAMES AND FILES, THEN SUBMIT ###
-
 NthJob=0
 filelistLength=$nFiles
 lastFilePos=$(( $filelistLength-1 ))
 startfile=0
 endfile=0
-#echo "startfile is ${startfile}" 
-#echo "endfile is ${endfile}"     
 while [ $NthJob -lt $NJobs ]
 do 
     echo ""
@@ -92,7 +105,7 @@ do
 	endfile=$(( $startfile + $NFilesPerJob ))
 	endfile=$(( $endfile - 1 ))
     fi
-    echo "startfile is ${startfile}" 
+    #echo "startfile is ${startfile}" 
     # check; end of filelist
     if [[ $endfile -ge $lastFilePos ]] 
     then 
@@ -100,7 +113,7 @@ do
 	let endfile=$lastFilePos
 	let NthJob=$(( $NJobs - 1 )) 
     fi
-    echo "endfile is ${endfile}"     
+    #echo "endfile is ${endfile}"     
 
     
     # for next job
@@ -131,14 +144,17 @@ GetEnv         = True
 Rank           = kflops
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
-transfer_input_files = ${filelistIn},readFiles_ppData.exe
+transfer_input_files = ${filelist},readFiles_ppData.exe
 when_to_transfer_output = ON_EXIT
 Queue
 EOF
 
     # submit the job defined in the above submit file
-    echo "running files #${startfile} to #${endfile}"
-    echo "submitting readFiles_ppData job..."
+    echo "running readFiles_ppData on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 0.5s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
+
+cd -
+echo "done."
+return

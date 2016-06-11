@@ -7,6 +7,9 @@
 int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::string outfile, // I/O
 		   int radius, bool isMC, bool debugMode){ // other
 
+  // for monitoring performance
+  TStopwatch timer;  timer.Start();
+
   // set random seed
   srand(time( NULL ));
   
@@ -275,8 +278,11 @@ int deriveResponse(int startfile, int endfile, std::string infile_Forest, std::s
       h_nEntriesAbsPho[i][j]->Write();
     }
   }
-  std::cout<< "closing file "<< outfile <<std::endl;
   fout->Close();
+  std::cout<< "Done, file "<< outfile <<" closed."<<std::endl;
+  timer.Stop();
+  std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
+  std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   return 0;
 } //end deriveResponse
 
@@ -361,7 +367,7 @@ int sumResponse(std::string filename, std::string outFileName,
       // protect against NaN
       if(avgBEntries_ij==0) hMPFResponse_i->SetBinContent( j+1 , 0 );
       else hMPFResponse_i->SetBinContent( j+1 , hMPFResponse_i_jadd1 );     
-      if(avgBEntries_i==0) hMPFResponse_i->SetBinError( j+1 , 0 );
+      if(avgBEntries_ij==0) hMPFResponse_i->SetBinError( j+1 , 0 );
       else hMPFResponse_i->SetBinError( j+1 , hMPFResponse_i_jadd1_err );
       totEntriesB_ptbin_i+=avgBEntries_ij;    
 
@@ -424,8 +430,8 @@ int sumResponse(std::string filename, std::string outFileName,
     TCanvas *c0 = new TCanvas("hRelResponse_all","Rel, all avail. pt",600,600);
     c0->cd(); 
     std::cout<<"drawing hRelResponse_all..."<<std::endl;
+    TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
     for(int i=0;i<nbins_pt;++i){ 
-      TLegend *l0 = new TLegend(0.4,0.8,0.7,0.9);
       std::string  hRelResponseTitle_i="hRelResponse_pt"+std::to_string(i);
       if(loopDebugMode)std::cout<<"drawing "<<hRelResponseTitle_i<<std::endl;
       TH1F* hRelResponse_i = (TH1F*)(fout->Get(hRelResponseTitle_i.c_str())->Clone()) ;

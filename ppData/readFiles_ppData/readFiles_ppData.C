@@ -471,11 +471,12 @@ int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std:
   trgObjpt_80->clear();
   trgObjpt_100->clear();
 
-  timer.Stop();
-
   std::cout<<std::endl<<"readFiles_ppData finished."<<std::endl;
+
+  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
+
   return 0;
 }// end readFiles_ppData
 

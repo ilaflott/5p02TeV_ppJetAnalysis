@@ -1,3 +1,4 @@
+
 // Originally written by: Kurt Jung, December 2015
 // Overhaul, Ian Laflotte, May 1st 2016
 // Macro for deriving the dijet relative and absolute response from pp data/MC forests
@@ -18,6 +19,7 @@
 #include <TLorentzVector.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <TStopwatch.h>
 #include <TAxis.h>
 #include <TH1F.h>
 

@@ -1,6 +1,6 @@
 started on 6/15/2016, ian laflotte
 
-The primary analysis folder for 5p02TeV_ppJetAnalysis. This analysis is built on code inherited from Raghav Kunnawalkam's RAA_5p02_code repository. Each folder represents a major arm of the analysis. Some are split into data/MC versions (e.g. readFiles, filelists), some not (e.g. DijetResponse).
+The primary analysis folder for 5p02TeV_ppJetAnalysis. This analysis is built on code inherited from Raghav Kunnawalkam's RAA_5p02_code repository. Each folder represents a major arm of the analysis. Some are split into data/MC versions (e.g. readFiles, filelists), some not (e.g. DijetResponse). See below for notes regarding the use of scripts/code, goals, progress, etc.
 
 
 

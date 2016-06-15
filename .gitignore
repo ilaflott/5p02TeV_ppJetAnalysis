@@ -19,6 +19,9 @@ src_old/*/
 filelists/pp*/old
 filelists/pp*/old/*
 filelists/pp*/old/*/
+readFiles/pp*/old
+readFiles/pp*/old/*
+readFiles/pp*/old/*/
 readFiles/ppData/saved_outputCondor
 readFiles/ppData/saved_outputCondor/*
 readFiles/ppData/saved_outputCondor/*/
@@ -28,6 +31,13 @@ DijetResponse/saved_outputCondor/*/
 DijetResponse/outputCondor
 DijetResponse/outputCondor/*
 DijetResponse/outputCondor/*/
+jetWeights/*.txt
+jetWeights/test
+jetWeights/test/*
+jetWeights/test/*/
+jetWeights/old
+jetWeights/old/*
+jetWeights/old/*/
 deprecated_RAA_5p02_code
 deprecated_RAA_5p02_code/*
 deprecated_RAA_5p02_code/*/

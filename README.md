@@ -7,25 +7,6 @@ The primary analysis folder for 5p02TeV_ppJetAnalysis. This analysis is built on
 
 //----------------------------------------------------------------------------------------
 
-//// readFiles 
-//// (these notes last updated 6/15/16)
-
-GOAL(s): Make QA/triggerCombination/vz plots for ppData,MC. Compute weights for ppMC.
-
-WORKFLOW(s)
-ppData: can be run on data as is, no input files necessary.
-ppMC: must use output from readFiles/ppMC/jetWeights in order to run properly. Otherwise the MC spectra are unweighted and nonsensical.
-
-CURRENTLY WORKING ON
-writing+testing+optimizing readFiles_ppMC and jetWeights
-Making printPlots for readFiles_ppData print more informative, detailed, and eye-pleasing plots
-
-
-
-
-
-//----------------------------------------------------------------------------------------
-
 //// jetWeights
 //// (these notes last updated 6/15/16)
 
@@ -36,6 +17,24 @@ jetWeights can be run on ppMC without input from any other script/code
 
 CURRENTLY WORKING ON
 writing+testing+optimizing jetWeights
+
+
+
+
+//----------------------------------------------------------------------------------------
+
+//// readFiles 
+//// (these notes last updated 6/15/16)
+
+GOAL(s): Make QA/triggerCombination/vz plots for ppData,MC. Compute weights for ppMC.
+
+WORKFLOW(s)
+ppData: can be run on data as is, no input files necessary.
+ppMC: must use output from jetWeights in order to run properly. Otherwise the MC spectra are unweighted and nonsensical.
+
+CURRENTLY WORKING ON
+writing+testing+optimizing readFiles_ppMC and jetWeights
+Making printPlots for readFiles_ppData print more informative, detailed, and eye-pleasing plots
 
 
 

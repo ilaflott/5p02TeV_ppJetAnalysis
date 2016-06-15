@@ -9,6 +9,7 @@
 *.tar
 *~
 *#
+README_more.md
 setupenv.sh
 deprecated_RAA_5p02_code
 deprecated_RAA_5p02_code/*

@@ -1,4 +1,4 @@
-// based on RAA_read_data_pp.C by Raghav Kunnawalkam Elayavalli
+// based on RAA_read_mc_pp.C by Raghav Kunnawalkam Elayavalli
 // current iteration written by Ian Laflotte
 // Jun 13 th 2016
 // reads and writes jets from pp MC forest files
@@ -54,14 +54,14 @@ const int minArgs=1;
 //// readFiles_ppMC
 const int defStartFile=0;
 const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
+const std::string defInFilelist="../../filelists/ppMC/5p02TeV_Py8_CUETP8M1_QCDjet15_20Files_debug_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
-const std::string defOutputName = "readFiles_ppMC_defOut.root";
-const bool defDebugMode = true;
-int readFiles_ppMC(int startfile = defStartFile , int endfile = defEndFile ,
-                     std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
-                     int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode );
+const std::string defOutputName="readFiles_ppMC_defOut.root";
+const bool defDebugMode=true;
+int readFiles_ppMC(int startfile=defStartFile , int endfile=defEndFile ,
+                     std::string inFilelist=defInFilelist , std::string outfile=defOutputName ,
+                     int radius=defRadius , std::string jetType=defJetType , bool debugMode=defDebugMode );
 const int readFilesArgCount=7+minArgs;
 
 //// helper functions
@@ -74,16 +74,16 @@ float deltaphi(float phi1, float phi2);
 // useful, code/function-wide constants
 
 // for convenience during testing, coding, etc.
-const bool atMIT = true;
-const std::string hadoopDir = "/mnt/hadoop/cms";
-const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
+const bool atMIT=true;
+const std::string hadoopDir="/mnt/hadoop/cms";
+const std::string xrootdDirect="root://cmsxrootd.fnal.gov/";
 
 // pt binning
-const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
-const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
+const int ptbins[]={ 15, 30, 50, 80, 120, 170, 220, 300, 500 };
+const int nbins_pt=sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
 // jec
-const double ptbins_jec[] = {
+const double ptbins_jec[]={
   17, 22, 27,    //15-30
   33, 39, 47,    //30-50
   55, 64, 74,    //50-80
@@ -94,10 +94,10 @@ const double ptbins_jec[] = {
   300, 350, 400, //300-500
   550, 790, 1000 //500-inf
 };
-const int nbins_pt_jec = sizeof(ptbins_jec)/sizeof(double)-1;
+const int nbins_pt_jec=sizeof(ptbins_jec)/sizeof(double)-1;
 
 // eta binning
-const double etabins[] = {
+const double etabins[]={
   -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013, 
   -3.839, -3.664, -3.489, -3.314, -3.139, 
   -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043, 
@@ -110,27 +110,27 @@ const double etabins[] = {
   +3.139, +3.314, +3.489, +3.664, +3.839, 
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
-const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
+const int nbins_eta=sizeof(etabins)/sizeof(double)-1;
 
-//static const char *etaWidth = (char*)"20_eta_20";
-const char *etaWidth = (char*)"20_eta_20";
+//static const char *etaWidth=(char*)"20_eta_20";
+const char *etaWidth=(char*)"20_eta_20";
 
 // root file directories + tree names
 const std::string treeNames[]={ 
-  "GARBAGE ENTRY" , //"ak"+((std::string)radius)+jetType+"JetAnalyzer/t"  //Form("ak%d%sJetAnalyzer/t",radius, jetType.c_str()),
-  //"ppTrack"       ,
-  //"hiEvtAnalyzer/HiTree"  ,
+  "GARBAGE ENTRY" , //make jetAnalyzer string and replace later
   "skimanalysis/HltTree"  ,
   "hltanalysis/HltTree"   ,
+  //"ppTrack"       ,
+  //"hiEvtAnalyzer/HiTree"  ,
   //"hltobject/HLT_AK4CaloJet40_Eta5p1_v"     , //hlt40
   //"hltobject/HLT_AK4CaloJet60_Eta5p1_v"     , //hlt60
   //"hltobject/HLT_AK4CaloJet80_Eta5p1_v"     , //hlt80
   //"hltobject/HLT_AK4CaloJet100_Eta5p1_v"     //hlt100
 }; 
-const int N_trees = sizeof(treeNames)/sizeof(std::string);
+const int N_trees=sizeof(treeNames)/sizeof(std::string);
 
 // Jet variable names
-const std::string var[] = {   
+const std::string var[]={   
   "jtpt" ,  "rawpt",  "jteta", "jtphi", 
   "trkMax", "trkSum", "trkHardSum", 
   "chMax",  "chSum",  "chHardSum", 
@@ -140,13 +140,10 @@ const std::string var[] = {
   "muMax",  "muSum", 
   "Aj",     "xj" 
 };
-const int N_vars = sizeof(var)/sizeof(std::string);
+const int N_vars=sizeof(var)/sizeof(std::string);
 
-//static const std::string trigNames[] = { "HLT40","HLT60","HLT80","HLT100","Combined" };
-const std::string trigNames[] = { "HLT40","HLT60","HLT80","HLT100","Combined" };
-//static const int trigValue = 5;
+const std::string trigNames[]={"HLT40","HLT60","HLT80","HLT100","Combined"};
 const int trigValue=sizeof(trigNames)/sizeof(std::string);
-//static const int N_trigs=sizeof(trigNames)/sizeof(std::string);
 
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
@@ -156,8 +153,8 @@ const int trigValue=sizeof(trigNames)/sizeof(std::string);
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop 
-    Float_t val = h->GetBinContent(i);
-    Float_t valErr = h->GetBinError(i);
+    Float_t val=h->GetBinContent(i);
+    Float_t valErr=h->GetBinError(i);
     val/=h->GetBinWidth(i);
     valErr/=h->GetBinWidth(i);
     h->SetBinContent(i,val);
@@ -171,10 +168,10 @@ void divideBinWidth(TH1 *h){
 // trigger combination //
 double trigComb(bool *trg, int *pscl, double pt){
   double weight=0;
-  if(trg[3] && pt>=100 )          weight = pscl[3];
-  if(trg[2] && pt>=80  && pt<100) weight = pscl[2];
-  if(trg[1] && pt>=60  && pt<80 ) weight = pscl[1];
-  if(trg[0] && pt>=40  && pt<60 ) weight = pscl[0];
+  if(trg[3] && pt>=100 )          weight=pscl[3];
+  if(trg[2] && pt>=80  && pt<100) weight=pscl[2];
+  if(trg[1] && pt>=60  && pt<80 ) weight=pscl[1];
+  if(trg[0] && pt>=40  && pt<60 ) weight=pscl[0];
   return weight;
 }
 

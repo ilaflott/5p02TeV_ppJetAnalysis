@@ -11,21 +11,27 @@
 #include "TCut.h"
 #include "TStopwatch.h"
 
-//pthat weights+bins
-//https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiForest#Dijet_Cross_Sections_for_reweigh
+
+// definition and default values
+const std::string ppMCfilelistFolder="../filelists/ppMC/";
+//const std::string ppDatafilelistFolder="../filelists/ppData/";
+const std::string defDatasetFilelist=ppMCfilelistFolder+"5p02TeV_Py8_CUETP8M1_QCDjet15_2Files_debug_forests.txt";
+const std::string defOutputWeightFile="jetWeights_defOutput.txt";
+int jetWeights(std::string infile_Forest=defDatasetFilelist , std::string outputWeightFile=defOutputWeightFile);
+
+
+// constants
+//source for bins+weights: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiForest#Dijet_Cross_Sections_for_reweigh
 const double pthatBins[] = {15.,30.,50.,80.,120.,170.,220.,280.,370.,460.,540.,9999.};
 const double xs2015[] = {5.269E-01, 3.455E-02, 4.068E-03, 4.959E-04, 7.096E-05, 1.223E-05, 3.031E-06, 7.746E-07, 1.410E-07, 3.216E-08, 1.001E-08, 0.0};
 const int Npthats=sizeof(pthatBins)/sizeof(double);//should be 12
 const int NpthatBins=Npthats-1;//should be 11
 
-const std::string defDatasetFilelist="../filelists/5p02TeV_Py8_CUETP8M1_QCDjet15_2Files_debug_forests.txt";
-const std::string defOutputWeightFile="jetWeights_defOutput.txt";
-//int jetWeights(std::string infile_Forest=defDatasetFilelist , std::string outputWeightFile=defOutputWeightFile);
 
 // ---------------------------------------------------------------------------------------------------------------
+// jetWeights
 // compute the MC QCD dijet weights based on input filelist.
-//int jetWeights( std::string infile_Forest , std::string outputWeightFile ){
-int jetWeights(std::string infile_Forest=defDatasetFilelist , std::string outputWeightFile=defOutputWeightFile){
+int jetWeights( std::string infile_Forest , std::string outputWeightFile ){
   
   TStopwatch timer;  timer.Start();
 
@@ -34,14 +40,14 @@ int jetWeights(std::string infile_Forest=defDatasetFilelist , std::string output
   std::cout<<"reading filelist "<<infile_Forest<<std::endl;
   std::cout<<"///////////////////"<<std::endl<<std::endl;
 
-  // open filelist, loop over files and close them to save memory
-  std::cout<<"looping over files..."<<std::endl;
-
-  std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
-  int n[NpthatBins]={0};//want to initialize all as zero
+  // initialize variables
   bool endOfFilelist=false; 
+  int n[NpthatBins]={0};
   int fileCount=0;
 
+  // open filelist, loop over files and close them to save memory
+  std::cout<<"looping over files..."<<std::endl;
+  std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   while(!endOfFilelist){
     std::string filename_Forest;
     instr_Forest>>filename_Forest;
@@ -52,7 +58,7 @@ int jetWeights(std::string infile_Forest=defDatasetFilelist , std::string output
     }//end of filelist condition
 
     // open file and grab tree
-    std::cout<<"opening file #"<<fileCount<<",  "<<filename_Forest<<std::endl;
+    if(fileCount%10==0)std::cout<<"opening file #"<<fileCount<<",  "<<filename_Forest<<std::endl;
     TFile *fin = TFile::Open(filename_Forest.c_str());
     TTree *t = (TTree*)fin->Get( "ak4PFJetAnalyzer/t"  );
     //TTree *evt=(TTree*)fin->Get( "HiEvtAnalyzer/HiEvt"  );;
@@ -83,7 +89,7 @@ int jetWeights(std::string infile_Forest=defDatasetFilelist , std::string output
       "(pthat<"+std::to_string((int)pthatBins[i+1])+")";
     std::cout<<"for cut = "<<theCut<<std::endl;
     std::cout<<"there are "<<n[i]<<" events and ";
-    std::cout<<"the weight is "<<pthatweight<<" mb^-3"<<std::endl<<std::endl;
+    std::cout<<"the weight is "<<pthatweight<<" mb"<<std::endl<<std::endl;
     outputFile<<theCut<<", n["<<i<<"]="<<n[i]<<", ";  
     outputFile<<"xsDiff="<<xsDiff<<" mb^-3, ";
     outputFile<<"weight="<<pthatweight; 
@@ -93,11 +99,13 @@ int jetWeights(std::string infile_Forest=defDatasetFilelist , std::string output
   outputFile.close();
 
   timer.Stop();
-  std::cout<<"CPU time per file (min)  = "<<(Float_t)timer.CpuTime()/60/fileCount<<std::endl;
-  std::cout<<"Real time per file (min) = "<<(Float_t)timer.RealTime()/60/fileCount<<std::endl;
+  std::cout<<"CPU time per file (sec)  = "<<(Float_t)timer.CpuTime()/fileCount<<std::endl;
+  std::cout<<"Real time per file (sec) = "<<(Float_t)timer.RealTime()/fileCount<<std::endl;
 
   return 0;
 } // end jetWeights
+
+
 
 ////// main //////
 // acts as the frontend control for .exe file

@@ -140,19 +140,22 @@ int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std:
   jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_F);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_F);
 
-  // hltanalysis
-  jetpp[3]->SetBranchAddress("L1_SingleJet28_BptxAND_Prescl",&jet40_l1seed_p_F);
-  jetpp[3]->SetBranchAddress("L1_SingleJet40_BptxAND_Prescl",&jet60_l1seed_p_F);
-  jetpp[3]->SetBranchAddress("L1_SingleJet48_BptxAND_Prescl",&jet80_l1seed_p_F);
-  jetpp[3]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&jet100_l1seed_p_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1",&jet40_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet40_Eta5p1_v1_Prescl",&jet40_p_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet60_Eta5p1_v1",&jet60_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet60_Eta5p1_v1_Prescl",&jet60_p_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&jet80_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1_Prescl",&jet80_p_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1",&jet100_F);
-  jetpp[3]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1_Prescl",&jet100_p_F);
+  // hltanalysis, I should try figuring out a better way to do this part
+  std::string HLTBranches[N_HLTBits]; for(int i=0;i<N_L1Bits;i++) HLTBranches[i]=HLTBitStrings[i]+"_v1";
+  jetpp[3]->SetBranchAddress( HLTBranches[0].c_str() , &jet40_F);
+  jetpp[3]->SetBranchAddress( HLTBranches[1].c_str() , &jet60_F);
+  jetpp[3]->SetBranchAddress( HLTBranches[2].c_str() , &jet80_F);
+  jetpp[3]->SetBranchAddress( HLTBranches[3].c_str() , &jet100_F);
+  std::string HLTPresclBranches[N_HLTBits]; for(int i=0;i<N_HLTBits;i++) HLTPresclBranches[i]=HLTBitStrings[i]+"_v1_Prescl";
+  jetpp[3]->SetBranchAddress( HLTPresclBranches[0].c_str() , &jet40_p_F);
+  jetpp[3]->SetBranchAddress( HLTPresclBranches[1].c_str() , &jet60_p_F);
+  jetpp[3]->SetBranchAddress( HLTPresclBranches[2].c_str() , &jet80_p_F);
+  jetpp[3]->SetBranchAddress( HLTPresclBranches[3].c_str() , &jet100_p_F);
+  std::string L1PresclBranches[N_L1Bits]  ; for(int i=0;i<N_HLTBits;i++) L1PresclBranches[i]=L1BitStrings[i]+"_Prescl";
+  jetpp[3]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1seed_p_F);
+  jetpp[3]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1seed_p_F);
+  jetpp[3]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1seed_p_F);
+  jetpp[3]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1seed_p_F);
 
   // specific HLT path trees
   //ONE path ONE tree ONE pt branch (see trees[] in header)

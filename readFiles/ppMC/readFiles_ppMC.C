@@ -154,13 +154,17 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   jetpp[2]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1",&jet100_F);
   jetpp[2]->SetBranchAddress("HLT_AK4CaloJet100_Eta5p1_v1_Prescl",&jet100_p_F);
 
-  // specific HLT path trees
+  // specific HLT path object trees
   //ONE path ONE tree ONE pt branch (see trees[] in header)
   //e.g. trgObjpt_40 is filled with jet pt from the specific jet40 HLT tree/branch 
   //jetpp[4]->SetBranchAddress("pt",&trgObjpt_40);
   //jetpp[5]->SetBranchAddress("pt",&trgObjpt_60);  
   //jetpp[6]->SetBranchAddress("pt",&trgObjpt_80);  
   //jetpp[7]->SetBranchAddress("pt",&trgObjpt_100);
+
+
+  // open weights files 
+  // read the weights+pthatbin into arrays, or maybe hard code them, lets see how lazy i'm feeling
 
   // Declare the output File and the necessary histograms after that:
   std::cout<<"opening output file "<<outfile<<std::endl;

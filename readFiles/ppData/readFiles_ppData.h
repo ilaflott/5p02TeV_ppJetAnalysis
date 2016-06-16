@@ -55,7 +55,7 @@ const int minArgs=1;
 //// readFiles_ppData
 const int defStartFile=0;
 const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
+const std::string defInFilelist = "../../filelists/ppData/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
 const std::string defOutputName = "readFiles_ppData_defOut.root";
@@ -72,19 +72,15 @@ float deltaphi(float phi1, float phi2);
 
 //// CONSTANTS
 // ---------------------------------------------------------------------------------------------------------------
-// useful, code/function-wide constants
 
-// for convenience during testing, coding, etc.
-const bool atMIT = true;
-const std::string hadoopDir = "/mnt/hadoop/cms";
-const std::string xrootdDirect = "root://cmsxrootd.fnal.gov/";
+// misc 
+const char *etaWidth = (char*)"20_eta_20";
 
-// pt binning
+// binning arrays
 const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
-// jec
-const double ptbins_jec[] = {
+const double JEC_ptbins[] = {
   17, 22, 27,    //15-30
   33, 39, 47,    //30-50
   55, 64, 74,    //50-80
@@ -95,9 +91,8 @@ const double ptbins_jec[] = {
   300, 350, 400, //300-500
   550, 790, 1000 //500-inf
 };
-const int nbins_pt_jec = sizeof(ptbins_jec)/sizeof(double)-1;
+const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(double)-1;
 
-// eta binning
 const double etabins[] = {
   -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013, 
   -3.839, -3.664, -3.489, -3.314, -3.139, 
@@ -113,24 +108,39 @@ const double etabins[] = {
 };
 const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 
-//static const char *etaWidth = (char*)"20_eta_20";
-const char *etaWidth = (char*)"20_eta_20";
+// string arrays
+//L1
+const std::string L1BitStrings[]={//this array is a good idea
+  "L1_SingleJet28_BptxAND",
+  "L1_SingleJet40_BptxAND",
+  "L1_SingleJet48_BptxAND",
+  "L1_SingleJet52_BptxAND"
+};
+const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
 
-// root file directories + tree names
+//HLT
+const std::string HLTBitStrings[N_L1Bits]={
+  "HLT_AK4CaloJet40_Eta5p1",
+  "HLT_AK4CaloJet60_Eta5p1",
+  "HLT_AK4CaloJet80_Eta5p1",
+  "HLT_AK4CaloJet100_Eta5p1"    
+};
+const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
+
+// tree names+directories
 const std::string treeNames[]={ 
-  "GARBAGE ENTRY" , //"ak"+((std::string)radius)+jetType+"JetAnalyzer/t"  //Form("ak%d%sJetAnalyzer/t",radius, jetType.c_str()),
-  "hiEvtAnalyzer/HiTree"  ,
-  "skimanalysis/HltTree"  ,
-  "hltanalysis/HltTree"   ,
-  //"ppTrack"       ,
-  "hltobject/HLT_AK4CaloJet40_Eta5p1_v"     , //hlt40
-  "hltobject/HLT_AK4CaloJet60_Eta5p1_v"     , //hlt60
-  "hltobject/HLT_AK4CaloJet80_Eta5p1_v"     , //hlt80
-  "hltobject/HLT_AK4CaloJet100_Eta5p1_v"     //hlt100
+  "GARBAGE ENTRY" , //use jet ana of choice later
+  "hiEvtAnalyzer/HiTree" ,
+  "skimanalysis/HltTree" ,
+  "hltanalysis/HltTree" ,
+  "hltobject/"+HLTBitStrings[0]+"_v" , 
+  "hltobject/"+HLTBitStrings[1]+"_v" , 
+  "hltobject/"+HLTBitStrings[2]+"_v" , 
+  "hltobject/"+HLTBitStrings[3]+"_v"   
 }; 
 const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
-// Jet variable names
+// variable names for QA Plots
 const std::string var[] = {   
   "jtpt" ,  "rawpt",  "jteta", "jtphi", 
   "trkMax", "trkSum", "trkHardSum", 
@@ -143,17 +153,10 @@ const std::string var[] = {
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
-//static const std::string trigNames[] = { "HLT40","HLT60","HLT80","HLT100","Combined" };
-const std::string trigNames[] = { "HLT40","HLT60","HLT80","HLT100","Combined" };
-//static const int trigValue = 5;
-const int trigValue=sizeof(trigNames)/sizeof(std::string);
-//static const int N_trigs=sizeof(trigNames)/sizeof(std::string);
-
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
-// mini functions not called by the frontend/main
 
-// divide by bin width //
+
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop 
@@ -169,7 +172,7 @@ void divideBinWidth(TH1 *h){
   return;
 }
 
-// trigger combination //
+
 double trigComb(bool *trg, int *pscl, double pt){
   double weight=0;
   if(trg[3] && pt>=100 )          weight = pscl[3];
@@ -179,7 +182,7 @@ double trigComb(bool *trg, int *pscl, double pt){
   return weight;
 }
 
-// delta phi //
+
 float deltaphi(float phi1, float phi2){
   float pi=TMath::Pi(); 
   float dphi=TMath::Abs(phi1-phi2);

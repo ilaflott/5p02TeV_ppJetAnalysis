@@ -1,7 +1,8 @@
-// based on RAA_read_mc_pp.C by Raghav Kunnawalkam Elayavalli
-// current iteration written by Ian Laflotte
-// Jun 13 th 2016
-// reads and writes jets from pp MC forest files
+// original author: Raghav Kunnawalkam Elayavalli
+// Nov 24th 2015
+// Overhaul, Ian Laflotte
+// Apr 29th 2016
+// reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later
 // compile with...
 // g++ readFiles_ppMC.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readFiles_ppMC.exe
@@ -54,14 +55,14 @@ const int minArgs=1;
 //// readFiles_ppMC
 const int defStartFile=0;
 const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist="../../filelists/ppMC/5p02TeV_Py8_CUETP8M1_QCDjet15_20Files_debug_forests.txt";
+const std::string defInFilelist = "../../filelists/ppMC/5p02TeV_Py8_CUETP8M1_QCDjet15_20Files_debug_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
-const std::string defOutputName="readFiles_ppMC_defOut.root";
-const bool defDebugMode=true;
-int readFiles_ppMC(int startfile=defStartFile , int endfile=defEndFile ,
-                     std::string inFilelist=defInFilelist , std::string outfile=defOutputName ,
-                     int radius=defRadius , std::string jetType=defJetType , bool debugMode=defDebugMode );
+const std::string defOutputName = "readFiles_ppMC_defOut.root";
+const bool defDebugMode = true;
+int readFiles_ppMC(int startfile = defStartFile , int endfile = defEndFile ,
+                     std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
+                     int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode );
 const int readFilesArgCount=7+minArgs;
 
 //// helper functions
@@ -71,19 +72,39 @@ float deltaphi(float phi1, float phi2);
 
 //// CONSTANTS
 // ---------------------------------------------------------------------------------------------------------------
-// useful, code/function-wide constants
 
-// for convenience during testing, coding, etc.
-const bool atMIT=true;
-const std::string hadoopDir="/mnt/hadoop/cms";
-const std::string xrootdDirect="root://cmsxrootd.fnal.gov/";
+// misc 
+const char *etaWidth = (char*)"20_eta_20";
 
-// pt binning
-const int ptbins[]={ 15, 30, 50, 80, 120, 170, 220, 300, 500 };
-const int nbins_pt=sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
+// binning arrays
+//const double ptbins[] = {
+//  3,   4,   5,   7,   9,  12,  15,   18,  21,  24,  28,
+//  28,  32,  37,  43,  49,  56,  64,   74,  84,  97, 114,
+//  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395, 
+//  430, 468, 507, 548, 592, 638, 686, 1000 
+//}; //random old binning i found in raghavs code, here for safe keeping
+const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
+const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
-// jec
-const double ptbins_jec[]={
+//const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 9999 }; //2015 bins?
+const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 9999 };
+const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
+
+const double pthatWeights[]={//from jetWeights/jetWeights_Py8_CUETP8M1_QCDjetAllPtBins.txt
+  /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/        5.27832e-07,
+  /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/       3.37352e-08,
+  /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/      3.63191e-09,
+  /*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 mb^-3, weight=*/   2.33383e-10,
+  /*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 mb^-3, weight=*/   5.43517e-11,
+  /*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 mb^-3, weight=*/    1.10016e-11,
+  /*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 mb^-3, weight=*/   2.36422e-12,
+  /*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 mb^-3, weight=*/   5.84505e-13,
+  /*(pthat>=370)&&(pthat<460), n[8]=948240, xsDiff=1.0884e-07 mb^-3, weight=*/   1.14781e-13,
+  /*(pthat>=460)&&(pthat<540), n[9]=1558268, xsDiff=2.215e-08 mb^-3, weight=*/   1.42145e-14,
+  /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
+};
+
+const double JEC_ptbins[] = {
   17, 22, 27,    //15-30
   33, 39, 47,    //30-50
   55, 64, 74,    //50-80
@@ -94,10 +115,9 @@ const double ptbins_jec[]={
   300, 350, 400, //300-500
   550, 790, 1000 //500-inf
 };
-const int nbins_pt_jec=sizeof(ptbins_jec)/sizeof(double)-1;
+const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(double)-1;
 
-// eta binning
-const double etabins[]={
+const double etabins[] = {
   -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013, 
   -3.839, -3.664, -3.489, -3.314, -3.139, 
   -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043, 
@@ -110,28 +130,42 @@ const double etabins[]={
   +3.139, +3.314, +3.489, +3.664, +3.839, 
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
-const int nbins_eta=sizeof(etabins)/sizeof(double)-1;
+const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 
-//static const char *etaWidth=(char*)"20_eta_20";
-const char *etaWidth=(char*)"20_eta_20";
+//// string arrays
+////L1
+//const std::string L1BitStrings[]={//this array is a good idea
+//  "L1_SingleJet28_BptxAND",
+//  "L1_SingleJet40_BptxAND",
+//  "L1_SingleJet48_BptxAND",
+//  "L1_SingleJet52_BptxAND"
+//};
+//const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
+//
+////HLT
+//const std::string HLTBitStrings[N_L1Bits]={
+//  "HLT_AK4CaloJet40_Eta5p1",
+//  "HLT_AK4CaloJet60_Eta5p1",
+//  "HLT_AK4CaloJet80_Eta5p1",
+//  "HLT_AK4CaloJet100_Eta5p1"    
+//};
+//const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
 
-// root file directories + tree names
+// tree names+directories
 const std::string treeNames[]={ 
-  "GARBAGE ENTRY" , //make ak4PFJetAnalyzer string and replace later
-  //"GARBAGE ENTRY" , //make ak4CaloJetAnalyzer string and replace later?
-  "skimanalysis/HltTree"  ,
-  "hltanalysis/HltTree"   ,
-  "hiEvtAnalyzer/HiTree"  ,
-  //"ppTrack"       ,
-  //"hltobject/HLT_AK4CaloJet40_Eta5p1_v"     , //hlt40
-  //"hltobject/HLT_AK4CaloJet60_Eta5p1_v"     , //hlt60
-  //"hltobject/HLT_AK4CaloJet80_Eta5p1_v"     , //hlt80
-  //"hltobject/HLT_AK4CaloJet100_Eta5p1_v"     //hlt100
+  "GARBAGE ENTRY" , //use jet ana of choice later
+  "hiEvtAnalyzer/HiTree" ,
+  "skimanalysis/HltTree" ,
+  "hltanalysis/HltTree" 
+//  "hltobject/"+HLTBitStrings[0]+"_v" , 
+//  "hltobject/"+HLTBitStrings[1]+"_v" , 
+//  "hltobject/"+HLTBitStrings[2]+"_v" , 
+//  "hltobject/"+HLTBitStrings[3]+"_v"   
 }; 
-const int N_trees=sizeof(treeNames)/sizeof(std::string);
+const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
-// Jet variable names
-const std::string var[]={   
+// variable names for QA Plots
+const std::string var[] = {   
   "jtpt" ,  "rawpt",  "jteta", "jtphi", 
   "trkMax", "trkSum", "trkHardSum", 
   "chMax",  "chSum",  "chHardSum", 
@@ -141,21 +175,17 @@ const std::string var[]={
   "muMax",  "muSum", 
   "Aj",     "xj" 
 };
-const int N_vars=sizeof(var)/sizeof(std::string);
-
-const std::string trigNames[]={"HLT40","HLT60","HLT80","HLT100","Combined"};
-const int trigValue=sizeof(trigNames)/sizeof(std::string);
+const int N_vars = sizeof(var)/sizeof(std::string);
 
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
-// mini functions not called by the frontend/main
 
-// divide by bin width //
+
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop 
-    Float_t val=h->GetBinContent(i);
-    Float_t valErr=h->GetBinError(i);
+    Float_t val = h->GetBinContent(i);
+    Float_t valErr = h->GetBinError(i);
     val/=h->GetBinWidth(i);
     valErr/=h->GetBinWidth(i);
     h->SetBinContent(i,val);
@@ -166,17 +196,17 @@ void divideBinWidth(TH1 *h){
   return;
 }
 
-// trigger combination //
+
 double trigComb(bool *trg, int *pscl, double pt){
   double weight=0;
-  if(trg[3] && pt>=100 )          weight=pscl[3];
-  if(trg[2] && pt>=80  && pt<100) weight=pscl[2];
-  if(trg[1] && pt>=60  && pt<80 ) weight=pscl[1];
-  if(trg[0] && pt>=40  && pt<60 ) weight=pscl[0];
+  if(trg[3] && pt>=100 )          weight = pscl[3];
+  if(trg[2] && pt>=80  && pt<100) weight = pscl[2];
+  if(trg[1] && pt>=60  && pt<80 ) weight = pscl[1];
+  if(trg[0] && pt>=40  && pt<60 ) weight = pscl[0];
   return weight;
 }
 
-// delta phi //
+
 float deltaphi(float phi1, float phi2){
   float pi=TMath::Pi(); 
   float dphi=TMath::Abs(phi1-phi2);

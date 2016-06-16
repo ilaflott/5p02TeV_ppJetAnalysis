@@ -117,11 +117,12 @@ const char *etaWidth=(char*)"20_eta_20";
 
 // root file directories + tree names
 const std::string treeNames[]={ 
-  "GARBAGE ENTRY" , //make jetAnalyzer string and replace later
+  "GARBAGE ENTRY" , //make ak4PFJetAnalyzer string and replace later
+  //"GARBAGE ENTRY" , //make ak4CaloJetAnalyzer string and replace later?
   "skimanalysis/HltTree"  ,
   "hltanalysis/HltTree"   ,
+  "hiEvtAnalyzer/HiTree"  ,
   //"ppTrack"       ,
-  //"hiEvtAnalyzer/HiTree"  ,
   //"hltobject/HLT_AK4CaloJet40_Eta5p1_v"     , //hlt40
   //"hltobject/HLT_AK4CaloJet60_Eta5p1_v"     , //hlt60
   //"hltobject/HLT_AK4CaloJet80_Eta5p1_v"     , //hlt80

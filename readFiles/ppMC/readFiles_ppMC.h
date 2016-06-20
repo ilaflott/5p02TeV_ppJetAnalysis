@@ -62,8 +62,8 @@ const std::string defOutputName = "readFiles_ppMC_defOut.root";
 const bool defDebugMode = true;
 int readFiles_ppMC(int startfile = defStartFile , int endfile = defEndFile ,
                      std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
-                     int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode );
-const int readFilesArgCount=7+minArgs;
+                     int radius = defRadius , bool debugMode = defDebugMode );
+const int readFilesArgCount=6+minArgs;
 
 //// helper functions
 double trigComb(bool *trg, int *pscl, double pt);
@@ -153,7 +153,8 @@ const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 
 // tree names+directories
 const std::string treeNames[]={ 
-  "GARBAGE ENTRY" , //use jet ana of choice later
+  "GARBAGE ENTRY" , //akPfJetAna of arb. radius, form strin
+  "GARBAGE ENTRY" , //akCaloJet of same radius
   "hiEvtAnalyzer/HiTree" ,
   "skimanalysis/HltTree" ,
   "hltanalysis/HltTree" 

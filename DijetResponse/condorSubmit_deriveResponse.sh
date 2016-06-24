@@ -2,10 +2,10 @@
 
 echo ""
 # error conditions 
-if [[ $# -ne 5 ]] # not enough arguments
+if [[ $# -ne 6 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condorSubmit_deriveResponse.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
+    echo "source condorSubmit_deriveResponse.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <isMC> <debug>"
     return 1
 elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
 then
@@ -23,7 +23,8 @@ NJobs=$1
 NFilesPerJob=$2
 startFilePos=$3
 filelistIn=$4  #echo "filelistIn is ${filelistIn}" #debug
-debug=$5
+isMC=$5
+debug=$6
 
 # one condor job submit per NFilesPerJob until we submit NJobs
 nFiles=`wc -l < $filelistIn`
@@ -54,7 +55,6 @@ echo ""
 # additional inputs to the run script and .exe, these don't change too much
 destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/ppData/DijetResponse"
 radius=4
-isMC=0
 jetType="PF"
 
 # create output folder/logfileNames with name based on filelist
@@ -63,7 +63,8 @@ filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
 energy=${filelistTitle%%_*} #echo "energy is ${energy}"
 trig=${filelistTitle#*_} #echo "trig is ${trig}"
 dirName="deriveResponse_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
-outName="${trig}_ak${radius}${jetType}"
+outName="${trig}_ak${radius}${jetType}" 
+echo "outName is ${outName}"
 logFileDir="${PWD}/outputCondor/${dirName}"
 if [ -d "${logFileDir}" ]; then
     rm -rf "${logFileDir}"

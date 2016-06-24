@@ -440,12 +440,14 @@ int sumResponse(std::string filename, std::string outFileName,
 	TAxis* theYAxis=hRelResponse_i->GetYaxis();
 	theYAxis->SetRangeUser(0.,2.75);
       }
-      std::string type = "";
-      if(!isMC) type = "Data"; 
-      else type = "PYTHIA_CUETP8M1";      
       hRelResponse_i->Draw("same");
-      if(isMC) l0->AddEntry("", type.c_str() ,"");
-      std::string legTitle= std::to_string((int)xbins_pt[i])+" < pt < "+std::to_string((int)xbins_pt[i+1]);
+
+      std::string type;
+      if(!isMC) type = "Data"; 
+      else type = "PY8_CUETP8M1";      
+      std::string legTitle="";
+      legTitle+=type+"_";
+      legTitle+=std::to_string((int)xbins_pt[i])+" < pt < "+std::to_string((int)xbins_pt[i+1]);
       l0->AddEntry(hRelResponse_i,legTitle.c_str());
     }
     l0->Draw("same");
@@ -467,12 +469,13 @@ int sumResponse(std::string filename, std::string outFileName,
 	TAxis* theYAxis=hMPFResponse_i->GetYaxis();
 	theYAxis->SetRangeUser(0.,2.75);
       }
-      std::string type = "";
+      std::string type;
       if(!isMC) type = "Data"; 
       else type = "PYTHIA_CUETP8M1";      
       hMPFResponse_i->Draw("same");
-      if(isMC) l1->AddEntry("", type.c_str(), "");
-      std::string legTitle= std::to_string((int)xbins_pt[i])+" < pt < "+std::to_string((int)xbins_pt[i+1]);
+      std::string legTitle="";
+      legTitle+=type+"_";
+      legTitle+=std::to_string((int)xbins_pt[i])+" < pt < "+std::to_string((int)xbins_pt[i+1]);
       l1->AddEntry(hMPFResponse_i,legTitle.c_str());
     }
     l1->Draw("same");
@@ -495,12 +498,13 @@ int sumResponse(std::string filename, std::string outFileName,
 	TAxis* theYAxis=hMPFAbsPhoResponse_i->GetYaxis();
 	theYAxis->SetRangeUser(0.,2.75);
       }
-      std::string type = "";
+      std::string type;
       if(!isMC) type = "Data"; 
       else type = "PYTHIA_CUETP8M1";      
       hMPFAbsPhoResponse_i->Draw("same");
-      if(isMC) l2->AddEntry("", type.c_str(), "");
-      std::string legTitle= std::to_string((int)xbins_pt[i])+" < pt < "+std::to_string((int)xbins_pt[i+1]);
+      std::string legTitle=""; 
+      legTitle+=type+"_";
+      legTitle+=std::to_string((int)xbins_pt[i])+" < pt < "+std::to_string((int)xbins_pt[i+1]);
       l2->AddEntry(hMPFAbsPhoResponse_i,legTitle.c_str());
     }
     l2->Draw("same");

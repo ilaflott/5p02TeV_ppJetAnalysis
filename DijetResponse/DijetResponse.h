@@ -33,10 +33,11 @@ const int minArgs=1+1;//always one for ./ itself, then one more for derive or su
 //// deriveResponse
 const int defStartFile=0;
 const int defEndFile=2; //exclusive boundary, range of files run over doesnt include endfile
-const std::string defInFilelist = "../filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
+const std::string defInFilelist = "../filelists/ppMC/5p02TeV_Py8_CUETP8M1_QCDjet15_20Files_debug_forests.txt";//MC
+//const std::string defInFilelist = "../filelists/ppData/5p02TeV_HighPtJet80_9Files_debug_forests.txt";//Data
 const std::string defDeriveOutputName = "deriveResponse_defOut.root";
 const int defRadius=4;
-const bool defIsMCderive=false;
+const bool defIsMCderive=true;
 const bool defDebugMode = true;
 int deriveResponse(int startfile = defStartFile, int endfile = defEndFile,
                    std::string infile_Forest=defInFilelist, std::string outfile = defDeriveOutputName,
@@ -46,7 +47,7 @@ const int deriveRespArgCount=7+minArgs;
 //// sumDijetResponse
 const std::string defSumInput="deriveResponse_defOut.root";
 const std::string defSumOutput="sumResponse_defOut.root";
-const bool defIsMCsum=false;
+const bool defIsMCsum=true;
 const bool defDoDraw=true;
 const bool defDebugModeSum=true;
 int sumResponse(std::string filename=defSumInput, std::string outFileName=defSumOutput,

@@ -3,9 +3,7 @@
 // Rutgers
 // Macro to perform Bayes and SVD Unfolding direct from the official RooUnfold classes 
 
-// is this necessary?
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
 // C++, C, etc.
 #include <cstdlib>
 #include <fstream>
@@ -41,7 +39,6 @@
 #include "/afs/cern.ch/work/r/rkunnawa/WORK/RAA/CMSSW_5_3_20/src/RooUnfold-1.1.1/src/RooUnfoldBayes.h"
 #include "/afs/cern.ch/work/r/rkunnawa/WORK/RAA/CMSSW_5_3_20/src/RooUnfold-1.1.1/src/RooUnfoldSvd.h"
 #include "/afs/cern.ch/work/r/rkunnawa/WORK/RAA/CMSSW_5_3_20/src/RooUnfold-1.1.1/src/RooUnfoldBinByBin.h"
-// is this necessary?
 #endif
 // custom header
 #include "utilities.h"
@@ -92,7 +89,7 @@ PrintMatrix( const TMatrixD& m,
   if (!(format && format[0])) format= "%11.4g ";
   char topbar[1000];
   snprintf(topbar,1000,format,123.456789);
-  Int_t nch = strlen(topbar)+1;
+  Int_t nch = strlen(topbar)+1;`
   if (nch > 18) nch = 18;
   char ftopbar[20];
   for (Int_t i = 0; i < nch; i++) ftopbar[i] = ' ';
@@ -188,6 +185,7 @@ void unfold(int radius = 4,
   cout << "errorTreatment: " << errorTreatment << endl;
   
   TFile *fpp_MC, *fpp_Data; 
+  // input files, i think this is hadd'd readFiles output specifically
   fpp_MC = TFile::Open("PP_5p02TeV_MC_ak4PF_20_eta_20.root");
   // for MC, we need to add the kinematic correction factors
   fpp_Data = TFile::Open("PP_5p02TeV_Data_ak4PF_20_eta_20.root");

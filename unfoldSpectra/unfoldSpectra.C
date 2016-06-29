@@ -12,78 +12,35 @@ const int nKregMax = 9;
 const int kIter = 4;
 const int kRegDraw = 3;
 
-//int unfoldDataSpectra(const bool isMC=false, const std::string MCinFile="", const std::string DatainFile="",
-//		        const bool doToy=true, const int radius = 4, const int param = 21
-//		        ){
+const int param=21;
+const int radius=4;
+const bool doToy=true;
+const bool doBayes=true; //untested
+const bool doSVD=false; //untested
+const bool drawPDFs=false; //untested
+const std::string inFile_MC=""; //need complete readFiles output from ppMC, or a debug file
+const std::string inFile_Data=""; //i think i have a good set of output
+const std::string outFile="PP_5p02_Spectra_Unfolded.root";
+
+
 int unfoldDataSpectra( ){
+
 
   // performance tracking
   TStopwatch timer; 
   timer.Start();
   
-  const int param=21;
-  const int radius=4;
-  const bool doToy=true;
-  const bool doBayes=true;
-  const bool doSVD=true;
-  const std::string inFile_MC="";
-  const std::string inFile_Data="";
-  const std::string outFile="PP_5p02_Spectra_Unfolded.root";
-  const std::string type="Data";
-
-  // set defaul error calculation for TH1/2's from here on out + gStyle
+  // set default error calculation for TH1/2's from here on out + gStyle
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   gStyle->SetOptStat(0);
 
-  // not sure what this is for, some kinda regularization parameter...
-  int kReg[nKregMax];  //{param-4, param-3, param-2, param-1, param, param+1, param+2, param+3, param+4};
-  for(int i=(-4); (i+4)<nKregMax; ++i) kReg[i+4]=param+i;
 
-  // the output file
-  TFile* fout;  
-  fout=new TFile(outFile.c_str(),"RECREATE");
-  fout->cd();
-        
-  // define the histos
+  // ppMC input histos
+  TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
+
+  //mat?
   TH2F *hmat, *hmat_anabin;
-
-  TH1F *hgen, *hgen_anabin;
-  TH1F *hgen_resp,*hgen_resp_anabin;
-
-  TH1F *hrec, *hrec_anabin;
-  //TH1F *hrec_check=NULL,*hrec_check_anabin=NULL;
-  TH1F *hrec_resp, *hrec_resp_anabin;  
-  
-  TH1F *hunf, *hunf_svd[nKregMax];
-  //TH1F *hunf_check=NULL; *hunf_svd_check[nKregMax];
-
-  TH1F *hratio, *hratio_svd[nKregMax];
-    //TH1F *hratio_check=NULL, *hratio_svd_check[nKregMax];  
-
-  TH2 *hPearsonSVDPriorMeas[nKregMax]; 
-  TH1 *hFoldedSVDPriorMeas[nKregMax];
-  //TH1 *hPearsonSVDPriorTruth[nKregMax], *hFoldedSVDPriorTruth[nKregMax];
-
-  TH1 *hrec_folded_ratio[nKregMax], *hrec_unfolded_ratio[nKregMax];
-  
-  // define error treatment, use RooUnfold namespace
-  RooUnfold::ErrorTreatment errorTreatment = RooUnfold::kCovariance;
-  if(doToy) errorTreatment = RooUnfold::kCovToy;
-  std::cout << "errorTreatment: " << errorTreatment << std::endl;
-  
-  // readFiles input, both data and MC
-  // always use both despite input spectra's type (data,MC)
-  TFile *fpp_MC, *fpp_Data; 
-  fpp_MC = TFile::Open("PP_5p02TeV_MC_ak4PF_20_eta_20.root");
-  fpp_Data = TFile::Open("PP_5p02TeV_Data_ak4PF_20_eta_20.root");
-
-  // for MC, we need to add the kinematic correction factors
-  // hKineticEff = (TH1F*)fPP_KineticEff->Get("hKineticEfficiency");    
-
-  // get Data+Unfolding specific histos from readFiles Data+MC output //
-  // need to figure out what kind of histos each unfolding procedure requires, then make sure it's there in the readFiles Data+MC output
-
   hmat = (TH2F*)fpp_MC->Get(Form("hpp_matrix_R%d_20_eta_20",radius));
   hmat->Print("base");
   
@@ -92,6 +49,7 @@ int unfoldDataSpectra( ){
   hmat_anabin->Print("base");    
   
   //gen
+  TH1F *hgen, *hgen_anabin;
   hgen = (TH1F*)fpp_MC->Get(Form("hpp_gen_R%d_20_eta_20",radius));
   hgen->Print("base");
   
@@ -99,8 +57,15 @@ int unfoldDataSpectra( ){
   hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, Form("hpp_anaBin_JetComb_gen_R%d_20_eta_20",radius), ptbins);
   divideBinWidth(hgen_anabin);
   hgen_anabin->Print("base");
-  
+
+  fpp_MC->Close();  
+
+
+  // ppData input histos
+  TFile *fpp_Data = TFile::Open(inFile_Data.c_str());
+
   //rec
+  TH1F *hrec, *hrec_anabin;
   hrec = (TH1F*)fpp_Data->Get(Form("hpp_TrgCombTest_JetID_R%d_20_eta_20",radius));
   hrec->Print("base");
   
@@ -109,38 +74,38 @@ int unfoldDataSpectra( ){
   divideBinWidth(hrec_anabin);
   hrec_anabin->Print("base");    
   
-  // output histos (notice the new constructor)
-  
+  // close input file, we have what we need!
+  fpp_Data->Close();
+
+
+  // output histos
+
   //gen
+  TH1F *hgen_resp,*hgen_resp_anabin;
   hgen_resp = new TH1F(Form("hpp_gen_responseR%d_20_eta_20",radius),"", hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
   hgen_resp_anabin = new TH1F(Form("hpp_gen_response_anabin_R%d_20_eta_20",radius),"", nbins, ptbins);
   hgen_resp_anabin->Sumw2();
   
   //rec
+  TH1F *hrec_resp, *hrec_resp_anabin; 
   hrec_resp = new TH1F(Form("hpp_rec_response_R%d_20_eta_20",radius),"", hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
   hrec_resp->Sumw2();
   hrec_resp_anabin = new TH1F(Form("hpp_rec_response_anabin_R%d_20_eta_20",radius),"", nbins, ptbins);
   hrec_resp_anabin->Sumw2();
 
-  // declare the canvas
-  TCanvas *cPearsonMatrixIter; 
-  cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","",1200,1000);
-  cPearsonMatrixIter->Divide(3,3);
+  // the output file
+  TFile* fout = new TFile(outFile.c_str(),"RECREATE");
 
-  TCanvas * cSpectra;
-  cSpectra = new TCanvas("cSpectra","",1200,1000);
-  cSpectra->Divide(3,3);
-
-  TCanvas * cRatio;
-  cRatio = new TCanvas("cRatio","",1200,1000);
-  cRatio->Divide(3,3);  
-
-  TCanvas *c11 = new TCanvas("c11","c11: Singular Values", 1200, 1000);
-  TCanvas *cdi = new TCanvas("cdi","cdi: di vectors", 1200, 1000);
-  TCanvas *cSpectraCheck = new TCanvas("cSpectraCheck","",1200, 1000);
- 
+  // define error treatment, use RooUnfold namespace
+  RooUnfold::ErrorTreatment errorTreatment = RooUnfold::kCovariance;
+  if(doToy) errorTreatment = RooUnfold::kCovToy;
+  std::cout << "errorTreatment: " << errorTreatment << std::endl;
+  
+  // bayesian unfolding
   if(doBayes){
+    TH1F *hunf; 
+    TH1F *hratio;
 
     RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, Form("Response_matrix_R%d",radius) );
     RooUnfoldBayes unf_bayes(&roo_resp, hrec_anabin, kIter);
@@ -157,10 +122,46 @@ int unfoldDataSpectra( ){
     hratio->SetMarkerStyle(24);
     hratio->SetMarkerColor(kRed);
 
+    fout->cd();
+    hmat->Write();
+    hunf->Write();
+    hratio->Write();
   } // end bayesian specifics
 
+  //SVD specific unfolding, plots, etc.
   if(doSVD){
 
+    // not sure what this is for, some kinda regularization parameter?
+    int kReg[nKregMax];  //{param-4, param-3, param-2, param-1, param, param+1, param+2, param+3, param+4};
+    for(int i=(-4); (i+4)<nKregMax; ++i) kReg[i+4]=param+i;
+    
+    TH1F *hunf_svd[nKregMax];
+    TH1F *hratio_svd[nKregMax];
+    TH1 *hrec_folded_ratio[nKregMax], *hrec_unfolded_ratio[nKregMax];
+    
+    // pearson coefficients
+    //TH2 *hPearsonSVDPriorTruth[nKregMax];
+    //TH1 *hFoldedSVDPriorTruth[nKregMax];
+    TH2 *hPearsonSVDPriorMeas[nKregMax]; 
+    TH1 *hFoldedSVDPriorMeas[nKregMax];
+    
+    // declare the canvases
+    TCanvas *cPearsonMatrixIter; 
+    cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","",1200,1000);
+    cPearsonMatrixIter->Divide(3,3);
+    
+    TCanvas * cSpectra;
+    cSpectra = new TCanvas("cSpectra","",1200,1000);
+    cSpectra->Divide(3,3);
+    
+    TCanvas * cRatio;
+    cRatio = new TCanvas("cRatio","",1200,1000);
+    cRatio->Divide(3,3);  
+    
+    TCanvas *c11 = new TCanvas("c11","c11: Singular Values", 1200, 1000);
+    TCanvas *cdi = new TCanvas("cdi","cdi: di vectors", 1200, 1000);
+    TCanvas *cSpectraCheck = new TCanvas("cSpectraCheck","",1200, 1000);
+    
     RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, Form("Response_matrix_anabin_R%d",radius));
     TLegend *leg[9],*leg1[9];      
 
@@ -268,13 +269,11 @@ int unfoldDataSpectra( ){
   	TH1 *hSVal = (TH1*)svdUnfold->GetSV();
   	//TH1D  *hSValClone = (TH1D*)hSVal->Clone("hSValClone");
   
-  	std::cout << "print singular values " << std::endl;
-  	for(int bin=1; bin<=hSVal->GetNbinsX(); bin++)
-  	  std::cout << "bin: " << bin << "  SV: " << hSVal->GetBinContent(bin) << std::endl;
+  	std::cout << "print singular values: " << std::endl;
+  	for(int bin=1; bin<=hSVal->GetNbinsX(); bin++)std::cout<<"bin: "<<bin<<", SV: "<<hSVal->GetBinContent(bin)<< std::endl;
   	
-  	std::cout << "print di vector " <<  std::endl;
-  	for(int bin=1; bin<=hdi->GetNbinsX(); bin++)
-  	  std::cout << "i: " << bin << "  di: " << hdi->GetBinContent(bin) << std::endl;
+  	std::cout << "print di vector: " <<  std::endl;
+  	for(int bin=1; bin<=hdi->GetNbinsX(); bin++)std::cout<<"i: "<<bin<<", di: "<<hdi->GetBinContent(bin)<<std::endl;
   	
   	c11->cd();
   	gPad->SetLogy();
@@ -300,58 +299,86 @@ int unfoldDataSpectra( ){
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Print("base");
     }// kReg loop
-  }// end SVD specific
-
-  cPearsonMatrixIter->SaveAs(Form("Pearson_Matrix_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");
-  cSpectra->SaveAs(Form("Spectra_meas_unf_fol_%s_R%d_plots.pdf",type.c_str(), radius),"RECREATE");
-  cRatio->SaveAs(Form("Ratio_meas_unf_fol_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");          
-  cdi->SaveAs(Form("di_Vectors_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
-  c11->SaveAs(Form("Singular_Values_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
-
-  cSpectraCheck->cd();
-  std::cout<<"Passed here !"<<std::endl<<std::endl;
-  
-  hrec_folded_ratio[kRegDraw]->SetTitle(" ");
-  hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
-  hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
-  hrec_folded_ratio[kRegDraw]->Draw();
-  hrec_unfolded_ratio[kRegDraw]->Draw("same");
-  
-  drawText("PP 5 TeV", 0.608173, 0.8459761, 22);
-  drawText(Form("kReg = %d",kReg[kRegDraw]), 0.60, 0.75, 22);
-  
-  TLegend * leg2 = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
-  leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");
-  leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Folded/Measured","pl");
-  //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
-  leg2->SetTextSize(0.04); 
-  leg2->Draw();
-  
-  cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_R%d.pdf", radius),"RECREATE");	
-  
-  // write output section //
-  fout->cd();
-  hgen->Write();
-  hgen_resp->Write();
-  hrec->Write();    
-  hrec_resp->Write();
-  if(doBayes){ 
-    hmat->Write();
-    hunf->Write();
-    hratio->Write();
-  }
-  if(doSVD){
+    
+    // loop over histos pointers in arrays to write
+    fout->cd();
     for(int kr = 0; kr<7; ++kr){
       hunf_svd[kr]->Write();
       hPearsonSVDPriorMeas[kr]->Write();
       hFoldedSVDPriorMeas[kr]->Write();
       hratio_svd[kr]->Write();
     }
-  }
+
+    if(drawPDFs){
+
+      std::string type="Data";//should only be Data or MC
+
+      cPearsonMatrixIter->SaveAs(Form("Pearson_Matrix_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");
+      cSpectra->SaveAs(Form("Spectra_meas_unf_fol_%s_R%d_plots.pdf",type.c_str(), radius),"RECREATE");
+      cRatio->SaveAs(Form("Ratio_meas_unf_fol_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");          
+      cdi->SaveAs(Form("di_Vectors_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
+      c11->SaveAs(Form("Singular_Values_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
+      
+      cSpectraCheck->cd();
+      
+      hrec_folded_ratio[kRegDraw]->SetTitle(" ");
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
+      
+      TLegend * leg2 = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
+      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");
+      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Folded/Measured","pl");
+      //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
+      leg2->SetTextSize(0.04); 
+      
+      hrec_folded_ratio[kRegDraw]->Draw();
+      hrec_unfolded_ratio[kRegDraw]->Draw("same");
+      drawText("PP 5 TeV", 0.608173, 0.8459761, 22);
+      drawText(Form("kReg = %d",kReg[kRegDraw]), 0.60, 0.75, 22);
+      leg2->Draw();    
+      
+      cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_R%d.pdf", radius),"RECREATE");	
+    }// end drawPDFs
+  }// end SVD specific
+  
+  // write histos relevant to both bayesian and svd unfolding
+  fout->cd();
+
+  hgen->Write();
+  hgen_resp->Write();
+  hrec->Write();    
+  hrec_resp->Write();
 
   fout->Write();
+  fout->Close();
+  
   return 0;
 } // end unfoldDataSpectra
+
+
+
+int main(int argc, char* argv[]){
+  int rStatus=-1;
+  
+  std::cout<<"unfolding data..."<<std::endl;
+  rStatus=unfoldDataSpectra();
+  
+  //std::cout<<"doing MC closure..."<<std::endl;
+  //rStatus=doMCClosure();
+
+  std::cout<<"done!"<<std::endl;
+  return rStatus;
+}
+
+
+
+
+
+
+
+
+
+
 
 /*
 int doMCClosure(const bool isMC=false, const std::string MCinFile="", const std::string DatainFile="",
@@ -858,18 +885,4 @@ int doMCClosure(const bool isMC=false, const std::string MCinFile="", const std:
   return 0;
 } // end doMCClosure 
 */
-
-int main(int argc, char* argv[]){
-  int rStatus=-1;
-
-  std::cout<<"unfolding data..."<<std::endl;
-  rStatus=unfoldDataSpectra();
-
-  //std::cout<<"doing MC closure..."<<std::endl;
-  //rStatus=doMCClosure();
-
-  std::cout<<"done!"<<std::endl;
-  return rStatus;
-}
-
 

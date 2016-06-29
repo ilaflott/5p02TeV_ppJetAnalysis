@@ -92,6 +92,90 @@ const Int_t fmstyle[6] = {20,21,22,23,29,3};
 const Int_t emstyle[6] = {24,25,26,27,30,28};
 
 //-----------------------------------------------------------------------------------------------------------------------
+//// CalculatePearsonCoefficients
+////-----------------------------------------------------------------------------------------------------------------------
+//// calculates pearson coefficients for....?
+//TMatrixT<double> *CalculatePearsonCoefficients(TMatrixT<double> *covmat) {
+//
+//  TMatrixT<double> *pearsonCoefs = (TMatrixT<double>*)covmat->Clone("pearsonCoefs");
+//  //pearsonCoefs->Clear();
+//  Int_t nrows = covmat->GetNrows();
+//  Int_t ncols = covmat->GetNcols();
+//
+//  // loop over columns+rows of the intput covariance matrix's pearson coefficients 
+//  for(int row = 0; row<nrows; row++){
+//    for(int col = 0; col<ncols; col++){
+//      Double_t pearson = 0.;      
+//      pearson = covmat(row,col)/TMath::Sqrt(covmat(row,row)*covmat(col,col));
+//      pearsonCoefs(row,col) = pearson;
+//      //std::cout << "(" << row << "," << col << ") = " << pearson << std::endl;
+//    }
+//  }
+//  return pearsonCoefs;
+//}
+
+
+// PrintMatrix
+//-----------------------------------------------------------------------------------------------------------------------
+// Print the matrix as a table of elements.
+// Based on TMatrixTBase<>::Print, but allowing user to specify name and cols_per_sheet (also option -> format).
+// By default, format ="%11.4g", is used to print one element.
+// One can specify an alternative format, e.g. format ="%6.2f  " 
+// ian note: doesn't seem to be called, debugging tool? 6/24
+int PrintMatrix( const TMatrixD& m, 
+		  const char* format, const char* name, Int_t cols_per_sheet ){
+
+  if (!m.IsValid()) {
+    m.Error("PrintMatrix","%s is invalid",name);
+    return -1;
+  }
+
+  const Int_t ncols  = m.GetNcols();
+  const Int_t nrows  = m.GetNrows();
+  const Int_t collwb = m.GetColLwb();
+  const Int_t rowlwb = m.GetRowLwb();
+
+  if (!(format && format[0])) format= "%11.4g ";
+  char topbar[1000];
+  snprintf(topbar,1000,format,123.456789);
+  Int_t nch = strlen(topbar)+1;
+  if (nch > 18) nch = 18;
+  char ftopbar[20];
+  for (Int_t i = 0; i < nch; i++) ftopbar[i] = ' ';
+  Int_t nk = 1 + Int_t(log10(ncols));
+  snprintf(ftopbar+nch/2,20-nch/2,"%s%dd","%",nk);
+  Int_t nch2 = strlen(ftopbar);
+  for (Int_t i = nch2; i < nch; i++) ftopbar[i] = ' ';
+  ftopbar[nch] = '|';
+  ftopbar[nch+1] = 0;
+
+  printf("\n%dx%d %s is as follows",nrows,ncols,name);
+
+  if (cols_per_sheet <= 0) {
+    cols_per_sheet = 5;
+    if (nch <= 8) cols_per_sheet =10;
+  }
+  nk = 5+nch*(cols_per_sheet<ncols ? cols_per_sheet : ncols);
+  for (Int_t i = 0; i < nk; i++) topbar[i] = '-';
+  topbar[nk] = 0;
+  for (Int_t sheet_counter = 1; sheet_counter <= ncols; sheet_counter += cols_per_sheet) {
+    printf("\n\n     |");
+    for (Int_t j = sheet_counter; j < sheet_counter+cols_per_sheet && j <= ncols; j++)
+      printf(ftopbar,j+collwb-1);
+    printf("\n%s\n",topbar);
+    if (m.GetNoElements() <= 0) continue;
+    for (Int_t i=1 ; i<=nrows ; i++) {
+      printf("%4d |",i+rowlwb-1);
+      for( Int_t j=sheet_counter ; j<sheet_counter+cols_per_sheet && j<=ncols ; j++) printf(format,m(i+rowlwb-1,j+collwb-1));
+      printf("\n");
+    }
+  }
+  printf("\n");
+  return 0;
+} // end PrintMatrix
+
+
+//-----------------------------------------------------------------------------------------------------------------------
 void SetUnfoldBins1D(TH1F *&h, float minpt, float maxpt){
   int lbin = h->GetXaxis()->FindBin(minpt);
   int hbin = h->GetXaxis()->FindBin(maxpt);

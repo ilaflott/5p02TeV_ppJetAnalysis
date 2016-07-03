@@ -15,9 +15,10 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
-// ROOTSYS
+// global ROOT setups and includes
 #include <TSystem.h>
 #include <TProfile.h>
+#include <TStyle.h>
 // I/O
 #include <TChain.h>
 #include <TFile.h>
@@ -25,25 +26,26 @@
 #include <TNtuple.h>
 #include <TEventList.h>
 #include <TCut.h>
-// utilities
-#include <TMath.h>
-#include <TRandom3.h>
-#include <TStopwatch.h>
-// plotting
-#include <TStyle.h>
+// plotting/drawing, tools and functions
 #include <TCanvas.h>
-#include <TGraphErrors.h>
-#include <TGraphAsymmErrors.h>
 #include <TLegend.h>
 #include <TLatex.h>
 #include <TLine.h>
-// histos
+// graphs/errors
+#include <TGraphErrors.h>
+#include <TGraphAsymmErrors.h>
+// hists
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
 #include <TH1F.h>
 #include <TH2F.h>
+// fits
 #include <TF1.h>
+// misc utilities
+#include <TMath.h>
+#include <TRandom3.h>
+#include <TStopwatch.h>
 
 //// FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
@@ -83,6 +85,7 @@ const char *etaWidth = (char*)"20_eta_20";
 //  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395, 
 //  430, 468, 507, 548, 592, 638, 686, 1000 
 //}; //random old binning i found in raghavs code, here for safe keeping
+
 const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
@@ -131,25 +134,6 @@ const double etabins[] = {
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
 const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
-
-//// string arrays
-////L1
-//const std::string L1BitStrings[]={//this array is a good idea
-//  "L1_SingleJet28_BptxAND",
-//  "L1_SingleJet40_BptxAND",
-//  "L1_SingleJet48_BptxAND",
-//  "L1_SingleJet52_BptxAND"
-//};
-//const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
-//
-////HLT
-//const std::string HLTBitStrings[N_L1Bits]={
-//  "HLT_AK4CaloJet40_Eta5p1",
-//  "HLT_AK4CaloJet60_Eta5p1",
-//  "HLT_AK4CaloJet80_Eta5p1",
-//  "HLT_AK4CaloJet100_Eta5p1"    
-//};
-//const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
 
 // tree names+directories
 const std::string treeNames[]={ 

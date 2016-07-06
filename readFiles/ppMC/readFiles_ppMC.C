@@ -104,6 +104,12 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   jetpp[0]->SetBranchAddress("jtphi",&phi_F);
   jetpp[0]->SetBranchAddress("rawpt",&rawpt_F);
   jetpp[0]->SetBranchAddress("jtpu",&jtpu_F);
+  //MC jet variables
+  jetpp[0]->SetBranchAddress( "subid"	, &subid_F     );
+  jetpp[0]->SetBranchAddress( "refparton_flavor" , &refparton_F );
+  jetpp[0]->SetBranchAddress( "refpt"	, &refpt_F     );
+  jetpp[0]->SetBranchAddress( "refeta"  , &refeta_F    );
+  jetpp[0]->SetBranchAddress( "refdrjt"	, &refdrjt_F   );
   //charged particles
   jetpp[0]->SetBranchAddress("chargedN",&chN_F);
   jetpp[0]->SetBranchAddress("chargedSum",&chSum_F);
@@ -153,7 +159,9 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   
   // histos for weights+weighting
   TH1F *hpthat = new TH1F("hpthat","",1000,0,1000);
+  TH1F *hWeightedpthat = new TH1F("hWeightedpthat","",1000,0,1000);
   TH1F *hVz = new TH1F("hVz","",200, -20, 20);
+  TH1F *hWeightedVz = new TH1F("hWeightedVz","",200, -20, 20);
 
   // book jet variable histograms
   TH1F *hJetQA[2][N_vars];
@@ -176,48 +184,44 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   
   // for unfolding + closure tests ;ate
   //3d plot of genpt v rec pt -> matrix
-  TH1F* hpp_gen    = new TH1F( Form("hpp_gen_R%d_%s",radius,etaWidth)    , Form("Gen refpt R%d %s ",radius,etaWidth),1000,0,1000);
-  TH1F* hpp_reco   = new TH1F( Form("hpp_reco_R%d_%s",radius,etaWidth)   , Form("Reco jtpt R%d %s ",radius,etaWidth),1000,0,1000);
-  TH2F* hpp_matrix = new TH2F( Form("hpp_matrix_R%d_%s",radius,etaWidth) , Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth),
-			       1000,0,1000,1000,0,1000);
+  TH1F* hpp_gen    = new TH1F( Form("hpp_gen_R%d_%s",radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth),1000,0,1000);
+  TH1F* hpp_reco   = new TH1F( Form("hpp_reco_R%d_%s",radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth),1000,0,1000);
+  TH2F* hpp_matrix = new TH2F( Form("hpp_matrix_R%d_%s",radius,etaWidth), 
+			       Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 1000,0,1000,1000,0,1000);
 
   //3d plot of "indep." sample genpt rec pt -> matrx
   TH1F* hpp_mcclosure_gen = new TH1F(Form("hpp_mcclosure_gen_R%d_%s",radius,etaWidth),
-				     Form("gen spectra for unfolding mc closure test R%d %s ",radius,etaWidth),
-				     1000, 0, 1000);
+				     Form("gen spectra for unfolding mc closure test R%d %s ",radius,etaWidth), 1000, 0, 1000);
   TH1F* hpp_mcclosure_data = new TH1F(Form("hpp_mcclosure_data_R%d_%s",radius,etaWidth),
-				      Form("data for unfolding mc closure test R%d %s ",radius,etaWidth),
-				      1000, 0, 1000);
+				      Form("data for unfolding mc closure test R%d %s ",radius,etaWidth), 1000, 0, 1000);
   TH2F* hpp_mcclosure_matrix = new TH2F(Form("hpp_mcclosure_matrix_R%d_%s",radius,etaWidth),
 					Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
 					1000,0,1000, 1000,0,1000);
 
   //the datasample the unfoldig is "closure-tested" on
-  TH1F* hpp_mcclosure_data_train = new TH1F(Form("hpp_mcclosure_data_train_R%d_%s",radius,etaWidth),Form("data_train for unfolding mc closure test R%d %s ",radius,etaWidth),
-					   1000, 0, 1000);  
+  TH1F* hpp_mcclosure_data_train = new TH1F(Form("hpp_mcclosure_data_train_R%d_%s",radius,etaWidth),
+					    Form("data_train for unfolding mc closure test R%d %s ",radius,etaWidth), 1000, 0, 1000);  
 
   // JEC
   TH3F * hJEC= new TH3F("hJEC",";raw p_{T};#eta;JEC",500, 0, 500, 200, -5, +5, 300, 0, 5);
 
-  TH1F * hJEC_check[nbins_pt_jec][nbins_eta];
-  for(int x = 0; x<nbins_pt_jec; ++x){for(int y = 0; y<nbins_eta; ++y){
+  TH1F * hJEC_check[nbins_JEC_ptbins][nbins_eta];
+  for(int x = 0; x<nbins_JEC_ptbins; ++x){ 
+    for(int y = 0; y<nbins_eta; ++y){
       hJEC_check[x][y] = new TH1F(Form("hJEC_check_ptbin%d_etabin%d",x,y),
-				  Form("rawpt/genpt %2.0f < genpt < %2.0f, %2.4f < geneta < %2.4f",ptbins_jec[x], ptbins_jec[x+1], etabins[y], etabins[y+1]),
-				  100, 0, 3);
-    }
-  }
+				  Form("rawpt/genpt %2.0f < genpt < %2.0f, %2.4f < geneta < %2.4f",JEC_ptbins[x], JEC_ptbins[x+1], etabins[y], etabins[y+1]),
+				  100, 0, 3);    }  }
 
   // JER
   TH1F * hJER[nbins_pt];
   for(int bin = 0; bin<nbins_pt; ++bin) hJER[bin] = new TH1F(Form("hJER_%d_pt_%d", ptbins[bin], ptbins[bin+1]),"",100, 0, 2);
 
-  TH1F * hJER_eta_30pt50[nbins_eta], hJER_eta_150pt200[nbins_eta];
+  TH1F* hJER_eta_30pt50[nbins_eta]; TH1F* hJER_eta_150pt200[nbins_eta];
   for(int bin = 0; bin<nbins_eta; ++bin){
     hJER_eta_30pt50[bin] = new TH1F(Form("hJER_etabin%d_30_pt_50", bin),
 				    Form("rawpt/genpt 30 < genpt < 50, %2.4f < geneta < %2.4f", etabins[bin], etabins[bin+1]),100, 0, 2);
     hJER_eta_150pt200[bin] = new TH1F(Form("hJER_etabin%d_150_pt_200", bin),
-				      Form("rawpt/genpt 150 < genpt < 200, %2.4f < geneta < %2.4f", etabins[bin], etabins[bin+1]),100, 0, 2);
-  }
+				      Form("rawpt/genpt 150 < genpt < 200, %2.4f < geneta < %2.4f", etabins[bin], etabins[bin+1]),100, 0, 2);  }
 
 
   // for counting trigger events
@@ -300,7 +304,7 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
       
       if(debugMode){
 	if(jet==0&&nref_F>1)  NEvents_w2Jets_wQACut++; 
-	if(jet==0&&nref_F<=1) NEvents_wo2Jets_wQACut++}; 
+	if(jet==0&&nref_F<=1) NEvents_wo2Jets_wQACut++; }
             
       // jetQA noJetID
       float genpt = refpt_F[jet];
@@ -312,7 +316,7 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
       // JER/JEC
       hJEC->Fill(rawpt, eta_F[jet], (float)(recpt/rawpt));
 
-      //if(fabs(geneta)>=fabs(etabins[0])) continue; // use me if/when i dont make a abs(eta)<2 cut before
+      //if(fabs(geneta)>=fabs(etabins[0])) continue; // use me if/when i dont make a abs(eta)<2 cut before this part
       int etabin = -1;
       for(int bin = 0; bin<nbins_eta; ++bin){
         if(geneta > etabins[bin]) etabin = bin;
@@ -322,8 +326,8 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
       if(genpt >= 150 && genpt<200) hJER_eta_150pt200[etabin]->Fill((float)recpt/genpt, weight_eS);
 
       int binx = -1;
-      for(int bin = 0; bin<nbins_pt_jec; ++bin){
-        if(genpt > ptbins_jec[bin]) binx = bin;
+      for(int bin = 0; bin<nbins_JEC_ptbins; ++bin){
+        if(genpt > JEC_ptbins[bin]) binx = bin;
       }
       if(binx == -1) continue;
       hJEC_check[binx][etabin]->Fill((float)rawpt/genpt);
@@ -349,7 +353,7 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
         hpp_mcclosure_data_train->Fill(recpt, weight_eS);
       }
 
-      // jet QA
+      // jet QA, before jetID cuts
       hJetQA[0][0]->Fill(recpt, weight_eS);
       hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
       hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
@@ -386,7 +390,7 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
 	if(jet==0&&nref_F>1)  NEvents_w2Jets_wQACut_wJetID++; 
 	if(jet==0&&nref_F<=1) NEvents_wo2Jets_wQACut_wJetID++; }
       
-      // jetQA wJetID
+      // jet QA, after jetID cuts
       hJetQA[1][0]->Fill(recpt, weight_eS);
       hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
       hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
@@ -412,11 +416,11 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
 	hJetQA[1][19]->Fill( A_j , weight_eS ); 
 	hJetQA[1][20]->Fill( x_j , weight_eS ); 
       }
-      
     }//end jet loop
   }//end event loop
-  std::cout<<std::endl;
 
+
+  std::cout<<std::endl;
   std::cout<<std::endl<<"Job Event-Loop Summary"<<std::endl;
   if(debugMode)std::cout<<"Total Number of Events read preskim  = "<<nentries<<std::endl;
   std::cout<<"Total Number of Events read          = "<<NEvents<<std::endl<<std::endl;

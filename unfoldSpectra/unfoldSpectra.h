@@ -1,6 +1,9 @@
-// heavily based on utilities.h by Raghav Kunnawalkam Elayavalli
-// written by Ian W. Laflotte
+// unfoldSpectra.C and unfoldSpectra.h written by Ian W. Laflotte
 // June 28 2016
+// heavily based on unfold.C and utilities.h bu Raghav Kunnawalkam Elayavalli
+// Macro to perform Bayes and SVD Unfolding direct from the official RooUnfold classes
+// compile with...
+// g++ -L"${ROOUNFOLD_PATH}" -I"${ROOUNFOLD_PATH}" -lRooUnfold -I"${ROOUNFOLD_PATH}/src" unfoldSpectra.C $(root-config --cflags --libs) -Werror -Wall -O2 -o unfoldSpectra.exe
 
 // C++, C, etc. 
 #include <cstdlib>
@@ -35,6 +38,7 @@
 #include <TStopwatch.h>
 #include <TSpline.h>
 #include <TKey.h>
+#include <TMatrix.h>
 #include <TMatrixT.h>
 #include <TMatrixD.h>
 #include <TSVDUnfold.h>
@@ -61,11 +65,18 @@
 #include <TH2D.h>
 
 // RooUnfold
-//#include "RooUnfold.h"
-//#include "RooUnfoldResponse.h"
+#include "RooUnfold.h"
+#include "RooUnfoldResponse.h"
 #include "RooUnfoldBayes.h"
 #include "RooUnfoldSvd.h"
 #include "RooUnfoldBinByBin.h"
+
+
+//-----------------------------------------------------------------------------------------------------------------------
+const std::string CMSSW_BASE="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
+const std::string inFile_MC_dir="readFiles/ppMC/";
+const std::string inFile_Data_dir="readFiles/ppData/saved_outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/";
+
 
 //-----------------------------------------------------------------------------------------------------------------------
 const double boundaries_pt[] = {
@@ -82,6 +93,7 @@ const double ptbins[] = {
 920, 930, 940, 950, 960, 970, 980, 990, 1000};
 const int nbins = sizeof(ptbins)/sizeof(double)-1;
 
+//-----------------------------------------------------------------------------------------------------------------------
 // color scheme for different color
 const Int_t color[13]={kViolet+2,kBlue,kAzure+6,kGreen-3,kOrange-5,kOrange-3,kOrange+4,kRed-3,kRed,kRed+2,kMagenta+1,kRed+1,kGreen+3};
 // color scheme for fill area - fcolor with lcolor as a boundary
@@ -91,28 +103,29 @@ const Int_t lcolor[5]={kRed+1,kBlue-3,kGreen+3,kOrange+3, kRed+2};
 const Int_t fmstyle[6] = {20,21,22,23,29,3};
 const Int_t emstyle[6] = {24,25,26,27,30,28};
 
+
+// CalculatePearsonCoefficients
 //-----------------------------------------------------------------------------------------------------------------------
-//// CalculatePearsonCoefficients
-////-----------------------------------------------------------------------------------------------------------------------
-//// calculates pearson coefficients for....?
-//TMatrixT<double> *CalculatePearsonCoefficients(TMatrixT<double> *covmat) {
-//
-//  TMatrixT<double> *pearsonCoefs = (TMatrixT<double>*)covmat->Clone("pearsonCoefs");
-//  //pearsonCoefs->Clear();
-//  Int_t nrows = covmat->GetNrows();
-//  Int_t ncols = covmat->GetNcols();
-//
-//  // loop over columns+rows of the intput covariance matrix's pearson coefficients 
-//  for(int row = 0; row<nrows; row++){
-//    for(int col = 0; col<ncols; col++){
-//      Double_t pearson = 0.;      
-//      pearson = covmat(row,col)/TMath::Sqrt(covmat(row,row)*covmat(col,col));
-//      pearsonCoefs(row,col) = pearson;
-//      //std::cout << "(" << row << "," << col << ") = " << pearson << std::endl;
-//    }
-//  }
-//  return pearsonCoefs;
-//}
+TMatrixT<double> *CalculatePearsonCoefficients(TMatrixT<double> *covmat) {
+
+  TMatrixT<double> *pearsonCoefs = (TMatrixT<double>*)covmat->Clone("pearsonCoefs");
+
+  //pearsonCoefs->Clear();
+  Int_t nrows = covmat->GetNrows();
+  Int_t ncols = covmat->GetNcols();
+
+  // loop over columns+rows of the intput covariance matrix's pearson coefficients 
+  for(int row = 0; row<nrows; row++){
+    for(int col = 0; col<ncols; col++){
+      Double_t pearson = 0.;      
+      Double_t covmatElement=*((TMatrixT<double>*)covmat(row,col));
+      pearson = covmatElement/TMath::Sqrt(covmatElement*covmatElement);
+      pearsonCoefs(row,col) = pearson;
+      //std::cout << "(" << row << "," << col << ") = " << pearson << std::endl;
+    }
+  }
+  return pearsonCoefs;
+}
 
 
 // PrintMatrix
@@ -121,7 +134,6 @@ const Int_t emstyle[6] = {24,25,26,27,30,28};
 // Based on TMatrixTBase<>::Print, but allowing user to specify name and cols_per_sheet (also option -> format).
 // By default, format ="%11.4g", is used to print one element.
 // One can specify an alternative format, e.g. format ="%6.2f  " 
-// ian note: doesn't seem to be called, debugging tool? 6/24
 int PrintMatrix( const TMatrixD& m, 
 		  const char* format, const char* name, Int_t cols_per_sheet ){
 

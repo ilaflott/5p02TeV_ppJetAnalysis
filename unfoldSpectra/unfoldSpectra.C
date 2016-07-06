@@ -1,34 +1,18 @@
-// heavily based on unfold.C by Raghav Kunnawalkam Elayavalli
-// written by Ian Laflotte, June 27 2016
-// Macro to perform Bayes and SVD Unfolding direct from the official RooUnfold classes 
-// compile with...
-// g++ -L"${ROOUNFOLD_PATH}" -I"${ROOUNFOLD_PATH}" -lRooUnfold -I"${ROOUNFOLD_PATH}/src" unfoldSpectra.C $(root-config --cflags --libs) -Werror -Wall -O2 -o unfoldSpectra.exe
-
-// custom header
 #include "unfoldSpectra.h"
 
-//-----------------------------------------------------------------------------------------------------------------------
-const std::string CMSSW_BASE="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
-const std::string inFile_MC_dir=CMSSW_BASE+"readFiles/ppMC/";
-const std::string inFile_MC=inFile_MC_dir+"forUnfoldTests.root"; //need complete readFiles output from ppMC, or a debug file
-const std::string inFile_Data_dir=CMSSW_BASE+"readFiles/ppData/saved_outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/";
-const std::string inFile_Data=inFile_Data_dir+"HighPtJetTrig_ak4PF-allFiles.root"; //i think i have a good set of output
+const std::string inFile_MC_name="readFiles_ppMC_QCDJets_forUnfoldTesting_101Files.root"; 
+const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root"; 
 
-const int param=21;
+// may make these inputs to unfoldDataSpectra ----------------------------------------------------------------------------
+const std::string inFile_MC=CMSSW_BASE+inFile_MC_dir+inFile_MC_name;
+const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
 const int radius=4;
-const bool doToyErrs=true;
-
-const bool doBayes=true; //untested
-const int kIter = 4;
-
-const bool doSVD=false; //untested
-const bool drawPDFs=false; //untested
-const int nKregMax = 9;
-const int kRegDraw = 3;
-
+const bool doToyErrs=false;
 const std::string outFile="PP_5p02_Spectra_Unfolded.root";
 const bool debugMode=true;
 
+
+// ----------------------------------------------------------------------------------------------------------------------
 int unfoldDataSpectra( ){
 
   // performance tracking
@@ -41,12 +25,11 @@ int unfoldDataSpectra( ){
   gStyle->SetOptStat(0);
 
 
+  // ppData input histos -------------------------
 
-  // ppData input histos //--------------------------------------------------------------
-
-  std::cout<<"opening histos from Data File"; 
-  if(debugMode)std::cout<<": "<<inFile_Data; 
-  std::cout<<std::endl;
+  std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"; 
+  if(debugMode)std::cout<<": "<<inFile_Data_name; 
+  std::cout<<std::endl<<std::endl;
   TFile *fpp_Data = TFile::Open(inFile_Data.c_str());
 
   //rec
@@ -61,16 +44,11 @@ int unfoldDataSpectra( ){
   hrec_anabin->Print("base");    
   
 
-  // close input file, we have what we need!
-  fpp_Data->Close();
+  // ppMC input histos -------------------------
 
-
-
-  // ppMC input histos //--------------------------------------------------------------
-
-  std::cout<<"opening histos from MC File"; 
-  if(debugMode)std::cout<<": "<<inFile_MC; 
-  std::cout<<std::endl;
+  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
+  if(debugMode)std::cout<<": "<<inFile_MC_name; 
+  std::cout<<std::endl<<std::endl;
   TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
 
   //mat?
@@ -94,69 +72,85 @@ int unfoldDataSpectra( ){
   divideBinWidth(hgen_anabin);
   hgen_anabin->Print("base");
 
-  fpp_MC->Close();  
 
-
-
-
-  // output histos //--------------------------------------------------------------
-
+  // output histos -------------------------
+  std::cout<<std::endl<<std::endl<<"creating new OUTPUT histos..."<<std::endl;
   //gen
-  TH1F *hgen_resp,*hgen_resp_anabin;
+  if(debugMode)std::cout<<"opening output gen/genresponse histograms..."<<std::endl;
+  TH1F *hgen_resp, *hgen_resp_anabin;
   hgen_resp = new TH1F( Form("hpp_gen_responseR%d_20_eta_20",radius),"", 
 			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
+  hgen_resp->Print("base");
   hgen_resp_anabin = new TH1F(Form("hpp_gen_response_anabin_R%d_20_eta_20",radius),"", nbins, ptbins);
   hgen_resp_anabin->Sumw2();
+  hgen_resp_anabin->Print("base");
   
   //rec
+  if(debugMode)std::cout<<"opening output rec/recresponse histograms..."<<std::endl;
   TH1F *hrec_resp, *hrec_resp_anabin; 
   hrec_resp = new TH1F(Form("hpp_rec_response_R%d_20_eta_20",radius),"", 
 		       hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
   hrec_resp->Sumw2();
+  hrec_resp->Print("base");
   hrec_resp_anabin = new TH1F(Form("hpp_rec_response_anabin_R%d_20_eta_20",radius),"", nbins, ptbins);
   hrec_resp_anabin->Sumw2();
-
-  // the output file
+  hrec_resp_anabin->Print("base");
+  
+  // open output file for later
   TFile* fout = new TFile(outFile.c_str(),"RECREATE");
 
 
-
-  // the unfolding //--------------------------------------------------------------
-
-  // define error treatment
+  // unfolding settings ------------------------- // toy-error treatment works! 
+                                                  // non-toy-error treatment being tested now
   RooUnfold::ErrorTreatment errorTreatment = RooUnfold::kCovariance;
   if(doToyErrs) errorTreatment = RooUnfold::kCovToy;
-  std::cout << "errorTreatment: " << errorTreatment << std::endl;
+  std::cout<<std::endl<<"errorTreatment: "<<errorTreatment<<std::endl;
   
-  // bayesian unfolding
+  // Bayesian unfolding ------------------------- // runs w/o crash or segfault! unsure if results sensible
+  const bool doBayes=false; 
+  const int kIter = 4;
   if(doBayes){
+    std::cout<<std::endl<<" beginning Bayesian unfolding..."<<std::endl;
+
+    std::cout<<"calling RooUnfoldResponse "<<std::endl;
+    RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, Form("Response_matrix_R%d",radius));
+
+    std::cout<<"calling RooUnfoldBayes..."<<std::endl;
+    RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
+
     TH1F *hunf; 
-    TH1F *hratio;
-
-    RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, Form("Response_matrix_R%d",radius) );
-    RooUnfoldBayes unf_bayes(&roo_resp, hrec_anabin, kIter);
-
     hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
     hunf->SetName("PP_Bayesian_Unfolded_Spectra");
 
+    TH1F *hratio;
     hratio = (TH1F*)hunf->Clone(Form("MCClosure_test_oppside_Bayes_R%d_20_eta_20", radius));
     hratio->Print("base");
-
     hgen_anabin->Print("base");
 
+    std::cout<<"dividing hunf and hgen_anabin..."<<std::endl;
     hratio->Divide(hgen_anabin);
     hratio->SetMarkerStyle(24);
     hratio->SetMarkerColor(kRed);
 
+    std::cout<<"writing bayesian unfolding output..."<<std::endl;
     fout->cd();
     hmat->Write();
     hunf->Write();
     hratio->Write();
-  } // end bayesian specifics
 
-  //SVD specific unfolding, plots, etc.
+    std::cout<<"Bayesian Unfolding done!"<<std::endl;
+  } // end bayesian specifics
+  else  std::cout<<std::endl<<" skipping Bayesian unfolding..."<<std::endl;
+
+
+  // SVD unfolding -------------------------
+  const bool doSVD   =true; // testing now
+  const bool drawPDFs=false; //untested
+  const int  nKregMax = 9, kRegDraw = 3, param=21;
   if(doSVD){
+
+    std::cout<<std::endl<<" beginning SVD unfolding..."<<std::endl;
 
     // not sure what this is for, some kinda regularization parameter?
     int kReg[nKregMax];  //{param-4, param-3, param-2, param-1, param, param+1, param+2, param+3, param+4};
@@ -172,7 +166,11 @@ int unfoldDataSpectra( ){
     TH2 *hPearsonSVDPriorMeas[nKregMax]; 
     TH1 *hFoldedSVDPriorMeas[nKregMax];
     
+    std::cout<<"calling RooUnfoldResponse"<<std::endl;
+    RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, Form("Response_matrix_anabin_R%d",radius));
+
     // declare the canvases
+    std::cout<<"opening TCanvases..."<<std::endl;
     TCanvas *cPearsonMatrixIter; 
     cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","",1200,1000);
     cPearsonMatrixIter->Divide(3,3);
@@ -189,10 +187,10 @@ int unfoldDataSpectra( ){
     TCanvas *cdi = new TCanvas("cdi","cdi: di vectors", 1200, 1000);
     TCanvas *cSpectraCheck = new TCanvas("cSpectraCheck","",1200, 1000);
     
-    RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, Form("Response_matrix_anabin_R%d",radius));
-    TLegend *leg[9],*leg1[9];      
+    TLegend *leg[nKregMax],*leg1[nKregMax];      
 
-    for(int kr = 0; kr < 9; ++kr){//what is this loop? bin?
+    std::cout<<"entering SVD Unfolding Loop..."<<std::endl;
+    for(int kr = 0; kr < nKregMax; ++kr){
       std::cout<<"int kr= "<<kr<<std::endl;
   
       RooUnfoldSvd unf_svd(&roo_resp, hrec_anabin, kReg[kr]);
@@ -210,8 +208,8 @@ int unfoldDataSpectra( ){
       //Get covariance matrix and calculate corresponding Pearson coefficients    
       TMatrixD covmat = unf_svd.Ereco(errorTreatment);
   
-      //TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covmat);//for initial compiling only
-      TMatrixD *pearson = &covmat;
+      TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covmat);//for initial compiling only
+      //TMatrixD *pearson = &covmat;
   
       hPearsonSVDPriorMeas[kr] = new TH2D(*pearson);
       hPearsonSVDPriorMeas[kr]->SetTitle(" ");
@@ -329,7 +327,7 @@ int unfoldDataSpectra( ){
     
     // loop over histos pointers in arrays to write
     fout->cd();
-    for(int kr = 0; kr<7; ++kr){
+    for(int kr = 0; kr<nKregMax; ++kr){
       hunf_svd[kr]->Write();
       hPearsonSVDPriorMeas[kr]->Write();
       hFoldedSVDPriorMeas[kr]->Write();
@@ -367,26 +365,33 @@ int unfoldDataSpectra( ){
       cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_R%d.pdf", radius),"RECREATE");	
     }// end drawPDFs
   }// end SVD specific
-  
-  // write histos relevant to both bayesian and svd unfolding
-  fout->cd();
+  else  std::cout<<std::endl<<" skipping SVD unfolding..."<<std::endl;
 
+  std::cout<<"writing histos to output file"<<std::endl;
+  fout->cd();
   hgen->Write();
   hgen_resp->Write();
   hrec->Write();    
   hrec_resp->Write();
-
   fout->Write();
+
+  std::cout<<"cleaning up"<<std::endl;
   fout->Close();
-  
+  fpp_MC->Close();  
+  fpp_Data->Close();
+
   return 0;
 } // end unfoldDataSpectra
 
 
 
-
+//-----------------------------------------------------------------------------------------------------------------------
 int doMCClosureTest(     ){
-  
+  const bool doSVD   =false; //untested
+  //const bool drawPDFs=false; //untested
+  const int  nKregMax = 9, kRegDraw = 3, param=21;
+  const bool doBayes=true; //untested
+  const int kIter = 4;
   // performance tracking
   TStopwatch timer; 
   timer.Start();
@@ -838,28 +843,36 @@ int doMCClosureTest(     ){
 } // end doMCClosureTest 
 
 
+//-----------------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[]){
-  int rStatus=-1;
+  int rStatus=-1;//-1 until input right
   if(argc==1){
     std::cout<<std::endl<<" for unfoldDataSpectra, do ";
-    std::cout<<"./unfoldSpectra 1"<<std::endl<<std::endl;
+    std::cout<<"./unfoldSpectra 0"<<std::endl<<std::endl;
     std::cout<<" for doMCClosureTests, do ";
+    std::cout<<"./unfoldSpectra 1"<<std::endl<<std::endl;
+    std::cout<<" for both, do ";
     std::cout<<"./unfoldSpectra <any other integer>"<<std::endl<<std::endl;
     return rStatus;
   }
 
-  rStatus=1;
-  if(atoi(argv[1])==1) {
-    std::cout<<"unfolding data..."<<std::endl;
+  rStatus=1;//1 until a function returns 0 (normal exit by my convention)
+  if( atoi(argv[1])==0 ){
+    std::cout<<std::endl<<" running unfoldDataSpectra... "<<std::endl;
     rStatus=unfoldDataSpectra();
   }
-  else{
-    std::cout<<"doing MC closure..."<<std::endl;
+  else if ( atoi(argv[1])==1 ){
+    std::cout<<std::endl<<" running doMCClosureTests..."<<std::endl;
+    rStatus=doMCClosureTest();
+  }
+  else {
+    std::cout<<std::endl<<" running unfoldDataSpectra... "<<std::endl;
+    rStatus=unfoldDataSpectra();
+    std::cout<<std::endl<<"  ...now running doMCClosureTests..."<<std::endl;
     rStatus=doMCClosureTest();
   }
 
-  
-  std::cout<<"done!"<<std::endl;
+  std::cout<<"done! return status: ";
   return rStatus;
 }
 

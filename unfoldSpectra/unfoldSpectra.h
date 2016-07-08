@@ -106,22 +106,32 @@ const Int_t emstyle[6] = {24,25,26,27,30,28};
 
 // CalculatePearsonCoefficients
 //-----------------------------------------------------------------------------------------------------------------------
-TMatrixT<double> *CalculatePearsonCoefficients(TMatrixT<double> *covmat) {
+//TMatrixT<double> * CalculatePearsonCoefficients(TMatrixT<double>* covmat) {
+TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat) {
 
-  TMatrixT<double> *pearsonCoefs = (TMatrixT<double>*)covmat->Clone("pearsonCoefs");
-
-  //pearsonCoefs->Clear();
+  //std::cout<<"calculating pearson coefficients!"<<std::endl;
+  //std::cout<<"covmat="<< covmat<<std::endl;
+  //std::cout<<"&covmat="<< &covmat<<std::endl;
   Int_t nrows = covmat->GetNrows();
   Int_t ncols = covmat->GetNcols();
+  std::cout<<"nrows,ncols="<<nrows<<" , "<<ncols<<std::endl;
+  TMatrixD* pearsonCoefs=new TMatrixD( nrows,ncols );
+
+  //pearsonCoefs->Clear();
+  //std::cout<<"pearsonCoefs="<< pearsonCoefs<<std::endl;
+  //std::cout<<"&pearsonCoefs="<< &pearsonCoefs<<std::endl;
 
   // loop over columns+rows of the intput covariance matrix's pearson coefficients 
   for(int row = 0; row<nrows; row++){
+    Double_t covmatElement_rowrow = (TMatrixD (*covmat))(row,row);
     for(int col = 0; col<ncols; col++){
-      Double_t pearson = 0.;      
-      Double_t covmatElement=*((TMatrixT<double>*)covmat(row,col));
-      pearson = covmatElement/TMath::Sqrt(covmatElement*covmatElement);
-      pearsonCoefs(row,col) = pearson;
-      //std::cout << "(" << row << "," << col << ") = " << pearson << std::endl;
+      Double_t covmatElement_rowcol = (TMatrixD (*covmat))(row,col);
+      Double_t covmatElement_colcol = (TMatrixD (*covmat))(col,col);
+      Double_t pearson = covmatElement_rowcol/TMath::Sqrt(covmatElement_rowrow*covmatElement_colcol);
+      (TMatrixD(*pearsonCoefs))(row,col) = pearson;
+      if(pearson!=pearson)pearson=-1.;//nan
+      if((row%5==0&&col%5==0)&&pearson!=-1)std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
+      if((row%5==0&&col%5==0)&&pearson!=-1)std::cout<<"pearson="<<pearson <<std::endl;
     }
   }
   return pearsonCoefs;

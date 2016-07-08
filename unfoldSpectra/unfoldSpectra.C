@@ -108,7 +108,7 @@ int unfoldDataSpectra( ){
   std::cout<<std::endl<<"errorTreatment: "<<errorTreatment<<std::endl;
   
   // Bayesian unfolding ------------------------- // runs w/o crash or segfault! unsure if results sensible
-  const bool doBayes=false; 
+  const bool doBayes=true; 
   const int kIter = 4;
   if(doBayes){
     std::cout<<std::endl<<" beginning Bayesian unfolding..."<<std::endl;
@@ -146,7 +146,7 @@ int unfoldDataSpectra( ){
 
   // SVD unfolding -------------------------
   const bool doSVD   =true; // testing now
-  const bool drawPDFs=false; //untested
+  const bool drawPDFs=true; //untested
   const int  nKregMax = 9, kRegDraw = 3, param=21;
   if(doSVD){
 
@@ -207,20 +207,24 @@ int unfoldDataSpectra( ){
   
       //Get covariance matrix and calculate corresponding Pearson coefficients    
       TMatrixD covmat = unf_svd.Ereco(errorTreatment);
-  
-      TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covmat);//for initial compiling only
-      //TMatrixD *pearson = &covmat;
-  
+      std::cout<<"&covmat="<<&covmat<<std::endl;
+
+      //TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covmat);//for initial compiling only
+      TMatrixD *pearson = CalculatePearsonCoefficients(&covmat);
+      //TMatrixD *pearson = &covmat;// for debug only
+      //std::cout<<"pearson="<<pearson<<std::endl;
+      //std::cout<<"&pearson="<<&pearson<<std::endl;
+
       hPearsonSVDPriorMeas[kr] = new TH2D(*pearson);
       hPearsonSVDPriorMeas[kr]->SetTitle(" ");
       hPearsonSVDPriorMeas[kr]->SetName(Form("hPearsonSVDPriorMeas_kReg%d", kReg[kr]));
       hPearsonSVDPriorMeas[kr]->SetMinimum(-1.);
       hPearsonSVDPriorMeas[kr]->SetMaximum(1.);
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.06);
-  
-      hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
       
-      hFoldedSVDPriorMeas[kr]->SetName(Form("hFoldedSVDPriorMeas_kReg%d", kReg[kr]));
+      //Apply to Truth
+      hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
+      hFoldedSVDPriorMeas[kr]->SetName(Form("hFoldedSVDPriorMeas_kReg%d", kReg[kr]));  
   
       cPearsonMatrixIter->cd(kr+1);
   
@@ -285,9 +289,9 @@ int unfoldDataSpectra( ){
       leg1[kr]->Draw();
   	
       //Get and print singular values and d_i vector, print also on screen
-      //Note that these do not depend on the regularization. The opposite: they tell you which regularization to use!
-  
-      if(kr == 0){// what's special about kr==0 here?
+      //Note that these do not depend on the regularization. 
+      //The opposite: they tell you which regularization to use!
+      if(kr == 0){
   
   	TSVDUnfold *svdUnfold = unf_svd.Impl();
   	TH1D *hdi = (TH1D*)svdUnfold->GetD();
@@ -872,7 +876,7 @@ int main(int argc, char* argv[]){
     rStatus=doMCClosureTest();
   }
 
-  std::cout<<"done! return status: ";
+  std::cout<<"done! return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;
 }
 

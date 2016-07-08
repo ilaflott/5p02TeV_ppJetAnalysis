@@ -5,17 +5,18 @@ echo ""
 if [[ $# -ne 5 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condorSubmit_ppData.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
+    echo "source condorSubmit_readFiles_ppMC.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
+    echo "set <NJobs>=-1 to run the entire filelist with jobs of size <NFilesPerJob>"
     return 1
-elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
-then
-    echo "non integer <startFilePos>, exit"
-    return 1
-elif [[ $3 -lt 0 ]] # check for valid startFilePos
-then
-    echo "bad third argument"
-    echo "0 <= <startFilePos> <= nFiles-1"
-    return 1
+#elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
+#then
+#    echo "non integer <startFilePos>, exit"
+#    return 1
+#elif [[ $3 -lt 0 ]] # check for valid startFilePos
+#then
+#    echo "bad third argument"
+#    echo "0 <= <startFilePos> <= nFiles-1"
+#    return 1
 fi
 
 # input arguments to submit script
@@ -40,7 +41,16 @@ elif [[ $startFilePos -ge $nFiles ]]
 then
     echo "bad <startFilePos>, exit"
     echo "0 <= <startFilePos> < nFiles-1"
-    return
+    return 1
+elif [[ ! $startFilePos =~ ^-?[0-9]+$ ]]
+then
+    echo "non integer <startFilePos>, exit"
+    return 1
+elif [[ $startFilePos -lt 0 ]]
+then
+    echo "bad third argument"
+    echo "0 <= <startFilePos> <= nFiles-1"
+    return 1
 fi
 
 # some debug info, just in case
@@ -51,18 +61,26 @@ echo "starting at file position ${startFilePos}..."
 echo ""
 
 # additional inputs to the run script and .exe, these don't change too much
-destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/readFiles_ppData"
 radius=4
 jetType="PF"
+# old and shoul consider removing
+destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/readFiles/ppMC" 
 
 # create output folder/logfileNames with name based on filelist
-filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
-filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
-energy=${filelistTitle%%_*} #echo "energy is ${energy}"
-trig=${filelistTitle#*_} #echo "trig is ${trig}"
-dirName="readFiles_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
-outName="${trig}_ak${radius}${jetType}"
-logFileDir="${PWD}/outputCondor/${dirName}"
+filelist=${filelistIn##*/} #
+echo "filelist is ${filelist}"
+filelistTitle=${filelist%_*} #
+echo "filelistTitle is ${filelistTitle}"
+energy=${filelistTitle%%_*} #
+echo "energy is ${energy}"
+trig=${filelistTitle#*_} #
+echo "trig is ${trig}"
+dirName="readFiles_ppMC_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")" #
+echo "dirName is ${dirName}"
+outName="${trig}_ak${radius}${jetType}" #
+echo "outName is ${outName}"
+logFileDir="${PWD}/outputCondor/${dirName}" #
+echo "logFileDir is ${logFileDir}"
 if [ -d "${logFileDir}" ]; then
     rm -rf "${logFileDir}"
 fi
@@ -77,9 +95,9 @@ cd -
 
 # compile code executable, same as rootcompile in my .bashrc
 echo "compiling..."
-g++ readFiles_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readFiles_ppData.exe || return 1
-cp readFiles_ppData.* "${logFileDir}"
-cp condorRun_readFiles_ppData.sh "${logFileDir}"
+g++ readFiles_ppMC.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readFiles_ppMC.exe || return 1
+cp readFiles_ppMC.* "${logFileDir}"
+cp condorRun_readFiles_ppMC.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 cd ${logFileDir}
 
@@ -131,7 +149,7 @@ do
 
 Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
-Executable     = condorRun_readFiles_ppData.sh
+Executable     = condorRun_readFiles_ppMC.sh
 +AccountingGroup = "group_cmshi.ilaflott"
 Arguments      = $startfile $endfile $filelist $outfile $radius $jetType $debug
 Input          = /dev/null
@@ -144,14 +162,14 @@ GetEnv         = True
 Rank           = kflops
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
-transfer_input_files = ${filelist},readFiles_ppData.exe
+transfer_input_files = ${filelist},readFiles_ppMC.exe
 when_to_transfer_output = ON_EXIT
 Queue
 EOF
 
     # submit the job defined in the above submit file
-    echo "running readFiles_ppData on files #${startfile} to #${endfile}"
-    #condor_submit ${logFileDir}/subfile    
+    echo "running readFiles_ppMC on files #${startfile} to #${endfile}"
+    condor_submit ${logFileDir}/subfile    
     sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 

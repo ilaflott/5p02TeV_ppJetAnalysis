@@ -36,29 +36,37 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   if(debugMode)std::cout<<"looking at jetTrees "<<trees[0]<<" and "<<trees[1]<<std::endl;
   for(int i=2;i<N_trees;++i)trees[i]=treeNames[i];
   
-  // declare TChains for each tree we're interested in
+  
+  //declare tchain, ifstream, and variables for the loop over the filelist
   TChain* jetpp[N_trees];
   for(int t = 0;t<N_trees;++t)  jetpp[t] = new TChain( trees[t].data() );
-  
-  // open filelist
-  std::cout<<"filelist used is "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
-  std::string filename_Forest;  
-  
-  // add files, including startfile+endfile, to chains
-  std::string lastFileAdded=""; bool treesAdded=false;
+  std::cout<<"filelist used is "<<inFilelist<<std::endl;
+  std::string filename_Forest;    std::string lastFileAdded="";   bool treesAdded=false;
   for(int ifile = 0; ifile<=endfile; ++ifile){//file loop
+
     // loop to starting file, check for end of filelist
     instr_Forest>>filename_Forest; 
-    if(ifile<startfile){lastFileAdded=filename_Forest;continue;}
-    if(filename_Forest==lastFileAdded){std::cout<<"end of filelist!"<<std::endl;break;}//end of filelist condition
-    std::cout<<"adding file #"<<ifile;  if(debugMode)std::cout<<" "<<filename_Forest;  std::cout<<" to TChain(s)"<<std::endl;
-    for(int t = 0;t<N_trees;++t){ jetpp[t]->Add(filename_Forest.c_str()); treesAdded=true; }
+    if(ifile<startfile){ 
+      lastFileAdded=filename_Forest; 
+      continue; } // file # under minimum of range desired
+    if(filename_Forest==lastFileAdded){ 
+      std::cout<<"end of filelist!"<<std::endl; 
+      break; } // file # is greater than # files in list
+
+    // debug info just in case
+    std::cout<<"adding file #"<<ifile;     
+    if(debugMode)std::cout<<" "<<filename_Forest;  
+    std::cout<<" to TChain(s)"<<std::endl;
+
+    // add file to each TChain in the jetpp array
+    for(int t = 0;t<N_trees;++t) jetpp[t]->Add(filename_Forest.c_str()); 
     lastFileAdded=filename_Forest;
-  }//end file loop
-  assert(treesAdded);//avoid segfault later
+    treesAdded=true; 
+  }// end file loop
+  assert(treesAdded);// avoid segfault later, just in case
   
-  // friend all trees to akPFJetAnalzyer
+  // friend all trees to akPFJetAnalyzer
   for(int t = 1;t<N_trees;++t)jetpp[0]->AddFriend( jetpp[t] );
   
   // declare variables/arrays for input files
@@ -238,14 +246,17 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   //fVzPP->SetParameters(1.05602e00,5.74688e-03,-3.37288e-03,-1.44764e-05,8.59060e-07);  // Raghav's weights
   fVzPP->SetParameters(+0.941, -0.0173, +3.23e-3, +3.61e-6, -1.04e-5);  // Anna's weights
 
-  // a little prep for pt/eta bin searching later; make it overall more efficient
+  // a little prep for pt/eta bin searching later
+  // if extra speed is needed (i dont think it is), can implement at a later time
   const float minAbsJetEta=2.0, minJetPt=15.0;
-  // find min eta bin index
-  // find min pt bin index
-
+  //int etabin = -1;
+  //int binx = -1;
+  //int ptbin = -1;
+  
   // EVENT LOOP
   Long64_t nentries=jetpp[0]->GetEntries();  
-  if(debugMode) nentries=1000*(endfile-startfile+1);  if(fastDebugMode) nentries=10*(endfile-startfile+1);
+  if(debugMode) nentries=1000*(endfile-startfile+1);  
+  if(fastDebugMode) nentries=10*(endfile-startfile+1);
   
   std::cout<<"looping over "<<nentries<<" events"<<std::endl;  
   for(int nEvt = 0; nEvt < nentries; ++nEvt) {//event loop   
@@ -267,16 +278,19 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
     //if(rho > 2 || nTrk < 2) continue;
 
     // compute weights
-    double vzWeight=1;           vzWeight = fVzPP->Eval(vz_F);
-    double evtPthatWeight=0.;    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }
-    double weight_eS=1;          //weight_eS = trigComb(trgDec, treePrescl, triggerPt);    
-    weight_eS*=evtPthatWeight*vzWeight;
+    double vzWeight=1;           
+    vzWeight = fVzPP->Eval(vz_F);
+    double evtPthatWeight=0.;    
+    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }
+    double weight_eS=1;          
+    //weight_eS = trigComb(trgDec, treePrescl, triggerPt);    
+    double finalWeight*=evtPthatWeight*vzWeight*weight_eS;
 
     // fill (un)weighted evt histos
     hVz->Fill(vz_F);
+    hWeightedVz->Fill(vz_F, finalWeight);
     hpthat->Fill(pthat_F);
-    hWeightedVz->Fill(vz_F, weight_eS);
-    hWeightedpthat->Fill(pthat_F, weight_eS);
+    hWeightedpthat->Fill(pthat_F, finalWeight);
 
     // check trigger decisions for events + exclusivity between them, count events
     bool is40  = false, is60  = false, is80  = false, is100 = false;
@@ -316,68 +330,67 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
       // JER/JEC
       hJEC->Fill(rawpt, eta_F[jet], (float)(recpt/rawpt));
 
-      //if(fabs(geneta)>=fabs(etabins[0])) continue; // use me if/when i dont make a abs(eta)<2 cut before this part
       int etabin = -1;
       for(int bin = 0; bin<nbins_eta; ++bin){
         if(geneta > etabins[bin]) etabin = bin;
       }
       if(etabin == -1) continue;
-      if(genpt >= 30 && genpt<50) hJER_eta_30pt50[etabin]->Fill((float)recpt/genpt, weight_eS);
-      if(genpt >= 150 && genpt<200) hJER_eta_150pt200[etabin]->Fill((float)recpt/genpt, weight_eS);
+      if(genpt >= 30 && genpt<50) hJER_eta_30pt50[etabin]->Fill((float)recpt/genpt, finalWeight);
+      if(genpt >= 150 && genpt<200) hJER_eta_150pt200[etabin]->Fill((float)recpt/genpt, finalWeight);
 
-      int binx = -1;
+      int binx = -1; //genpt JEC bin
       for(int bin = 0; bin<nbins_JEC_ptbins; ++bin){
         if(genpt > JEC_ptbins[bin]) binx = bin;
       }
       if(binx == -1) continue;
       hJEC_check[binx][etabin]->Fill((float)rawpt/genpt);
 
-      int ptbin = -1;
+      int ptbin = -1; //another genpt binnning
       for(int bin = 0; bin<nbins_pt; ++bin){
         if(genpt > ptbins[bin]) ptbin = bin;
       }
       if(ptbin == -1) continue;
-      hJER[ptbin]->Fill((float)recpt/genpt, weight_eS);
+      hJER[ptbin]->Fill((float)recpt/genpt, finalWeight);
 
       // for unfolding
-      hpp_gen->Fill(genpt, weight_eS);
-      hpp_reco->Fill(recpt, weight_eS);
-      hpp_matrix->Fill(recpt, genpt, weight_eS);
+      hpp_gen->Fill(genpt, finalWeight);
+      hpp_reco->Fill(recpt, finalWeight);
+      hpp_matrix->Fill(recpt, genpt, finalWeight);
 
       // for MC closure tests
       if(nEvt%2 == 0){
-        hpp_mcclosure_data->Fill(recpt, weight_eS);
+        hpp_mcclosure_data->Fill(recpt, finalWeight);
       }else {
-        hpp_mcclosure_matrix->Fill(recpt, genpt, weight_eS);
-        hpp_mcclosure_gen->Fill(genpt, weight_eS);
-        hpp_mcclosure_data_train->Fill(recpt, weight_eS);
+        hpp_mcclosure_matrix->Fill(recpt, genpt, finalWeight);
+        hpp_mcclosure_gen->Fill(genpt, finalWeight);
+        hpp_mcclosure_data_train->Fill(recpt, finalWeight);
       }
 
       // jet QA, before jetID cuts
-      hJetQA[0][0]->Fill(recpt, weight_eS);
-      hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
-      hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
-      hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
-      hJetQA[0][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][7]->Fill(chMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][8]->Fill(chSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][10]->Fill(phMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][11]->Fill(phSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][13]->Fill(neMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][14]->Fill(neSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][15]->Fill(eMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][16]->Fill(eSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][17]->Fill(muMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][18]->Fill(muSum_F[jet]/recpt, weight_eS);
+      hJetQA[0][0]->Fill(recpt, finalWeight);
+      hJetQA[0][1]->Fill(rawpt_F[jet], finalWeight);
+      hJetQA[0][2]->Fill(eta_F[jet], finalWeight);
+      hJetQA[0][3]->Fill(phi_F[jet], finalWeight);
+      hJetQA[0][4]->Fill(trkMax_F[jet]/recpt, finalWeight);
+      hJetQA[0][5]->Fill(trkSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][6]->Fill(trkHardSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][7]->Fill(chMax_F[jet]/recpt, finalWeight);
+      hJetQA[0][8]->Fill(chSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][9]->Fill(chHardSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][10]->Fill(phMax_F[jet]/recpt, finalWeight);
+      hJetQA[0][11]->Fill(phSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][12]->Fill(phHardSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][13]->Fill(neMax_F[jet]/recpt, finalWeight);
+      hJetQA[0][14]->Fill(neSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][15]->Fill(eMax_F[jet]/recpt, finalWeight);
+      hJetQA[0][16]->Fill(eSum_F[jet]/recpt, finalWeight);
+      hJetQA[0][17]->Fill(muMax_F[jet]/recpt, finalWeight);
+      hJetQA[0][18]->Fill(muSum_F[jet]/recpt, finalWeight);
       if( jet==0 && nref_F>1 ) {
 	float A_j=(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
 	float x_j=(pt_F[1]/pt_F[0]); 	
-	hJetQA[0][19]->Fill( A_j , weight_eS ); 
-	hJetQA[0][20]->Fill( x_j , weight_eS ); 
+	hJetQA[0][19]->Fill( A_j , finalWeight ); 
+	hJetQA[0][20]->Fill( x_j , finalWeight ); 
       }
 
       // apply JetID cut
@@ -391,30 +404,30 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
 	if(jet==0&&nref_F<=1) NEvents_wo2Jets_wQACut_wJetID++; }
       
       // jet QA, after jetID cuts
-      hJetQA[1][0]->Fill(recpt, weight_eS);
-      hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
-      hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
-      hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
-      hJetQA[1][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][7]->Fill(chMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][8]->Fill(chSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][10]->Fill(phMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][11]->Fill(phSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][13]->Fill(neMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][14]->Fill(neSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][15]->Fill(eMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][16]->Fill(eSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][17]->Fill(muMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][18]->Fill(muSum_F[jet]/recpt, weight_eS);
+      hJetQA[1][0]->Fill(recpt, finalWeight);
+      hJetQA[1][1]->Fill(rawpt_F[jet], finalWeight);
+      hJetQA[1][2]->Fill(eta_F[jet], finalWeight);
+      hJetQA[1][3]->Fill(phi_F[jet], finalWeight);
+      hJetQA[1][4]->Fill(trkMax_F[jet]/recpt, finalWeight);
+      hJetQA[1][5]->Fill(trkSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][6]->Fill(trkHardSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][7]->Fill(chMax_F[jet]/recpt, finalWeight);
+      hJetQA[1][8]->Fill(chSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][9]->Fill(chHardSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][10]->Fill(phMax_F[jet]/recpt, finalWeight);
+      hJetQA[1][11]->Fill(phSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][12]->Fill(phHardSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][13]->Fill(neMax_F[jet]/recpt, finalWeight);
+      hJetQA[1][14]->Fill(neSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][15]->Fill(eMax_F[jet]/recpt, finalWeight);
+      hJetQA[1][16]->Fill(eSum_F[jet]/recpt, finalWeight);
+      hJetQA[1][17]->Fill(muMax_F[jet]/recpt, finalWeight);
+      hJetQA[1][18]->Fill(muSum_F[jet]/recpt, finalWeight);
       if( jet==0 && nref_F>1 ){
 	float A_j=(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
 	float x_j=(pt_F[1]/pt_F[0]); 	
-	hJetQA[1][19]->Fill( A_j , weight_eS ); 
-	hJetQA[1][20]->Fill( x_j , weight_eS ); 
+	hJetQA[1][19]->Fill( A_j , finalWeight ); 
+	hJetQA[1][20]->Fill( x_j , finalWeight ); 
       }
     }//end jet loop
   }//end event loop

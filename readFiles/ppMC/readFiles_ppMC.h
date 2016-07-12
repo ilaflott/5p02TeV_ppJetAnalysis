@@ -162,9 +162,9 @@ const std::string var[] = {
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
+
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
-
 
 void divideBinWidth(TH1 *h){
   h->Sumw2();

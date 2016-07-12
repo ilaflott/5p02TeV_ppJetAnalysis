@@ -9,8 +9,8 @@ const std::string inputFilename =
 const std::string fullFilename = CMSSW_BASE+inputDir+inputFilename;
 
 const std::string thePDFFileName = "readFiles_ppMC_printPlots_PY6_TuneZ2-QCDDijet_JetQA-vz-pthat_7.12.16.pdf";
-const std::string radius="4";
-const std::string pfRad_etaWidth="R"+radius+"_"+(std::string)etaWidth;
+const std::string radius="R4_";
+const std::string pfRad_etaWidth=radius+"_"+(std::string)etaWidth;
 
 int main(int argc, char *argv[]){
 

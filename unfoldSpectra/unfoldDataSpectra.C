@@ -153,8 +153,6 @@ int unfoldDataSpectra( ){
     TH1 *hrec_folded_ratio[nKregMax], *hrec_unfolded_ratio[nKregMax];
     
     // pearson coefficients
-    //TH2 *hPearsonSVDPriorTruth[nKregMax];
-    //TH1 *hFoldedSVDPriorTruth[nKregMax];
     TH2 *hPearsonSVDPriorMeas[nKregMax]; 
     TH1 *hFoldedSVDPriorMeas[nKregMax];
     
@@ -199,11 +197,8 @@ int unfoldDataSpectra( ){
   
       //Get covariance matrix and calculate corresponding Pearson coefficients    
       TMatrixD covmat = unf_svd.Ereco(errorTreatment);
-      std::cout<<"&covmat="<<&covmat<<std::endl;
-
-      //TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covmat);//for initial compiling only
-      TMatrixD *pearson = CalculatePearsonCoefficients(&covmat);
-      //TMatrixD *pearson = &covmat;// for debug only
+      //      std::cout<<"&covmat="<<&covmat<<std::endl;
+      TMatrixD *pearson = CalculatePearsonCoefficients(&covmat); 
       //std::cout<<"pearson="<<pearson<<std::endl;
       //std::cout<<"&pearson="<<&pearson<<std::endl;
 
@@ -333,7 +328,6 @@ int unfoldDataSpectra( ){
     if(drawPDFs){
 
       std::string type="unfoldData";//should only be Data or MC
-
       cPearsonMatrixIter->SaveAs(Form("Pearson_Matrix_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");
       cSpectra->SaveAs(Form("Spectra_meas_unf_fol_%s_R%d_plots.pdf",type.c_str(), radius),"RECREATE");
       cRatio->SaveAs(Form("Ratio_meas_unf_fol_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");          
@@ -382,13 +376,12 @@ int unfoldDataSpectra( ){
 
 //-----------------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[]){
-  int rStatus=-1;//-1 until input right
-  if(argc!=1){
-    std::cout<<" bad usage, do ";
-    std::cout<<"./unfoldDataSpectra"<<std::endl<<std::endl;
+  int rStatus = -1;
+  if( argc!=1 ) {
+    std::cout<<"settings hard coded, just do ./unfoldDataSpectra.exe"<<std::endl;
     return rStatus;
   }
-  rStatus=1;//1 until a function returns 0 (normal exit by my convention)
+  rStatus=1;
   rStatus=unfoldDataSpectra();
   std::cout<<"done! return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

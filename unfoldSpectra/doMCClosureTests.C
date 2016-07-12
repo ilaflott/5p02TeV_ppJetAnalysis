@@ -40,7 +40,6 @@ int doMCClosureTests( ){
   TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
 
   //mat
-  //TH2F *hmat, *hmat_anabin;
   TH2F *hmat = (TH2F*)fpp_MC->Get(Form("hpp_mcclosure_matrix_R%d_20_eta_20",radius));
   hmat->Print("base");
   TH2F* hmat_anabin = (TH2F*)hmat->Clone(Form("hpp_anaBin_Trans_matrix_HLT_R%d_20_eta_20",radius));
@@ -48,7 +47,6 @@ int doMCClosureTests( ){
   hmat_anabin->Print("base");    
   
   //gen
-  //TH1F *hgen, *hgen_anabin;
   TH1F *hgen= (TH1F*)fpp_MC->Get(Form("hpp_mcclosure_gen_R%d_20_eta_20",radius));
   hgen->Print("base");
   TH1F *hgen_anabin = (TH1F*)hgen->Clone(Form("hpp_anaBin_mcclosure_gen_JetComb_R%d_20_eta_20",radius));
@@ -58,7 +56,6 @@ int doMCClosureTests( ){
   hgen_anabin->Print("base");
 
   //rec
-  //TH1F *hrec, *hrec_anabin;
   TH1F *hrec = (TH1F*)fpp_MC->Get(Form("hpp_mcclosure_data_R%d_20_eta_20",radius));
   hrec->Print("base");
   TH1F *hrec_anabin = (TH1F*)hrec->Clone(Form("hpp_anaBin_mcclosure_rec_JetComb_R%d_20_eta_20",radius));
@@ -69,7 +66,6 @@ int doMCClosureTests( ){
   //if(dotrigcor) doTrigCorr(hrec_anabin, hMC_turnon);
 
   //rec_check
-  //TH1F *hrec_check=NULL,*hrec_check_anabin=NULL;
   TH1F *hrec_check = (TH1F*)fpp_MC->Get(Form("hpp_mcclosure_data_train_R%d_20_eta_20",radius));
   hrec_check->Print("base");
   //if(dotrigcor) doTrigCorr(hrec_check, hMC_turnon);
@@ -84,7 +80,6 @@ int doMCClosureTests( ){
 
   //gen
   if(debugMode)std::cout<<"opening  gen/genresponse histograms..."<<std::endl;
-  //TH1F *hgen_resp, *hgen_resp_anabin;
   TH1F *hgen_resp = new TH1F( Form("hpp_gen_responseR%d_20_eta_20",radius),"", 
 			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
@@ -95,7 +90,6 @@ int doMCClosureTests( ){
   
   //rec
   if(debugMode)std::cout<<"opening  rec/recresponse histograms..."<<std::endl;
-  //TH1F *hrec_resp, *hrec_resp_anabin; 
   TH1F *hrec_resp = new TH1F(Form("hpp_rec_response_R%d_20_eta_20",radius),"", 
 		       hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
   hrec_resp->Sumw2();
@@ -127,7 +121,6 @@ int doMCClosureTests( ){
     hunf->SetName("PP_Bayesian_Unfolded_Spectra");
 
     TH1F *hratio = (TH1F*)hunf->Clone(Form("MCClosure_test_oppside_Bayes_R%d_20_eta_20", radius));
-    //hratio = (TH1F*)hunf->Clone(Form("MCClosure_test_oppside_Bayes_R%d_20_eta_20", radius));
     hratio->Print("base");
 
     std::cout<<"dividing hunf and hgen_anabin..."<<std::endl;
@@ -514,12 +507,12 @@ int doMCClosureTests( ){
 
 //-----------------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[]){
-  int rStatus=-1;//-1 until input right
-  if(argc!=1){
-    std::cout<<" bad usage, do ";
-    std::cout<<"./doMCClosureTests"<<std::endl<<std::endl;
+  int rStatus = -1;
+  if( argc!=1 ) {//no input arguments, error
+    std::cout<<"settings hard coded, just do ./doMCClosureTests.exe"<<std::endl;
     return rStatus;
   }
+  rStatus=1;
   rStatus=1;//1 until a function returns 0 (normal exit by my convention)
   rStatus=doMCClosureTests();
   std::cout<<"done! return status: "<<rStatus<<std::endl<<std::endl;

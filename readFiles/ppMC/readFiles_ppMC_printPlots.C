@@ -8,9 +8,9 @@ const std::string inputFilename =
   "readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_2016-07-09/QCDjetAllPtBins_ak4PF-allFiles.root";
 const std::string fullFilename = CMSSW_BASE+inputDir+inputFilename;
 
-const std::string thePDFFileName = "readFiles_printPlots_ppMC_PY6_TuneZ2-QCDDijet_JetQA-vz-pthat_7.12.16.pdf";
+const std::string thePDFFileName = "readFiles_ppMC_printPlots_PY6_TuneZ2-QCDDijet_JetQA-vz-pthat_7.12.16.pdf";
 const std::string radius="4";
-const std::string pfRad_etaWidth="R"+std::to_string(radius)"_"+(std::string)etaWidth;
+const std::string pfRad_etaWidth="R"+radius+"_"+(std::string)etaWidth;
 
 int main(int argc, char *argv[]){
 

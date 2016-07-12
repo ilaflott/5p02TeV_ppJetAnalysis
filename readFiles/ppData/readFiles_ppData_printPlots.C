@@ -43,8 +43,20 @@ int main(int argc, char *argv[]){
   temp_canv->cd();
 
 
+  // evt plots
+  //vz
+  {
+    std::string theHistName="hVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+    theJetQAHist->Draw();
+    temp_canv->Print( thePDFFileName.c_str() );
+  }
   //----------------------
-  //first, raw QA plots, 2*N_vars plots
+
+
+  // jetQA plots ----------------------
+  //{0,1}wJetID
   for(int i=0;i<2;i++){
     for(int j=0;j<N_vars;j++){      
       //e.g. hJetQA_{0,1}wJetID_{jtpt,rawpt,jteta...}
@@ -58,22 +70,9 @@ int main(int argc, char *argv[]){
   //----------------------
 
 
-  //----------------------
-  //then the vz hist, one plot, e.g. hVz
-  {
-    std::string theHistName="hVz";
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
-  //----------------------
-
-
-  //----------------------
-  //then trig and trigCombo plots, 12 plots
+  // HLT/L1 and Comb plots ----------------------
+  //hpp_{HLT40,HLT60,HLT80,HLT100,HLTComb}_{no,}JetID_R4_20_eta_20
   for(int i=0;i<2;i++){
-    //hpp_{HLT40,HLT60,HLT80,HLT100,HLTComb}_{no,}JetID_R4_20_eta_20
     for(int j=0;j<N_HLTNames;j++){
       std::string theHistName="hpp_"+HLTName[j];
       if(i==0)theHistName+="no";

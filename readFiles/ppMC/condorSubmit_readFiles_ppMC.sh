@@ -67,20 +67,13 @@ jetType="PF"
 destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/readFiles/ppMC" 
 
 # create output folder/logfileNames with name based on filelist
-filelist=${filelistIn##*/} #
-echo "filelist is ${filelist}"
-filelistTitle=${filelist%_*} #
-echo "filelistTitle is ${filelistTitle}"
-energy=${filelistTitle%%_*} #
-echo "energy is ${energy}"
-trig=${filelistTitle#*_} #
-echo "trig is ${trig}"
-dirName="readFiles_ppMC_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")" #
-echo "dirName is ${dirName}"
-outName="${trig}_ak${radius}${jetType}" #
-echo "outName is ${outName}"
-logFileDir="${PWD}/outputCondor/${dirName}" #
-echo "logFileDir is ${logFileDir}"
+filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
+filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
+energy=${filelistTitle%%_*} #echo "energy is ${energy}"
+trig=${filelistTitle#*_} #echo "trig is ${trig}"
+dirName="readFiles_ppMC_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")" #echo "dirName is ${dirName}"
+outName="${trig}_ak${radius}${jetType}" #echo "outName is ${outName}"
+logFileDir="${PWD}/outputCondor/${dirName}" #echo "logFileDir is ${logFileDir}"
 if [ -d "${logFileDir}" ]; then
     rm -rf "${logFileDir}"
 fi
@@ -151,7 +144,7 @@ Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
 Executable     = condorRun_readFiles_ppMC.sh
 +AccountingGroup = "group_cmshi.ilaflott"
-Arguments      = $startfile $endfile $filelist $outfile $radius $jetType $debug
+Arguments      = $startfile $endfile $filelist $outfile $radius $debug
 Input          = /dev/null
 Error          = ${logFileDir}/$Error
 Output         = ${logFileDir}/$Output

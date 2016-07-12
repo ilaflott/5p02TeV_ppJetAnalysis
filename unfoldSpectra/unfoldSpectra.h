@@ -73,13 +73,16 @@
 #include "RooUnfoldSvd.h"
 #include "RooUnfoldBinByBin.h"
 
-
 //-----------------------------------------------------------------------------------------------------------------------
 const std::string CMSSW_BASE="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
-const std::string inFile_MC_dir="readFiles/ppMC/";
+const std::string inFile_MC_dir="readFiles/ppMC/saved_outputCondor/readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_2016-07-09/";
+const std::string inFile_MC_name="QCDjetAllPtBins_ak4PF-allFiles.root";//const std::string inFile_MC_name="readFiles_ppMC_QCDJets_forUnfoldTesting_101Files.root";
 const std::string inFile_Data_dir="readFiles/ppData/saved_outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/";
+const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root";
 
-
+// may make these inputs to unfoldDataSpectra ----------------------------------------------------------------------------
+const std::string inFile_MC=CMSSW_BASE+inFile_MC_dir+inFile_MC_name;
+const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
 //-----------------------------------------------------------------------------------------------------------------------
 const double boundaries_pt[] = {
 3, 4, 5, 7, 9, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84, 97, 114, 133, 153, 

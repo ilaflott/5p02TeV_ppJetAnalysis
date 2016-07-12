@@ -1,11 +1,5 @@
 #include "unfoldSpectra.h"
 
-const std::string inFile_MC_name="readFiles_ppMC_QCDJets_forUnfoldTesting_101Files.root"; 
-const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root"; 
-
-// may make these inputs to unfoldDataSpectra ----------------------------------------------------------------------------
-const std::string inFile_MC=CMSSW_BASE+inFile_MC_dir+inFile_MC_name;
-const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
 const int radius=4;
 const bool doToyErrs=false;
 const bool debugMode=true;

@@ -26,12 +26,12 @@ endfile=$2
 filelist=$3
 outfile=$4
 radius=$5 
-jetType=$6 
-debug=$7
+#jetType=$6 
+debug=$6
 #destination=$8
 
 echo "Processing..."
-./readFiles_ppData.exe $startfile $endfile "${filelist}" "${outfile}" $radius "${jetType}" $debug
+./readFiles_ppMC.exe $startfile $endfile "${filelist}" "${outfile}" $radius $debug
 
 #echo "Copying file ${outfile} to ${destination}..."
 #mv ${outfile} ${destination}

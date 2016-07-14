@@ -29,24 +29,27 @@ int main(int argc, char *argv[]){
   }
   rStatus=1;
 
+  // -----------------------------------------------------------------------
+  // Data ------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   if(printDataPlots){
     //input Data file
     std::string filename=inputDataFullFilename;
     std::cout<< "filename is " << filename <<std::endl;
     TFile *fin = new TFile(filename.c_str());
   
-    //get output file ready
+    //create canvas for plots + open output PDF file
     TCanvas *temp_canv = new TCanvas("temp", "temp", 1200, 600);
     std::string thePDFFileName=theDataPDFFileName;
     std::string open_thePDFFileName=theDataPDFFileName+"[";
     std::string close_thePDFFileName=theDataPDFFileName+"]";
-    temp_canv->Print( open_thePDFFileName.c_str() );      //open the .pdf file we want to print to
-    temp_canv->cd();
-    
-    
+    temp_canv->Print( open_thePDFFileName.c_str() );      //open the .pdf file we want to print to, no blank page at start
+    // draw each plot on the temp canvas, then print to the pdf file
+
     // relative response ( individual pt bins, and all together)
     //----------------------
     {
+      temp_canv->cd();    
       for(int i=0;i<5;++i){
 	std::string theHistName="hRelResponse_pt"+std::to_string(i);
 	if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
@@ -56,18 +59,17 @@ int main(int argc, char *argv[]){
       }
     }
     {
-      std::string theHistName="hRelResponse_all";
-      if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-      TCanvas* theJetQAHist= (TCanvas*)fin->Get( theHistName.c_str() );
-      theJetQAHist->Print( thePDFFileName.c_str() );
-      //theJetQAHist->Draw();
-      //temp_canv->Print( thePDFFileName.c_str() );
+      std::string theCanvName="hRelResponse_all";
+      if(debugMode)std::cout<<"theCanvName="<<theCanvName<<std::endl;
+      TCanvas* theAllRespCanv= (TCanvas*)fin->Get( theCanvName.c_str() );
+      theAllRespCanv->cd();
+      theAllRespCanv->Print( thePDFFileName.c_str() );
     }
-    //----------------------
 
     // MPFResponse ( individual pt bins, and all together)
     //----------------------
     {
+      temp_canv->cd();    
       for(int i=0;i<5;++i){
 	std::string theHistName="hMPFResponse_pt"+std::to_string(i);
 	if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
@@ -77,18 +79,17 @@ int main(int argc, char *argv[]){
       }
     }
     {
-      std::string theHistName="hMPFResponse_all";
-      if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-      TCanvas* theJetQAHist= (TCanvas*)fin->Get( theHistName.c_str() );
-      theJetQAHist->Print( thePDFFileName.c_str() );
-      //theJetQAHist->Draw();
-      //temp_canv->Print( thePDFFileName.c_str() );
+      std::string theCanvName="hMPFResponse_all";
+      if(debugMode)std::cout<<"theCanvName="<<theCanvName<<std::endl;
+      TCanvas* theAllRespCanv= (TCanvas*)fin->Get( theCanvName.c_str() );
+      theAllRespCanv->cd();
+      theAllRespCanv->Print( thePDFFileName.c_str() );
     }
-    //----------------------
 
     // MPFAbsResponse ( individual pt bins, and all together)
     //----------------------
     {
+      temp_canv->cd();    
       for(int i=0;i<5;++i){
 	std::string theHistName="hMPFAbsPhoResponse_pt"+std::to_string(i);
 	if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
@@ -98,18 +99,23 @@ int main(int argc, char *argv[]){
       }
     }
     {
-      std::string theHistName="hMPFAbsPhoResponse_all";
-      if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-      TCanvas* theJetQAHist= (TCanvas*)fin->Get( theHistName.c_str() );
-      theJetQAHist->Print( thePDFFileName.c_str() );
-      //theJetQAHist->Draw();
-      //temp_canv->Print( thePDFFileName.c_str() );
+      std::string theCanvName="hMPFAbsPhoResponse_all";
+      if(debugMode)std::cout<<"theCanvName="<<theCanvName<<std::endl;
+      TCanvas* theAllRespCanv= (TCanvas*)fin->Get( theCanvName.c_str() );
+      theAllRespCanv->cd();
+      theAllRespCanv->Print( thePDFFileName.c_str() );
     }
-    //----------------------    
+
     fin->Close();
     temp_canv->Print( close_thePDFFileName.c_str() );//close the output file
   }//end print Data plots condition
 
+
+
+
+  // ---------------------------------------------------------------------
+  // MC ------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   if(printMCPlots){
     //input Data file
     std::string filename=inputMCFullFilename;
@@ -122,12 +128,13 @@ int main(int argc, char *argv[]){
     std::string open_thePDFFileName=theMCPDFFileName+"[";
     std::string close_thePDFFileName=theMCPDFFileName+"]";
     temp_canv->Print( open_thePDFFileName.c_str() );      //open the .pdf file we want to print to
-    temp_canv->cd();
+    //temp_canv->cd();
     
     
     // relative response ( individual pt bins, and all together)
     //----------------------
     {
+      temp_canv->cd();
       for(int i=0;i<5;++i){
 	std::string theHistName="hRelResponse_pt"+std::to_string(i);
 	if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
@@ -137,18 +144,18 @@ int main(int argc, char *argv[]){
       }
     }
     {
-      std::string theHistName="hRelResponse_all";
-      if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-      TCanvas* theJetQAHist= (TCanvas*)fin->Get( theHistName.c_str() );
-      theJetQAHist->Print( thePDFFileName.c_str() );
-      //theJetQAHist->Draw();
-      //temp_canv->Print( thePDFFileName.c_str() );
+      std::string theCanvName="hRelResponse_all";
+      if(debugMode)std::cout<<"theCanvName="<<theCanvName<<std::endl;
+      TCanvas* theAllRespCanv= (TCanvas*)fin->Get( theCanvName.c_str() );
+      theAllRespCanv->cd();
+      theAllRespCanv->Print( thePDFFileName.c_str() );
     }
     //----------------------
 
     // MPFResponse ( individual pt bins, and all together)
     //----------------------
     {
+      temp_canv->cd();
       for(int i=0;i<5;++i){
 	std::string theHistName="hMPFResponse_pt"+std::to_string(i);
 	if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
@@ -158,18 +165,18 @@ int main(int argc, char *argv[]){
       }
     }
     {
-      std::string theHistName="hMPFResponse_all";
-      if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-      TCanvas* theJetQAHist= (TCanvas*)fin->Get( theHistName.c_str() );
-      theJetQAHist->Print( thePDFFileName.c_str() );
-      //theJetQAHist->Draw();
-      //temp_canv->Print( thePDFFileName.c_str() );
+      std::string theCanvName="hMPFResponse_all";
+      if(debugMode)std::cout<<"theCanvName="<<theCanvName<<std::endl;
+      TCanvas* theAllRespCanv= (TCanvas*)fin->Get( theCanvName.c_str() );
+      theAllRespCanv->cd();
+      theAllRespCanv->Print( thePDFFileName.c_str() );
     }
     //----------------------
 
     // MPFAbsResponse ( individual pt bins, and all together)
     //----------------------
     {
+      temp_canv->cd();
       for(int i=0;i<5;++i){
 	std::string theHistName="hMPFAbsPhoResponse_pt"+std::to_string(i);
 	if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
@@ -179,18 +186,18 @@ int main(int argc, char *argv[]){
       }
     }
     {
-      std::string theHistName="hMPFAbsPhoResponse_all";
-      if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-      TCanvas* theJetQAHist= (TCanvas*)fin->Get( theHistName.c_str() );
-      theJetQAHist->Print( thePDFFileName.c_str() );
-      //theJetQAHist->Draw();
-      //temp_canv->Print( thePDFFileName.c_str() );
+      std::string theCanvName="hMPFAbsPhoResponse_all";
+      if(debugMode)std::cout<<"theCanvName="<<theCanvName<<std::endl;
+      TCanvas* theAllRespCanv= (TCanvas*)fin->Get( theCanvName.c_str() );
+      theAllRespCanv->cd();
+      theAllRespCanv->Print( thePDFFileName.c_str() );
     }
     //----------------------    
     
     fin->Close();
     temp_canv->Print( close_thePDFFileName.c_str() );//close the output file
   }// end do MC plots condition
+  // MC ------------------------------------------------------------------
   
   return 0;
 }

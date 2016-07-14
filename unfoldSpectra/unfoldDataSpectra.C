@@ -314,7 +314,7 @@ int unfoldDataSpectra( ){
   	
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Print("base");
-    }// kReg loop
+    }// kReg loop ends
     
     // loop over histos pointers in arrays to write
     fout->cd();
@@ -325,8 +325,8 @@ int unfoldDataSpectra( ){
       hratio_svd[kr]->Write();
     }
 
+    // draw pdfs
     if(drawPDFs){
-
       std::string type="unfoldData";//should only be Data or MC
       cPearsonMatrixIter->SaveAs(Form("Pearson_Matrix_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");
       cSpectra->SaveAs(Form("Spectra_meas_unf_fol_%s_R%d_plots.pdf",type.c_str(), radius),"RECREATE");
@@ -334,8 +334,8 @@ int unfoldDataSpectra( ){
       cdi->SaveAs(Form("di_Vectors_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
       c11->SaveAs(Form("Singular_Values_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
       
-      cSpectraCheck->cd();
-      
+
+      cSpectraCheck->cd();      
       hrec_folded_ratio[kRegDraw]->SetTitle(" ");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
@@ -351,10 +351,9 @@ int unfoldDataSpectra( ){
       drawText("PP 5 TeV", 0.608173, 0.8459761, 22);
       drawText(Form("kReg = %d",kReg[kRegDraw]), 0.60, 0.75, 22);
       leg2->Draw();    
-      
       cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_%s_R%d.pdf", type.c_str(), radius),"RECREATE");	
     }// end drawPDFs
-  }// end SVD specific
+  }// end SVD unfolding
   else  std::cout<<std::endl<<" skipping SVD unfolding..."<<std::endl;
 
   std::cout<<"writing histos to output file"<<std::endl;

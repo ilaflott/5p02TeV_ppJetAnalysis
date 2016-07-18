@@ -1,14 +1,14 @@
-#include "deriveJERUnc.h"
+#include "readFiles_ppMC_deriveJERUnc.h"
 
 //pp_JER_plot
-int readFiles_ppMC_JER_deriveUncAndResiduals(){
+int readFiles_ppMC_deriveJERUnc(){
 
   int radius = 4;
   //bool printDebug = true;
 
   // input file
-  std::cout<< "file dir is " << inFile_MC_dir<< std::endl;
-  std::cout<< "file name is " << inFile_MC_name<< std::endl;
+  std::cout<< "input file dir is " << inFile_MC_dir<< std::endl;
+  std::cout<< "input file name is " << inFile_MC_name<< std::endl;
   TFile *fin = TFile::Open(inFile_MC.c_str());
 
   // draw JER across pt bins, other info on 5x3 canvas + save JER as pdf
@@ -24,8 +24,10 @@ int readFiles_ppMC_JER_deriveUncAndResiduals(){
     cJER->cd(bin)->SetLogy();
 
     F1[bin] = new TF1(Form("F1_bin%d",bin),"gaus", 0.4, 1.6);
-
-    hJER[bin] = (TH1F*)fin->Get(Form("hJER_%d_pt_%d",ptbins[bin], ptbins[bin+1]));  
+    
+    std::string histTitle="hJER_"+std::to_string(ptbins[bin])+"_pt_"+std::to_string(ptbins[bin+1]);
+    std::cout<<"opening hist: "<<histTitle<<std::endl;
+    hJER[bin] = (TH1F*)fin->Get(histTitle.c_str());  
     hJER[bin]->SetTitle(Form("%d < Gen p_{T} < %d; |#eta|<2", ptbins[bin], ptbins[bin+1]));
     hJER[bin]->SetXTitle("p_{T}^{detector jet}/p_{T}^{particle jet}");
     hJER[bin]->Print("base");
@@ -101,11 +103,11 @@ int main(int argc, char*argv[])
 {
   int rStatus=-1;
   if(argc!=1){
-    std::cout<<"no arguments, just do "<<std::endl<<"./ppMC_JER_plotUncAndResiduals.exe"<<std::endl<<std::endl;
+    std::cout<<"no arguments, just do "<<std::endl<<"./readFiles_ppMC_deriveJERUnc.exe"<<std::endl<<std::endl;
     return rStatus;
   }
 
   rStatus=1;
-  rStatus=readFiles_ppMC_printPlots_JERandJES();
+  rStatus=readFiles_ppMC_deriveJERUnc();
   return rStatus;
 }

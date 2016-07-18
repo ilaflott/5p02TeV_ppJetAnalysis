@@ -1,6 +1,6 @@
-#include "normResponseMatrix.h"
+#include "readFiles_ppMC_normRespMatrix.h"
 
-int readFiles_ppMC_normResponseMatrix(){
+int readFiles_ppMC_normRespMatrix(){
 
   gStyle->SetOptStat(0);
   int radius=4;
@@ -29,7 +29,9 @@ int readFiles_ppMC_normResponseMatrix(){
   // TH2F * mPbPb_Matrix_recoTrunc[nbins_cent];  // TH2F * mPbPb_Response_recoTrunc[nbins_cent];  // TH2F * mPbPb_ResponseNorm_recoTrunc[nbins_cent];
   
   // input pp matrix ------------------------------------------------------------
-  TH2F* mPP_Matrix = (TH2F*)fin->Get(Form("hpp_matrix_HLT_R%d_20_eta_20",radius));
+  std::string histTitle="hpp_matrix_HLT_R"+std::to_string(radius)+"_20_eta_20";
+  std::cout<<"opening hist: "<<histTitle <<std::endl;
+  TH2F* mPP_Matrix = (TH2F*)fin->Get(histTitle.c_str());
   mPP_Matrix->Rebin2D(10, 10);
   for (int y=1;y<=mPP_Matrix->GetNbinsY();y++) {
     double sum=0;
@@ -218,11 +220,11 @@ int readFiles_ppMC_normResponseMatrix(){
 int main(int argc, char* argv[]){
   int rStatus=-1;
   if(argc!=1){
-    std::cout<<"no arguments, just do "<<std::endl<<"./norm_ppMCResponseMatrix.exe"<<std::endl<<std::endl;
+    std::cout<<"no arguments, just do "<<std::endl<<"./readFiles_ppMC_normRespMatrix.exe"<<std::endl<<std::endl;
     return rStatus;
   }
 
   rStatus=1;
-  rStatus=norm_ppMCResponseMatrix();
+  rStatus=readFiles_ppMC_normRespMatrix();
   return rStatus;
 }

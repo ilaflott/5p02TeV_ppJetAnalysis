@@ -1,4 +1,4 @@
-#include "ppMC_Response_JERandJES.h"
+#include "normResponseMatrix.h"
 
 int readFiles_ppMC_normResponseMatrix(){
 

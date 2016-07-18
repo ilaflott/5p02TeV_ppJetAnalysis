@@ -1,7 +1,7 @@
 #include "readFiles_ppMC.h"
 
 const std::string CMSSW_BASE = 
-  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
+the  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
 const std::string inputDir = 
   "src/readFiles/ppMC/saved_outputCondor/";
 const std::string inputFilename = 

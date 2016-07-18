@@ -17,12 +17,12 @@
 #include <TH2.h>
 #include <TF1.h>
 #include <TVirtualFitter.h>
-#include <Minuit2/Minuit2Minimizer.h>
-#include <Math/Functor.h>
-//#include "boundaries.h"
+
 //#include "Minuit2/Minuit2Minimizer.h"
 //#include "Math/Functor.h"
 //#include "boundaries.h"
+#include <Minuit2/Minuit2Minimizer.h>
+#include <Math/Functor.h>
 
 #include <TGraph.h>
 #include <TGraphErrors.h>
@@ -34,9 +34,34 @@
 #include <TLatex.h>
 #include <TString.h>
 
+const std::string CMSSW_BASE=
+  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
+
+const std::string inFile_MC_dir=
+  "readFiles/ppMC/saved_outputCondor/readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_2016-07-09/";
+const std::string inFile_MC_name="QCDjetAllPtBins_ak4PF-allFiles.root";
+const std::string inFile_MC=CMSSW_BASE+inFile_MC_dir+inFile_MC_name;
+
+const std::string inFile_Data_dir=
+  "readFiles/ppData/saved_outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/";
+const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root";
+const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
+
 // some numbers...
 const int digi = 3;
 double fracRMS = 1.00;
+const double ptbins_ana[] = {
+  50, 60, 70, 80, 90,
+  100, 110, 130, 150, 170, 190,
+  210, 240, 270, 300};
+const int ptbins[] = {
+  50, 60, 70, 80, 90,
+  100, 110, 130, 150, 170, 190,
+  210, 240, 270, 300};
+const int nbins_ana=(sizeof(ptbins_ana)/sizeof(double))-1;
+const int nbins=nbins_ana;
+const int nbins_pt=nbins_ana;
+//const int nbins_ana = 14;
 
 // styledraw/hist/visuals methods
 void LoadStyle();
@@ -70,7 +95,7 @@ void fit_double_gaussian(TH1F *&hrsp);
 //double sided crystal ball
 int fit_dscb(TH1F *&hrsp,
              const double nsigma, const double jtptmin, const int niter,
-             const string alg);
+             const std::string alg);
 double fnc_dscb(double*xx,double*pp);
 //fit misc
 void FitDist(TH1F *&, //hrsp
@@ -164,7 +189,7 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
       pad[i][j]->SetNumber(columns*j+i+1);
     }
   }						
-  return void;
+  return;
 }
 
 void MakeHist(TH1F *&histo,int istat,const char *xname, const char *yname){
@@ -184,7 +209,7 @@ void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
   h1->SetTitle("");
   h1->SetMaximum(ymax);
   h1->SetMinimum(ymin);
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
   h1->GetXaxis()->SetTitle("GenJet p_{T} (GeV/c)");
   h1->GetXaxis()->CenterTitle(true);
   h1->GetXaxis()->SetMoreLogLabels();
@@ -213,7 +238,7 @@ void MakeHistMean(TH1F *&h1,float ymax,float ymin){
   h1->SetMaximum(ymax);
   h1->SetMinimum(ymin);
   h1->SetTitle("");
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
   h1->GetXaxis()->SetTitle("GenJet p_{T} (GeV/c)");
   h1->GetXaxis()->CenterTitle(true);
   h1->GetXaxis()->SetMoreLogLabels();
@@ -327,7 +352,7 @@ void fit_gaussian(TH1F *&hrsp,
     std::cout<<"ERROR: Empty pointer to fit_gaussian()"<<std::endl;return;
   }
   
-  string histname = hrsp->GetName();
+  std::string histname = hrsp->GetName();
   double mean     = hrsp->GetMean();
   double rms      = hrsp->GetRMS();
   double ptRefMax(1.0),rspMax(0.0);
@@ -343,7 +368,7 @@ void fit_gaussian(TH1F *&hrsp,
 
   TF1* fitfnc(0); int fitstatus(-1);
   for (int iiter=0;iiter<niter;iiter++) {
-    vector<double> vv;
+    std::vector<double> vv;
     vv.push_back(rspMax);
     vv.push_back(xmin);
     vv.push_back(peak-nsigma*sigma);
@@ -381,11 +406,11 @@ void fit_double_gaussian(TH1F *&hrsp){
     std::cout<<"ERROR: Empty pointer to fit_double_gaussian()"<<std::endl;return;
   }
   
-  string histname = hrsp->GetName();
+  std::string histname = hrsp->GetName();
   hrsp->Scale(1./hrsp->Integral());
   double mean     = hrsp->GetMean();
   double rms      = hrsp->GetRMS();
-s
+
   int maxbin    = hrsp->GetMaximumBin();
   double norm1  = hrsp->GetBinContent(maxbin);
   double peak1  = hrsp->GetBinCenter(maxbin);
@@ -415,7 +440,7 @@ s
   fitfnc->SetParameters(norm1, peak1, sigma1, 
    			norm2, peak2, sigma2); 
   fitstatus = hrsp->Fit(fitfnc,"RQ");
-
+  std::cout << "fitstatus="<<fitstatus<<std::endl;
   fitfnc->SetParLimits(0,0.01,50*norm1);
   // fitfnc->SetParLimits(1,0.7,1.2);
   // fitfnc->SetParLimits(2,0.01,5.0);
@@ -466,7 +491,7 @@ s
 
 int fit_dscb(TH1F *&hrsp,
              const double nsigma, const double jtptmin, const int niter,
-             const string alg){
+             const std::string alg){
 
   if (0==hrsp) {
     std::cout<<"ERROR: Empty pointer to fit_dscb()"<<std::endl;return -1;
@@ -481,7 +506,7 @@ int fit_dscb(TH1F *&hrsp,
   }
 
   // implementation of the low pt bias threshold 
-  string histname = hrsp->GetName();
+  std::string histname = hrsp->GetName();
   //double ptRefMax(1.0),rspMax(0.0);
 
   double fitrange_min(0.4);
@@ -590,7 +615,7 @@ void FitDist(TH1F *&hrsp,
   mean  = hrsp->GetMean();
   emean = hrsp->GetMeanError();
 
-  double rms   = hrsp->GetRMS();
+  //double rms   = hrsp->GetRMS();
   double err   = hrsp->GetRMSError();
 
   sig   = hrsp->GetRMS()/mean;
@@ -665,7 +690,9 @@ void set_range_truncatedRMS(TH1F *&hist,float frac){
 
   if (0==hist) return;
 
-  const float nevts = hist->Integral(); if (0==nevts) return;
+  const float nevts = hist->Integral(); 
+  if (0.==nevts) return;
+  
   const int   nbins = hist->GetNbinsX();
 
   if (frac<=0.0 || frac==1.) return;

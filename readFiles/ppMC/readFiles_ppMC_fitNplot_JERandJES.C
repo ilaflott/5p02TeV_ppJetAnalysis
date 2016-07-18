@@ -1,8 +1,11 @@
-#include "readFiles_ppMC_plotJESandJER.h"
+#include "readFiles_ppMC_fitNplot_JERandJES.h"
 
 // the macro
 //int plot_JESandJERClosure(int wJetID=1, std::string jetType = "PF"){
-int readFiles_ppMC_plotJESandJER(){
+int readFiles_ppMC_fitNplot_JERandJES(){
+
+  const std::string srad[]={"2","3","4"};
+  int knj=3;//wasn't in original code, 10 arbitrarily chosen
 
   int iSave=1;
   int wJetID=1;  int id = wJetID;
@@ -16,7 +19,8 @@ int readFiles_ppMC_plotJESandJER(){
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04); 
   
-  TFile *finPP = new TFile(Form("PP_5p02TeV_MC_ak%s_20_eta_20.root",(srad[0]+jetType).c_str()),"r");
+  //  TFile *finPP = new TFile(Form("PP_5p02TeV_MC_ak%s_20_eta_20.root",(srad[0]+jetType).c_str()),"r");
+  TFile *finPP=new TFile(inFile_MC.c_str());
   TH1F *hrsp [knj][nbins_pt];
   TH1F *hMean[knj], *hSigma[knj];
   TF1 *fgaus=0;
@@ -303,11 +307,11 @@ int main(int argc, char*argv[])
 {
   int rStatus=-1;
   if(argc!=1){
-    std::cout<<"no arguments, just do "<<std::endl<<"./readFiles_ppMC_plotJESandJER.exe"<<std::endl<<std::endl;
+    std::cout<<"no arguments, just do "<<std::endl<<"./readFiles_ppMC_fitNplot_JERandJES.exe"<<std::endl<<std::endl;
     return rStatus;
   }
 
   rStatus=1;
-  rStatus=plot_JESandJERClosure();
+  rStatus=readFiles_ppMC_fitNplot_JERandJES();
   return rStatus;
 }

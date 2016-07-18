@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
     std::string thePDFFileName=theDataPDFFileName;
     std::string open_thePDFFileName=theDataPDFFileName+"[";
     std::string close_thePDFFileName=theDataPDFFileName+"]";
-    temp_canv->Print( open_thePDFFileName.c_str() );      //open the .pdf file we want to print to, no blank page at start
+    temp_canv->Print( open_thePDFFileName.c_str() );      //open the .pdf file we wan t to print to, no blank page at start
     // draw each plot on the temp canvas, then print to the pdf file
 
     // relative response ( individual pt bins, and all together)

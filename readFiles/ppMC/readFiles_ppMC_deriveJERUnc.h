@@ -49,9 +49,14 @@ const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root";
 const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
 
 // some numbers...
-const double ptbins_ana[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
-const int ptbins[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
-const int nbins_ana = sizeof(ptbins)/sizeof(int) - 1;//14
+//const double ptbins_ana[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
+//const int ptbins[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
+//const int nbins = 14
+const double ptbins_ana[] = {15,30,50,80,120,170,220,300,500};
+const int nbins_ana = sizeof(ptbins_ana)/sizeof(double) - 1;
+const int ptbins[]        = {15,30,50,80,120,170,220,300,500};
+const int nbins = sizeof(ptbins)/sizeof(int) - 1;
+
 const int digi = 3;
 double fracRMS = 1.00;
 
@@ -69,6 +74,9 @@ void MakeHistRMS(TH1F *&  , // hRMS
 void MakeHistMean(TH1F *& , // mean 
 		 float , float);// max, min 
 void MakeZero(TH1F *& ); //hist 
+
+void drawText(const char *,  //text 
+	      float, float , int ); //xp,yp,size
 
 void drawText2(const char *,  //text 
 	       float, float , int ); //xp,yp,size
@@ -199,10 +207,12 @@ void MakeHist(TH1F *&histo,int istat,const char *xname, const char *yname){
 
 
 void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
+  
   h1->SetTitle("");
   h1->SetMaximum(ymax);
   h1->SetMinimum(ymin);
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
   h1->GetXaxis()->SetTitle("GenJet p_{T} (GeV/c)");
   h1->GetXaxis()->CenterTitle(true);
   h1->GetXaxis()->SetMoreLogLabels();
@@ -214,6 +224,7 @@ void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
   h1->GetXaxis()->SetTitleSize(0.07);
   h1->GetXaxis()->SetTitleOffset(1.15);
   h1->GetXaxis()->SetTitleFont(42);
+  
   h1->GetYaxis()->SetTitle("#sigma / #mu");
   h1->GetYaxis()->CenterTitle(true);
   h1->GetYaxis()->SetNdivisions(507);
@@ -228,10 +239,12 @@ void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
 
 
 void MakeHistMean(TH1F *&h1,float ymax,float ymin){
+
   h1->SetMaximum(ymax);
   h1->SetMinimum(ymin);
   h1->SetTitle("");
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
+
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
   h1->GetXaxis()->SetTitle("GenJet p_{T} (GeV/c)");
   h1->GetXaxis()->CenterTitle(true);
   h1->GetXaxis()->SetMoreLogLabels();
@@ -243,6 +256,7 @@ void MakeHistMean(TH1F *&h1,float ymax,float ymin){
   h1->GetXaxis()->SetLabelSize(0.07);
   h1->GetXaxis()->SetLabelOffset(0.005);
   h1->GetXaxis()->SetNdivisions(507);
+
   h1->GetYaxis()->SetTitle("#mu");
   h1->GetYaxis()->CenterTitle(true);
   h1->GetYaxis()->SetTitleSize(0.07);
@@ -260,6 +274,16 @@ void MakeZero(TH1F *&h1){
   h1->GetYaxis()->SetTitleSize(0);
 }
 
+void drawText(const char *text, float xp, float yp, int size){
+  TLatex *tex = new TLatex(xp,yp,text);
+  tex->SetTextFont(63);
+  tex->SetTextSize(size);
+  tex->SetTextColor(kBlack);
+  tex->SetLineWidth(1);
+  //tex->SetTextFont(42);
+  tex->SetNDC();
+  tex->Draw();
+}
 
 void drawText2(const char *text, float xp, float yp, int size){
   TLatex *tex = new TLatex(xp,yp,text);
@@ -361,7 +385,7 @@ void fit_gaussian(TH1F *&hrsp,
 
   TF1* fitfnc(0); int fitstatus(-1);
   for (int iiter=0;iiter<niter;iiter++) {
-    vector<double> vv;
+    std::vector<double> vv;
     vv.push_back(rspMax);
     vv.push_back(xmin);
     vv.push_back(peak-nsigma*sigma);
@@ -396,14 +420,14 @@ void fit_gaussian(TH1F *&hrsp,
 void fit_double_gaussian(TH1F *&hrsp){
 
   if (0==hrsp) {
-    std::cout<<"ERROR: Empty pointer to fit_double_gaussian()"<<std::endl;return;
-  }
+    std::cout<<"ERROR: Empty pointer to fit_double_gaussian()"<<std::endl;
+    return;  }
   
   std::string histname = hrsp->GetName();
   hrsp->Scale(1./hrsp->Integral());
   double mean     = hrsp->GetMean();
   double rms      = hrsp->GetRMS();
-s
+
   int maxbin    = hrsp->GetMaximumBin();
   double norm1  = hrsp->GetBinContent(maxbin);
   double peak1  = hrsp->GetBinCenter(maxbin);
@@ -422,6 +446,7 @@ s
   double fitrange_max = 1.4;
 
   TF1* fitfnc(0); int fitstatus(-1);
+  std::cout<<"fitstatus="<<fitstatus<<std::endl;
   TF1 *fitg1(0), *fitg2(0);
   fitfnc = new TF1("fdgaus","gaus(0)+gaus(3)",fitrange_min,fitrange_max);
   fitfnc->SetLineColor(1);
@@ -433,7 +458,7 @@ s
   fitfnc->SetParameters(norm1, peak1, sigma1, 
    			norm2, peak2, sigma2); 
   fitstatus = hrsp->Fit(fitfnc,"RQ");
-
+  std::cout<<"fitstatus="<<fitstatus<<std::endl;
   fitfnc->SetParLimits(0,0.01,50*norm1);
   // fitfnc->SetParLimits(1,0.7,1.2);
   // fitfnc->SetParLimits(2,0.01,5.0);
@@ -452,6 +477,7 @@ s
   // }
 
   fitstatus = hrsp->Fit(fitfnc,"RQ");
+  std::cout<<"fitstatus="<<fitstatus<<std::endl;
   hrsp->SetMaximum(norm1+0.2*norm1);
 
   fitg1 = new TF1("fg1","gaus(0)",fitrange_min,fitrange_max);
@@ -519,6 +545,7 @@ int fit_dscb(TH1F *&hrsp,
   TVirtualFitter::SetDefaultFitter("Minuit");
   
   int fitstatus(0);
+  std::cout<<"fitstatus="<<fitstatus<<std::endl;
   for (int i=0;i<niter;i++) {
     fdscb->SetParameter(0,norm); // N
     fdscb->SetParameter(1,mean); // mean
@@ -541,6 +568,7 @@ int fit_dscb(TH1F *&hrsp,
     fdscb->SetParLimits(6,0.,100.);
 
     fitstatus = hrsp->Fit(fdscb,"RQB+");
+      std::cout<<"fitstatus="<<fitstatus<<std::endl;
     if (0==fitstatus) i=999;
     delete fdscb;
     fdscb = hrsp->GetFunction("fdscb");
@@ -622,6 +650,7 @@ void FitDist(TH1F *&hrsp,
   fgaus->SetParLimits(2,0.2,1.00);
 
   int fitstatus  = hrsp->Fit(fgaus,"RMLQ");
+  std::cout<<"fitstatus="<<fitstatus<<std::endl;
   //fitstatus=-1;
   // mean  = (fitstatus!=4000) ? hrsp->GetMean()     :  0.5*(fgaus->GetParameter(1) + hrsp->GetMean());
   // emean = (fitstatus!=4000) ? hrsp->GetMeanError(): sqrt(pow(fgaus->GetParError(1),2) + pow(hrsp->GetMeanError(),2));

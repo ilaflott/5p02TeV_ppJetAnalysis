@@ -50,11 +50,11 @@ the relvant g++ compilation therefore is
 
 here, the part that says 
 
--L"${ROOUNFOLD_PATH}" -I"${ROOUNFOLD_PATH}" -lRooUnfold
+     -L"${ROOUNFOLD_PATH}" -I"${ROOUNFOLD_PATH}" -lRooUnfold
 
 and 
 
--I"${ROOUNFOLD_PATH}/src"
+     -I"${ROOUNFOLD_PATH}/src"
 
 points g++ to the lcoation of the RooUnfold libraries/binaries/headers for linking at compile time. I make this a bash function called "rooUnfoldCompile", and it's very similar to my rootcompile function; it differs only by the aforementioned two pieces
 
@@ -64,18 +64,18 @@ points g++ to the lcoation of the RooUnfold libraries/binaries/headers for linki
 
 in my ${CMSSW_BASE}/src do 
 
-   svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk  #downloads the directory "trunk"
-   mv trunk RooUnfold-svnTrunk  #rename for convenience
-   cd RooUnfold-svnTrunk
-   make
-   make bin
+     svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk  #downloads the directory "trunk"
+     mv trunk RooUnfold-svnTrunk  #rename for convenience
+     cd RooUnfold-svnTrunk
+     make
+     make bin
 
 in .bashrc -> rooUnfoldCompile() function as described above, defined at login
 
 in setupenv.sh -> LD_LIBRARY_PATH and ROOUNFOLD_PATH defined, do
 
-   source setupenv.sh  # no need to enter grid pass
+     source setupenv.sh  # no need to enter grid pass
 
 now I should be able to compile code that uses RooUnfold with
    
-   rooUnfoldCompile myUnfoldCode.C  # should yield myUnfoldCode.exe
+     rooUnfoldCompile myUnfoldCode.C  # should yield myUnfoldCode.exe

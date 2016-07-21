@@ -1,12 +1,11 @@
-//---------------------------------------------------------------------------------------
 
-ian w laflotte
-started on 6/15/2016
-last updated: (7/12/16)
+ian w laflotte, started on 6/15/2016, last updated on 7/21/16
 
+**********
 The primary analysis folder for 5p02TeV_ppJetAnalysis. This analysis is built on code inherited from Raghav Kunnawalkam's RAA_5p02_code repository. 
 See below for notes regarding the use of scripts/code, goals, progress, etc. Some directories are split into data/MC versions (e.g. readFiles, filelists), some not (e.g. DijetResponse). 
 
+**********
 WORKFLOW(s)
 for QA/SanityChecks :  
 input Forest files -> 
@@ -21,9 +20,8 @@ inputForestFiles -> DijetResponse(deriveResponse) -> rootfiles -> DijetResponse 
 if(needDebug) analyze_deriveResponseOutput.C -> text output regarding quality of DijetResponse(sum+derive) output 
 
 
-//----------------------------------------------------------------------------------------
-
-//// unfoldSpectra
+**********
+// unfoldSpectra --------------------------------------------------------
 
 FILE(s):
 unfoldDataSpectra.C
@@ -42,9 +40,8 @@ CURRENTLY WORKING ON:
 deciding if output is sensible
 
 
-//----------------------------------------------------------------------------------------
-
-//// readFiles 
+**********
+// readFiles --------------------------------------------------------
 
 FILE(s):
 ppData/readFiles_ppData.{C,h}
@@ -63,9 +60,8 @@ CURRENTLY WORKING ON:
 Making the plots prettier, more readable (a constant work in progress)
 
 
-//----------------------------------------------------------------------------------------
-
-//// DijetResponse 
+**********
+// DijetResponse --------------------------------------------------------
 
 FILE(s):
 DijetResponse.{C,h}
@@ -77,14 +73,11 @@ Aj/Relative response, missEt+jetpt/MPF response, missEt+matchedphoton/MPFAbsPho 
 
 PROGRESS:
 
-
 CURRENTLY WORKING ON:
 
 
-
-//----------------------------------------------------------------------------------------
-
-//// jetWeights
+**********
+// jetWeights --------------------------------------------------------
 
 FILE(s):
 
@@ -101,27 +94,8 @@ CURRENTLY WORKING ON:
 N/A
 
 
-
-//----------------------------------------------------------------------------------------
-
-//// "2ndTier"
-
-TO WORK/RUN: normResponseMatrix, plot_JESClosure, pp_JER_plot
-
-GOAL(s): not 100% certain yet, but i know this has to do with rooUnfold and the consistency of the corrections we derive for the distributions. More work here is needed.
- 
-WORKFLOW(s): 
-this is the "2nd tier" of the analysis code; must run readFiles/DijetResponse/unfoldSpectra first
-
-PROGRESS:
-
-CURRENTLY WORKING ON:
-
-
-
-//----------------------------------------------------------------------------------------
-
-//// bonus round: jetObservables 
+**********
+// jetObservables --------------------------------------------------------
 
 GOAL(s): 
 some macros dedicated to computing the quanities in question (jetPull, jetThrust, njettiness) and exploring their usefuless as experimental observables. 

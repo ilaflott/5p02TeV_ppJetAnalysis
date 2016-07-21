@@ -1,9 +1,14 @@
 
 ian w laflotte, started on 6/15/2016, last updated on 7/21/16
 
+
 **********
 The primary analysis folder for 5p02TeV_ppJetAnalysis. This analysis is built on code inherited from Raghav Kunnawalkam's RAA_5p02_code repository. 
+
 See below for notes regarding the use of scripts/code, goals, progress, etc. Some directories are split into data/MC versions (e.g. readFiles, filelists), some not (e.g. DijetResponse). 
+
+some of this may be more readable in github via the RAW format button.
+
 
 **********
 // OVERALL STATUS --------------------------------------------------------
@@ -12,6 +17,7 @@ positive, most code compiles+runs without issue.
 Most output looks sensbile (DijetResponse_printPlots, readFiles_ppd{Data,MC}_printPlots)
 Issue: Py6 QCDDijetMC for pp doesnt't have an emulated HLT/L1 sector, can't use/test readFiles_ppMC_normRespMatrix.C
 putting MinBias samples into the spectra+fitter and then re-running the analysis shouldn't be an issue
+
 
 **********
 // readFiles --------------------------------------------------------
@@ -46,7 +52,6 @@ deriveJERUnc.{C,h} compiles+work fine. unsure if output is sane
 CURRENTLY WORKING ON:
 Making plots from printPlots more enlightening (more info on drawn PDF file, better binning, maybe!)
 interpreting output from the JER/JES scripts, also making it prettier + more readable
-
 
 
 **********
@@ -121,13 +126,15 @@ some macros dedicated to computing the quanities in question (jetPull, jetThrust
 CURRENTLY WORKING ON, STATUS, CURRENTLY WORKING ON:
 N/A, later.
 
+
 **********
 // workflows --------------------------------------------------------
 
 section describing the intended procedures the code + it's output and products should follow. Warning; this section contains some abuse of C++ syntax
 
+
 **********
-WORKFLOW(s) for QA/SanityChecks :  
+// for QA/SanityChecks -------------------------------------------------------- 
 
 if(inputForestFiles are MC){
 ForestFiles into-> jetWeights.C outputs-> weightsInTextFormat hardCodeInto-> readFiles_ppMC.C
@@ -136,19 +143,19 @@ inputForestFiles into-> readFiles.C outputs-> rootFiles into-> readFiles_printPl
 
 
 **********
-WORKFLOW(s) for JER uncertainty :
+// for JER uncertainty :
 
 readFiles_ppMC.C rootFiles into-> readFiles_ppMC_deriveJERUnc.C outputs-> pdf plots + rootFiles
 
 
 **********
-WORKFLOW(s) for for JER/JES plotting + fitting :
+// for JER/JES plotting + fitting :
 
 readFiles_ppMC rootFiles into-> readFiles_ppMC_JERandJES_plotNfit.C outputs-> pdf plots + rootFiles
 
 
 **********
-WORKFLOW(s) for data unfolding : 
+// for data unfolding --------------------------------------------------------
 
 hists from both data AND MC readFiles rootFiles into-> 
 unfoldDataSpectra.C outputs->
@@ -156,7 +163,7 @@ data unfolding RootFile + plots output
 
 
 **********
-WORKFLOW(s) for MCClosure tests : 
+// for MCClosure tests --------------------------------------------------------
 
 hists from readFiles_ppMC rootFiles into-> 
 doMCClosureTests.C outputs->
@@ -164,7 +171,7 @@ data unfolding RootFile + plots output
 
 
 **********
-WORKFLOW(s) for DijetResponse derive+sum : 
+// for DijetResponse derive+sum --------------------------------------------------------
 
 inputForestFiles into DijetResponse(deriveResponse) output-> deriveResponse rootFiles
 if(suspect Bug/Error/other issue){

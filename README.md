@@ -104,40 +104,72 @@ STATUS:
 unfoldDataSpectra.C and do MCClosureTests
 
 CURRENTLY WORKING ON:
-interpreting +beautifying the output plots from both unfoldDataSpectra.C and doMCClosureTests.C
+interpreting + beautifying the output plots from both unfoldDataSpectra.C and doMCClosureTests.C
 
 
 **********
 // jetObservables --------------------------------------------------------
 
-FILE(s):
+DIRECTORY(s):
 jetPull/
+jetThrust/
+nSubJettiness/
 
 GOAL(s) OF CODE: 
 some macros dedicated to computing the quanities in question (jetPull, jetThrust, njettiness) and exploring their usefuless as experimental observables. 
 
-CURRENTLY WORKING ON:
-N/A, later.
-
-STATUS:
-N/A, later.
-
-CURRENTLY WORKING ON:
+CURRENTLY WORKING ON, STATUS, CURRENTLY WORKING ON:
 N/A, later.
 
 **********
-WORKFLOW(s)
+// workflows --------------------------------------------------------
 
-for QA/SanityChecks :  
-input Forest files -> 
-if(inputForestFiles are MC){jetWeights->weightsInTextFormat->hardCodeInto(readFiles_ppMC)} -> 
-readFiles -> rootFiles -> readFiles_printPlots -> pdf plots
+section describing the intended procedures the code + it's output and products should follow. Warning; this section contains some abuse of C++ syntax
 
-for Unfolding : 
-hists in readFiles rootFiles -> unfoldSpectra/unfoldDataSpectra.C and/or unfoldSpectra/doMCClosureTests.C -> pdfPlots + unfolding RootFile output
+**********
+WORKFLOW(s) for QA/SanityChecks :  
 
-for dijet response calculations : 
-inputForestFiles -> DijetResponse(deriveResponse) -> rootfiles -> DijetResponse (sumResponse) -> one rootfile -> 
-if(needDebug) analyze_deriveResponseOutput.C -> text output regarding quality of DijetResponse(sum+derive) output 
+if(inputForestFiles are MC){
+ForestFiles into-> jetWeights.C outputs-> weightsInTextFormat hardCodeInto-> readFiles_ppMC.C
+} 
+inputForestFiles into-> readFiles.C outputs-> rootFiles into-> readFiles_printPlots.C outputs-> pdf plots
 
 
+**********
+WORKFLOW(s) for JER uncertainty :
+
+readFiles_ppMC.C rootFiles into-> readFiles_ppMC_deriveJERUnc.C outputs-> pdf plots + rootFiles
+
+
+**********
+WORKFLOW(s) for for JER/JES plotting + fitting :
+
+readFiles_ppMC rootFiles into-> readFiles_ppMC_JERandJES_plotNfit.C outputs-> pdf plots + rootFiles
+
+
+**********
+WORKFLOW(s) for data unfolding : 
+
+hists from both data AND MC readFiles rootFiles into-> 
+unfoldDataSpectra.C outputs->
+data unfolding RootFile + plots output
+
+
+**********
+WORKFLOW(s) for MCClosure tests : 
+
+hists from readFiles_ppMC rootFiles into-> 
+doMCClosureTests.C outputs->
+data unfolding RootFile + plots output
+
+
+**********
+WORKFLOW(s) for DijetResponse derive+sum : 
+
+inputForestFiles into DijetResponse(deriveResponse) output-> deriveResponse rootFiles
+if(suspect Bug/Error/other issue){
+deriveResponse rootFiles into-> analyze_deriveResponseOutput.C outputs-> textToScreen about avg of/#entries in each bin
+}
+else { // deriveResponse stuff looks good
+deriveResponse rootFiles into-> DijetResponse(sumResponse) outputs-> rootFiles and (optional) plots
+sumResponse output rootFiles into-> DijetResponse_printPlots.C outputs-> sanity/QA plots 

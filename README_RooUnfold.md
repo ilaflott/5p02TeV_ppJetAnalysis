@@ -3,9 +3,10 @@ ian w laflotte
 started on 6/15/2016
 last updated: (7/21/16)
 
-**************************************
-//---------------------------------------------------------------------------------------
-// RooUnfold Library Implementation //
+
+**********
+// GENERAL IMPLEMENTATION --------------------------------------------------------
+**********
 
 RooUnfold is a tad tricky to implement at cgate/MIT. So i've noted down the entire process here. I tested it in CMSSW_7_5_8/ROOT6 on hidsk
 
@@ -57,9 +58,9 @@ and
 
 points g++ to the lcoation of the RooUnfold libraries/binaries/headers for linking at compile time. I make this a bash function called "rooUnfoldCompile", and it's very similar to my rootcompile function; it differs only by the aforementioned two pieces
 
-**************************************
-//---------------------------------------------------------------------------------------
-// DETAILS REGARDING MY OWN SETUP
+**********
+// DETAILS REGARDING MY OWN SETUP --------------------------------------------------------
+**********
 
 in my ${CMSSW_BASE}/src do 
 

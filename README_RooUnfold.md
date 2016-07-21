@@ -56,9 +56,7 @@ and
 
 points g++ to the lcoation of the RooUnfold libraries/binaries/headers for linking at compile time. I make this a bash function called "rooUnfoldCompile", and it's very similar to my rootcompile function; it differs only by the aforementioned two pieces
 
-********************
-*** MY OWN SETUP ***
-********************
+//// DETAILS REGARDING MY OWN SETUP
 
 in my ${CMSSW_BASE}/src do 
 

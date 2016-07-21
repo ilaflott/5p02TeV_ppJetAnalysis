@@ -128,7 +128,7 @@ N/A, later.
 
 
 **********
-// workflows --------------------------------------------------------
+// WORKFLOW(s) --------------------------------------------------------
 
 section describing the intended procedures the code + it's output and products should follow. Warning; this section contains some abuse of C++ syntax
 

@@ -1,11 +1,6 @@
-
-ian w laflotte
-started on 6/15/2016
-last updated: (7/21/16)
-
-
+ian w laflotte, started on 6/15/2016, last updated on 7/21/16
 **********
-// GENERAL IMPLEMENTATION --------------------------------------------------------
+// GENERAL ROOUNFOLD IMPLEMENTATION --------------------------------------------------------
 **********
 
 RooUnfold is a tad tricky to implement at cgate/MIT. So i've noted down the entire process here. I tested it in CMSSW_7_5_8/ROOT6 on hidsk

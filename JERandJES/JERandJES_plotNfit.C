@@ -4,10 +4,10 @@
 
 const bool debugMode=true;
 const std::string defOutFilename="plotNfit_ppMC_QCDDijetMC_defOut";
-const std::string outRootFilename=defOutFilename+".root";
-const std::string outPdfFilename=defOutFilename+".pdf";
 
-int JERandJES_plotNfit(){
+int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
+  const std::string outRootFilename=inputOutFilename+".root";
+  const std::string outPdfFilename   =inputOutFilename+".pdf";
 
   // root style settings
   std::cout<<std::endl<<"loading style..." <<std::endl;
@@ -211,12 +211,13 @@ int JERandJES_plotNfit(){
 
 int main(int argc, char*argv[]){
   int rStatus=-1;
-  if(argc!=1){
-    std::cout<<"no arguments, just do "<<std::endl<<"./JERandJES_plotNfit.exe"<<std::endl<<std::endl;
+  if(argc!=1&&argc!=2){
+    std::cout<<"do "<<std::endl<<"./JERandJES_plotNfit.exe <outputName>"<<std::endl<<std::endl;
     return rStatus;
   }
   rStatus=1;
-  rStatus=JERandJES_plotNfit();
+  if(argc==1)  rStatus=JERandJES_plotNfit();
+  else rStatus=JERandJES_plotNfit( (const std::string)argv[1] );
   std::cout<<"done, rStatus="<<rStatus <<std::endl<<std::endl;
   return rStatus;
 }

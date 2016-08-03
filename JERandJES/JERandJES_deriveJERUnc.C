@@ -1,11 +1,11 @@
 #include "readFiles_ppMC_deriveJERUnc.h"
 
+const bool debugMode=true;
+const bool drawPDFs=true;
+const int radius = 4;
+
 //pp_JER_plot
 int readFiles_ppMC_deriveJERUnc(){
-
-  const bool debugMode=true;
-  const bool drawPDFs=true;
-  const int radius = 4;
 
   // input file
   std::cout<< "input file dir is " << inFile_MC_dir<< std::endl;
@@ -87,7 +87,6 @@ int readFiles_ppMC_deriveJERUnc(){
   drawText(Form("ak%dPF Jets, PYTHIA", radius), 0.2, 0.2, 16);
 
   // save output + draw pdfs
-  std::string baseName="readFiles_ppMC_deriveJERUnc_defOut";
   std::string outFileName=baseName+".root";
   std::string thePDFFileName=baseName+".pdf";
   if(drawPDFs){
@@ -102,12 +101,11 @@ int readFiles_ppMC_deriveJERUnc(){
     //cPP_JER->SaveAs(Form("readFiles_ppMC_deriveJERUnc_defOut_R%d.pdf",radius),"RECREATE");
   }
 
-  TFile *fout=new TFile("readFiles_ppMC_deriveJERUnc_defOut.root","RECREATE");   fout->cd();
-  hPP_JER_Uncert->Write();
-  cPP_JER->Write();
-  cJER->Write();
-
-  fout->Close();
+  TFile *fout=new TFile(outFileName.c_str(),"RECREATE");   
+  fout->cd();
+  hPP_JER_Uncert->Write();  cPP_JER->Write();  cJER->Write();
+  fout->Close();  
+  
   fin->Close();
   return 0;
 

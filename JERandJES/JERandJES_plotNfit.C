@@ -81,24 +81,40 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       double sig   = hrsp[nj][ip]->GetStdDev()/mean;
       double esig  = pow(1/mean,2)*pow(err,2) + pow( -sig/pow(mean,2), 2)*pow(emean, 2);
       
-      // //! R 0.3
-      // fgaus = new TF1("fgaus","gaus", 0.50,1.50);
-      // fgaus->SetParameters(norm, 1.00, 0.3);            
 
-      //! R 0.2
+
+
+
+
+
+
+
+
+      // i dont know what this part is doing or what is has to do with the radius
+
+      //// R 0.3
+      //fgaus = new TF1("fgaus","gaus", 0.50,1.50);
+      //fgaus->SetParameters(norm, 1.00, 0.3);            
+
+      // R 0.2
       fgaus = new TF1("fgaus","gaus", 0.50,1.50);
       fgaus->SetParameters(norm, 0.9999, 0.5);
             
-      // fgaus = new TF1("fgaus","gaus", mean - 2.15*hrsp[nj][ip]->GetRMS(), mean + 2.15*hrsp[nj][ip]->GetRMS());
-      // fgaus->SetParameters(norm, 1.00, 0.6);
-      // fgaus->SetParLimits(1,0.60,1.30);
-      // fgaus->SetParLimits(2,0.20,0.80);
+      //fgaus = new TF1("fgaus","gaus", mean - 2.15*hrsp[nj][ip]->GetRMS(), mean + 2.15*hrsp[nj][ip]->GetRMS());
+      //fgaus->SetParameters(norm, 1.00, 0.6);
+      //fgaus->SetParLimits(1,0.60,1.30);
+      //fgaus->SetParLimits(2,0.20,0.80);
       
-      // fgaus = new TF1("fgaus","gaus", 0.80, 1.20);
-      // fgaus->SetParameters(norm, 0.9999, 0.5);
-      // fgaus->SetParLimits(1,0.92,1.05);
-      // fgaus->SetParLimits(2,0.20,0.80);
+      //fgaus = new TF1("fgaus","gaus", 0.80, 1.20);
+      //fgaus->SetParameters(norm, 0.9999, 0.5);
+      //fgaus->SetParLimits(1,0.92,1.05);
+      //fgaus->SetParLimits(2,0.20,0.80);
       
+
+
+
+
+
       int fitstatus = 0;
       fitstatus = hrsp[nj][ip]->Fit(fgaus,"RQ");
       
@@ -109,11 +125,15 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     : fgaus->GetParameter(1);
       emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError(): fgaus->GetParError(1) ; // hrsp[nj][ip]->GetMeanError(); //debug
       sig   = (fitstatus!=0) ? hrsp[nj][ip]->GetStdDev()/mean : fgaus->GetParameter(2)/fgaus->GetParameter(1);
+
+//      double sqrd_mean = mean*mean;      double sqrd_emean = emean*emean;
+//      double hrsp_stddev=hrsp[nj][ip]->GetStdDev();       double sqrd_hrsp_stddev=hrsp_stddev*hrsp_stddev;
+//      double hrsp_stddeverr=hrsp[nj][ip]->GetStdDevError();    double sqrd_hrsp_stddeverr=hrsp_stddeverr*hrsp_stddeverr;
       esig  = (fitstatus!=0) 
 	? sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) + 
 		(pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) ) 
 	: sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) + 
-		(pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) ); 
+		(pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) ); 	
       
       //// ALT METRICS
       // mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     :  0.5*(fgaus->GetParameter(1) + hrsp[nj][ip]->GetMean());
@@ -130,7 +150,7 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       //       
       
 
-      // write hrsp histos
+      // write hrsp, hMean, hSigma histos to root+pdf files
       std::cout<<"writings histo hrsp[nj="<< nj<<"][ip="<< ip<<"] "<<std::endl;
       hrsp[nj][ip]->Write();
 

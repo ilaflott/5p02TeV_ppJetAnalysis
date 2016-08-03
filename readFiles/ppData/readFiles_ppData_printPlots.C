@@ -19,7 +19,6 @@ const int N_HLTNames=sizeof(HLTName)/sizeof(std::string);
 //const float var_yHigh[N_vars]  = {};
 //const float  var_yLow[N_vars]  = {};
 
-
 int main(int argc, char *argv[]){
 
   const bool debugMode=true;

@@ -24,10 +24,6 @@
 #include <TLine.h>
 #include <TLatex.h>
 
-// methods, functions, numbers, etc.
-//#include "readFiles_ppMC_JERandJES_binsNconsts.h"
-//#include "readFiles_ppMC_JERandJES_fitsNfuncs.h"
-
 // run settings
 const bool printDebug=true;
 const bool doBjets = false; //true;

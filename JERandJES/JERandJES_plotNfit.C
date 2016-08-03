@@ -1,10 +1,13 @@
-#include "readFiles_ppMC_JERandJES_plotNfit.h"
-#include "readFiles_ppMC_JERandJES_binsNconsts.h"
-#include "readFiles_ppMC_JERandJES_fitsNfuncs.h"
+#include "JERandJES_plotNfit.h"
+#include "JERandJES_binsNconsts.h"
+#include "JERandJES_fitsNfuncs.h"
 
 const bool debugMode=true;
+const std::string defOutFilename="plotNfit_ppMC_QCDDijetMC_defOut";
+const std::string outRootFilename=defOutFilename+".root";
+const std::string outPdfFilename=defOutFilename+".pdf";
 
-int readFiles_ppMC_JERandJES_plotNfit(){
+int JERandJES_plotNfit(){
 
   // root style settings
   std::cout<<std::endl<<"loading style..." <<std::endl;
@@ -21,18 +24,15 @@ int readFiles_ppMC_JERandJES_plotNfit(){
   std::cout<<std::endl<<"opening input file in dir "<< inFile_MC_dir <<std::endl;
   std::cout<<"input file name in dir "<< inFile_MC_name <<std::endl;
   TFile *finPP=new TFile(inFile_MC.c_str());
-  TH1F *hrsp [Nrad][nbins_pt];  
-
-  // output file/hists/fits
-  std::string outfileName="readFiles_ppMC_JERandJES_plotNfit_defOut.root";
-  std::cout<<"opening output file "<< outfileName<<std::endl<<std::endl;
-  TFile *fout = new TFile(outfileName.c_str(),"RECREATE");      fout->cd();
+  TH1F *hrsp[Nrad][nbins_pt];  
+  double array_mean[Nrad][nbins_pt];
+  
+  // output hists+fits
   TH1F *hMean[Nrad], *hSigma[Nrad];   // mean/sigma hists
   TF1 *fgaus=0;   // gaussian fit
 
   // first loop, pp loop over available radii
-  std::cout<<"num available radii for loop : "<< Nrad<<std::endl;
-  for(int nj=0; nj<Nrad; nj++){// loop over available radii
+  for(int nj=0; nj<Nrad; nj++){
     const std::string algname=algo+srad[nj]+jetType;
     std::cout<<"making hists for algorithm "<< algname<<"..."<<std::endl;
 
@@ -67,6 +67,7 @@ int readFiles_ppMC_JERandJES_plotNfit(){
     // pt bin hJER-fit loop
     std::cout<<"looping over nbins_pt= "<<nbins_pt<<" input JER hists + fitting..." <<std::endl;
     for(int ip=0; ip<nbins_pt; ip++){
+
       std::string inputHistName="hJER_"+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);
       hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );    std::cout<<std::endl; 
       hrsp[nj][ip]->Print("base");
@@ -81,17 +82,7 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       double sig   = hrsp[nj][ip]->GetStdDev()/mean;
       double esig  = pow(1/mean,2)*pow(err,2) + pow( -sig/pow(mean,2), 2)*pow(emean, 2);
       
-
-
-
-
-
-
-
-
-
       // i dont know what this part is doing or what is has to do with the radius
-
       //// R 0.3
       //fgaus = new TF1("fgaus","gaus", 0.50,1.50);
       //fgaus->SetParameters(norm, 1.00, 0.3);            
@@ -110,11 +101,6 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       //fgaus->SetParLimits(1,0.92,1.05);
       //fgaus->SetParLimits(2,0.20,0.80);
       
-
-
-
-
-
       int fitstatus = 0;
       fitstatus = hrsp[nj][ip]->Fit(fgaus,"RQ");
       
@@ -125,10 +111,6 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     : fgaus->GetParameter(1);
       emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError(): fgaus->GetParError(1) ; // hrsp[nj][ip]->GetMeanError(); //debug
       sig   = (fitstatus!=0) ? hrsp[nj][ip]->GetStdDev()/mean : fgaus->GetParameter(2)/fgaus->GetParameter(1);
-
-//      double sqrd_mean = mean*mean;      double sqrd_emean = emean*emean;
-//      double hrsp_stddev=hrsp[nj][ip]->GetStdDev();       double sqrd_hrsp_stddev=hrsp_stddev*hrsp_stddev;
-//      double hrsp_stddeverr=hrsp[nj][ip]->GetStdDevError();    double sqrd_hrsp_stddeverr=hrsp_stddeverr*hrsp_stddeverr;
       esig  = (fitstatus!=0) 
 	? sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) + 
 		(pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) ) 
@@ -149,12 +131,19 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       // 	: sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))); 
       //       
       
+      //hrsp[nj][ip]->Write();
 
-      // write hrsp, hMean, hSigma histos to root+pdf files
-      std::cout<<"writings histo hrsp[nj="<< nj<<"][ip="<< ip<<"] "<<std::endl;
-      hrsp[nj][ip]->Write();
+      //array_norm[nj][ip]=norm ; 
+      //array_err[nj][ip]=err  ;  
+      array_mean[nj][ip]=mean ; 
+      //array_emean[nj][ip]=emean;
+      //array_sig[nj][ip]=sig  ;  
+      //array_esig[nj][ip]=esig ; 
+
+
 
       // set contents+errors in specific bin
+      if(debugMode)std::cout<<"setting bin content for [nj][ip]=["<< nj<<"]["<< ip<<"] "<<std::endl;
       if(debugMode)std::cout<<"mean ="<< mean<<std::endl;
       if(debugMode)std::cout<<"emean ="<< emean<<std::endl;
       hMean[nj]->SetBinContent (ip+1, mean);
@@ -166,180 +155,68 @@ int readFiles_ppMC_JERandJES_plotNfit(){
       if(debugMode)std::cout<<"esig ="<< esig<<std::endl;
       hSigma[nj]->SetBinContent (ip+1, sig);
       hSigma[nj]->SetBinError   (ip+1, esig);
-    }
-  }
-
-
-  
-  /*
-  // PbPb plot
-  gStyle->SetOptStat(0);
-  gStyle->SetOptFit(0);
-  
-  TLegend *leg0 = getLegend(0.1950635,0.4625641,0.8242194,0.7497436);
-  //TLegend *leg0 = getLegend(0.4418803,0.3887016,0.8692251,0.6763714);  
-  if(wJetID) leg0->SetHeader("w JetID");
-  else leg0->SetHeader("w/o JetID");
-  leg0->SetTextSize(0.10);
-  leg0->AddEntry( hMean[0][0], Form("pp %s",algname.c_str()) , "p" );
-  //leg0->AddEntry( hMean[0][0]   , Form("PbPb ak%s",(algo+srad[nj]+jetType).c_str()), "p" );
-  //leg0->AddEntry(hMean_resd[0][0],"Resd. Correc.","p");
-  
-  TLine *l0 = new TLine(xmin,1.00,xmax,1.0);   l0->SetLineStyle(2);  l0->SetLineWidth(2);
-  TLine *l1 = new TLine(xmin,0.99,xmax,0.99);  l1->SetLineStyle(2);
-  TLine *l2 = new TLine(xmin,1.01,xmax,1.01);  l2->SetLineStyle(2);
-
-  TCanvas *c11[Nrad];     int ipad=0;  int maxr=2;  int maxc=7;
-  for(int nj=0; nj<Nrad; nj++){
-    c11[nj] = new TCanvas( ( "c11_"+std::to_string(nj) ).c_str() , algname.c_str(), 1695, 530);
-    makeMultiPanelCanvas(c11[nj], maxc, maxr, 0.0,0.0, 0.22,0.22, 0.02,0);
-
-    for(int ic=ncen; ic>=0; --ic){    //for(int ic=ncen; ic>=0; ic--){
-      c11[nj]->cd(++ipad);
-      gPad->SetLogx();
-
-      hSigma[nj][ic]->GetXaxis()->SetRangeUser(xmin,xmax);
-      hSigma[nj][ic]->Draw("p");
-      hSigma[nj][ic]->SetMarkerColor(2);
-      hSigma[nj][ic]->SetLineColor(2);
-      hSigma[nj][ic]->Draw("psame");
-
-      // if(ipad==2 && ic==ncen-1){
-      // 	drawText2("PYTHIA+HYDJET",0.19,0.85,21);
-      // 	leg0->Draw();
-      // }
-      // if(ipad==3 && ic==4){
-      // 	drawText2("#sqrt{s_{NN}} = 5.02 TeV,|#eta| < 2",0.10,0.85,19);
-      // }
-      // if(ipad==1 && ic==5){
-      // 	if(wJetID)drawText2(Form("%s, w JetID",(srad[]+jetType).c_str()),0.28,0.60,21);
-      // 	else drawText2(Form("%s, w/o JetID",(srad[]+jetType).c_str()),0.28,0.60,21);
-      // }
-
-      drawText2(ccent[ic],0.28,0.70,21);
-      c11[nj]->cd(ipad+maxc);
-      gPad->SetLogx();
-    
-      // if(ipad!=1)
-      hMean[nj][ic]->GetXaxis()->SetRangeUser(xmin,xmax);
-      hMean[nj][ic]->GetYaxis()->SetRangeUser(0.8,1.05);
-      hMean[nj][ic]->Draw("p");
-      
-      hMean[nj][ncen]->SetMarkerColor(2);
-      hMean[nj][ncen]->SetLineColor(2);
-      hMean[nj][ncen]->Draw("psame");
-
-      l1->Draw();
-      l0->Draw();
-      l2->Draw();
-    }
-    if(iSave) c11[nj]->SaveAs(Form("Plots_JEC_%d_PbPb_%s.pdf",wJetID,algname.c_str()));
-  }
-
-  
-  // PbPb plot
-  TCanvas *c99[Nrad][ncen];
-  for(int nj=0;nj<Nrad;nj++){
-    for(int ic=ncen-1;ic>=0; --ic){
-      c99[nj][ic] = new TCanvas(Form("c99%d_%d",nj,ic),Form("%s %s ",srad[nj].c_str(),ccent[ic]),100,102,1399,942);
-      c99[nj][ic]->Divide(4,4,0,0);
-
-      int ipad=0;
-      for(int ip=0;ip<nbins_pt;ip++){      
-	c99[nj][ic]->cd(++ipad);
-	
-	gPad->SetLeftMargin(0.15);
-	gPad->SetBottomMargin(0.15);
-	gPad->SetRightMargin(0.1);
-	
-	// hrsp[nj][ic][ip]->Scale(1./hrsp[nj][ic][ip]->Integral());
-	// if(ic==ncen-3)hrsp[nj][ncen-1][ip]->Scale(1./hrsp[nj][ncen-1][ip]->Integral());	
-
-	double ymax = TMath::Max(hrsp[nj][ic][ip]->GetMaximum(),hrsp[nj][ncen-1][ip]->GetMaximum());
-	//double ymax = hrsp[nj][ic][ip]->GetMaximum();
-
-	hrsp[nj][ic][ip]->SetMaximum(1.45*ymax);
-	hrsp[nj][ic][ip]->SetMinimum(0);
-	hrsp[nj][ic][ip]->SetTitle(0);
-
-	hrsp[nj][ic][ip]->GetXaxis()->SetTitle("<reco jet p_{T} / gen jet p_{T}>");
-	hrsp[nj][ic][ip]->GetXaxis()->SetTitleFont(42);
-	hrsp[nj][ic][ip]->GetXaxis()->SetLabelFont(42);
-	hrsp[nj][ic][ip]->GetXaxis()->SetLabelSize(0.08);
-	hrsp[nj][ic][ip]->GetXaxis()->SetTitleSize(0.07);
-
-	hrsp[nj][ic][ip]->GetYaxis()->SetTitle("");
-	hrsp[nj][ic][ip]->GetYaxis()->SetTitleFont(42);
-	hrsp[nj][ic][ip]->GetYaxis()->SetLabelFont(42);
-	hrsp[nj][ic][ip]->GetYaxis()->SetLabelSize(0.08);
-      
-	hrsp[nj][ic][ip]->SetMarkerStyle(20);
-	hrsp[nj][ic][ip]->SetMarkerColor(1);
-	hrsp[nj][ic][ip]->SetLineColor(1);
-	hrsp[nj][ic][ip]->SetMarkerSize(1.3);
-	hrsp[nj][ic][ip]->Draw("p");  
-
-	hrsp[nj][ncen-1][ip]->SetMarkerStyle(20);
-	hrsp[nj][ncen-1][ip]->SetMarkerColor(2);
-	hrsp[nj][ncen-1][ip]->SetLineColor(2);
-	hrsp[nj][ncen-1][ip]->SetMarkerSize(1.3);
-	// hrsp[nj][ncen-1][ip]->Draw("psame");  
-      
-	//std::ostringstream strs; 
-	//strs << ptbins[ip] << "< p_{T} (GeV/c) <" << ptbins[ip+1];
-	//std::string spt = strs.str();
-	std::string spt=std::to_string(ptbins[ip])+"< p_{T} (GeV/c) <"+std::to_string(ptbins[ip+1]);
-	if(ipad==1){
-	  //drawText2(Form("%s",(srad[nj]+jetType).c_str()),0.28,0.90,21);      
-	  drawText2(ccent[ic],0.75,0.87,21);	  
-	  drawText2(spt.c_str(),0.22,0.80,21);		
-	  if(wJetID)drawText2("w JetID",0.22,0.65,21);
-	  else drawText2("w/o JetID",0.22,0.66,21);	  
-	} 
-	else drawText2(spt.c_str(),0.17,0.80,21);
-      }
-      if(iSave)	c99[nj][ic]->SaveAs(Form("Plots_IndDist_PbPb_%s_%s.pdf",ccent[ic],algname.c_str()));
-    }
-  }
-
-
-  // output file
-  fout->cd( );
-  const std::string dirname=algname+"JetAnalyzer";
-  fout->mkdir( dirname.c_str() );
-  fout->cd( dirname.c_str() );
-
-  // PbPb write output
-  for(int nj=0; nj<Nrad; nj++){
-    for(int ic=0; ic<ncen; ic++){
-      hMean[nj][ic]->SetName(  Form("hMean_PbPb_R%s_PuPF_%s", srad[nj].c_str(), cdir[ic]));
-      hMean[nj][ic]->SetTitle( Form("hMean_PbPb_R%s_PuPF_%s", srad[nj].c_str(), cdir[ic]));
-      hMean[nj][ic]->Write();
-      hSigma[nj][ic]->SetName(  Form("hSigma_PbPb_R%s_PuPF_%s", srad[nj].c_str(), cdir[ic]));
-      hSigma[nj][ic]->SetTitle( Form("hSigma_PbPb_R%s_PuPF_%s", srad[nj].c_str(), cdir[ic]));
-      hSigma[nj][ic]->Write();
-    }
-  }
-  */
+    }// end fit-loop over ptbins
+  }// end loop over available jet radii
 
   std::cout<<std::endl<<"closing gPad..."<<std::endl;
   gPad->Close();
-  std::cout<<std::endl<<"writing pp output to file..."<<std::endl;
-  fout->Write();
-  std::cout<<"closing pp output file "<<outfileName<<std::endl<<std::endl;
-  fout->Close();
-  return 0;
+
+  {
+    std::cout<<std::endl<<"opening output pdf file "<< outPdfFilename<<std::endl;
+    TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 800);
+    std::string open_outPdfFilename=outPdfFilename+"[";
+    std::string close_outPdfFilename=outPdfFilename+"]";
+    pdfoutCanv->Print( open_outPdfFilename.c_str() );
+    pdfoutCanv->cd();
+    std::cout<<std::endl<<"printing hists to pdf file..."<<std::endl;
+    for(int i=0;i<Nrad;++i){
+      hMean[i] ->Draw(); pdfoutCanv->Print(outPdfFilename.c_str());
+      hSigma[i]->Draw(); pdfoutCanv->Print(outPdfFilename.c_str());    
+      for(int j=0;j<nbins_pt;++j){
+	std::string hrspTitle="hJER_"+std::to_string(ptbins[j])+"_pt_"+std::to_string(ptbins[j+1]);	
+	hrsp[i][j]->SetTitle(hrspTitle.c_str());
+	hrsp[i][j]->SetMarkerStyle(8);
+	hrsp[i][j]->SetMarkerSize(1.1);
+	hrsp[i][j]->GetXaxis()->SetTitle("recpt/genpt");
+	hrsp[i][j]->Draw("e");
+	TLine* histMeanLine=new TLine( array_mean[i][j], 0., // x1,y1 
+				       array_mean[i][j], hrsp[i][j]->GetYaxis()->GetXmax() );// x2,y2
+	histMeanLine->Draw("same");
+	
+	pdfoutCanv->Print(outPdfFilename.c_str());
+      }
+    }
+    std::cout<<"closing output pdf file "<<outPdfFilename<<std::endl<<std::endl;
+    pdfoutCanv->Print( close_outPdfFilename.c_str() );
+  }
+  
+
+  {
+    std::cout<<std::endl<<"opening output root file "<< outRootFilename<<std::endl;
+    TFile *rootfout = new TFile(outRootFilename.c_str(),"RECREATE"); 
+    rootfout->cd();  
+    std::cout<<"writing output to root file..."<<std::endl;
+    for(int i=0;i<Nrad;++i){
+      hMean[i]->Write();
+      hSigma[i]->Write();    
+      for(int j=0;j<nbins_pt;++j) hrsp[i][j]->Write();
+    }
+    std::cout<<"closing output root file"<<std::endl<<std::endl;
+    rootfout->Close();
+  }
+  
+    return 0;
 }
 
 
 int main(int argc, char*argv[]){
   int rStatus=-1;
   if(argc!=1){
-    std::cout<<"no arguments, just do "<<std::endl<<"./readFiles_ppMC_JERandJES_plotNfit.exe"<<std::endl<<std::endl;
+    std::cout<<"no arguments, just do "<<std::endl<<"./JERandJES_plotNfit.exe"<<std::endl<<std::endl;
     return rStatus;
   }
   rStatus=1;
-  rStatus=readFiles_ppMC_JERandJES_plotNfit();
+  rStatus=JERandJES_plotNfit();
   std::cout<<"done, rStatus="<<rStatus <<std::endl<<std::endl;
   return rStatus;
 }

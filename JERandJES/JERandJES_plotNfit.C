@@ -3,7 +3,7 @@
 #include "JERandJES_fitsNfuncs.h"
 
 const bool debugMode=true;
-const std::string defOutFilename="plotNfit_ppMC_QCDDijetMC_defOut";
+const std::string defOutFilename="plotNfit_ppMC_defOut";
 
 int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
   const std::string outRootFilename=inputOutFilename+".root";

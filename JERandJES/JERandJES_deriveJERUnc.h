@@ -48,8 +48,6 @@ const std::string inFile_Data_dir=
 const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root";
 const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
 
-const std::string baseName="ppMC_QCDDijetMC_5p02TeV_deriveJERUnc_8.1.16";
-
 // some numbers...
 //const double ptbins_ana[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
 //const int ptbins[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};

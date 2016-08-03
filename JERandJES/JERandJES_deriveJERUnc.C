@@ -83,6 +83,7 @@ int JERandJES_deriveJERUnc(){
 
   // new canvas for JER uncertainties
   TCanvas * cPP_JER = new TCanvas("cPP_JER","",800,600);
+  cPP_JER->cd();
   hPP_JER_Uncert->SetLineColor(kBlue);
   hPP_JER_Uncert->SetAxisRange(0.5, 1.5, "Y");
   hPP_JER_Uncert->SetAxisRange(60, 300, "X");
@@ -91,8 +92,7 @@ int JERandJES_deriveJERUnc(){
   hPP_JER_Uncert->SetYTitle("JER Uncertainty (%)");
   hPP_JER_Uncert->Draw();
   drawText(Form("ak%dPF Jets, PYTHIA", radius), 0.2, 0.2, 16);
-
-
+  
   {
     // DRAW PDFS
     std::string thePDFFileName=baseName+".pdf";

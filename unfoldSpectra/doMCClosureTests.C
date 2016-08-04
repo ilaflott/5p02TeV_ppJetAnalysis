@@ -277,7 +277,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
       hFoldedSVDPriorMeas[kr]->Draw("same");
   
-      leg[kr] = new TLegend(0.1, 0.1, 0.30, 0.30, NULL,"NBNDC");
+      leg[kr] = new TLegend(0.1, 0.1, 0.30, 0.30, NULL,"NBNDC");//x1,y1,x2,y2,header,option
       leg[kr]->AddEntry(hrec_anabin_clone,"Measured","pl");
       leg[kr]->AddEntry(hunf_svd[kr],"Unfolded","pl");
       leg[kr]->AddEntry(hFoldedSVDPriorMeas[kr],"Folded","pl");
@@ -337,7 +337,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->SetXTitle("singular values");
   	hSVal->DrawCopy();  	
-  	drawText("PP 5 TeV", 0.608173, 0.8459761, 22);
+	drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",0.608173, 0.8459761, 22);
 	
 	if(debugMode)std::cout<<std::endl<<"drawing stuff on cdi canvas..."<<std::endl;
   	cdi->cd();
@@ -346,8 +346,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetAxisRange(0,35,"X");
   	hdi->SetXTitle("|d_{i}^{kreg}|");
   	hdi->DrawCopy();
-  	
-  	drawText("PP 5 TeV", 0.608173, 0.8459761, 22);
+	drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",0.608173, 0.8459761, 22);
+
       } // end kr==0 specific
   
       hrec_unfolded_ratio[kr]->Print("base");
@@ -507,15 +507,15 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hratio_svd[kRegDraw]->Draw("psame");
       hratio_svd_check[kRegDraw]->Draw("psame");
       
-      drawText("PP, 5 TeV", 0.648173, 0.8459761,22);
+
       TLine *line = new TLine(30,1,1000,1);
       line->SetLineStyle(2); 
       line->SetLineWidth(2);
       line->Draw();
-      
-      drawText(Form("kReg = %d", kReg[kRegDraw]), 0.64, 0.7, 21);
-      drawText("PYTHIA",0.22,0.88,21);
-      
+      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.608173, 0.8459761, 22);
+      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.608173, 0.8059761, 22);
+
+
       leg0->AddEntry(hratio_svd[kRegDraw],"OppSide SVD","p");
       leg0->AddEntry(hratio_svd_check[kRegDraw],"SameSide SVD","p");
       leg0->Draw();

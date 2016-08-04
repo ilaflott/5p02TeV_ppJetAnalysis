@@ -279,8 +279,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   
       leg[kr] = new TLegend(0.1, 0.1, 0.30, 0.30, NULL,"BRNDC");
       leg[kr]->AddEntry(hrec_anabin_clone,"Measured","pl");
-      leg[kr]->AddEntry(hunf_svd[kr],Form("Unfolded, kr = %d", kReg[kr]),"pl");
-      leg[kr]->AddEntry(hFoldedSVDPriorMeas[kr],Form("Folded kr = %d", kReg[kr]),"pl");
+      leg[kr]->AddEntry(hunf_svd[kr],"Unfolded","pl");
+      leg[kr]->AddEntry(hFoldedSVDPriorMeas[kr],"Folded","pl");
       leg[kr]->SetTextSize(0.04); 
       leg[kr]->Draw();
       	

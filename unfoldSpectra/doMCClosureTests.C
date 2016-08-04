@@ -337,8 +337,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->SetXTitle(" singular values ");
   	hSVal->DrawCopy();  	
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.458173, 0.8459761, 20);
-	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.458173, 0.8059761, 20);
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.408173, 0.8459761, 19);
+	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 
 	c11->cd(2);
 	gPad->SetLogy();	//cdi->SetLogy();
@@ -346,8 +346,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetAxisRange(0,35,"X");
   	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->DrawCopy();
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.458173, 0.8459761, 20);
-	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.458173, 0.8059761, 20);
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.408173, 0.8459761, 19);
+	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
       } // end kr==0 specific
   
       hrec_unfolded_ratio[kr]->Print("base");

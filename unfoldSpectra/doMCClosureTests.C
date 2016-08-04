@@ -209,7 +209,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     std::cout<<std::endl<<"entering SVD Unfolding Loop..."<<std::endl;
     for(int kr = 0; kr < nKregMax; ++kr){
 
-      std::cout<<std::endl<<std::endl<<"kReg = "<<kReg[kr]<<std::endl<<std::endl<<std::endl;
+      std::cout<<std::endl<<std::endl<<"kr="<<kr<<" , kReg = "<<kReg[kr]<<std::endl<<std::endl<<std::endl;
   
       if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd"<<std::endl;
       RooUnfoldSvd unf_svd(&roo_resp, hrec_anabin, kReg[kr]);
@@ -253,8 +253,9 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
       // draw on cSpectra canvas
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cSpectra canvas..."<<std::endl;
+      cSpectra->cd(kr+1)->SetLogy();
       cSpectra->cd(kr+1);
-      cSpectra->SetLogy();//cSpectra->cd(kr+1)->SetLogy();
+
       hrec_anabin->SetTitle(Form("kReg = %d",kReg[kr]));
       hrec_anabin->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin->SetMarkerStyle(24);
@@ -304,28 +305,28 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       leg1[kr]->AddEntry(hrec_folded_ratio[kr],Form("Folded/Measured kr = %d", kReg[kr]),"pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg1[kr]->SetTextSize(0.04); 
-      leg1[kr]->Draw();//leg1[kr]->Draw("same");
+      leg1[kr]->Draw("same");//leg1[kr]->Draw();
   	
       //Get and print singular values and d_i vector, print also on screen
       //Note that these do not depend on the regularization. 
       //The opposite: they tell you which regularization to use!
       if(kr == 0){
 	std::cout<<std::endl<<"kr==0, getting singular values and di vectors!"<<std::endl<<std::endl;
-
+	
   	TSVDUnfold *svdUnfold = unf_svd.Impl();
-  	TH1D *hdi = (TH1D*)svdUnfold->GetD();
+
   	TH1 *hSVal = (TH1*)svdUnfold->GetSV();
-  
   	if(debugMode)std::cout << "  printing singular values: " << std::endl;
   	if(debugMode)for(int bin=1; bin<=hSVal->GetNbinsX(); bin++)
 		       std::cout<<"bin: "<<bin<<",  SV: "<<hSVal->GetBinContent(bin)<< std::endl;
+  	TH1D *hdi = (TH1D*)svdUnfold->GetD();
   	if(debugMode)std::cout << std::cout<<"  printing di vector: " <<  std::endl;
   	if(debugMode)for(int bin=1; bin<=hdi->GetNbinsX(); bin++)
 		       std::cout<<"i: "<<bin<<",  di: "<<hdi->GetBinContent(bin)<<std::endl;
 
 	if(debugMode)std::cout<<std::endl<<"drawing stuff on c11 canvas..."<<std::endl;
   	c11->cd();
-	c11->SetLogy();  	//gPad->SetLogy();
+	gPad->SetLogy();	//c11->SetLogy();  	
 	hSVal->SetTitle(" ");
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->SetXTitle("singular values");
@@ -334,8 +335,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 	
 	if(debugMode)std::cout<<std::endl<<"drawing stuff on cdi canvas..."<<std::endl;
   	cdi->cd();
-	cdi->SetLogy();	//gPad->SetLogy();
-	
+	gPad->SetLogy();	//cdi->SetLogy();
   	hdi->SetTitle(" ");
   	hdi->SetAxisRange(0,35,"X");
   	hdi->SetXTitle("|d_{i}^{kreg}|");

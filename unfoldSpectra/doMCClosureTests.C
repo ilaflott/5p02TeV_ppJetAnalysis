@@ -201,9 +201,9 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     TCanvas *cRatio             = new TCanvas("cRatio","",             1200, 1000);  cRatio->Divide(3,3);      
     TCanvas *cSpectra           = new TCanvas("cSpectra","",           1200, 1000);  cSpectra->Divide(3,3);
     TCanvas *cSpectraCheck      = new TCanvas("cSpectraCheck","",      1200, 1000);    
+    TCanvas *c11 = new TCanvas("c11"," Singular Values and divectors", 1200, 1000); c11->Divide(2);
+    //TCanvas *cdi = new TCanvas("cdi","cdi: di vectors",      1200, 1000);
 
-    TCanvas *c11 = new TCanvas("c11","c11: Singular Values", 1200, 1000);
-    TCanvas *cdi = new TCanvas("cdi","cdi: di vectors",      1200, 1000);
     TLegend *leg[nKregMax],*leg1[nKregMax];      
 
     std::cout<<std::endl<<"entering SVD Unfolding Loop..."<<std::endl;
@@ -261,7 +261,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
       std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl<<std::endl;
       TH1F* hrec_anabin_clone=(TH1F*)hrec_anabin->Clone("untitledClone");
-      hrec_anabin_clone->SetTitle( ("kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
+      hrec_anabin_clone->SetTitle( ("jet spectra, kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
       hrec_anabin_clone->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin_clone->SetMarkerStyle(24);
       hrec_anabin_clone->SetMarkerColor(kBlack);
@@ -302,7 +302,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_unfolded_ratio[kr]->Divide(hrec_anabin);
       hrec_unfolded_ratio[kr]->SetMarkerStyle(27);
       hrec_unfolded_ratio[kr]->SetMarkerColor(kBlue);
-      hrec_unfolded_ratio[kr]->SetTitle(Form("ratio with measured, kReg = %d",kReg[kr]));
+      hrec_unfolded_ratio[kr]->SetTitle(Form("div. by measured, kReg = %d",kReg[kr]));
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->Draw("same");
 
@@ -331,21 +331,22 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 		       std::cout<<"i: "<<bin<<",  di: "<<hdi->GetBinContent(bin)<<std::endl;
 
 	if(debugMode)std::cout<<std::endl<<"drawing stuff on c11 canvas..."<<std::endl;
-  	c11->cd();
+  	c11->cd(1);
 	gPad->SetLogy();	//c11->SetLogy();  	
-	hSVal->SetTitle(" ");
+	hSVal->SetTitle(" singular values ");
   	hSVal->SetAxisRange(0,35,"X");
-  	hSVal->SetXTitle("singular values");
+  	hSVal->SetXTitle(" singular values ");
   	hSVal->DrawCopy();  	
 	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.608173, 0.8459761, 22);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.608173, 0.8059761, 22);
 
 	if(debugMode)std::cout<<std::endl<<"drawing stuff on cdi canvas..."<<std::endl;
-  	cdi->cd();
+  	//cdi->cd();
+	c11->cd(2);
 	gPad->SetLogy();	//cdi->SetLogy();
-  	hdi->SetTitle(" ");
+  	hdi->SetTitle(" di vectors ");
   	hdi->SetAxisRange(0,35,"X");
-  	hdi->SetXTitle("|d_{i}^{kreg}|");
+  	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->DrawCopy();
 	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.608173, 0.8459761, 22);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.608173, 0.8059761, 22);
@@ -428,7 +429,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       cPearsonMatrixIter->cd() ;   cPearsonMatrixIter->Print(outPdfFile.c_str()); 
       cSpectra->cd()           ;   cSpectra->Print(outPdfFile.c_str());
       cRatio->cd()             ;   cRatio->Print(outPdfFile.c_str()); 
-      cdi->cd()                ;   cdi->Print(outPdfFile.c_str()); 
+      //cdi->cd()                ;   cdi->Print(outPdfFile.c_str()); 
       c11->cd()                ;   c11->Print(outPdfFile.c_str()); 
 
       // cSpectra Check plot
@@ -462,17 +463,17 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hDum->SetYTitle("Unfolding Closure");//y-axis
       hDum->GetYaxis()->SetNdivisions(610); 
       hDum->GetYaxis()->SetLabelFont(43);
-      hDum->GetYaxis()->SetTitleFont(43);
       hDum->GetYaxis()->SetLabelSize(20);
+      hDum->GetYaxis()->SetTitleFont(43);
       hDum->GetYaxis()->SetTitleSize(22);
-      hDum->GetYaxis()->SetTitleOffset(2.6);
+      hDum->GetYaxis()->SetTitleOffset(2.0);
       
       hDum->SetXTitle("Gen Jet p_{T} (GeV/c)");//x-axis
       hDum->GetXaxis()->SetLabelFont(43);
-      hDum->GetXaxis()->SetTitleFont(43);
       hDum->GetXaxis()->SetLabelSize(20);
+      hDum->GetXaxis()->SetTitleFont(43);
       hDum->GetXaxis()->SetTitleSize(22);
-      hDum->GetXaxis()->SetTitleOffset(2.3);
+      hDum->GetXaxis()->SetTitleOffset(2.0);
       hDum->GetXaxis()->SetNoExponent();
       hDum->GetXaxis()->SetMoreLogLabels();
       hDum->SetAxisRange(0.8,1.2,"Y");

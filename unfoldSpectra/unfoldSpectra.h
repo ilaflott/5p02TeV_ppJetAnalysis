@@ -113,35 +113,38 @@ const Int_t fmstyle[6] = {20,21,22,23,29,3};
 const Int_t emstyle[6] = {24,25,26,27,30,28};
 
 
-// CalculatePearsonCoefficients
 //-----------------------------------------------------------------------------------------------------------------------
-TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat) {
+TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false) {
 
-  //std::cout<<"calculating pearson coefficients!"<<std::endl;
-  //std::cout<<"covmat="<< covmat<<std::endl;
-  //std::cout<<"&covmat="<< &covmat<<std::endl;
+  if(debugPearson)std::cout<<"calculating pearson coefficients!"<<std::endl;
   Int_t nrows = covmat->GetNrows();
   Int_t ncols = covmat->GetNcols();
-  std::cout<<"nrows,ncols="<<nrows<<" , "<<ncols<<std::endl;
-  TMatrixD* pearsonCoefs=new TMatrixD( nrows,ncols );
-
+  if(debugPearson)std::cout<<"nrows,ncols="<<nrows<<" , "<<ncols<<std::endl;
+  TMatrixD* pearsonCoefs= new TMatrixD( nrows,ncols );
   //pearsonCoefs->Clear();
-  //std::cout<<"pearsonCoefs="<< pearsonCoefs<<std::endl;
-  //std::cout<<"&pearsonCoefs="<< &pearsonCoefs<<std::endl;
 
-  // loop over columns+rows of the intput covariance matrix's pearson coefficients 
+  if(debugPearson)std::cout<<"looping over rows and columns..."<<std::endl;
   for(int row = 0; row<nrows; row++){
     Double_t covmatElement_rowrow = (TMatrixD (*covmat))(row,row);
     for(int col = 0; col<ncols; col++){
       Double_t covmatElement_rowcol = (TMatrixD (*covmat))(row,col);
       Double_t covmatElement_colcol = (TMatrixD (*covmat))(col,col);
+
+      // calculate the pearson coefficient and put it in matrix which we return the pointer of
       Double_t pearson = covmatElement_rowcol/TMath::Sqrt(covmatElement_rowrow*covmatElement_colcol);
       (TMatrixD(*pearsonCoefs))(row,col) = pearson;
-      if(pearson!=pearson)pearson=-1.;//nan
-      if((row%10==0&&col%10==0)&&pearson!=-1)std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
-      if((row%10==0&&col%10==0)&&pearson!=-1)std::cout<<"pearson="<<pearson <<std::endl;
-    }
-  }
+
+      // check for error conditions/debug
+      if(pearson!=pearson){ 
+	pearson=-1.;
+	  if(debugPearson&&(row%10==0&&col%10==0)) { 
+	    std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
+	    std::cout<<"NaN!, pearson=-1"<<std::endl; } }
+      if( debugPearson&&(row%10==0&&col%10==0&&pearson!=-1.) ) {
+	std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
+	std::cout<<"pearson="<<pearson <<std::endl; }
+    } // end col loop
+  } // end row loop
   return pearsonCoefs;
 }
 

@@ -18,8 +18,6 @@ int unfoldDataSpectra( ){
   gStyle->SetOptStat(0);
 
 
-  // ppData input histos -------------------------
-
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"; 
   if(debugMode)std::cout<<": "<<inFile_Data_name; 
   std::cout<<std::endl<<std::endl;
@@ -207,7 +205,7 @@ int unfoldDataSpectra( ){
       hPearsonSVDPriorMeas[kr]->SetName(Form("hPearsonSVDPriorMeas_kReg%d", kReg[kr]));
       hPearsonSVDPriorMeas[kr]->SetMinimum(-1.);
       hPearsonSVDPriorMeas[kr]->SetMaximum(1.);
-      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.06);
+      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.03);
       
       //Apply to Truth
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);

@@ -277,7 +277,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
       hFoldedSVDPriorMeas[kr]->Draw("same");
   
-      leg[kr] = new TLegend(0.1, 0.1, 0.50, 0.30, NULL,"NBNDC");//x1,y1,x2,y2,header,option
+      leg[kr] = new TLegend(0.1, 0.1, 0.40, 0.30, NULL,"NBNDC");//x1,y1,x2,y2,header,option
       leg[kr]->AddEntry(hrec_anabin_clone,"Measured","pl");
       leg[kr]->AddEntry(hunf_svd[kr],"Unfolded","pl");
       leg[kr]->AddEntry(hFoldedSVDPriorMeas[kr],"Folded","pl");
@@ -306,7 +306,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->Draw("same");
 
-      leg1[kr] = new TLegend(0.1, 0.1, 0.50, 0.3, NULL,"NBNDC");
+      leg1[kr] = new TLegend(0.1, 0.1, 0.40, 0.3, NULL,"NBNDC");
       leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],"Unfolded/Measured","pl");
       leg1[kr]->AddEntry(hrec_folded_ratio[kr],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
@@ -337,8 +337,9 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->SetXTitle("singular values");
   	hSVal->DrawCopy();  	
-	drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",0.608173, 0.8459761, 22);
-	
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.608173, 0.8459761, 22);
+	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.608173, 0.8059761, 22);
+
 	if(debugMode)std::cout<<std::endl<<"drawing stuff on cdi canvas..."<<std::endl;
   	cdi->cd();
 	gPad->SetLogy();	//cdi->SetLogy();
@@ -346,7 +347,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetAxisRange(0,35,"X");
   	hdi->SetXTitle("|d_{i}^{kreg}|");
   	hdi->DrawCopy();
-	drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",0.608173, 0.8459761, 22);
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.608173, 0.8459761, 22);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.608173, 0.8059761, 22);
 
       } // end kr==0 specific
@@ -403,68 +404,58 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     }// end kReg loop
 
     // loop over histos pointers in arrays to write
-    if(debugMode)std::cout<<std::endl<<"writing histo arrays to file..."<<std::endl;
-    fout->cd();
+    if(debugMode)std::cout<<std::endl<<"writing histo arrays to file..."<<std::endl;    fout->cd();
     for(int kr = 0; kr<nKregMax; ++kr){
       // for svd unfolding
       hunf_svd[kr]->Write();
       hratio_svd[kr]->Write();
       hPearsonSVDPriorMeas[kr]->Write();
       hFoldedSVDPriorMeas[kr]->Write();
-      // for MC CLosure tests
+      // for MC Closure tests
       hunf_svd_check[kr]->Write();
       hratio_svd_check[kr]->Write();
       hPearsonSVDPriorTruth[kr]->Write();
       hFoldedSVDPriorTruth[kr]->Write();
     }
 
-    // draw PDF files if desired
     if(drawPDFs){ std::cout<<std::endl<<"drawing PDFs for SVD Unfolding"<<std::endl;
-      //std::string type="MCClosure";//should only be Data or MC
+      std::string outPdfFile=baseName+"_SVDUnfoldingPlots"; 
+      if(doBayes)outPdfFile+="_wBayes";       outPdfFile+=".pdf";
 
-      std::string outPdfFile=baseName+"_SVDUnfoldingPlots";
-      if(doBayes)outPdfFile+="_wBayes";
-      outPdfFile+=".pdf";
-
-      std::string open_outPdfFile=outPdfFile+"[";
-      std::string close_outPdfFile=outPdfFile+"]";
+      // open pdf file and draw the canvases we have so far
+      std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
       cPearsonMatrixIter->Print(open_outPdfFile.c_str()); 
-      cPearsonMatrixIter->cd();   cPearsonMatrixIter->Print(outPdfFile.c_str()); 
-      cSpectra->cd();   cSpectra->Print(outPdfFile.c_str());
-      cRatio->cd();   cRatio->Print(outPdfFile.c_str()); 
-      cdi->cd();   cdi->Print(outPdfFile.c_str()); 
-      c11->cd();   c11->Print(outPdfFile.c_str()); 
+      cPearsonMatrixIter->cd() ;   cPearsonMatrixIter->Print(outPdfFile.c_str()); 
+      cSpectra->cd()           ;   cSpectra->Print(outPdfFile.c_str());
+      cRatio->cd()             ;   cRatio->Print(outPdfFile.c_str()); 
+      cdi->cd()                ;   cdi->Print(outPdfFile.c_str()); 
+      c11->cd()                ;   c11->Print(outPdfFile.c_str()); 
 
-      //cPearsonMatrixIter->SaveAs(Form("Pearson_Matrix_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");
-      //cSpectra->SaveAs(Form("Spectra_meas_unf_fol_%s_R%d_plots.pdf",type.c_str(), radius),"RECREATE");
-      //cRatio->SaveAs(Form("Ratio_meas_unf_fol_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");          
-      //cdi->SaveAs(Form("di_Vectors_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
-      //c11->SaveAs(Form("Singular_Values_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
-      
+      // cSpectra Check plot
       cSpectraCheck->cd();
       
       hrec_folded_ratio[kRegDraw]->SetTitle(" ");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
-      
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");      
       hrec_folded_ratio[kRegDraw]->Draw();
-      TLegend * leg2 = new TLegend(0.1, 0.1, 0.50, 0.3, NULL,"NBNDC");
+
+      TLegend * leg2 = new TLegend(0.1, 0.1, 0.40, 0.3, NULL,"NBNDC");
       leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");
       leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg2->SetTextSize(0.04); 
       leg2->Draw();    
+
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.508173, 0.8459761, 22);
+
+      drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",	0.508173, 0.8459761, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
 
-
-      
-      //cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_%s_R%d.pdf", type.c_str(), radius),"RECREATE");	
       cSpectraCheck->Print(outPdfFile.c_str());
       
+
       // MCClosure Plot
-      //std::string c1_filename="PP_5p02TeV_"+type+"_R"+std::to_string(radius)+"_SVDOnly.pdf";
+      if(debugMode)std::cout<<"drawing MCClosure plot..."<<std::endl;      
       TCanvas *c1 = new TCanvas("c1","Spectra",1300,1000);  c1->cd();
       TH1F *hDum = new TH1F("hDum","",250, 30, 900);
 
@@ -508,24 +499,20 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hratio_svd[kRegDraw]->Draw("psame");
       hratio_svd_check[kRegDraw]->Draw("psame");
       
-
       TLine *line = new TLine(30,1,1000,1);
       line->SetLineStyle(2); 
       line->SetLineWidth(2);
       line->Draw();
-      drawText( "MCClosure Tests", 0.608173, 0.8859761, 22);
-      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.608173, 0.8459761, 21);
+
+      drawText( "MCClosure Tests", 0.608173, 0.8659761, 22);
+      drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",	0.608173, 0.8359761, 21);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.608173, 0.8059761, 21);
-
-
 
       leg0->AddEntry(hratio_svd[kRegDraw],"OppSide SVD","p");
       leg0->AddEntry(hratio_svd_check[kRegDraw],"SameSide SVD","p");
       leg0->Draw();
-      
       c1->Print(outPdfFile.c_str());
       c1->Print(close_outPdfFile.c_str());
-      //c1->SaveAs( c1_filename.c_str(), "RECREATE");
     }// end drawPDFs
   }// end SVD specific
 
@@ -572,3 +559,9 @@ int main(int argc, char* argv[]){
   //TFile *fpp_Data = TFile::Open(inFile_Data.c_str());
 
       //if(debugMode)std::cout<<std::endl<<""<<std::endl;
+      //cPearsonMatrixIter->SaveAs(Form("Pearson_Matrix_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");
+      //cSpectra->SaveAs(Form("Spectra_meas_unf_fol_%s_R%d_plots.pdf",type.c_str(), radius),"RECREATE");
+      //cRatio->SaveAs(Form("Ratio_meas_unf_fol_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");          
+      //cdi->SaveAs(Form("di_Vectors_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
+      //c11->SaveAs(Form("Singular_Values_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
+      //cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_%s_R%d.pdf", type.c_str(), radius),"RECREATE");	      

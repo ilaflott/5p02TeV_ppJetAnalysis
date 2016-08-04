@@ -245,7 +245,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hPearsonSVDPriorMeas[kr]->SetMinimum(-1*minNmax);      hPearsonSVDPriorMeas[kr]->SetMaximum(minNmax);
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
-      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.04);
+      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
       hPearsonSVDPriorMeas[kr]->Draw("colz");
 
       // Apply to Truth
@@ -307,8 +307,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_unfolded_ratio[kr]->Draw("same");
   
       leg1[kr] = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
-      leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],Form("Unfolded/Measured, kr = %d", kReg[kr]),"pl");
-      leg1[kr]->AddEntry(hrec_folded_ratio[kr],Form("Folded/Measured kr = %d", kReg[kr]),"pl");
+      leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],"Unfolded/Measured","pl");
+      leg1[kr]->AddEntry(hrec_folded_ratio[kr],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg1[kr]->SetTextSize(0.04); 
       leg1[kr]->Draw("same");//leg1[kr]->Draw();
@@ -448,8 +448,9 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       
       hrec_folded_ratio[kRegDraw]->Draw();
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText("PP 5 TeV", 0.608173, 0.8459761, 22);
-      drawText(Form("kReg = %d",kReg[kRegDraw]), 0.60, 0.75, 22);
+      drawText( ( "Py6 Tune Z2, ppMC 5.02 TeV, kReg="+std::to_string(kReg[kRegDraw]) ).c_str(), 
+		0.508173, 0.8459761, 22);
+      //drawText(Form("kReg = %d",kReg[kRegDraw]), 0.60, 0.75, 22);
 
       TLegend * leg2 = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
       leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");

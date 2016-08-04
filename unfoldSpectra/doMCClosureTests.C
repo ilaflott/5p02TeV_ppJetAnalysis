@@ -115,7 +115,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
   // Bayesian unfolding -------------------------------------------------- 
   if(!doBayes) std::cout<<std::endl<<"   skipping Bayesian MC Closure test..."<<std::endl;
-  else { std::cout<<std::endl<<"   beginning Bayesian unfolding..."<<std::endl;
+  else { std::cout<<std::endl<<std::endl<<"   beginning Bayesian unfolding..."<<std::endl;
 
     if(debugMode)std::cout<<std::endl<<"errorTreatment: "<<errorTreatment<<std::endl;
 
@@ -177,7 +177,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
   // SVD unfolding --------------------------------------------------
   if(!doSVD) std::cout<<std::endl<<"   skipping SVD unfolding..."<<std::endl;
-  else{ std::cout<<std::endl<<"   beginning SVD unfolding..."<<std::endl;
+  else{ std::cout<<std::endl<<std::endl<<"   beginning SVD unfolding..."<<std::endl;
     
     std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
     int kReg[nKregMax];  
@@ -232,29 +232,32 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"calling CalculatePearsonCoefficients..."<<std::endl<<std::endl;
       TMatrixD *pearson = CalculatePearsonCoefficients(&covmat,debugPearson);
 
-      if(debugMode)std::cout<<std::endl<<"writing pearson matrix as TH2D and drawing..."<<std::endl;
+      if(debugMode)std::cout<<std::endl<<"writing pearson matrix as TH2D..."<<std::endl;
       hPearsonSVDPriorMeas[kr] = new TH2D(*pearson);
-      hPearsonSVDPriorMeas[kr]->SetTitle(" ");
+      //      hPearsonSVDPriorMeas[kr]->SetTitle(" ");
       hPearsonSVDPriorMeas[kr]->SetName(Form("hPearsonSVDPriorMeas_kReg%d", kReg[kr]));
+
+      // draw Pearson Coefficient Matrix
+      if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
+      cPearsonMatrixIter->cd(kr+1);  
+      hPearsonSVDPriorMeas[kr]->SetTitle( ( "kReg="+std::to_string(kReg[kr]) ).c_str() );
       hPearsonSVDPriorMeas[kr]->SetMinimum(-1.);
       hPearsonSVDPriorMeas[kr]->SetMaximum(1.);
-      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.06);
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
+      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.06);
       hPearsonSVDPriorMeas[kr]->Draw("colz");
 
-      //Apply to Truth
+      // Apply to Truth
       if(debugMode)std::cout<<std::endl<<"applying roo_resp to truth dist hunf_svd[kr="<<kr<<"]"<<std::endl;
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
       hFoldedSVDPriorMeas[kr]->SetName(Form("hFoldedSVDPriorMeas_kReg%d", kReg[kr]));  
 
-      // ??
-      cPearsonMatrixIter->cd(kr+1);  
-
       // draw on cSpectra canvas
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cSpectra canvas..."<<std::endl;
-      cSpectra->cd(kr+1)->SetLogy();
       cSpectra->cd(kr+1);
+      cSpectra->cd(kr+1)->SetLogy();
+
 
       std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl;
       hrec_anabin->SetTitle( ("kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
@@ -262,6 +265,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_anabin->SetMarkerStyle(24);
       hrec_anabin->SetMarkerColor(kBlack);
       hrec_anabin->SetAxisRange(45, 1000, "X");
+      hrec_anabin->Print("base");
       hrec_anabin->Draw();
   
       hunf_svd[kr]->SetMarkerStyle(33);
@@ -384,15 +388,15 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hFoldedSVDPriorTruth[kr]->SetName(Form("hFoldedSVDPriorTruth_kReg%d", kReg[kr]));
   
       TSVDUnfold *svdUnfold = unf_svd_check.Impl();      
-      TH1 *hSVal = svdUnfold->GetSV();
       TH1D *hdi = svdUnfold->GetD();
+      TH1 *hSVal = svdUnfold->GetSV();
       //TH1D  *hSValClone = (TH1D*)hSVal->Clone("hSValClone");
       
       if(debugMode)std::cout << "  printing singular values: " << std::endl;
-      if(debugMode)for(int bin=1; bin<=hSVal->GetNbinsX(); bin++)
+      if(debugMode)for(int bin=0; bin<=hSVal->GetNbinsX(); bin++)//did start at 1, now starts at 0?
 	std::cout << "bin: " << bin << "  SV: " << hSVal->GetBinContent(bin) << std::endl;
       if(debugMode)std::cout << std::endl<<"  printing di vector: " <<  std::endl;
-      if(debugMode)for(int bin=1; bin<=hdi->GetNbinsX(); bin++)
+      if(debugMode)for(int bin=0; bin<=hdi->GetNbinsX(); bin++)
 	std::cout << "i: " << bin << "  di: " << hdi->GetBinContent(bin) << std::endl;
     }// end kReg loop
 

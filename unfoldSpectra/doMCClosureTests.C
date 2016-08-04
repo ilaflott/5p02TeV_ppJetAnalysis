@@ -277,7 +277,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
       hFoldedSVDPriorMeas[kr]->Draw("same");
   
-      leg[kr] = new TLegend(0.1, 0.1, 0.30, 0.30, NULL,"NBNDC");//x1,y1,x2,y2,header,option
+      leg[kr] = new TLegend(0.1, 0.1, 0.50, 0.30, NULL,"NBNDC");//x1,y1,x2,y2,header,option
       leg[kr]->AddEntry(hrec_anabin_clone,"Measured","pl");
       leg[kr]->AddEntry(hunf_svd[kr],"Unfolded","pl");
       leg[kr]->AddEntry(hFoldedSVDPriorMeas[kr],"Folded","pl");
@@ -305,8 +305,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_unfolded_ratio[kr]->SetTitle(Form("kReg = %d",kReg[kr]));
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->Draw("same");
-  
-      leg1[kr] = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"NBNDC");
+
+      leg1[kr] = new TLegend(0.1, 0.1, 0.50, 0.3, NULL,"NBNDC");
       leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],"Unfolded/Measured","pl");
       leg1[kr]->AddEntry(hrec_folded_ratio[kr],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
@@ -347,6 +347,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetXTitle("|d_{i}^{kreg}|");
   	hdi->DrawCopy();
 	drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",0.608173, 0.8459761, 22);
+	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.608173, 0.8059761, 22);
 
       } // end kr==0 specific
   
@@ -512,8 +513,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       line->SetLineStyle(2); 
       line->SetLineWidth(2);
       line->Draw();
-      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.608173, 0.8459761, 22);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.608173, 0.8059761, 22);
+      drawText( "MCClosure Tests", 0.608173, 0.8859761, 22);
+      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.608173, 0.8459761, 21);
+      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.608173, 0.8059761, 21);
+
 
 
       leg0->AddEntry(hratio_svd[kRegDraw],"OppSide SVD","p");

@@ -200,7 +200,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     TCanvas *cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","", 1200, 1000);  cPearsonMatrixIter->Divide(3,3);
     TCanvas *cRatio             = new TCanvas("cRatio","",             1200, 1000);  cRatio->Divide(3,3);      
     TCanvas *cSpectra           = new TCanvas("cSpectra","",           1200, 1000);  cSpectra->Divide(3,3);
-    TCanvas *cSpectraCheck      = new TCanvas("cSpectraCheck","",      1200, 1000);    
+    TCanvas *cRatioCheck      = new TCanvas("cRatioCheck","",      1200, 1000);    
     TCanvas *c11 = new TCanvas("c11"," Singular Values and divectors", 1200, 1000); c11->Divide(2);
     //TCanvas *cdi = new TCanvas("cdi","cdi: di vectors",      1200, 1000);
 
@@ -337,7 +337,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->SetXTitle(" singular values ");
   	hSVal->DrawCopy();  	
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.408173, 0.8459761, 19);
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 
 	c11->cd(2);
@@ -346,7 +346,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetAxisRange(0,35,"X");
   	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->DrawCopy();
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.408173, 0.8459761, 19);
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
       } // end kr==0 specific
   
@@ -430,7 +430,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       c11->cd()                ;   c11->Print(outPdfFile.c_str()); 
 
       // cSpectra Check plot
-      cSpectraCheck->cd();
+      cRatioCheck->cd();
       
       hrec_folded_ratio[kRegDraw]->SetTitle(" ");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
@@ -446,10 +446,11 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
 
-      drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",	0.508173, 0.8459761, 22);
+      drawText( "Ratio plot check",	0.508173, 0.8659761, 22);
+      drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",	0.508173, 0.8359761, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
 
-      cSpectraCheck->Print(outPdfFile.c_str());
+      cRatioCheck->Print(outPdfFile.c_str());
       
 
       // MCClosure Plot
@@ -562,4 +563,4 @@ int main(int argc, char* argv[]){
       //cRatio->SaveAs(Form("Ratio_meas_unf_fol_%s_R%d_plots.pdf", type.c_str(), radius),"RECREATE");          
       //cdi->SaveAs(Form("di_Vectors_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
       //c11->SaveAs(Form("Singular_Values_%s_R%d.pdf",type.c_str(), radius),"RECREATE");
-      //cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_%s_R%d.pdf", type.c_str(), radius),"RECREATE");	      
+      //cRatioCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_%s_R%d.pdf", type.c_str(), radius),"RECREATE");	      

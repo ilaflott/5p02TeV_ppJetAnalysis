@@ -256,7 +256,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       cSpectra->cd(kr+1)->SetLogy();
       cSpectra->cd(kr+1);
 
-      hrec_anabin->SetTitle(Form("kReg = %d",kReg[kr]));
+      std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl;
+      hrec_anabin->SetTitle( ("kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
       hrec_anabin->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin->SetMarkerStyle(24);
       hrec_anabin->SetMarkerColor(kBlack);

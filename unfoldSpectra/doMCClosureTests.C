@@ -448,11 +448,11 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       
       hrec_folded_ratio[kRegDraw]->Draw();
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( ( "Py6 Tune Z2, ppMC 5.02 TeV, kReg="+std::to_string(kReg[kRegDraw]) ).c_str(), 
-		0.508173, 0.8459761, 22);
-      //drawText(Form("kReg = %d",kReg[kRegDraw]), 0.60, 0.75, 22);
+      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.508173, 0.8459761, 22);
+      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.7459761, 22);
 
-      TLegend * leg2 = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
+
+      TLegend * leg2 = new TLegend(0.1, 0.1, 0.60, 0.3, NULL,"BRNDC");
       leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");
       leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");

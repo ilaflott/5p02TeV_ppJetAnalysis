@@ -240,12 +240,12 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       // draw Pearson Coefficient Matrix
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);  
-      hPearsonSVDPriorMeas[kr]->SetTitle( ( "kReg="+std::to_string(kReg[kr]) ).c_str() );
-      hPearsonSVDPriorMeas[kr]->SetMinimum(-1.);
-      hPearsonSVDPriorMeas[kr]->SetMaximum(1.);
+      hPearsonSVDPriorMeas[kr]->SetTitle( ( "kReg="+std::to_string(kReg[kr]) ).c_str() ); 
+      float minNmax=0.3;      //float minNmax=1.0;
+      hPearsonSVDPriorMeas[kr]->SetMinimum(-1*minNmax);      hPearsonSVDPriorMeas[kr]->SetMaximum(minNmax);
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
-      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.06);
+      hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.04);
       hPearsonSVDPriorMeas[kr]->Draw("colz");
 
       // Apply to Truth

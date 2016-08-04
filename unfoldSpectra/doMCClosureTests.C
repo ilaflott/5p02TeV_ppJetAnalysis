@@ -330,27 +330,24 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	if(debugMode)for(int bin=1; bin<=hdi->GetNbinsX(); bin++)
 		       std::cout<<"i: "<<bin<<",  di: "<<hdi->GetBinContent(bin)<<std::endl;
 
-	if(debugMode)std::cout<<std::endl<<"drawing stuff on c11 canvas..."<<std::endl;
+	if(debugMode)std::cout<<std::endl<<"drawing stuff on c11 canvas(s).."<<std::endl;
   	c11->cd(1);
 	gPad->SetLogy();	//c11->SetLogy();  	
 	hSVal->SetTitle(" singular values ");
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->SetXTitle(" singular values ");
   	hSVal->DrawCopy();  	
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.608173, 0.8459761, 22);
-	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.608173, 0.8059761, 22);
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.458173, 0.8459761, 20);
+	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.458173, 0.8059761, 20);
 
-	if(debugMode)std::cout<<std::endl<<"drawing stuff on cdi canvas..."<<std::endl;
-  	//cdi->cd();
 	c11->cd(2);
 	gPad->SetLogy();	//cdi->SetLogy();
   	hdi->SetTitle(" di vectors ");
   	hdi->SetAxisRange(0,35,"X");
   	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->DrawCopy();
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.608173, 0.8459761, 22);
-	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.608173, 0.8059761, 22);
-
+	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.458173, 0.8459761, 20);
+	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.458173, 0.8059761, 20);
       } // end kr==0 specific
   
       hrec_unfolded_ratio[kr]->Print("base");
@@ -441,8 +438,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_folded_ratio[kRegDraw]->Draw();
 
       TLegend * leg2 = new TLegend(0.1, 0.1, 0.40, 0.3, NULL,"NBNDC");
-      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");
-      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Folded/Measured","pl");
+      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfold/Meas","pl");
+      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Fold/Meas","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg2->SetTextSize(0.04); 
       leg2->Draw();    

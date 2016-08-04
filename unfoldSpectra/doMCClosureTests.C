@@ -259,14 +259,15 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       cSpectra->cd(kr+1)->SetLogy();
 
 
-      std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl;
-      hrec_anabin->SetTitle( ("kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
-      hrec_anabin->SetXTitle("Jet p_{T} (GeV/c)");
-      hrec_anabin->SetMarkerStyle(24);
-      hrec_anabin->SetMarkerColor(kBlack);
-      hrec_anabin->SetAxisRange(45, 1000, "X");
-      hrec_anabin->Print("base");
-      hrec_anabin->Draw();
+      std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl<<std::endl;
+      TH1F* hrec_anabin_clone=(TH1F*)hrec_anabin->Clone("untitledClone");
+      hrec_anabin_clone->SetTitle( ("kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
+      hrec_anabin_clone->SetXTitle("Jet p_{T} (GeV/c)");
+      hrec_anabin_clone->SetMarkerStyle(24);
+      hrec_anabin_clone->SetMarkerColor(kBlack);
+      hrec_anabin_clone->SetAxisRange(45, 1000, "X");
+      hrec_anabin_clone->Print("base");
+      hrec_anabin_clone->Draw();
   
       hunf_svd[kr]->SetMarkerStyle(33);
       hunf_svd[kr]->SetMarkerColor(kBlue);
@@ -277,7 +278,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hFoldedSVDPriorMeas[kr]->Draw("same");
   
       leg[kr] = new TLegend(0.1, 0.1, 0.30, 0.30, NULL,"BRNDC");
-      leg[kr]->AddEntry(hrec_anabin,"Measured","pl");
+      leg[kr]->AddEntry(hrec_anabin_clone,"Measured","pl");
       leg[kr]->AddEntry(hunf_svd[kr],Form("Unfolded, kr = %d", kReg[kr]),"pl");
       leg[kr]->AddEntry(hFoldedSVDPriorMeas[kr],Form("Folded kr = %d", kReg[kr]),"pl");
       leg[kr]->SetTextSize(0.04); 
@@ -393,10 +394,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       //TH1D  *hSValClone = (TH1D*)hSVal->Clone("hSValClone");
       
       if(debugMode)std::cout << "  printing singular values: " << std::endl;
-      if(debugMode)for(int bin=0; bin<=hSVal->GetNbinsX(); bin++)//did start at 1, now starts at 0?
+      if(debugMode)for(int bin=1; bin<=hSVal->GetNbinsX(); bin++)//did start at 1, now starts at 0?
 	std::cout << "bin: " << bin << "  SV: " << hSVal->GetBinContent(bin) << std::endl;
       if(debugMode)std::cout << std::endl<<"  printing di vector: " <<  std::endl;
-      if(debugMode)for(int bin=0; bin<=hdi->GetNbinsX(); bin++)
+      if(debugMode)for(int bin=1; bin<=hdi->GetNbinsX(); bin++)
 	std::cout << "i: " << bin << "  di: " << hdi->GetBinContent(bin) << std::endl;
     }// end kReg loop
 

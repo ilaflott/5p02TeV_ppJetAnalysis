@@ -277,7 +277,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
       hFoldedSVDPriorMeas[kr]->Draw("same");
   
-      leg[kr] = new TLegend(0.1, 0.1, 0.30, 0.30, NULL,"BRNDC");
+      leg[kr] = new TLegend(0.1, 0.1, 0.30, 0.30, NULL,"NBNDC");
       leg[kr]->AddEntry(hrec_anabin_clone,"Measured","pl");
       leg[kr]->AddEntry(hunf_svd[kr],"Unfolded","pl");
       leg[kr]->AddEntry(hFoldedSVDPriorMeas[kr],"Folded","pl");
@@ -306,7 +306,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->Draw("same");
   
-      leg1[kr] = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
+      leg1[kr] = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"NBNDC");
       leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],"Unfolded/Measured","pl");
       leg1[kr]->AddEntry(hrec_folded_ratio[kr],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
@@ -447,7 +447,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
       
       hrec_folded_ratio[kRegDraw]->Draw();
-      TLegend * leg2 = new TLegend(0.1, 0.1, 0.50, 0.3, NULL,"BRNDC");
+      TLegend * leg2 = new TLegend(0.1, 0.1, 0.50, 0.3, NULL,"NBNDC");
       leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");
       leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
@@ -487,7 +487,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       
       hDum->Draw("hist");
       
-      TLegend *leg0 = new TLegend(0.25, 0.15, 0.60, 0.35, NULL,"BRNDC");
+      TLegend *leg0 = new TLegend(0.25, 0.15, 0.60, 0.35, NULL,"NBNDC");
       leg0->SetTextSize(0.07);
 
       if(doBayes){ // if we did bayes as well, put it on the same MCClosure plot as the SVD

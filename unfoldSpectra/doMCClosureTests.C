@@ -446,18 +446,19 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
       
-      hrec_folded_ratio[kRegDraw]->Draw();
-      hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.508173, 0.8459761, 22);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.7459761, 22);
-
-
-      TLegend * leg2 = new TLegend(0.1, 0.1, 0.60, 0.3, NULL,"BRNDC");
+      TLegend * leg2 = new TLegend(0.1, 0.1, 0.50, 0.3, NULL,"BRNDC");
       leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded/Measured","pl");
       leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Folded/Measured","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg2->SetTextSize(0.04); 
       leg2->Draw();    
+
+      hrec_folded_ratio[kRegDraw]->Draw();
+      hrec_unfolded_ratio[kRegDraw]->Draw("same");
+      drawText( "ppMC, Py6 Tune Z2, 5.02 TeV",	0.508173, 0.8459761, 22);
+      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
+
+
       
       //cSpectraCheck->SaveAs(Form("Spectra_Ratio_withkRegDraw_%s_R%d.pdf", type.c_str(), radius),"RECREATE");	
       cSpectraCheck->Print(outPdfFile.c_str());

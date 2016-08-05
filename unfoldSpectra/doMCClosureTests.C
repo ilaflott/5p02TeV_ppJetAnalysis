@@ -182,8 +182,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       // draw and print responses
       //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
       //hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hgen_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hrec_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      hgen_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      hrec_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
       // draw and print unfold/ratio plots
       hunf->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());

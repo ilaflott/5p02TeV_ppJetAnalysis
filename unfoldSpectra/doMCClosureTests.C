@@ -99,7 +99,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   std::cout<<std::endl<<std::endl<<"creating NEW histos..."<<std::endl<<std::endl;
 
   TH1F *hgen_resp, *hgen_resp_anabin;
-  hgen_resp = new TH1F( Form("hpp_gen_responseR%d_20_eta_20",radius),"", 
+  hgen_resp = new TH1F( Form("hpp_gen_response_R%d_20_eta_20",radius),"", 
 			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
   hgen_resp->Print("base");
@@ -297,15 +297,15 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
       // what's happening here exactly?
       //std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl<<std::endl;
-      TH1F* hrec_anabin_clone=(TH1F*)hrec_anabin->Clone("untitledClone");
-      hrec_anabin_clone->SetTitle( ("jet spectra, kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
+      TH1F* hrec_anabin_clone=(TH1F*)hrec_anabin->Clone("hrec_anabin_clone");
+      hrec_anabin_clone->SetTitle( ("spectra, kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
       hrec_anabin_clone->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin_clone->SetMarkerStyle(24);
       hrec_anabin_clone->SetMarkerColor(kBlack);
       hrec_anabin_clone->SetAxisRange(45, 1000, "X");
       hrec_anabin_clone->Print("base");
-
       hrec_anabin_clone->Draw();
+
       hunf_svd[kr]->Draw("same");
       hFoldedSVDPriorMeas[kr]->Draw("same");
   
@@ -321,7 +321,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       cRatio->cd(kr+1);
   
       hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone(Form("ratio_folded_with_measured_kReg%d",kReg[kr]));
-      hrec_folded_ratio[kr]->SetTitle(Form("div. by measured, kReg = %d",kReg[kr]));
+      hrec_folded_ratio[kr]->SetTitle(Form("ratio, kReg = %d",kReg[kr]));
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
@@ -365,7 +365,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 	hSVal->SetTitle(" singular values ");
   	hSVal->SetXTitle(" singular values ");
   	hSVal->SetAxisRange(0,35,"X");
-  	hSVal->Draw();  	//hSVal->DrawCopy();  	
+  	hSVal->DrawCopy();  	
 	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 
@@ -381,7 +381,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetTitle(" di vectors ");
   	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->SetAxisRange(0,35,"X");
-  	hdi->Draw();            //hdi->DrawCopy();
+  	hdi->DrawCopy();
 	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 	if(debugMode)std::cout<<std::endl<<"done with kr==0 specifics"<<std::endl<<std::endl;
@@ -429,14 +429,14 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hFoldedSVDPriorTruth[kr]->SetName(Form("hFoldedSVDPriorTruth_kReg%d", kReg[kr]));
   
       TSVDUnfold *svdUnfold = unf_svd_check.Impl();      
-      TH1D *hdi = svdUnfold->GetD();
-      TH1 *hSVal = svdUnfold->GetSV();
-      //TH1D  *hSValClone = (TH1D*)hSVal->Clone("hSValClone");
       
       if(debugMode)std::cout << std::endl<<std::endl<<"  printing singular values: " << std::endl<<std::endl;
+      TH1 *hSVal = svdUnfold->GetSV();
       if(debugMode)for(int bin=1; bin<=hSVal->GetNbinsX(); bin++)//did start at 1, now starts at 0?
 	std::cout << "bin: " << bin << "  SV: " << hSVal->GetBinContent(bin) << std::endl;
+
       if(debugMode)std::cout << std::endl<<std::endl<<"  printing di vector: " <<  std::endl<<std::endl;
+      TH1D *hdi = svdUnfold->GetD();
       if(debugMode)for(int bin=1; bin<=hdi->GetNbinsX(); bin++)
 	std::cout << "i: " << bin << "  di: " << hdi->GetBinContent(bin) << std::endl;
     }// end kReg loop
@@ -496,7 +496,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"drawing MCClosure plot..."<<std::endl;      
       TCanvas *c1 = new TCanvas("c1","Spectra",1300,1000);  c1->cd();
 
-      TH1F *hDum = new TH1F("hDum","",250, 30, 900);      
+      TH1F *hDum = new TH1F("MC_Unfold_Closure_genpt","MCClosure Plot",250, 30, 900);      
       hDum->SetYTitle("Unfolding Closure");//y-axis
       hDum->GetYaxis()->SetNdivisions(610); 
       hDum->GetYaxis()->SetLabelFont(43);

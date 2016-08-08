@@ -129,6 +129,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
     if(debugMode)std::cout<<"calling RooUnfoldBayes and Hreco..."<<std::endl<<std::endl;
     RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
+
     TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
     hunf->SetName("PP_Bayesian_Unfolded_Spectra");
     std::cout<<std::endl; hunf->Print("base");
@@ -209,7 +210,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   
   
   //  SVD unfolding --------------------------------------------------
-  if(!doSVD) std::cout<<std::endl<<"   skipping SVD unfolding..."<<std::endl<<std::endl;
+  if(!doSVD) std::cout<<std::endl<<"   skipping SVD MCClosure Test..."<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<std::endl<<std::endl<<"   beginning SVD MCClosure Test..."<<std::endl;
     
     std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
@@ -275,7 +276,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hPearsonSVDPriorMeas[kr]->SetName(Form("hPearsonSVDPriorMeas_kReg%d", kReg[kr]));
       hPearsonSVDPriorMeas[kr]->SetTitle( ( "pearson matrix, kReg="+std::to_string(kReg[kr]) ).c_str() ); 
       
-      if(debugMode)std::cout<<std::cout<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
+      if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);  
       
       float minNmax=0.3; 

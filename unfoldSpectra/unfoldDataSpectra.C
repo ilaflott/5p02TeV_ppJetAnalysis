@@ -174,22 +174,21 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str()); //looks a little ridiculous, MC not normalized
 
       // draw and print response output, all of these plots draw empty though...
-      hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());              //empty
-      hgen_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty     
-      hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());	      //empty
-      hrec_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty
+      //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());              //empty
+      //hgen_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty     
+      //hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());	      //empty
+      //hrec_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty
 
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-	hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hgen_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
 	hmat->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str()); //bleh looking in bottom left bin....
+	//hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str()); //bleh looking in bottom left bin....
+	hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	//hgen_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
 	hrec->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());      }
-
+	//hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());      
+      }
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
-
     }// end draw pdfs
   }  // end doBayes
   std::cout<<std::endl<<"Bayesian Unfolding done, all output written!"<<std::endl;
@@ -199,18 +198,20 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
   if(!doSVD) std::cout<<std::endl<<"   skipping SVD unfolding..."<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<std::endl<<std::endl<<"   beginning SVD unfolding..."<<std::endl;
         
-    std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
     int kReg[nKregMax];  
+    std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
     std::cout<<kRegCenter-kRegRange<<" <= kReg[i] <= "<<kRegCenter+kRegRange<<std::endl;
     for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) kReg[i+kRegRange]=kRegCenter+i;
     if(debugMode)for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) 
 		   std::cout<<"kReg["<<i+kRegRange<<"]="<<kReg[i+kRegRange]<<std::endl;
     
     if(debugMode)std::cout<<std::endl<<"creating histo-arrays..."<<std::endl;
-    TH2 *hPearsonSVDPriorMeas[nKregMax];  TH1 *hFoldedSVDPriorMeas[nKregMax];     
     TH1 *hrec_folded_ratio[nKregMax];     TH1 *hrec_unfolded_ratio[nKregMax];
-    TH1F *hunf_svd[nKregMax];        TH1F *hratio_svd[nKregMax];  
-    
+
+    TH2 *hPearsonSVDPriorMeas[nKregMax];  
+    TH1 *hFoldedSVDPriorMeas[nKregMax];     
+    TH1F *hunf_svd[nKregMax];        
+    TH1F *hratio_svd[nKregMax];      
     
     std::cout<<"calling RooUnfoldResponse"<<std::endl;
     RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, 
@@ -407,9 +408,9 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
 
 
       //  already-drawn canvases --------------------------------------------------
-      cPearsonMatrixIter->cd() ;   cPearsonMatrixIter->Print(outPdfFile.c_str());
       cSpectra->cd()           ;   cSpectra->Print(outPdfFile.c_str());
       cRatio->cd()             ;   cRatio->Print(outPdfFile.c_str());
+      cPearsonMatrixIter->cd() ;   cPearsonMatrixIter->Print(outPdfFile.c_str());
       c11->cd()                ;   c11->Print(outPdfFile.c_str());
 
 

@@ -180,28 +180,29 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
       tempCanvForPdfPrint->cd();
 
-      // draw and print responses
-      //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      //hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hgen_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hrec_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
       // draw and print unfold/ratio plots
       hunf->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
       hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
       hunf_check->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
       hratio_check->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
+      // draw and print responses
+      //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      //hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      //hgen_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      //hrec_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-	//hmat->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hrec->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hrec_check->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hgen_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hrec_check_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());   
+	hmat->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	//hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	//hgen_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hrec->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	//hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hrec_check->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	//hrec_check_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());   
       }
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
     }// end draw pdfs
@@ -213,17 +214,18 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   if(!doSVD) std::cout<<std::endl<<"   skipping SVD MCClosure Test..."<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<std::endl<<std::endl<<"   beginning SVD MCClosure Test..."<<std::endl;
     
-    std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
     int kReg[nKregMax];  
+    std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
     std::cout<<kRegCenter-kRegRange<<" <= kReg[i] <= "<<kRegCenter+kRegRange<<std::endl;
     for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) kReg[i+kRegRange]=kRegCenter+i;
     if(debugMode)for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) 
       std::cout<<"kReg["<<i+kRegRange<<"]="<<kReg[i+kRegRange]<<std::endl;
     
     if(debugMode)std::cout<<std::endl<<"creating histo-arrays..."<<std::endl;
+    TH1 *hrec_folded_ratio[nKregMax]; TH1 *hrec_unfolded_ratio[nKregMax];
+
     TH2 *hPearsonSVDPriorMeas[nKregMax]; TH2 *hPearsonSVDPriorTruth[nKregMax];
     TH1 *hFoldedSVDPriorMeas[nKregMax]; TH1 *hFoldedSVDPriorTruth[nKregMax];
-    TH1 *hrec_folded_ratio[nKregMax]; TH1 *hrec_unfolded_ratio[nKregMax];
     TH1F *hunf_svd[nKregMax];    TH1F *hunf_svd_check[nKregMax];
     TH1F *hratio_svd[nKregMax];  TH1F *hratio_svd_check[nKregMax];
 
@@ -361,8 +363,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 		       std::cout<<"bin: "<<bin<<",  SV: "<<hSVal->GetBinContent(bin)<< std::endl;
 
 	if(debugMode)std::cout<<std::endl<<"drawing singular values on c11 canvas.."<<std::endl<<std::endl;
-  	c11->cd(1);
-	gPad->SetLogy();	//c11->SetLogy();  	
+  	c11->cd(1);	gPad->SetLogy();	//c11->SetLogy();  	
+
 	hSVal->SetTitle(" singular values ");
   	hSVal->SetXTitle(" singular values ");
   	hSVal->SetAxisRange(0,35,"X");
@@ -377,8 +379,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 		       std::cout<<"i: "<<bin<<",  di: "<<hdi->GetBinContent(bin)<<std::endl;
 
 	if(debugMode)std::cout<<std::endl<<"drawing di vectors on c11 canvas.."<<std::endl;
-	c11->cd(2);
-	gPad->SetLogy();	//cdi->SetLogy();
+	c11->cd(2);	gPad->SetLogy();	//cdi->SetLogy();
+
   	hdi->SetTitle(" di vectors ");
   	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->SetAxisRange(0,35,"X");
@@ -464,9 +466,9 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
 
       //  already-drawn canvases --------------------------------------------------      
-      cPearsonMatrixIter->cd() ;   cPearsonMatrixIter->Print(outPdfFile.c_str()); 
       cSpectra->cd()           ;   cSpectra->Print(outPdfFile.c_str());
       cRatio->cd()             ;   cRatio->Print(outPdfFile.c_str()); 
+      cPearsonMatrixIter->cd() ;   cPearsonMatrixIter->Print(outPdfFile.c_str()); 
       c11->cd()                ;   c11->Print(outPdfFile.c_str()); 
       
 

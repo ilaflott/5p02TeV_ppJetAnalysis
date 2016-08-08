@@ -94,7 +94,7 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
 
   //gen
   TH1F *hgen_resp, *hgen_resp_anabin;
-  hgen_resp = new TH1F( Form("hpp_gen_responseR%d_20_eta_20",radius),"", 
+  hgen_resp = new TH1F( Form("hpp_gen_response_R%d_20_eta_20",radius),"", 
 			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
   //hgen_resp->Print("base");
@@ -130,18 +130,22 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
 
     TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
     hunf->SetName("PP_Bayesian_Unfolded_Spectra");
-    hunf->Print("base");
+    std::cout<<std::endl; hunf->Print("base");
 
     TH1F *hratio = (TH1F*)hunf->Clone(Form("MCClosure_test_oppside_Bayes_R%d_20_eta_20", radius));
-    hratio->Print("base");
     hratio->SetMarkerStyle(24);
     hratio->SetMarkerColor(kRed);
     hratio->Divide(hgen_anabin);
+    hratio->Print("base");
 
     std::cout<<std::endl<<"writing bayesian unfolding output to file..."<<std::endl;
     fout->cd();
-    hgen_resp->Write();  hgen_resp_anabin->Write();
-    hrec_resp->Write();	 hrec_resp_anabin->Write();
+
+    // response
+    /*std::cout<<std::endl; hgen_resp->Print("base");         */  hgen_resp->Write();  
+    /*std::cout<<std::endl; hgen_resp_anabin->Print("base");  */  hgen_resp_anabin->Write();
+    /*std::cout<<std::endl; hrec_resp->Print("base");         */  hrec_resp->Write();	 
+    /*std::cout<<std::endl; hrec_resp_anabin->Print("base");  */  hrec_resp_anabin->Write();
 
     hunf->Write();
 
@@ -165,26 +169,27 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
       tempCanvForPdfPrint->cd();
 
-      // draw and print response output
-      hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hgen_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hrec_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
       // draw and print unfold/ratio plots
       hunf->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str()); //looks a little ridiculous, MC not normalized
+
+      // draw and print response output, all of these plots draw empty though...
+      hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());              //empty
+      hgen_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty     
+      hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());	      //empty
+      hrec_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty
 
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-	//hmat->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hrec->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
 	hgen_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      }
+	hmat->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str()); //bleh looking in bottom left bin....
+	hrec->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());      }
+
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
+
     }// end draw pdfs
   }  // end doBayes
   std::cout<<std::endl<<"Bayesian Unfolding done, all output written!"<<std::endl;
@@ -429,6 +434,7 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
 
       cRatioCheck->Print(outPdfFile.c_str());
+      cRatioCheck->Print(close_outPdfFile.c_str());
 
       std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;
     }// end drawPDFs

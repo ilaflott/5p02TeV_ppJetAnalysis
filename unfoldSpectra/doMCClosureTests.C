@@ -213,10 +213,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
 	hmat->SetTitle("ppMC jet input, genpt v. recopt");         
-	hmat->GetYaxis()->SetLabelSize(1);
-	hmat->GetYaxis()->SetTitleSize(1.3);
-	hmat->GetXaxis()->SetLabelSize(1);
-	hmat->GetXaxis()->SetTitleSize(1.3);
+	hmat->GetYaxis()->SetLabelSize(0.04);
+	hmat->GetYaxis()->SetTitleSize(0.06);
+	hmat->GetXaxis()->SetLabelSize(0.04);
+	hmat->GetXaxis()->SetTitleSize(0.06);
 	hmat->Draw();         
 	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
@@ -433,10 +433,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       }
         
       // the closure tests for svd unfolding
-      if(debugMode)std::cout<<"calling RooUnfoldSVD for MCClosure tests"<<std::endl;
+      if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSVD for MCClosure tests..."<<std::endl;
       RooUnfoldSvd unf_svd_check(&roo_resp, hrec_check_anabin, kReg[kr]);
       
-      if(debugMode)std::cout<<std::endl<<"calling Hreco..."<<std::endl;
+      if(debugMode)std::cout<<"calling Hreco..."<<std::endl;
       hunf_svd_check[kr] = (TH1F*)unf_svd_check.Hreco(errorTreatment);
       hunf_svd_check[kr]->SetName( ("h_Unfolded_mcclosure_sameside_SVD"+kRegRandEtaRange).c_str() );
       std::cout<<std::endl;      hunf_svd_check[kr]->Print("base");

@@ -156,17 +156,22 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     RooUnfoldBayes unf_bayes_check(&roo_resp, hrec_check_anabin, kIter);
     TH1F *hunf_check = (TH1F*)unf_bayes_check.Hreco(errorTreatment);
     hunf_check->SetName("ppMC_BayesianClosureCheck_Unfolded_Spectra");
+    hunf_check->SetTitle("ppMC Closure Check, Bayesian Unfolded Spectra");    
     std::cout<<std::endl;        hunf_check->Print("base");
 
     //TH1F *hratio_check = (TH1F*)hunf_check->Clone( ("MCClosure_test_sameside_Bayes"+RandEtaRange).c_str() );
     TH1F *hratio_check = (TH1F*)hunf_check->Clone( "ppMC_BayesianClosureCheck_Unfolded_Ratio" );
+    hratio_check->SetTitle( "ppMC Closure Check, Bayesian Unfolded/Meas Ratio" );
     hratio_check->Divide(hgen_anabin);
     hratio_check->Print("base");
     
     std::cout<<std::endl<<"writing bayesian unfolding output to file..."<<std::endl;
     fout->cd();
 
+    hunf->SetMarkerStyle(24);    hunf_check->SetMarkerStyle(24); 
+    hunf->SetMarkerColor(kRed);  hunf_check->SetMarkerColor(kBlack);    
     hunf->Write();    hunf_check->Write();
+
     hgen_resp->Write();  hgen_resp_anabin->Write();
     hrec_resp->Write();	 hrec_resp_anabin->Write();
 
@@ -207,13 +212,35 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-	hmat->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hgen_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hrec->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hrec_check->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hmat->SetTitle("ppMC jet input, genpt v. recopt");         
+	hmat->GetYaxis()->SetLabelSize(10);
+	hmat->GetYaxis()->SetTitleSize(13);
+	hmat->GetXaxis()->SetLabelSize(10);
+	hmat->GetXaxis()->SetTitleSize(13);
+	hmat->Draw();         
+	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+	hgen->SetMarkerStyle(24);    
+	hgen->SetMarkerColor(kRed);  
+	hgen->SetTitle("ppMC jet input, genpt");
+	hgen->Draw();         
+	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+	hrec->SetMarkerStyle(24);    
+	hrec->SetMarkerColor(kRed);  
+	hrec->SetTitle("ppMC jet input, recopt");
+	hrec->Draw();         
+	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+	hrec_check->SetMarkerStyle(24); 
+	hrec_check->SetMarkerColor(kBlack);    
+	hrec_check->Draw();         
+	hrec_check->SetTitle("ppMC jet input for Closure Check, recopt");         
+	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+	//hmat_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	//hgen_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	//hrec_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
 	//hrec_check_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());   
       }
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
@@ -290,7 +317,6 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<"creating TH2D for pearson matrix..."<<std::endl;
       hPearsonSVDPriorMeas[kr] = new TH2D(*pearson);
       hPearsonSVDPriorMeas[kr]->SetName( ("hPearsonSVDPriorMeas"+kRegRandEtaRange).c_str() );
-      hPearsonSVDPriorMeas[kr]->SetTitle( Form("pearson matrix, kReg=%d", kReg[kr]) );
       
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);  
@@ -300,22 +326,23 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
+      hPearsonSVDPriorMeas[kr]->SetTitle( ("SVDPriorMeas, pearsonMatrix, "+kRegRandEtaRange).c_str()  );
       hPearsonSVDPriorMeas[kr]->Draw("colz");
       
       if(debugMode)std::cout<<"applying roo_resp to \"truth\" histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
-      hFoldedSVDPriorMeas[kr]->SetName( ("hFoldedSVDPriorMeas"+kRegRandEtaRange).c_str() );
+      hFoldedSVDPriorMeas[kr]->SetName( ("SVDPriorMeas, Folded, "+kRegRandEtaRange).c_str() );
       hFoldedSVDPriorMeas[kr]->SetLineStyle(33);
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
 
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cSpectra canvas..."<<std::endl<<std::endl;
       cSpectra->cd(kr+1);
-      cSpectra->cd(kr+1)->SetLogy();
+      cSpectra->cd(kr+1)->SetLogy();//i dont know why cd works this way...
 
       // what's happening here exactly?
       //std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl<<std::endl;
       TH1F* hrec_anabin_clone=(TH1F*)hrec_anabin->Clone("hrec_anabin_clone");
-      hrec_anabin_clone->SetTitle( Form("spectra, kReg = %d",kReg[kr]) );
+      hrec_anabin_clone->SetTitle( ("Reco Jet spectra, "+kRegRandEtaRange).c_str() );
       hrec_anabin_clone->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin_clone->SetMarkerStyle(24);
       hrec_anabin_clone->SetMarkerColor(kBlack);
@@ -338,7 +365,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       cRatio->cd(kr+1);
   
       hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ratio_folded_with_measured"+kRegRandEtaRange).c_str() );
-      hrec_folded_ratio[kr]->SetTitle( Form("ratio, kReg=%d",kReg[kr]) );
+      hrec_folded_ratio[kr]->SetTitle( ("Ratios, Fold/Unfold Spectra Over Meas., "+kRegRandEtaRange).c_str() );
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
@@ -349,7 +376,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_folded_ratio[kr]->Draw();
   
       hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ratio_folded_with_measured"+kRegRandEtaRange).c_str() );
-      hrec_unfolded_ratio[kr]->SetTitle(Form("div. by meas. spectra, kReg=%d",kReg[kr]));
+      hrec_unfolded_ratio[kr]->SetTitle( ("Ratios, Fold/Unfold Spectra Over Meas., "+kRegRandEtaRange).c_str() );
+      //hrec_unfolded_ratio[kr]->SetTitle( Form("div. by meas. spectra, kReg=%d",kReg[kr]) );
       hrec_unfolded_ratio[kr]->SetMarkerStyle(27);
       hrec_unfolded_ratio[kr]->SetMarkerColor(kBlue);
       hrec_unfolded_ratio[kr]->Divide(hrec_anabin);

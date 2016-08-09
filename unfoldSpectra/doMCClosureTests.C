@@ -31,6 +31,9 @@ const bool defDebugPearson=false;
 
 const std::string Rstring="_R"+std::to_string(radius);
 const std::string RandEtaRange=Rstring+"_20_eta_20";
+
+const std::string Rstring_plotTitle=" R"+std::to_string(radius);
+const std::string RandEtaRange_plotTitle=Rstring+" 20eta20";
  
 //  the code --------------------------------------------------
 int doMCClosureTests( const bool debugMode=defDebugMode){
@@ -285,6 +288,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     for(int kr = 0; kr < nKregMax; ++kr){
 
       const std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr])+RandEtaRange;
+      const std::string kRegRandEtaRange_plotTitle=" kReg"+std::to_string(kReg[kr])+RandEtaRange;
       std::cout<<std::endl<<std::endl<<"kr="<<kr<<" , kReg = "<<kReg[kr]<<std::endl<<std::endl;
       
       // unfold the MC dist, then create a ratio with the gen-level MC dist
@@ -326,12 +330,13 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");
       hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
-      hPearsonSVDPriorMeas[kr]->SetTitle( ("SVDPriorMeas, pearsonMatrix, "+kRegRandEtaRange).c_str()  );
+      hPearsonSVDPriorMeas[kr]->SetTitle( ("PriorMeas pearsonMatrix,"+kRegRandEtaRange_plotTitle).c_str()  );
       hPearsonSVDPriorMeas[kr]->Draw("colz");
       
       if(debugMode)std::cout<<"applying roo_resp to \"truth\" histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
-      hFoldedSVDPriorMeas[kr]->SetName( ("SVDPriorMeas, Folded, "+kRegRandEtaRange).c_str() );
+      //hFoldedSVDPriorMeas[kr]->SetName( ("PriorMeas Folded,"+kRegRandEtaRange).c_str() );
+      hFoldedSVDPriorMeas[kr]->SetName( ("SVDPriorMeas_Folded"+kRegRandEtaRange).c_str() );
       hFoldedSVDPriorMeas[kr]->SetLineStyle(33);
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
 
@@ -342,7 +347,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       // what's happening here exactly?
       //std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl<<std::endl;
       TH1F* hrec_anabin_clone=(TH1F*)hrec_anabin->Clone("hrec_anabin_clone");
-      hrec_anabin_clone->SetTitle( ("Reco Jet spectra, "+kRegRandEtaRange).c_str() );
+      hrec_anabin_clone->SetTitle( ("Reco Jet spectra,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_anabin_clone->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin_clone->SetMarkerStyle(24);
       hrec_anabin_clone->SetMarkerColor(kBlack);
@@ -365,7 +370,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       cRatio->cd(kr+1);
   
       hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ratio_folded_with_measured"+kRegRandEtaRange).c_str() );
-      hrec_folded_ratio[kr]->SetTitle( ("Ratios w/ Meas., "+kRegRandEtaRange).c_str() );
+      hrec_folded_ratio[kr]->SetTitle( ("Ratios w/ Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
@@ -376,7 +381,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_folded_ratio[kr]->Draw();
   
       hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ratio_folded_with_measured"+kRegRandEtaRange).c_str() );
-      hrec_unfolded_ratio[kr]->SetTitle( ("Ratios, Fold/Unfold Spectra Over Meas., "+kRegRandEtaRange).c_str() );
+      hrec_unfolded_ratio[kr]->SetTitle( ("Ratio, Unf. Over Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       //hrec_unfolded_ratio[kr]->SetTitle( Form("div. by meas. spectra, kReg=%d",kReg[kr]) );
       hrec_unfolded_ratio[kr]->SetMarkerStyle(27);
       hrec_unfolded_ratio[kr]->SetMarkerColor(kBlue);
@@ -510,10 +515,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       //  cRatio Check --------------------------------------------------
       cRatioCheck->cd();
       
-      hrec_folded_ratio[kRegDraw]->SetTitle(" ");
+      //hrec_folded_ratio[kRegDraw]->SetTitle(" ");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");     
-      hrec_unfolded_ratio[kRegDraw]->SetTitle("Ratio plot check"); 
+      hrec_folded_ratio[kRegDraw]->SetTitle("Ratio plot check"); 
       hrec_folded_ratio[kRegDraw]->Draw();
       
       TLegend * leg2 = new TLegend(0.1, 0.1, 0.40, 0.3, NULL,"NBNDC");
@@ -536,7 +541,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"drawing MCClosure plot..."<<std::endl;      
       TCanvas *c1 = new TCanvas("c1","Spectra",1300,1000);  c1->cd();
 
-      TH1F *hDum = new TH1F("MC_Unfold_Closure_genpt","Ratios, Unf to Gen",250, 30, 900);      
+      TH1F *hDum = new TH1F("MC_Unfold_Closure_genpt","Ratio, (un)folded over Gen",250, 30, 900);      
       hDum->SetYTitle("Closure");//y-axis
       hDum->GetYaxis()->SetNdivisions(610); 
       hDum->GetYaxis()->SetLabelFont(43);

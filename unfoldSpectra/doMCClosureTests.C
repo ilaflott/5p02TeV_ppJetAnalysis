@@ -13,9 +13,9 @@ const int  nKregMax = 9, kRegRange=4, kRegDraw = 3, kRegCenter=21;
 
 // procedural settings
 const bool doBayes=true; 
-const bool doSVD    = true; 
+const bool doSVD=true; 
 
-const bool drawPDFs = true; 
+const bool drawPDFs=true; 
 const bool drawPDFs_BayesInputHistos= true&&drawPDFs;
 const bool drawPDFs_SVDInputHistos  = true&&drawPDFs;
 

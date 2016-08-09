@@ -213,10 +213,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
 	hmat->SetTitle("ppMC jet input, genpt v. recopt");         
-	hmat->GetYaxis()->SetLabelSize(0.04);
-	hmat->GetYaxis()->SetTitleSize(0.06);
-	hmat->GetXaxis()->SetLabelSize(0.04);
-	hmat->GetXaxis()->SetTitleSize(0.06);
+	hmat->GetYaxis()->SetLabelSize(0.02);
+	hmat->GetYaxis()->SetTitleSize(0.04);
+	hmat->GetXaxis()->SetLabelSize(0.02);
+	hmat->GetXaxis()->SetTitleSize(0.04);
 	hmat->Draw();         
 	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
@@ -365,7 +365,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       cRatio->cd(kr+1);
   
       hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ratio_folded_with_measured"+kRegRandEtaRange).c_str() );
-      hrec_folded_ratio[kr]->SetTitle( ("Ratios, Fold/Unfold Spectra Over Meas., "+kRegRandEtaRange).c_str() );
+      hrec_folded_ratio[kr]->SetTitle( ("Ratios w/ Meas., "+kRegRandEtaRange).c_str() );
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
@@ -512,7 +512,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       
       hrec_folded_ratio[kRegDraw]->SetTitle(" ");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");      
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");     
+      hrec_unfolded_ratio[kRegDraw]->SetTitle("Ratio plot check"); 
       hrec_folded_ratio[kRegDraw]->Draw();
       
       TLegend * leg2 = new TLegend(0.1, 0.1, 0.40, 0.3, NULL,"NBNDC");
@@ -522,8 +523,9 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       leg2->SetTextSize(0.04); 
       leg2->Draw();    
       
+      //hrec_unfolded_ratio[kRegDraw]->SetTitle("Radio plot check");
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( "Ratio plot check",	0.508173, 0.8659761, 22);
+      //drawText( "Ratio plot check",	0.508173, 0.8659761, 22);
       drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",	0.508173, 0.8359761, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
       
@@ -534,8 +536,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"drawing MCClosure plot..."<<std::endl;      
       TCanvas *c1 = new TCanvas("c1","Spectra",1300,1000);  c1->cd();
 
-      TH1F *hDum = new TH1F("MC_Unfold_Closure_genpt","MCClosure Plot",250, 30, 900);      
-      hDum->SetYTitle("Unfolding Closure");//y-axis
+      TH1F *hDum = new TH1F("MC_Unfold_Closure_genpt","Ratios, Unf to Gen",250, 30, 900);      
+      hDum->SetYTitle("Closure");//y-axis
       hDum->GetYaxis()->SetNdivisions(610); 
       hDum->GetYaxis()->SetLabelFont(43);
       hDum->GetYaxis()->SetLabelSize(20);
@@ -556,42 +558,39 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hDum->Draw("hist");
       
       TLegend *leg0 = new TLegend(0.25, 0.15, 0.60, 0.35, NULL,"NBNDC");
-      leg0->SetTextSize(0.07);
+      leg0->SetTextSize(0.02);
       
-      if(doBayes){  
-	if(debugMode)std::cout<<"Bayesian MCClosure was done too! adding to plot..."<<std::endl<<std::endl;
-
+      if(doBayes){ std::cout<<"adding Bayesian Closure to plot..."<<std::endl<<std::endl;
 	TH1F* hratio=(TH1F*)fout->Get( "ppMC_BayesianClosure_Unfolded_Ratio" );
-	hratio->Print("base");
+	//hratio->Print("base");
 	hratio->Draw("psame");
+	leg0->AddEntry(hratio, "OppSide, Bayesian","p");
 	
 	TH1F* hratio_check=(TH1F*)fout->Get( "ppMC_BayesianClosureCheck_Unfolded_Ratio");
-	hratio_check->Print("base");
+	//hratio_check->Print("base");
 	hratio_check->Draw("psame");
-	
-	leg0->SetTextSize(0.04);
-	leg0->AddEntry(hratio,"OppSide Bayesian","p");
-	leg0->AddEntry(hratio_check,"SameSide Bayesian","p");
+	leg0->AddEntry(hratio_check, "SameSide \"check\", Bayesian","p");
       }
+
       hratio_svd[kRegDraw]->Draw("psame");
+      leg0->AddEntry(hratio_svd[kRegDraw],"OppSide \"check\", SVD","p");
+
       hratio_svd_check[kRegDraw]->Draw("psame");
+      leg0->AddEntry(hratio_svd_check[kRegDraw],"SameSide \"check\", SVD","p");
       
       TLine *line = new TLine(30,1,1000,1);
       line->SetLineStyle(2); 
       line->SetLineWidth(2);
+
       line->Draw();
-      
       drawText( "MCClosure Tests", 0.608173, 0.8659761, 22);
       drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2", 0.608173, 0.8359761, 21);
       drawText( Form("kReg=%d",kReg[kRegDraw])  , 0.608173, 0.8059761, 21);
-      
-      leg0->AddEntry(hratio_svd[kRegDraw],"OppSide SVD","p");
-      leg0->AddEntry(hratio_svd_check[kRegDraw],"SameSide SVD","p");
       leg0->Draw();
-      
       c1->Print(outPdfFile.c_str());
-      c1->Print(close_outPdfFile.c_str());
+
       std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;
+      c1->Print(close_outPdfFile.c_str());
     }// end drawPDFs
   }// end SVD specific
   

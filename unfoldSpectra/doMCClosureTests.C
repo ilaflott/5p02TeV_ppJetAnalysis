@@ -213,10 +213,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
 	hmat->SetTitle("ppMC jet input, genpt v. recopt");         
-	hmat->GetYaxis()->SetLabelSize(10);
-	hmat->GetYaxis()->SetTitleSize(13);
-	hmat->GetXaxis()->SetLabelSize(10);
-	hmat->GetXaxis()->SetTitleSize(13);
+	hmat->GetYaxis()->SetLabelSize(1);
+	hmat->GetYaxis()->SetTitleSize(1.3);
+	hmat->GetXaxis()->SetLabelSize(1);
+	hmat->GetXaxis()->SetTitleSize(1.3);
 	hmat->Draw();         
 	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 

@@ -29,11 +29,11 @@ const std::string outSVDPdfFile=baseName+"_SVDUnfoldingPlots"; // see drawPDFs f
 const bool defDebugMode=false; 
 const bool defDebugPearson=false;
 
-const std::string Rstring="_R"+std::to_string(radius);
+const std::string Rstring="_R"+std::to_string(radius); 
 const std::string RandEtaRange=Rstring+"_20_eta_20";
 
-const std::string Rstring_plotTitle=" R"+std::to_string(radius);
-const std::string RandEtaRange_plotTitle=Rstring+" 20eta20";
+const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
+const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
  
 //  the code --------------------------------------------------
 int doMCClosureTests( const bool debugMode=defDebugMode){
@@ -142,12 +142,11 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
 
     TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
-    hunf->SetName("ppMC_BayesianClosure_Unfolded_Spectra");
+    hunf->SetName("ppMC_BayesianClosure_UnfoldSpectra");
     hunf->SetTitle("ppMC Closure, Bayesian Unfolded Spectra");    
     std::cout<<std::endl;     hunf->Print("base");
 
-    //TH1F *hratio = (TH1F*)hunf->Clone( ("MCClosure_test_oppside_Bayes"+RandEtaRange).c_str() );
-    TH1F *hratio = (TH1F*)hunf->Clone( "ppMC_BayesianClosure_Unfolded_Ratio" );
+    TH1F *hratio = (TH1F*)hunf->Clone( "ppMC_BayesianClosure_UnfoldRatio" );
     hratio->SetTitle( "ppMC Closure, Bayesian Unfolded/Meas Ratio" );
     hratio->Divide(hgen_anabin);
     hratio->Print("base");
@@ -158,13 +157,13 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     std::cout<<std::endl;    
     RooUnfoldBayes unf_bayes_check(&roo_resp, hrec_check_anabin, kIter);
     TH1F *hunf_check = (TH1F*)unf_bayes_check.Hreco(errorTreatment);
-    hunf_check->SetName("ppMC_BayesianClosureCheck_Unfolded_Spectra");
-    hunf_check->SetTitle("ppMC Closure Check, Bayesian Unfolded Spectra");    
+    hunf_check->SetName("ppMC_BayesianClosureTest_UnfoldSpectra");
+    hunf_check->SetTitle("ppMC Closure Test, Bayesian Unfolded Spectra");    
     std::cout<<std::endl;        hunf_check->Print("base");
 
     //TH1F *hratio_check = (TH1F*)hunf_check->Clone( ("MCClosure_test_sameside_Bayes"+RandEtaRange).c_str() );
-    TH1F *hratio_check = (TH1F*)hunf_check->Clone( "ppMC_BayesianClosureCheck_Unfolded_Ratio" );
-    hratio_check->SetTitle( "ppMC Closure Check, Bayesian Unfolded/Meas Ratio" );
+    TH1F *hratio_check = (TH1F*)hunf_check->Clone( "ppMC_BayesianClosureTest_UnfoldRatio" );
+    hratio_check->SetTitle( "ppMC Closure Test, Bayesian Unfolded/Meas Ratio" );
     hratio_check->Divide(hgen_anabin);
     hratio_check->Print("base");
     
@@ -238,7 +237,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 	hrec_check->SetMarkerStyle(24); 
 	hrec_check->SetMarkerColor(kBlack);    
 	hrec_check->Draw();         
-	hrec_check->SetTitle("ppMC jet input for Closure Check, recopt");         
+	hrec_check->SetTitle("ppMC jet input, Closure Test, recopt");         
 	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 	//hmat_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
@@ -286,57 +285,59 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
     std::cout<<"entering SVD Unfolding Loop..."<<std::endl;
     for(int kr = 0; kr < nKregMax; ++kr){
+      std::string kRegRandEtaRange_plotTitle=" kReg"+std::to_string(kReg[kr])+RandEtaRange_plotTitle;
+      std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr])+RandEtaRange;
 
-      const std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr])+RandEtaRange;
-      const std::string kRegRandEtaRange_plotTitle=" kReg"+std::to_string(kReg[kr])+RandEtaRange;
       std::cout<<std::endl<<std::endl<<"kr="<<kr<<" , kReg = "<<kReg[kr]<<std::endl<<std::endl;
       
-      // unfold the MC dist, then create a ratio with the gen-level MC dist
       if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd and Hreco..."<<std::endl<<std::endl;
       RooUnfoldSvd unf_svd(&roo_resp, hrec_anabin, kReg[kr]);
+
+      // Hreco -> return unfolded reco hist with specified error treatment
       hunf_svd[kr] = (TH1F*)unf_svd.Hreco(errorTreatment);
       
       std::cout<<std::endl;   
-      hunf_svd[kr]->SetName( ("PP_SVD_Unfolded_mcclosure_Spectra"+kRegRandEtaRange).c_str());
+      hunf_svd[kr]->SetName( ("ppMC_SVDClosure_UnfoldSpectra"+kRegRandEtaRange).c_str());
       hunf_svd[kr]->SetLineStyle(33);
       hunf_svd[kr]->SetLineColor(kBlue);
       hunf_svd[kr]->Print("base");
       
-      hratio_svd[kr] = (TH1F*)hunf_svd[kr]->Clone( ("MCClosure_test_oppside_SVD"+kRegRandEtaRange).c_str());
-      hratio_svd[kr]->Divide(hgen_anabin);
+      hratio_svd[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ppMC_SVDClosure_UnfoldRatio"+kRegRandEtaRange).c_str());
       hratio_svd[kr]->SetMarkerStyle(33);
       hratio_svd[kr]->SetMarkerColor(kRed);
+      hratio_svd[kr]->Divide(hgen_anabin);
       hratio_svd[kr]->Print("base");
 
       // get covariance matrix and calculate pearson coefficients
       if(debugMode)std::cout<<std::endl<<"calling Ereco..."<<std::endl;
-      TMatrixD covmat = unf_svd.Ereco(errorTreatment);
+      
+      // Ereco -> return covariance matrix for errors later
+      TMatrixD covmat = unf_svd.Ereco(errorTreatment);//this is the other line that works
 
       if(debugPearson)std::cout<<std::endl;
       if(debugMode)std::cout<<"calling CalculatePearsonCoefficients..."<<std::endl;
       TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, debugPearson );
       if(debugPearson)std::cout<<std::endl;
       
-      // drawing/visuals
+      // drawing/visuals for pearson later
       if(debugMode)std::cout<<"creating TH2D for pearson matrix..."<<std::endl;
       hPearsonSVDPriorMeas[kr] = new TH2D(*pearson);
-      hPearsonSVDPriorMeas[kr]->SetName( ("hPearsonSVDPriorMeas"+kRegRandEtaRange).c_str() );
       
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);  
       
       float minNmax=0.3; 
       hPearsonSVDPriorMeas[kr]->SetMinimum(-1*minNmax);  hPearsonSVDPriorMeas[kr]->SetMaximum(minNmax);
-      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");
-      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
+      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
-      hPearsonSVDPriorMeas[kr]->SetTitle( ("PriorMeas pearsonMatrix,"+kRegRandEtaRange_plotTitle).c_str()  );
+      hPearsonSVDPriorMeas[kr]->SetName( ("hPearsonSVDPriorMeas"+kRegRandEtaRange).c_str() );
+      hPearsonSVDPriorMeas[kr]->SetTitle( ("pearsonMatrix SVDPriorMeas"+kRegRandEtaRange_plotTitle).c_str()  );
       hPearsonSVDPriorMeas[kr]->Draw("colz");
       
+      // the "truth" i think, is the gen dis that the unfodled hist came from
       if(debugMode)std::cout<<"applying roo_resp to \"truth\" histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
-      //hFoldedSVDPriorMeas[kr]->SetName( ("PriorMeas Folded,"+kRegRandEtaRange).c_str() );
-      hFoldedSVDPriorMeas[kr]->SetName( ("SVDPriorMeas_Folded"+kRegRandEtaRange).c_str() );
+      hFoldedSVDPriorMeas[kr]->SetName( ("hFoldedSVDPriorMeas"+kRegRandEtaRange).c_str() );
       hFoldedSVDPriorMeas[kr]->SetLineStyle(33);
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
 
@@ -369,7 +370,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio canvas..."<<std::endl;
       cRatio->cd(kr+1);
   
-      hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ratio_folded_with_measured"+kRegRandEtaRange).c_str() );
+      hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ppMC_SVDClosure_FoldRatio"+kRegRandEtaRange).c_str() );
       hrec_folded_ratio[kr]->SetTitle( ("Ratios w/ Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
@@ -380,7 +381,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hrec_folded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Draw();
   
-      hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ratio_folded_with_measured"+kRegRandEtaRange).c_str() );
+      hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ppMC_SVDClosure_UnfoldRatio"+kRegRandEtaRange).c_str() );
       hrec_unfolded_ratio[kr]->SetTitle( ("Ratio, Unf. Over Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       //hrec_unfolded_ratio[kr]->SetTitle( Form("div. by meas. spectra, kReg=%d",kReg[kr]) );
       hrec_unfolded_ratio[kr]->SetMarkerStyle(27);
@@ -394,7 +395,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       leg1[kr]->AddEntry(hrec_folded_ratio[kr],"Fold/Meas","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg1[kr]->SetTextSize(0.04); 
-      leg1[kr]->Draw("same");//leg1[kr]->Draw();
+      leg1[kr]->Draw("same");
   	
 
       //  singular values and d_i vector ---------------------------
@@ -443,10 +444,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       
       if(debugMode)std::cout<<"calling Hreco..."<<std::endl;
       hunf_svd_check[kr] = (TH1F*)unf_svd_check.Hreco(errorTreatment);
-      hunf_svd_check[kr]->SetName( ("h_Unfolded_mcclosure_sameside_SVD"+kRegRandEtaRange).c_str() );
+      hunf_svd_check[kr]->SetName( ("ppMC_SVDClosureTest_UnfoldSpectra"+kRegRandEtaRange).c_str() );
       std::cout<<std::endl;      hunf_svd_check[kr]->Print("base");
 
-      hratio_svd_check[kr] = (TH1F*)hunf_svd_check[kr]->Clone( ("MCClosure_test_sameside_SVD"+kRegRandEtaRange).c_str() );
+      hratio_svd_check[kr] = (TH1F*)hunf_svd_check[kr]->Clone( ("ppMC_SVDClosureTest_UnfoldRatio"+kRegRandEtaRange).c_str() );
       hratio_svd_check[kr]->SetMarkerStyle(33);
       hratio_svd_check[kr]->SetMarkerColor(kBlack);
       hratio_svd_check[kr]->Divide(hgen_anabin);
@@ -566,12 +567,12 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       leg0->SetTextSize(0.02);
       
       if(doBayes){ std::cout<<"adding Bayesian Closure to plot..."<<std::endl<<std::endl;
-	TH1F* hratio=(TH1F*)fout->Get( "ppMC_BayesianClosure_Unfolded_Ratio" );
+	TH1F* hratio=(TH1F*)fout->Get( "ppMC_BayesianClosure_UnfoldRatio" );
 	//hratio->Print("base");
 	hratio->Draw("psame");
 	leg0->AddEntry(hratio, "OppSide, Bayesian","p");
 	
-	TH1F* hratio_check=(TH1F*)fout->Get( "ppMC_BayesianClosureCheck_Unfolded_Ratio");
+	TH1F* hratio_check=(TH1F*)fout->Get( "ppMC_BayesianClosureTest_UnfoldRatio");
 	//hratio_check->Print("base");
 	hratio_check->Draw("psame");
 	leg0->AddEntry(hratio_check, "SameSide \"check\", Bayesian","p");
@@ -586,16 +587,16 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       TLine *line = new TLine(30,1,1000,1);
       line->SetLineStyle(2); 
       line->SetLineWidth(2);
-
       line->Draw();
+
       drawText( "MCClosure Tests", 0.608173, 0.8659761, 22);
       drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2", 0.608173, 0.8359761, 21);
       drawText( Form("kReg=%d",kReg[kRegDraw])  , 0.608173, 0.8059761, 21);
       leg0->Draw();
+
       c1->Print(outPdfFile.c_str());
 
-      std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;
-      c1->Print(close_outPdfFile.c_str());
+      std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;      c1->Print(close_outPdfFile.c_str());
     }// end drawPDFs
   }// end SVD specific
   

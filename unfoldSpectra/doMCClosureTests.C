@@ -37,17 +37,11 @@ const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
  
 //  the code --------------------------------------------------
 int doMCClosureTests( const bool debugMode=defDebugMode){
-
-  // other settings that are easily forgot
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
 
-  const bool debugPearson=(bool)((debugPearson && debugMode) || defDebugPearson);
+  const bool debugPearson=(bool)(defDebugPearson && debugMode) ;
   if(debugMode)std::cout<<"debugPearson="<<debugPearson<<std::endl;
 
-  // script performance tracking if needed
-  TStopwatch timer; 
-  timer.Start();
-  
   // set error handing, stat info, other settings  // fix me
   RooUnfold::ErrorTreatment errorTreatment;
   if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
@@ -58,7 +52,10 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   TH2::SetDefaultSumw2();
   gStyle->SetOptStat(0);
 
-
+  //// script performance tracking if needed
+  //TStopwatch timer; 
+  //timer.Start();
+  
   //  ppMC input histos --------------------------------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
   if(debugMode)std::cout<<": "<<inFile_MC_name; 
@@ -200,10 +197,16 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       tempCanvForPdfPrint->cd();
 
       // draw and print unfold/ratio plots
+      tempCanvForPdfPrint->SetLogy(1);
       hunf->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
+      tempCanvForPdfPrint->SetLogy(0);
+      hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      
+      tempCanvForPdfPrint->SetLogy(1);      
       hunf_check->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+      tempCanvForPdfPrint->SetLogy(0);
       hratio_check->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
       // draw and print responses
@@ -214,31 +217,32 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
+
 	hmat->SetTitle("ppMC jet input, genpt v. recopt");         
 	hmat->GetYaxis()->SetLabelSize(0.02);
 	hmat->GetYaxis()->SetTitleSize(0.04);
 	hmat->GetXaxis()->SetLabelSize(0.02);
 	hmat->GetXaxis()->SetTitleSize(0.04);
-	hmat->Draw();         
-	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	tempCanvForPdfPrint->SetLogy(0);      
+	hmat->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 	hgen->SetMarkerStyle(24);    
 	hgen->SetMarkerColor(kRed);  
 	hgen->SetTitle("ppMC jet input, genpt");
-	hgen->Draw();         
-	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	tempCanvForPdfPrint->SetLogy(1);      
+	hgen->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 	hrec->SetMarkerStyle(24);    
 	hrec->SetMarkerColor(kRed);  
-	hrec->SetTitle("ppMC jet input, recopt");
-	hrec->Draw();         
-	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hrec->SetTitle("ppMC QCDjets, recopt");
+	tempCanvForPdfPrint->SetLogy(1);      
+	hrec->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 	hrec_check->SetMarkerStyle(24); 
 	hrec_check->SetMarkerColor(kBlack);    
-	hrec_check->Draw();         
-	hrec_check->SetTitle("ppMC jet input, Closure Test, recopt");         
-	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+	hrec_check->SetTitle("ppMC QCDJets check,  recopt");         
+	tempCanvForPdfPrint->SetLogy(1);      
+	hrec_check->Draw();	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 	//hmat_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
 	//hgen_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
@@ -579,7 +583,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       }
 
       hratio_svd[kRegDraw]->Draw("psame");
-      leg0->AddEntry(hratio_svd[kRegDraw],"OppSide \"check\", SVD","p");
+      leg0->AddEntry(hratio_svd[kRegDraw],"OppSide, SVD","p");
 
       hratio_svd_check[kRegDraw]->Draw("psame");
       leg0->AddEntry(hratio_svd_check[kRegDraw],"SameSide \"check\", SVD","p");

@@ -34,13 +34,13 @@ const std::string RandEtaRange=Rstring+"_20_eta_20";
 
 const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
 const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
- 
+
+const std:: string MCdesc= "5.02 TeV, QCD Py6 Tune Z2"; 
+
+
 //  the code --------------------------------------------------
 int doMCClosureTests( const bool debugMode=defDebugMode){
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
-
-  const bool debugPearson=(bool)(defDebugPearson && debugMode) ;
-  if(debugMode)std::cout<<"debugPearson="<<debugPearson<<std::endl;
 
   // set error handing, stat info, other settings  // fix me
   RooUnfold::ErrorTreatment errorTreatment;
@@ -144,9 +144,12 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     std::cout<<std::endl;     hunf->Print("base");
 
     TH1F *hratio = (TH1F*)hunf->Clone( "ppMC_BayesianClosure_UnfoldRatio" );
-    hratio->SetTitle( "ppMC Closure, Bayesian Unfolded/Meas Ratio" );
+    hratio->SetTitle( "ppMC Closure, Bayesian Unfolded/Gen" );
+    hratio->SetMarkerStyle(24);
+    hratio->SetMarkerColor(kRed);
     hratio->Divide(hgen_anabin);
     hratio->Print("base");
+
 
     std::cout<<std::endl<<"doing unfolding checks..."<<std::endl;
     if(debugMode)std::cout<<"calling RooUnfoldBayes and Hreco for MC Closure..."<<std::endl; 
@@ -160,10 +163,11 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
     //TH1F *hratio_check = (TH1F*)hunf_check->Clone( ("MCClosure_test_sameside_Bayes"+RandEtaRange).c_str() );
     TH1F *hratio_check = (TH1F*)hunf_check->Clone( "ppMC_BayesianClosureTest_UnfoldRatio" );
-    hratio_check->SetTitle( "ppMC Closure Test, Bayesian Unfolded/Meas Ratio" );
+    hratio_check->SetTitle( "ppMC Closure Test, Bayesian Unfolded/Gen Ratio" );
     hratio_check->Divide(hgen_anabin);
     hratio_check->Print("base");
     
+
     std::cout<<std::endl<<"writing bayesian unfolding output to file..."<<std::endl;
     fout->cd();
 
@@ -209,12 +213,6 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       tempCanvForPdfPrint->SetLogy(0);
       hratio_check->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
-      // draw and print responses
-      //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      //hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      //hgen_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      //hrec_resp_anabin->DrawCopy();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
 
@@ -228,26 +226,21 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 
 	hgen->SetMarkerStyle(24);    
 	hgen->SetMarkerColor(kRed);  
-	hgen->SetTitle("ppMC jet input, genpt");
+	hgen->SetTitle("ppMC genjet input");
 	tempCanvForPdfPrint->SetLogy(1);      
 	hgen->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 	hrec->SetMarkerStyle(24);    
 	hrec->SetMarkerColor(kRed);  
-	hrec->SetTitle("ppMC QCDjets, recopt");
+	hrec->SetTitle("ppMC recojet input");
 	tempCanvForPdfPrint->SetLogy(1);      
 	hrec->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 	hrec_check->SetMarkerStyle(24); 
 	hrec_check->SetMarkerColor(kBlack);    
-	hrec_check->SetTitle("ppMC QCDJets check,  recopt");         
+	hrec_check->SetTitle("ppMC recojet test input");         
 	tempCanvForPdfPrint->SetLogy(1);      
 	hrec_check->Draw();	tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-	//hmat_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hgen_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hrec_anabin->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hrec_check_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());   
       }
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
     }// end draw pdfs
@@ -283,7 +276,6 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
     TCanvas *cSpectra           = new TCanvas("cSpectra","",           1200, 1000);  cSpectra->Divide(3,3);
     TCanvas *cRatioCheck      = new TCanvas("cRatioCheck","",      1200, 1000);    
     TCanvas *c11 = new TCanvas("c11"," Singular Values and divectors", 1200, 1000); c11->Divide(2);
-    //TCanvas *cdi = new TCanvas("cdi","cdi: di vectors",      1200, 1000);
 
     TLegend *leg[nKregMax],*leg1[nKregMax];      
 
@@ -318,6 +310,9 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       // Ereco -> return covariance matrix for errors later
       TMatrixD covmat = unf_svd.Ereco(errorTreatment);//this is the other line that works
 
+      bool debugPearson=(bool)(defDebugPearson && debugMode) ;
+      if(debugMode)std::cout<<"debugPearson="<<debugPearson<<std::endl;
+
       if(debugPearson)std::cout<<std::endl;
       if(debugMode)std::cout<<"calling CalculatePearsonCoefficients..."<<std::endl;
       TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, debugPearson );
@@ -330,10 +325,11 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);  
       
-      float minNmax=0.3; 
-      hPearsonSVDPriorMeas[kr]->SetMinimum(-1*minNmax);  hPearsonSVDPriorMeas[kr]->SetMaximum(minNmax);
-      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
+      float ZminNmax=1.0;             int XYmin=1; int XYmax=99;
+      hPearsonSVDPriorMeas[kr]->SetMinimum(-1*ZminNmax);  hPearsonSVDPriorMeas[kr]->SetMaximum(ZminNmax);
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
+      hPearsonSVDPriorMeas[kr]->SetAxisRange(XYmin, XYmax, "X");
+      hPearsonSVDPriorMeas[kr]->SetAxisRange(XYmin, XYmax, "Y");
       hPearsonSVDPriorMeas[kr]->SetName( ("hPearsonSVDPriorMeas"+kRegRandEtaRange).c_str() );
       hPearsonSVDPriorMeas[kr]->SetTitle( ("pearsonMatrix SVDPriorMeas"+kRegRandEtaRange_plotTitle).c_str()  );
       hPearsonSVDPriorMeas[kr]->Draw("colz");
@@ -374,7 +370,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio canvas..."<<std::endl;
       cRatio->cd(kr+1);
   
-      hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ppMC_SVDClosure_FoldRatio"+kRegRandEtaRange).c_str() );
+      hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ppMC_SVDClosure_FoldedRatio"+kRegRandEtaRange).c_str() );
       hrec_folded_ratio[kr]->SetTitle( ("Ratios w/ Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
@@ -421,7 +417,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hSVal->SetXTitle(" singular values ");
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->DrawCopy();  	
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
+	drawText( MCdesc.c_str(), 0.358173, 0.8459761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 
 	// di vector values
@@ -437,7 +433,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->SetAxisRange(0,35,"X");
   	hdi->DrawCopy();
-	drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
+	drawText( MCdesc.c_str(),0.358173, 0.8459761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 	if(debugMode)std::cout<<std::endl<<"done with kr==0 specifics"<<std::endl<<std::endl;
       }
@@ -457,7 +453,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       hratio_svd_check[kr]->Divide(hgen_anabin);
       hratio_svd_check[kr]->Print("base");
       
-      // get covariance matrix and calculate pearson coefficients
+      // get covariance matrix and calculate pearson coefficients for the closure checks
       if(debugMode)std::cout<<std::endl<<"calling Ereco..."<<std::endl;
       TMatrixD covmat_truth = unf_svd_check.Ereco(errorTreatment);
       
@@ -535,8 +531,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       
       //hrec_unfolded_ratio[kRegDraw]->SetTitle("Radio plot check");
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      //drawText( "Ratio plot check",	0.508173, 0.8659761, 22);
-      drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",	0.508173, 0.8359761, 22);
+      drawText( "ppMC ak4PFJets, (Un)Folded/Meas",     0.508173, 0.8659761, 22);
+      drawText( "5.02 TeV, HighPtJet-Triggered",       0.508173, 0.8359761, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
       
       cRatioCheck->Print(outPdfFile.c_str());      
@@ -594,13 +590,14 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       line->Draw();
 
       drawText( "MCClosure Tests", 0.608173, 0.8659761, 22);
-      drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2", 0.608173, 0.8359761, 21);
+      drawText( MCdesc.c_str(), 0.608173, 0.8359761, 21);
       drawText( Form("kReg=%d",kReg[kRegDraw])  , 0.608173, 0.8059761, 21);
       leg0->Draw();
 
       c1->Print(outPdfFile.c_str());
+      c1->Print(close_outPdfFile.c_str());
 
-      std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;      c1->Print(close_outPdfFile.c_str());
+      std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;      
     }// end drawPDFs
   }// end SVD specific
   

@@ -116,35 +116,47 @@ const Int_t emstyle[6] = {24,25,26,27,30,28};
 //-----------------------------------------------------------------------------------------------------------------------
 TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false) {
 
-  if(debugPearson)std::cout<<"calculating pearson coefficients!"<<std::endl;
-  Int_t nrows = covmat->GetNrows();
-  Int_t ncols = covmat->GetNcols();
-  if(debugPearson)std::cout<<"nrows,ncols="<<nrows<<" , "<<ncols<<std::endl;
-  TMatrixD* pearsonCoefs= new TMatrixD( nrows,ncols );
-  //pearsonCoefs->Clear();
+  int startRowColInt=0, skipRowColInt=10;   
+  int NanCount=0, gt1Count=0, EntryCount=0;
+  int nrows = covmat->GetNrows(), ncols = covmat->GetNcols();
 
-  if(debugPearson)std::cout<<"looping over rows and columns..."<<std::endl;
-  for(int row = 0; row<nrows; row++){
-    Double_t covmatElement_rowrow = (TMatrixD (*covmat))(row,row);
-    for(int col = 0; col<ncols; col++){
-      Double_t covmatElement_rowcol = (TMatrixD (*covmat))(row,col);
-      Double_t covmatElement_colcol = (TMatrixD (*covmat))(col,col);
+  TMatrixD* pearsonCoefs= (TMatrixD*)covmat->Clone("pearsonCoefs");
 
-      // calculate the pearson coefficient and put it in matrix which we return the pointer of
-      Double_t pearson = covmatElement_rowcol/TMath::Sqrt(covmatElement_rowrow*covmatElement_colcol);
-      (TMatrixD(*pearsonCoefs))(row,col) = pearson;
+  if(debugPearson)std::cout<<"looping over (nrows,ncols)=("<<nrows<<", "<<ncols<<")"<<std::endl;
+  for(int row = startRowColInt; row<nrows; row++){ double covmatElement_rowrow = (*covmat)(row,row);
+    for(int col = startRowColInt; col<ncols; col++){ double covmatElement_colcol = (*covmat)(col,col);
+      double covmatElement_rowcol = (*covmat)(row,col);
+      double pearson = covmatElement_rowcol/TMath::Sqrt(covmatElement_rowrow*covmatElement_colcol);
 
-      // check for error conditions/debug
-      if(pearson!=pearson){ 
-	pearson=-1.;
-	  if(debugPearson&&(row%10==0&&col%10==0)) { 
-	    std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
-	    std::cout<<"NaN!, pearson=-1"<<std::endl; } }
-      if( debugPearson&&(row%10==0&&col%10==0&&pearson!=-1.) ) {
-	std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
-	std::cout<<"pearson="<<pearson <<std::endl; }
+      // NaN protection
+      bool notNan=true;
+      if(pearson!=pearson){ 	pearson=-10.;
+	if(debugPearson&&(row%skipRowColInt==0||col%skipRowColInt==0)) { 
+	  std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
+	  std::cout<<"NaN!, pearson=-10."<<std::endl; 	}
+	NanCount++;	notNan=false;      }
+
+      // assign the value to the TMatrix
+      (*pearsonCoefs)(row,col) = pearson;            
+
+      // debug
+      if(debugPearson&&abs(pearson)>1.) {
+	std::cout<<"warning, abs(pearson)="<<abs(pearson)<<std::endl; 
+	gt1Count++;      }
+      if( debugPearson&&(row%skipRowColInt==0&&col%skipRowColInt==0&&notNan) ) {
+	std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;	
+	std::cout<<"covmat(row,row)="<< covmatElement_rowrow<<std::endl;       
+	std::cout<<"covmat(col,col)="<< covmatElement_colcol<<std::endl;       
+	std::cout<<"covmat(row,col)="<< covmatElement_rowcol<<std::endl;       
+	std::cout<<"pearson="<<pearson <<std::endl;       
+	std::cout<<"pearsonCoefs(row,col)="<<( TMatrixD (*pearsonCoefs) )(row,col) <<std::endl;       }
+      EntryCount++;      
     } // end col loop
   } // end row loop
+
+  if(debugPearson)std::cout<<"Entries in Pearson Matrix="<<EntryCount<<std::endl;  
+  if(debugPearson)std::cout<<"pearson>1 Entries="<<gt1Count<<std::endl;  
+  if(debugPearson)std::cout<<"Nan Entries="<<NanCount<<std::endl;  
   return pearsonCoefs;
 }
 

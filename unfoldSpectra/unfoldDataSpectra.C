@@ -4,17 +4,20 @@
 //  global settings -------------------------------------------------- 
 const int radius=4;
 const bool doToyErrs=false;
-const bool drawPDFs = true; 
 
 // Bayesian settings 
-const bool doBayes=true; 
-const bool drawPDFs_BayesInputHistos= true&&drawPDFs;
 const int kIter = 4;
 
 // SVD settings 
-const bool doSVD    = true; // testing now
-const bool drawPDFs_SVDInputHistos  = true&&drawPDFs;
 const int  nKregMax = 9, kRegRange=4, kRegDraw = 3, kRegCenter=21;
+
+// procedural settings
+const bool doBayes=true; 
+const bool doSVD=true; 
+
+const bool drawPDFs=true; 
+const bool drawPDFs_BayesInputHistos= true&&drawPDFs;
+const bool drawPDFs_SVDInputHistos  = true&&drawPDFs;
 
 // I/O
 const std::string baseName="unfoldDataSpectra_defOut"; // output name
@@ -23,31 +26,58 @@ const std::string outBayesPdfFile=baseName+"_BayesianUnfoldingPlots.pdf";
 const std::string outSVDPdfFile=baseName+"_SVDUnfoldingPlots"; // see drawPDFs part for rest of string
 
 const bool defDebugMode=false;
-const bool defDebugPearson=false;   // for easy debugging of pearson matrix stuff
+const bool defDebugPearson=true;   // for easy debugging of pearson matrix stuff
+
+const std::string Rstring="_R"+std::to_string(radius); 
+const std::string RandEtaRange=Rstring+"_20_eta_20";
+
+const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
+const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
+
 
 //  the code --------------------------------------------------
 int unfoldDataSpectra( bool debugMode=defDebugMode){
-
-  // performance tracking
-  TStopwatch timer; 
-  timer.Start();
-  
-  // other settings that are easily forgot
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
 
-  const bool debugPearson=(bool)(defDebugPearson && debugMode);
-  if(debugMode)std::cout<<"debugPearson="<<debugPearson<<std::endl;
-
-  // set error handing, stat info, other settings  
+  // set error handing, stat info, other settings  // fix me
   RooUnfold::ErrorTreatment errorTreatment;
   if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
   else errorTreatment = RooUnfold::kCovToy; 
   if(debugMode)std::cout<<"doToyErrs="<<doToyErrs<<std::endl; 
 
-  // set default error calculation for TH1/2's from here on out + gStyle
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   gStyle->SetOptStat(0);
+
+  //// script performance tracking if needed
+  //TStopwatch timer; 
+  //timer.Start();
+
+
+  // ppMC input histos -------------------------
+  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
+  if(debugMode)std::cout<<": "<<inFile_MC_name; 
+  std::cout<<std::endl<<std::endl;
+  TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
+
+  //mat
+  TH2F *hmat,*hmat_anabin;
+  hmat = (TH2F*)fpp_MC->Get( ("hpp_matrix"+RandEtaRange).c_str() );
+  hmat->Print("base");
+  hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
+  hmat_anabin->Rebin2D(10, 10);
+  hmat_anabin->Print("base");    
+  
+  //gen
+  TH1F*hgen,*hgen_anabin;
+  hgen= (TH1F*)fpp_MC->Get( ("hpp_gen"+RandEtaRange).c_str() );
+  hgen->Print("base");
+  hgen_anabin = (TH1F*)hgen->Clone( ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str() );
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);
+  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
+  divideBinWidth(hgen_anabin);
+  hgen_anabin->Print("base");
+
 
   //  ppData input histos --------------------------------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"; 
@@ -57,59 +87,35 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
 
   //rec
   TH1F *hrec, *hrec_anabin;
-  hrec = (TH1F*)fpp_Data->Get(Form("hpp_TrgCombTest_JetID_R%d_20_eta_20",radius));
+  hrec = (TH1F*)fpp_Data->Get( ("hpp_TrgCombTest_JetID"+RandEtaRange).c_str() );
   hrec->Print("base");
-  hrec_anabin = (TH1F*)hrec->Clone(Form("hpp_anaBin_HLTComb_R%d_20_eta_20",radius));
-  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, Form("hpp_anaBin_HLTComb_R%d_20_eta_20",radius), ptbins);
+  hrec_anabin = (TH1F*)hrec->Clone( ("hpp_anaBin_HLTComb"+RandEtaRange).c_str() );
+  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, ("hpp_anaBin_HLTComb"+RandEtaRange).c_str(), ptbins);
   divideBinWidth(hrec_anabin);
   hrec_anabin->Print("base");    
   
-
-  // ppMC input histos -------------------------
-  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
-  if(debugMode)std::cout<<": "<<inFile_MC_name; 
-  std::cout<<std::endl<<std::endl;
-  TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
-
-  //mat
-  TH2F *hmat, *hmat_anabin;
-  hmat = (TH2F*)fpp_MC->Get(Form("hpp_matrix_R%d_20_eta_20",radius));
-  hmat->Print("base");
-  hmat_anabin = (TH2F*)hmat->Clone(Form("hpp_anaBin_Trans_matrix_HLT_R%d_20_eta_20",radius));
-  hmat_anabin->Rebin2D(10, 10);
-  hmat_anabin->Print("base");    
-  
-  //gen
-  TH1F *hgen, *hgen_anabin;
-  hgen = (TH1F*)fpp_MC->Get(Form("hpp_gen_R%d_20_eta_20",radius));
-  hgen->Print("base");
-  hgen_anabin = (TH1F*)hgen->Clone(Form("hpp_anaBin_JetComb_gen_R%d_20_eta_20",radius));
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, Form("hpp_anaBin_JetComb_gen_R%d_20_eta_20",radius), ptbins);
-  divideBinWidth(hgen_anabin);
-  hgen_anabin->Print("base");
-
 
   // output histos -------------------------
   std::cout<<std::endl<<std::endl<<"creating new OUTPUT histos..."<<std::endl;
 
   //gen
   TH1F *hgen_resp, *hgen_resp_anabin;
-  hgen_resp = new TH1F( Form("hpp_gen_response_R%d_20_eta_20",radius),"", 
+  hgen_resp = new TH1F( ("hpp_gen_response"+RandEtaRange).c_str(),"", 
 			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
-  //hgen_resp->Print("base");
-  hgen_resp_anabin = new TH1F(Form("hpp_gen_response_anabin_R%d_20_eta_20",radius),"", nbins, ptbins);
+  hgen_resp->Print("base");
+  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", nbins, ptbins);
   hgen_resp_anabin->Sumw2();
   hgen_resp_anabin->Print("base");
   
   //rec
   if(debugMode)std::cout<<"opening output rec/recresponse histograms..."<<std::endl;
   TH1F *hrec_resp, *hrec_resp_anabin; 
-  hrec_resp = new TH1F(Form("hpp_rec_response_R%d_20_eta_20",radius),"", 
+  hrec_resp = new TH1F( ("hpp_rec_response"+RandEtaRange).c_str(),"", 
 		       hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
   hrec_resp->Sumw2();
-  //hrec_resp->Print("base");
-  hrec_resp_anabin = new TH1F(Form("hpp_rec_response_anabin_R%d_20_eta_20",radius),"", nbins, ptbins);
+  hrec_resp->Print("base");
+  hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", nbins, ptbins);
   hrec_resp_anabin->Sumw2();
   hrec_resp_anabin->Print("base");
   
@@ -123,31 +129,33 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
   else{ std::cout<<std::endl<<std::endl<<std::endl<<"   beginning Bayesian Unfolding..."<<std::endl;
 
     std::cout<<"calling RooUnfoldResponse "<<std::endl;
-    RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, Form("Response_matrix_R%d",radius));
+    RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str());
 
     std::cout<<"calling RooUnfoldBayes..."<<std::endl;
     RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
 
     TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
-    hunf->SetName("PP_Bayesian_Unfolded_Spectra");
+    hunf->SetName("ppData_BayesianUnfolding_UnfoldSpectra");
+    hunf->SetTitle("ppData, Bayesian Unfolded Spectra");
     std::cout<<std::endl; hunf->Print("base");
 
-    TH1F *hratio = (TH1F*)hunf->Clone(Form("MCClosure_test_oppside_Bayes_R%d_20_eta_20", radius));
+    TH1F *hratio = (TH1F*)hunf->Clone( "ppData_BayesianUnfolding_UnfoldRatio" );
+    hratio->SetTitle( "ppData, Bayesian Unfolded/ppMC Gen" );
     hratio->SetMarkerStyle(24);
     hratio->SetMarkerColor(kRed);
     hratio->Divide(hgen_anabin);
     hratio->Print("base");
 
+
     std::cout<<std::endl<<"writing bayesian unfolding output to file..."<<std::endl;
     fout->cd();
 
-    // response
-    /*std::cout<<std::endl; hgen_resp->Print("base");         */  hgen_resp->Write();  
-    /*std::cout<<std::endl; hgen_resp_anabin->Print("base");  */  hgen_resp_anabin->Write();
-    /*std::cout<<std::endl; hrec_resp->Print("base");         */  hrec_resp->Write();	 
-    /*std::cout<<std::endl; hrec_resp_anabin->Print("base");  */  hrec_resp_anabin->Write();
-
+    hunf->SetMarkerStyle(24);
+    hunf->SetMarkerColor(kRed);
     hunf->Write();
+
+    hgen_resp->Write();      hgen_resp_anabin->Write();
+    hrec_resp->Write();	     hrec_resp_anabin->Write();
 
     hratio->SetMarkerStyle(24);    
     hratio->SetMarkerColor(kRed);  
@@ -170,8 +178,11 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       tempCanvForPdfPrint->cd();
 
       // draw and print unfold/ratio plots
+      tempCanvForPdfPrint->SetLogy(1);
       hunf->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str()); //looks a little ridiculous, MC not normalized
+
+      tempCanvForPdfPrint->SetLogy(0);
+      hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
       // draw and print response output, all of these plots draw empty though...
       //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());              //empty
@@ -181,12 +192,27 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
 
       if(drawPDFs_BayesInputHistos){
 	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-	hmat->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hmat_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str()); //bleh looking in bottom left bin....
-	hgen->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hgen_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	hrec->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-	//hrec_anabin->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());      
+        hmat->SetTitle("ppMC jet input, genpt v. recopt");
+        hmat->GetYaxis()->SetLabelSize(0.02);
+        hmat->GetYaxis()->SetTitleSize(0.04);
+        hmat->GetXaxis()->SetLabelSize(0.02);
+        hmat->GetXaxis()->SetTitleSize(0.04);
+        tempCanvForPdfPrint->SetLogy(0);
+        hmat->Draw();           tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+        hgen->SetMarkerStyle(24);
+        hgen->SetMarkerColor(kRed);
+        hgen->SetTitle("ppMC genjet input, genpt");
+        tempCanvForPdfPrint->SetLogy(1);
+        hgen->Draw();           tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+	TH1F* hrec_clone=(TH1F*)hrec->Clone("hrec_clone");
+	hrec_clone->SetAxisRange(0.,1000.,"X");
+        hrec_clone->SetMarkerStyle(24);
+        hrec_clone->SetMarkerColor(kRed);
+        hrec_clone->SetTitle("ppData recojet input, recopt");
+        tempCanvForPdfPrint->SetLogy(1);
+        hrec_clone->Draw();           tempCanvForPdfPrint->Print(outPdfFile.c_str());
       }
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
     }// end draw pdfs
@@ -197,40 +223,41 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
   // SVD unfolding ------------------------------------------------------------------------- 
   if(!doSVD) std::cout<<std::endl<<"   skipping SVD unfolding..."<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<std::endl<<std::endl<<"   beginning SVD unfolding..."<<std::endl;
-        
-    int kReg[nKregMax];  
     std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
     std::cout<<kRegCenter-kRegRange<<" <= kReg[i] <= "<<kRegCenter+kRegRange<<std::endl;
+    
+    int kReg[nKregMax];
     for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) kReg[i+kRegRange]=kRegCenter+i;
+
     if(debugMode)for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) 
 		   std::cout<<"kReg["<<i+kRegRange<<"]="<<kReg[i+kRegRange]<<std::endl;
     
     if(debugMode)std::cout<<std::endl<<"creating histo-arrays..."<<std::endl;
     TH1 *hrec_folded_ratio[nKregMax];     TH1 *hrec_unfolded_ratio[nKregMax];
 
-    TH2 *hPearsonSVDPriorMeas[nKregMax];  
+    TH2 *hPearsonSVDPriorMeas[nKregMax];      //TH2D *hPearsonSVDPriorMeas[nKregMax];  
     TH1 *hFoldedSVDPriorMeas[nKregMax];     
     TH1F *hunf_svd[nKregMax];        
     TH1F *hratio_svd[nKregMax];      
-    
+
+
     std::cout<<"calling RooUnfoldResponse"<<std::endl;
-    RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, 
-			       Form("Response_matrix_anabin_R%d",radius));
+    RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix_anabin"+Rstring).c_str());
 
     if(debugMode)std::cout<<"opening TCanvases..."<<std::endl;
-
-    //TCanvas *cdi = new TCanvas("cdi","cdi: di vectors",      1200, 1000);
-    TCanvas *c11 = new TCanvas("c11"," Singular Values and divectors", 1200, 1000);      c11->Divide(2);                    
-
-    TCanvas *cRatioCheck      = new TCanvas("cRatioCheck","",      1200, 1000);    
     TCanvas *cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","", 1200, 1000);      cPearsonMatrixIter->Divide(3,3);	
     TCanvas *cRatio             = new TCanvas("cRatio","",             1200, 1000);      cRatio->Divide(3,3);      		
     TCanvas *cSpectra           = new TCanvas("cSpectra","",           1200, 1000);      cSpectra->Divide(3,3);	   
+    TCanvas *cRatioCheck      = new TCanvas("cRatioCheck","",      1200, 1000);    
+    TCanvas *c11 = new TCanvas("c11"," Singular Values and divectors", 1200, 1000);      c11->Divide(2);                    
 
     TLegend *leg[nKregMax],*leg1[nKregMax];      
 
     std::cout<<"entering SVD Unfolding Loop..."<<std::endl;
     for(int kr = 0; kr < nKregMax; ++kr){
+      std::string kRegRandEtaRange_plotTitle=" kReg"+std::to_string(kReg[kr])+RandEtaRange_plotTitle;
+      std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr])+RandEtaRange;
+      
       std::cout<<std::endl<<std::endl<<"kr="<<kr<<" , kReg = "<<kReg[kr]<<std::endl<<std::endl;
    
       // unfold the MC dist, then create a ratio with the gen-level MC dist
@@ -239,12 +266,12 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       hunf_svd[kr] = (TH1F*)unf_svd.Hreco(errorTreatment);
       
       std::cout<<std::endl;   
-      hunf_svd[kr]->SetName(Form("PP_SVD_Unfolded_mcclosure_Spectra_kReg%d_20_eta_20",kReg[kr]));
+      hunf_svd[kr]->SetName( ("ppData_SVDUnfolding_UnfoldSpectra"+kRegRandEtaRange).c_str() );
       hunf_svd[kr]->SetLineStyle(33);
       hunf_svd[kr]->SetLineColor(kBlue);
       hunf_svd[kr]->Print("base");
   
-      hratio_svd[kr] = (TH1F*)hunf_svd[kr]->Clone(Form("MCClosure_test_oppside_SVD_kReg%d_R%d_20_eta_20", kReg[kr], radius));
+      hratio_svd[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ppData_SVDUnfolding_UnfoldRatio"+kRegRandEtaRange).c_str());
       hratio_svd[kr]->Divide(hgen_anabin);
       hratio_svd[kr]->SetMarkerStyle(33);
       hratio_svd[kr]->SetMarkerColor(kRed);
@@ -254,30 +281,33 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"calling Ereco..."<<std::endl;
       TMatrixD covmat = unf_svd.Ereco(errorTreatment);
 
+      bool debugPearson=(bool)(defDebugPearson && debugMode) ;
+      if(debugPearson)std::cout<<"debugPearson is ON!"<<std::endl;
+
       if(debugPearson)std::cout<<std::endl;
       if(debugMode)std::cout<<"calling CalculatePearsonCoefficients..."<<std::endl;
       TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, debugPearson );
       if(debugPearson)std::cout<<std::endl;
 
+      if(debugMode)std::cout<<"creating TH2 for pearson matrix..."<<std::endl;
+      hPearsonSVDPriorMeas[kr] = new TH2D (*pearson);
+      
       // drawing/visuals
-      if(debugMode)std::cout<<"creating TH2D for pearson matrix..."<<std::endl;
-      hPearsonSVDPriorMeas[kr] = new TH2D(*pearson);
-      hPearsonSVDPriorMeas[kr]->SetName(Form("hPearsonSVDPriorMeas_kReg%d", kReg[kr]));
-      hPearsonSVDPriorMeas[kr]->SetTitle( ( "pearson matrix, kReg="+std::to_string(kReg[kr]) ).c_str() );
-
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);
 
-      float minNmax=0.3;
-      hPearsonSVDPriorMeas[kr]->SetMinimum(-1*minNmax);  hPearsonSVDPriorMeas[kr]->SetMaximum(minNmax);
-      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "X");
-      hPearsonSVDPriorMeas[kr]->SetAxisRange(0, 35, "Y");
+      float ZminNmax=1.0;             int XYmin=1; int XYmax=99;
+      hPearsonSVDPriorMeas[kr]->SetMinimum(-1*ZminNmax);  hPearsonSVDPriorMeas[kr]->SetMaximum(ZminNmax);
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
+      hPearsonSVDPriorMeas[kr]->SetAxisRange(XYmin, XYmax, "X");
+      hPearsonSVDPriorMeas[kr]->SetAxisRange(XYmin, XYmax, "Y");
+      hPearsonSVDPriorMeas[kr]->SetName( ("hPearsonSVDPriorMeas"+kRegRandEtaRange).c_str() );
+      hPearsonSVDPriorMeas[kr]->SetTitle( ("pearsonMatrix SVDPriorMeas"+kRegRandEtaRange_plotTitle).c_str()  );
       hPearsonSVDPriorMeas[kr]->Draw("colz");
 
       if(debugMode)std::cout<<"applying roo_resp to \"truth\" histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
-      hFoldedSVDPriorMeas[kr]->SetName(Form("hFoldedSVDPriorMeas_kReg%d", kReg[kr]));
+      hFoldedSVDPriorMeas[kr]->SetName( ("hFoldedSVDPriorMeas"+kRegRandEtaRange).c_str() );
       hFoldedSVDPriorMeas[kr]->SetLineStyle(33);
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
       
@@ -288,14 +318,14 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       // what's happening here exactly?
       //std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl<<std::endl;
       TH1F* hrec_anabin_clone=(TH1F*)hrec_anabin->Clone("hrec_anabin_clone");
-      hrec_anabin_clone->SetTitle( ("spectra, kReg = "+std::to_string(kReg[kr])).c_str() );//Form("kReg = %d",kReg[kr]) );
+      hrec_anabin_clone->SetTitle( ("Reco Jet spectra,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_anabin_clone->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin_clone->SetMarkerStyle(24);
       hrec_anabin_clone->SetMarkerColor(kBlack);
       hrec_anabin_clone->SetAxisRange(45, 1000, "X");
       hrec_anabin_clone->Print("base");
-      hrec_anabin_clone->Draw();
 
+      hrec_anabin_clone->Draw();
       hunf_svd[kr]->Draw("same");
       hFoldedSVDPriorMeas[kr]->Draw("same");
 
@@ -310,8 +340,8 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio canvas..."<<std::endl;
       cRatio->cd(kr+1);
 
-      hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone(Form("ratio_folded_with_measured_kReg%d",kReg[kr]));
-      hrec_folded_ratio[kr]->SetTitle(Form("ratio, kReg = %d",kReg[kr]));
+      hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ppData_SVDUnfolding_FoldedRatio"+kRegRandEtaRange).c_str() );
+      hrec_folded_ratio[kr]->SetTitle( ("Ratios w/ Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
@@ -321,24 +351,17 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       hrec_folded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Draw();
 
-      hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone(Form("ratio_unfolded_with_measured_kReg%d",kReg[kr]));
-      hrec_unfolded_ratio[kr]->SetTitle(Form("div. by measured, kReg = %d",kReg[kr]));
+      hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ppData_SVDUnfolding_UnfoldedRatio"+kRegRandEtaRange).c_str());
+      hrec_unfolded_ratio[kr]->SetTitle( ("Ratio, Unf. Over Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_unfolded_ratio[kr]->SetMarkerStyle(27);
       hrec_unfolded_ratio[kr]->SetMarkerColor(kBlue);
       hrec_unfolded_ratio[kr]->Divide(hrec_anabin);
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->Draw("same");
 
-      leg1[kr] = new TLegend(0.1, 0.1, 0.40, 0.3, NULL,"NBNDC");
+      leg1[kr] = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
       leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],"Unfold/Meas","pl");
       leg1[kr]->AddEntry(hrec_folded_ratio[kr],"Fold/Meas","pl");
-      //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
-      leg1[kr]->SetTextSize(0.04);
-      leg1[kr]->Draw("same");//leg1[kr]->Draw();
-  
-      leg1[kr] = new TLegend(0.1, 0.1, 0.30, 0.3, NULL,"BRNDC");
-      leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],Form("Unfolded/Measured, kr = %d", kReg[kr]),"pl");
-      leg1[kr]->AddEntry(hrec_folded_ratio[kr],Form("Folded/Measured kr = %d", kReg[kr]),"pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg1[kr]->SetTextSize(0.04); 
       leg1[kr]->Draw();
@@ -417,22 +440,22 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       //  cRatio Check --------------------------------------------------
       cRatioCheck->cd();
 
-      hrec_folded_ratio[kRegDraw]->SetTitle(" ");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
+      hrec_folded_ratio[kRegDraw]->SetTitle("(Un)Fold/Meas");
       hrec_folded_ratio[kRegDraw]->Draw();
 
-      TLegend * leg2 = new TLegend(0.1, 0.1, 0.40, 0.3, NULL,"NBNDC");
+      TLegend * leg2 = new TLegend(0.1, 0.1, 0.30, 0.20, NULL,"NBNDC");
       leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfold/Meas","pl");
       leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Fold/Meas","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
-      leg2->SetTextSize(0.04);
+      leg2->SetTextSize(0.03);
       leg2->Draw();
 
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( "Ratio plot check",     0.508173, 0.8659761, 22);
-      drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",       0.508173, 0.8359761, 22);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
+      drawText( "ppData ak4PFJets",                               0.13, 0.46, 22);
+      drawText( "5.02 TeV, HighPtJet-Triggered",                  0.13, 0.43, 22);
+      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.13, 0.40, 22);
 
       cRatioCheck->Print(outPdfFile.c_str());
       cRatioCheck->Print(close_outPdfFile.c_str());

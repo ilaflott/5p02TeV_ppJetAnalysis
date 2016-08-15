@@ -1,7 +1,7 @@
 #include "readFiles_ppMC.h"
 
 const std::string CMSSW_BASE = 
-the  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
+  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
 const std::string inputDir = 
   "src/readFiles/ppMC/saved_outputCondor/";
 const std::string inputFilename = 
@@ -59,6 +59,7 @@ int main(int argc, char *argv[]){
     std::string theHistName="hpthat";
     if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
     TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+    temp_canv->SetLogy(1);
     theJetQAHist->Draw();
     temp_canv->Print( thePDFFileName.c_str() );
   }
@@ -67,6 +68,7 @@ int main(int argc, char *argv[]){
     std::string theHistName="hWeightedpthat";
     if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
     TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+    temp_canv->SetLogy(1);
     theJetQAHist->Draw();
     temp_canv->Print( thePDFFileName.c_str() );
   }
@@ -82,6 +84,7 @@ int main(int argc, char *argv[]){
       std::string theHistName="hJetQA_"+std::to_string(i)+"wJetID_"+var[j];
       if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
       TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+      temp_canv->SetLogy(1);
       theJetQAHist->Draw();
       temp_canv->Print( thePDFFileName.c_str() );
     }
@@ -90,78 +93,78 @@ int main(int argc, char *argv[]){
 
 
 
-  // unfolding plots----------------------
-  //unfolding inputs
-  {  
-    std::string theHistName="hpp_gen_"+pfRad_etaWidth;
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
-  {  
-    std::string theHistName="hpp_reco_"+pfRad_etaWidth;
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
-  {  
-    std::string theHistName="hpp_matrix_"+pfRad_etaWidth;
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH2F* theJetQAHist= (TH2F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
-  //MCClosure inputs
-  {  
-    std::string theHistName="hpp_mcclosure_gen_"+pfRad_etaWidth;
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
-  {  
-    std::string theHistName="hpp_mcclosure_data_"+pfRad_etaWidth;
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
-  {  
-    std::string theHistName="hpp_mcclosure_data_train_"+pfRad_etaWidth;
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
-  {  
-    std::string theHistName="hpp_mcclosure_matrix_"+pfRad_etaWidth;
-    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-    TH2F* theJetQAHist= (TH2F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-  }
+  //// unfolding plots----------------------
+  //
+  ////unfolding inputs
+  //{  
+  //  std::string theHistName="hpp_gen_"+pfRad_etaWidth;
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
+  //{  
+  //  std::string theHistName="hpp_reco_"+pfRad_etaWidth;
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
+  //{  
+  //  std::string theHistName="hpp_matrix_"+pfRad_etaWidth;
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH2F* theJetQAHist= (TH2F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
+  //
+  ////MCClosure inputs
+  //{  
+  //  std::string theHistName="hpp_mcclosure_gen_"+pfRad_etaWidth;
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
+  //{  
+  //  std::string theHistName="hpp_mcclosure_data_"+pfRad_etaWidth;
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
+  //{  
+  //  std::string theHistName="hpp_mcclosure_data_train_"+pfRad_etaWidth;
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
+  //{  
+  //  std::string theHistName="hpp_mcclosure_matrix_"+pfRad_etaWidth;
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH2F* theJetQAHist= (TH2F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
 
-
-
-//  // Jet Corrections----------------------
-//  //JEC
-//  {  
-//    std::string theHistName="";
-//    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-//    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-//    theJetQAHist->Draw();
-//    temp_canv->Print( thePDFFileName.c_str() );
-//  }
-//  //JER
-//  {  
-//    std::string theHistName="";
-//    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-//    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-//    theJetQAHist->Draw();
-//    temp_canv->Print( thePDFFileName.c_str() );
-//  }
+  //// Jet Corrections----------------------
+  ////JEC
+  //{  
+  //  std::string theHistName="";
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
+  ////JER
+  //{  
+  //  std::string theHistName="";
+  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+  //  TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+  //  theJetQAHist->Draw();
+  //  temp_canv->Print( thePDFFileName.c_str() );
+  //}
 
 
 

@@ -62,6 +62,7 @@ int main(int argc, char *argv[]){
       std::string theHistName="hJetQA_"+std::to_string(i)+"wJetID_"+var[j];
       if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
       TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+      temp_canv->SetLogy(1);
       theJetQAHist->Draw();
       temp_canv->Print( thePDFFileName.c_str() );
     }
@@ -78,6 +79,7 @@ int main(int argc, char *argv[]){
       theHistName+="JetID_R"+radius+"_"+(std::string)etaWidth;
       if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
       TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+      temp_canv->SetLogy(1);
       theJetQAHist->Draw();
       temp_canv->Print( thePDFFileName.c_str() );
     }

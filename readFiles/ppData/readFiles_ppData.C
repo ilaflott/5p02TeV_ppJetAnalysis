@@ -295,7 +295,9 @@ int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std:
     }    
 
     double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
-
+    //// 8.22.2016; gonna stick in the integrated luminosity in the weight so vertical axes are cross section
+    //weight_eS/=25.8*math::pow(10,6);//inverse picobarns to inverse microbarns
+    
     if(debugMode&&nEvt%250==0)std::cout <<"triggerPt ="<<triggerPt<<std::endl;
     if(debugMode&&nEvt%250==0)std::cout<<"jet 40, trgDec[0]  = "<< trgDec[0]  <<std::endl;
     if(debugMode&&nEvt%250==0)std::cout<<"jet 60, trgDec[1]  = "<< trgDec[1]  <<std::endl;

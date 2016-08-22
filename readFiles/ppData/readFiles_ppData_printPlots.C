@@ -1,27 +1,32 @@
 #include "readFiles_ppData.h"
 
+// Input relevant
 const std::string CMSSW_BASE =
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
 const std::string inputDir =
   "src/readFiles/ppData/saved_outputCondor/";
-const std::string inputFilename =
+
+//highPtJetTrig 5.02TeV 2015 prompt reco
+const double integratedLuminosity=25.8*pow(10.,9.)*0.99;// 25.8 inv. picobarns to inv. millibarns
+const std::string inputFilename=
   "readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/HighPtJetTrig_ak4PF-allFiles.root";
-const std::string fullFilename = CMSSW_BASE+inputDir+inputFilename;
+const std::string fullFilename=CMSSW_BASE+inputDir+inputFilename;
 
-const std::string thePDFFileName="readFiles_ppData_printPlots_HighPtJetTrigs_JetQA-vz-TrigComb_6.11.16.pdf";
+// output relevant
+const std::string thePDFFileName=
+  "readFiles_ppData_printPlots_HighPtJets_PromptReco2015_JetQA-vz-TrigComb_8.22.16.pdf";
 
+// other useful things
 const std::string radius="4";
 const std::string HLTName[]={"HLT40_","HLT60_","HLT80_","HLT100_","HLTComb_","TrgCombTest_"};
+const std::string HLThTitle[]={"HLT40 ","HLT60 ","HLT80 ","HLT100 ","HLTComb ","Kurt Meth. HLTComb "};
 const int N_HLTNames=sizeof(HLTName)/sizeof(std::string);
 
-//const float  var_xLow[N_vars]  = {};
-//const float var_xHigh[N_vars]  = {};
-//const float var_yHigh[N_vars]  = {};
-//const float  var_yLow[N_vars]  = {};
+const bool debugMode=true;
+
 
 int main(int argc, char *argv[]){
 
-  const bool debugMode=true;
   int rStatus = -1;
   if( argc!=1 ) {//no input arguments, error
     std::cout<<"settings hard coded, just do ./readFiles_ppMC_printPlots.exe"<<std::endl;
@@ -47,39 +52,80 @@ int main(int argc, char *argv[]){
   {
     std::string theHistName="hVz";
     if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+
     TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+    theJetQAHist->SetTitle("data Event QA, vz");
+    theJetQAHist->SetYTitle("millibarn/bin");
+    theJetQAHist->SetXTitle("vz (cm)");
+
+    theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
+    theJetQAHist->Scale(1/integratedLuminosity);
+
     theJetQAHist->Draw();
     temp_canv->Print( thePDFFileName.c_str() );
   }
   //----------------------
 
+  temp_canv->SetLogy(1);
 
   // jetQA plots ----------------------
   //{0,1}wJetID
-  for(int i=0;i<2;i++){
-    for(int j=0;j<N_vars;j++){      
+  for(int j=0;j<N_vars;j++){      
+    for(int i=0;i<2;i++){
       //e.g. hJetQA_{0,1}wJetID_{jtpt,rawpt,jteta...}
       std::string theHistName="hJetQA_"+std::to_string(i)+"wJetID_"+var[j];
       if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+
       TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-      temp_canv->SetLogy(1);
+      //temp_canv->SetLogy(1);
+
+      if(var[j]=="jteta") theJetQAHist->SetAxisRange(-2.5,2.5,"X");
+      else if(var[j]=="xj"||var[j]=="Aj") {
+	theJetQAHist->SetAxisRange(0.,1.05,"X");
+	temp_canv->SetLogy(0);
+      }
+      
+
+      std::string theHistTitle="Data JetQA "+var[j]+" ";
+      if(i==0)theHistTitle+="w/o JetID";
+      else theHistTitle+="w/ JetID";
+      theJetQAHist->SetTitle(theHistTitle.c_str());
+
+      theJetQAHist->SetYTitle("Cross-section (millibarn)/bin");
+
+      theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
+      theJetQAHist->Scale(1/integratedLuminosity);
+
       theJetQAHist->Draw();
       temp_canv->Print( thePDFFileName.c_str() );
     }
   }
   //----------------------
 
-
+  temp_canv->SetLogy(1);
   // HLT/L1 and Comb plots ----------------------
   //hpp_{HLT40,HLT60,HLT80,HLT100,HLTComb}_{no,}JetID_R4_20_eta_20
-  for(int i=0;i<2;i++){
-    for(int j=0;j<N_HLTNames;j++){
+  for(int j=0;j<N_HLTNames;j++){
+    for(int i=0;i<2;i++){
+
       std::string theHistName="hpp_"+HLTName[j];
       if(i==0)theHistName+="no";
       theHistName+="JetID_R"+radius+"_"+(std::string)etaWidth;
       if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+
       TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-      temp_canv->SetLogy(1);
+
+      std::string theHistTitle=HLThTitle[j];
+      if(i==0)theHistTitle+="w/o JetID R";
+      else theHistTitle+="w/ JetID R";      
+      theHistTitle+=radius+" "+(std::string)etaWidth;
+      theJetQAHist->SetTitle( theHistTitle.c_str() );
+      theJetQAHist->SetYTitle("Cross-section (millibarn)/bin");
+
+      theJetQAHist->SetAxisRange(0,1300.,"X");
+      theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
+      theJetQAHist->Scale(1/integratedLuminosity);
+
       theJetQAHist->Draw();
       temp_canv->Print( thePDFFileName.c_str() );
     }

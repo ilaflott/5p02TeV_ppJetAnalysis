@@ -26,7 +26,7 @@ const std::string outBayesPdfFile=baseName+"_BayesianUnfoldingPlots.pdf";
 const std::string outSVDPdfFile=baseName+"_SVDUnfoldingPlots"; // see drawPDFs part for rest of string
 
 const bool defDebugMode=false;
-const bool defDebugPearson=true;   // for easy debugging of pearson matrix stuff
+const bool defDebugPearson=false;   // for easy debugging of pearson matrix stuff
 
 const std::string Rstring="_R"+std::to_string(radius); 
 const std::string RandEtaRange=Rstring+"_20_eta_20";
@@ -34,6 +34,8 @@ const std::string RandEtaRange=Rstring+"_20_eta_20";
 const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
 const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
 
+const double integratedLuminosity=25.8*pow(10,9)*0.99;
+const std::string MCdesc= "MC, QCD PY8 Tune CUETP8M1"; 
 
 //  the code --------------------------------------------------
 int unfoldDataSpectra( bool debugMode=defDebugMode){
@@ -54,31 +56,6 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
   //timer.Start();
 
 
-  // ppMC input histos -------------------------
-  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
-  if(debugMode)std::cout<<": "<<inFile_MC_name; 
-  std::cout<<std::endl<<std::endl;
-  TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
-
-  //mat
-  TH2F *hmat,*hmat_anabin;
-  hmat = (TH2F*)fpp_MC->Get( ("hpp_matrix"+RandEtaRange).c_str() );
-  hmat->Print("base");
-  hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
-  hmat_anabin->Rebin2D(10, 10);
-  hmat_anabin->Print("base");    
-  
-  //gen
-  TH1F*hgen,*hgen_anabin;
-  hgen= (TH1F*)fpp_MC->Get( ("hpp_gen"+RandEtaRange).c_str() );
-  hgen->Print("base");
-  hgen_anabin = (TH1F*)hgen->Clone( ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str() );
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);
-  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
-  divideBinWidth(hgen_anabin);
-  hgen_anabin->Print("base");
-
-
   //  ppData input histos --------------------------------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"; 
   if(debugMode)std::cout<<": "<<inFile_Data_name; 
@@ -88,12 +65,43 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
   //rec
   TH1F *hrec, *hrec_anabin;
   hrec = (TH1F*)fpp_Data->Get( ("hpp_TrgCombTest_JetID"+RandEtaRange).c_str() );
+  hrec->Scale(1/integratedLuminosity);
   hrec->Print("base");
+
   hrec_anabin = (TH1F*)hrec->Clone( ("hpp_anaBin_HLTComb"+RandEtaRange).c_str() );
   hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, ("hpp_anaBin_HLTComb"+RandEtaRange).c_str(), ptbins);
   divideBinWidth(hrec_anabin);
+  //hrec_anabin->Scale(1/integratedLuminosity);
   hrec_anabin->Print("base");    
   
+
+  // ppMC input histos -------------------------
+  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
+  if(debugMode)std::cout<<": "<<inFile_MC_name; 
+  std::cout<<std::endl<<std::endl;
+  TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
+
+  //mat, NOT NORMALIZED
+  TH2F *hmat,*hmat_anabin;
+  hmat = (TH2F*)fpp_MC->Get( ("hpp_matrix"+RandEtaRange).c_str() );
+  hmat->Print("base");
+
+  hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
+  hmat_anabin->Rebin2D(10, 10);
+  hmat_anabin->Print("base");    
+  
+  //gen
+  TH1F*hgen,*hgen_anabin;
+  hgen= (TH1F*)fpp_MC->Get( ("hpp_gen"+RandEtaRange).c_str() );
+  hgen->Print("base");
+
+  hgen_anabin = (TH1F*)hgen->Clone( ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str() );
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
+
+  divideBinWidth(hgen_anabin);
+  hgen_anabin->Scale(hrec_anabin->Integral()/hgen_anabin->Integral());
+  hgen_anabin->Print("base");
+
 
   // output histos -------------------------
   std::cout<<std::endl<<std::endl<<"creating new OUTPUT histos..."<<std::endl;
@@ -385,8 +393,10 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
         hSVal->SetXTitle(" singular values ");
         hSVal->SetAxisRange(0,35,"X");
         hSVal->DrawCopy();
-        drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
-        drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
+        drawText( "5.02 TeV pp, ak4PFJets",0.358173, 0.8459761, 19);
+	drawText( "Data, Prompt-Reco, HighPtJets",0.358173, 0.8159761, 19);
+	drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+	drawText( ("kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);
 
         // di vector values
         if(debugMode)std::cout << "  getting di vector... " <<  std::endl;
@@ -401,8 +411,11 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
         hdi->SetXTitle(" |d_{i}^{kreg}| ");
         hdi->SetAxisRange(0,35,"X");
         hdi->DrawCopy();
-        drawText( "5.02 TeV ppMC, QCD Py6 Tune Z2",0.358173, 0.8459761, 19);
-        drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
+        //drawText( "5.02 TeV ak4PFJets",0.358173, 0.8459761, 19);
+	//drawText( "ppData, Prompt Reco HighPtJets",0.358173, 0.8159761, 19);
+	//drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+	//drawText( ("kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);
+	  const std:: string MCdesc= "QCD Dijets, PY8 Tune CUETP8M1"; 
         if(debugMode)std::cout<<std::endl<<"done with kr==0 specifics"<<std::endl<<std::endl;
       }
 
@@ -453,8 +466,8 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       leg2->Draw();
 
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( "ppData ak4PFJets",                               0.13, 0.46, 22);
-      drawText( "5.02 TeV, HighPtJet-Triggered",                  0.13, 0.43, 22);
+      drawText( "5.02 TeV pp, ak4PFJets",                               0.13, 0.46, 22);
+      drawText( "Data, Prompt-Reco HighPtJets",                  0.13, 0.43, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.13, 0.40, 22);
 
       cRatioCheck->Print(outPdfFile.c_str());

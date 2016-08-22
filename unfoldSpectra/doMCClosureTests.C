@@ -35,7 +35,7 @@ const std::string RandEtaRange=Rstring+"_20_eta_20";
 const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
 const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
 
-const std:: string MCdesc= "5.02 TeV, QCD Py6 Tune Z2"; 
+const std:: string MCdesc= "MC, QCD PY8 Tune CUETP8M1"; 
 
 
 //  the code --------------------------------------------------
@@ -417,6 +417,7 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hSVal->SetXTitle(" singular values ");
   	hSVal->SetAxisRange(0,35,"X");
   	hSVal->DrawCopy();  	
+	drawText( "5.02 TeV pp, ak4PFJets",     0.358173, 0.8659761, 19);
 	drawText( MCdesc.c_str(), 0.358173, 0.8459761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 
@@ -433,8 +434,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   	hdi->SetXTitle(" |d_{i}^{kreg}| ");
   	hdi->SetAxisRange(0,35,"X");
   	hdi->DrawCopy();
-	drawText( MCdesc.c_str(),0.358173, 0.8459761, 19);
-	drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
+	//drawText( MCdesc.c_str(),0.358173, 0.8459761, 19);
+	//drawText( ("kReg="+std::to_string(kReg[kr])).c_str(),0.408173, 0.8059761, 19);
 	if(debugMode)std::cout<<std::endl<<"done with kr==0 specifics"<<std::endl<<std::endl;
       }
         
@@ -531,8 +532,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       
       //hrec_unfolded_ratio[kRegDraw]->SetTitle("Radio plot check");
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( "ppMC ak4PFJets, (Un)Folded/Meas",     0.508173, 0.8659761, 22);
-      drawText( "5.02 TeV, HighPtJet-Triggered",       0.508173, 0.8359761, 22);
+      drawText( "5.02 TeV ppMC, ak4PFJets",     0.508173, 0.8659761, 22);
+      drawText( MCdesc.c_str(),    0.508173, 0.8359761, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.508173, 0.8059761, 22);
       
       cRatioCheck->Print(outPdfFile.c_str());      
@@ -589,7 +590,8 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
       line->SetLineWidth(2);
       line->Draw();
 
-      drawText( "MCClosure Tests", 0.608173, 0.8659761, 22);
+      //drawText( "MCClosure Tests", 0.608173, 0.8659761, 22);
+      drawText( "5.02 TeV pp, ak4PFJets", 0.608173, 0.8659761, 22);
       drawText( MCdesc.c_str(), 0.608173, 0.8359761, 21);
       drawText( Form("kReg=%d",kReg[kRegDraw])  , 0.608173, 0.8059761, 21);
       leg0->Draw();

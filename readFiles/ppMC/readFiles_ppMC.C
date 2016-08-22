@@ -280,8 +280,10 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
     // compute weights
     double vzWeight=1;           
     vzWeight = fVzPP->Eval(vz_F);
+    
     double evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }
+ 
     double weight_eS=1;          
     //weight_eS = trigComb(trgDec, treePrescl, triggerPt);    
     double finalWeight=evtPthatWeight*vzWeight*weight_eS;

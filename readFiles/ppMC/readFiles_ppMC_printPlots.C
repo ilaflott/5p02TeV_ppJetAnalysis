@@ -10,18 +10,24 @@ const std::string inputDataDir =
 
 // pythia8 tune CUETP8M1, QCDDijet sample in pthat bins starting at 15 GeV,
 const std::string inputMCFilename = 
-  "readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_2016-07-09/QCDjetAllPtBins_ak4PF-allFiles.root";
+  //"readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_07-09-16__firstRun_allFiles/QCDjetAllPtBins_ak4PF-allFiles.root";
+  //"readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_08-23-16__RaghavsVzWeights_noTrigWeights/QCDjetAllPtBins_ak4PF-allFiles.root";
+  "readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_08-23-16__AnnasVzWeights_noTrigWeights/QCDjetAllPtBins_ak4PF-allFiles.root";
+
 const std::string fullMCFilename = CMSSW_BASE+inputMCDir+inputMCFilename;
 
 // for vz plot only, for now
 const double integratedLuminosity=25.8*pow(10.,9.)*0.99;// 25.8 inv. picobarns to inv. millibarns
 const std::string inputDataFilename = 
-  "readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/HighPtJetTrig_ak4PF-allFiles.root";
+  //"readFiles_ppData_5p02TeV_HighPtJetTrig_06-10-16__allFiles_vzHasNoTrigWeight/HighPtJetTrig_ak4PF-allFiles.root";
+  //"readFiles_ppData_5p02TeV_HighPtJetTrig_08-23-16__noTrigWeights/HighPtJetTrig_ak4PF-allFiles.root";
+  "readFiles_ppData_5p02TeV_HighPtJetTrig_08-23-16__vzWithAndWithoutWeights/HighPtJetTrig_ak4PF-allFiles.root";
 const std::string fullDataFilename = CMSSW_BASE+inputDataDir+inputDataFilename;
 
 // output relevant
 const std::string thePDFFileName = 
-  "readFiles_ppMC_printPlots_PY8_TuneCUETP8M1-QCDDijet_JetQA-vz-pthat_8.22.16.pdf";
+  //"printQAPlots_ppMC_PY8_TuneCUETP8M1-QCDDijet_JetQA-vz-pthat_8.23.16_RaghavsVzWeights.pdf";
+  "printQAPlots_ppMC_PY8_TuneCUETP8M1-QCDDijet_JetQA-vz-pthat_8.23.16_AnnasVzWeights.pdf";
 
 // other useful things
 const std::string radius="R4_";
@@ -65,8 +71,38 @@ int main(int argc, char *argv[]){
     if(debugMode)std::cout<<"bin width is "<< theJetQAHist->GetBinWidth(1) <<std::endl;
     theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
 
-    theJetQAHist->SetTitle("MC event QA, vz w/o weights");
-    theJetQAHist->SetYTitle("Num. MC Events/bin");
+    theJetQAHist->SetTitle("MC evt QA, vz w/o weights");
+    theJetQAHist->SetYTitle("Num. MC Evts/bin");
+    theJetQAHist->SetXTitle("vz (cm)");
+
+    theJetQAHist->Draw();
+    temp_canv->Print( thePDFFileName.c_str() );
+  }
+  {
+    std::string theHistName="hpthatWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+    TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
+
+    if(debugMode)std::cout<<"bin width is "<< theJetQAHist->GetBinWidth(1) <<std::endl;
+    theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
+
+    theJetQAHist->SetTitle("MC evt QA, vz w/ pthat weights only");
+    theJetQAHist->SetYTitle("millibarns/bin");
+    theJetQAHist->SetXTitle("vz (cm)");
+
+    theJetQAHist->Draw();
+    temp_canv->Print( thePDFFileName.c_str() );
+  }
+  {
+    std::string theHistName="hvzWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+    TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
+
+    if(debugMode)std::cout<<"bin width is "<< theJetQAHist->GetBinWidth(1) <<std::endl;
+    theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
+
+    theJetQAHist->SetTitle("MC event QA, vz w/ vz weights only");
+    theJetQAHist->SetYTitle("millibarns/bin");
     theJetQAHist->SetXTitle("vz (cm)");
 
     theJetQAHist->Draw();
@@ -80,66 +116,75 @@ int main(int argc, char *argv[]){
     if(debugMode)std::cout<<"bin width is "<< theJetQAHist->GetBinWidth(1) <<std::endl;
     theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
 
-    theJetQAHist->SetTitle("MC event QA, vz w/ weights");
+    theJetQAHist->SetTitle("MC event QA, vz w/ all weights");
     theJetQAHist->SetYTitle("millibarns/bin");
     theJetQAHist->SetXTitle("vz (cm)");
 
     theJetQAHist->Draw();
     temp_canv->Print( thePDFFileName.c_str() );
   }
+  
 
-  //vz ratio, no weights
-  {// since bin widths the same, no need to scale by the bin width
-    //input file
-    std::string Datafilename=fullDataFilename;
-    std::cout<< "Datafilename is " << Datafilename <<std::endl;
-    TFile *finData = new TFile(Datafilename.c_str());
-
-    std::string data_Vz_Name="hVz";
-    TH1F* data_Vz= (TH1F*)finData->Get( data_Vz_Name.c_str() );
-    
-    std::string MC_Vz_Name="hVz";
-    TH1F* MC_Vz= (TH1F*)finMC->Get( MC_Vz_Name.c_str() );
-    MC_Vz->Scale(data_Vz->Integral()/MC_Vz->Integral());
-    
-    TH1F* Vz_ratio=data_Vz;
-    Vz_ratio->Divide(MC_Vz);
-    Vz_ratio->SetTitle("Vz ratio, data/MC w/o weights, MC norm. to data");
-    Vz_ratio->SetXTitle("vz (cm)");
-    Vz_ratio->SetYTitle("data/MC");
- 
-    Vz_ratio->Draw();
-    temp_canv->Print( thePDFFileName.c_str() );
-    finData->Close();
-  }
-  //vz ratio, with weights
+  //vz, MC Only ratio plots
   {
-    //input file
-    std::string Datafilename=fullDataFilename;
-    std::cout<< "Datafilename is " << Datafilename <<std::endl;
-    TFile *finData = new TFile(Datafilename.c_str());
+    std::string theHistName_num="hvzWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+    TH1F* theJetQAHist_num= (TH1F*)finMC->Get( theHistName_num.c_str() );
 
-    std::string data_Vz_Name="hVz";
-    TH1F* data_Vz= (TH1F*)finData->Get( data_Vz_Name.c_str() );
-    data_Vz->Scale(1/integratedLuminosity);
+    std::string theHistName_den="hVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_den<<std::endl;
+    TH1F* theJetQAHist_den= (TH1F*)finMC->Get( theHistName_den.c_str() );
 
-    std::string MC_Vz_Name="hWeightedVz";
-    TH1F* MC_Vz= (TH1F*)finMC->Get( MC_Vz_Name.c_str() );
-    MC_Vz->Scale(data_Vz->Integral()/MC_Vz->Integral());
-    
-    TH1F* Vz_ratio=data_Vz;
-    Vz_ratio->Divide(MC_Vz);
-    Vz_ratio->SetTitle("Vz ratio, data/MC w/ weights, MC norm. to data");
-    Vz_ratio->SetXTitle("vz (cm)");
-    Vz_ratio->SetYTitle("data/weightedMC");
- 
-    Vz_ratio->Draw();
+    TH1F* theRatio=theJetQAHist_num;
+    theRatio->Divide(theJetQAHist_den);
+    theRatio->SetTitle("MC Evt QA, MC Only, vzWeights only");
+    theRatio->SetYTitle("weighted/unweighted");
+    theRatio->SetXTitle("vz (cm)");
+
+    theRatio->Draw();
     temp_canv->Print( thePDFFileName.c_str() );
-    finData->Close();
+  }
+  {
+    std::string theHistName_num="hpthatWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+    TH1F* theJetQAHist_num= (TH1F*)finMC->Get( theHistName_num.c_str() );
+
+    std::string theHistName_den="hVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_den<<std::endl;
+    TH1F* theJetQAHist_den= (TH1F*)finMC->Get( theHistName_den.c_str() );
+
+    TH1F* theRatio=theJetQAHist_num;
+    theRatio->Divide(theJetQAHist_den);
+    theRatio->SetTitle("MC Evt QA, MC Only, vz, pthatWeights only");
+    theRatio->SetYTitle("weighted/unweighted");
+    theRatio->SetXTitle("vz (cm)");
+    
+    theRatio->Draw();
+    temp_canv->Print( thePDFFileName.c_str() );
+  }
+  {
+    std::string theHistName_num="hWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+    TH1F* theJetQAHist_num= (TH1F*)finMC->Get( theHistName_num.c_str() );
+
+    std::string theHistName_den="hVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_den<<std::endl;
+    TH1F* theJetQAHist_den= (TH1F*)finMC->Get( theHistName_den.c_str() );
+
+    TH1F* theRatio=theJetQAHist_num;
+    theRatio->Divide(theJetQAHist_den);
+    theRatio->SetTitle("MC Evt QA, MC Only, vz, all Weights");
+    theRatio->SetYTitle("weighted/unweighted");
+    theRatio->SetXTitle("vz (cm)");
+    
+    theRatio->Draw();
+    temp_canv->Print( thePDFFileName.c_str() );
   }
 
 
   temp_canv->SetLogy(1);
+
+
 
   //pthat
   {
@@ -149,7 +194,7 @@ int main(int argc, char *argv[]){
     theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
 
     theJetQAHist->SetTitle("MC event QA, pthat, not weighted");
-    theJetQAHist->SetYTitle("Num. Events/bin");
+    theJetQAHist->SetYTitle("Num. Evts/bin");
     theJetQAHist->SetXTitle("pthat (GeV)");
 
     theJetQAHist->Draw();
@@ -169,6 +214,9 @@ int main(int argc, char *argv[]){
     temp_canv->Print( thePDFFileName.c_str() );
   }
   //----------------------
+
+
+
 
 
 
@@ -291,6 +339,157 @@ int main(int argc, char *argv[]){
   //  theJetQAHist->Draw();
   //  temp_canv->Print( thePDFFileName.c_str() );
   //}
+
+  //vz, MC v Data ratio plots
+  { 
+    std::string Datafilename=fullDataFilename; 
+    TFile *finData = new TFile(Datafilename.c_str());
+
+    std::string theHistName_den="hVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_den<<std::endl;
+    TH1F* theJetQAHist_den= (TH1F*)finData->Get( theHistName_den.c_str() );
+    theJetQAHist_den->Scale(1/integratedLuminosity);
+    theJetQAHist_den->Scale(1/theJetQAHist_den->GetBinWidth(1));
+
+    std::string theHistName_den2="hWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_den<<std::endl;
+    TH1F* theJetQAHist_den2= (TH1F*)finData->Get( theHistName_den.c_str() );
+    theJetQAHist_den2->Scale(1/integratedLuminosity);
+    theJetQAHist_den2->Scale(1/theJetQAHist_den2->GetBinWidth(1));
+    
+    {//MC, norm, no weights
+      
+      std::string theHistName_num="hVz";
+      if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+      TH1F* theJetQAHist_num = (TH1F*)finMC->Get( theHistName_num.c_str() );      
+      theJetQAHist_num->Scale(1/theJetQAHist_num->GetBinWidth(1));
+      theJetQAHist_num->Scale(theJetQAHist_den->Integral()/theJetQAHist_num->Integral());
+      
+      TH1F* theRatio=theJetQAHist_num;
+      theRatio->Divide(theJetQAHist_den);
+      theRatio->SetTitle("evtQA, ratio, MC norm., data");
+      theRatio->SetYTitle("MC/Data");
+      theRatio->SetXTitle("vz (cm)");
+      theRatio->SetAxisRange(0.,2.5,"Y");
+      theRatio->SetMarkerColor(kRed+2);
+      theRatio->Draw();
+
+
+      TH1F* theJetQAHist_num2= (TH1F*)theJetQAHist_num->Clone("cloneHist");
+      theJetQAHist_num2->Scale(theJetQAHist_den2->Integral()/theJetQAHist_num2->Integral());
+
+      TH1F* theRatio2=theJetQAHist_num2;
+      theRatio2->Divide(theJetQAHist_den2);
+      theRatio2->SetMarkerColor(kAzure);
+      theRatio2->Draw("same");
+
+      TLegend* theLeg = new TLegend(0.1,0.1,0.3,0.3,NULL,"NBNDC");
+      theLeg->AddEntry(theRatio,"MC/data w/o trigWghts");
+      theLeg->AddEntry(theRatio2,"MC/data w/ trig weights");
+      theLeg->Draw();
+
+      temp_canv->Print( thePDFFileName.c_str() );
+    }
+
+    {//MC, norm, vz weights
+      std::string theHistName_num="hvzWeightedVz";
+      if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+      TH1F* theJetQAHist_num = (TH1F*)finMC->Get( theHistName_num.c_str() );
+      theJetQAHist_num->Scale(1/theJetQAHist_num->GetBinWidth(1));
+      theJetQAHist_num->Scale(theJetQAHist_den->Integral()/theJetQAHist_num->Integral());
+      
+      TH1F* theRatio=theJetQAHist_num;
+      theRatio->Divide(theJetQAHist_den);
+      theRatio->SetTitle("evtQA, ratio, MC norm. w/ vz weights, data");
+      theRatio->SetYTitle("MC/Data");
+      theRatio->SetXTitle("vz (cm)");
+      theRatio->SetAxisRange(0.,2.5,"Y");
+      theRatio->SetMarkerColor(kRed+2);
+      theRatio->Draw();
+
+
+      TH1F* theJetQAHist_num2= (TH1F*)theJetQAHist_num->Clone("cloneHist");
+      theJetQAHist_num2->Scale(theJetQAHist_den2->Integral()/theJetQAHist_num2->Integral());
+
+      TH1F* theRatio2=theJetQAHist_num2;
+      theRatio2->Divide(theJetQAHist_den2);
+      theRatio2->SetMarkerColor(kAzure);
+      theRatio2->Draw("same");
+
+      TLegend* theLeg = new TLegend(0.1,0.1,0.3,0.3,NULL,"NBNDC");
+      theLeg->AddEntry(theRatio,"MC/data w/o trigWghts");
+      theLeg->AddEntry(theRatio2,"MC/data w/ trig weights");
+      theLeg->Draw();
+
+      temp_canv->Print( thePDFFileName.c_str() );
+    }
+
+    {//MC, norm, pthat weights
+      std::string theHistName_num="hpthatWeightedVz";
+      if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+      TH1F* theJetQAHist_num = (TH1F*)finMC->Get( theHistName_num.c_str() );
+      theJetQAHist_num->Scale(1/theJetQAHist_num->GetBinWidth(1));
+      theJetQAHist_num->Scale(theJetQAHist_den->Integral()/theJetQAHist_num->Integral());
+      
+      TH1F* theRatio=theJetQAHist_num;
+      theRatio->Divide(theJetQAHist_den);
+      theRatio->SetTitle("evtQA, ratio, MC norm. w/ pthat weights, data");
+      theRatio->SetYTitle("MC/Data");
+      theRatio->SetXTitle("vz (cm)");
+      theRatio->SetAxisRange(0.,2.5,"Y");
+      theRatio->SetMarkerColor(kRed+2);
+      theRatio->Draw();
+
+      TH1F* theJetQAHist_num2= (TH1F*)theJetQAHist_num->Clone("cloneHist");
+      theJetQAHist_num2->Scale(theJetQAHist_den2->Integral()/theJetQAHist_num2->Integral());
+
+      TH1F* theRatio2=theJetQAHist_num2;
+      theRatio2->Divide(theJetQAHist_den2);
+      theRatio2->SetMarkerColor(kAzure);
+      theRatio2->Draw("same");
+
+      TLegend* theLeg = new TLegend(0.1,0.1,0.25,0.25,NULL,"NBNDC");
+      theLeg->AddEntry(theRatio,"MC/data w/o trigWghts");
+      theLeg->AddEntry(theRatio2,"MC/data w/ trig weights");
+      theLeg->Draw();
+
+      temp_canv->Print( thePDFFileName.c_str() );
+    }
+
+    {//MC, norm, all weights
+      std::string theHistName_num="hWeightedVz";
+      if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+      TH1F* theJetQAHist_num = (TH1F*)finMC->Get( theHistName_num.c_str() );
+      theJetQAHist_num->Scale(1/theJetQAHist_num->GetBinWidth(1));
+      theJetQAHist_num->Scale(theJetQAHist_den->Integral()/theJetQAHist_num->Integral());
+      
+      TH1F* theRatio=theJetQAHist_num;
+      theRatio->Divide(theJetQAHist_den);
+      theRatio->SetTitle("evtQA, ratio, MC norm. w/ all weights, data");
+      theRatio->SetYTitle("MC/Data");
+      theRatio->SetXTitle("vz (cm)");
+      theRatio->SetAxisRange(0.,2.5,"Y");
+      theRatio->SetMarkerColor(kRed+2);
+      theRatio->Draw();
+
+      TH1F* theJetQAHist_num2= (TH1F*)theJetQAHist_num->Clone("cloneHist");
+      theJetQAHist_num2->Scale(theJetQAHist_den2->Integral()/theJetQAHist_num2->Integral());
+
+      TH1F* theRatio2=theJetQAHist_num2;
+      theRatio2->Divide(theJetQAHist_den2);
+      theRatio2->SetMarkerColor(kAzure);
+      theRatio2->Draw("same");
+
+      TLegend* theLeg = new TLegend(0.1,0.1,0.25,0.25,NULL,"NBNDC");
+      theLeg->AddEntry(theRatio,"MC/data w/o trigWghts");
+      theLeg->AddEntry(theRatio2,"MC/data w/ trig weights");
+      theLeg->Draw();
+
+      temp_canv->Print( thePDFFileName.c_str() );
+    }
+
+  }
+  
 
 
 

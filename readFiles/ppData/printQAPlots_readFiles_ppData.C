@@ -9,12 +9,14 @@ const std::string inputDir =
 //highPtJetTrig 5.02TeV 2015 prompt reco
 const double integratedLuminosity=25.8*pow(10.,9.)*0.99;// 25.8 inv. picobarns to inv. millibarns
 const std::string inputFilename=
-  "readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/HighPtJetTrig_ak4PF-allFiles.root";
+  //"readFiles_ppData_5p02TeV_HighPtJetTrig_06-10-16__allFiles_vzHasNoTrigWeight/HighPtJetTrig_ak4PF-allFiles.root";
+  //"readFiles_ppData_5p02TeV_HighPtJetTrig_08-23-16__noTrigWeights/HighPtJetTrig_ak4PF-allFiles.root";
+  "readFiles_ppData_5p02TeV_HighPtJetTrig_08-23-16__vzWithAndWithoutWeights/HighPtJetTrig_ak4PF-allFiles.root";
 const std::string fullFilename=CMSSW_BASE+inputDir+inputFilename;
 
 // output relevant
 const std::string thePDFFileName=
-  "readFiles_ppData_printPlots_HighPtJets_PromptReco2015_JetQA-vz-TrigComb_8.22.16.pdf";
+  "printQAPlots_ppData_HighPtJets_PromptReco2015_JetQA-vz-TrigComb_8.23.16.pdf";
 
 // other useful things
 const std::string radius="4";
@@ -54,7 +56,7 @@ int main(int argc, char *argv[]){
     if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
 
     TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-    theJetQAHist->SetTitle("data Event QA, vz");
+    theJetQAHist->SetTitle("data Event QA, vz, without TrigWeight");
     theJetQAHist->SetYTitle("millibarn/bin");
     theJetQAHist->SetXTitle("vz (cm)");
 
@@ -62,6 +64,40 @@ int main(int argc, char *argv[]){
     theJetQAHist->Scale(1/integratedLuminosity);
 
     theJetQAHist->Draw();
+    temp_canv->Print( thePDFFileName.c_str() );
+  }
+  {
+    std::string theHistName="hWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
+
+    TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
+    theJetQAHist->SetTitle("data Event QA, vz, with TrigWeight");
+    theJetQAHist->SetYTitle("millibarn/bin");
+    theJetQAHist->SetXTitle("vz (cm)");
+
+    theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
+    theJetQAHist->Scale(1/integratedLuminosity);
+
+    theJetQAHist->Draw();
+    temp_canv->Print( thePDFFileName.c_str() );
+  }
+  {
+    std::string theHistName_num="hWeightedVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_num<<std::endl;
+    TH1F* theJetQAHist_num= (TH1F*)fin->Get( theHistName_num.c_str() );
+
+    std::string theHistName_den="hVz";
+    if(debugMode)std::cout<<"theHistName="<<theHistName_den<<std::endl;
+    TH1F* theJetQAHist_den= (TH1F*)fin->Get( theHistName_den.c_str() );
+
+    TH1F* theRatio=theJetQAHist_num;
+    theRatio->Divide(theJetQAHist_den);
+    theRatio->SetTitle("data Event QA, vz w/ over vz w/o TrigWeight");
+    theRatio->SetYTitle("weighted/unweighted");
+    theRatio->SetXTitle("vz (cm)");
+    theRatio->SetAxisRange(0., 18., "Y");
+
+    temp_canv->Draw();
     temp_canv->Print( thePDFFileName.c_str() );
   }
   //----------------------

@@ -33,7 +33,7 @@ then
     NJobs=$(( $nFiles / $NFilesPerJob ))
     if [[ $(( $nFiles % $NFilesPerJob ))  -gt 0 ]]
     then
-    NJobs=$(( $NJobs + 1 ))
+	NJobs=$(( $NJobs + 1 ))
     fi
     startFilePos=0
 elif [[ $startFilePos -ge $nFiles ]]
@@ -51,18 +51,22 @@ echo "starting at file position ${startFilePos}..."
 echo ""
 
 # additional inputs to the run script and .exe, these don't change too much
-destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/readFiles_ppData"
 radius=4
 jetType="PF"
+# old and shoul consider removing
+destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/readFiles_ppData"
 
 # create output folder/logfileNames with name based on filelist
 filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
 filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
 energy=${filelistTitle%%_*} #echo "energy is ${energy}"
 trig=${filelistTitle#*_} #echo "trig is ${trig}"
-dirName="readFiles_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
+
+#dirName="readFiles_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
+dirName="readFiles_ppData_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
 logFileDir="${PWD}/outputCondor/${dirName}"
+
 if [ -d "${logFileDir}" ]; then
     rm -rf "${logFileDir}"
 fi

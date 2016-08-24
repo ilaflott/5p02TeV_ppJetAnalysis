@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo ""
+
 # error conditions 
 if [[ $# -ne 5 ]] # not enough arguments
 then
@@ -8,15 +9,15 @@ then
     echo "source condorSubmit_readFiles_ppMC.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
     echo "set <NJobs>=-1 to run the entire filelist with jobs of size <NFilesPerJob>"
     return 1
-#elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
-#then
-#    echo "non integer <startFilePos>, exit"
-#    return 1
-#elif [[ $3 -lt 0 ]] # check for valid startFilePos
-#then
-#    echo "bad third argument"
-#    echo "0 <= <startFilePos> <= nFiles-1"
-#    return 1
+elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
+then
+    echo "non integer <startFilePos>, exit"
+    return 1
+elif [[ $3 -lt 0 ]] # check for valid startFilePos
+then
+    echo "bad third argument"
+    echo "0 <= <startFilePos> <= nFiles-1"
+    return 1
 fi
 
 # input arguments to submit script
@@ -34,22 +35,13 @@ then
     NJobs=$(( $nFiles / $NFilesPerJob ))
     if [[ $(( $nFiles % $NFilesPerJob ))  -gt 0 ]]
     then
-    NJobs=$(( $NJobs + 1 ))
+	NJobs=$(( $NJobs + 1 ))
     fi
     startFilePos=0
 elif [[ $startFilePos -ge $nFiles ]]
 then
     echo "bad <startFilePos>, exit"
     echo "0 <= <startFilePos> < nFiles-1"
-    return 1
-elif [[ ! $startFilePos =~ ^-?[0-9]+$ ]]
-then
-    echo "non integer <startFilePos>, exit"
-    return 1
-elif [[ $startFilePos -lt 0 ]]
-then
-    echo "bad third argument"
-    echo "0 <= <startFilePos> <= nFiles-1"
     return 1
 fi
 
@@ -59,7 +51,7 @@ echo "require ${NFilesRequested} files for ${NJobs} jobs"
 echo "# of files in list: ${nFiles}"
 echo "starting at file position ${startFilePos}..."
 echo ""
-
+    
 # additional inputs to the run script and .exe, these don't change too much
 radius=4
 jetType="PF"
@@ -71,9 +63,12 @@ filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
 filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
 energy=${filelistTitle%%_*} #echo "energy is ${energy}"
 trig=${filelistTitle#*_} #echo "trig is ${trig}"
-dirName="readFiles_ppMC_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")" #echo "dirName is ${dirName}"
+
+#dirName="readFiles_ppMC_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")" #echo "dirName is ${dirName}"
+dirName="readFiles_ppMC_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
 outName="${trig}_ak${radius}${jetType}" #echo "outName is ${outName}"
 logFileDir="${PWD}/outputCondor/${dirName}" #echo "logFileDir is ${logFileDir}"
+
 if [ -d "${logFileDir}" ]; then
     rm -rf "${logFileDir}"
 fi
@@ -168,4 +163,5 @@ done
 
 cd -
 echo "done."
+
 return

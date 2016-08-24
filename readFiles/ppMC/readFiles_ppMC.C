@@ -169,6 +169,8 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   TH1F *hpthat = new TH1F("hpthat","",1000,0,1000);
   TH1F *hWeightedpthat = new TH1F("hWeightedpthat","",1000,0,1000);
   TH1F *hVz = new TH1F("hVz","",200, -20, 20);
+  TH1F *hpthatWeightedVz = new TH1F("hpthatWeightedVz","",200, -20, 20);
+  TH1F *hvzWeightedVz = new TH1F("hvzWeightedVz","",200, -20, 20);
   TH1F *hWeightedVz = new TH1F("hWeightedVz","",200, -20, 20);
 
   // book jet variable histograms
@@ -249,9 +251,7 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
   // a little prep for pt/eta bin searching later
   // if extra speed is needed (i dont think it is), can implement at a later time
   const float minAbsJetEta=2.0, minJetPt=15.0;
-  //int etabin = -1;
-  //int binx = -1;
-  //int ptbin = -1;
+  //int etabin = -1;  //int binx = -1;  //int ptbin = -1;
   
   // EVENT LOOP
   Long64_t nentries=jetpp[0]->GetEntries();  
@@ -278,20 +278,23 @@ int readFiles_ppMC(int startfile , int endfile , std::string inFilelist , std::s
     //if(rho > 2 || nTrk < 2) continue;
 
     // compute weights
-    double vzWeight=1;           
+    double vzWeight=1.;           
     vzWeight = fVzPP->Eval(vz_F);
     
     double evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }
  
-    double weight_eS=1;          
+    double weight_eS=1.;          
     //weight_eS = trigComb(trgDec, treePrescl, triggerPt);    
     double finalWeight=evtPthatWeight*vzWeight*weight_eS;
 
     // fill (un)weighted evt histos
-    hVz->Fill(vz_F);
+    hVz->Fill(vz_F, 1.);
+    hvzWeightedVz->Fill(vz_F, vzWeight);
+    hpthatWeightedVz->Fill(vz_F, evtPthatWeight);
     hWeightedVz->Fill(vz_F, finalWeight);
-    hpthat->Fill(pthat_F);
+
+    hpthat->Fill(pthat_F, 1.);
     hWeightedpthat->Fill(pthat_F, finalWeight);
 
     // check trigger decisions for events + exclusivity between them, count events

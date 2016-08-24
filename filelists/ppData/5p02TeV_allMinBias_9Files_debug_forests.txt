@@ -1,0 +1,9 @@
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_1.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_10.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_100.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_101.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_102.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_103.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_104.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_105.root
+/mnt/hadoop/cms/store/user/dgulhan/MinimumBias1/HiForest_MinimumBias1_Run2015E_PromptReco_pp_5020GeV/151201_113508/0000/HiForest_106.root

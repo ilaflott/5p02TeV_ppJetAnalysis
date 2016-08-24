@@ -141,17 +141,22 @@ int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std:
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_F);
 
   // hltanalysis, I should try figuring out a better way to do this part
-  std::string HLTBranches[N_HLTBits]; for(int i=0;i<N_L1Bits;i++) HLTBranches[i]=HLTBitStrings[i]+"_v1";
+  std::string HLTBranches[N_HLTBits]; 
+  for(int i=0;i<N_L1Bits;i++) HLTBranches[i]=HLTBitStrings[i]+"_v1";
   jetpp[3]->SetBranchAddress( HLTBranches[0].c_str() , &jet40_F);
   jetpp[3]->SetBranchAddress( HLTBranches[1].c_str() , &jet60_F);
   jetpp[3]->SetBranchAddress( HLTBranches[2].c_str() , &jet80_F);
   jetpp[3]->SetBranchAddress( HLTBranches[3].c_str() , &jet100_F);
-  std::string HLTPresclBranches[N_HLTBits]; for(int i=0;i<N_HLTBits;i++) HLTPresclBranches[i]=HLTBitStrings[i]+"_v1_Prescl";
+  
+  std::string HLTPresclBranches[N_HLTBits]; 
+  for(int i=0;i<N_HLTBits;i++) HLTPresclBranches[i]=HLTBitStrings[i]+"_v1_Prescl";
   jetpp[3]->SetBranchAddress( HLTPresclBranches[0].c_str() , &jet40_p_F);
   jetpp[3]->SetBranchAddress( HLTPresclBranches[1].c_str() , &jet60_p_F);
   jetpp[3]->SetBranchAddress( HLTPresclBranches[2].c_str() , &jet80_p_F);
   jetpp[3]->SetBranchAddress( HLTPresclBranches[3].c_str() , &jet100_p_F);
-  std::string L1PresclBranches[N_L1Bits]  ; for(int i=0;i<N_HLTBits;i++) L1PresclBranches[i]=L1BitStrings[i]+"_Prescl";
+
+  std::string L1PresclBranches[N_L1Bits]  ; 
+  for(int i=0;i<N_HLTBits;i++) L1PresclBranches[i]=L1BitStrings[i]+"_Prescl";
   jetpp[3]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1seed_p_F);
   jetpp[3]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1seed_p_F);
   jetpp[3]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1seed_p_F);
@@ -190,8 +195,8 @@ int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std:
   }
 
   // for vertex position, can use for vz weighting
-  TH1F *hVz;
-  hVz = new TH1F("hVz","",200, -20, 20);
+  TH1F *hVz = new TH1F("hVz","",200, -20, 20);
+  TH1F *hWeightedVz = new TH1F("hWeightedVz","",200, -20, 20);
 
   // for triggerpt spectra before/after jetID
   //consider renaming h_ppTrgObj, 'hpp' confusing
@@ -257,9 +262,6 @@ int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std:
         pprimaryvertexFilter_F==0 || //skim
         fabs(vz_F)>15              ) continue;
     
-    // fill vz histo
-    hVz->Fill(vz_F);
-    
     // total prescale array
     int treePrescl[4]={ (jet40_p_F*jet40_l1seed_p_F), (jet60_p_F*jet60_l1seed_p_F), 
 			(jet80_p_F*jet80_l1seed_p_F), (jet100_p_F*jet100_l1seed_p_F) };    
@@ -295,9 +297,11 @@ int readFiles_ppData(int startfile , int endfile , std::string inFilelist , std:
     }    
 
     double weight_eS = trigComb(trgDec, treePrescl, triggerPt);
-    //// 8.22.2016; gonna stick in the integrated luminosity in the weight so vertical axes are cross section
-    //weight_eS/=25.8*math::pow(10,6);//inverse picobarns to inverse microbarns
-    
+
+    // fill vz histo
+    hVz->Fill(vz_F, 1.0);
+    hWeightedVz->Fill(vz_F, weight_eS);
+
     if(debugMode&&nEvt%250==0)std::cout <<"triggerPt ="<<triggerPt<<std::endl;
     if(debugMode&&nEvt%250==0)std::cout<<"jet 40, trgDec[0]  = "<< trgDec[0]  <<std::endl;
     if(debugMode&&nEvt%250==0)std::cout<<"jet 60, trgDec[1]  = "<< trgDec[1]  <<std::endl;

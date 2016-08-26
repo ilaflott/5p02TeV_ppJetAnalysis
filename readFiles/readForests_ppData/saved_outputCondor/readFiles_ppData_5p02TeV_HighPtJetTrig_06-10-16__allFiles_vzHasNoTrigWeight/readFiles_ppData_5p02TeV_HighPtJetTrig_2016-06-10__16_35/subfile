@@ -1,0 +1,19 @@
+
+Universe       = vanilla
+Environment = "HOSTNAME=hidsk0001.cmsaf.mit.edu"
+Executable     = condorRun_readFiles_ppData.sh
++AccountingGroup = "group_cmshi.ilaflott"
+Arguments      = 390 399 5p02TeV_HighPtJetTrig_forests.txt HighPtJetTrig_ak4PF-390to399.root 4 PF 0
+Input          = /dev/null
+Error          = /net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/ppData/readFiles_ppData/outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10__16_35/HighPtJetTrig_ak4PF-390to399.err
+Output         = /net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/ppData/readFiles_ppData/outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10__16_35/HighPtJetTrig_ak4PF-390to399.out
+Log            = /net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/ppData/readFiles_ppData/outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10__16_35/HighPtJetTrig_ak4PF-390to399.log
+# get the environment (path, etc.)
+GetEnv         = True
+# prefer to run on fast, 64 bit computers
+Rank           = kflops
+Requirements   = Arch == "X86_64"
+should_transfer_files   = YES
+transfer_input_files = 5p02TeV_HighPtJetTrig_forests.txt,readFiles_ppData.exe
+when_to_transfer_output = ON_EXIT
+Queue

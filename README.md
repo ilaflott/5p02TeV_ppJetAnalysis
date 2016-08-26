@@ -1,5 +1,9 @@
 
-ian w laflotte, started on 6/15/2016, last updated on 7/21/16
+ian w laflotte, started on 6/15/2016, last updated on 8/24/16
+
+
+
+
 
 
 **********
@@ -10,48 +14,99 @@ See below for notes regarding the use of scripts/code, goals, progress, etc. Som
 some of this may be more readable in github via the RAW format button.
 
 
+
+
+
+
+
 **********
 // OVERALL STATUS --------------------------------------------------------
 
-positive, most code compiles+runs without issue. 
-Most output looks sensbile (DijetResponse_printPlots, readFiles_ppd{Data,MC}_printPlots)
-Issue: Py6 QCDDijetMC for pp doesnt't have an emulated HLT/L1 sector, can't use/test readFiles_ppMC_normRespMatrix.C
-putting MinBias samples into the spectra+fitter and then re-running the analysis shouldn't be an issue
+Status: Good; beginning to look a bit closer and interpret analysis results to ask what we can be doing better
+
+Issue: Py8 QCDDijetMC for pp doesnt't have an emulated HLT/L1 sector, can't use/test readFiles_ppMC_normRespMatrix.C
+Issue: not vz-weighting the MC correctly
+
+
+
+
 
 
 **********
 // readFiles --------------------------------------------------------
 
+
+
 FILE(s):
 pp{Data,MC}/readFiles_pp{Data,MC}.{C,h}
-pp{Data,MC}/readFiles_pp{Data,MC}_printPlots.C
+ppData/readFiles_ppData_Run2MinBias.{C,h}
+
 ppMC/readFiles_ppMC_deriveJERUnc.{C,h}
-ppMC/readFiles_ppMC_normRespMatrix.{C,h}
-ppMC/readFiles_ppMC_JERandJES_plotNfit.{C,h}
-ppMC/readFiles_ppMC_JERandJES_fitsNfuncs.h
-ppMC/readFiles_ppMC_JERandJES_binsNconsts.h
+ppMC/normRespMatrix_ppMC.{C,h}
+ppMC/jetWeights/jetWeights.{C,h}
+
+printQAPlots/printQAPlots_readFiles_pp{Data,MC}.C
+
+
 
 GOAL(s) OF CODE:
-create pp{Data,MC} input for unfoldSpectra steps and apply pthat/vz/etc. 
-apply weights computed from jetWeights.C to ppMC
+create pp{Data,MC} input files for unfoldSpectra, JERandJES, DijetResponse code(s)
 make QA/triggerCombination/vz/pthat plots for sanity check for pp{Data,MC}
-plotting, fitting, and deriving JER/JES + response matrix normalization for MC events
+apply trigger weights to ppData
+compute proper MC jet weights for application in readFiles_ppMC
+apply vz weights from previous fits to ppMC
+apply dijet weights computed from jetWeights.C to ppMC
+
+
 
 ppData STATUS:
-JetQA/vz/trigger+combo plots created with HighPtJet Triggered datasets up on github in readFiles/ppData folder
-output ntuples can be fed into unfolding code just fine
+attempting to implement Run2MinBias version now
+issue with Aj/xj computation; should do the first two *valid* jets
+
 
 ppMC STATUS:
-JetQA/vz/pthat/unfolding plots created with QCDDijet Py6 MC up on github in readFiles/ppMC folder
-Dijet QCD MC appears to be correctly weighted
-output ntuples can be fed into unfolding code just fine
-normRespMatrix.C DOES NOT WORK! QCDDijet Py6 MC doesn't have req. HLT info
-JERandJES_plotNfit/fitsNfuncs/binsNconsts.{C,h} scripts compile+work fine. unsure if output is sane
-deriveJERUnc.{C,h} compiles+work fine. unsure if output is sane
+Dijet QCD MC appears to be correctly pthat-weighted, but not correctly vz-weighted
+
+printQAPlots STATUS:
+early stages, in progress...
+
+jetWeights STATUS:
+fine, no work to be done yet
+
+
 
 CURRENTLY WORKING ON:
-Making plots from printPlots more enlightening (more info on drawn PDF file, better binning, maybe!)
-interpreting output from the JER/JES scripts, also making it prettier + more readable
+readFiles_ppData_Run2MinBias.{C,h} to begin to push our observations to lower pt
+printQAPlots_Overlaid.C to better compare MC/Data plots
+
+
+
+
+
+
+
+**********
+// unfoldSpectra --------------------------------------------------------
+
+FILE(s):
+unfoldDataSpectra.C
+doMCClosureTests.C
+unfoldSpectra.h
+utilities.h
+
+GOAL(s) OF CODE: 
+remove detector distortions+effects w/ Bayesian+SVD unfolding techniques and a spectra "training" sample
+
+STATUS:
+output looks largely good so far, but the bayesian unfolding could be better
+there are better kReg values for the SVD unfolding to pick other than 20, figure it out!
+
+CURRENTLY WORKING ON:
+making more Bayesian Unfolding plots in both codes, want to examine the fitting across several different kIter values
+
+
+
+
 
 
 **********
@@ -77,39 +132,9 @@ making plots pretty + interpreting the output
 understanding the low Rel Response curve for low jetpt on ppData and ppMC
 
 
-**********
-// jetWeights --------------------------------------------------------
-
-FILE(s):
-jetWeights.C
-
-GOAL(s) OF CODE: 
-Compute Dijet weights for ppMC in different pthat bins, output the event weights into a text file
-
-STATUS:
-all tests run well, dijetQCD MC weights calculated then hardcoded into readFiles_ppMC
-
-CURRENTLY WORKING ON:
 
 
 
-**********
-// unfoldSpectra --------------------------------------------------------
-
-FILE(s):
-unfoldDataSpectra.C
-doMCClosureTests.C
-unfoldSpectra.h
-utilities.h
-
-GOAL(s) OF CODE: 
-remove detector distortions+effects w/ Bayesian+SVD unfolding techniques and a spectra "training" sample
-
-STATUS:
-unfoldDataSpectra.C and do MCClosureTests
-
-CURRENTLY WORKING ON:
-interpreting + beautifying the output plots from both unfoldDataSpectra.C and doMCClosureTests.C
 
 
 **********
@@ -127,10 +152,20 @@ CURRENTLY WORKING ON, STATUS, CURRENTLY WORKING ON:
 N/A, later.
 
 
+
+
+
+
+
 **********
 // WORKFLOW(s) --------------------------------------------------------
 
 section describing the intended procedures the code + it's output and products should follow. Warning; this section contains some abuse of C++ syntax
+
+
+
+
+
 
 
 **********
@@ -142,16 +177,31 @@ ForestFiles into-> jetWeights.C outputs-> weightsInTextFormat hardCodeInto-> rea
 inputForestFiles into-> readFiles.C outputs-> rootFiles into-> readFiles_printPlots.C outputs-> pdf plots
 
 
+
+
+
+
+
 **********
 // for JER uncertainty :
 
 readFiles_ppMC.C rootFiles into-> readFiles_ppMC_deriveJERUnc.C outputs-> pdf plots + rootFiles
 
 
+
+
+
+
+
 **********
 // for JER/JES plotting + fitting :
 
 readFiles_ppMC rootFiles into-> readFiles_ppMC_JERandJES_plotNfit.C outputs-> pdf plots + rootFiles
+
+
+
+
+
 
 
 **********
@@ -162,12 +212,22 @@ unfoldDataSpectra.C outputs->
 data unfolding RootFile + plots output
 
 
+
+
+
+
+
 **********
 // for MCClosure tests --------------------------------------------------------
 
 hists from readFiles_ppMC rootFiles into-> 
 doMCClosureTests.C outputs->
 data unfolding RootFile + plots output
+
+
+
+
+
 
 
 **********

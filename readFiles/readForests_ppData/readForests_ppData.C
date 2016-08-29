@@ -68,9 +68,8 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     //lastFileAdded=filename_Forest;
 
     std::cout<<", to each TChain in array"<<std::endl;
-    for(int t = 0;t<N_trees;++t){ 
-      jetpp[t]->Add(filename_Forest.c_str()); 
-      if(!treesAdded)treesAdded=true;     }
+    for(int t = 0;t<N_trees;++t) jetpp[t]->Add(filename_Forest.c_str()); 
+    if(!treesAdded)treesAdded=true;     
     lastFileAdded=filename_Forest;
   }//end file loop
   assert(treesAdded);//avoid segfault later
@@ -205,20 +204,20 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   
   //evt counts post all evt cuts. thrown out because no jets left in the event pre or post cuts
   TH1F *h_NEvents_withJets           = new TH1F("NEvents_withJets" , 
-		  				"NEvents read post evt cuts, w/ good jets", 1,0,2);
+		  				"NEvents read post evt cuts, w/ jets", 1,0,2);
   TH1F *h_NEvents_withJets_kmatCut   = new TH1F("NEvents_withJets_kmatCut" , 
-						"NEvents read post evt cuts, w/ good jets post kmatCut", 1,0,2);
+						"NEvents read post evt cuts, w/ jets post kmatCut", 1,0,2);
   TH1F *h_NEvents_withJets_JetIDCut = new TH1F("NEvents_withJets_JetIDCut" , 
-						"NEvents read post evt cuts, w/ good jets post kmatCut AND jetID Cut", 1,0,2);
+						"NEvents read post evt cuts, w/ jets post kmatCut AND JetID Cut", 1,0,2);
 
   //jet counts
   TH1F *h_NJets          = new TH1F("NJets","NJets read", 1,0,2);
   TH1F *h_NJets_kmatCut  = new TH1F("NJets_kmatCut ","NJets read post kmatCut ", 1,0,2);
-  TH1F *h_NJets_JetIDCut = new TH1F("NJets_jetIDCut","NJets read post jetIDCut AND kmatCut", 1,0,2);
+  TH1F *h_NJets_JetIDCut = new TH1F("NJets_JetIDCut","NJets read post JetIDCut AND kmatCut", 1,0,2);
   
   //TH1F *h_WNJets          = new TH1F("WNJets"         ,"wghtdNJets of selected events, no jet cuts", 1,0,2);
   //TH1F *h_WNJets_kmatCut  = new TH1F("WNJets_kmatCut ","wghtdNJets post kmatCut ", 1,0,2);// kmat for kinematics
-  //TH1F *h_WNJets_jetIDCut = new TH1F("WNJets_jetIDCut","wghtdNJets post jetIDCut", 1,0,2);
+  //TH1F *h_WNJets_JetIDCut = new TH1F("WNJets_JetIDCut","wghtdNJets post JetIDCut", 1,0,2);
 
   //jet QA
   TH1F *hJetQA[2][N_vars];
@@ -540,11 +539,11 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
       h_NEvents_vzCut->GetEntries()<<std::endl;
     
     std::cout<<std::endl;
-    std::cout<<"Total Num of good Events w/ good jets                             = " <<
+    std::cout<<"Total Num of good Events w/ jets                             = " <<
       h_NEvents_withJets->GetEntries()<<std::endl;	   
-    std::cout<<"Total Num of good Events, w/ good jets, post kmatCuts             = " <<
+    std::cout<<"Total Num of good Events, w/ jets, post kmatCuts             = " <<
       h_NEvents_withJets_kmatCut->GetEntries()<<std::endl; 
-    std::cout<<"Total Num of good Events, w/ good jets, post kmatCut AND JetIDCut = " <<
+    std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " <<
       h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;
     }
 

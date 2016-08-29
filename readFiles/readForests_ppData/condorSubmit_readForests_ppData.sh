@@ -53,8 +53,6 @@ echo ""
 # additional inputs to the run script and .exe, these don't change too much
 radius=4
 jetType="PF"
-# old and shoul consider removing
-#destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/readFiles_ppData"
 
 # create output folder/logfileNames with name based on filelist
 filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
@@ -156,7 +154,7 @@ EOF
     # submit the job defined in the above submit file
     echo "running readForests_ppData on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    #sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

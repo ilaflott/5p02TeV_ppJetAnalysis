@@ -28,12 +28,8 @@ outfile=$4
 radius=$5 
 jetType=$6 
 debug=$7
-#destination=$8
 
 echo "Processing..."
-./readFiles_ppData.exe $startfile $endfile "${filelist}" "${outfile}" $radius "${jetType}" $debug
-
-#echo "Copying file ${outfile} to ${destination}..."
-#mv ${outfile} ${destination}
+./readForests_ppData.exe $startfile $endfile "${filelist}" "${outfile}" $radius "${jetType}" $debug
 
 echo "Job done!"

@@ -5,7 +5,7 @@
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later
 // compile with...
-// g++ readFiles_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readFiles_ppData.exe
+// g++ readForests_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppData.exe
 
 ////////// (initializa/declara)tions //////////
 // C++, C, etc.
@@ -52,18 +52,18 @@
 //// main
 const int minArgs=1;
 
-//// readFiles_ppData
+//// readForests_ppData
 const int defStartFile=0;
 const int defEndFile=1; //inclusive boundary
 const std::string defInFilelist = "../../filelists/ppData/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
-const std::string defOutputName = "readFiles_ppData_defOut.root";
+const std::string defOutputName = "readForests_ppData_defOut.root";
 const bool defDebugMode = true;
-int readFiles_ppData(int startfile = defStartFile , int endfile = defEndFile ,
+int readForests_ppData(int startfile = defStartFile , int endfile = defEndFile ,
                      std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
                      int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode );
-const int readFilesArgCount=7+minArgs;
+const int readForestsArgCount=7+minArgs;
 
 //// helper functions
 double trigComb(bool *trg, int *pscl, double pt);
@@ -173,13 +173,13 @@ void divideBinWidth(TH1 *h){
 }
 
 
-double trigComb(bool *trg, int *pscl, double pt){
-  double weight=0;
-  if(trg[3] && pt>=100 )          weight = pscl[3];
-  if(trg[2] && pt>=80  && pt<100) weight = pscl[2];
-  if(trg[1] && pt>=60  && pt<80 ) weight = pscl[1];
-  if(trg[0] && pt>=40  && pt<60 ) weight = pscl[0];
-  return weight;
+double trigComb(bool *trgDec, int *treePrescl, double triggerPt){
+  double weight_eS=0;
+  if(trgDec[3] && triggerPt>=100 )                 weight_eS = treePrescl[3];
+  if(trgDec[2] && triggerPt>=80  && triggerPt<100) weight_eS = treePrescl[2];
+  if(trgDec[1] && triggerPt>=60  && triggerPt<80 ) weight_eS = treePrescl[1];
+  if(trgDec[0] && triggerPt>=40  && triggerPt<60 ) weight_eS = treePrescl[0];
+  return weight_eS;
 }
 
 

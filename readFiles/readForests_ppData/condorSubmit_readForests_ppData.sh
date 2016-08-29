@@ -54,7 +54,7 @@ echo ""
 radius=4
 jetType="PF"
 # old and shoul consider removing
-destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/readFiles_ppData"
+#destination="/mnt/hadoop/cms/store/user/ilaflott/5p02TeV_ppJetAnalysis/PP_Data/readFiles_ppData"
 
 # create output folder/logfileNames with name based on filelist
 filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
@@ -62,8 +62,8 @@ filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
 energy=${filelistTitle%%_*} #echo "energy is ${energy}"
 trig=${filelistTitle#*_} #echo "trig is ${trig}"
 
-#dirName="readFiles_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
-dirName="readFiles_ppData_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
+#dirName="readForests_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
+dirName="readForests_ppData_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
 logFileDir="${PWD}/outputCondor/${dirName}"
 
@@ -81,9 +81,9 @@ cd -
 
 # compile code executable, same as rootcompile in my .bashrc
 echo "compiling..."
-g++ readFiles_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readFiles_ppData.exe || return 1
-cp readFiles_ppData.* "${logFileDir}"
-cp condorRun_readFiles_ppData.sh "${logFileDir}"
+g++ readForests_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppData.exe || return 1
+cp readForests_ppData.* "${logFileDir}"
+cp condorRun_readForests_ppData.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 cd ${logFileDir}
 
@@ -135,7 +135,7 @@ do
 
 Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
-Executable     = condorRun_readFiles_ppData.sh
+Executable     = condorRun_readForests_ppData.sh
 +AccountingGroup = "group_cmshi.ilaflott"
 Arguments      = $startfile $endfile $filelist $outfile $radius $jetType $debug
 Input          = /dev/null
@@ -148,15 +148,15 @@ GetEnv         = True
 Rank           = kflops
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
-transfer_input_files = ${filelist},readFiles_ppData.exe
+transfer_input_files = ${filelist},readForests_ppData.exe
 when_to_transfer_output = ON_EXIT
 Queue
 EOF
 
     # submit the job defined in the above submit file
-    echo "running readFiles_ppData on files #${startfile} to #${endfile}"
+    echo "running readForests_ppData on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    #sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

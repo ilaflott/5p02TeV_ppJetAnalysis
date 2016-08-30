@@ -336,7 +336,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     double trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
 
-    double weight_eS=evtPthatWeight*vzWeight*trigWeight;              
+    //double weight_eS=evtPthatWeight*trigWeight*vzWeight;              
+    double weight_eS=evtPthatWeight*trigWeight/vzWeight;              
 
     //vz
     hVz->Fill(vz_F, 1.);

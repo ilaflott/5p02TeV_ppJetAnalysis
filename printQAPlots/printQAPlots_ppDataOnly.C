@@ -1,4 +1,4 @@
-#include "readFiles_ppData.h"
+#include "printQAPlots_ppDataOnly.h"
 
 // Input relevant
 const std::string CMSSW_BASE =
@@ -126,31 +126,31 @@ int main(int argc, char *argv[]){
       if(i==0)theHistTitle+="w/o JetID";
       else theHistTitle+="w/ JetID";
       theJetQAHist->SetTitle(theHistTitle.c_str());
-
+      
       theJetQAHist->SetYTitle("Cross-section (millibarn)/bin");
-
+      
       theJetQAHist->Scale(1/theJetQAHist->GetBinWidth(0));
       theJetQAHist->Scale(1/integratedLuminosity);
-
+      
       theJetQAHist->Draw();
       temp_canv->Print( thePDFFileName.c_str() );
     }
   }
   //----------------------
-
+  
   temp_canv->SetLogy(1);
   // HLT/L1 and Comb plots ----------------------
   //hpp_{HLT40,HLT60,HLT80,HLT100,HLTComb}_{no,}JetID_R4_20_eta_20
   for(int j=0;j<N_HLTNames;j++){
     for(int i=0;i<2;i++){
-
+      
       std::string theHistName="hpp_"+HLTName[j];
       if(i==0)theHistName+="no";
       theHistName+="JetID_R"+radius+"_"+(std::string)etaWidth;
       if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-
+      
       TH1F* theJetQAHist= (TH1F*)fin->Get( theHistName.c_str() );
-
+      
       std::string theHistTitle=HLThTitle[j];
       if(i==0)theHistTitle+="w/o JetID R";
       else theHistTitle+="w/ JetID R";      
@@ -172,4 +172,3 @@ int main(int argc, char *argv[]){
   temp_canv->Print( close_thePDFFileName.c_str() );//close the output file
   return 0;
 }
-

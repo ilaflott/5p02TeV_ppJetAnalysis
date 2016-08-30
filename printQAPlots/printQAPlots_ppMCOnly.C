@@ -1,4 +1,4 @@
-#include "readFiles_ppMC.h"
+#include "printQAPlots_ppMCOnly.h"
 
 // Input relevant
 const std::string CMSSW_BASE = 
@@ -255,91 +255,6 @@ int main(int argc, char *argv[]){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-  //// unfolding plots----------------------
-  //
-  ////unfolding inputs
-  //{  
-  //  std::string theHistName="hpp_gen_"+pfRad_etaWidth;
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-  //{  
-  //  std::string theHistName="hpp_reco_"+pfRad_etaWidth;
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-  //{  
-  //  std::string theHistName="hpp_matrix_"+pfRad_etaWidth;
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH2F* theJetQAHist= (TH2F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-  //
-  ////MCClosure inputs
-  //{  
-  //  std::string theHistName="hpp_mcclosure_gen_"+pfRad_etaWidth;
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-  //{  
-  //  std::string theHistName="hpp_mcclosure_data_"+pfRad_etaWidth;
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-  //{  
-  //  std::string theHistName="hpp_mcclosure_data_train_"+pfRad_etaWidth;
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-  //{  
-  //  std::string theHistName="hpp_mcclosure_matrix_"+pfRad_etaWidth;
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH2F* theJetQAHist= (TH2F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-
-  //// Jet Corrections----------------------
-  ////JEC
-  //{  
-  //  std::string theHistName="";
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-  ////JER
-  //{  
-  //  std::string theHistName="";
-  //  if(debugMode)std::cout<<"theHistName="<<theHistName<<std::endl;
-  //  TH1F* theJetQAHist= (TH1F*)finMC->Get( theHistName.c_str() );
-  //  theJetQAHist->Draw();
-  //  temp_canv->Print( thePDFFileName.c_str() );
-  //}
-
   //vz, MC v Data ratio plots
   { 
     std::string Datafilename=fullDataFilename; 
@@ -497,4 +412,3 @@ int main(int argc, char *argv[]){
   temp_canv->Print( close_thePDFFileName.c_str() );//close the output file
   return 0;
 }
-

@@ -9,7 +9,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
-  const bool fastDebugMode = (debugMode)&&false; //if debugMode is off, fastDebugMode shouldn't be on
+
+  const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
   // basic info the screen
@@ -29,20 +30,21 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
   // form jetTreeName
   std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
-  std::string CaloJetTreeName="ak"+std::to_string(radius)+"CaloJetAnalyzer/t";
   if(debugMode)std::cout<<"looking at jetTree "<<jetTreeName<<std::endl;
-  if(debugMode)std::cout<<"looking at CalojetTree "<<CaloJetTreeName<<std::endl;
+
+  //std::string CaloJetTreeName="ak"+std::to_string(radius)+"CaloJetAnalyzer/t";
+  //if(debugMode)std::cout<<"looking at CalojetTree "<<CaloJetTreeName<<std::endl;
 
   // initialize tree name array
   std::string trees[N_trees];
-  trees[0]=jetTreeName; trees[1]=CaloJetTreeName;
-  for(int i=2;i<N_trees;++i)trees[i]=treeNames[i];
+  trees[0]=jetTreeName; //trees[1]=CaloJetTreeName;
+  for(int i=1;i<N_trees;++i)trees[i]=treeNames[i];
 
   // declare TChains for each tree + friend them
   TChain* jetpp[N_trees];
   for(int t = 0;t<N_trees;++t)  { 
     jetpp[t] = new TChain( trees[t].data() );
-    if(t>1)jetpp[0]->AddFriend( jetpp[t] );  }// not friending calo tree currently
+    if(t>0)jetpp[0]->AddFriend( jetpp[t] );  }// not friending calo tree currently
                                              // not doing anything with it yet
 
     
@@ -151,20 +153,18 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   //jetpp[1]->SetBranchAddress("jtpu",&jtpu_F);
 
   // HiEvtAnalyzer
-  ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I;   
-  float vz_F;
-
-  jetpp[2]->SetBranchAddress("evt",&evt_I);
-  jetpp[2]->SetBranchAddress("run",&run_I);
-  jetpp[2]->SetBranchAddress("lumi",&lumi_I);
-  jetpp[2]->SetBranchAddress("vz",&vz_F);
+  ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I; float vz_F;
+  jetpp[1]->SetBranchAddress("evt",&evt_I);
+  jetpp[1]->SetBranchAddress("run",&run_I);
+  jetpp[1]->SetBranchAddress("lumi",&lumi_I);
+  jetpp[1]->SetBranchAddress("vz",&vz_F);
 
 
   // skimanalysis
   int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I;
-  jetpp[3]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
-  jetpp[3]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
-  jetpp[3]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
+  jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
+  jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
 
 
   // Declare the output file, declare hists after for easy write
@@ -176,10 +176,13 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   // declare hists
   //evt vz, counts
   // histos for weights+weighting
-  TH1F *hVz = new TH1F("hVz","",200, -20, 20);
-  TH1F *hpthatWVz = new TH1F("hpthatWeightedVz","",200, -20, 20);
-  TH1F *hvzWVz = new TH1F("hvzWeightedVz","",200, -20, 20);
-  TH1F *hWVz = new TH1F("hWeightedVz","",200, -20, 20);
+  TH1F *hpthatWVz = new TH1F("hpthatWeightedVz","", 60,-15.,15.);
+  
+  TH1F *hVz = new TH1F("hVz","", 60,-15.,15.);
+  TH1F *hvzWVz = new TH1F("hvzWeightedVz","", 60,-15.,15.);
+  TH1F *hWVz = new TH1F("hWeightedVz","", 60,-15.,15.);
+  TH1F *hvzWProdVz = new TH1F("hvzWeightedProdVz","", 60,-15.,15.);
+  TH1F *hWProdVz = new TH1F("hWeightedProdVz","", 60,-15.,15.);
 
   TH1F *hpthat = new TH1F("hpthat","",1000,0,1000);
   TH1F *hWpthat = new TH1F("hWeightedpthat","",1000,0,1000);
@@ -214,14 +217,17 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){ for(int j = 0; j<N_vars; ++j){
       //jtpt and rawpt special binning
-      if(j<=1) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
+      if(j<=1||j==22) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
 				        Form(";%s;", var[j].c_str()) , 500,0,500);
       //jteta special binning 
       else if(j==2) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
 					     Form(";%s;",var[j].c_str()) , 100,-5,+5);
       //jtphi special binning 
       else if(j==3) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
-					     Form(";%s;",var[j].c_str()) , 100,-4,+4);
+						    Form(";%s;",var[j].c_str()) , 100,-4,+4);
+      //dphi special binning
+      else if(j==21) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
+						    Form(";%s;",var[j].c_str()) , 50, 0,+4);
       //same binning for all others
       else /*if(j>=4)*/ hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
 						 Form(";%s;",var[j].c_str()) , 200,0,2);    }  }
@@ -229,61 +235,90 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
 
   /////   UNFOLDING   ///// START!
-  //gen x reco = matrix
-  TH1F *hpp_gen[2], *hpp_reco[2]; 
-  TH2F* hpp_matrix[2];
 
-  for(int k=0; k<2; ++k){
-    hpp_gen[k]    = new TH1F( Form("hpp_gen_%dwJetID_R%d_%s", k,radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth), 
-			      1000,0,1000);
-    hpp_reco[k]   = new TH1F( Form("hpp_reco_%dwJetID_R%d_%s", k,radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth), 
-			      1000,0,1000);
-    hpp_matrix[k] = new TH2F( Form("hpp_matrix_%dwJetID_R%d_%s", k,radius,etaWidth), 
-			      Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 
-			      1000,0,1000,1000,0,1000);  }
+  TH1F *hpp_gen[2], *hpp_reco[2]; 
+  TH2F* hpp_matrix[2];  //gen x reco = matrix
+  
+  hpp_gen[0]    = new TH1F( Form("hpp_gen_R%d_%s", radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth), 
+			    1000,0,1000);
+  hpp_reco[0]   = new TH1F( Form("hpp_reco_R%d_%s", radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth), 
+			    1000,0,1000);
+  hpp_matrix[0] = new TH2F( Form("hpp_matrix_R%d_%s", radius,etaWidth), 
+			    Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 
+			    1000,0,1000,1000,0,1000);  
+
+  hpp_gen[1]    = new TH1F( Form("hpp_gen_wJetID_R%d_%s", radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth), 
+			    1000,0,1000);
+  hpp_reco[1]   = new TH1F( Form("hpp_reco_wJetID_R%d_%s", radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth), 
+			    1000,0,1000);
+  hpp_matrix[1] = new TH2F( Form("hpp_matrix_wJetID_R%d_%s", radius,etaWidth), 
+			    Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 
+			    1000,0,1000,1000,0,1000);  
   
   //data train -> sample the unfolding is trained on for mcclosure tests
   TH1F *hpp_mcclosure_gen[2], *hpp_mcclosure_data[2],*hpp_mcclosure_data_train[2];
   TH2F* hpp_mcclosure_matrix[2];
+ 
+   hpp_mcclosure_gen[0] = new TH1F(Form("hpp_mcclosure_gen_R%d_%s", radius,etaWidth),
+				  Form("gen spectra for mc closure test R%d %s ",radius,etaWidth), 
+				  1000,0,1000);
+  hpp_mcclosure_data[0] = new TH1F(Form("hpp_mcclosure_data_R%d_%s", radius,etaWidth),
+				   Form("data for mc closure test R%d %s ",radius,etaWidth), 
+				   1000,0,1000);  
+  hpp_mcclosure_data_train[0] = new TH1F(Form("hpp_mcclosure_data_train_R%d_%s",  radius,etaWidth),
+					 Form("data_train for mc closure test R%d %s ", radius,etaWidth), 
+					 1000, 0, 1000);  
+  hpp_mcclosure_matrix[0] = new TH2F(Form("hpp_mcclosure_matrix_R%d_%s", radius,etaWidth),
+				     Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
+				     1000,0,1000, 1000,0,1000);  
   
-  for(int k=0; k<2; ++k){
-    hpp_mcclosure_gen[k] = new TH1F(Form("hpp_mcclosure_gen_%dwJetID_R%d_%s",k,radius,etaWidth),
-				    Form("gen spectra for mc closure test R%d %s ",radius,etaWidth), 
-				    1000,0,1000);
-    hpp_mcclosure_data[k] = new TH1F(Form("hpp_mcclosure_data_%dwJetID_R%d_%s",k,radius,etaWidth),
-				     Form("data for mc closure test R%d %s ",radius,etaWidth), 
-				     1000,0,1000);  
-    hpp_mcclosure_data_train[k] = new TH1F(Form("hpp_mcclosure_data_train_%dwJetID_R%d_%s", k,radius,etaWidth),
-					   Form("data_train for mc closure test R%d %s ", radius,etaWidth), 
-					   1000, 0, 1000);  
-    hpp_mcclosure_matrix[k] = new TH2F(Form("hpp_mcclosure_matrix_%dwJetID_R%d_%s",k,radius,etaWidth),
-				       Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
-				       1000,0,1000, 1000,0,1000);  }
-  /////   UNFOLDING   ///// END!
+  hpp_mcclosure_gen[1] = new TH1F(Form("hpp_mcclosure_gen_wJetID_R%d_%s", radius,etaWidth),
+				  Form("gen spectra for mc closure test R%d %s ",radius,etaWidth), 
+				  1000,0,1000);
+  hpp_mcclosure_data[1] = new TH1F(Form("hpp_mcclosure_data_wJetID_R%d_%s", radius,etaWidth),
+				   Form("data for mc closure test R%d %s ",radius,etaWidth), 
+				   1000,0,1000);  
+  hpp_mcclosure_data_train[1] = new TH1F(Form("hpp_mcclosure_data_train_wJetID_R%d_%s",  radius,etaWidth),
+					 Form("data_train for mc closure test R%d %s ", radius,etaWidth), 
+					 1000, 0, 1000);  
+  hpp_mcclosure_matrix[1] = new TH2F(Form("hpp_mcclosure_matrix_wJetID_R%d_%s", radius,etaWidth),
+				     Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
+				     1000,0,1000, 1000,0,1000);  
 
-
-
+  
+  
   /////   GEN/RECO MATCHING   ///// START!
   //TH1F *hpp_mc_genpt[2], *hpp_mc_geneta[2], *hpp_mc_genphi[2], *hpp_mc_gendrjt[2];
   TH2F *hpp_mceff_genpt[2], *hpp_mceff_geneta[2], *hpp_mceff_genphi[2],*hpp_mceff_gendrjt[2];
-  for(int k=0; k<2; ++k){
-    hpp_mceff_genpt[k] = new TH2F(Form("hpp_mceff_genpt_%dwJetID_R%d_%s",k,radius,etaWidth),
-				   Form("gen/reco jet matching, genpt recpt/genpt, R%d %s",radius,etaWidth),
-				    1000,0,1000, 40,0.,5.0);
-    hpp_mceff_geneta[k] = new TH2F(Form("hpp_mceff_geneta_%dwJetID_R%d_%s",k,radius,etaWidth),
-				    Form("gen/reco jet matching, geneta recpt/genpt, R%d %s",radius,etaWidth),
-				     100,-5.,5., 40,0.,5.0);
-    hpp_mceff_genphi[k] = new TH2F(Form("hpp_mceff_genphi_%dwJetID_R%d_%s",k,radius,etaWidth),
-				    Form("gen/reco jet matching, genphi recpt/genpt, R%d %s",radius,etaWidth),
-				     100,-4.,4., 40,0.,5.0); 
-    hpp_mceff_gendrjt[k] = new TH2F(Form("hpp_mceff_gendrjt_%dwJetID_R%d_%s",k,radius,etaWidth),
-				     Form("gen/reco jet matching, gendrjt recpt/genpt, R%d %s",radius,etaWidth),
-				      20,.0,.8, 40,0.,5.0);   }
-  /////   GEN/RECO MATCHING   ///// END!
+  
+  hpp_mceff_genpt[0] = new TH2F(Form("hpp_mceff_genpt_R%d_%s", radius,etaWidth),
+				Form("gen/reco jet matching, genpt recpt/genpt, R%d %s",radius,etaWidth),
+				1000,0,1000, 40,0.,5.0);
+  hpp_mceff_geneta[0] = new TH2F(Form("hpp_mceff_geneta_R%d_%s", radius,etaWidth),
+				 Form("gen/reco jet matching, geneta recpt/genpt, R%d %s",radius,etaWidth),
+				 100,-5.,5., 40,0.,5.0);
+  hpp_mceff_genphi[0] = new TH2F(Form("hpp_mceff_genphi_R%d_%s", radius,etaWidth),
+				 Form("gen/reco jet matching, genphi recpt/genpt, R%d %s",radius,etaWidth),
+				 100,-4.,4., 40,0.,5.0); 
+  hpp_mceff_gendrjt[0] = new TH2F(Form("hpp_mceff_gendrjt_R%d_%s", radius,etaWidth),
+				  Form("gen/reco jet matching, gendrjt recpt/genpt, R%d %s",radius,etaWidth),
+				  20,.0,.8, 40,0.,5.0);   
+
+  hpp_mceff_genpt[1] = new TH2F(Form("hpp_mceff_genpt_wJetID_R%d_%s", radius,etaWidth),
+				Form("gen/reco jet matching, genpt recpt/genpt, R%d %s",radius,etaWidth),
+				1000,0,1000, 40,0.,5.0);
+  hpp_mceff_geneta[1] = new TH2F(Form("hpp_mceff_geneta_wJetID_R%d_%s", radius,etaWidth),
+				 Form("gen/reco jet matching, geneta recpt/genpt, R%d %s",radius,etaWidth),
+				 100,-5.,5., 40,0.,5.0);
+  hpp_mceff_genphi[1] = new TH2F(Form("hpp_mceff_genphi_wJetID_R%d_%s", radius,etaWidth),
+				 Form("gen/reco jet matching, genphi recpt/genpt, R%d %s",radius,etaWidth),
+				 100,-4.,4., 40,0.,5.0); 
+  hpp_mceff_gendrjt[1] = new TH2F(Form("hpp_mceff_gendrjt_wJetID_R%d_%s", radius,etaWidth),
+				  Form("gen/reco jet matching, gendrjt recpt/genpt, R%d %s",radius,etaWidth),
+				  20,.0,.8, 40,0.,5.0);   
 
   
   // EVENT LOOP PREP
-
   // evt  vz weights from Raghav
   TF1 *fVzPP = new TF1("fVzPP","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
   //fVzPP->SetParameters(1.05602e00,5.74688e-03,-3.37288e-03,-1.44764e-05,8.59060e-07);  // Raghav's weights
@@ -302,27 +337,29 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
   
   UInt_t NEvents_read=0;
-  if(debugMode) NEvents_read = 1000*(endfile-startfile+1); 
-  else if(fastDebugMode) NEvents_read = 10*(endfile-startfile+1);  
+  if(fastDebugMode) NEvents_read = 1000*(endfile-startfile+1); 
   else NEvents_read = NEvents_allFiles;
   
   //UInt_t NEvents_40=0, NEvents_60=0, NEvents_80=0, NEvents_100=0;  //trigger event counts
 
+
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;  
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
 
-    if(debugMode&&nEvt%1000==0)std::cout<<"grabbing Evt # = "<<nEvt<<std::endl;
+    if(fastDebugMode&&nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
+    else if (nEvt%10000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
+    
     //for(int i=0;i<N_trees; ++i)jetpp[i]->GetEntry(nEvt);
     jetpp[0]->GetEntry(nEvt);
     h_NEvents_read->Fill(1);
-
+    
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0     || 
         pBeamScrapingFilter_I==0  || 
         pprimaryvertexFilter_I==0  ) continue;    
     h_NEvents_skimCut->Fill(1);
 
-    if( fabs(vz_F)>15              ) continue;
+    if( fabs(vz_F)>15.              ) continue;
     h_NEvents_vzCut->Fill(1);
     
 
@@ -338,12 +375,17 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
     //double weight_eS=evtPthatWeight*trigWeight*vzWeight;              
     double weight_eS=evtPthatWeight*trigWeight/vzWeight;              
+    double weight_eS_prod=evtPthatWeight*trigWeight*vzWeight;              
 
     //vz
-    hVz->Fill(vz_F, 1.);
-    hvzWVz->Fill(vz_F, vzWeight);
     hpthatWVz->Fill(vz_F, evtPthatWeight);
+
+    hVz->Fill(vz_F, 1.);
+    hvzWVz->Fill(vz_F, 1./vzWeight);
     hWVz->Fill(vz_F, weight_eS);
+
+    hvzWProdVz->Fill(vz_F, vzWeight);
+    hWProdVz->Fill(vz_F, weight_eS_prod);
 
     //pthat
     hpthat->Fill(pthat_F, 1.);
@@ -352,13 +394,17 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     // JET LOOP 
     // for Aj/xj computation
     bool firstGoodJetFound=false, secondGoodJetFound=false; 
-    float firstGoodJetPt=-1., secondGoodJetPt=-1.;
+    float firstGoodJetPt=-10., secondGoodJetPt=-10.;
+    float firstGoodJetPhi=-1., secondGoodJetPhi=-1.;
+
     bool firstGoodJetFound_wJetID=false, secondGoodJetFound_wJetID=false; 
-    float firstGoodJetPt_wJetID=-1., secondGoodJetPt_wJetID=-1.;
+    float firstGoodJetPt_wJetID=-10., secondGoodJetPt_wJetID=-10.;
+    float firstGoodJetPhi_wJetID=-1., secondGoodJetPhi_wJetID=-1.;
     
     // for event counting
     bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false;
     for(int jet = 0; jet<nref_I; ++jet){
+
 
       // event+jet counting
       h_NJets->Fill(1);
@@ -367,16 +413,18 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hNEvts_withJets_Filled=true;      }      
 
       float recpt = pt_F[jet];
-      //float rawpt = rawpt_F[jet];
+      float rawpt = rawpt_F[jet];
+      float phi = phi_F[jet];
+
+      // kmatCut
+      if( fabs(eta_F[jet]) > 2. ||
+          recpt <= 15.           ) continue;     
+
       float genpt= refpt_F[jet];
       float geneta = refeta_F[jet];
       float genphi = refphi_F[jet];
       float gendrjt = refdrjt_F[jet];
       
-      // kmatCut
-      if( fabs(eta_F[jet]) > 2. ||
-          recpt <= 15.           ) continue;     
-
       /////   UNFOLDING   ///// START!
       hpp_gen[0]->Fill(genpt, weight_eS);
       hpp_reco[0]->Fill(recpt, weight_eS);
@@ -389,47 +437,68 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hpp_mcclosure_matrix[0]->Fill(recpt, genpt, weight_eS);
 	hpp_mcclosure_gen[0]->Fill(genpt, weight_eS);
 	hpp_mcclosure_data_train[0]->Fill(recpt, weight_eS);      }	
-      /////   UNFOLDING   ///// END!
       
+
       /////   GEN/RECO MATCHING   ///// START!
       hpp_mceff_genpt[0]->Fill(genpt, recpt/genpt, weight_eS);
       hpp_mceff_geneta[0]->Fill(geneta, recpt/genpt, weight_eS);
       hpp_mceff_genphi[0]->Fill(genphi, recpt/genpt, weight_eS);
       hpp_mceff_gendrjt[0]->Fill(gendrjt, recpt/genpt, weight_eS);
-      /////   GEN/RECO MATCHING   ///// END!
+
       
       // jetQA noJetID
       hJetQA[0][0]->Fill(recpt, weight_eS);
       hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
-      hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
-      hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
-      hJetQA[0][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][7]->Fill(chMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][8]->Fill(chSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][10]->Fill(phMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][11]->Fill(phSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][13]->Fill(neMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][14]->Fill(neSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][15]->Fill(eMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][16]->Fill(eSum_F[jet]/recpt, weight_eS);
-      hJetQA[0][17]->Fill(muMax_F[jet]/recpt, weight_eS);
-      hJetQA[0][18]->Fill(muSum_F[jet]/recpt, weight_eS);
+      if(recpt>50.){
+	hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
+	hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
+	hJetQA[0][4]->Fill(trkMax_F[jet]/rawpt, weight_eS);
+	hJetQA[0][5]->Fill(trkSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][6]->Fill(trkHardSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][7]->Fill(chMax_F[jet]/rawpt, weight_eS);
+	hJetQA[0][8]->Fill(chSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][9]->Fill(chHardSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][10]->Fill(phMax_F[jet]/rawpt, weight_eS);
+	hJetQA[0][11]->Fill(phSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][12]->Fill(phHardSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][13]->Fill(neMax_F[jet]/rawpt, weight_eS);
+	hJetQA[0][14]->Fill(neSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][15]->Fill(eMax_F[jet]/rawpt, weight_eS);
+	hJetQA[0][16]->Fill(eSum_F[jet]/rawpt, weight_eS);
+	hJetQA[0][17]->Fill(muMax_F[jet]/rawpt, weight_eS);
+	hJetQA[0][18]->Fill(muSum_F[jet]/rawpt, weight_eS);
+      }
+
 
       // want to compute Aj/xj with the first two good jets that meet all criteria found
-      if (firstGoodJetFound && !secondGoodJetFound){
-	secondGoodJetFound=true; secondGoodJetPt=recpt;}
-      else if (!firstGoodJetFound && !secondGoodJetFound){
-	firstGoodJetFound=true; firstGoodJetPt=recpt; }
-      else if( firstGoodJetFound && secondGoodJetFound ) {
-	float A_j=(firstGoodJetPt-secondGoodJetPt)/(firstGoodJetPt+secondGoodJetPt);
-	float x_j=(secondGoodJetPt/firstGoodJetPt); 	
+      if (!firstGoodJetFound && !secondGoodJetFound){
+        if(recpt>60.) {
+          firstGoodJetFound=true;
+          firstGoodJetPt=recpt;
+          firstGoodJetPhi=phi; }
+        else { 
+	  firstGoodJetFound=false;}                  }
+      else if (firstGoodJetFound && !secondGoodJetFound){
+        secondGoodJetFound=true;
+        if(recpt>firstGoodJetPt) {
+          secondGoodJetPt=firstGoodJetPt;
+          secondGoodJetPhi=firstGoodJetPhi;
+          firstGoodJetPt=recpt;
+          firstGoodJetPhi=phi; }
+        else {  
+	  secondGoodJetPt=recpt; 
+	  secondGoodJetPhi=phi; }                       }
+
+      if( firstGoodJetFound && secondGoodJetFound ) {
+        float A_j=(firstGoodJetPt-secondGoodJetPt)/(firstGoodJetPt+secondGoodJetPt);
+        float x_j=(secondGoodJetPt/firstGoodJetPt);
+        float dphi=deltaphi(firstGoodJetPhi,secondGoodJetPhi);
 	hJetQA[0][19]->Fill( A_j , weight_eS ); 
-	hJetQA[0][20]->Fill( x_j , weight_eS );       }
-      
+	hJetQA[0][20]->Fill( x_j , weight_eS );       
+	hJetQA[0][21]->Fill( dphi , weight_eS ); 
+	hJetQA[0][22]->Fill( firstGoodJetPt , weight_eS ); }
+    
+
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
       if(!hNEvts_withJets_kmatCut_Filled){
@@ -437,20 +506,19 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hNEvts_withJets_kmatCut_Filled=true;      }
 
 
-      /////////////////////
       //// apply JetID ////
-      /////////////////////
-
       if (chSum_F[jet]/recpt <= 0    ||
           neSum_F[jet]/recpt >= 0.99 || 
           phSum_F[jet]/recpt >= 0.99 ||
           chN_I[jet] <= 0             ) continue;
       
+
       /////   UNFOLDING   ///// START!
       hpp_gen[1]->Fill(genpt, weight_eS);
       hpp_reco[1]->Fill(recpt, weight_eS);
       hpp_matrix[1]->Fill(recpt, genpt, weight_eS);
       
+
       // for MC closure tests
       if(nEvt%2 == 0){
 	hpp_mcclosure_data[1]->Fill(recpt, weight_eS);      }
@@ -458,60 +526,79 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hpp_mcclosure_matrix[1]->Fill(recpt, genpt, weight_eS);
 	hpp_mcclosure_gen[1]->Fill(genpt, weight_eS);
 	hpp_mcclosure_data_train[1]->Fill(recpt, weight_eS);      }	
-      /////   UNFOLDING   ///// END!
+
+
 
       /////   GEN/RECO MATCHING   ///// START!
       hpp_mceff_genpt[1]->Fill(genpt, recpt/genpt, weight_eS);
       hpp_mceff_geneta[1]->Fill(geneta, recpt/genpt, weight_eS);
       hpp_mceff_genphi[1]->Fill(genphi, recpt/genpt, weight_eS);
       hpp_mceff_gendrjt[1]->Fill(gendrjt, recpt/genpt, weight_eS);
-      /////   GEN/RECO MATCHING   ///// END!
+
 
       // jetQA wJetID
       hJetQA[1][0]->Fill(recpt, weight_eS);
       hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
-      hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
-      hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
-      hJetQA[1][4]->Fill(trkMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][5]->Fill(trkSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][6]->Fill(trkHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][7]->Fill(chMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][8]->Fill(chSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][9]->Fill(chHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][10]->Fill(phMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][11]->Fill(phSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][12]->Fill(phHardSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][13]->Fill(neMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][14]->Fill(neSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][15]->Fill(eMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][16]->Fill(eSum_F[jet]/recpt, weight_eS);
-      hJetQA[1][17]->Fill(muMax_F[jet]/recpt, weight_eS);
-      hJetQA[1][18]->Fill(muSum_F[jet]/recpt, weight_eS);
 
+      if(recpt>50){
+	hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
+	hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
+	hJetQA[1][4]->Fill(trkMax_F[jet]/rawpt, weight_eS);
+	hJetQA[1][5]->Fill(trkSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][6]->Fill(trkHardSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][7]->Fill(chMax_F[jet]/rawpt, weight_eS);
+	hJetQA[1][8]->Fill(chSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][9]->Fill(chHardSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][10]->Fill(phMax_F[jet]/rawpt, weight_eS);
+	hJetQA[1][11]->Fill(phSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][12]->Fill(phHardSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][13]->Fill(neMax_F[jet]/rawpt, weight_eS);
+	hJetQA[1][14]->Fill(neSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][15]->Fill(eMax_F[jet]/rawpt, weight_eS);
+	hJetQA[1][16]->Fill(eSum_F[jet]/rawpt, weight_eS);
+	hJetQA[1][17]->Fill(muMax_F[jet]/rawpt, weight_eS);
+	hJetQA[1][18]->Fill(muSum_F[jet]/rawpt, weight_eS);
+      }
 
       // want to compute Aj/xj with the first two good jets that meet all criteria found
-      if (firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
-	secondGoodJetFound_wJetID=true; 
-	secondGoodJetPt_wJetID=recpt;  }
-      else if (!firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
-	firstGoodJetFound_wJetID=true; 
-	firstGoodJetPt_wJetID=recpt;  }
-      else if( firstGoodJetFound_wJetID && secondGoodJetFound_wJetID ) {
+      if (!firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
+        if(recpt>60.) {
+          firstGoodJetFound_wJetID=true;
+          firstGoodJetPt_wJetID=recpt;
+          firstGoodJetPhi_wJetID=phi; }
+        else { 
+	  firstGoodJetFound_wJetID=false;}                        }
+      else if (firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
+        secondGoodJetFound_wJetID=true;
+        if(recpt>firstGoodJetPt_wJetID) {
+          secondGoodJetPt_wJetID=firstGoodJetPt_wJetID;
+          secondGoodJetPhi_wJetID=firstGoodJetPhi_wJetID;
+          firstGoodJetPt_wJetID=recpt;
+          firstGoodJetPhi_wJetID=phi; }
+        else {  
+	  secondGoodJetPt_wJetID=recpt; 
+	  secondGoodJetPhi_wJetID=phi; }                              }
+      
+      if( firstGoodJetFound_wJetID && secondGoodJetFound_wJetID ) {
 	float A_j=(firstGoodJetPt_wJetID-secondGoodJetPt_wJetID)/
 	  (firstGoodJetPt_wJetID+secondGoodJetPt_wJetID);
 	float x_j=(secondGoodJetPt_wJetID/firstGoodJetPt_wJetID); 	
+	float dphi=deltaphi(firstGoodJetPhi_wJetID,secondGoodJetPhi_wJetID);
 	hJetQA[1][19]->Fill( A_j , weight_eS ); 
-	hJetQA[1][20]->Fill( x_j , weight_eS );       }
+	hJetQA[1][20]->Fill( x_j , weight_eS );       
+      	hJetQA[1][21]->Fill( dphi , weight_eS ); 
+      	hJetQA[1][22]->Fill( firstGoodJetPt , weight_eS ); }
+
       
       // jet/event counts
       h_NJets_JetIDCut->Fill(1);
       if(!hNEvts_withJets_JetIDCut_Filled){
 	h_NEvents_withJets_JetIDCut->Fill(1);
 	hNEvts_withJets_JetIDCut_Filled=true;      }
-
     }//end jet loop
   }//end event loop
   std::cout<<std::endl;
+
 
   std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
   std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
@@ -531,6 +618,7 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
       h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;
   }
 
+
   std::cout<<std::endl<<"/// Job Jet-Loop Summary ///"<<std::endl<<std::endl;
   std::cout<<"Total Num of Jets read from good events                          = " <<
     h_NJets->GetEntries()<<std::endl;  
@@ -538,7 +626,6 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     h_NJets_kmatCut->GetEntries()<<std::endl;
   std::cout<<"Total Num of Jets read from good events post kinCut AND JetIDCut = " <<
     h_NJets_JetIDCut->GetEntries()<<std::endl;
-
   std::cout<<std::endl;
 
 
@@ -585,6 +672,7 @@ int main(int argc, char *argv[]){
   std::cout<<"rStatus="<<rStatus<<std::endl;
   return rStatus;
 }
+
 
 
 

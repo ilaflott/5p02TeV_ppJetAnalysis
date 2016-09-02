@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo ""
+
 # error conditions 
 if [[ $# -ne 5 ]] # not enough arguments
 then
@@ -18,12 +19,14 @@ then
     return 1
 fi
 
+
 # input arguments to submit script
 NJobs=$1
 NFilesPerJob=$2
 startFilePos=$3
 filelistIn=$4  #echo "filelistIn is ${filelistIn}" #debug
 debug=$5
+
 
 # one condor job submit per NFilesPerJob until we submit NJobs
 nFiles=`wc -l < $filelistIn`
@@ -43,12 +46,14 @@ then
     return
 fi
 
+
 # some debug info, just in case
 NFilesRequested=$(( $NJobs * $NFilesPerJob ))
 echo "require ${NFilesRequested} files for ${NJobs} jobs"
 echo "# of files in list: ${nFiles}"
 echo "starting at file position ${startFilePos}..."
 echo ""
+
 
 # additional inputs to the run script and .exe, these don't change too much
 radius=4
@@ -94,7 +99,7 @@ endfile=0
 while [ $NthJob -lt $NJobs ]
 do 
     echo ""
-    echo "SPLITTING FILES FOR JOB #${NthJob}"
+    echo "SPLITTING FILES FOR JOB # ${NthJob} of ${NJobs}"
 
     # start/end file 
     if [[ $NthJob -le 0 ]]
@@ -154,7 +159,7 @@ EOF
     # submit the job defined in the above submit file
     echo "running readForests_ppMC on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 2s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

@@ -55,7 +55,7 @@ const int minArgs=1;
 //// readForests_ppData
 const int defStartFile=0;
 const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist = "../../filelists/ppData/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
+const std::string defInFilelist = "filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
 const std::string defOutputName = "readForests_ppData_defOut.root";
@@ -142,14 +142,16 @@ const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
 // variable names for QA Plots
 const std::string var[] = {   
-  "jtpt" ,  "rawpt",  "jteta", "jtphi", 
+  "jtpt" ,  "rawpt",  
+  "jteta", "jtphi",   
   "trkMax", "trkSum", "trkHardSum", 
   "chMax",  "chSum",  "chHardSum", 
   "phMax",  "phSum",  "phHardSum", 
   "neMax",  "neSum", 
   "eMax",   "eSum", 
   "muMax",  "muSum", 
-  "Aj",     "xj" 
+  "Aj",     "xj" , "dphi", //dijet variables
+  "leadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
@@ -160,11 +162,11 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop 
-    Float_t val = h->GetBinContent(i);
+    Float_t val = h->GetBinContent(i); 
     Float_t valErr = h->GetBinError(i);
-    val/=h->GetBinWidth(i);
+    val/=h->GetBinWidth(i);     
     valErr/=h->GetBinWidth(i);
-    h->SetBinContent(i,val);
+    h->SetBinContent(i,val);    
     h->SetBinError(i,valErr);
   }//end nbinsX loop
   h->GetXaxis()->CenterTitle();

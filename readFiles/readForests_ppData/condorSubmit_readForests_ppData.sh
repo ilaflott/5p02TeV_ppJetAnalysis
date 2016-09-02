@@ -94,7 +94,7 @@ endfile=0
 while [ $NthJob -lt $NJobs ]
 do 
     echo ""
-    echo "SPLITTING FILES FOR JOB #${NthJob}"
+    echo "SPLITTING FILES FOR JOB # ${NthJob} of ${NJobs}"
 
     # start/end file 
     if [[ $NthJob -le 0 ]]
@@ -150,7 +150,7 @@ transfer_input_files = ${filelist},readForests_ppData.exe
 when_to_transfer_output = ON_EXIT
 Queue
 EOF
-
+    
     # submit the job defined in the above submit file
     echo "running readForests_ppData on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    

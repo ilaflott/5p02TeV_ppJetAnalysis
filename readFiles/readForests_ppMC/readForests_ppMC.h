@@ -57,7 +57,7 @@ const int minArgs=1;
 //// readForests_ppMC
 const int defStartFile=0;
 const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist = "../filelists/ppMC/5p02TeV_Py8_CUETP8M1_QCDjet15_20Files_debug_forests.txt";
+const std::string defInFilelist = "filelists/5p02TeV_Py8_CUETP8M1_QCDjet15_20Files_debug_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
 const std::string defOutputName = "readForests_ppMC_defOut.root";
@@ -138,7 +138,7 @@ const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 // tree names+directories
 const std::string treeNames[]={ 
   "GARBAGE ENTRY" , //akPfJetAna of arb. radius, form strin
-  "GARBAGE ENTRY" , //akCaloJet of same radius
+  //  "GARBAGE ENTRY" , //akCaloJet of same radius
   "hiEvtAnalyzer/HiTree" ,
   "skimanalysis/HltTree" ,
   "hltanalysis/HltTree" 
@@ -151,14 +151,16 @@ const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
 // variable names for QA Plots
 const std::string var[] = {   
-  "jtpt" ,  "rawpt",  "jteta", "jtphi", 
+  "jtpt" ,  "rawpt",  //jet weights only
+  "jteta", "jtphi", //require normalization
   "trkMax", "trkSum", "trkHardSum", 
   "chMax",  "chSum",  "chHardSum", 
   "phMax",  "phSum",  "phHardSum", 
   "neMax",  "neSum", 
   "eMax",   "eSum", 
   "muMax",  "muSum", 
-  "Aj",     "xj" 
+  "Aj",     "xj",      "dphi", //dijets
+  "leadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 

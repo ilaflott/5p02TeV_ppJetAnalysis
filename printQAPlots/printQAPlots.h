@@ -50,13 +50,14 @@
 
 //CMSSW_BASE
 const std::string CMSSW_BASE = 
-  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8";
-
+  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
+const std::string condor_dir = "saved_outputCondor/";
 //ppMC/ppData input directories, filenames, and fullFilenames
+
 const std::string input_ppData_dir =
-  "/src/readFiles/readForests_ppData/saved_outputCondor/";
+  "src/readFiles/readForests_ppData/";//+condor_dir;
 const std::string input_ppMC_dir =
-  "/src/readFiles/readForests_ppMC/saved_outputCondor/";
+  "src/readFiles/readForests_ppMC/";//+condor_dir;
 
 // other useful strings
 const int radius_int=4;
@@ -72,16 +73,32 @@ const std::string jetAna="ak"+radius+jetType+"JetAnalyzer";
 
 // variable names, string array
 const std::string var[] = {   
-  "jtpt" ,  "rawpt",  "jteta", "jtphi", 
+  "jtpt" ,  "rawpt",  
+  "jteta", "jtphi", //normalize to data
   "trkMax", "trkSum", "trkHardSum", 
   "chMax",  "chSum",  "chHardSum", 
   "phMax",  "phSum",  "phHardSum", 
   "neMax",  "neSum", 
   "eMax",   "eSum", 
   "muMax",  "muSum", 
-  "Aj",     "xj" 
+  "Aj",     "xj" , "dphi", //dijets
+  "leadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
+
+// variable names, string array
+const std::string var_xAx_Titles[] = {   
+  "jtpt (GeV)" ,  "rawpt (GeV)",  
+  "jteta", "jtphi (rad)", 
+  "trkMax/rawpt", "trkMax/rawpt", "trkHardSum/rawpt", 
+  "chMax/rawpt",  "chSum/rawpt",  "chHardSum/rawpt", 
+  "phMax/rawpt",  "phSum/rawpt",  "phHardSum/rawpt", 
+  "neMax/rawpt",  "neSum/rawpt", 
+  "eMax/rawpt",   "eSum/rawpt", 
+  "muMax/rawpt",  "muSum/rawpt", 
+  "Aj",     "xj" , "dphi (radians)", "leadJetPt (GeV)"
+};
+const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
 
 
 //// MC+DATA COMMON BINNING

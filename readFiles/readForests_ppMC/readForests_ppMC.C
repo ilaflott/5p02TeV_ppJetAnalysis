@@ -630,7 +630,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
 
   std::cout<<"writing output file..."<<std::endl;
-  fout->Write();
+  //fout->Write(); //this writes duplicates
+  fout->Write("",TObject::kOverwrite);//this does not
 
 
   std::cout<<std::endl<<"readForests_ppMC finished."<<std::endl;  timer.Stop();

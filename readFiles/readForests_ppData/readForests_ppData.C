@@ -607,7 +607,8 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
 
   std::cout<<"writing output file..."<<std::endl;
-  fout->Write();
+  //fout->Write(); //this writes duplicates
+  fout->Write("",TObject::kOverwrite);//this does not
 
 
   if(debugMode)std::cout<<"misc clean up.."<<std::endl;

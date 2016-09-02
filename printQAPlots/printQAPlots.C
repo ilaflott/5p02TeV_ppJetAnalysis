@@ -35,7 +35,7 @@ const bool doEventCounts=true, doVzWeights=true;
 
 //plot style
 const bool drawDataMCOverlays= false;
-const bool drawDataMCRatios =!(drawDataMCOverlays);
+const bool drawDataMCRatios =!(drawDataMCOverlays);//temporary? unsure
 //const bool drawTrigOverlays=true, drawTrigRatios=false;//data only for now
 
 //plot content
@@ -43,11 +43,10 @@ const bool drawEvtQAPlots=true, drawJetQAPlots=true;
 
 ////data-specific (for now)
 //const bool drawTrigPlots=drawTrigOverlays||drawTrigRatios;
-
 ////mc-specific (fornow)
 //const bool drawMCEffPlots=true, drawJECandJERPlots=true;//MC Specific for now
 
-//for efficiency later when I get a chance 
+//for efficiency later if/when I get a chance 
 const bool openDataFile=//doEventCounts||drawTrigPlots||
   drawDataMCOverlays||drawDataMCRatios;
 const bool openMCFile  =//doEventCounts||//drawMCEffPlots||drawJECandJERPlots||
@@ -328,17 +327,17 @@ int printQAPlots(){
 	TH1F* theMCEvtQAHist2= (TH1F*)finMC->Get( "hpthatWeightedVz" );
 	theMCEvtQAHist2->Scale( 1/theMCEvtQAHist2->GetBinWidth(0) );
 	theMCEvtQAHist2->Scale( theDataEvtQAHist2->Integral()/theMCEvtQAHist2->Integral() );
-   
+	
 	TH1F *theRatio2=theDataEvtQAHist2;
 	theRatio2->SetLineColor( altRatioLineColor1 );	
 	theRatio2->Divide(theMCEvtQAHist2);	
 	theEvtQALeg->AddEntry(theRatio2,"MC not vz-weighted","lp"); 		
 	
-	//Int_t NvzWeightBins=theRatio2->TH1::GetNBinsX();
 	if(doVzWeights){
 	  Int_t NvzWeightBins=60;
 	  Float_t theVzBinWidth=theRatio2->TH1::GetBinWidth(0);
 	  Float_t xLow=-15., xHigh=15.;
+
 	  std::cout<<"now grabbing vzWeights for "<< NvzWeightBins<<"bins for "<<xLow<<"< vz <"<<xHigh << std::endl;
 	  for (int i=1;i<NvzWeightBins+1;++i){//binsX loop
 	    Float_t leftSideOfBin=-15.+(i-1)*theVzBinWidth;
@@ -346,11 +345,11 @@ int printQAPlots(){
 	    Float_t vzWeight = theRatio2->TH1::GetBinContent(i);
 	    
 	    if(i!=NvzWeightBins)
-	      std::cout<<" i="<<i<<" vzWeight="<<vzWeight<<"  for "<<leftSideOfBin<<" <vz<= "<<rightSideOfBin<< std::endl; 
+	      std::cout<<"  or i="<<i<<", "<<leftSideOfBin<<<<"<vz<="<<rightSideOfBin<<", vzWeight="<<vzWeight<< std::endl; 
 	    else
-	      std::cout<<" i="<<i<<" vzWeight="<<vzWeight<<"  for "<<leftSideOfBin<<" <vz< "<<rightSideOfBin<< std::endl; 	  
-	  }//end nbinsX loop}
-	  
+	      std::cout<<"  or i="<<i<<", "<<leftSideOfBin<<<<"<vz<="<<rightSideOfBin<<", vzWeight="<<vzWeight<< std::endl; 
+	  }}//end vz weights
+	
 	
 	theRatio2->Draw("SAME");
 	

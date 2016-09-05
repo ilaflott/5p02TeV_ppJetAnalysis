@@ -181,8 +181,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   TH1F *hVz = new TH1F("hVz","", 60,-15.,15.);
   TH1F *hvzWVz = new TH1F("hvzWeightedVz","", 60,-15.,15.);
   TH1F *hWVz = new TH1F("hWeightedVz","", 60,-15.,15.);
-  TH1F *hvzWProdVz = new TH1F("hvzWeightedProdVz","", 60,-15.,15.);
-  TH1F *hWProdVz = new TH1F("hWeightedProdVz","", 60,-15.,15.);
+  TH1F *hvzWAnnaVz = new TH1F("hvzWeightedAnnaVz","", 60,-15.,15.);
+  TH1F *hWAnnaVz = new TH1F("hWeightedAnnaVz","", 60,-15.,15.);
 
   TH1F *hpthat = new TH1F("hpthat","",1000,0,1000);
   TH1F *hWpthat = new TH1F("hWeightedpthat","",1000,0,1000);
@@ -330,8 +330,7 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   if(!(NEvents_jetAnalyzr==NEvents_skimAnalyzr)){
     std::cout<<"jetAnalyzr # evts  = " << NEvents_jetAnalyzr  << std::endl;
     std::cout<<"skimAnalyzr # evts = " << NEvents_skimAnalyzr << std::endl;
-    assert(NEvents_jetAnalyzr==NEvents_skimAnalyzr);
-  }
+    assert(NEvents_jetAnalyzr==NEvents_skimAnalyzr);  }
 
   UInt_t NEvents_allFiles=NEvents_jetAnalyzr;   // preskim event count from files
   for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
@@ -341,7 +340,6 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   else NEvents_read = NEvents_allFiles;
   
   //UInt_t NEvents_40=0, NEvents_60=0, NEvents_80=0, NEvents_100=0;  //trigger event counts
-
 
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;  
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
@@ -364,28 +362,33 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     
 
     // compute weights
-    double vzWeight=1.;           
-    vzWeight = fVzPP->Eval(vz_F);
-    
+    double vzWeight=1.; double vzStart=minbinValue_vzWeights;
+    for( int i=0; i<nbins_vzWeights ; i++ ){ 
+      double vzBinLeftSide=vzStart+i*binsize_vzWeights;//, vzBinRightSide=vzStart+(i+1)*binsize_vzWeights;
+      if(vz_F>=vzBinLeftSide) vzWeight=vzWeights[i];  }//this way only works because we already have a vz cut prior to this loop
+
+    double vzWeight_Anna=1.;           
+    vzWeight_Anna = fVzPP->Eval(vz_F);
+
     double evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }
     
     double trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
 
-    //double weight_eS=evtPthatWeight*trigWeight*vzWeight;              
-    double weight_eS=evtPthatWeight*trigWeight/vzWeight;              
-    double weight_eS_prod=evtPthatWeight*trigWeight*vzWeight;              
+    double weight_eS=evtPthatWeight*trigWeight*vzWeight;              
+    double weight_eS_Anna=evtPthatWeight*trigWeight/vzWeight_Anna;              
 
     //vz
     hpthatWVz->Fill(vz_F, evtPthatWeight);
 
     hVz->Fill(vz_F, 1.);
-    hvzWVz->Fill(vz_F, 1./vzWeight);
+    
+    hvzWVz->Fill(vz_F, vzWeight);
     hWVz->Fill(vz_F, weight_eS);
 
-    hvzWProdVz->Fill(vz_F, vzWeight);
-    hWProdVz->Fill(vz_F, weight_eS_prod);
+    hvzWAnnaVz->Fill(vz_F, 1./vzWeight_Anna);
+    hWAnnaVz->Fill(vz_F, weight_eS_Anna);
 
     //pthat
     hpthat->Fill(pthat_F, 1.);

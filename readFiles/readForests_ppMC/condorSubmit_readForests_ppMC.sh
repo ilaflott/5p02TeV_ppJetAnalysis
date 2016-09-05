@@ -98,8 +98,9 @@ startfile=0
 endfile=0
 while [ $NthJob -lt $NJobs ]
 do 
+    JobNum=$(( $NthJob + 1))
     echo ""
-    echo "SPLITTING FILES FOR JOB # ${NthJob} of ${NJobs}"
+    echo "SPLITTING FILES FOR JOB # ${JobNum} of ${NJobs}"
 
     # start/end file 
     if [[ $NthJob -le 0 ]]
@@ -159,7 +160,7 @@ EOF
     # submit the job defined in the above submit file
     echo "running readForests_ppMC on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 2s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 0.5s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

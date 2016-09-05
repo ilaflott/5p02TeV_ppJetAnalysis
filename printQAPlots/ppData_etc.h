@@ -8,10 +8,10 @@
 //const double intgrtdLumi=25.8*pow(10.,9.);// 25.8 inv. picobarns to inv. millibarns
 const double intgrtdLumi=25.8*pow(10.,9.);// 25.8 pb^-1 to \millib^-1
 
-// other useful things
-const std::string HLThNames[]={"HLT40_","HLT60_","HLT80_","HLT100_","HLTComb_","TrgCombTest_"};
-const std::string HLThTitle[]={"HLT40 ","HLT60 ","HLT80 ","HLT100 ","HLTComb ","Kurt Meth. HLTComb "};
-const int N_HLThNames=sizeof(HLThNames)/sizeof(std::string);
+//// other useful things
+//const std::string HLThNames[]={"HLT40_","HLT60_","HLT80_","HLT100_","HLTComb_","TrgCombTest_"};
+//const std::string HLThTitle[]={"HLT40 ","HLT60 ","HLT80 ","HLT100 ","HLTComb ","Kurt Meth. HLTComb "};
+//const int N_HLThNames=sizeof(HLThNames)/sizeof(std::string);
 
 // string arrays
 //L1

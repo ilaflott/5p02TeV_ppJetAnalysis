@@ -142,9 +142,9 @@ const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
 // variable names for QA Plots
 const std::string var[] = {   
-  "jtpt" ,  "rawpt",  
+  "jtpt" ,  "rawpt",  //jets
   "jteta", "jtphi",   
-  "trkMax", "trkSum", "trkHardSum", 
+  "trkMax", "trkSum", "trkHardSum", //jet constituents
   "chMax",  "chSum",  "chHardSum", 
   "phMax",  "phSum",  "phHardSum", 
   "neMax",  "neSum", 

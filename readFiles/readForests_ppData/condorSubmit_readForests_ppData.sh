@@ -93,8 +93,9 @@ startfile=0
 endfile=0
 while [ $NthJob -lt $NJobs ]
 do 
+    JobNum=$(( $NthJob + 1 ))
     echo ""
-    echo "SPLITTING FILES FOR JOB # ${NthJob} of ${NJobs}"
+    echo "SPLITTING FILES FOR JOB # ${JobNum} of ${NJobs}"
 
     # start/end file 
     if [[ $NthJob -le 0 ]]

@@ -59,6 +59,8 @@ const std::string input_ppData_dir =
 const std::string input_ppMC_dir =
   "src/readFiles/readForests_ppMC/";//+condor_dir;
 
+const std::string outputDir=CMSSW_BASE+"src/printQAPlots/output/";
+
 // other useful strings
 const int radius_int=4;
 const std::string radius_int_str=std::to_string(radius_int);
@@ -81,8 +83,7 @@ const std::string var[] = {
   "neMax",  "neSum", 
   "eMax",   "eSum", 
   "muMax",  "muSum", 
-  "Aj",     "xj" , "dphi", //dijets
-  "leadJetPt"
+  "Aj",     "xj" , "dphi", "leadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
@@ -100,6 +101,11 @@ const std::string var_xAx_Titles[] = {
 };
 const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
 
+
+const std::string HLTName[] = {
+  "HLT40","HLT60","HLT80","HLT100","HLTComb"// ,"TrgCombTest"
+};
+const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 
 //// MC+DATA COMMON BINNING
 // ---------------------------------------------------------------------------------------------------------------
@@ -136,6 +142,18 @@ const double etabins[] = {
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
 const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
+
+
+// hist painting ------------------------
+const int theDataOverlayMarkerColor=1, theMCOverlayMarkerColor=1,theRatioMarkerColor=1;//black
+const int theDataOverlayLineColor=2, theMCOverlayLineColor=4,theRatioLineColor=9;//red, blue, olive
+
+const int altOverlayLineColor=3; 
+const int altRatioLineColor1=8, altRatioLineColor2=7;//green, violet or something
+
+const int theTrigOverlayMarkerColor=1;
+const int theTrigOverlayLineColor[]={9,8,7,2};//,3};
+
 
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------

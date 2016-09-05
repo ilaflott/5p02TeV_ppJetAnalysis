@@ -6,6 +6,7 @@
 int readForests_ppData(int startfile , int endfile , std::string inFilelist , std::string outfile ,
 		     int radius , std::string jetType , bool debugMode ){ 
 
+
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
@@ -291,7 +292,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;  
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
 
-
     if(fastDebugMode&&nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     else if (nEvt%10000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
 
@@ -418,28 +418,24 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	hJetQA[0][15]->Fill(eMax_F[jet]/rawpt, weight_eS);
 	hJetQA[0][16]->Fill(eSum_F[jet]/rawpt, weight_eS);
 	hJetQA[0][17]->Fill(muMax_F[jet]/rawpt, weight_eS);
-	hJetQA[0][18]->Fill(muSum_F[jet]/rawpt, weight_eS);
-      }
+	hJetQA[0][18]->Fill(muSum_F[jet]/rawpt, weight_eS);      }
 
 
       // want to compute Aj/xj with the first two good jets that meet all criteria found
       if (!firstGoodJetFound && !secondGoodJetFound){
-        if(recpt>60.) {
-          firstGoodJetFound=true;
-          firstGoodJetPt=recpt;
-          firstGoodJetPhi=phi; }
-        else {
-          firstGoodJetFound=false;}                        }
-      else if (firstGoodJetFound && !secondGoodJetFound){
+        if(recpt>60.) { firstGoodJetFound=true;
+          firstGoodJetPt=recpt; 
+	  firstGoodJetPhi=phi; }
+        else { firstGoodJetFound=false; }           }
+
+      else if ( firstGoodJetFound && !secondGoodJetFound ) {
         secondGoodJetFound=true;
-        if(recpt>firstGoodJetPt) {std::cout<<std::endl<<"WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
-          secondGoodJetPt=firstGoodJetPt;
-          secondGoodJetPhi=firstGoodJetPhi;
-          firstGoodJetPt=recpt;
-          firstGoodJetPhi=phi; }
-        else {
-          secondGoodJetPt=recpt;
-          secondGoodJetPhi=phi; }                              }
+        if (recpt>firstGoodJetPt) {std::cerr<<std::endl<<
+	    "WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
+          secondGoodJetPt=firstGoodJetPt;          secondGoodJetPhi=firstGoodJetPhi;
+          firstGoodJetPt=recpt;          firstGoodJetPhi=phi; }
+        else { secondGoodJetPt=recpt;
+          secondGoodJetPhi=phi; }                          }
 
       if( firstGoodJetFound && secondGoodJetFound ) {
 	float A_j=(firstGoodJetPt-secondGoodJetPt)/(firstGoodJetPt+secondGoodJetPt);
@@ -466,7 +462,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
       
 
       // trig plots
-
       if(true)  hpp_CombJetpT[1]->Fill(recpt, weight_eS); //kurts method
       if(is40 )  hpp_TrgObj40[1]->Fill(recpt, treePrescl[0]);
       if(is60 )  hpp_TrgObj60[1]->Fill(recpt, treePrescl[1]);
@@ -494,8 +489,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	hJetQA[1][15]->Fill(eMax_F[jet]/rawpt, weight_eS);
 	hJetQA[1][16]->Fill(eSum_F[jet]/rawpt, weight_eS);
 	hJetQA[1][17]->Fill(muMax_F[jet]/rawpt, weight_eS);
-	hJetQA[1][18]->Fill(muSum_F[jet]/rawpt, weight_eS);
-      }
+	hJetQA[1][18]->Fill(muSum_F[jet]/rawpt, weight_eS);      }
 
       // want to compute Aj/xj with the first two good jets that meet all criteria found
       if (!firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
@@ -607,8 +601,8 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
 
   std::cout<<"writing output file..."<<std::endl;
-  //fout->Write(); //this writes duplicates
-  fout->Write("",TObject::kOverwrite);//this does not
+  fout->Write(); //this writes duplicates
+  //fout->Write("",TObject::kOverwrite);//this does not
 
 
   if(debugMode)std::cout<<"misc clean up.."<<std::endl;

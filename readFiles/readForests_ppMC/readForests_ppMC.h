@@ -94,18 +94,87 @@ const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 9999 
 const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
 
 const double pthatWeights[]={//from jetWeights/jetWeights_Py8_CUETP8M1_QCDjetAllPtBins.txt
-  /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/        5.27832e-07,
-  /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/       3.37352e-08,
-  /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/      3.63191e-09,
-  /*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 mb^-3, weight=*/   2.33383e-10,
-  /*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 mb^-3, weight=*/   5.43517e-11,
-  /*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 mb^-3, weight=*/    1.10016e-11,
-  /*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 mb^-3, weight=*/   2.36422e-12,
-  /*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 mb^-3, weight=*/   5.84505e-13,
-  /*(pthat>=370)&&(pthat<460), n[8]=948240, xsDiff=1.0884e-07 mb^-3, weight=*/   1.14781e-13,
-  /*(pthat>=460)&&(pthat<540), n[9]=1558268, xsDiff=2.215e-08 mb^-3, weight=*/   1.42145e-14,
-  /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
+/*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/        5.27832e-07,
+/*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/       3.37352e-08,
+/*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/      3.63191e-09,
+/*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 mb^-3, weight=*/   2.33383e-10,
+/*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 mb^-3, weight=*/   5.43517e-11,
+/*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 mb^-3, weight=*/    1.10016e-11,
+/*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 mb^-3, weight=*/   2.36422e-12,
+/*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 mb^-3, weight=*/   5.84505e-13,
+/*(pthat>=370)&&(pthat<460), n[8]=948240, xsDiff=1.0884e-07 mb^-3, weight=*/   1.14781e-13,
+/*(pthat>=460)&&(pthat<540), n[9]=1558268, xsDiff=2.215e-08 mb^-3, weight=*/   1.42145e-14,
+/*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
 };
+
+const double vzWeights[]={//from doVzWeights on jtpt15_ldJetPt50 HPtJetTrigData/Py8QCDMC samples in printQAPlots.C 8.31.16
+/*or i=1, -15<vz<=-14.5, vzWeight=*/   0.381095,
+/*  or i=2, -14.5<vz<=-14, vzWeight=*/ 0.420839,
+/*  or i=3, -14<vz<=-13.5, vzWeight=*/ 0.457158,
+/*  or i=4, -13.5<vz<=-13, vzWeight=*/ 0.489084,
+/*  or i=5, -13<vz<=-12.5, vzWeight=*/ 0.526421,
+/*  or i=6, -12.5<vz<=-12, vzWeight=*/ 0.568266,
+/*  or i=7, -12<vz<=-11.5, vzWeight=*/ 0.631775,
+/*  or i=8, -11.5<vz<=-11, vzWeight=*/ 0.627823,
+/*  or i=9, -11<vz<=-10.5, vzWeight=*/ 0.690401,
+/*  or i=10, -10.5<vz<=-10, vzWeight=*/0.714522,
+/*  or i=11, -10<vz<=-9.5, vzWeight=*/ 0.750037,
+/*  or i=12, -9.5<vz<=-9, vzWeight=*/  0.799898,
+/*  or i=13, -9<vz<=-8.5, vzWeight=*/  0.816712,
+/*  or i=14, -8.5<vz<=-8, vzWeight=*/  0.8532  ,
+/*  or i=15, -8<vz<=-7.5, vzWeight=*/  0.877429,
+/*  or i=16, -7.5<vz<=-7, vzWeight=*/  0.895462,
+/*  or i=17, -7<vz<=-6.5, vzWeight=*/  0.925748,
+/*  or i=18, -6.5<vz<=-6, vzWeight=*/  0.960379,
+/*  or i=19, -6<vz<=-5.5, vzWeight=*/  1.00065 ,
+/*  or i=20, -5.5<vz<=-5, vzWeight=*/  1.00565 ,
+/*  or i=21, -5<vz<=-4.5, vzWeight=*/  1.01403 ,
+/*  or i=22, -4.5<vz<=-4, vzWeight=*/  1.03837 ,
+/*  or i=23, -4<vz<=-3.5, vzWeight=*/  1.05647 ,
+/*  or i=24, -3.5<vz<=-3, vzWeight=*/  1.07155 ,
+/*  or i=25, -3<vz<=-2.5, vzWeight=*/  1.07985 ,
+/*  or i=26, -2.5<vz<=-2, vzWeight=*/  1.09945 ,
+/*  or i=27, -2<vz<=-1.5, vzWeight=*/  1.1102  ,
+/*  or i=28, -1.5<vz<=-1, vzWeight=*/  1.12035 ,
+/*  or i=29, -1<vz<=-0.5, vzWeight=*/  1.11602 ,
+/*  or i=30, -0.5<vz<=0, vzWeight=*/   1.1358  ,
+/*  or i=31, 0<vz<=0.5, vzWeight=*/    1.1328  ,
+/*  or i=32, 0.5<vz<=1, vzWeight=*/    1.13871 ,
+/*  or i=33, 1<vz<=1.5, vzWeight=*/    1.13266 ,
+/*  or i=34, 1.5<vz<=2, vzWeight=*/    1.14604 ,
+/*  or i=35, 2<vz<=2.5, vzWeight=*/    1.12859 ,
+/*  or i=36, 2.5<vz<=3, vzWeight=*/    1.14574 ,
+/*  or i=37, 3<vz<=3.5, vzWeight=*/    1.12041 ,
+/*  or i=38, 3.5<vz<=4, vzWeight=*/    1.11591 ,
+/*  or i=39, 4<vz<=4.5, vzWeight=*/    1.11259 ,
+/*  or i=40, 4.5<vz<=5, vzWeight=*/    1.1011  ,
+/*  or i=41, 5<vz<=5.5, vzWeight=*/    1.09243 ,
+/*  or i=42, 5.5<vz<=6, vzWeight=*/    1.08899 ,
+/*  or i=43, 6<vz<=6.5, vzWeight=*/    1.06719 ,
+/*  or i=44, 6.5<vz<=7, vzWeight=*/    1.02613 ,
+/*  or i=45, 7<vz<=7.5, vzWeight=*/    1.0183  ,
+/*  or i=46, 7.5<vz<=8, vzWeight=*/    0.989017,
+/*  or i=47, 8<vz<=8.5, vzWeight=*/    0.962692,
+/*  or i=48, 8.5<vz<=9, vzWeight=*/    0.936776,
+/*  or i=49, 9<vz<=9.5, vzWeight=*/    0.90725 ,
+/*  or i=50, 9.5<vz<=10, vzWeight=*/   0.89135 ,
+/*  or i=51, 10<vz<=10.5, vzWeight=*/  0.864868,
+/*  or i=52, 10.5<vz<=11, vzWeight=*/  0.807878,
+/*  or i=53, 11<vz<=11.5, vzWeight=*/  0.788   ,
+/*  or i=54, 11.5<vz<=12, vzWeight=*/  0.725265,
+/*  or i=55, 12<vz<=12.5, vzWeight=*/  0.709917,
+/*  or i=56, 12.5<vz<=13, vzWeight=*/  0.661436,
+/*  or i=57, 13<vz<=13.5, vzWeight=*/  0.628792,
+/*  or i=58, 13.5<vz<=14, vzWeight=*/  0.580058,
+/*  or i=59, 14<vz<=14.5, vzWeight=*/  0.550358,
+/*  or i=60, 14.5<vz<=15, vzWeight=*/  0.479061//,
+///*  or i=61, 15.<vz<inf, vzWeight=*/  0.
+};
+const int nbins_vzWeights = sizeof(vzWeights)/sizeof(double);//should be 60
+const double minbinValue_vzWeights = -15.;
+const double maxbinValue_vzWeights = 15.;
+const double binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
+//const double binsize_vzWeights = 0.5;
 
 const double JEC_ptbins[] = {
   17, 22, 27,    //15-30

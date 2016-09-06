@@ -11,43 +11,40 @@ const std::string input_ppData_Filename=
   "readForests_ppData_5p02TeV_HighPtJetTrig_09-05-16__w.ldJetPtHist/HighPtJetTrig_ak4PF-allFiles.root";
 
 const std::string input_ppMC_Filename=
-  //"readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_08-29-16__noJECorJER_wmceff_wEvtJetCounts_AjxjBugFix/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
-  //"readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_08-29-16__divByVzWeightTry/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
-  //"readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_08-31-16__jtpt15_ldJetPt60/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
-  "readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_09-04-16__21_43/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
+  "readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_09-04-16__wMyvzWeights/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
 
 
 //output
 const std::string output_ppDataMCOverlaid_PDFname=outputDir+
-  "DataMCOverlaid_spectraOnly_newVzWeights_QA-jets-evts-trig_9.4.16.pdf";
+  "DataMCOverlaid_newVzWeights_QA-jets-evts-trig_9.4.16.pdf";
 const std::string output_ppDataMCRatio_PDFname=outputDir+
-  "DataMCRatios_spectraOnly_newVzWeights_QA-jets-evts-trig_9.4.16.pdf";
+  "DataMCRatios_newVzWeights_QA-jets-evts-trig_9.4.16.pdf";
 
+ 
 
 
 // code/job switches ------------------------
 const bool doEventCounts=true, drawEvtQAPlots=true;
 const bool drawJetQAPlots=true, drawJetTrigQAPlots=true;
-
+const bool drawMCEffPlots=true;//, drawJECandJERPlots=true;//MC Specific for now
 //, doVzWeights=false;//vz weights only happen if doing ratio
-//const bool drawMCEffPlots=true;//, drawJECandJERPlots=true;//MC Specific for now
-
-//plot style
-const bool drawDataMCOverlays= true,drawTrigDataOverlays=drawDataMCOverlays;
-const bool drawDataMCRatios =!(drawDataMCOverlays), drawTrigDataRatios=drawDataMCRatios;
-
-
-//for efficiency later if/when I get a chance 
-const bool openDataFile=//doEventCounts||drawTrigPlots||
-  drawDataMCOverlays||drawDataMCRatios;
-const bool openMCFile  =//doEventCounts||//drawMCEffPlots||drawJECandJERPlots||
-  drawDataMCOverlays||drawDataMCRatios;
-
 
 // the macro ------------------------
-const bool debugMode=true;//, dataDebugMode=true, MCDebugMode=true; //debug
-int printQAPlots(){
+const bool debugMode=false;//, dataDebugMode=true, MCDebugMode=true; //debug
+int printQAPlots(const bool drawDataMCOverlaysInput=true){
  
+  //plot style
+  const bool drawDataMCOverlays=drawDataMCOverlaysInput, drawTrigDataOverlays=drawDataMCOverlays;
+  const bool drawDataMCRatios =!(drawDataMCOverlays),    drawTrigDataRatios=!(drawTrigDataOverlays);
+
+  //for efficiency later if/when I get a chance 
+  const bool openDataFile=true;//doEventCounts||drawTrigPlots||
+  //  drawDataMCOverlays||drawDataMCRatios;
+  const bool openMCFile  =true;//doEventCounts||//drawMCEffPlots||drawJECandJERPlots||
+  //  drawDataMCOverlays||drawDataMCRatios;
+
+
+
   std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;
 
   //input file(s)
@@ -543,105 +540,211 @@ int printQAPlots(){
 
     
     for(int i=0; i<2; i++){      if(debugMode)std::cout<<std::endl<<"i= "<<i<<std::endl;
-      for(int j=0; j<N_trigs; j++){ 
-	
-	// PROBLEM SECTION, do NOT delete comments or other commented code
-	if(j==N_trigs)std::cout<<"warning! j=="<< N_trigs<<"=N_trigs, about to seg fault..."<<std::endl;// NEVER FIRES
-	
-	if(debugMode)std::cout<<std::endl<<"N_trigs="<<N_trigs<<" and j="<<j<<std::endl;
-	if(debugMode)std::cout<<"j<(N_trigs-1)="<<(bool)(j<(N_trigs-1))<<std::endl;
-	if(debugMode)std::cout<<"j<N_trigs="<<(bool)(j<(N_trigs))<<std::endl;
-	if(debugMode)std::cout<<"j<(N_trigs+1)="<<(bool)(j<(N_trigs+1))<<std::endl;	
+      TLegend* JetTrigLegend=new TLegend(0.81,0.84,0.96,0.99, NULL,"brNDC");
 
-	//assert(j!=N_trigs);// NEVER FIRES
-	//assert(j<N_trigs); // NEVER FIRES
-
-     	//open the hists + do scaling 
-	if(j==N_trigs)std::cout<<"warning! j=="<< N_trigs<<"=N_trigs, about to seg fault..."<<std::endl;// NEVER FIRES
-	
-	if(j==N_trigs){  // uncommenting this if/else statement fixes the pathological behavior
-	  std::cout<<"warning! j==N_trigs, about to seg fault..1."<<std::endl;
-	  continue;}  
-	else std::cout<<" HLTName ="<<HLTName[j]<<std::endl;
-
-	//if(j==N_trigs){  // uncommenting this if/else statement fixes the pathological behavior
-	//  std::cout<<"warning! j==N_trigs, about to seg fault..1."<<std::endl;
-	//  continue;}	
-	//else std::cout<<" HLTName ="<<HLTName[j]<<std::endl;
-
-     	//open the hists + do scaling 
-	if(j==N_trigs)std::cout<<"warning! j=="<< N_trigs<<"=N_trigs, about to seg fault..."<<std::endl;// NEVER FIRES
-	// PROBLEM SECTION
-
-
-
-
-
-	long double theLumi;
-	if(i==0)theLumi=effIntgrtdLumi_kmat;
-	else theLumi=effIntgrtdLumi_JetID;
-
-	std::string inHistName="hpp_"+HLTName[j];
-	if(i==1)inHistName+="_wJetID";
-	inHistName+="_"+radius+etaWidth;
-
-	if(debugMode)std::cout<<"inHistName="<<inHistName<<std::endl<<std::endl;
-
-     	//open the hists + do scaling 
-	TH1F* theJetTrigQAHist= (TH1F*)finData->Get( inHistName.c_str() );
-	//theJetTrigQAHist->Print("base");
-	theJetTrigQAHist->Scale( 1/theJetTrigQAHist->GetBinWidth(0) );
-	theJetTrigQAHist->Scale( 1/theLumi);
-
+      long double theLumi;
+      if(i==0)theLumi=effIntgrtdLumi_kmat;
+      else theLumi=effIntgrtdLumi_JetID;
+      
 	if(drawTrigDataOverlays){	
-	  
-	  theJetTrigQAHist->SetMarkerStyle(kDot);
-	  theJetTrigQAHist->SetMarkerSize(1.1);
-	  theJetTrigQAHist->SetMarkerColor( theTrigOverlayMarkerColor );
-	  theJetTrigQAHist->SetLineColor( theTrigOverlayLineColor[j] );
-	  
-	  if(j==0){
-	    std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title="millibarns/bin"    ; 
-	    std::string h_Title   ="Data, Jet Trig QA";
-	    if(i==1)h_Title+=", w/ JetIDCut";      
-	    //else h_Title+=", no JetIDCut";
-	    theJetTrigQAHist->SetAxisRange(0.,1000.,"X");
-	    theJetTrigQAHist->SetTitle (    h_Title.c_str() );
-	    theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
-	    theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
-	    theJetTrigQAHist->Draw(); }
-	  else theJetTrigQAHist->Draw("SAME");
+	  for(int j=0; j<N_trigs; j++){ 
+	    
+	    
+	    
+	    
+	    // PROBLEM SECTION, do NOT delete comments or other commented code
+	    if(j==N_trigs)std::cout<<"warning! j=="<< N_trigs<<"=N_trigs, about to seg fault..."<<std::endl;// NEVER FIRES
+	    
+	    if(debugMode)std::cout<<std::endl<<"N_trigs="<<N_trigs<<" and j="<<j<<std::endl;
+	    if(debugMode)std::cout<<"j<(N_trigs-1)="<<(bool)(j<(N_trigs-1))<<std::endl;
+	    if(debugMode)std::cout<<"j<N_trigs="<<(bool)(j<(N_trigs))<<std::endl;
+	    if(debugMode)std::cout<<"j<(N_trigs+1)="<<(bool)(j<(N_trigs+1))<<std::endl;	
+	    
+	    //assert(j!=N_trigs);// NEVER FIRES
+	    //assert(j<N_trigs); // NEVER FIRES
+	    
+	    //open the hists + do scaling 
+	    if(j==N_trigs)std::cout<<"warning! j=="<< N_trigs<<"=N_trigs, about to seg fault..."<<std::endl;// NEVER FIRES
+	    
+	    if(j==N_trigs){  // uncommenting this if/else statement fixes the pathological behavior
+	      std::cout<<"warning! j==N_trigs, about to seg fault..1."<<std::endl;
+	      continue;}  
+	    else std::cout<<" HLTName ="<<HLTName[j]<<std::endl;
+	    
+	    //if(j==N_trigs){  // uncommenting this if/else statement fixes the pathological behavior
+	    //  std::cout<<"warning! j==N_trigs, about to seg fault..1."<<std::endl;
+	    //  continue;}	
+	    //else std::cout<<" HLTName ="<<HLTName[j]<<std::endl;
+	    
+	    //open the hists + do scaling 
+	    if(j==N_trigs)std::cout<<"warning! j=="<< N_trigs<<"=N_trigs, about to seg fault..."<<std::endl;// NEVER FIRES
+	    // PROBLEM SECTION
 
+
+
+	    
+	    std::string inHistName="hpp_"+HLTName[j];
+	    if(i==1)inHistName+="_wJetID";
+	    inHistName+="_"+radius+etaWidth;
+	    
+	    if(debugMode)std::cout<<"inHistName="<<inHistName<<std::endl<<std::endl;
+	    
+	    //open the hists + do scaling 
+	    TH1F* theJetTrigQAHist= (TH1F*)finData->Get( inHistName.c_str() );
+	    //theJetTrigQAHist->Print("base");
+	    theJetTrigQAHist->Scale( 1/theJetTrigQAHist->GetBinWidth(0) );
+	    theJetTrigQAHist->Scale( 1/theLumi);
+	    
+	    theJetTrigQAHist->SetMarkerStyle(kDot);
+	    theJetTrigQAHist->SetMarkerSize(1.1);
+	    theJetTrigQAHist->SetMarkerColor( theTrigOverlayMarkerColor );
+	    theJetTrigQAHist->SetLineColor( theTrigOverlayLineColor[j] );
+	    
+	    JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTName[j]).c_str(),"lp");
+	    
+	    if(j==0){
+	      std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title="millibarns/bin"    ; 
+	      std::string h_Title   ="Data, Jet Trig QA";
+	      if(i==1)h_Title+=", w/ JetIDCut";      
+	      //else h_Title+=", no JetIDCut";
+	      theJetTrigQAHist->SetAxisRange(0.,1000.,"X");
+	      theJetTrigQAHist->SetTitle (    h_Title.c_str() );
+	      theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
+	      theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
+	      theJetTrigQAHist->Draw(); }
+	    else theJetTrigQAHist->Draw("SAME");   
+	  }//end loop over trigs
+	  JetTrigLegend->Draw();
+	  temp_canvJetTrig->Print(thePDFFileName.c_str());
 	}//DRAW TRIG OVERLAY
+	
+	if(drawTrigDataRatios){	
+	  std::string comboPlotName="hpp_"+HLTName[4];
+	  if(i==1)comboPlotName+="_wJetID";
+	  comboPlotName+="_"+radius+etaWidth;
 
-	//if(drawTrigDataRatios){	
-	//  
-	//  theJetTrigQAHist->SetMarkerStyle(kDot);
-	//  theJetTrigQAHist->SetMarkerSize(1.1);
-	//  theJetTrigQAHist->SetMarkerColor( theTrigOverlayMarkerColor );
-	//  theJetTrigQAHist->SetLineColor( theTrigOverlayLineColor[j] );
-	//  
-	//  if(j==0){
-	//    std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title="millibarns/bin"    ; 
-	//    std::string h_Title   ="Data, Jet Trig QA";
-	//    if(i==1)h_Title+=", w/ JetIDCut";      
-	//    //else h_Title+=", no JetIDCut";
-	//    theJetTrigQAHist->SetAxisRange(0.,1000.,"X");
-	//    theJetTrigQAHist->SetTitle (    h_Title.c_str() );
-	//    theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
-	//    theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
-	//    theJetTrigQAHist->Draw(); }
-	//  else theJetTrigQAHist->Draw("SAME");
-	//
-	//}//DRAW TRIG Ratios
+	  TH1F* theComboHist=(TH1F*)finData->Get(comboPlotName.c_str());
+	  for(int j=0; j<N_trigs; j++){ 
 
-      }//end loop over trig (e.g Jet80,Jet40,Comb)
+	    if(j==N_trigs-1)continue;//need to divide each curve by HLT Comb
 
-      temp_canvJetTrig->Print(thePDFFileName.c_str());
+	    std::string inHistName="hpp_"+HLTName[j];
+	    if(i==1)inHistName+="_wJetID";
+	    inHistName+="_"+radius+etaWidth;
+
+	    TH1F* comboHistClone=(TH1F*)theComboHist->Clone("comboHistClone4Div");
+
+	    TH1F* theRatio=(TH1F*)finData->Get(inHistName.c_str());
+	    theRatio->SetMarkerStyle(kDot);
+	    theRatio->SetMarkerSize(1.1);
+	    theRatio->SetMarkerColor( theTrigOverlayMarkerColor );
+	    theRatio->SetLineColor( theTrigOverlayLineColor[j] );
+	    
+	    theRatio->Divide(comboHistClone);
+
+	    JetTrigLegend->AddEntry(theRatio,(HLTName[j]).c_str(),"lp");
+	    
+	    if(j==0){
+	      std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title="JetTrig/JetTrigCombo"    ; 
+	      std::string h_Title   ="Data, Jet Trig QA, Ratios Jet(40,60,80,100)/Combo";
+	      if(i==1)h_Title+=", w/ JetIDCut";      
+
+	      //else h_Title+=", no JetIDCut";
+	      theRatio->SetAxisRange(0.,1000.,"X");
+	      theRatio->SetTitle (    h_Title.c_str() );
+	      theRatio->SetXTitle( h_XAx_Title.c_str() );
+	      theRatio->SetYTitle( h_YAx_Title.c_str() );
+	      theRatio->Draw(); }
+	    else theRatio->Draw("SAME");
+
+	  }//end trig name loop
+	  
+	  JetTrigLegend->Draw();
+	  temp_canvJetTrig->Print(thePDFFileName.c_str());
+	}//DRAW TRIG Ratios
+	
+	
+	
     }//end jet ID loop, i=0,1
-
   temp_canvJetTrig->Close();        
-  }  
+    
+  }//end else statement for het trig plots
+  
+  
+
+
+
+
+
+
+
+  // MCEffQAPlots plots----------------------
+  if(!drawMCEffPlots)std::cout<<std::endl<<"skipping MC Eff. QA plots..."<<std::endl<<std::endl;
+  else { std::cout<<std::endl<<std::endl;
+    std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
+
+    if(debugMode)std::cout<<std::endl<<"creating temporary canvas for printing MCEff plots..."<<std::endl;
+    TCanvas *temp_canvMCEff = new TCanvas("tempMCEff", "tempMCEff", 1200, 600);
+    //TCanvas *temp_canvMCEff_LogX = new TCanvas("tempMCEff_LogX", "tempMCEff_LogX", 1200, 600); 
+    //temp_canvMCEff_LogX->cd();    temp_canvMCEff_LogX->SetLogx(1);
+    temp_canvMCEff->cd();
+    //temp_canvMCEff->SetLogy(1);    
+    if(drawDataMCOverlays){
+      for(int j=0; j<N_genVars; j++){     
+	for(int i=0; i<2; i++){      
+	  
+	  //if(debugMode)std::cout<<std::endl<<"i= "<<i<<std::endl;
+	  
+	  
+	  //open the hists + do scaling 
+	  std::string inHistName="hpp_mceff_"+genVars[j];
+	  if(i==1)inHistName+="_wJetID";
+	  inHistName+="_"+radius+etaWidth;
+	  
+	  std::string h_YAx_Title="reco Pt/ gen Pt", h_XAx_Title="";
+	  
+	  if(j==0)h_XAx_Title="gen Jet Pt (GeV)" ;//, h_YAx_Title="gen Jet Pt (GeV)";
+	  if(j==1)h_XAx_Title="gen Jet Eta";//, h_YAx_Title="gen Jet Phi (rad)";
+	  if(j==2)h_XAx_Title="gen Jet Phi (rad)"      ;//, h_YAx_Title="gen Jet Eta";
+	  if(j==3)h_XAx_Title="gen Jet dr2Jet"   ;//, h_YAx_Title="gen Jet dr2Jet";
+	  
+	  std::string h_ZAx_Title="Entries"    ; 
+	  
+	  std::string h_Title   ="MC Eff. QA, reco-gen jet matching";
+	  if(i==1)h_Title+=", w/ JetIDCut";      
+	  //else h_Title+=", no JetIDCut";
+	  
+	  TH2F* theMCEffQAHist= (TH2F*)finMC->Get( inHistName.c_str() );
+	  //theMCEffQAHist->Scale( 1/theMCEffQAHist->GetBinWidth(0) );	
+	  
+	  theMCEffQAHist->SetAxisRange(0.4,1.8,"Y");
+	  if(j==0)theMCEffQAHist->SetAxisRange(0.,50.,"X");
+	  if(j==1)theMCEffQAHist->SetAxisRange(-2.1,2.1,"X");
+	  if(j==2)theMCEffQAHist->SetAxisRange(-3.20,3.20,"X");
+	  if(j==3)theMCEffQAHist->SetAxisRange(0.,0.15,"X");
+
+	  theMCEffQAHist->SetTitle (    h_Title.c_str() );
+	  theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
+	  theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
+	  theMCEffQAHist->SetZTitle( h_ZAx_Title.c_str() );
+
+	  //if(j==0)temp_canvMCEff_LogX->cd();
+	  //else temp_canvMCEff->cd();
+
+	  theMCEffQAHist->Draw("COLZ"); 
+
+	  temp_canvMCEff->Print(thePDFFileName.c_str());	
+	}//end genVar loop
+      }//end jetID loop
+    }
+
+  temp_canvMCEff->Close();        
+
+  }//end  MCEff Plots
+
+
+  
+
 
     
     
@@ -665,12 +768,15 @@ int printQAPlots(){
 int main(int argc, char *argv[]){
 
   int rStatus = -1;
-  if( argc!=1 ) {//no input arguments, error
-    std::cout<<"debugging, for now just do ./printQAPlots.exe"<<std::endl;
+  if( argc>2 ) {//no input arguments, error
+    std::cout<<"do ./printQAPlots.exe <OverlayFlag>"<<std::endl;
     return rStatus;
   }
   rStatus=1;
-  rStatus=printQAPlots();
+  
+  if(argc==1)rStatus=printQAPlots();
+  else rStatus=printQAPlots((bool)std::atoi(argv[1]));
+
   std::cout<<"done, rStatus="<<rStatus<<std::endl;
   return rStatus;
 }

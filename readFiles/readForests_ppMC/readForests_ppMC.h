@@ -67,6 +67,9 @@ int readForests_ppMC(int startfile = defStartFile , int endfile = defEndFile ,
                      int radius = defRadius , std::string jetType=defJetType , bool debugMode = defDebugMode );
 const int readFilesArgCount=7+minArgs;
 
+/// other switches
+const bool fillUnfoldingHists=false, fillMCEffHists=true;//, fillJECJERHists=false;
+
 //// helper functions
 double trigComb(bool *trg, int *pscl, double pt);
 void divideBinWidth(TH1 *h);
@@ -79,18 +82,13 @@ float deltaphi(float phi1, float phi2);
 const char *etaWidth = (char*)"20_eta_20";
 
 // binning arrays
-//const double ptbins[] = {
-//  3,   4,   5,   7,   9,  12,  15,   18,  21,  24,  28,
-//  28,  32,  37,  43,  49,  56,  64,   74,  84,  97, 114,
-//  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395, 
-//  430, 468, 507, 548, 592, 638, 686, 1000 
-//}; //random old binning i found in raghavs code, here for safe keeping
-
-const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
+//const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
+const double ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
-//const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 9999 }; //2015 bins?
-const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 9999 };
+
+//const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 9999 };
+const double pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. };
 const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
 
 const double pthatWeights[]={//from jetWeights/jetWeights_Py8_CUETP8M1_QCDjetAllPtBins.txt
@@ -177,15 +175,15 @@ const double binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/n
 //const double binsize_vzWeights = 0.5;
 
 const double JEC_ptbins[] = {
-  17, 22, 27,    //15-30
-  33, 39, 47,    //30-50
-  55, 64, 74,    //50-80
-  84, 97, 114,   //80-120
-  133, 153,      //120-170
-  174, 196,      //170-220
-  220, 245, 272, //220-300
-  300, 350, 400, //300-500
-  550, 790, 1000 //500-inf
+  17., 22., 27.,    //15-30
+  33., 39., 47.,    //30-50
+  55., 64., 74.,    //50-80
+  84., 97., 114.,   //80-120
+  133., 153.,      //120-170
+  174., 196.,      //170-220
+  220., 245., 272., //220-300
+  300., 350., 400., //300-500
+  550., 790., 1000. //500-1000
 };
 const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(double)-1;
 
@@ -255,10 +253,10 @@ void divideBinWidth(TH1 *h){
 
 double trigComb(bool *trg, int *pscl, double pt){
   double weight=0;
-  if(trg[3] && pt>=100 )          weight = pscl[3];
-  if(trg[2] && pt>=80  && pt<100) weight = pscl[2];
-  if(trg[1] && pt>=60  && pt<80 ) weight = pscl[1];
-  if(trg[0] && pt>=40  && pt<60 ) weight = pscl[0];
+  if( trg[3] && pt>=100.            ) weight = pscl[3];
+  if( trg[2] && pt>=80.  && pt<100. ) weight = pscl[2];
+  if( trg[1] && pt>=60.  && pt<80.  ) weight = pscl[1];
+  if( trg[0] && pt>=40.  && pt<60.  ) weight = pscl[0];
   return weight;
 }
 
@@ -266,6 +264,17 @@ double trigComb(bool *trg, int *pscl, double pt){
 float deltaphi(float phi1, float phi2){
   float pi=TMath::Pi(); 
   float dphi=TMath::Abs(phi1-phi2);
-  if(dphi > pi)dphi -= 2*pi;
+  if(dphi > pi)dphi -= 2.*pi;
   return TMath::Abs(dphi);
 }
+
+
+//random old binning i found in raghavs code, here for safe keeping
+//const double ptbins[] = {
+//  3,   4,   5,   7,   9,  12,  15,   18,  21,  24,  28,
+//  28,  32,  37,  43,  49,  56,  64,   74,  84,  97, 114,
+//  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395, 
+//  430, 468, 507, 548, 592, 638, 686, 1000 
+//}; 
+//const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 9999 }; //2015 bins?
+

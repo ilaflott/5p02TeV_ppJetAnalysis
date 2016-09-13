@@ -1,6 +1,7 @@
 // custom header
 #include "readForests_ppMC.h"
 
+const double jtPtCut=20., ldJetPtCut=60., subldJetPtCut=20., jetQAPtCut=50.;
 //// readForests_ppMC
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std::string outfile ,
@@ -181,8 +182,6 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   TH1F *hVz = new TH1F("hVz","", 60,-15.,15.);
   TH1F *hvzWVz = new TH1F("hvzWeightedVz","", 60,-15.,15.);
   TH1F *hWVz = new TH1F("hWeightedVz","", 60,-15.,15.);
-  TH1F *hvzWAnnaVz = new TH1F("hvzWeightedAnnaVz","", 60,-15.,15.);
-  TH1F *hWAnnaVz = new TH1F("hWeightedAnnaVz","", 60,-15.,15.);
 
   TH1F *hpthat = new TH1F("hpthat","",1000,0,1000);
   TH1F *hWpthat = new TH1F("hWeightedpthat","",1000,0,1000);
@@ -235,88 +234,132 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
 
   /////   UNFOLDING   ///// START!
-
+  
   TH1F *hpp_gen[2], *hpp_reco[2]; 
   TH2F* hpp_matrix[2];  //gen x reco = matrix
-  
-  hpp_gen[0]    = new TH1F( Form("hpp_gen_R%d_%s", radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth), 
-			    1000,0,1000);
-  hpp_reco[0]   = new TH1F( Form("hpp_reco_R%d_%s", radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth), 
-			    1000,0,1000);
-  hpp_matrix[0] = new TH2F( Form("hpp_matrix_R%d_%s", radius,etaWidth), 
-			    Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 
-			    1000,0,1000,1000,0,1000);  
+  hpp_gen[0]=NULL;      hpp_gen[1]=NULL;   
+  hpp_reco[0]=NULL;  	hpp_reco[1]=NULL;  
+  hpp_matrix[0]=NULL;	hpp_matrix[1]=NULL;
 
-  hpp_gen[1]    = new TH1F( Form("hpp_gen_wJetID_R%d_%s", radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth), 
-			    1000,0,1000);
-  hpp_reco[1]   = new TH1F( Form("hpp_reco_wJetID_R%d_%s", radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth), 
-			    1000,0,1000);
-  hpp_matrix[1] = new TH2F( Form("hpp_matrix_wJetID_R%d_%s", radius,etaWidth), 
-			    Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 
-			    1000,0,1000,1000,0,1000);  
+  if(fillUnfoldingHists){
+    hpp_gen[0]    = new TH1F( Form("hpp_gen_R%d_%s", radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth), 
+			      1000,0,1000);
+    hpp_reco[0]   = new TH1F( Form("hpp_reco_R%d_%s", radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth), 
+			      1000,0,1000);
+    hpp_matrix[0] = new TH2F( Form("hpp_matrix_R%d_%s", radius,etaWidth), 
+			      Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 
+			      1000,0,1000,1000,0,1000);  
+    
+    hpp_gen[1]    = new TH1F( Form("hpp_gen_wJetID_R%d_%s", radius,etaWidth), Form("Gen refpt R%d %s ",radius,etaWidth), 
+			      1000,0,1000);
+    hpp_reco[1]   = new TH1F( Form("hpp_reco_wJetID_R%d_%s", radius,etaWidth), Form("Reco jtpt R%d %s ",radius,etaWidth), 
+			      1000,0,1000);
+    hpp_matrix[1] = new TH2F( Form("hpp_matrix_wJetID_R%d_%s", radius,etaWidth), 
+			      Form("Matrix refpt jtpt R%d %s ; reco pT; gen pT",radius,etaWidth), 
+			      1000,0,1000,1000,0,1000);  }
   
   //data train -> sample the unfolding is trained on for mcclosure tests
   TH1F *hpp_mcclosure_gen[2], *hpp_mcclosure_data[2],*hpp_mcclosure_data_train[2];
   TH2F* hpp_mcclosure_matrix[2];
- 
-   hpp_mcclosure_gen[0] = new TH1F(Form("hpp_mcclosure_gen_R%d_%s", radius,etaWidth),
-				  Form("gen spectra for mc closure test R%d %s ",radius,etaWidth), 
-				  1000,0,1000);
-  hpp_mcclosure_data[0] = new TH1F(Form("hpp_mcclosure_data_R%d_%s", radius,etaWidth),
-				   Form("data for mc closure test R%d %s ",radius,etaWidth), 
-				   1000,0,1000);  
-  hpp_mcclosure_data_train[0] = new TH1F(Form("hpp_mcclosure_data_train_R%d_%s",  radius,etaWidth),
-					 Form("data_train for mc closure test R%d %s ", radius,etaWidth), 
-					 1000, 0, 1000);  
-  hpp_mcclosure_matrix[0] = new TH2F(Form("hpp_mcclosure_matrix_R%d_%s", radius,etaWidth),
-				     Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
-				     1000,0,1000, 1000,0,1000);  
-  
-  hpp_mcclosure_gen[1] = new TH1F(Form("hpp_mcclosure_gen_wJetID_R%d_%s", radius,etaWidth),
-				  Form("gen spectra for mc closure test R%d %s ",radius,etaWidth), 
-				  1000,0,1000);
-  hpp_mcclosure_data[1] = new TH1F(Form("hpp_mcclosure_data_wJetID_R%d_%s", radius,etaWidth),
-				   Form("data for mc closure test R%d %s ",radius,etaWidth), 
-				   1000,0,1000);  
-  hpp_mcclosure_data_train[1] = new TH1F(Form("hpp_mcclosure_data_train_wJetID_R%d_%s",  radius,etaWidth),
-					 Form("data_train for mc closure test R%d %s ", radius,etaWidth), 
-					 1000, 0, 1000);  
-  hpp_mcclosure_matrix[1] = new TH2F(Form("hpp_mcclosure_matrix_wJetID_R%d_%s", radius,etaWidth),
-				     Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
-				     1000,0,1000, 1000,0,1000);  
+  hpp_mcclosure_gen[0]=NULL;	    hpp_mcclosure_gen[1]=NULL;	    
+  hpp_mcclosure_data[0]=NULL;	    hpp_mcclosure_data[1]=NULL;	    
+  hpp_mcclosure_data_train[0]=NULL; hpp_mcclosure_data_train[1]=NULL; 
+  hpp_mcclosure_matrix[0]=NULL;     hpp_mcclosure_matrix[1]=NULL;     
 
+  if(fillUnfoldingHists){
+    hpp_mcclosure_gen[0] = new TH1F(Form("hpp_mcclosure_gen_R%d_%s", radius,etaWidth),
+				    Form("gen spectra for mc closure test R%d %s ",radius,etaWidth), 
+				    1000,0,1000);
+    hpp_mcclosure_data[0] = new TH1F(Form("hpp_mcclosure_data_R%d_%s", radius,etaWidth),
+				     Form("data for mc closure test R%d %s ",radius,etaWidth), 
+				     1000,0,1000);  
+    hpp_mcclosure_data_train[0] = new TH1F(Form("hpp_mcclosure_data_train_R%d_%s",  radius,etaWidth),
+					   Form("data_train for mc closure test R%d %s ", radius,etaWidth), 
+					   1000, 0, 1000);  
+    hpp_mcclosure_matrix[0] = new TH2F(Form("hpp_mcclosure_matrix_R%d_%s", radius,etaWidth),
+				       Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
+				       1000,0,1000, 1000,0,1000);  
+    
+    hpp_mcclosure_gen[1] = new TH1F(Form("hpp_mcclosure_gen_wJetID_R%d_%s", radius,etaWidth),
+				    Form("gen spectra for mc closure test R%d %s ",radius,etaWidth), 
+				    1000,0,1000);
+    hpp_mcclosure_data[1] = new TH1F(Form("hpp_mcclosure_data_wJetID_R%d_%s", radius,etaWidth),
+				     Form("data for mc closure test R%d %s ",radius,etaWidth), 
+				     1000,0,1000);  
+    hpp_mcclosure_data_train[1] = new TH1F(Form("hpp_mcclosure_data_train_wJetID_R%d_%s",  radius,etaWidth),
+					   Form("data_train for mc closure test R%d %s ", radius,etaWidth), 
+					   1000, 0, 1000);  
+    hpp_mcclosure_matrix[1] = new TH2F(Form("hpp_mcclosure_matrix_wJetID_R%d_%s", radius,etaWidth),
+				       Form("Matrix for mcclosure refpt jtpt R%d %s;reco pT; gen pT ",radius,etaWidth),
+				       1000,0,1000, 1000,0,1000);  }
+  
   
   
   /////   GEN/RECO MATCHING   ///// START!
-  //TH1F *hpp_mc_genpt[2], *hpp_mc_geneta[2], *hpp_mc_genphi[2], *hpp_mc_gendrjt[2];
-  TH2F *hpp_mceff_genpt[2], *hpp_mceff_geneta[2], *hpp_mceff_genphi[2],*hpp_mceff_gendrjt[2];
+
+  //gen(quantity) v. rec(quantity)/gen(quantity), the classic
+  TH2F *hpp_mceff_pt[2], *hpp_mceff_eta[2], *hpp_mceff_phi[2];//, *hpp_mceff_drjt[2];
+  hpp_mceff_pt[0]  =NULL;hpp_mceff_pt[1]  =NULL;
+  hpp_mceff_eta[0] =NULL;hpp_mceff_eta[1] =NULL;
+  hpp_mceff_phi[0] =NULL;hpp_mceff_phi[1] =NULL;
+
+  if(fillMCEffHists){
+    hpp_mceff_pt[0] = new TH2F(Form("hpp_mceff_pt_R%d_%s", radius,etaWidth),
+    		     	       Form("gen/reco jet matching, genpt v. recpt/genpt, R%d %s",radius,etaWidth),
+    		     	       1000,0,1000, 50,0.,5.);
+    hpp_mceff_pt[1] = new TH2F(Form("hpp_mceff_pt_wJetID_R%d_%s", radius,etaWidth),
+    		     	       Form("gen/reco jet matching, genpt v. recpt/genpt, R%d %s",radius,etaWidth),
+    		     	       1000,0,1000, 50,0.,5.);
+    		     
+    hpp_mceff_eta[0] = new TH2F(Form("hpp_mceff_eta_R%d_%s", radius,etaWidth),
+    		     		Form("gen/reco jet matching, geneta v. receta/geneta, R%d %s",radius,etaWidth),
+    		     		40,-5.,5., 50,0.,5.);
+    hpp_mceff_eta[1] = new TH2F(Form("hpp_mceff_eta_wJetID_R%d_%s", radius,etaWidth),
+    		     		Form("gen/reco jet matching, geneta v. receta/geneta, R%d %s",radius,etaWidth),
+    		     		40,-5.,5., 50,0.,5.);
+    		     
+    hpp_mceff_phi[0] = new TH2F(Form("hpp_mceff_phi_R%d_%s", radius,etaWidth),
+    		     		Form("gen/reco jet matching, genphi v. recphi/genphi, R%d %s",radius,etaWidth),
+    		     		40,-4.,4., 50,0.,5.);
+    hpp_mceff_phi[1] = new TH2F(Form("hpp_mceff_phi_wJetID_R%d_%s", radius,etaWidth),
+				Form("gen/reco jet matching, genphi v. recphi/genphi, R%d %s",radius,etaWidth),
+				40,-4.,4., 50,0.,5.);
+    //hpp_mceff_drjt[0] = new TH2F(Form("hpp_mceff_drjt_R%d_%s", radius,etaWidth),
+    //			       Form("gen/reco jet matching, gendrjt v. recdrjt/gendrjt, R%d %s",radius,etaWidth),
+    //			       10,0.,0.6, 50,0.,5.);
+    //hpp_mceff_drjt[1] = new TH2F(Form("hpp_mceff_drjt_wJetID_R%d_%s", radius,etaWidth),
+    //			       Form("gen/reco jet matching, gendrjt v. recdrjt/gendrjt, R%d %s",radius,etaWidth),
+    //			       10,0.,0.6, 50,0.,5.);
+  }
   
-  hpp_mceff_genpt[0] = new TH2F(Form("hpp_mceff_genpt_R%d_%s", radius,etaWidth),
-				Form("gen/reco jet matching, genpt recpt/genpt, R%d %s",radius,etaWidth),
-				1000,0,1000, 40,0.,5.0);
-  hpp_mceff_geneta[0] = new TH2F(Form("hpp_mceff_geneta_R%d_%s", radius,etaWidth),
-				 Form("gen/reco jet matching, geneta recpt/genpt, R%d %s",radius,etaWidth),
-				 100,-5.,5., 40,0.,5.0);
-  hpp_mceff_genphi[0] = new TH2F(Form("hpp_mceff_genphi_R%d_%s", radius,etaWidth),
-				 Form("gen/reco jet matching, genphi recpt/genpt, R%d %s",radius,etaWidth),
-				 100,-4.,4., 40,0.,5.0); 
-  hpp_mceff_gendrjt[0] = new TH2F(Form("hpp_mceff_gendrjt_R%d_%s", radius,etaWidth),
-				  Form("gen/reco jet matching, gendrjt recpt/genpt, R%d %s",radius,etaWidth),
-				  20,.0,.8, 40,0.,5.0);   
+  //gen(quantity) v. recpt/genpt, i'm curious about it!
+  TH2F* hpp_mceff_ptrat_eta[2], *hpp_mceff_ptrat_phi[2],*hpp_mceff_ptrat_drjt[2];// all v. genpt/recpt
+  hpp_mceff_ptrat_eta[0]=NULL;   hpp_mceff_ptrat_eta[1]=NULL; 
+  hpp_mceff_ptrat_phi[0]=NULL; 	 hpp_mceff_ptrat_phi[1]=NULL; 
+  hpp_mceff_ptrat_drjt[0]=NULL;	 hpp_mceff_ptrat_drjt[1]=NULL;
 
-  hpp_mceff_genpt[1] = new TH2F(Form("hpp_mceff_genpt_wJetID_R%d_%s", radius,etaWidth),
-				Form("gen/reco jet matching, genpt recpt/genpt, R%d %s",radius,etaWidth),
-				1000,0,1000, 40,0.,5.0);
-  hpp_mceff_geneta[1] = new TH2F(Form("hpp_mceff_geneta_wJetID_R%d_%s", radius,etaWidth),
-				 Form("gen/reco jet matching, geneta recpt/genpt, R%d %s",radius,etaWidth),
-				 100,-5.,5., 40,0.,5.0);
-  hpp_mceff_genphi[1] = new TH2F(Form("hpp_mceff_genphi_wJetID_R%d_%s", radius,etaWidth),
-				 Form("gen/reco jet matching, genphi recpt/genpt, R%d %s",radius,etaWidth),
-				 100,-4.,4., 40,0.,5.0); 
-  hpp_mceff_gendrjt[1] = new TH2F(Form("hpp_mceff_gendrjt_wJetID_R%d_%s", radius,etaWidth),
-				  Form("gen/reco jet matching, gendrjt recpt/genpt, R%d %s",radius,etaWidth),
-				  20,.0,.8, 40,0.,5.0);   
-
+  if(fillMCEffHists){
+    hpp_mceff_ptrat_eta[0] = new TH2F(Form("hpp_mceff_ptrat_eta_R%d_%s", radius,etaWidth),
+				      Form("gen/reco jet matching, geneta v. recpt/genpt, R%d %s",radius,etaWidth),
+				      40,-5.,5., 50,0.,5.);
+    hpp_mceff_ptrat_eta[1] = new TH2F(Form("hpp_mceff_ptrat_eta_wJetID_R%d_%s", radius,etaWidth),
+				      Form("gen/reco jet matching, geneta v. recpt/genpt, R%d %s",radius,etaWidth),
+				      40,-5.,5., 50,0.,5.);
+    
+    hpp_mceff_ptrat_phi[0] = new TH2F(Form("hpp_mceff_ptrat_phi_R%d_%s", radius,etaWidth),
+				      Form("gen/reco jet matching, genphi v. recpt/genpt, R%d %s",radius,etaWidth),
+				      40,-4.,4., 50,0.,5.); 
+    hpp_mceff_ptrat_phi[1] = new TH2F(Form("hpp_mceff_ptrat_phi_wJetID_R%d_%s", radius,etaWidth),
+				      Form("gen/reco jet matching, genphi v. recpt/genpt, R%d %s",radius,etaWidth),
+				      40,-4.,4., 50,0.,5.); 
+    
+    hpp_mceff_ptrat_drjt[0] = new TH2F(Form("hpp_mceff_ptrat_drjt_R%d_%s", radius,etaWidth),
+				       Form("gen/reco jet matching, gendrjt v. recpt/genpt, R%d %s",radius,etaWidth),
+				       10,0.,0.6, 50,0.,5.);   
+    hpp_mceff_ptrat_drjt[1] = new TH2F(Form("hpp_mceff_ptrat_drjt_wJetID_R%d_%s", radius,etaWidth),
+				       Form("gen/reco jet matching, gendrjt v. recpt/genpt, R%d %s",radius,etaWidth),
+				       20,.0,0.6, 50,0.,5.);   }
+  
   
   // EVENT LOOP PREP
   // evt  vz weights from Raghav
@@ -361,53 +404,46 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     h_NEvents_vzCut->Fill(1);
     
 
-    // compute weights
+    // compute weights, this way only works because of the previous vz>15. cut
     double vzWeight=1.; double vzStart=minbinValue_vzWeights;
-    for( int i=0; i<nbins_vzWeights ; i++ ){ 
-      double vzBinLeftSide=vzStart+i*binsize_vzWeights;//, vzBinRightSide=vzStart+(i+1)*binsize_vzWeights;
-      if(vz_F>=vzBinLeftSide) vzWeight=vzWeights[i];  }//this way only works because we already have a vz cut prior to this loop
-
-    double vzWeight_Anna=1.;           
-    vzWeight_Anna = fVzPP->Eval(vz_F);
+    for( int i=0; i<nbins_vzWeights ; i++ ){ double vzBinLeftSide=vzStart+i*binsize_vzWeights;
+      if(vz_F>=vzBinLeftSide) vzWeight=vzWeights[i];  }
+    
+    //vzWeight_anna=fvzPP->eval(vz_F);
+    //vzWeight=1./vzWeight_anna;
 
     double evtPthatWeight=0.;    
-    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }
-    
+    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 
     double trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
 
     double weight_eS=evtPthatWeight*trigWeight*vzWeight;              
-    double weight_eS_Anna=evtPthatWeight*trigWeight/vzWeight_Anna;              
 
     //vz
+    hVz->Fill(vz_F, 1.);
+    hpthat->Fill(pthat_F, 1.);
+
+    hvzWVz->Fill(vz_F, vzWeight);
     hpthatWVz->Fill(vz_F, evtPthatWeight);
 
-    hVz->Fill(vz_F, 1.);
-    
-    hvzWVz->Fill(vz_F, vzWeight);
-    hWVz->Fill(vz_F, weight_eS);
-
-    hvzWAnnaVz->Fill(vz_F, 1./vzWeight_Anna);
-    hWAnnaVz->Fill(vz_F, weight_eS_Anna);
-
-    //pthat
-    hpthat->Fill(pthat_F, 1.);
     hWpthat->Fill(pthat_F, weight_eS);
+    hWVz->Fill(vz_F, weight_eS);
 
     // JET LOOP 
     // for Aj/xj computation
     bool firstGoodJetFound=false, secondGoodJetFound=false; 
-    float firstGoodJetPt=-10., secondGoodJetPt=-10.;
+    float firstGoodJetPt=-1., secondGoodJetPt=-1.;
     float firstGoodJetPhi=-1., secondGoodJetPhi=-1.;
 
     bool firstGoodJetFound_wJetID=false, secondGoodJetFound_wJetID=false; 
-    float firstGoodJetPt_wJetID=-10., secondGoodJetPt_wJetID=-10.;
+    float firstGoodJetPt_wJetID=-1., secondGoodJetPt_wJetID=-1.;
     float firstGoodJetPhi_wJetID=-1., secondGoodJetPhi_wJetID=-1.;
     
     // for event counting
-    bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false;
-    for(int jet = 0; jet<nref_I; ++jet){
+    bool dijetHistsFilled=false, dijetHistsFilled_wJetID=false;
+    bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
 
+    for(int jet = 0; jet<nref_I; ++jet){
 
       // event+jet counting
       h_NJets->Fill(1);
@@ -415,44 +451,52 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	h_NEvents_withJets->Fill(1);
 	hNEvts_withJets_Filled=true;      }      
 
-      float recpt = pt_F[jet];
-      float rawpt = rawpt_F[jet];
-      float phi = phi_F[jet];
+      float rawpt  = rawpt_F[jet];
+      float recpt  = pt_F[jet];
+      float receta = eta_F[jet];
+      float recphi = phi_F[jet];
 
       // kmatCut
-      if( fabs(eta_F[jet]) > 2. ||
-          recpt <= 15.           ) continue;     
+      if( fabs(receta) > 2. ||
+          recpt <= jtPtCut           ) continue;     
 
       float genpt= refpt_F[jet];
       float geneta = refeta_F[jet];
       float genphi = refphi_F[jet];
       float gendrjt = refdrjt_F[jet];
       
-      /////   UNFOLDING   ///// START!
-      hpp_gen[0]->Fill(genpt, weight_eS);
-      hpp_reco[0]->Fill(recpt, weight_eS);
-      hpp_matrix[0]->Fill(recpt, genpt, weight_eS);
-      
-      // for MC closure tests
-      if(nEvt%2 == 0){
-	hpp_mcclosure_data[0]->Fill(recpt, weight_eS);      }
-      else {
-	hpp_mcclosure_matrix[0]->Fill(recpt, genpt, weight_eS);
-	hpp_mcclosure_gen[0]->Fill(genpt, weight_eS);
-	hpp_mcclosure_data_train[0]->Fill(recpt, weight_eS);      }	
-      
 
-      /////   GEN/RECO MATCHING   ///// START!
-      hpp_mceff_genpt[0]->Fill(genpt, recpt/genpt, weight_eS);
-      hpp_mceff_geneta[0]->Fill(geneta, recpt/genpt, weight_eS);
-      hpp_mceff_genphi[0]->Fill(genphi, recpt/genpt, weight_eS);
-      hpp_mceff_gendrjt[0]->Fill(gendrjt, recpt/genpt, weight_eS);
+      /////   UNFOLDING   ///// 
+      if(fillUnfoldingHists){
+	hpp_gen[0]->Fill(genpt, weight_eS);
+	hpp_reco[0]->Fill(recpt, weight_eS);
+	hpp_matrix[0]->Fill(recpt, genpt, weight_eS);
+	
+	// for MC closure tests
+	if(nEvt%2 == 0){
+	  hpp_mcclosure_data[0]->Fill(recpt, weight_eS);      }
+	else {
+	  hpp_mcclosure_matrix[0]->Fill(recpt, genpt, weight_eS);
+	  hpp_mcclosure_gen[0]->Fill(genpt, weight_eS);
+	  hpp_mcclosure_data_train[0]->Fill(recpt, weight_eS);      }	}
+      
+      
+      /////   GEN/RECO MATCHING   /////
+      if(fillMCEffHists){
+	hpp_mceff_pt[0]->Fill(genpt, recpt/genpt, weight_eS);
+	hpp_mceff_eta[0]->Fill(geneta, receta/geneta, weight_eS);
+	hpp_mceff_phi[0]->Fill(genphi, recphi/genphi, weight_eS);
+	//hpp_mceff_drjt[0]->Fill(gendrjt, recdrjt/gendrjt, weight_eS);
+	
+	hpp_mceff_ptrat_eta[0]->Fill(geneta, recpt/genpt, weight_eS);
+	hpp_mceff_ptrat_phi[0]->Fill(genphi, recpt/genpt, weight_eS);
+	hpp_mceff_ptrat_drjt[0]->Fill(gendrjt, recpt/genpt, weight_eS);}
 
       
-      // jetQA noJetID
-      hJetQA[0][0]->Fill(recpt, weight_eS);
+      /////   JETQA   ///// 
+      hJetQA[0][0]->Fill(pt_F[jet], weight_eS);
       hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
-      if(recpt>50.){
+      if(recpt>jetQAPtCut){
 	hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
 	hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
 	hJetQA[0][4]->Fill(trkMax_F[jet]/rawpt, weight_eS);
@@ -473,34 +517,40 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
       }
 
 
-      // want to compute Aj/xj with the first two good jets that meet all criteria found
+      //looking for the first two good jets that meet the criteria specified
       if (!firstGoodJetFound && !secondGoodJetFound){
-        if(recpt>60.) {
-          firstGoodJetFound=true;
-          firstGoodJetPt=recpt;
-          firstGoodJetPhi=phi; }
-        else { 
-	  firstGoodJetFound=false;}                  }
-      else if (firstGoodJetFound && !secondGoodJetFound){
-        secondGoodJetFound=true;
-        if(recpt>firstGoodJetPt) {
-          secondGoodJetPt=firstGoodJetPt;
-          secondGoodJetPhi=firstGoodJetPhi;
-          firstGoodJetPt=recpt;
-          firstGoodJetPhi=phi; }
-        else {  
-	  secondGoodJetPt=recpt; 
-	  secondGoodJetPhi=phi; }                       }
+        if(recpt>ldJetPtCut) { firstGoodJetFound=true;
+          firstGoodJetPt=recpt; 
+	  firstGoodJetPhi=recphi; }
+        else firstGoodJetFound=false;     }
 
-      if( firstGoodJetFound && secondGoodJetFound ) {
-        float A_j=(firstGoodJetPt-secondGoodJetPt)/(firstGoodJetPt+secondGoodJetPt);
-        float x_j=(secondGoodJetPt/firstGoodJetPt);
-        float dphi=deltaphi(firstGoodJetPhi,secondGoodJetPhi);
+      else if ( firstGoodJetFound && !secondGoodJetFound ) {
+	if (recpt>firstGoodJetPt) { secondGoodJetFound=true;
+	  std::cerr<<std::endl<<
+	    "WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
+          secondGoodJetPt=firstGoodJetPt;          
+	  secondGoodJetPhi=firstGoodJetPhi;
+          firstGoodJetPt=recpt;          
+	  firstGoodJetPhi=recphi; }
+        else if(recpt>subldJetPtCut){ secondGoodJetFound=true;
+	  secondGoodJetPt=recpt;
+          secondGoodJetPhi=recphi; } 
+	else secondGoodJetFound=false;      }  
+    
+
+      //fill dijet hist condition check
+      if( firstGoodJetFound && secondGoodJetFound 
+	  && !dijetHistsFilled) { 
+	//if(debugMode)std::cout<<"I only fill once per event or less!"<<std::endl;
+	dijetHistsFilled=true;
+	float A_j=(firstGoodJetPt-secondGoodJetPt)/(firstGoodJetPt+secondGoodJetPt);
+	float x_j=(secondGoodJetPt/firstGoodJetPt); 	
+	float dphi=deltaphi(firstGoodJetPhi,secondGoodJetPhi);
 	hJetQA[0][19]->Fill( A_j , weight_eS ); 
 	hJetQA[0][20]->Fill( x_j , weight_eS );       
-	hJetQA[0][21]->Fill( dphi , weight_eS ); 
-	hJetQA[0][22]->Fill( firstGoodJetPt , weight_eS ); }
-    
+	hJetQA[0][21]->Fill( dphi , weight_eS );       
+	hJetQA[0][22]->Fill( firstGoodJetPt , weight_eS );       }
+
 
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
@@ -510,40 +560,44 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
 
       //// apply JetID ////
-      if (chSum_F[jet]/recpt <= 0    ||
+      if (chSum_F[jet]/recpt <= 0.   ||
           neSum_F[jet]/recpt >= 0.99 || 
           phSum_F[jet]/recpt >= 0.99 ||
           chN_I[jet] <= 0             ) continue;
       
 
-      /////   UNFOLDING   ///// START!
-      hpp_gen[1]->Fill(genpt, weight_eS);
-      hpp_reco[1]->Fill(recpt, weight_eS);
-      hpp_matrix[1]->Fill(recpt, genpt, weight_eS);
+      /////   UNFOLDING   /////
+      if(fillUnfoldingHists){
+	hpp_gen[1]->Fill(genpt, weight_eS);
+	hpp_reco[1]->Fill(recpt, weight_eS);
+	hpp_matrix[1]->Fill(recpt, genpt, weight_eS);      
+	
+	// for MC closure tests
+	if(nEvt%2 == 0){
+	  hpp_mcclosure_data[1]->Fill(recpt, weight_eS);      }
+	else {
+	  hpp_mcclosure_matrix[1]->Fill(recpt, genpt, weight_eS);
+	  hpp_mcclosure_gen[1]->Fill(genpt, weight_eS);
+	  hpp_mcclosure_data_train[1]->Fill(recpt, weight_eS);      }	}
       
 
-      // for MC closure tests
-      if(nEvt%2 == 0){
-	hpp_mcclosure_data[1]->Fill(recpt, weight_eS);      }
-      else {
-	hpp_mcclosure_matrix[1]->Fill(recpt, genpt, weight_eS);
-	hpp_mcclosure_gen[1]->Fill(genpt, weight_eS);
-	hpp_mcclosure_data_train[1]->Fill(recpt, weight_eS);      }	
+
+      /////   GEN/RECO MATCHING   /////
+      if(fillMCEffHists){
+	hpp_mceff_pt[1]->Fill(genpt, recpt/genpt, weight_eS);
+	hpp_mceff_eta[1]->Fill(geneta, receta/geneta, weight_eS);
+	hpp_mceff_phi[1]->Fill(genphi, recphi/genphi, weight_eS);
+	//hpp_mceff_drjt[1]->Fill(gendrjt, recdrjt/gendrjt, weight_eS);
+	
+	hpp_mceff_ptrat_eta[1]->Fill(geneta, recpt/genpt, weight_eS);
+	hpp_mceff_ptrat_phi[1]->Fill(genphi, recpt/genpt, weight_eS);
+	hpp_mceff_ptrat_drjt[1]->Fill(gendrjt, recpt/genpt, weight_eS);}
 
 
-
-      /////   GEN/RECO MATCHING   ///// START!
-      hpp_mceff_genpt[1]->Fill(genpt, recpt/genpt, weight_eS);
-      hpp_mceff_geneta[1]->Fill(geneta, recpt/genpt, weight_eS);
-      hpp_mceff_genphi[1]->Fill(genphi, recpt/genpt, weight_eS);
-      hpp_mceff_gendrjt[1]->Fill(gendrjt, recpt/genpt, weight_eS);
-
-
-      // jetQA wJetID
-      hJetQA[1][0]->Fill(recpt, weight_eS);
+      /////   JETQA   /////
+      hJetQA[1][0]->Fill(pt_F[jet], weight_eS);
       hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
-
-      if(recpt>50){
+      if(recpt>jetQAPtCut){
 	hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
 	hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
 	hJetQA[1][4]->Fill(trkMax_F[jet]/rawpt, weight_eS);
@@ -563,36 +617,41 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hJetQA[1][18]->Fill(muSum_F[jet]/rawpt, weight_eS);
       }
 
-      // want to compute Aj/xj with the first two good jets that meet all criteria found
+      //looking for the first two good jets that meet the criteria specified
       if (!firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
-        if(recpt>60.) {
-          firstGoodJetFound_wJetID=true;
-          firstGoodJetPt_wJetID=recpt;
-          firstGoodJetPhi_wJetID=phi; }
-        else { 
-	  firstGoodJetFound_wJetID=false;}                        }
-      else if (firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
-        secondGoodJetFound_wJetID=true;
-        if(recpt>firstGoodJetPt_wJetID) {
-          secondGoodJetPt_wJetID=firstGoodJetPt_wJetID;
-          secondGoodJetPhi_wJetID=firstGoodJetPhi_wJetID;
-          firstGoodJetPt_wJetID=recpt;
-          firstGoodJetPhi_wJetID=phi; }
-        else {  
-	  secondGoodJetPt_wJetID=recpt; 
-	  secondGoodJetPhi_wJetID=phi; }                              }
-      
-      if( firstGoodJetFound_wJetID && secondGoodJetFound_wJetID ) {
+        if(recpt>ldJetPtCut) { firstGoodJetFound_wJetID=true;
+          firstGoodJetPt_wJetID=recpt; 
+	  firstGoodJetPhi_wJetID=recphi; }
+        else firstGoodJetFound_wJetID=false;      }
+
+      else if ( firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID ) {
+	if (recpt>firstGoodJetPt_wJetID) { secondGoodJetFound_wJetID=true;
+	  std::cerr<<std::endl<<
+	    "WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
+          secondGoodJetPt_wJetID=firstGoodJetPt_wJetID;          
+	  secondGoodJetPhi_wJetID=firstGoodJetPhi_wJetID;
+          firstGoodJetPt_wJetID=recpt;          
+	  firstGoodJetPhi_wJetID=recphi; }
+        else if(recpt>subldJetPtCut){ secondGoodJetFound_wJetID=true;
+	  secondGoodJetPt_wJetID=recpt;
+          secondGoodJetPhi_wJetID=recphi; } 
+	else secondGoodJetFound_wJetID=false;      }  
+
+
+      //fill dijet hist condition check
+      if( firstGoodJetFound_wJetID && secondGoodJetFound_wJetID 
+	  && !dijetHistsFilled_wJetID) { 
+	dijetHistsFilled_wJetID=true;
 	float A_j=(firstGoodJetPt_wJetID-secondGoodJetPt_wJetID)/
 	  (firstGoodJetPt_wJetID+secondGoodJetPt_wJetID);
 	float x_j=(secondGoodJetPt_wJetID/firstGoodJetPt_wJetID); 	
 	float dphi=deltaphi(firstGoodJetPhi_wJetID,secondGoodJetPhi_wJetID);
 	hJetQA[1][19]->Fill( A_j , weight_eS ); 
 	hJetQA[1][20]->Fill( x_j , weight_eS );       
-      	hJetQA[1][21]->Fill( dphi , weight_eS ); 
-      	hJetQA[1][22]->Fill( firstGoodJetPt , weight_eS ); }
+      	hJetQA[1][21]->Fill( dphi , weight_eS );       
+      	hJetQA[1][22]->Fill( firstGoodJetPt_wJetID , weight_eS );      }
 
-      
+
       // jet/event counts
       h_NJets_JetIDCut->Fill(1);
       if(!hNEvts_withJets_JetIDCut_Filled){

@@ -1,6 +1,9 @@
 // custom header
 #include "readForests_ppData.h"
 
+const double jtPtCut=15.,jtEtaCut=2.;//JETCUTS
+const double ldJetPtCut=60., subldJetPtCut=30., jetQAPtCut=50.;//DIJET CUTS, QA CUT
+
 //// readForests_ppData
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData(int startfile , int endfile , std::string inFilelist , std::string outfile ,
@@ -50,7 +53,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   std::string filename_Forest;  
 
   // add files, including startfile+endfile, to chains
-  std::string lastFileAdded=""; bool treesAdded=false;
+  std::string lastFileAdded=""; bool filesAdded=false; //Int_t filesCount=0;
   for(int ifile = 0; ifile<=endfile; ++ifile){
 
     // grab a filename, check startfile and end of filelist condition
@@ -63,18 +66,15 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     std::cout<<"adding file #"<<ifile; 
     if(debugMode)std::cout<<", "<<filename_Forest; 
 
-    //std::cout<<", to TChain jetpp[0]"<<std::endl;
-    //jetpp[0]->Add(filename_Forest.c_str());
-    //if(!treesAdded)treesAdded=true;     
-    //lastFileAdded=filename_Forest;
-
     std::cout<<", to each TChain in array"<<std::endl;
-    for(int t = 0;t<N_trees;++t) jetpp[t]->Add(filename_Forest.c_str()); 
-    if(!treesAdded)treesAdded=true;     
+    //for(int t = 0;t<N_trees;++t) filesCount=jetpp[t]->Add(filename_Forest.c_str()); 
+    for(int t = 0;t<N_trees;++t) filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
+    //if((bool)filesCount)filesAdded=true;     
     lastFileAdded=filename_Forest;
   }//end file loop
-  assert(treesAdded);//avoid segfault later
+  if(debugMode)std::cout<<"filesAdded="<<filesAdded<<", exiting to prevent segfault"<<std::endl;
 
+  assert(filesAdded);//avoid segfault later
 
   // declare variables/arrays + set branch address for each input tree
   //JetAnalyzer, jets
@@ -188,17 +188,25 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
 
   // declare hists
+  //meta data
+  TH1F *hJetPtCut        = new TH1F("hJetPtCut"       , (std::to_string(jtPtCut)).c_str()   ,    2,0,1);    
+  TH1F *hJetEtaCut       = new TH1F("hJetEtaCut"      , (std::to_string(jtEtaCut)).c_str()   ,   2,0,1);    
+  TH1F *hLeadJetPtCut    = new TH1F("hLeadJetPtCut"   , (std::to_string(ldJetPtCut)).c_str(),    2,0,1);  
+  TH1F *hSubLeadJetPtCut = new TH1F("hSubLeadJetPtCut", (std::to_string(subldJetPtCut)).c_str(), 2,0,1);  
+  TH1F *hJetQAPtCut      = new TH1F("hJetQAPtCut"     , (std::to_string(jetQAPtCut)).c_str(),    2,0,1);
+
+  hJetPtCut->Fill(1);      //only fill if cut is actually applied 
+  hJetEtaCut->Fill(1);
+  hLeadJetPtCut->Fill(1);   
+  hSubLeadJetPtCut->Fill(1);
+  hJetQAPtCut->Fill(1);     
+
   //evt count
   TH1F *h_NEvents         = new TH1F("NEvents"         , "NEvents", 1,0,2);
   TH1F *h_NEvents_read    = new TH1F("NEvents_read"    , "NEvents read", 1,0,2);
   TH1F *h_NEvents_skimCut = new TH1F("NEvents_skimCut" , "NEvents read post skimCut", 1,0,2);
   TH1F *h_NEvents_vzCut   = new TH1F("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 1,0,2);
 
-  //TH1F *h_WNEvents         = new TH1F("WNEvents"        , "wghtdNEvents", 1,0,2);
-  //TH1F *h_WNEvents         = new TH1F("WNEvents_read"   , "wghtdNEvents read", 1,0,2);
-  //TH1F *h_WNEvents_skimCut = new TH1F("WNEvents_skimCut", "wghtdNEvents read post skimCut", 1,0,2);
-  //TH1F *h_WNEvents_vzCut   = new TH1F("WNEvents_vzCut"  , "wghtdNEvents read post vzCut AND skimCut", 1,0,2);
-  
   //evt counts post all evt cuts. thrown out because no jets left in the event pre or post cuts
   TH1F *h_NEvents_withJets           = new TH1F("NEvents_withJets" , 
 		  				"NEvents read post evt cuts, w/ jets", 1,0,2);
@@ -216,16 +224,12 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   TH1F *h_NJets_kmatCut  = new TH1F("NJets_kmatCut ","NJets read post kmatCut ", 1,0,2);
   TH1F *h_NJets_JetIDCut = new TH1F("NJets_JetIDCut","NJets read post JetIDCut AND kmatCut", 1,0,2);
   
-  //TH1F *h_WNJets          = new TH1F("WNJets"         ,"wghtdNJets of selected events, no jet cuts", 1,0,2);
-  //TH1F *h_WNJets_kmatCut  = new TH1F("WNJets_kmatCut ","wghtdNJets post kmatCut ", 1,0,2);// kmat for kinematics
-  //TH1F *h_WNJets_JetIDCut = new TH1F("WNJets_JetIDCut","wghtdNJets post JetIDCut", 1,0,2);
-
   //jet QA
   TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){ for(int j = 0; j<N_vars; ++j){
 
       //jtpt and rawpt and leadJetPt special binning
-      if(j<=1||j==22) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
+      if(j<=1||j==22||j==23) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
 				        Form(";%s;", var[j].c_str()) , 500,0,500);
       //jteta special binning 
       else if(j==2) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
@@ -242,8 +246,8 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
   // trigger (also jet) level
   TH1F  *hpp_TrgObj40[2], *hpp_TrgObj60[2], *hpp_TrgObj80[2], *hpp_TrgObj100[2];// separate trigs
-  TH1F *hpp_TrgObjComb[2], *hpp_CombJetpT[2];// combos of trigs
 
+  //no JetID
   hpp_TrgObj40[0]   = new TH1F(Form("hpp_HLT40_R%d_%s" , radius,etaWidth), 
 			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s" , radius,etaWidth), 2000,0,2000);
   hpp_TrgObj60[0]   = new TH1F(Form("hpp_HLT60_R%d_%s" , radius,etaWidth), 
@@ -252,11 +256,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 			       Form("Spectra from  Jet 80 R%d %s" , radius,etaWidth), 2000,0,2000);
   hpp_TrgObj100[0]  = new TH1F(Form("hpp_HLT100_R%d_%s" , radius,etaWidth), 
 			       Form("Spectra from  Jet 100 R%d %s" , radius,etaWidth), 2000,0,2000);
-  hpp_TrgObjComb[0] = new TH1F(Form("hpp_HLTComb_R%d_%s" , radius,etaWidth), 
-			       Form("Trig Combined Spectra R%d %s" , radius,etaWidth), 2000,0,2000);
-  hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_R%d_%s" , radius,etaWidth), 
-			       Form("Trig Comb Spectra kMethod R%d %s" , radius,etaWidth), 2000,0,2000);
-
+  //wJetID
   hpp_TrgObj40[1]   = new TH1F(Form("hpp_HLT40_wJetID_R%d_%s" , radius,etaWidth), 
 			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s" , radius,etaWidth), 2000,0,2000);
   hpp_TrgObj60[1]   = new TH1F(Form("hpp_HLT60_wJetID_R%d_%s" , radius,etaWidth), 
@@ -265,6 +265,13 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 			       Form("Spectra from  Jet 80 R%d %s" , radius,etaWidth), 2000,0,2000);
   hpp_TrgObj100[1]  = new TH1F(Form("hpp_HLT100_wJetID_R%d_%s" , radius,etaWidth), 
 			       Form("Spectra from  Jet 100 R%d %s" , radius,etaWidth), 2000,0,2000);
+
+  TH1F *hpp_TrgObjComb[2], *hpp_CombJetpT[2];// combos of trigs
+  hpp_TrgObjComb[0] = new TH1F(Form("hpp_HLTComb_R%d_%s" , radius,etaWidth), 
+			       Form("Trig Combined Spectra R%d %s" , radius,etaWidth), 2000,0,2000);
+  hpp_CombJetpT[0]  = new TH1F(Form("hpp_TrgCombTest_R%d_%s" , radius,etaWidth), 
+			       Form("Trig Comb Spectra kMethod R%d %s" , radius,etaWidth), 2000,0,2000);
+
   hpp_TrgObjComb[1] = new TH1F(Form("hpp_HLTComb_wJetID_R%d_%s" , radius,etaWidth), 
 			       Form("Trig Combined Spectra R%d %s" , radius,etaWidth), 2000,0,2000);
   hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_wJetID_R%d_%s" , radius,etaWidth), 
@@ -275,10 +282,15 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   // EVENT LOOP
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
   UInt_t NEvents_skimAnalyzr=jetpp[3]->GetEntries();   // preskim event count from files
-  if(!(NEvents_jetAnalyzr==NEvents_skimAnalyzr)){
+  if(!(NEvents_jetAnalyzr==NEvents_skimAnalyzr)
+     ||!((bool)NEvents_jetAnalyzr)||!((bool)NEvents_skimAnalyzr) ){//if this fires, we're gonna segfault
     std::cout<<"jetAnalyzr # evts  = " << NEvents_jetAnalyzr  << std::endl;
-    std::cout<<"skimAnalyzr # evts = " << NEvents_skimAnalyzr << std::endl;
-    assert(NEvents_jetAnalyzr==NEvents_skimAnalyzr);  }
+    std::cout<<"skimAnalyzr # evts = " << NEvents_skimAnalyzr << std::endl; }
+  bool jetEventsExist= (bool)NEvents_jetAnalyzr, skimEventsExist=(bool)NEvents_skimAnalyzr;
+  bool EventCountsEqual= (NEvents_jetAnalyzr==NEvents_skimAnalyzr);
+  assert( jetEventsExist && skimEventsExist 
+	  && EventCountsEqual );//exit if the counts don't make sense, we don't want to segfault
+  
 
   UInt_t NEvents_allFiles=NEvents_jetAnalyzr;   // preskim event count from files
   for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
@@ -305,21 +317,21 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
         pBeamScrapingFilter_I==0  || 
         pprimaryvertexFilter_I==0  ) continue;    
     h_NEvents_skimCut->Fill(1);
-
+    
     if( fabs(vz_F)>15.              ) continue;
     h_NEvents_vzCut->Fill(1);
     
-
-    // grab largest triggerPt among HLT paths' trigger object collectiosn
-    double triggerPt=0.;
-    unsigned int trgObj40_size =trgObjpt_40->size(), trgObj60_size =trgObjpt_60->size();
-    unsigned int trgObj80_size =trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();
-    
+    //prescale/decision arrays
     int treePrescl[4]={ (jet40_p_I*jet40_l1s_ps_I), (jet60_p_I*jet60_l1s_ps_I), //total prescale=L1_ps*HLT_ps
 			(jet80_p_I*jet80_l1s_ps_I), (jet100_p_I*jet100_l1s_ps_I) };    
 
     bool trgDec[4]={ (bool)jet40_I, (bool)jet60_I, //HLT decision=HLT&&L1=HLT&&true
 		     (bool)jet80_I, (bool)jet100_I  }; 
+    
+    // grab largest triggerPt among HLT paths' trigger object collectiosn
+    double triggerPt=0.;
+    unsigned int trgObj40_size=trgObjpt_40->size(), trgObj60_size=trgObjpt_60->size();
+    unsigned int trgObj80_size=trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();
     
     if(jet40_I){ for(unsigned int itt=0; itt<trgObj40_size; ++itt){
 	if(trgObjpt_40->at(itt) > triggerPt) 
@@ -337,11 +349,13 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     
     // check trigger decisions for events + exclusivity between them, count events
     bool is40  = false, is60  = false, is80  = false, is100 = false;
-    if(trgDec[0] && triggerPt>=40. && triggerPt<60. ) is40  = true;    
-    if(trgDec[1] && triggerPt>=60. && triggerPt<80. ) is60  = true;    
-    if(trgDec[2] && triggerPt>=80. && triggerPt<100.) is80  = true;    
-    if(trgDec[3] && triggerPt>=100.                ) is100 = true;    
+    if( trgDec[0] && triggerPt>=40.  && triggerPt<60.  ) is40  = true;    
+    if( trgDec[1] && triggerPt>=60.  && triggerPt<80.  ) is60  = true;    
+    if( trgDec[2] && triggerPt>=80.  && triggerPt<100. ) is80  = true;    
+    if( trgDec[3] && triggerPt>=100.                   ) is100 = true;    
 
+    double weight_eS = trigComb(trgDec, treePrescl, triggerPt); //kurt method
+    
     if(is40)  NEvents_40++; 
     if(is60)  NEvents_60++; 
     if(is80)  NEvents_80++; 
@@ -349,10 +363,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     //if(true)  NEvents_any++;
 
     
-    //if(debugMode&&nEvt%1000==0)std::cout<<"cpu'ing trigger weight for evt# "<<nEvt<<std::endl;
-    double weight_eS = trigComb(trgDec, treePrescl, triggerPt); //kurt method
-    
-
     // fill evt vz histo
     hVz->Fill(vz_F, 1.0);    
     hWVz->Fill(vz_F, weight_eS);
@@ -363,13 +373,14 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     bool firstGoodJetFound=false, secondGoodJetFound=false; 
     float firstGoodJetPt=-1., secondGoodJetPt=-1.;
     float firstGoodJetPhi=-1., secondGoodJetPhi=-1.;
+
     bool firstGoodJetFound_wJetID=false, secondGoodJetFound_wJetID=false; 
     float firstGoodJetPt_wJetID=-1., secondGoodJetPt_wJetID=-1.;
     float firstGoodJetPhi_wJetID=-1., secondGoodJetPhi_wJetID=-1.;
     
     // for event counting
-    bool hNEvts_withJets_Filled=false;
-    bool hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false;
+    bool dijetHistsFilled=false, dijetHistsFilled_wJetID=false;
+    bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
 
     for(int jet = 0; jet<nref_I; ++jet){
 
@@ -381,12 +392,12 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
 
       float recpt = pt_F[jet];
+      float recphi = phi_F[jet];
       float rawpt = rawpt_F[jet];
-      float phi = phi_F[jet];
 
       // kmatCut
-      if( fabs(eta_F[jet]) > 2. ||
-          recpt <= 15.           ) continue;     
+      if( fabs(eta_F[jet]) > jtEtaCut ||
+          recpt <= jtPtCut           ) continue;     
 
 
       // trig plots
@@ -395,13 +406,13 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
       if(is60)  hpp_TrgObj60[0]->Fill(recpt, treePrescl[1]);
       if(is80)  hpp_TrgObj80[0]->Fill(recpt, treePrescl[2]);
       if(is100) hpp_TrgObj100[0]->Fill(recpt, treePrescl[3]);
+      
 
 
       // jetQA noJetID
       hJetQA[0][0]->Fill(recpt, weight_eS);
       hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
-
-      if(recpt>50.){
+      if(recpt>jetQAPtCut){
 	hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
 	hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
 	hJetQA[0][4]->Fill(trkMax_F[jet]/rawpt, weight_eS);
@@ -421,30 +432,40 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	hJetQA[0][18]->Fill(muSum_F[jet]/rawpt, weight_eS);      }
 
 
-      // want to compute Aj/xj with the first two good jets that meet all criteria found
+      //looking for the first two good jets that meet the criteria specified
       if (!firstGoodJetFound && !secondGoodJetFound){
-        if(recpt>60.) { firstGoodJetFound=true;
+        if(recpt>ldJetPtCut) { firstGoodJetFound=true;
           firstGoodJetPt=recpt; 
-	  firstGoodJetPhi=phi; }
-        else { firstGoodJetFound=false; }           }
+	  firstGoodJetPhi=recphi; }
+        else firstGoodJetFound=false;     }
 
       else if ( firstGoodJetFound && !secondGoodJetFound ) {
-        secondGoodJetFound=true;
-        if (recpt>firstGoodJetPt) {std::cerr<<std::endl<<
+	if (recpt>firstGoodJetPt) { secondGoodJetFound=true;
+	  std::cerr<<std::endl<<
 	    "WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
-          secondGoodJetPt=firstGoodJetPt;          secondGoodJetPhi=firstGoodJetPhi;
-          firstGoodJetPt=recpt;          firstGoodJetPhi=phi; }
-        else { secondGoodJetPt=recpt;
-          secondGoodJetPhi=phi; }                          }
+          secondGoodJetPt=firstGoodJetPt;          
+	  secondGoodJetPhi=firstGoodJetPhi;
+          firstGoodJetPt=recpt;          
+	  firstGoodJetPhi=recphi; }
+        else if(recpt>subldJetPtCut){ secondGoodJetFound=true;
+	  secondGoodJetPt=recpt;
+          secondGoodJetPhi=recphi; } 
+	else secondGoodJetFound=false;      }  
+    
 
-      if( firstGoodJetFound && secondGoodJetFound ) {
+      //fill dijet hist condition check
+      if( firstGoodJetFound && secondGoodJetFound 
+	  && !dijetHistsFilled) { 
+	//if(debugMode)std::cout<<"I only fill once per event or less!"<<std::endl;
+	dijetHistsFilled=true;
 	float A_j=(firstGoodJetPt-secondGoodJetPt)/(firstGoodJetPt+secondGoodJetPt);
 	float x_j=(secondGoodJetPt/firstGoodJetPt); 	
 	float dphi=deltaphi(firstGoodJetPhi,secondGoodJetPhi);
 	hJetQA[0][19]->Fill( A_j , weight_eS ); 
 	hJetQA[0][20]->Fill( x_j , weight_eS );       
 	hJetQA[0][21]->Fill( dphi , weight_eS );       
-	hJetQA[0][22]->Fill( firstGoodJetPt , weight_eS );       }
+	hJetQA[0][22]->Fill( firstGoodJetPt , weight_eS );       
+	hJetQA[0][23]->Fill( secondGoodJetPt , weight_eS );       }
       
 
       // jet/event counts
@@ -455,7 +476,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
       
       // apply JetID
-      if (chSum_F[jet]/rawpt <= 0    ||
+      if (chSum_F[jet]/rawpt <= 0.    ||
           neSum_F[jet]/rawpt >= 0.99 || 
           phSum_F[jet]/rawpt >= 0.99 ||
           chN_I[jet] <= 0             ) continue;
@@ -472,7 +493,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
       hJetQA[1][0]->Fill(recpt, weight_eS);
       hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
 
-      if(recpt>50.){     
+      if(recpt>jetQAPtCut){     
 	hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
 	hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
 	hJetQA[1][4]->Fill(trkMax_F[jet]/rawpt, weight_eS);
@@ -491,28 +512,31 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	hJetQA[1][17]->Fill(muMax_F[jet]/rawpt, weight_eS);
 	hJetQA[1][18]->Fill(muSum_F[jet]/rawpt, weight_eS);      }
 
-      // want to compute Aj/xj with the first two good jets that meet all criteria found
+      //looking for the first two good jets that meet the criteria specified
       if (!firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
-        if(recpt>60.) {
-          firstGoodJetFound_wJetID=true;
-          firstGoodJetPt_wJetID=recpt;
-          firstGoodJetPhi_wJetID=phi; }
-        else {
-          firstGoodJetFound_wJetID=false; }  }
+        if(recpt>ldJetPtCut) { firstGoodJetFound_wJetID=true;
+          firstGoodJetPt_wJetID=recpt; 
+	  firstGoodJetPhi_wJetID=recphi; }
+        else firstGoodJetFound_wJetID=false;      }
 
-      else if (firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID){
-        secondGoodJetFound_wJetID=true;
-        if(recpt>firstGoodJetPt_wJetID) {std::cout<<std::endl<<"WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
-          secondGoodJetPt_wJetID=firstGoodJetPt_wJetID;
-          secondGoodJetPhi_wJetID=firstGoodJetPhi_wJetID;
-          firstGoodJetPt_wJetID=recpt;
-          firstGoodJetPhi_wJetID=phi; }
-        else {
-          secondGoodJetPt_wJetID=recpt;
-          secondGoodJetPhi_wJetID=phi; }  }
+      else if ( firstGoodJetFound_wJetID && !secondGoodJetFound_wJetID ) {
+	if (recpt>firstGoodJetPt_wJetID) { secondGoodJetFound_wJetID=true;
+	  std::cerr<<std::endl<<
+	    "WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
+          secondGoodJetPt_wJetID=firstGoodJetPt_wJetID;          
+	  secondGoodJetPhi_wJetID=firstGoodJetPhi_wJetID;
+          firstGoodJetPt_wJetID=recpt;          
+	  firstGoodJetPhi_wJetID=recphi; }
+        else if(recpt>subldJetPtCut){ secondGoodJetFound_wJetID=true;
+	  secondGoodJetPt_wJetID=recpt;
+          secondGoodJetPhi_wJetID=recphi; } 
+	else secondGoodJetFound_wJetID=false;      }  
 
 
-      if( firstGoodJetFound_wJetID && secondGoodJetFound_wJetID ) {
+      //fill dijet hist condition check
+      if( firstGoodJetFound_wJetID && secondGoodJetFound_wJetID 
+	  && !dijetHistsFilled_wJetID) { 
+	dijetHistsFilled_wJetID=true;
 	float A_j=(firstGoodJetPt_wJetID-secondGoodJetPt_wJetID)/
 	  (firstGoodJetPt_wJetID+secondGoodJetPt_wJetID);
 	float x_j=(secondGoodJetPt_wJetID/firstGoodJetPt_wJetID); 	
@@ -520,8 +544,8 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	hJetQA[1][19]->Fill( A_j , weight_eS ); 
 	hJetQA[1][20]->Fill( x_j , weight_eS );       
       	hJetQA[1][21]->Fill( dphi , weight_eS );       
-      	hJetQA[1][22]->Fill( firstGoodJetPt_wJetID , weight_eS );       }
-      
+      	hJetQA[1][22]->Fill( firstGoodJetPt_wJetID , weight_eS );      
+	hJetQA[1][23]->Fill( secondGoodJetPt_wJetID , weight_eS );       }      
 
       // jet/event counts
       h_NJets_JetIDCut->Fill(1);
@@ -556,7 +580,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   hpp_TrgObjComb[1]->Add(hpp_TrgObj60[1] );
   hpp_TrgObjComb[1]->Add(hpp_TrgObj40[1] );
   hpp_TrgObjComb[1]->Print("base");
-
 
   //kurts method??
   hpp_CombJetpT[0]->Print("base");

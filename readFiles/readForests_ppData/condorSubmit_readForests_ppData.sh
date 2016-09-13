@@ -1,31 +1,55 @@
 #!/bin/bash
 
+
 echo ""
-# error conditions 
-if [[ $# -ne 5 ]] # not enough arguments
+
+# error conditions + I/O
+if [[ $# -ne 6 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condorSubmit_ppData.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
-    return 1
-elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
-then
-    echo "non integer <startFilePos>, exit"
-    return 1
-elif [[ $3 -lt 0 ]] # check for valid startFilePos
-then
-    echo "bad third argument"
-    echo "0 <= <startFilePos> <= nFiles-1"
+    echo "source condorSubmit_ppData.sh <inputVersion> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
+    echo "where <readForests Ver.> = HighPtLowerJets or Vanilla"
     return 1
 fi
+#if [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input against text reg ex.
 
 # input arguments to submit script
-NJobs=$1
-NFilesPerJob=$2
-startFilePos=$3
-filelistIn=$4  #echo "filelistIn is ${filelistIn}" #debug
-debug=$5
+inputVersion=$1
+NJobs=$2
+NFilesPerJob=$3
+startFilePos=$4
+filelistIn=$5  #echo "filelistIn is ${filelistIn}" #debug
+debug=$6
 
-# one condor job submit per NFilesPerJob until we submit NJobs
+# additional inputs to the code, may be input to this script in the near future
+radius=4
+jetType="PF"
+
+## checking version input,
+readFilesScript=""
+if [ "$inputVersion" = "Vanilla" ]
+then
+    echo "picked vanilla version"
+    readFilesScript="readForests_ppData"
+    readFilesScriptExe="${readFilesScript}.exe"
+elif [ "$inputVersion" = "HighPtLowerJets" ]
+then
+    echo "picked HighPtLowerJets version"
+    readFilesScript="readForests_ppData_${inputVersion}"
+    readFilesScriptExe="${readFilesScript}.exe"
+    filelistIn="filelists/5p02TeV_HighPtLowerJets_forests.txt"
+else
+    echo "${inputVersion} is not a readForests version. exit."
+    return
+fi
+
+#elif[[ "$inputVersion" = "HighPtJet80" ]]
+#    readFilesScript="readForests_ppData_${inputVersion}"
+#    readFilesScriptExe="${readFilesScript}.exe"
+#    filelistIn="filelists/5p02TeV_HighPtJet80_forests.txt"
+
+
+# NJobs=-1 case
 nFiles=`wc -l < $filelistIn`
 if [[ $NJobs -eq -1 ]]
 then
@@ -36,11 +60,20 @@ then
 	NJobs=$(( $NJobs + 1 ))
     fi
     startFilePos=0
-elif [[ $startFilePos -ge $nFiles ]]
+fi
+
+# simple error cases for startFilePos
+if [[ $startFilePos -ge $nFiles ]]
 then
-    echo "bad <startFilePos>, exit"
-    echo "0 <= <startFilePos> < nFiles-1"
+    echo "<startFilePos> larger than filelist, exit"
+    #echo "setting it to 0..."
+    #startFilePos=0
     return
+elif [[ $startFilePos -lt 0 ]]
+then
+    echo "bad <startFilePos>"
+    echo "setting it to 0..."
+    startFilePos=0
 fi
 
 # some debug info, just in case
@@ -50,9 +83,6 @@ echo "# of files in list: ${nFiles}"
 echo "starting at file position ${startFilePos}..."
 echo ""
 
-# additional inputs to the run script and .exe, these don't change too much
-radius=4
-jetType="PF"
 
 # create output folder/logfileNames with name based on filelist
 filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
@@ -61,29 +91,37 @@ energy=${filelistTitle%%_*} #echo "energy is ${energy}"
 trig=${filelistTitle#*_} #echo "trig is ${trig}"
 
 #dirName="readForests_ppData_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
-dirName="readForests_ppData_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
+dirName="${readFilesScript}_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
-logFileDir="${PWD}/outputCondor/${dirName}"
 
+logFileDir="${PWD}/outputCondor/${dirName}"
 if [ -d "${logFileDir}" ]; then
     rm -rf "${logFileDir}"
 fi
 mkdir $logFileDir
 echo "log files in outputCondor/${dirName}"
 
+
 # cmsenv for condor
 echo "cmsenv'ing..."
-cd /cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_5_8/src
+#cd /cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_5_8/src
+cd ${CVMFS_758}
 cmsenv
 cd -
 
+
 # compile code executable, same as rootcompile in my .bashrc
 echo "compiling..."
-g++ readForests_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppData.exe || return 1
-cp readForests_ppData.* "${logFileDir}"
+#g++ readForests_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppData.exe || return 
+rootcompile "${readFilesScript}.C"
+
+
+# copy over code used for job running/submitting for archival purposes
+cp ${readFilesScript}.* "${logFileDir}"
 cp condorRun_readForests_ppData.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 cd ${logFileDir}
+
 
 ### CREATE NAMES AND FILES, THEN SUBMIT ###
 NthJob=0
@@ -136,7 +174,7 @@ Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
 Executable     = condorRun_readForests_ppData.sh
 +AccountingGroup = "group_cmshi.ilaflott"
-Arguments      = $startfile $endfile $filelist $outfile $radius $jetType $debug
+Arguments      = $readFilesScriptExe $startfile $endfile $filelist $outfile $radius $jetType $debug
 Input          = /dev/null
 Error          = ${logFileDir}/$Error
 Output         = ${logFileDir}/$Output
@@ -147,15 +185,15 @@ GetEnv         = True
 Rank           = kflops
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
-transfer_input_files = ${filelist},readForests_ppData.exe
+transfer_input_files = ${filelist},${readFilesScriptExe}
 when_to_transfer_output = ON_EXIT
 Queue
 EOF
     
     # submit the job defined in the above submit file
-    echo "running readForests_ppData on files #${startfile} to #${endfile}"
-    #condor_submit ${logFileDir}/subfile    
-    sleep 1s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    echo "running ${readFilesVersion} on files #${startfile} to #${endfile}"
+    condor_submit ${logFileDir}/subfile    
+    sleep 0.2s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

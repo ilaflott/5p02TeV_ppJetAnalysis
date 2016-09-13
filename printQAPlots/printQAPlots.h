@@ -103,9 +103,13 @@ const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
 
 // variable names, string array
 const std::string genVars[] = {   
-  "genpt","geneta","genphi","gendrjt"
+  "pt","eta","phi" //,"drjt"
 };
 const int N_genVars = sizeof(genVars)/sizeof(std::string);
+const std::string genVars_ptrat[] = {   
+  "eta","phi" ,"drjt"
+};
+const int N_genVars_ptrat = sizeof(genVars_ptrat)/sizeof(std::string);
 
 const std::string HLTName[] = {
   "HLT40","HLT60","HLT80","HLT100","HLTComb"// ,"TrgCombTest"

@@ -1,11 +1,9 @@
-// original author: Raghav Kunnawalkam Elayavalli
-// Nov 24th 2015
-// Overhaul, Ian Laflotte
 // Apr 29th 2016
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later
 // compile with...
 // g++ readForests_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppData.exe
+
 
 ////////// (initializa/declara)tions //////////
 // C++, C, etc.
@@ -45,6 +43,7 @@
 #include <TH2F.h>
 #include <TF1.h>
 
+
 //// FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
 // define "main" functions, their default inputs, number of input arguments in this section
@@ -54,8 +53,8 @@ const int minArgs=1;
 
 //// readForests_ppData
 const int defStartFile=0;
-const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist = "filelists/5p02TeV_HighPtJet80_9Files_debug_forests.txt";
+const int defEndFile=1; //inclusive boundary, runs 2 files by default
+const std::string defInFilelist = "filelists/5p02TeV_HighPtJet80_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
 const std::string defOutputName = "readForests_ppData_defOut.root";
@@ -70,6 +69,7 @@ double trigComb(bool *trg, int *pscl, double pt);
 void divideBinWidth(TH1 *h);
 float deltaphi(float phi1, float phi2);
 
+
 //// CONSTANTS
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -77,19 +77,19 @@ float deltaphi(float phi1, float phi2);
 const char *etaWidth = (char*)"20_eta_20";
 
 // binning arrays
-const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
+const double ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
 const double JEC_ptbins[] = {
-  17, 22, 27,    //15-30
-  33, 39, 47,    //30-50
-  55, 64, 74,    //50-80
-  84, 97, 114,   //80-120
-  133, 153,      //120-170
-  174, 196,      //170-220
-  220, 245, 272, //220-300
-  300, 350, 400, //300-500
-  550, 790, 1000 //500-inf
+  17., 22., 27.,    //15-30
+  33., 39., 47.,    //30-50
+  55., 64., 74.,    //50-80
+  84., 97., 114.,   //80-120
+  133., 153.,      //120-170
+  174., 196.,      //170-220
+  220., 245., 272., //220-300
+  300., 350., 400., //300-500
+  550., 790., 1000. //500-inf
 };
 const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(double)-1;
 
@@ -151,9 +151,10 @@ const std::string var[] = {
   "eMax",   "eSum", 
   "muMax",  "muSum", 
   "Aj",     "xj" , "dphi", //dijet variables
-  "leadJetPt"
+  "leadJetPt", "subleadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
+
 
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
@@ -174,20 +175,18 @@ void divideBinWidth(TH1 *h){
   return;
 }
 
-
 double trigComb(bool *trgDec, int *treePrescl, double triggerPt){
-  double weight_eS=0;
-  if(trgDec[3] && triggerPt>=100 )                 weight_eS = treePrescl[3];
-  if(trgDec[2] && triggerPt>=80  && triggerPt<100) weight_eS = treePrescl[2];
-  if(trgDec[1] && triggerPt>=60  && triggerPt<80 ) weight_eS = treePrescl[1];
-  if(trgDec[0] && triggerPt>=40  && triggerPt<60 ) weight_eS = treePrescl[0];
+  double weight_eS=0.;
+  if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS = treePrescl[0];
+  if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS = treePrescl[1];
+  if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS = treePrescl[2];
+  if(trgDec[3] && triggerPt>=100. )                  weight_eS = treePrescl[3];
   return weight_eS;
 }
-
 
 float deltaphi(float phi1, float phi2){
   float pi=TMath::Pi(); 
   float dphi=TMath::Abs(phi1-phi2);
-  if(dphi > pi)dphi -= 2*pi;
+  if(dphi > pi)dphi -= 2.*pi;
   return TMath::Abs(dphi);
 }

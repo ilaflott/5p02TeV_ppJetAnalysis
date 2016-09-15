@@ -48,19 +48,6 @@
 #include "ppMC_etc.h"
 #include "ppData_etc.h"
 
-//CMSSW_BASE
-const std::string CMSSW_BASE = 
-  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
-const std::string condor_dir = "saved_outputCondor/";
-//ppMC/ppData input directories, filenames, and fullFilenames
-
-const std::string input_ppData_dir =
-  "src/readFiles/readForests_ppData/";//+condor_dir;
-const std::string input_ppMC_dir =
-  "src/readFiles/readForests_ppMC/";//+condor_dir;
-
-const std::string outputDir=CMSSW_BASE+"src/printQAPlots/output/";
-
 // other useful strings
 const int radius_int=4;
 const std::string radius_int_str=std::to_string(radius_int);
@@ -83,7 +70,8 @@ const std::string var[] = {
   "neMax",  "neSum", 
   "eMax",   "eSum", 
   "muMax",  "muSum", 
-  "Aj",     "xj" , "dphi", "leadJetPt"
+  "Aj",     "xj" , "dphi", 
+  "leadJetPt", "subleadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
@@ -97,9 +85,24 @@ const std::string var_xAx_Titles[] = {
   "neMax/rawpt",  "neSum/rawpt", 
   "eMax/rawpt",   "eSum/rawpt", 
   "muMax/rawpt",  "muSum/rawpt", 
-  "Aj",     "xj" , "dphi (radians)", "leadJetPt (GeV)"
+  "Aj",     "xj" , "dphi (radians)", 
+  "leadJetPt (GeV)", "subleadJetPt (GeV)"
 };
-const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
+//const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
+
+const int var_xAx_reBin[]={
+  25, 25, //reco/rawpt
+  5, 5,   //jteta, phi
+  5, 5, 5,//trks
+  5, 5, 5,//ch
+  5, 5, 5,//ph
+  5, 5,   //ne
+  5, 5,   //e
+  5, 5,   //mu
+  5, 5,   //xj,Aj
+  5,      //dphi
+  25, 25  //dijet, sub/lead jet
+};
 
 // variable names, string array
 const std::string genVars[] = {   

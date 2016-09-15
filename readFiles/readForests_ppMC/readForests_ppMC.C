@@ -1,7 +1,9 @@
 // custom header
 #include "readForests_ppMC.h"
 
-const double jtPtCut=20., ldJetPtCut=60., subldJetPtCut=20., jetQAPtCut=50.;
+const double jtPtCut=15.,jtEtaCut=2.;//JETCUTS
+const double ldJetPtCut=60., subldJetPtCut=30., jetQAPtCut=50.;//DIJET CUTS, QA CUT
+
 //// readForests_ppMC
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std::string outfile ,
@@ -55,7 +57,7 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   std::string filename_Forest;  
 
   // add files, including startfile+endfile, to chains
-  std::string lastFileAdded=""; bool treesAdded=false;
+  std::string lastFileAdded=""; bool filesAdded=false; //Int_t filesCount=0;
   for(int ifile = 0; ifile<=endfile; ++ifile){
 
     // grab a filename, check startfile and end of filelist condition
@@ -68,17 +70,15 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     std::cout<<"adding file #"<<ifile; 
     if(debugMode)std::cout<<", "<<filename_Forest; 
 
-    //std::cout<<", to TChain jetpp[0]"<<std::endl;
-    //jetpp[0]->Add(filename_Forest.c_str());
-    //if(!treesAdded)treesAdded=true;     
-    //lastFileAdded=filename_Forest;
-
     std::cout<<", to each TChain in array"<<std::endl;
-    for(int t = 0;t<N_trees;++t) jetpp[t]->Add(filename_Forest.c_str());
-    if(!treesAdded)treesAdded=true;
+    //for(int t = 0;t<N_trees;++t) filesCount=jetpp[t]->Add(filename_Forest.c_str()); 
+    for(int t = 0;t<N_trees;++t) filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
+    //if((bool)filesCount)filesAdded=true;     
     lastFileAdded=filename_Forest;
   }//end file loop
-  assert(treesAdded);//avoid segfault later
+
+  //if(debugMode)std::cout<<"filesAdded="<<filesAdded<<", exiting to prevent segfault"<<std::endl;
+  assert(filesAdded);//avoid segfault later
 
 
   // declare variables/arrays + set branch address for each input tree
@@ -175,8 +175,21 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
 
   // declare hists
-  //evt vz, counts
-  // histos for weights+weighting
+
+  //meta data
+  TH1F *hJetPtCut        = new TH1F("hJetPtCut"       , (std::to_string(jtPtCut)).c_str()   ,    2,0,1);    
+  TH1F *hJetEtaCut       = new TH1F("hJetEtaCut"      , (std::to_string(jtEtaCut)).c_str()   ,   2,0,1);    
+  TH1F *hLeadJetPtCut    = new TH1F("hLeadJetPtCut"   , (std::to_string(ldJetPtCut)).c_str(),    2,0,1);  
+  TH1F *hSubLeadJetPtCut = new TH1F("hSubLeadJetPtCut", (std::to_string(subldJetPtCut)).c_str(), 2,0,1);  
+  TH1F *hJetQAPtCut      = new TH1F("hJetQAPtCut"     , (std::to_string(jetQAPtCut)).c_str(),    2,0,1);
+
+  hJetPtCut->Fill(1);      //only fill if cut is actually applied 
+  hJetEtaCut->Fill(1);
+  hLeadJetPtCut->Fill(1);   
+  hSubLeadJetPtCut->Fill(1);
+  hJetQAPtCut->Fill(1);     
+
+  //evt vz, counts, histos for weights+weighting
   TH1F *hpthatWVz = new TH1F("hpthatWeightedVz","", 60,-15.,15.);
   
   TH1F *hVz = new TH1F("hVz","", 60,-15.,15.);
@@ -216,8 +229,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   TH1F *hJetQA[2][N_vars];
   for(int k = 0; k<2; ++k){ for(int j = 0; j<N_vars; ++j){
       //jtpt and rawpt special binning
-      if(j<=1||j==22) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
-				        Form(";%s;", var[j].c_str()) , 500,0,500);
+      if(j<=1||j==22||j==23) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
+						      Form(";%s;", var[j].c_str()) , 500,0,500);
       //jteta special binning 
       else if(j==2) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
 					     Form(";%s;",var[j].c_str()) , 100,-5,+5);
@@ -361,19 +374,25 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 				       20,.0,0.6, 50,0.,5.);   }
   
   
-  // EVENT LOOP PREP
+
+  // EVENT LOOP + PREP
+
   // evt  vz weights from Raghav
   TF1 *fVzPP = new TF1("fVzPP","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
   //fVzPP->SetParameters(1.05602e00,5.74688e-03,-3.37288e-03,-1.44764e-05,8.59060e-07);  // Raghav's weights
   fVzPP->SetParameters(+0.941, -0.0173, +3.23e-3, +3.61e-6, -1.04e-5);  // Anna's weights
   
   // event count from files
-  UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   
-  UInt_t NEvents_skimAnalyzr=jetpp[3]->GetEntries();   
-  if(!(NEvents_jetAnalyzr==NEvents_skimAnalyzr)){
+  UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
+  UInt_t NEvents_skimAnalyzr=jetpp[3]->GetEntries();   // preskim event count from files
+  if(!(NEvents_jetAnalyzr==NEvents_skimAnalyzr)
+     ||!((bool)NEvents_jetAnalyzr)||!((bool)NEvents_skimAnalyzr) ){//if this fires, we're gonna segfault
     std::cout<<"jetAnalyzr # evts  = " << NEvents_jetAnalyzr  << std::endl;
-    std::cout<<"skimAnalyzr # evts = " << NEvents_skimAnalyzr << std::endl;
-    assert(NEvents_jetAnalyzr==NEvents_skimAnalyzr);  }
+    std::cout<<"skimAnalyzr # evts = " << NEvents_skimAnalyzr << std::endl; }
+  bool jetEventsExist= (bool)NEvents_jetAnalyzr, skimEventsExist=(bool)NEvents_skimAnalyzr;
+  bool EventCountsEqual= (NEvents_jetAnalyzr==NEvents_skimAnalyzr);
+  assert( jetEventsExist && skimEventsExist 
+	  && EventCountsEqual );//exit if the counts don't make sense, we don't want to segfault
 
   UInt_t NEvents_allFiles=NEvents_jetAnalyzr;   // preskim event count from files
   for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
@@ -405,15 +424,36 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     
 
     // compute weights, this way only works because of the previous vz>15. cut
-    double vzWeight=1.; double vzStart=minbinValue_vzWeights;
-    for( int i=0; i<nbins_vzWeights ; i++ ){ double vzBinLeftSide=vzStart+i*binsize_vzWeights;
-      if(vz_F>=vzBinLeftSide) vzWeight=vzWeights[i];  }
+    double vzWeight=1.;
+    double vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
+    int theVzBin=0;
+      
+    for( int i=0; i<nbins_vzWeights ; i++ ){ 
+      if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
+	vzWeight=vzWeights[i];  
+	theVzBin=i;     
+	break;      }
+      else {
+	vzBinLeftSide+=binsize_vzWeights;
+	vzBinRightSide+=binsize_vzWeights; }    }
     
+    std::cout<<std::endl;
+    std::cout<<"( vzBinLeftSide="<<vzBinLeftSide<<" )"<<std::endl;
+    std::cout<<"<"<<vz_F<<"<="<<std::endl;
+    std::cout<<"( vzBinRightSide="<<vzBinRightSide<<" )"<<std::endl;
+    
+    std::cout<<std::endl;
+    std::cout<<"theVzBin="<<theVzBin<<std::endl;
+    std::cout<<"from array, vzWeights["<<theVzBin<<"]="<<vzWeights[theVzBin]<<std::endl;
+    std::cout<<"my code says vzWeight="<<vzWeight<<std::endl;
+    
+
     //vzWeight_anna=fvzPP->eval(vz_F);
     //vzWeight=1./vzWeight_anna;
 
     double evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 
+
     double trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
 
@@ -421,14 +461,13 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
     //vz
     hVz->Fill(vz_F, 1.);
-    hpthat->Fill(pthat_F, 1.);
-
     hvzWVz->Fill(vz_F, vzWeight);
     hpthatWVz->Fill(vz_F, evtPthatWeight);
-
-    hWpthat->Fill(pthat_F, weight_eS);
     hWVz->Fill(vz_F, weight_eS);
 
+    hpthat->Fill(pthat_F, 1.);
+    hWpthat->Fill(pthat_F, weight_eS);
+    
     // JET LOOP 
     // for Aj/xj computation
     bool firstGoodJetFound=false, secondGoodJetFound=false; 
@@ -439,7 +478,7 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     float firstGoodJetPt_wJetID=-1., secondGoodJetPt_wJetID=-1.;
     float firstGoodJetPhi_wJetID=-1., secondGoodJetPhi_wJetID=-1.;
     
-    // for event counting
+    // for event counting + avoiding duplicate fills in dijet hists
     bool dijetHistsFilled=false, dijetHistsFilled_wJetID=false;
     bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
 
@@ -457,7 +496,7 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
       float recphi = phi_F[jet];
 
       // kmatCut
-      if( fabs(receta) > 2. ||
+      if( fabs(receta) > jtEtaCut ||
           recpt <= jtPtCut           ) continue;     
 
       float genpt= refpt_F[jet];
@@ -549,7 +588,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hJetQA[0][19]->Fill( A_j , weight_eS ); 
 	hJetQA[0][20]->Fill( x_j , weight_eS );       
 	hJetQA[0][21]->Fill( dphi , weight_eS );       
-	hJetQA[0][22]->Fill( firstGoodJetPt , weight_eS );       }
+	hJetQA[0][22]->Fill( firstGoodJetPt , weight_eS );       
+	hJetQA[0][23]->Fill( secondGoodJetPt , weight_eS );       }
 
 
       // jet/event counts
@@ -649,7 +689,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hJetQA[1][19]->Fill( A_j , weight_eS ); 
 	hJetQA[1][20]->Fill( x_j , weight_eS );       
       	hJetQA[1][21]->Fill( dphi , weight_eS );       
-      	hJetQA[1][22]->Fill( firstGoodJetPt_wJetID , weight_eS );      }
+      	hJetQA[1][22]->Fill( firstGoodJetPt_wJetID , weight_eS );      
+      	hJetQA[1][23]->Fill( secondGoodJetPt_wJetID , weight_eS );      }
 
 
       // jet/event counts
@@ -666,21 +707,20 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
   std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl;
   
-  if(debugMode){
-    std::cout<<"Total Num of Events read passing skimCuts                              = " <<
-      h_NEvents_skimCut->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events read passing vzCuts and skimCuts (aka good events) = " <<
-      h_NEvents_vzCut->GetEntries()<<std::endl;
-    std::cout<<std::endl;
-    std::cout<<"Total Num of good Events w/ jets                             = " <<
-      h_NEvents_withJets->GetEntries()<<std::endl;	   
-    std::cout<<"Total Num of good Events, w/ jets, post kmatCuts             = " <<
-      h_NEvents_withJets_kmatCut->GetEntries()<<std::endl; 
-    std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " <<
-      h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;
-  }
-
-
+  
+  std::cout<<"Total Num of Events read passing skimCuts                              = " <<
+    h_NEvents_skimCut->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events read passing vzCuts and skimCuts (aka good events) = " <<
+    h_NEvents_vzCut->GetEntries()<<std::endl;
+  std::cout<<std::endl;
+  std::cout<<"Total Num of good Events w/ jets                             = " <<
+    h_NEvents_withJets->GetEntries()<<std::endl;	   
+  std::cout<<"Total Num of good Events, w/ jets, post kmatCuts             = " <<
+    h_NEvents_withJets_kmatCut->GetEntries()<<std::endl; 
+  std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " <<
+    h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;
+  std::cout<<std::endl;
+  
   std::cout<<std::endl<<"/// Job Jet-Loop Summary ///"<<std::endl<<std::endl;
   std::cout<<"Total Num of Jets read from good events                          = " <<
     h_NJets->GetEntries()<<std::endl;  
@@ -692,8 +732,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 
 
   std::cout<<"writing output file..."<<std::endl;
-  //fout->Write(); //this writes duplicates
-  fout->Write("",TObject::kOverwrite);//this does not
+  fout->Write(); 
+  //fout->Write("",TObject::kOverwrite);//not worthwhile, not writing ntuples
 
 
   std::cout<<std::endl<<"readForests_ppMC finished."<<std::endl;  timer.Stop();

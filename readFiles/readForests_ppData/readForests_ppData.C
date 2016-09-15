@@ -13,6 +13,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
+
   const bool fastDebugMode = (debugMode)&&true; //if debugMode is off, fastDebugMode shouldn't be on
   if(fastDebugMode)std::cout<<"fastDebugMode is ON"<<std::endl;
 
@@ -72,8 +73,8 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     //if((bool)filesCount)filesAdded=true;     
     lastFileAdded=filename_Forest;
   }//end file loop
-  if(debugMode)std::cout<<"filesAdded="<<filesAdded<<", exiting to prevent segfault"<<std::endl;
 
+  //if(debugMode)std::cout<<"filesAdded="<<filesAdded<<", exiting to prevent segfault"<<std::endl;
   assert(filesAdded);//avoid segfault later
 
   // declare variables/arrays + set branch address for each input tree
@@ -229,24 +230,27 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   for(int k = 0; k<2; ++k){ for(int j = 0; j<N_vars; ++j){
 
       //jtpt and rawpt and leadJetPt special binning
-      if(j<=1||j==22||j==23) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
-				        Form(";%s;", var[j].c_str()) , 500,0,500);
+      if(j<=1)hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , 
+				       Form(";%s;", var[j].c_str()) , 500,0,500);       
       //jteta special binning 
       else if(j==2) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
 					     Form(";%s;",var[j].c_str()) , 100,-5,+5);
       //jtphi and dphi special binning 
       else if(j==3) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
 					     Form(";%s;",var[j].c_str()) , 100,-4,+4);
-
+      //jet constituent binnings
+      else if(j<=20) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
+					      Form(";%s;",var[j].c_str()) , 200,0,2);   
+      //dphi
       else if(j==21) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
-					     Form(";%s;",var[j].c_str()) , 50,0,+4);
-      //same binning for all others
-      else /*if(j>=4)*/ hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) ,
-						 Form(";%s;",var[j].c_str()) , 200,0,2);    }  }
+					      Form(";%s;",var[j].c_str()) , 50,0,+4);
+      //sub/leadjet pt
+      else if(j==22||j==23) hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , 
+						     Form(";%s;", var[j].c_str()) , 500,0,500);     }}
 
   // trigger (also jet) level
   TH1F  *hpp_TrgObj40[2], *hpp_TrgObj60[2], *hpp_TrgObj80[2], *hpp_TrgObj100[2];// separate trigs
-
+  
   //no JetID
   hpp_TrgObj40[0]   = new TH1F(Form("hpp_HLT40_R%d_%s" , radius,etaWidth), 
 			       Form("Spectra from Jet 40 && !jet60 && !jet80 R%d %s" , radius,etaWidth), 2000,0,2000);
@@ -279,7 +283,9 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
 
 
-  // EVENT LOOP
+  // EVENT LOOP + PREP
+
+  //evtcounts check
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
   UInt_t NEvents_skimAnalyzr=jetpp[3]->GetEntries();   // preskim event count from files
   if(!(NEvents_jetAnalyzr==NEvents_skimAnalyzr)
@@ -378,7 +384,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     float firstGoodJetPt_wJetID=-1., secondGoodJetPt_wJetID=-1.;
     float firstGoodJetPhi_wJetID=-1., secondGoodJetPhi_wJetID=-1.;
     
-    // for event counting
+    // for event counting + avoiding duplicate fills in dijet hists
     bool dijetHistsFilled=false, dijetHistsFilled_wJetID=false;
     bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
 

@@ -2,22 +2,15 @@
 
 echo ""
 
-# error conditions 
+## error conditions + I/O
 if [[ $# -ne 5 ]] # not enough arguments
 then
     echo "Usage is... "
     echo "source condorSubmit_ppMC.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
-    return 1
-elif [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input
-then
-    echo "non integer <startFilePos>, exit"
-    return 1
-elif [[ $3 -lt 0 ]] # check for valid startFilePos
-then
-    echo "bad third argument"
-    echo "0 <= <startFilePos> <= nFiles-1"
+    #echo "where <readForests Ver.> = HighPtLowerJets or Vanilla"
     return 1
 fi
+#if [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input against text reg ex.
 
 
 # input arguments to submit script
@@ -26,6 +19,10 @@ NFilesPerJob=$2
 startFilePos=$3
 filelistIn=$4  #echo "filelistIn is ${filelistIn}" #debug
 debug=$5
+
+# additional inputs to the run script and .exe, these don't change too much
+radius=4
+jetType="PF"
 
 
 # one condor job submit per NFilesPerJob until we submit NJobs
@@ -39,11 +36,20 @@ then
 	NJobs=$(( $NJobs + 1 ))
     fi
     startFilePos=0
-elif [[ $startFilePos -ge $nFiles ]]
+fi
+
+## simple error cases for startFilePos
+if [[ $startFilePos -ge $nFiles ]]
 then
-    echo "bad <startFilePos>, exit"
-    echo "0 <= <startFilePos> < nFiles-1"
+    echo "<startFilePos> larger than filelist, exit"
+    #echo "setting it to 0..."
+    #startFilePos=0
     return
+elif [[ $startFilePos -lt 0 ]]
+then
+    echo "neg startFile position"
+    echo "setting it to 0..."
+    startFilePos=0
 fi
 
 
@@ -55,36 +61,34 @@ echo "starting at file position ${startFilePos}..."
 echo ""
 
 
-# additional inputs to the run script and .exe, these don't change too much
-radius=4
-jetType="PF"
-
 # create output folder/logfileNames with name based on filelist
 filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
 filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
 energy=${filelistTitle%%_*} #echo "energy is ${energy}"
 trig=${filelistTitle#*_} #echo "trig is ${trig}"
 
-#dirName="readForests_ppMC_${energy}_${trig}_$(date +"%Y-%m-%d__%H_%M")"
 dirName="readForests_ppMC_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
-logFileDir="${PWD}/outputCondor/${dirName}"
 
+logFileDir="${PWD}/outputCondor/${dirName}"
 if [ -d "${logFileDir}" ]; then
     rm -rf "${logFileDir}"
 fi
 mkdir $logFileDir
 echo "log files in outputCondor/${dirName}"
 
-# cmsenv for condor
+## cmsenv for condor
 echo "cmsenv'ing..."
-cd /cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_5_8/src
+#cd /cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_5_8/src
+cd ${CVMFS_758}
 cmsenv
 cd -
 
-# compile code executable, same as rootcompile in my .bashrc
+## compile code executable, same as rootcompile in my .bashrc
 echo "compiling..."
-g++ readForests_ppMC.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppMC.exe || return 1
+#g++ readForests_ppMC.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppMC.exe || return 
+rootcompile "${readFilesScript}.C"
+
 cp readForests_ppMC.* "${logFileDir}"
 cp condorRun_readForests_ppMC.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
@@ -160,7 +164,7 @@ EOF
     # submit the job defined in the above submit file
     echo "running readForests_ppMC on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 0.2s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 0.5s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

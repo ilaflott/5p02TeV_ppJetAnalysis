@@ -57,7 +57,7 @@ const int minArgs=1;
 //// readForests_ppMC
 const int defStartFile=0;
 const int defEndFile=1; //inclusive boundary
-const std::string defInFilelist = "filelists/5p02TeV_Py8_CUETP8M1_QCDjet15_20Files_debug_forests.txt";
+const std::string defInFilelist = "filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
 const std::string defOutputName = "readForests_ppMC_defOut.root";
@@ -105,72 +105,70 @@ const double pthatWeights[]={//from jetWeights/jetWeights_Py8_CUETP8M1_QCDjetAll
 /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
 };
 
-const double vzWeights[]={//from doVzWeights on jtpt15_ldJetPt50 HPtJetTrigData/Py8QCDMC samples in printQAPlots.C 8.31.16
-/*or i=1, -15<vz<=-14.5, vzWeight=*/   0.381095,
-/*  or i=2, -14.5<vz<=-14, vzWeight=*/ 0.420839,
-/*  or i=3, -14<vz<=-13.5, vzWeight=*/ 0.457158,
-/*  or i=4, -13.5<vz<=-13, vzWeight=*/ 0.489084,
-/*  or i=5, -13<vz<=-12.5, vzWeight=*/ 0.526421,
-/*  or i=6, -12.5<vz<=-12, vzWeight=*/ 0.568266,
-/*  or i=7, -12<vz<=-11.5, vzWeight=*/ 0.631775,
-/*  or i=8, -11.5<vz<=-11, vzWeight=*/ 0.627823,
-/*  or i=9, -11<vz<=-10.5, vzWeight=*/ 0.690401,
-/*  or i=10, -10.5<vz<=-10, vzWeight=*/0.714522,
-/*  or i=11, -10<vz<=-9.5, vzWeight=*/ 0.750037,
-/*  or i=12, -9.5<vz<=-9, vzWeight=*/  0.799898,
-/*  or i=13, -9<vz<=-8.5, vzWeight=*/  0.816712,
-/*  or i=14, -8.5<vz<=-8, vzWeight=*/  0.8532  ,
-/*  or i=15, -8<vz<=-7.5, vzWeight=*/  0.877429,
-/*  or i=16, -7.5<vz<=-7, vzWeight=*/  0.895462,
-/*  or i=17, -7<vz<=-6.5, vzWeight=*/  0.925748,
-/*  or i=18, -6.5<vz<=-6, vzWeight=*/  0.960379,
-/*  or i=19, -6<vz<=-5.5, vzWeight=*/  1.00065 ,
-/*  or i=20, -5.5<vz<=-5, vzWeight=*/  1.00565 ,
-/*  or i=21, -5<vz<=-4.5, vzWeight=*/  1.01403 ,
-/*  or i=22, -4.5<vz<=-4, vzWeight=*/  1.03837 ,
-/*  or i=23, -4<vz<=-3.5, vzWeight=*/  1.05647 ,
-/*  or i=24, -3.5<vz<=-3, vzWeight=*/  1.07155 ,
-/*  or i=25, -3<vz<=-2.5, vzWeight=*/  1.07985 ,
-/*  or i=26, -2.5<vz<=-2, vzWeight=*/  1.09945 ,
-/*  or i=27, -2<vz<=-1.5, vzWeight=*/  1.1102  ,
-/*  or i=28, -1.5<vz<=-1, vzWeight=*/  1.12035 ,
-/*  or i=29, -1<vz<=-0.5, vzWeight=*/  1.11602 ,
-/*  or i=30, -0.5<vz<=0, vzWeight=*/   1.1358  ,
-/*  or i=31, 0<vz<=0.5, vzWeight=*/    1.1328  ,
-/*  or i=32, 0.5<vz<=1, vzWeight=*/    1.13871 ,
-/*  or i=33, 1<vz<=1.5, vzWeight=*/    1.13266 ,
-/*  or i=34, 1.5<vz<=2, vzWeight=*/    1.14604 ,
-/*  or i=35, 2<vz<=2.5, vzWeight=*/    1.12859 ,
-/*  or i=36, 2.5<vz<=3, vzWeight=*/    1.14574 ,
-/*  or i=37, 3<vz<=3.5, vzWeight=*/    1.12041 ,
-/*  or i=38, 3.5<vz<=4, vzWeight=*/    1.11591 ,
-/*  or i=39, 4<vz<=4.5, vzWeight=*/    1.11259 ,
-/*  or i=40, 4.5<vz<=5, vzWeight=*/    1.1011  ,
-/*  or i=41, 5<vz<=5.5, vzWeight=*/    1.09243 ,
-/*  or i=42, 5.5<vz<=6, vzWeight=*/    1.08899 ,
-/*  or i=43, 6<vz<=6.5, vzWeight=*/    1.06719 ,
-/*  or i=44, 6.5<vz<=7, vzWeight=*/    1.02613 ,
-/*  or i=45, 7<vz<=7.5, vzWeight=*/    1.0183  ,
-/*  or i=46, 7.5<vz<=8, vzWeight=*/    0.989017,
-/*  or i=47, 8<vz<=8.5, vzWeight=*/    0.962692,
-/*  or i=48, 8.5<vz<=9, vzWeight=*/    0.936776,
-/*  or i=49, 9<vz<=9.5, vzWeight=*/    0.90725 ,
-/*  or i=50, 9.5<vz<=10, vzWeight=*/   0.89135 ,
-/*  or i=51, 10<vz<=10.5, vzWeight=*/  0.864868,
-/*  or i=52, 10.5<vz<=11, vzWeight=*/  0.807878,
-/*  or i=53, 11<vz<=11.5, vzWeight=*/  0.788   ,
-/*  or i=54, 11.5<vz<=12, vzWeight=*/  0.725265,
-/*  or i=55, 12<vz<=12.5, vzWeight=*/  0.709917,
-/*  or i=56, 12.5<vz<=13, vzWeight=*/  0.661436,
-/*  or i=57, 13<vz<=13.5, vzWeight=*/  0.628792,
-/*  or i=58, 13.5<vz<=14, vzWeight=*/  0.580058,
-/*  or i=59, 14<vz<=14.5, vzWeight=*/  0.550358,
-/*  or i=60, 14.5<vz<=15, vzWeight=*/  0.479061//,
-///*  or i=61, 15.<vz<inf, vzWeight=*/  0.
+const double vzWeights[]={//from vzEvtWeights 9.14.16, 
+/*for i=1, -15<vz<=-14.5, vzWeight=*/ 0.381083,
+/*for i=2, -14.5<vz<=-14, vzWeight=*/ 0.420849,
+/*for i=3, -14<vz<=-13.5, vzWeight=*/ 0.457166,
+/*for i=4, -13.5<vz<=-13, vzWeight=*/ 0.489082,
+/*for i=5, -13<vz<=-12.5, vzWeight=*/ 0.526434,
+/*for i=6, -12.5<vz<=-12, vzWeight=*/ 0.568316,
+/*for i=7, -12<vz<=-11.5, vzWeight=*/ 0.631824,
+/*for i=8, -11.5<vz<=-11, vzWeight=*/ 0.627796,
+/*for i=9, -11<vz<=-10.5, vzWeight=*/ 0.690459,
+/*for i=10, -10.5<vz<=-10, vzWeight=*/0.714526,
+/*for i=11, -10<vz<=-9.5, vzWeight=*/ 0.750061,
+/*for i=12, -9.5<vz<=-9, vzWeight=*/  0.799916,
+/*for i=13, -9<vz<=-8.5, vzWeight=*/  0.816735,
+/*for i=14, -8.5<vz<=-8, vzWeight=*/  0.85323 ,
+/*for i=15, -8<vz<=-7.5, vzWeight=*/  0.877455,
+/*for i=16, -7.5<vz<=-7, vzWeight=*/  0.895425,
+/*for i=17, -7<vz<=-6.5, vzWeight=*/  0.92577 ,
+/*for i=18, -6.5<vz<=-6, vzWeight=*/  0.960376,
+/*for i=19, -6<vz<=-5.5, vzWeight=*/  1.00063 ,
+/*for i=20, -5.5<vz<=-5, vzWeight=*/  1.00567 ,
+/*for i=21, -5<vz<=-4.5, vzWeight=*/  1.01408 ,
+/*for i=22, -4.5<vz<=-4, vzWeight=*/  1.03837 ,
+/*for i=23, -4<vz<=-3.5, vzWeight=*/  1.05649 ,
+/*for i=24, -3.5<vz<=-3, vzWeight=*/  1.07153 ,
+/*for i=25, -3<vz<=-2.5, vzWeight=*/  1.07986 ,
+/*for i=26, -2.5<vz<=-2, vzWeight=*/  1.09942 ,
+/*for i=27, -2<vz<=-1.5, vzWeight=*/  1.1102  ,
+/*for i=28, -1.5<vz<=-1, vzWeight=*/  1.12039 ,
+/*for i=29, -1<vz<=-0.5, vzWeight=*/  1.116   ,
+/*for i=30, -0.5<vz<=0, vzWeight=*/   1.1358  ,
+/*for i=31, 0<vz<=0.5, vzWeight=*/    1.13279 ,
+/*for i=32, 0.5<vz<=1, vzWeight=*/    1.1387  ,
+/*for i=33, 1<vz<=1.5, vzWeight=*/    1.13261 ,
+/*for i=34, 1.5<vz<=2, vzWeight=*/    1.14604 ,
+/*for i=35, 2<vz<=2.5, vzWeight=*/    1.12861 ,
+/*for i=36, 2.5<vz<=3, vzWeight=*/    1.14573 ,
+/*for i=37, 3<vz<=3.5, vzWeight=*/    1.12039 ,
+/*for i=38, 3.5<vz<=4, vzWeight=*/    1.11589 ,
+/*for i=39, 4<vz<=4.5, vzWeight=*/    1.11258 ,
+/*for i=40, 4.5<vz<=5, vzWeight=*/    1.10108 ,
+/*for i=41, 5<vz<=5.5, vzWeight=*/    1.09245 ,
+/*for i=42, 5.5<vz<=6, vzWeight=*/    1.08902 ,
+/*for i=43, 6<vz<=6.5, vzWeight=*/    1.06721 ,
+/*for i=44, 6.5<vz<=7, vzWeight=*/    1.0261  ,
+/*for i=45, 7<vz<=7.5, vzWeight=*/    1.01827 ,
+/*for i=46, 7.5<vz<=8, vzWeight=*/    0.989024,
+/*for i=47, 8<vz<=8.5, vzWeight=*/    0.962674,
+/*for i=48, 8.5<vz<=9, vzWeight=*/    0.936773,
+/*for i=49, 9<vz<=9.5, vzWeight=*/    0.907251,
+/*for i=50, 9.5<vz<=10, vzWeight=*/   0.891311,
+/*for i=51, 10<vz<=10.5, vzWeight=*/  0.864917,
+/*for i=52, 10.5<vz<=11, vzWeight=*/  0.807905,
+/*for i=53, 11<vz<=11.5, vzWeight=*/  0.787968,
+/*for i=54, 11.5<vz<=12, vzWeight=*/  0.725249,
+/*for i=55, 12<vz<=12.5, vzWeight=*/  0.709917,
+/*for i=56, 12.5<vz<=13, vzWeight=*/  0.661411,
+/*for i=57, 13<vz<=13.5, vzWeight=*/  0.628832,
+/*for i=58, 13.5<vz<=14, vzWeight=*/  0.580118,
+/*for i=59, 14<vz<=14.5, vzWeight=*/  0.550339,
+/*for i=60, 14.5<vz<=15, vzWeight=*/  0.479087
 };
 const int nbins_vzWeights = sizeof(vzWeights)/sizeof(double);//should be 60
-const double minbinValue_vzWeights = -15.;
-const double maxbinValue_vzWeights = 15.;
+const double minbinValue_vzWeights = -15., maxbinValue_vzWeights = 15.;
 const double binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
 //const double binsize_vzWeights = 0.5;
 
@@ -227,7 +225,7 @@ const std::string var[] = {
   "eMax",   "eSum", 
   "muMax",  "muSum", 
   "Aj",     "xj",      "dphi", //dijets
-  "leadJetPt"
+  "leadJetPt", "subleadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 

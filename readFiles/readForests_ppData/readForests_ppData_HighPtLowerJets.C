@@ -488,11 +488,12 @@ int readForests_ppData_HighPtLowerJets(int startfile , int endfile ,
 
       
       // apply JetID
-      if (chSum_F[jet]/rawpt <= 0.    ||
+      if (chSum_F[jet]/rawpt <= 0.   ||
+	  chSum_F[jet]/rawpt >= 0.99 || //wasn't here for runs previous to 9.16.16
           neSum_F[jet]/rawpt >= 0.99 || 
-          phSum_F[jet]/rawpt >= 0.99 ||
+          eSum_F[jet]/rawpt  >= 0.99 || //wasn't here for runs previous to 9.16.16
+	  //phSum_F[jet]/rawpt >= 0.99 || //wasn't in raghav's 13 tev JetID cuts 
           chN_I[jet] <= 0             ) continue;
-      
 
       // trig plots
       if(true)  hpp_CombJetpT[1]->Fill(recpt, weight_eS); //kurts method

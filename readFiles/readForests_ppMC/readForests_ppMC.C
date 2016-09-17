@@ -437,15 +437,15 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	vzBinLeftSide+=binsize_vzWeights;
 	vzBinRightSide+=binsize_vzWeights; }    }
     
-    std::cout<<std::endl;
-    std::cout<<"( vzBinLeftSide="<<vzBinLeftSide<<" )"<<std::endl;
-    std::cout<<"<"<<vz_F<<"<="<<std::endl;
-    std::cout<<"( vzBinRightSide="<<vzBinRightSide<<" )"<<std::endl;
-    
-    std::cout<<std::endl;
-    std::cout<<"theVzBin="<<theVzBin<<std::endl;
-    std::cout<<"from array, vzWeights["<<theVzBin<<"]="<<vzWeights[theVzBin]<<std::endl;
-    std::cout<<"my code says vzWeight="<<vzWeight<<std::endl;
+    if(debugMode){std::cout<<std::endl;
+      std::cout<<"( vzBinLeftSide="<<vzBinLeftSide<<" )"<<std::endl;
+      std::cout<<"<"<<vz_F<<"<="<<std::endl;
+      std::cout<<"( vzBinRightSide="<<vzBinRightSide<<" )"<<std::endl;
+      
+      std::cout<<std::endl;
+      std::cout<<"theVzBin="<<theVzBin<<std::endl;
+      std::cout<<"from array, vzWeights["<<theVzBin<<"]="<<vzWeights[theVzBin]<<std::endl;
+      std::cout<<"my code says vzWeight="<<vzWeight<<std::endl;}
     
 
     //vzWeight_anna=fvzPP->eval(vz_F);
@@ -599,12 +599,14 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	hNEvts_withJets_kmatCut_Filled=true;      }
 
 
-      //// apply JetID ////
-      if (chSum_F[jet]/recpt <= 0.   ||
-          neSum_F[jet]/recpt >= 0.99 || 
-          phSum_F[jet]/recpt >= 0.99 ||
+      // apply JetID
+      if (chSum_F[jet]/rawpt <= 0.   ||
+	  chSum_F[jet]/rawpt >= 0.99 || //wasn't here for runs previous to 9.16.16
+          neSum_F[jet]/rawpt >= 0.99 || 
+          eSum_F[jet]/rawpt  >= 0.99 || //wasn't here for runs previous to 9.16.16
+	  //phSum_F[jet]/rawpt >= 0.99 || //wasn't in raghav's 13 tev JetID cuts 
           chN_I[jet] <= 0             ) continue;
-      
+
 
       /////   UNFOLDING   /////
       if(fillUnfoldingHists){

@@ -90,21 +90,52 @@ const std::string var_xAx_Titles[] = {
 };
 //const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
 
-const int var_xAx_reBin[]={
-  25, 25, //reco/rawpt
-  5, 5,   //jteta, phi
-  5, 5, 5,//trks
-  5, 5, 5,//ch
-  5, 5, 5,//ph
-  5, 5,   //ne
-  5, 5,   //e
-  5, 5,   //mu
-  5, 5,   //xj,Aj
-  5,      //dphi
-  25, 25  //dijet, sub/lead jet
+const int var_xAx_reBin[]={                                   
+  5, 5,     //reco/rawjtpt //500,0,500	   
+  2,  2,    //jteta, phi   //60 ,-3,+3  and  //100,-4,+4  
+  5, 5, 5,  //trks	   //200,0,2	   				   
+  5, 5, 5,  //ch  
+  5, 5, 5,  //ph					           
+  5, 5,     //ne		
+  5, 5,     //e					      
+  5, 5,     //mu					      
+  2, 2,     //xj,Aj	//100,0,1				     
+  1,        //dphi	//50 ,0,+4		   				      
+  5, 5      //sub/lead recojttpt, //500,0,500				      
 };
 
-// variable names, string array
+const float jetQAxmax[]={
+  (500.+5.), (500.+5.),
+  (3.+.2), (4.+.16),
+  (2.00+.05), (2.00+.05), (2.00+.05),
+  (2.00+.05), (2.00+.05), (2.00+.05),
+  (2.00+.05), (2.00+.05), (2.00+.05),
+  (2.00+.05), (2.00+.05), 
+  (2.00+.05), (2.00+.05), 
+  (2.00+.05), (2.00+.05), 
+  (1.+.02), (1.+.02), 
+  (3.2),//(4.+.08),
+  (500.+.05), (500.+.05)
+};
+
+
+const float jetQAxmin[]={
+  0., 0.,
+  -3., -4.,
+  0., 0., 0.,
+  0., 0., 0.,
+  0., 0., 0.,
+  0., 0., 
+  0., 0., 
+  0., 0., 
+  0., 0., 
+  0.,
+  30., 15.
+};
+
+const int jetTrigQABinning=10;
+
+// gen variable names for Th2 profiles//MCEff Ploits
 const std::string genVars[] = {   
   "pt","eta","phi" //,"drjt"
 };
@@ -114,10 +145,13 @@ const std::string genVars_ptrat[] = {
 };
 const int N_genVars_ptrat = sizeof(genVars_ptrat)/sizeof(std::string);
 
+// trigs
 const std::string HLTName[] = {
   "HLT40","HLT60","HLT80","HLT100","HLTComb"// ,"TrgCombTest"
 };
 const int N_trigs=sizeof(HLTName)/sizeof(std::string);
+
+
 
 //// MC+DATA COMMON BINNING
 // ---------------------------------------------------------------------------------------------------------------

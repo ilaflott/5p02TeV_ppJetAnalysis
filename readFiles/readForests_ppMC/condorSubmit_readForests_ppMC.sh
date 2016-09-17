@@ -164,7 +164,7 @@ EOF
     # submit the job defined in the above submit file
     echo "running readForests_ppMC on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 0.5s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 1.5s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

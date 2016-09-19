@@ -1,8 +1,8 @@
 // custom header
 #include "readForests_ppMC.h"
 
-const double jtPtCut=15.,jtEtaCut=2.;//JETCUTS
-const double ldJetPtCut=60., subldJetPtCut=30., jetQAPtCut=50.;//DIJET CUTS, QA CUT
+const float jtPtCut=15.,jtEtaCut=2.;//JETCUTS
+const float ldJetPtCut=60., subldJetPtCut=20., jetQAPtCut=50.;//DIJET CUTS, QA CUT
 
 //// readForests_ppMC
 // ---------------------------------------------------------------------------------------------------------------
@@ -390,8 +390,8 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
     h_NEvents_vzCut->Fill(1);
     
     // compute weights, this way only works because of the previous vz>15. cut
-    double vzWeight=1.;
-    double vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
+    float vzWeight=1.;
+    float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
     int theVzBin=0;
       
     for( int i=0; i<nbins_vzWeights ; i++ ){ 
@@ -414,13 +414,13 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
       std::cout<<"my code says vzWeight="<<vzWeight<<std::endl;}
     
 
-    double evtPthatWeight=0.;    
+    float evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 
 
-    double trigWeight=1.;
+    float trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
 
-    double weight_eS=evtPthatWeight*trigWeight*vzWeight;              
+    float weight_eS=evtPthatWeight*trigWeight*vzWeight;              
 
     //vz
     hVz->Fill(vz_F, 1.);
@@ -534,9 +534,12 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	  secondGoodJetPhi=firstGoodJetPhi;
           firstGoodJetPt=recpt;          
 	  firstGoodJetPhi=recphi; }
-        else if(recpt>subldJetPtCut){ secondGoodJetFound=true;
-	  secondGoodJetPt=recpt;
-          secondGoodJetPhi=recphi; } 
+        else if(recpt>subldJetPtCut){ 
+	  float checkdPhi=deltaphi(firstGoodJetPhi,recphi);
+	  if(checkdPhi>(2./3.*TMath::Pi())){
+	    secondGoodJetFound=true;
+	    secondGoodJetPt=recpt;
+	    secondGoodJetPhi=recphi; } 	}
 	else secondGoodJetFound=false;      }  
     
 
@@ -640,9 +643,12 @@ int readForests_ppMC(int startfile , int endfile , std::string inFilelist , std:
 	  secondGoodJetPhi_wJetID=firstGoodJetPhi_wJetID;
           firstGoodJetPt_wJetID=recpt;          
 	  firstGoodJetPhi_wJetID=recphi; }
-        else if(recpt>subldJetPtCut){ secondGoodJetFound_wJetID=true;
-	  secondGoodJetPt_wJetID=recpt;
-          secondGoodJetPhi_wJetID=recphi; } 
+        else if(recpt>subldJetPtCut){ 
+	  float checkdPhi=deltaphi(firstGoodJetPhi_wJetID,recphi);
+	  if(checkdPhi>(2./3.*TMath::Pi())){
+	    secondGoodJetFound_wJetID=true;
+	    secondGoodJetPt_wJetID=recpt;
+	    secondGoodJetPhi_wJetID=recphi; } }
 	else secondGoodJetFound_wJetID=false;      }  
 
 

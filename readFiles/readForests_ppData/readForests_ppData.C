@@ -1,8 +1,9 @@
 // custom header
 #include "readForests_ppData.h"
 
-const double jtPtCut=15.,jtEtaCut=2.;//JETCUTS
-const double ldJetPtCut=60., subldJetPtCut=30., jetQAPtCut=50.;//DIJET CUTS, QA CUT
+const float jtPtCut=15.,jtEtaCut=2.;//JETCUTS
+const float ldJetPtCut=60., subldJetPtCut=20., jetQAPtCut=50.;//DIJET CUTS, QA CUT
+const float dPhiCut=2./3.*TMath::Pi();
 
 //// readForests_ppData
 // ---------------------------------------------------------------------------------------------------------------
@@ -366,7 +367,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     if( trgDec[2] && triggerPt>=80.  && triggerPt<100. ) is80  = true;    
     if( trgDec[3] && triggerPt>=100.                   ) is100 = true;    
 
-    double weight_eS = trigComb(trgDec, treePrescl, triggerPt); //kurt method
+    float weight_eS = trigComb(trgDec, treePrescl, triggerPt); //kurt method
     
     if(is40)  NEvents_40++; 
     if(is60)  NEvents_60++; 
@@ -455,12 +456,15 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	  secondGoodJetPhi=firstGoodJetPhi;
           firstGoodJetPt=recpt;          
 	  firstGoodJetPhi=recphi; }
-        else if(recpt>subldJetPtCut){ secondGoodJetFound=true;
-	  secondGoodJetPt=recpt;
-          secondGoodJetPhi=recphi; } 
+        else if(recpt>subldJetPtCut){ 
+	  float checkdPhi=deltaphi(firstGoodJetPhi,recphi);
+	  if(checkdPhi>(2./3.*TMath::Pi())){
+	    secondGoodJetFound=true;
+	    secondGoodJetPt=recpt;
+	    secondGoodJetPhi=recphi; } 	}
 	else secondGoodJetFound=false;      }  
-    
-
+      
+      
       //fill dijet hist condition check
       if( firstGoodJetFound && secondGoodJetFound 
 	  && !dijetHistsFilled) { 
@@ -539,12 +543,15 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	  secondGoodJetPhi_wJetID=firstGoodJetPhi_wJetID;
           firstGoodJetPt_wJetID=recpt;          
 	  firstGoodJetPhi_wJetID=recphi; }
-        else if(recpt>subldJetPtCut){ secondGoodJetFound_wJetID=true;
-	  secondGoodJetPt_wJetID=recpt;
-          secondGoodJetPhi_wJetID=recphi; } 
+        else if(recpt>subldJetPtCut){ 
+	  float checkdPhi=deltaphi(firstGoodJetPhi_wJetID,recphi);
+	  if(checkdPhi>(2./3.*TMath::Pi())){
+	    secondGoodJetFound_wJetID=true;
+	    secondGoodJetPt_wJetID=recpt;
+	    secondGoodJetPhi_wJetID=recphi; } }
 	else secondGoodJetFound_wJetID=false;      }  
-
-
+      
+      
       //fill dijet hist condition check
       if( firstGoodJetFound_wJetID && secondGoodJetFound_wJetID 
 	  && !dijetHistsFilled_wJetID) { 

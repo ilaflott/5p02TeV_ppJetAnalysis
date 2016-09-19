@@ -71,7 +71,7 @@ const int readFilesArgCount=7+minArgs;
 const bool fillUnfoldingHists=false, fillMCEffHists=true;//, fillJECJERHists=false;
 
 //// helper functions
-double trigComb(bool *trg, int *pscl, double pt);
+float trigComb(bool *trg, int *pscl, float pt);
 void divideBinWidth(TH1 *h);
 float deltaphi(float phi1, float phi2);
 
@@ -82,14 +82,14 @@ float deltaphi(float phi1, float phi2);
 const char *etaWidth = (char*)"20_eta_20";
 
 // binning arrays
-const double ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
+const float ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
 
-const double pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. };
+const float pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. };
 const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
 
-const double pthatWeights[]={//from evtPthatWeights/evtPthatWeights_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets.txt
+const float pthatWeights[]={//from evtPthatWeights/evtPthatWeights_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets.txt
 /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/        5.27832e-07,
 /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/       3.37352e-08,
 /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/      3.63191e-09,
@@ -104,7 +104,7 @@ const double pthatWeights[]={//from evtPthatWeights/evtPthatWeights_Py8_CUETP8M1
 };
 
 //these apply when comparing the MC to HLTAk4Calo-triggered jets in data
-const double vzWeights[]={//from vzEvtWeights 9.14.16, //
+const float vzWeights[]={//from vzEvtWeights 9.14.16, //
 /*for i=1, -15<vz<=-14.5, vzWeight=*/ 0.381083,
 /*for i=2, -14.5<vz<=-14, vzWeight=*/ 0.420849,
 /*for i=3, -14<vz<=-13.5, vzWeight=*/ 0.457166,
@@ -166,12 +166,12 @@ const double vzWeights[]={//from vzEvtWeights 9.14.16, //
 /*for i=59, 14<vz<=14.5, vzWeight=*/  0.550339,
 /*for i=60, 14.5<vz<=15, vzWeight=*/  0.479087
 };
-const int nbins_vzWeights = sizeof(vzWeights)/sizeof(double);//should be 60
-const double minbinValue_vzWeights = -15., maxbinValue_vzWeights = 15.;
-const double binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
-//const double binsize_vzWeights = 0.5;
+const int nbins_vzWeights = sizeof(vzWeights)/sizeof(float);//should be 60
+const float minbinValue_vzWeights = -15., maxbinValue_vzWeights = 15.;
+const float binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
+//const float binsize_vzWeights = 0.5;
 
-const double JEC_ptbins[] = {
+const float JEC_ptbins[] = {
   17., 22., 27.,    //15-30
   33., 39., 47.,    //30-50
   55., 64., 74.,    //50-80
@@ -182,9 +182,9 @@ const double JEC_ptbins[] = {
   300., 350., 400., //300-500
   550., 790., 1000. //500-1000
 };
-const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(double)-1;
+const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(float)-1;
 
-const double etabins[] = {
+const float etabins[] = {
   -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013, 
   -3.839, -3.664, -3.489, -3.314, -3.139, 
   -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043, 
@@ -197,7 +197,7 @@ const double etabins[] = {
   +3.139, +3.314, +3.489, +3.664, +3.839, 
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
-const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
+const int nbins_eta = sizeof(etabins)/sizeof(float)-1;
 
 // tree names+directories
 const std::string treeNames[]={ 
@@ -304,7 +304,7 @@ void divideBinWidth(TH1 *h){
 
 
 double trigComb(bool *trg, int *pscl, double pt){
-  double weight=0;
+  float weight=0.;
   if( trg[3] && pt>=100.            ) weight = pscl[3];
   if( trg[2] && pt>=80.  && pt<100. ) weight = pscl[2];
   if( trg[1] && pt>=60.  && pt<80.  ) weight = pscl[1];
@@ -322,7 +322,7 @@ float deltaphi(float phi1, float phi2){
 
 
 //random old binning i found in raghavs code, here for safe keeping
-//const double ptbins[] = {
+//const float ptbins[] = {
 //  3,   4,   5,   7,   9,  12,  15,   18,  21,  24,  28,
 //  28,  32,  37,  43,  49,  56,  64,   74,  84,  97, 114,
 //  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395, 

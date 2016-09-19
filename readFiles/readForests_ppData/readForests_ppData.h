@@ -66,7 +66,7 @@ int readForests_ppData(int startfile = defStartFile , int endfile = defEndFile ,
 const int readForestsArgCount=7+minArgs;
 
 //// helper functions
-double trigComb(bool *trg, int *pscl, double pt);
+float trigComb(bool *trg, int *pscl, float pt);
 void divideBinWidth(TH1 *h);
 float deltaphi(float phi1, float phi2);
 
@@ -78,10 +78,10 @@ float deltaphi(float phi1, float phi2);
 const char *etaWidth = (char*)"20_eta_20";
 
 // binning arrays
-const double ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
+const float ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
-const double JEC_ptbins[] = {
+const float JEC_ptbins[] = {
   17., 22., 27.,    //15-30
   33., 39., 47.,    //30-50
   55., 64., 74.,    //50-80
@@ -92,9 +92,9 @@ const double JEC_ptbins[] = {
   300., 350., 400., //300-500
   550., 790., 1000. //500-inf
 };
-const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(double)-1;
+const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(float)-1;
 
-const double etabins[] = {
+const float etabins[] = {
   -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013, 
   -3.839, -3.664, -3.489, -3.314, -3.139, 
   -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043, 
@@ -107,7 +107,7 @@ const double etabins[] = {
   +3.139, +3.314, +3.489, +3.664, +3.839, 
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
-const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
+const int nbins_eta = sizeof(etabins)/sizeof(float)-1;
 
 // string arrays
 
@@ -200,8 +200,8 @@ void divideBinWidth(TH1 *h){
   return;
 }
 
-double trigComb(bool *trgDec, int *treePrescl, double triggerPt){
-  double weight_eS=0.;
+float trigComb(bool *trgDec, int *treePrescl, double triggerPt){
+  float weight_eS=0.;
   if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS = treePrescl[0];
   if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS = treePrescl[1];
   if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS = treePrescl[2];

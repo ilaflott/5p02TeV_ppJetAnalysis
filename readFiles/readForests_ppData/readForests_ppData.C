@@ -40,14 +40,15 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   std::string trees[N_trees];
   trees[0]=jetTreeName;
   for(int i=1;i<N_trees;++i)trees[i]=treeNames[i];
+  if(debugMode)for(int i=1;i<N_trees;++i)std::cout<<"treeNames[i="<<i<<"]="<<treeNames[i]<<std::endl;
 
   // declare TChains for each tree + friend them
   TChain* jetpp[N_trees];
   for(int t = 0;t<N_trees;++t)  { 
     jetpp[t] = new TChain( trees[t].data() );
-    if(t>0)jetpp[0]->AddFriend( jetpp[t] );  }
+    if(t>0)jetpp[0]->AddFriend( jetpp[t] );    
+  }
 
-    
   // open filelist
   std::cout<<"opening filelist: "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
@@ -68,10 +69,9 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     if(debugMode)std::cout<<", "<<filename_Forest; 
 
     std::cout<<", to each TChain in array"<<std::endl;
-    //for(int t = 0;t<N_trees;++t) filesCount=jetpp[t]->Add(filename_Forest.c_str()); 
     for(int t = 0;t<N_trees;++t) filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
-    //if((bool)filesCount)filesAdded=true;     
     lastFileAdded=filename_Forest;
+
   }//end file loop
 
   //if(debugMode)std::cout<<"filesAdded="<<filesAdded<<", exiting to prevent segfault"<<std::endl;
@@ -85,18 +85,19 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   float rawpt_F[1000]; float jtpu_F[1000];
   //tracks 
   float trkSum_F[1000]; float trkHardSum_F[1000];  
-  float trkMax_F[1000]; //float trkHardMax_F[1000];
+  float trkMax_F[1000]; 
   //charged particles          
   int chN_I[1000];  
   float chSum_F[1000]; float chHardSum_F[1000];  
-  float chMax_F[1000]; //float chHardMax_F[1000]; 
+  float chMax_F[1000]; 
   //photons  
   float phSum_F[1000]; float phHardSum_F[1000];   
-  float phMax_F[1000]; //float phHardMax_F[1000];          
+  float phMax_F[1000]; 
   //leptons
   float eSum_F[1000];   float eMax_F[1000];        
   float muSum_F[1000];  float muMax_F[1000];    
   //neutrals
+  int neN_I[1000];
   float neSum_F[1000];  float neMax_F[1000];        
 
   //jets
@@ -106,37 +107,37 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   jetpp[0]->SetBranchAddress("jtphi",&phi_F);
   jetpp[0]->SetBranchAddress("rawpt",&rawpt_F);
   jetpp[0]->SetBranchAddress("jtpu",&jtpu_F);
-  //charged particles
-  jetpp[0]->SetBranchAddress("chargedN",&chN_I);  
-  jetpp[0]->SetBranchAddress("chargedSum",&chSum_F);
-  jetpp[0]->SetBranchAddress("chargedHardSum",&chHardSum_F);
-  jetpp[0]->SetBranchAddress("chargedMax",&chMax_F);  
   //tracks
   jetpp[0]->SetBranchAddress("trackSum",&trkSum_F);  
   jetpp[0]->SetBranchAddress("trackHardSum",&trkHardSum_F);
   jetpp[0]->SetBranchAddress("trackMax",&trkMax_F);  
+  //charged hadrons
+  jetpp[0]->SetBranchAddress("chargedN",&chN_I);  
+  jetpp[0]->SetBranchAddress("chargedSum",&chSum_F);
+  jetpp[0]->SetBranchAddress("chargedHardSum",&chHardSum_F);
+  jetpp[0]->SetBranchAddress("chargedMax",&chMax_F);  
+  //neutral hadrons
+  jetpp[0]->SetBranchAddress("neutralSum",&neSum_F); 
+  jetpp[0]->SetBranchAddress("neutralMax",&neMax_F);
+  jetpp[0]->SetBranchAddress("neutralN",&neN_I);  
   //photons
   jetpp[0]->SetBranchAddress("photonSum",&phSum_F);  
   jetpp[0]->SetBranchAddress("photonHardSum",&phHardSum_F);
   jetpp[0]->SetBranchAddress("photonMax",&phMax_F);  
-  //leptons
+  //electrons and muons
   jetpp[0]->SetBranchAddress("eSum",&eSum_F);  
   jetpp[0]->SetBranchAddress("eMax",&eMax_F);
   jetpp[0]->SetBranchAddress("muSum",&muSum_F);
   jetpp[0]->SetBranchAddress("muMax",&muMax_F);
-  //neutrals
-  jetpp[0]->SetBranchAddress("neutralSum",&neSum_F); 
-  jetpp[0]->SetBranchAddress("neutralMax",&neMax_F);
 
 
   // HiEvtAnalyzer
-  ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I;   
   float vz_F;
-
+  ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I;   
+  jetpp[1]->SetBranchAddress("vz",&vz_F);
   jetpp[1]->SetBranchAddress("evt",&evt_I);
   jetpp[1]->SetBranchAddress("run",&run_I);
   jetpp[1]->SetBranchAddress("lumi",&lumi_I);
-  jetpp[1]->SetBranchAddress("vz",&vz_F);
 
 
   // skimanalysis
@@ -145,28 +146,27 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
 
-
   // hltanalysis
   int jet40_l1s_ps_I, jet60_l1s_ps_I,  jet80_l1s_ps_I,  jet100_l1s_ps_I;   //L1
   int jet40_I, jet60_I, jet80_I, jet100_I;   //HLT
   int jet40_p_I, jet60_p_I, jet80_p_I, jet100_p_I;
 
-  std::string HLTBranches[N_HLTBits]; 
-  for(int i=0;i<N_L1Bits;i++) HLTBranches[i]=HLTBitStrings[i]+"_v1";
+  if(debugMode)for(int i=0;i<N_L1Bits;i++)
+    std::cout<<"HLTBranches[i="<<i<<"]="<<HLTBranches[i]<<std::endl;
   jetpp[3]->SetBranchAddress( HLTBranches[0].c_str() , &jet40_I);
   jetpp[3]->SetBranchAddress( HLTBranches[1].c_str() , &jet60_I);
   jetpp[3]->SetBranchAddress( HLTBranches[2].c_str() , &jet80_I);
   jetpp[3]->SetBranchAddress( HLTBranches[3].c_str() , &jet100_I);
   
-  std::string HLTPresclBranches[N_HLTBits]; 
-  for(int i=0;i<N_HLTBits;i++) HLTPresclBranches[i]=HLTBitStrings[i]+"_v1_Prescl";
+  if(debugMode)for(int i=0;i<N_L1Bits;i++)
+    std::cout<<"HLTPresclBranches[i="<<i<<"]="<<HLTPresclBranches[i]<<std::endl;
   jetpp[3]->SetBranchAddress( HLTPresclBranches[0].c_str() , &jet40_p_I);
   jetpp[3]->SetBranchAddress( HLTPresclBranches[1].c_str() , &jet60_p_I);
   jetpp[3]->SetBranchAddress( HLTPresclBranches[2].c_str() , &jet80_p_I);
   jetpp[3]->SetBranchAddress( HLTPresclBranches[3].c_str() , &jet100_p_I);
 
-  std::string L1PresclBranches[N_L1Bits]  ; 
-  for(int i=0;i<N_HLTBits;i++) L1PresclBranches[i]=L1BitStrings[i]+"_Prescl";
+  if(debugMode)for(int i=0;i<N_L1Bits;i++)
+    std::cout<<"L1PresclBranches[i="<<i<<"]="<<L1PresclBranches[i]<<std::endl;
   jetpp[3]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1s_ps_I);
   jetpp[3]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
   jetpp[3]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
@@ -187,20 +187,14 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   TFile *fout = new TFile(outfile.c_str(),"RECREATE");
   fout->cd();
 
-
   // declare hists
   //meta data
-  TH1F *hJetPtCut        = new TH1F("hJetPtCut"       , (std::to_string(jtPtCut)).c_str()   ,    2,0,1);    
-  TH1F *hJetEtaCut       = new TH1F("hJetEtaCut"      , (std::to_string(jtEtaCut)).c_str()   ,   2,0,1);    
-  TH1F *hLeadJetPtCut    = new TH1F("hLeadJetPtCut"   , (std::to_string(ldJetPtCut)).c_str(),    2,0,1);  
-  TH1F *hSubLeadJetPtCut = new TH1F("hSubLeadJetPtCut", (std::to_string(subldJetPtCut)).c_str(), 2,0,1);  
-  TH1F *hJetQAPtCut      = new TH1F("hJetQAPtCut"     , (std::to_string(jetQAPtCut)).c_str(),    2,0,1);
-
-  hJetPtCut->Fill(1);      //only fill if cut is actually applied 
-  hJetEtaCut->Fill(1);
-  hLeadJetPtCut->Fill(1);   
-  hSubLeadJetPtCut->Fill(1);
-  hJetQAPtCut->Fill(1);     
+  TH1F *hJetPtCut       =new TH1F("hJetPtCut"       ,(std::to_string(jtPtCut)).c_str()   ,   2,0,1); hJetPtCut->Fill(1);           
+  TH1F *hJetEtaCut      =new TH1F("hJetEtaCut"      ,(std::to_string(jtEtaCut)).c_str()   ,  2,0,1); hJetEtaCut->Fill(1);	        
+  TH1F *hJetQAPtCut     =new TH1F("hJetQAPtCut"     ,(std::to_string(jetQAPtCut)).c_str(),   2,0,1); hJetQAPtCut->Fill(1);     
+  TH1F *hLeadJetPtCut   =new TH1F("hLeadJetPtCut"   ,(std::to_string(ldJetPtCut)).c_str(),   2,0,1); hLeadJetPtCut->Fill(1);     
+  TH1F *hSubLeadJetPtCut=new TH1F("hSubLeadJetPtCut",(std::to_string(subldJetPtCut)).c_str(),2,0,1); hSubLeadJetPtCut->Fill(1);  
+ 
 
   //evt count
   TH1F *h_NEvents         = new TH1F("NEvents"         , "NEvents", 1,0,2);
@@ -281,8 +275,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   hpp_CombJetpT[1]  = new TH1F(Form("hpp_TrgCombTest_wJetID_R%d_%s" , radius,etaWidth), 
 			       Form("Trig Comb Spectra kMethod w/JetID R%d %s" , radius,etaWidth), 2000,0,2000);
 
-
-
   // EVENT LOOP + PREP
 
   //evtcounts check
@@ -306,17 +298,31 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   else NEvents_read = NEvents_allFiles;
   
   UInt_t NEvents_40=0, NEvents_60=0, NEvents_80=0, NEvents_100=0;  //trigger event counts
-
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;  
-  for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
 
+  bool filelistIsLowerJets=false; //to know if i should apply the duplicate check or not
+  std::size_t found=inFilelist.find("HighPtLowerJets");
+  if(found!=std::string::npos) filelistIsLowerJets=true;
+  if(debugMode)if(found!=std::string::npos){
+    std::cout<<"found="<<found<<std::endl;
+    std::cout<<"running HighPtLowerJets! Will employ duplicate trig. event check"<<std::endl;}
+
+  for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
+      
     if(fastDebugMode&&nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     else if (nEvt%10000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
 
-    //for(int i=0;i<N_trees; ++i)jetpp[i]->GetEntry(nEvt);
+    //for(int i=0;i<N_trees;++i){
+    //  std::cout<<"grabbing entry from tree "<<trees[i]<<std::endl;
+    //  jetpp[i]->GetEntry(nEvt);    }//intense debug...
     jetpp[0]->GetEntry(nEvt);
     h_NEvents_read->Fill(1);
-
+    
+    if(filelistIsLowerJets)
+      if( ((bool)jet40_I || (bool)jet60_I ) && 
+	  ((bool)jet80_I || (bool)jet100_I)    ) {
+	if(debugMode)std::cout<<"event is in Jet80 AND LowerJets datset, skipping event!"<<std::endl;
+	continue;}
 
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0     || 
@@ -324,13 +330,13 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
         pprimaryvertexFilter_I==0  ) continue;    
     h_NEvents_skimCut->Fill(1);
     
-    if( fabs(vz_F)>15.              ) continue;
+    if( fabs(vz_F)>15. )     continue;
     h_NEvents_vzCut->Fill(1);
     
-    //prescale/decision arrays
-    int treePrescl[4]={ (jet40_p_I*jet40_l1s_ps_I), (jet60_p_I*jet60_l1s_ps_I), //total prescale=L1_ps*HLT_ps
+    //prescale/decision arrays, total prescale=L1_ps*HLT_ps
+    int treePrescl[4]={ (jet40_p_I*jet40_l1s_ps_I), (jet60_p_I*jet60_l1s_ps_I), 
 			(jet80_p_I*jet80_l1s_ps_I), (jet100_p_I*jet100_l1s_ps_I) };    
-
+    //l1 bits always true if they've been bothered to be written to forest... i think?
     bool trgDec[4]={ (bool)jet40_I, (bool)jet60_I, //HLT decision=HLT&&L1=HLT&&true
 		     (bool)jet80_I, (bool)jet100_I  }; 
     
@@ -368,7 +374,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     if(is100) NEvents_100++;
     //if(true)  NEvents_any++;
 
-    
     // fill evt vz histo
     hVz->Fill(vz_F, 1.0);    
     hWVz->Fill(vz_F, weight_eS);
@@ -396,7 +401,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 	h_NEvents_withJets->Fill(1);
 	hNEvts_withJets_Filled=true;      }      
 
-
       float recpt = pt_F[jet];
       float recphi = phi_F[jet];
       float rawpt = rawpt_F[jet];
@@ -405,7 +409,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
       if( fabs(eta_F[jet]) > jtEtaCut ||
           recpt <= jtPtCut           ) continue;     
 
-
       // trig plots
       if(true)  hpp_CombJetpT[0]->Fill(recpt, weight_eS); //kurts method
       if(is40)  hpp_TrgObj40[0]->Fill(recpt, treePrescl[0]);
@@ -413,7 +416,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
       if(is80)  hpp_TrgObj80[0]->Fill(recpt, treePrescl[2]);
       if(is100) hpp_TrgObj100[0]->Fill(recpt, treePrescl[3]);
       
-
 
       // jetQA noJetID
       hJetQA[0][0]->Fill(recpt, weight_eS);
@@ -482,12 +484,14 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
       
       // apply JetID
-      if (chSum_F[jet]/rawpt <= 0.   ||
-	  chSum_F[jet]/rawpt >= 0.99 || //wasn't here for runs previous to 9.16.16
-          neSum_F[jet]/rawpt >= 0.99 || 
-          eSum_F[jet]/rawpt  >= 0.99 || //wasn't here for runs previous to 9.16.16
-	  //phSum_F[jet]/rawpt >= 0.99 || //wasn't in raghav's 13 tev JetID cuts 
-          chN_I[jet] <= 0             ) continue;
+      //original jetid was just chSum, neSum, chN, and phSum. 
+      //new ones are the chN+neN, and eSum, 9.19.16
+      if (  neSum_F[jet]/rawpt >= 0.99 || //neutral had //for abs(eta)<2.7
+	    phSum_F[jet]/rawpt >= 0.99 || //neutral em
+	    chSum_F[jet]/rawpt <= 0.   || //charged had //for abs(eta)<2.4 only
+	    eSum_F[jet]/rawpt  >= 0.99 || //electrons
+	    chN_I[jet]+neN_I[jet] <= 1 || //Nconstit.=NchHad+NneuHad
+	    chN_I[jet] <= 0              ) continue; //Ncharged had
       
 
       // trig plots
@@ -632,9 +636,7 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
 
   std::cout<<"writing output file..."<<std::endl;
-  fout->Write(); //this writes duplicates
-  //fout->Write("",TObject::kOverwrite);//this does not
-
+  fout->Write(); 
 
   if(debugMode)std::cout<<"misc clean up.."<<std::endl;
   trgObjpt_40->clear();
@@ -651,7 +653,6 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
 
 
 ////// main //////
-// acts as the frontend control for .exe file
 int main(int argc, char *argv[]){
   
   // error, not enough arguments
@@ -681,18 +682,3 @@ int main(int argc, char *argv[]){
   std::cout<<"rStatus="<<rStatus<<std::endl;
   return rStatus;
 }
-
-
-
-    //if(debugMode&&nEvt%250==0)std::cout <<"triggerPt ="<<triggerPt<<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 40, trgDec[0]  = "<< trgDec[0]  <<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 60, trgDec[1]  = "<< trgDec[1]  <<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 80, trgDec[2]  = "<< trgDec[2]  <<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 100, trgDec[3] = "<< trgDec[3]  <<std::endl<<std::endl;
-
-    //if(debugMode&&nEvt%250==0)std::cout<<"after checking trigger pt "<<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 40,  is40  = "<< is40  <<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 60,  is60  = "<< is60  <<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 80,  is80  = "<< is80  <<std::endl;
-    //if(debugMode&&nEvt%250==0)std::cout<<"jet 100, is100 = "<< is100  <<std::endl<<std::endl;
-

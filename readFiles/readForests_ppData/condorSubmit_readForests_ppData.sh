@@ -4,52 +4,31 @@
 echo ""
 
 ## error conditions + I/O
-if [[ $# -ne 6 ]] # not enough arguments
+if [[ $# -ne 7 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condorSubmit_ppData.sh <inputVersion> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <debug>"
-    echo "where <readForests Ver.> = HighPtLowerJets or Vanilla"
+    echo "source condorSubmit_ppData.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug>"
     return 1
 fi
 #if [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input against text reg ex.
 
 ## input arguments to submit script
-inputVersion=$1
-NJobs=$2
-NFilesPerJob=$3
-startFilePos=$4
-filelistIn=$5  #echo "filelistIn is ${filelistIn}" #debug
-debug=$6
+NJobs=$1
+NFilesPerJob=$2
+startFilePos=$3
+filelistIn=$4  #echo "filelistIn is ${filelistIn}" 
+radius=$5
+jetType=$6
+debug=$7
 
 ## additional inputs to the code, may be input to this script in the near future
-radius=4
-jetType="PF"
+readFilesScript="readForests_ppData"
+readFilesScriptExe="${readFilesScript}.exe"
 
-## checking version input,
-readFilesScript=""
-if [ "$inputVersion" = "Vanilla" ]
-then
-    echo "picked vanilla version"
-    readFilesScript="readForests_ppData"
-    readFilesScriptExe="${readFilesScript}.exe"
-elif [ "$inputVersion" = "HighPtLowerJets" ]
-then
-    echo "picked HighPtLowerJets version"
-    readFilesScript="readForests_ppData_${inputVersion}"
-    readFilesScriptExe="${readFilesScript}.exe"
-    filelistIn="filelists/5p02TeV_HighPtLowerJets_forests.txt"
-else
-    echo "${inputVersion} is not a readForests version. exit."
-    return
-fi
-#elif[[ "$inputVersion" = "HighPtJet80" ]]
-#    readFilesScript="readForests_ppData_${inputVersion}"
-#    readFilesScriptExe="${readFilesScript}.exe"
-#    filelistIn="filelists/5p02TeV_HighPtJet80_forests.txt"
-#fi
+filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
+nFiles=`wc -l < $filelistIn`
 
 ## NJobs=-1 case
-nFiles=`wc -l < $filelistIn`
 if [[ $NJobs -eq -1 ]]
 then
     echo "submitting jobs for all files in list"
@@ -65,8 +44,6 @@ fi
 if [[ $startFilePos -ge $nFiles ]]
 then
     echo "<startFilePos> larger than filelist, exit"
-    #echo "setting it to 0..."
-    #startFilePos=0
     return
 elif [[ $startFilePos -lt 0 ]]
 then
@@ -78,32 +55,33 @@ fi
 ## some debug info, just in case
 NFilesRequested=$(( $NJobs * $NFilesPerJob ))
 echo "require ${NFilesRequested} files for ${NJobs} jobs"
-echo "# of files in list: ${nFiles}"
+echo "# of files in list ${filelist}: ${nFiles}"
 echo "starting at file position ${startFilePos}..."
 echo ""
 
-
-## create output folder/logfileNames with name based on filelist
-filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
+## grab some usefule string based on filelist name
 filelistTitle=${filelist%_*} #echo "filelistTitle is ${filelistTitle}"
 energy=${filelistTitle%%_*} #echo "energy is ${energy}"
 trig=${filelistTitle#*_} #echo "trig is ${trig}"
-
-#dirName="${readFilesScript}_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
-dirName="readForests_ppData_${energy}_${trig}_$(date +"%m-%d-%y__%H_%M")"
 outName="${trig}_ak${radius}${jetType}"
 
+## create output directory for condor job
+dirName="ppData_${trig}_ak${radius}${jetType}Jets_$(date +"%m-%d-%y")"
 logFileDir="${PWD}/outputCondor/${dirName}"
-if [ -d "${logFileDir}" ]; then
-    rm -rf "${logFileDir}"
-fi
+AltCounter=0
+while [[ -d "${logFileDir}"  ]]
+  do
+  AltCounter=$(( $AltCounter + 1 ))
+  echo "dir exists!"
+  dirName="ppData_${trig}_ak${radius}${jetType}Jets_$(date +"%m-%d-%y")_${AltCounter}"
+  logFileDir="${PWD}/outputCondor/${dirName}"    
+done
+echo "output in outputCondor/${dirName}"
 mkdir $logFileDir
-echo "log files in outputCondor/${dirName}"
 
 
 ## cmsenv for condor
 echo "cmsenv'ing..."
-#cd /cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_5_8/src
 cd ${CVMFS_758}
 cmsenv
 cd -
@@ -111,9 +89,7 @@ cd -
 
 ## compile code executable, same as rootcompile in my .bashrc
 echo "compiling..."
-#g++ readForests_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppData.exe || return 
 rootcompile "${readFilesScript}.C"
-
 
 ## copy over code used for job running/submitting for archival purposes
 cp ${readFilesScript}.* "${logFileDir}"

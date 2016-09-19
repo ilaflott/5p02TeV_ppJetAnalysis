@@ -82,16 +82,14 @@ float deltaphi(float phi1, float phi2);
 const char *etaWidth = (char*)"20_eta_20";
 
 // binning arrays
-//const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
 const double ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
 
-//const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 9999 };
 const double pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. };
 const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
 
-const double pthatWeights[]={//from jetWeights/jetWeights_Py8_CUETP8M1_QCDjetAllPtBins.txt
+const double pthatWeights[]={//from evtPthatWeights/evtPthatWeights_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets.txt
 /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/        5.27832e-07,
 /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/       3.37352e-08,
 /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/      3.63191e-09,
@@ -105,7 +103,8 @@ const double pthatWeights[]={//from jetWeights/jetWeights_Py8_CUETP8M1_QCDjetAll
 /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
 };
 
-const double vzWeights[]={//from vzEvtWeights 9.14.16, 
+//these apply when comparing the MC to HLTAk4Calo-triggered jets in data
+const double vzWeights[]={//from vzEvtWeights 9.14.16, //
 /*for i=1, -15<vz<=-14.5, vzWeight=*/ 0.381083,
 /*for i=2, -14.5<vz<=-14, vzWeight=*/ 0.420849,
 /*for i=3, -14<vz<=-13.5, vzWeight=*/ 0.457166,
@@ -202,7 +201,7 @@ const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 
 // tree names+directories
 const std::string treeNames[]={ 
-  "GARBAGE ENTRY" , //akPfJetAna of arb. radius, form strin
+  "GARBAGE ENTRY" , //akPFJetAna of arb. radius, form strin
   //  "GARBAGE ENTRY" , //akCaloJet of same radius
   "hiEvtAnalyzer/HiTree" ,
   "skimanalysis/HltTree" ,
@@ -229,6 +228,61 @@ const std::string var[] = {
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
 
+
+// do not use yet, for when we have MC with hlt emulation!
+////L1
+//const std::string L1BitStrings[]={//this array is a good idea
+//  "L1_SingleJet28_BptxAND",
+//  "L1_SingleJet40_BptxAND",
+//  "L1_SingleJet48_BptxAND",   
+//  "L1_SingleJet52_BptxAND"
+//};
+//const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
+//
+//const std::string L1PresclBranches[]={//this array is a good idea
+//  L1BitStrings[0]+"_Prescl",
+//  L1BitStrings[1]+"_Prescl",
+//  L1BitStrings[2]+"_Prescl",
+//  L1BitStrings[3]+"_Prescl"
+//};
+//
+//// HLT                           
+//const std::string HLTJetType="Calo";//"PF";
+//const std::string HLTBitStrings[]={	
+//  "HLT_AK4"+HLTJetType+"Jet40_Eta5p1",
+//  "HLT_AK4"+HLTJetType+"Jet60_Eta5p1",			
+//  "HLT_AK4"+HLTJetType+"Jet80_Eta5p1",			
+//  "HLT_AK4"+HLTJetType+"Jet100_Eta5p1"    		
+//};						
+////const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
+//const int N_HLTBits=N_L1Bits;
+//
+//const std::string HLTPresclBranches[]={	
+//  HLTBitStrings[0]+"_v1_Prescl",
+//  HLTBitStrings[1]+"_v1_Prescl",
+//  HLTBitStrings[2]+"_v1_Prescl",
+//  HLTBitStrings[3]+"_v1_Prescl"
+//};			
+//			
+//const std::string HLTBranches[]={	
+//  HLTBitStrings[0]+"_v1",
+//  HLTBitStrings[1]+"_v1",
+//  HLTBitStrings[2]+"_v1",
+//  HLTBitStrings[3]+"_v1"
+//};						
+//
+//// tree names+directories
+//const std::string treeNames[]={ 
+//  "GARBAGE ENTRY" , //use jet ana of choice later
+//  "hiEvtAnalyzer/HiTree" ,
+//  "skimanalysis/HltTree" ,
+//  "hltanalysis/HltTree" ,
+//  "hltobject/"+HLTBitStrings[0]+"_v" , 
+//  "hltobject/"+HLTBitStrings[1]+"_v" , 
+//  "hltobject/"+HLTBitStrings[2]+"_v" , 
+//  "hltobject/"+HLTBitStrings[3]+"_v"   
+//}; 
+//const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
@@ -274,5 +328,6 @@ float deltaphi(float phi1, float phi2){
 //  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395, 
 //  430, 468, 507, 548, 592, 638, 686, 1000 
 //}; 
+
 //const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 9999 }; //2015 bins?
 

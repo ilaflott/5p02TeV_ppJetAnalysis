@@ -21,15 +21,16 @@ ls -al
 echo ""
 
 # inputs for run+root script
-startfile=$1
-endfile=$2
-filelist=$3
-outfile=$4
-radius=$5 
-jetType=$6 
-debug=$7
+readFilesScriptExe=$1
+startfile=$2
+endfile=$3
+filelist=$4
+outfile=$5
+radius=$6 
+jetType=$7 
+debug=$8
 
 echo "Processing..."
-./readForests_ppMC.exe $startfile $endfile "${filelist}" "${outfile}" $radius "${jetType}" $debug
+./${readFilesScriptExe} ${startfile} ${endfile} "${filelist}" "${outfile}" $radius "${jetType}" $debug
 
 echo "Job done!"

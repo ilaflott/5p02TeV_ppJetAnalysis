@@ -1,5 +1,10 @@
 #include "printQAPlots.h"
 
+const int radius_int=4;
+const std::string radius_int_str=std::to_string(radius_int);
+const std::string radius="R"+radius_int_str+"_";
+const std::string etaWidth = "20_eta_20";
+
 // env ------------------------
 
 //CMSSW_BASE
@@ -14,26 +19,40 @@ const std::string readForests_ppMC_dir=CMSSW_BASE+
 // I/O ------------------------
 //input
 const std::string input_ppData_condorDir=readForests_ppData_dir+
-  //"saved_outputCondor/readForests_ppData_5p02TeV_HighPtJetTrig_09-14-16__noDupEvts/";
-  "saved_outputCondor/readForests_ppData_5p02TeV_HighPtJetTrig_09-16-16__newJetID/";
+//"saved_outputCondor/ppData_HighPtJetTrig_ak4CaloJets_HLT.ak4CaloJets_09-17-16__newJetID/";
+//"saved_outputCondor/ppData_HighPtJetTrig_ak4PFJets_HLT.ak4CaloJets_09-16-16__newJetID/";
+//"saved_outputCondor/ppData_HighPtJetTrig_ak3PFJets_HLT.ak4CaloJets_09-18-16__newJetID/";
+//"saved_outputCondor/ppData_HighPtJetTrig_ak4CaloJets_HLT.ak4PFJets_09-18-16__newJetID/";
+  "saved_outputCondor/ppData_HighPtJetTrig_ak4PFJets_HLT.ak4PFJets_09-18-16__newJetID/";
+//"saved_outputCondor/ppData_HighPtJetTrig_ak3PFJets_HLT.ak4PFJets_09-18-16__newJetID/";
+
 const std::string input_ppData_Filename=input_ppData_condorDir+
-  //"HighPtJetTrig_ak4PF-allFiles_rebinCopy.root";
+//"HighPtJetTrig_ak4Calo-allFiles.root";
   "HighPtJetTrig_ak4PF-allFiles.root";
+//"HighPtJetTrig_ak3PF-allFiles.root";
 
 const std::string input_ppMC_condorDir=readForests_ppMC_dir+
-  //"saved_outputCondor/readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_09-14-16__wMetaData_goodVzWeights/";
-  "saved_outputCondor/readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_09-16-16__newJetID_rec.rawPtBugFixed/";
+//"saved_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4CaloJets_09-17-16__newJetID/";
+  "saved_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_09-16-16__newJetID/";  
+//"saved_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak3PFJets_09-18-16__newJetID/";
+
 const std::string input_ppMC_Filename=input_ppMC_condorDir+
-  //"Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles_rebinCopy.root";
+//"Py8_CUETP8M1_QCDjetAllPtBins_ak4Calo-allFiles.root";
   "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
+//"Py8_CUETP8M1_QCDjetAllPtBins_ak3PF-allFiles.root";
 
 
 //output
 const std::string printQAPlots_dir=CMSSW_BASE+"src/printQAPlots/";
 
 const std::string output_PDFname_base_full=printQAPlots_dir+
-  "output/printQAplots_9.16.16_newJetID_rec.rawPtBugFixed_QAPlots_";
-
+//"output/printQAplots_9.18.16_newJetID_ak4CaloJets_HLT.ak4PFJets_QAPlots_";
+  "output/printQAplots_9.18.16_newJetID_ak4PFJets_HLT.ak4PFJets_QAPlots_";
+//"output/printQAplots_9.18.16_newJetID_ak3PFJets_HLT.ak4PFJets_QAPlots_";
+//"output/printQAplots_9.18.16_newJetID_ak4CaloJets_HLT.ak4CaloJets_QAPlots_";
+//"output/printQAplots_9.18.16_newJetID_ak4PFJets_HLT.ak4CaloJets_QAPlots_";
+//"output/printQAplots_9.18.16_newJetID_ak3PFJets_HLT.ak4CaloJets_QAPlots_";
+  
 const std::string output_ppDataMCOverlaid_PDFname=output_PDFname_base_full+
   "DataMCOverlaid.pdf";
 const std::string output_ppDataMCRatios_PDFname=output_PDFname_base_full+

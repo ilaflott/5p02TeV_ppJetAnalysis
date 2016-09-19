@@ -48,17 +48,10 @@
 #include "ppMC_etc.h"
 #include "ppData_etc.h"
 
-// other useful strings
-const int radius_int=4;
-const std::string radius_int_str=std::to_string(radius_int);
-
-const std::string jetType="PF";
-const std::string etaWidth = "20_eta_20";
-
-// combos
-const std::string radius="R"+radius_int_str+"_";
-const std::string pfRad_etaWidth=radius+etaWidth;
-const std::string jetAna="ak"+radius+jetType+"JetAnalyzer";
+//// combos
+//const std::string jetType="PF";
+//const std::string pfRad_etaWidth=radius+etaWidth;
+//const std::string jetAna="ak"+radius+jetType+"JetAnalyzer";
 
 // variable names, string array
 const std::string var[] = {   

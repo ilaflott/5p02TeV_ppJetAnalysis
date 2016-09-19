@@ -13,6 +13,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <string>
 // ROOTSYS
 #include <TSystem.h>
 #include <TProfile.h>
@@ -60,8 +61,8 @@ const std::string defJetType="PF";
 const std::string defOutputName = "readForests_ppData_defOut.root";
 const bool defDebugMode = true;
 int readForests_ppData(int startfile = defStartFile , int endfile = defEndFile ,
-                     std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
-                     int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode );
+		       std::string inFilelist = defInFilelist , std::string outfile = defOutputName ,
+		       int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode );
 const int readForestsArgCount=7+minArgs;
 
 //// helper functions
@@ -109,36 +110,6 @@ const double etabins[] = {
 const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 
 // string arrays
-//L1
-const std::string L1BitStrings[]={//this array is a good idea
-  "L1_SingleJet28_BptxAND",
-  "L1_SingleJet40_BptxAND",
-  "L1_SingleJet48_BptxAND",
-  "L1_SingleJet52_BptxAND"
-};
-const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
-
-//HLT
-const std::string HLTBitStrings[N_L1Bits]={
-  "HLT_AK4CaloJet40_Eta5p1",
-  "HLT_AK4CaloJet60_Eta5p1",
-  "HLT_AK4CaloJet80_Eta5p1",
-  "HLT_AK4CaloJet100_Eta5p1"    
-};
-const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
-
-// tree names+directories
-const std::string treeNames[]={ 
-  "GARBAGE ENTRY" , //use jet ana of choice later
-  "hiEvtAnalyzer/HiTree" ,
-  "skimanalysis/HltTree" ,
-  "hltanalysis/HltTree" ,
-  "hltobject/"+HLTBitStrings[0]+"_v" , 
-  "hltobject/"+HLTBitStrings[1]+"_v" , 
-  "hltobject/"+HLTBitStrings[2]+"_v" , 
-  "hltobject/"+HLTBitStrings[3]+"_v"   
-}; 
-const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
 // variable names for QA Plots
 const std::string var[] = {   
@@ -154,6 +125,60 @@ const std::string var[] = {
   "leadJetPt", "subleadJetPt"
 };
 const int N_vars = sizeof(var)/sizeof(std::string);
+
+//L1
+const std::string L1BitStrings[]={//this array is a good idea
+  "L1_SingleJet28_BptxAND",
+  "L1_SingleJet40_BptxAND",
+  "L1_SingleJet48_BptxAND",   
+  "L1_SingleJet52_BptxAND"
+};
+const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
+
+const std::string L1PresclBranches[]={//this array is a good idea
+  L1BitStrings[0]+"_Prescl",
+  L1BitStrings[1]+"_Prescl",
+  L1BitStrings[2]+"_Prescl",
+  L1BitStrings[3]+"_Prescl"
+};
+
+// HLT                           
+const std::string HLTJetType="Calo";//"PF";
+const std::string HLTBitStrings[]={	
+  "HLT_AK4"+HLTJetType+"Jet40_Eta5p1",
+  "HLT_AK4"+HLTJetType+"Jet60_Eta5p1",			
+  "HLT_AK4"+HLTJetType+"Jet80_Eta5p1",			
+  "HLT_AK4"+HLTJetType+"Jet100_Eta5p1"    		
+};						
+//const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
+const int N_HLTBits=N_L1Bits;
+
+const std::string HLTPresclBranches[]={	
+  HLTBitStrings[0]+"_v1_Prescl",
+  HLTBitStrings[1]+"_v1_Prescl",
+  HLTBitStrings[2]+"_v1_Prescl",
+  HLTBitStrings[3]+"_v1_Prescl"
+};			
+			
+const std::string HLTBranches[]={	
+  HLTBitStrings[0]+"_v1",
+  HLTBitStrings[1]+"_v1",
+  HLTBitStrings[2]+"_v1",
+  HLTBitStrings[3]+"_v1"
+};						
+
+// tree names+directories
+const std::string treeNames[]={ 
+  "GARBAGE ENTRY" , //use jet ana of choice later
+  "hiEvtAnalyzer/HiTree" ,
+  "skimanalysis/HltTree" ,
+  "hltanalysis/HltTree" ,
+  "hltobject/"+HLTBitStrings[0]+"_v" , 
+  "hltobject/"+HLTBitStrings[1]+"_v" , 
+  "hltobject/"+HLTBitStrings[2]+"_v" , 
+  "hltobject/"+HLTBitStrings[3]+"_v"   
+}; 
+const int N_trees = sizeof(treeNames)/sizeof(std::string);
 
 
 //// HELPER FUNCTIONS

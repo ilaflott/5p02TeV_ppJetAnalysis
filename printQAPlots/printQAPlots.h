@@ -49,9 +49,7 @@
 #include "ppData_etc.h"
 
 //// combos
-//const std::string jetType="PF";
-//const std::string pfRad_etaWidth=radius+etaWidth;
-//const std::string jetAna="ak"+radius+jetType+"JetAnalyzer";
+const std::string etaWidth = "20_eta_20";
 
 // variable names, string array
 const std::string var[] = {   

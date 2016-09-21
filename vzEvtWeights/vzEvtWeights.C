@@ -52,37 +52,36 @@ const std::string readForests_ppMC_dir=CMSSW_BASE+
 // I/O ------------------------
 //input
 const std::string input_ppData_condorDir=readForests_ppData_dir+
-  "saved_outputCondor/readForests_ppData_5p02TeV_HighPtJetTrig_09-14-16__noDupEvts/";
-const std::string input_ppData_Filename=input_ppData_condorDir+
+  "saved_outputCondor/ppData_HighPtJetTrig_ak4PFJets_HLT.ak4CaloJets_09-16-16__newJetID/";
+//"saved_outputCondor/ppData_HighPtJetTrig_ak4PFJets_HLT.ak4PFJets_09-18-16__newJetID/";
+  const std::string input_ppData_Filename=input_ppData_condorDir+
   "HighPtJetTrig_ak4PF-allFiles.root";
 
 const std::string input_ppMC_condorDir=readForests_ppMC_dir+
-  "saved_outputCondor/readForests_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_09-14-16__wMetaData/";//+
-//"";
-//"";
+  "saved_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_09-16-16__newJetID/";
 
 const std::string input_ppMC_Filename=input_ppMC_condorDir+
   "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
 
 int main (int argc, char *argv[]){
   
-
+  
   //const std::string ppData_fullFilename=CMSSW_BASE+input_ppData_dir+input_ppData_Filename;
   //const std::string ppMC_fullFilename=CMSSW_BASE+input_ppMC_dir+input_ppMC_Filename;
   
   std::cout<<" now opening Data File "<<std::endl<<input_ppData_Filename<<std::endl<<std::endl;
   TFile* finData = new TFile(input_ppData_Filename.c_str());
-
+  
   TH1F *h_NEvents         = (TH1F*)finData->Get("NEvents");
   TH1F *h_NEvents_vzCut   = (TH1F*)finData->Get("NEvents_vzCut");
-
+  
   const Int_t NEvts=h_NEvents->GetEntries();
   const Int_t NEvtsPassvzCut=h_NEvents_vzCut->GetEntries();
   std::cout<<std::endl;
   std::cout<<"NEvents in dataset="<<NEvts<<std::endl;
   std::cout<<"NEvents passing vz/skim cut="<<NEvtsPassvzCut<<std::endl;
   std::cout<<std::endl;
-
+  
   const double LumiEff_vz = h_NEvents_vzCut->GetEntries()/h_NEvents->GetEntries(); 
   std::cout<<std::endl;
   std::cout<<"Lumi Efficiency post vz+skim cuts=NEvents_vzCut/NEvents ";
@@ -119,25 +118,18 @@ int main (int argc, char *argv[]){
   theMCEvtQAHist->Scale( 1/theMCEvtQAHist->GetBinWidth(0) );
   theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );
   
-
-
-
-
-
-
-
   TH1F *theRatio=theDataEvtQAHist;
   theRatio->Divide(theMCEvtQAHist);
   theRatio->Draw();  
   //theRatio->SetLineColor( altRatioLineColor1 );
   //theEvtQALeg->AddEntry(theRatio,"MC not vz-weighted","lp");
-
+  
   Float_t theVzBinWidth=theRatio->TH1::GetBinWidth(0);
   Float_t xLow=-15., xHigh=15.;
   Float_t NvzWeightBins_F=(xHigh-xLow)/(theVzBinWidth);
-  std::cout<<"float-division says NBins="<<NvzWeightBins_F<<" (exactly)"std::endl;
+  //std::cout<<"float-division says NBins="<<NvzWeightBins_F<<" (exactly)"<<std::endl;
   Int_t NvzWeightBins=(Int_t)NvzWeightBins_F;//should be 60
-
+  
   std::cout<<"now grabbing vzWeights for "<<NvzWeightBins<<" bins for ( "<<xLow<<"< vz <"<<xHigh<<" )"<<std::endl;
   for (int i=0;i<NvzWeightBins;++i){//binsX loop
     Float_t leftSideOfBin=xLow+(i)*theVzBinWidth;

@@ -1,9 +1,5 @@
 #include "printQAPlots.h"
 
-const int radius_int=4;
-const std::string radius_int_str=std::to_string(radius_int);
-const std::string radius="R"+radius_int_str+"_";
-const std::string etaWidth = "20_eta_20";
 
 // env ------------------------
 
@@ -12,57 +8,17 @@ const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
 
 const std::string readForests_ppData_dir=CMSSW_BASE+
-  "src/readFiles/readForests_ppData/";
+  "src/readFiles/readForests_ppData/saved_outputCondor/";
+
 const std::string readForests_ppMC_dir=CMSSW_BASE+
-  "src/readFiles/readForests_ppMC/";
-
-// I/O ------------------------
-//input
-const std::string input_ppData_condorDir=readForests_ppData_dir+
-//"saved_outputCondor/ppData_HighPtJetTrig_ak4CaloJets_HLT.ak4CaloJets_09-17-16__newJetID/";
-//"saved_outputCondor/ppData_HighPtJetTrig_ak4PFJets_HLT.ak4CaloJets_09-16-16__newJetID/";
-//"saved_outputCondor/ppData_HighPtJetTrig_ak3PFJets_HLT.ak4CaloJets_09-18-16__newJetID/";
-//"saved_outputCondor/ppData_HighPtJetTrig_ak4CaloJets_HLT.ak4PFJets_09-18-16__newJetID/";
-  "saved_outputCondor/ppData_HighPtJetTrig_ak4PFJets_HLT.ak4PFJets_09-18-16__newJetID/";
-//"saved_outputCondor/ppData_HighPtJetTrig_ak3PFJets_HLT.ak4PFJets_09-18-16__newJetID/";
-
-const std::string input_ppData_Filename=input_ppData_condorDir+
-//"HighPtJetTrig_ak4Calo-allFiles.root";
-  "HighPtJetTrig_ak4PF-allFiles.root";
-//"HighPtJetTrig_ak3PF-allFiles.root";
-
-const std::string input_ppMC_condorDir=readForests_ppMC_dir+
-//"saved_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4CaloJets_09-17-16__newJetID/";
-  "saved_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_09-16-16__newJetID/";  
-//"saved_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak3PFJets_09-18-16__newJetID/";
-
-const std::string input_ppMC_Filename=input_ppMC_condorDir+
-//"Py8_CUETP8M1_QCDjetAllPtBins_ak4Calo-allFiles.root";
-  "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
-//"Py8_CUETP8M1_QCDjetAllPtBins_ak3PF-allFiles.root";
-
+  "src/readFiles/readForests_ppMC/saved_outputCondor/";
 
 //output
-const std::string printQAPlots_dir=CMSSW_BASE+"src/printQAPlots/";
+const std::string printQAPlots_dir=CMSSW_BASE+"src/printQAPlots/output";
 
-const std::string output_PDFname_base_full=printQAPlots_dir+
-//"output/printQAplots_9.18.16_newJetID_ak4CaloJets_HLT.ak4PFJets_QAPlots_";
-  "output/printQAplots_9.18.16_newJetID_ak4PFJets_HLT.ak4PFJets_QAPlots_";
-//"output/printQAplots_9.18.16_newJetID_ak3PFJets_HLT.ak4PFJets_QAPlots_";
-//"output/printQAplots_9.18.16_newJetID_ak4CaloJets_HLT.ak4CaloJets_QAPlots_";
-//"output/printQAplots_9.18.16_newJetID_ak4PFJets_HLT.ak4CaloJets_QAPlots_";
-//"output/printQAplots_9.18.16_newJetID_ak3PFJets_HLT.ak4CaloJets_QAPlots_";
-  
-const std::string output_ppDataMCOverlaid_PDFname=output_PDFname_base_full+
-  "DataMCOverlaid.pdf";
-const std::string output_ppDataMCRatios_PDFname=output_PDFname_base_full+
-  "DataMCRatios.pdf";
-
-
- 
 // code/job switches ------------------------
 const bool doEventCounts=true, drawEvtQAPlots=true;
-const bool drawJetQAPlots=true, drawJetTrigQAPlots=true;
+const bool drawJetQAPlots=true, drawJetTrigQAPlots=false;
 const bool drawMCEffPlots=true;//, drawJECandJERPlots=true;//MC Specific for now
 
 const bool debugMode=true;//, dataDebugMode=true, MCDebugMode=true; //debug
@@ -70,19 +26,23 @@ const bool debugMode=true;//, dataDebugMode=true, MCDebugMode=true; //debug
 
 
 // the macro ------------------------
-int printQAPlots(const bool drawDataMCOverlaysInput=true){
+int printQAPlots(const std::string input_ppData_condorDir, const std::string input_ppData_Filename,
+		 const std::string input_ppMC_condorDir, const std::string input_ppMC_Filename, 
+		 const std::string output_PDFname_base_full, const bool drawDataMCOverlaysInput=true ){
  
   //plot style
   const bool drawDataMCOverlays=drawDataMCOverlaysInput, drawDataMCRatios =!(drawDataMCOverlays);
   const bool drawTrigDataOverlays=drawDataMCOverlays,    drawTrigDataRatios=!(drawTrigDataOverlays);
 
   //for efficiency later if/when I get a chance 
-  const bool openDataFile=true;//doEventCounts||drawTrigPlots||
-  //  drawDataMCOverlays||drawDataMCRatios;
-  const bool openMCFile  =true;//doEventCounts||//drawMCEffPlots||drawJECandJERPlots||
-  //  drawDataMCOverlays||drawDataMCRatios;
-
-
+  const bool openDataFile=true;
+  const bool openMCFile  =true;
+  
+  const int radius_int=4;// turn into a search-input-filename thing
+  const std::string radius="R"+std::to_string(radius_int)+"_";
+  const std::string jetType="PF";
+  //const std::string pfRad_etaWidth=radius+etaWidth;
+  //const std::string jetAna="ak"+radius+jetType+"JetAnalyzer";
 
   std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;
 
@@ -90,13 +50,21 @@ int printQAPlots(const bool drawDataMCOverlaysInput=true){
   TFile *finMC=NULL, *finData=NULL;
   assert( openMCFile||openDataFile );
 
-  std::string ppData_fullFilename,ppMC_fullFilename;  
- 
-  if(openDataFile){  std::cout<<" now opening Data File "<<std::endl<<input_ppData_Filename<<std::endl<<std::endl;
-    finData = new TFile(input_ppData_Filename.c_str());}
+
+  const std::string ppData_fullFilename=readForests_ppData_dir+
+    input_ppData_condorDir+input_ppData_Filename;
+  const std::string ppMC_fullFilename  =readForests_ppMC_dir+ 
+    input_ppMC_condorDir+input_ppMC_Filename;;  
   
-  if(openMCFile){  std::cout<<" now opening MC File "<<std::endl<<input_ppMC_Filename<<std::endl<<std::endl;
-    finMC = new TFile(input_ppMC_Filename.c_str());}
+  if(openDataFile){
+    if(debugMode)std::cout<<" now opening Data File "<<std::endl<<ppData_fullFilename<<std::endl<<std::endl;
+    else std::cout<<" now opening Data File "<<std::endl<<input_ppData_Filename<<std::endl<<std::endl;
+    finData = new TFile(ppData_fullFilename.c_str());      }
+  
+  if(openMCFile){  
+    if(debugMode) std::cout<<" now opening MC File "<<std::endl<<ppMC_fullFilename<<std::endl<<std::endl;
+    else std::cout<<" now opening MC File "<<std::endl<<input_ppMC_Filename<<std::endl<<std::endl;
+    finMC = new TFile(ppMC_fullFilename.c_str());}
   assert(finData||finMC);
   
   // Lumi Efficiency Calculation ------------------------
@@ -128,14 +96,14 @@ int printQAPlots(const bool drawDataMCOverlaysInput=true){
       std::cout<<std::endl;
 
 
-      TH1F *h_NEvents_trgDup   = (TH1F*)finData->Get("NEvents_trgDup");   
-      TH1F *h_NEvents_trgDupCut= (TH1F*)finData->Get("NEvents_trgDupCut");
-      
-      std::cout<<"Total Num of duplicate Events read post skim+vz cuts                 = " <<
-      	h_NEvents_trgDup->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Events read passing skim+vz+duplicate (aka good events) = " <<
-      	h_NEvents_trgDupCut->GetEntries()<<std::endl;
-      std::cout<<std::endl;
+      //TH1F *h_NEvents_trgDup   = (TH1F*)finData->Get("NEvents_trgDup");   
+      //TH1F *h_NEvents_trgDupCut= (TH1F*)finData->Get("NEvents_trgDupCut");
+      //
+      //std::cout<<"Total Num of duplicate Events read post skim+vz cuts                 = " <<
+      //	h_NEvents_trgDup->GetEntries()<<std::endl;
+      //std::cout<<"Total Num of Events read passing skim+vz+duplicate (aka good events) = " <<
+      //	h_NEvents_trgDupCut->GetEntries()<<std::endl;
+      //std::cout<<std::endl;
 
 
       TH1F *h_NEvents_withJets           = (TH1F*)finData->Get("NEvents_withJets");
@@ -225,17 +193,16 @@ int printQAPlots(const bool drawDataMCOverlaysInput=true){
       std::cout<<std::endl;    }
   }// end evt counts
   
+  
 
 
-  //get output file ready
-  std::string thePDFFileName;
-  if(drawDataMCOverlays)thePDFFileName=output_ppDataMCOverlaid_PDFname;
-  else /*(drawDataMCRatios)*/ thePDFFileName=output_ppDataMCRatios_PDFname;
-    //if(debugMode)thePDFFileName="DEBUGTEST_"+thePDFFileName;
-
+  std::string thePDFFileName=printQAPlots_dir;
+  if(drawDataMCOverlaysInput)thePDFFileName+=output_PDFname_base_full+"DataMCOverlaid.pdf";
+  else thePDFFileName+=output_PDFname_base_full+"DataMCRatios.pdf";
+  
   std::string open_thePDFFileName, close_thePDFFileName;
   open_thePDFFileName=thePDFFileName+"[";  close_thePDFFileName=thePDFFileName+"]";
-
+  
   // just for opening the pdf
   TCanvas *temp_canvOpen = new TCanvas("temp", "temp", 1200, 600);
   temp_canvOpen->Print( open_thePDFFileName.c_str() );  temp_canvOpen->Close();
@@ -935,15 +902,55 @@ int printQAPlots(const bool drawDataMCOverlaysInput=true){
 int main(int argc, char *argv[]){
   
   int rStatus = -1;
-  if( argc>2 ) {//no input arguments, error
-    std::cout<<"do ./printQAPlots.exe <OverlayFlag>"<<std::endl;
+  if( argc!=7 ) {//no input arguments, error
+    std::cout<<"do ./printQAPlots.exe <ppDataCondorDir> <ppDataFilename> <ppMCCondorDir> <ppMCFilename> <outputNameBase> <OverlayFlag>"<<std::endl;
     return rStatus;
   }
   rStatus=1;
   
-  if(argc==1)rStatus=printQAPlots();
-  else rStatus=printQAPlots((bool)std::atoi(argv[1]));
+  //if(argc==1)rStatus=printQAPlots();
+  if(argc==7) rStatus=printQAPlots( (const std::string) argv[1], (const std::string) argv[2],
+			     (const std::string) argv[3], (const std::string) argv[4],
+			     (const std::string) argv[5], (bool) std::atoi(argv[6])    );
   
   std::cout<<"done, rStatus="<<rStatus<<std::endl;
   return rStatus;
 }
+
+
+
+//// I/O ------------------------
+////input
+//const std::string input_ppData_condorDir=readForests_ppData_dir+
+////"ppData_HighPtJetTrig_ak4CaloJets_HLT.ak4CaloJets_09-17-16__newJetID/";
+////"ppData_HighPtJetTrig_ak4PFJets_HLT.ak4CaloJets_09-16-16__newJetID/";
+////"ppData_HighPtJetTrig_ak3PFJets_HLT.ak4CaloJets_09-18-16__newJetID/";
+////"ppData_HighPtJetTrig_ak4CaloJets_HLT.ak4PFJets_09-18-16__newJetID/";
+//  "ppData_HighPtJetTrig_ak4PFJets_HLT.ak4PFJets_09-18-16__newJetID/";
+////"ppData_HighPtJetTrig_ak3PFJets_HLT.ak4PFJets_09-18-16__newJetID/";
+//
+//const std::string input_ppData_Filename=input_ppData_condorDir+
+////"HighPtJetTrig_ak4Calo-allFiles.root";
+//  "HighPtJetTrig_ak4PF-allFiles.root";
+////"HighPtJetTrig_ak3PF-allFiles.root";
+//
+//const std::string input_ppMC_condorDir=readForests_ppMC_dir+
+////"ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4CaloJets_09-17-16__newJetID/";
+//  "ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_09-16-16__newJetID/";  
+////"ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak3PFJets_09-18-16__newJetID/";
+//
+//const std::string input_ppMC_Filename=input_ppMC_condorDir+
+////"Py8_CUETP8M1_QCDjetAllPtBins_ak4Calo-allFiles.root";
+//  "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
+////"Py8_CUETP8M1_QCDjetAllPtBins_ak3PF-allFiles.root";
+
+//const std::string output_PDFname_base_full=printQAPlots_dir+
+////"printQAplots_9.18.16_newJetID_ak4CaloJets_HLT.ak4PFJets_QAPlots_";
+//  "printQAplots_9.18.16_newJetID_ak4PFJets_HLT.ak4PFJets_QAPlots_";
+////"printQAplots_9.18.16_newJetID_ak3PFJets_HLT.ak4PFJets_QAPlots_";
+////"printQAplots_9.18.16_newJetID_ak4CaloJets_HLT.ak4CaloJets_QAPlots_";
+////"printQAplots_9.18.16_newJetID_ak4PFJets_HLT.ak4CaloJets_QAPlots_";
+////"printQAplots_9.18.16_newJetID_ak3PFJets_HLT.ak4CaloJets_QAPlots_";
+  
+ 
+

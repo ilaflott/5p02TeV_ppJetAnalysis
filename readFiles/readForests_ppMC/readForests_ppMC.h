@@ -103,68 +103,68 @@ const float pthatWeights[]={//from evtPthatWeights/evtPthatWeights_Py8_CUETP8M1_
 /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
 };
 
-//these apply when comparing the MC to HLTAk4Calo-triggered jets in data
-const float vzWeights[]={//from vzEvtWeights 9.14.16, //
-/*for i=1, -15<vz<=-14.5, vzWeight=*/ 0.381083,
-/*for i=2, -14.5<vz<=-14, vzWeight=*/ 0.420849,
-/*for i=3, -14<vz<=-13.5, vzWeight=*/ 0.457166,
-/*for i=4, -13.5<vz<=-13, vzWeight=*/ 0.489082,
-/*for i=5, -13<vz<=-12.5, vzWeight=*/ 0.526434,
-/*for i=6, -12.5<vz<=-12, vzWeight=*/ 0.568316,
-/*for i=7, -12<vz<=-11.5, vzWeight=*/ 0.631824,
-/*for i=8, -11.5<vz<=-11, vzWeight=*/ 0.627796,
-/*for i=9, -11<vz<=-10.5, vzWeight=*/ 0.690459,
-/*for i=10, -10.5<vz<=-10, vzWeight=*/0.714526,
-/*for i=11, -10<vz<=-9.5, vzWeight=*/ 0.750061,
-/*for i=12, -9.5<vz<=-9, vzWeight=*/  0.799916,
-/*for i=13, -9<vz<=-8.5, vzWeight=*/  0.816735,
-/*for i=14, -8.5<vz<=-8, vzWeight=*/  0.85323 ,
-/*for i=15, -8<vz<=-7.5, vzWeight=*/  0.877455,
-/*for i=16, -7.5<vz<=-7, vzWeight=*/  0.895425,
-/*for i=17, -7<vz<=-6.5, vzWeight=*/  0.92577 ,
-/*for i=18, -6.5<vz<=-6, vzWeight=*/  0.960376,
-/*for i=19, -6<vz<=-5.5, vzWeight=*/  1.00063 ,
-/*for i=20, -5.5<vz<=-5, vzWeight=*/  1.00567 ,
-/*for i=21, -5<vz<=-4.5, vzWeight=*/  1.01408 ,
-/*for i=22, -4.5<vz<=-4, vzWeight=*/  1.03837 ,
-/*for i=23, -4<vz<=-3.5, vzWeight=*/  1.05649 ,
-/*for i=24, -3.5<vz<=-3, vzWeight=*/  1.07153 ,
-/*for i=25, -3<vz<=-2.5, vzWeight=*/  1.07986 ,
-/*for i=26, -2.5<vz<=-2, vzWeight=*/  1.09942 ,
-/*for i=27, -2<vz<=-1.5, vzWeight=*/  1.1102  ,
-/*for i=28, -1.5<vz<=-1, vzWeight=*/  1.12039 ,
-/*for i=29, -1<vz<=-0.5, vzWeight=*/  1.116   ,
-/*for i=30, -0.5<vz<=0, vzWeight=*/   1.1358  ,
-/*for i=31, 0<vz<=0.5, vzWeight=*/    1.13279 ,
-/*for i=32, 0.5<vz<=1, vzWeight=*/    1.1387  ,
-/*for i=33, 1<vz<=1.5, vzWeight=*/    1.13261 ,
-/*for i=34, 1.5<vz<=2, vzWeight=*/    1.14604 ,
-/*for i=35, 2<vz<=2.5, vzWeight=*/    1.12861 ,
-/*for i=36, 2.5<vz<=3, vzWeight=*/    1.14573 ,
-/*for i=37, 3<vz<=3.5, vzWeight=*/    1.12039 ,
-/*for i=38, 3.5<vz<=4, vzWeight=*/    1.11589 ,
-/*for i=39, 4<vz<=4.5, vzWeight=*/    1.11258 ,
-/*for i=40, 4.5<vz<=5, vzWeight=*/    1.10108 ,
-/*for i=41, 5<vz<=5.5, vzWeight=*/    1.09245 ,
-/*for i=42, 5.5<vz<=6, vzWeight=*/    1.08902 ,
-/*for i=43, 6<vz<=6.5, vzWeight=*/    1.06721 ,
-/*for i=44, 6.5<vz<=7, vzWeight=*/    1.0261  ,
-/*for i=45, 7<vz<=7.5, vzWeight=*/    1.01827 ,
-/*for i=46, 7.5<vz<=8, vzWeight=*/    0.989024,
-/*for i=47, 8<vz<=8.5, vzWeight=*/    0.962674,
-/*for i=48, 8.5<vz<=9, vzWeight=*/    0.936773,
-/*for i=49, 9<vz<=9.5, vzWeight=*/    0.907251,
-/*for i=50, 9.5<vz<=10, vzWeight=*/   0.891311,
-/*for i=51, 10<vz<=10.5, vzWeight=*/  0.864917,
-/*for i=52, 10.5<vz<=11, vzWeight=*/  0.807905,
-/*for i=53, 11<vz<=11.5, vzWeight=*/  0.787968,
-/*for i=54, 11.5<vz<=12, vzWeight=*/  0.725249,
-/*for i=55, 12<vz<=12.5, vzWeight=*/  0.709917,
-/*for i=56, 12.5<vz<=13, vzWeight=*/  0.661411,
-/*for i=57, 13<vz<=13.5, vzWeight=*/  0.628832,
-/*for i=58, 13.5<vz<=14, vzWeight=*/  0.580118,
-/*for i=59, 14<vz<=14.5, vzWeight=*/  0.550339,
-/*for i=60, 14.5<vz<=15, vzWeight=*/  0.479087
+//evt vz weights
+const float vzWeights[]={//           HLTAK4CaloJets, HLTAK4PFJets
+/*for i=1, -15<vz<=-14.5, vzWeight=*/ 0.381083,  /* 0.35749,  */
+/*for i=2, -14.5<vz<=-14, vzWeight=*/ 0.420849,	 /* 0.400545, */
+/*for i=3, -14<vz<=-13.5, vzWeight=*/ 0.457166,	 /* 0.433741, */
+/*for i=4, -13.5<vz<=-13, vzWeight=*/ 0.489082,	 /* 0.469437, */
+/*for i=5, -13<vz<=-12.5, vzWeight=*/ 0.526434,	 /* 0.512839, */
+/*for i=6, -12.5<vz<=-12, vzWeight=*/ 0.568316,	 /* 0.556416, */
+/*for i=7, -12<vz<=-11.5, vzWeight=*/ 0.631824,	 /* 0.612334, */
+/*for i=8, -11.5<vz<=-11, vzWeight=*/ 0.627796,	 /* 0.622496, */
+/*for i=9, -11<vz<=-10.5, vzWeight=*/ 0.690459,	 /* 0.672646, */
+/*for i=10, -10.5<vz<=-10, vzWeight=*/0.714526,	 /* 0.706209, */
+/*for i=11, -10<vz<=-9.5, vzWeight=*/ 0.750061,	 /* 0.740972, */
+/*for i=12, -9.5<vz<=-9, vzWeight=*/  0.799916,	 /* 0.792563, */
+/*for i=13, -9<vz<=-8.5, vzWeight=*/  0.816735,	 /* 0.815354, */
+/*for i=14, -8.5<vz<=-8, vzWeight=*/  0.85323 ,	 /* 0.853215, */
+/*for i=15, -8<vz<=-7.5, vzWeight=*/  0.877455,	 /* 0.875179, */
+/*for i=16, -7.5<vz<=-7, vzWeight=*/  0.895425,	 /* 0.891705, */
+/*for i=17, -7<vz<=-6.5, vzWeight=*/  0.92577 ,	 /* 0.921846, */
+/*for i=18, -6.5<vz<=-6, vzWeight=*/  0.960376,	 /* 0.958741, */
+/*for i=19, -6<vz<=-5.5, vzWeight=*/  1.00063 ,	 /* 1.00373,  */
+/*for i=20, -5.5<vz<=-5, vzWeight=*/  1.00567 ,	 /* 1.00595,  */
+/*for i=21, -5<vz<=-4.5, vzWeight=*/  1.01408 ,	 /* 1.01643,  */
+/*for i=22, -4.5<vz<=-4, vzWeight=*/  1.03837 ,	 /* 1.04327,  */
+/*for i=23, -4<vz<=-3.5, vzWeight=*/  1.05649 ,	 /* 1.06326,  */
+/*for i=24, -3.5<vz<=-3, vzWeight=*/  1.07153 ,	 /* 1.07991,  */
+/*for i=25, -3<vz<=-2.5, vzWeight=*/  1.07986 ,	 /* 1.08791,  */
+/*for i=26, -2.5<vz<=-2, vzWeight=*/  1.09942 ,	 /* 1.10771,  */
+/*for i=27, -2<vz<=-1.5, vzWeight=*/  1.1102  ,	 /* 1.11622,  */
+/*for i=28, -1.5<vz<=-1, vzWeight=*/  1.12039 ,	 /* 1.12078,  */
+/*for i=29, -1<vz<=-0.5, vzWeight=*/  1.116   ,	 /* 1.12084,  */
+/*for i=30, -0.5<vz<=0, vzWeight=*/   1.1358  ,	 /* 1.14016,  */
+/*for i=31, 0<vz<=0.5, vzWeight=*/    1.13279 ,	 /* 1.14058,  */
+/*for i=32, 0.5<vz<=1, vzWeight=*/    1.1387  ,	 /* 1.14684,  */
+/*for i=33, 1<vz<=1.5, vzWeight=*/    1.13261 ,	 /* 1.14148,  */
+/*for i=34, 1.5<vz<=2, vzWeight=*/    1.14604 ,	 /* 1.15419,  */
+/*for i=35, 2<vz<=2.5, vzWeight=*/    1.12861 ,	 /* 1.1392,   */
+/*for i=36, 2.5<vz<=3, vzWeight=*/    1.14573 ,	 /* 1.15569,  */
+/*for i=37, 3<vz<=3.5, vzWeight=*/    1.12039 ,	 /* 1.13269,  */
+/*for i=38, 3.5<vz<=4, vzWeight=*/    1.11589 ,	 /* 1.12478,  */
+/*for i=39, 4<vz<=4.5, vzWeight=*/    1.11258 ,	 /* 1.11415,  */
+/*for i=40, 4.5<vz<=5, vzWeight=*/    1.10108 ,	 /* 1.10534,  */
+/*for i=41, 5<vz<=5.5, vzWeight=*/    1.09245 ,	 /* 1.09492,  */
+/*for i=42, 5.5<vz<=6, vzWeight=*/    1.08902 ,	 /* 1.08401,  */
+/*for i=43, 6<vz<=6.5, vzWeight=*/    1.06721 ,	 /* 1.06167,  */
+/*for i=44, 6.5<vz<=7, vzWeight=*/    1.0261  ,	 /* 1.02492,  */
+/*for i=45, 7<vz<=7.5, vzWeight=*/    1.01827 ,	 /* 1.01539,  */
+/*for i=46, 7.5<vz<=8, vzWeight=*/    0.989024,	 /* 0.985653, */
+/*for i=47, 8<vz<=8.5, vzWeight=*/    0.962674,	 /* 0.952256, */
+/*for i=48, 8.5<vz<=9, vzWeight=*/    0.936773,	 /* 0.930472, */
+/*for i=49, 9<vz<=9.5, vzWeight=*/    0.907251,	 /* 0.894218, */
+/*for i=50, 9.5<vz<=10, vzWeight=*/   0.891311,	 /* 0.875605, */
+/*for i=51, 10<vz<=10.5, vzWeight=*/  0.864917,	 /* 0.847596, */
+/*for i=52, 10.5<vz<=11, vzWeight=*/  0.807905,	 /* 0.78767,  */
+/*for i=53, 11<vz<=11.5, vzWeight=*/  0.787968,	 /* 0.768839, */
+/*for i=54, 11.5<vz<=12, vzWeight=*/  0.725249,	 /* 0.700327, */
+/*for i=55, 12<vz<=12.5, vzWeight=*/  0.709917,	 /* 0.687202, */
+/*for i=56, 12.5<vz<=13, vzWeight=*/  0.661411,	 /* 0.629434, */
+/*for i=57, 13<vz<=13.5, vzWeight=*/  0.628832,	 /* 0.597895, */
+/*for i=58, 13.5<vz<=14, vzWeight=*/  0.580118,	 /* 0.555087, */
+/*for i=59, 14<vz<=14.5, vzWeight=*/  0.550339,	 /* 0.523324, */
+/*for i=60, 14.5<vz<=15, vzWeight=*/  0.479087	 /* 0.448861  */
 };
 const int nbins_vzWeights = sizeof(vzWeights)/sizeof(float);//should be 60
 const float minbinValue_vzWeights = -15., maxbinValue_vzWeights = 15.;

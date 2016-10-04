@@ -14,11 +14,11 @@ const std::string readForests_ppMC_dir=CMSSW_BASE+
   "src/readFiles/readForests_ppMC/saved_outputCondor/";
 
 //output
-const std::string printQAPlots_dir=CMSSW_BASE+"src/printQAPlots/output";
+const std::string printQAPlots_dir=CMSSW_BASE+"src/printQAPlots/output/";
 
 // code/job switches ------------------------
 const bool doEventCounts=true, drawEvtQAPlots=true;
-const bool drawJetQAPlots=true, drawJetTrigQAPlots=false;
+const bool drawJetQAPlots=true, drawJetTrigQAPlots=true;
 const bool drawMCEffPlots=true;//, drawJECandJERPlots=true;//MC Specific for now
 
 const bool debugMode=true;//, dataDebugMode=true, MCDebugMode=true; //debug
@@ -37,12 +37,19 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
   //for efficiency later if/when I get a chance 
   const bool openDataFile=true;
   const bool openMCFile  =true;
+
+
+  //figure out what radius/jetcollection we are looking at using the ppData filename
+  //format of the filename is always HighPt{filelist}_ak{3,4}{PF,Calo}-allFiles.root
+  std::size_t radPos=input_ppData_Filename.find("_ak")+3;  
+  const std::string radius="R"+
+    input_ppData_Filename.substr( radPos,1 )+"_";
+  if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
   
-  const int radius_int=4;// turn into a search-input-filename thing
-  const std::string radius="R"+std::to_string(radius_int)+"_";
-  const std::string jetType="PF";
-  //const std::string pfRad_etaWidth=radius+etaWidth;
-  //const std::string jetAna="ak"+radius+jetType+"JetAnalyzer";
+  std::size_t jetTypePos=radPos+1;
+  std::size_t hyphenPos=input_ppData_Filename.find("-allFiles");;
+  const std::string jetType=input_ppData_Filename.substr( jetTypePos,(hyphenPos-jetTypePos) );
+  if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
 
   std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;
 
@@ -239,8 +246,8 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	std::string h_YAx_Title="millibarns/bin"                   ;
 	
 	TH1F* theDataEvtQAHist= (TH1F*)finData->Get( inHistName.c_str() );
-	theDataEvtQAHist->Scale( 1/theDataEvtQAHist->GetBinWidth(0) );
-	theDataEvtQAHist->Scale( 1/theLumi );
+	theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(0) );
+	theDataEvtQAHist->Scale( 1./theLumi );
 	
 	theDataEvtQAHist->SetMarkerStyle(kDot);
 	theDataEvtQAHist->SetMarkerSize(1.3);
@@ -254,7 +261,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theDataEvtQAHist->Draw();
 	
 	TH1F* theMCEvtQAHist= (TH1F*)finMC->Get( inHistName.c_str() );
-	theMCEvtQAHist->Scale( 1/theMCEvtQAHist->GetBinWidth(0) );
+	theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(0) );
 	theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );
 	
 	theMCEvtQAHist->SetMarkerStyle(kDot);
@@ -274,7 +281,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 
 	//{//pthat weighted only MC, can use this for Vz weighting
 	//  TH1F* theMCEvtQAHist2= (TH1F*)finMC->Get( "hpthatWeightedVz" );
-	//  theMCEvtQAHist2->Scale( 1/theMCEvtQAHist2->GetBinWidth(0) );
+	//  theMCEvtQAHist2->Scale( 1./theMCEvtQAHist2->GetBinWidth(0) );
 	//  theMCEvtQAHist2->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist2->Integral() );
 	//  theMCEvtQAHist2->SetMarkerStyle(kDot);
 	//  theMCEvtQAHist2->SetMarkerSize(1.3);
@@ -301,7 +308,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	std::string h_YAx_Title="NEvents/bin"       ;
 	
 	TH1F* theMCEvtQAHist= (TH1F*)finMC->Get( inHistName.c_str() );
-	theMCEvtQAHist->Scale( 1/theMCEvtQAHist->GetBinWidth(0) );
+	theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(0) );
 	
 	theMCEvtQAHist->SetTitle (    h_Title.c_str() );
 	theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
@@ -334,7 +341,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	std::string h_YAx_Title="millibarns/bin"             ;
 	
 	TH1F* theMCEvtQAHist= (TH1F*)finMC->Get( inHistName.c_str() );
-	theMCEvtQAHist->Scale( 1/theMCEvtQAHist->GetBinWidth(0) );
+	theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(0) );
 	
 	theMCEvtQAHist->SetTitle (    h_Title.c_str() );
 	theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
@@ -371,8 +378,8 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	
 	//TH1F* theDataEvtQAHist= (TH1F*)finData->Get( inHistName.c_str() );
 	TH1F* theDataEvtQAHist= (TH1F*)finData->Get( inHistName.c_str() );
-	theDataEvtQAHist->Scale( 1/theDataEvtQAHist->GetBinWidth(0) );
-	theDataEvtQAHist->Scale( 1/theLumi );
+	theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(0) );
+	theDataEvtQAHist->Scale( 1./theLumi );
 	
 	theDataEvtQAHist->SetTitle (    h_Title.c_str() );
 	theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
@@ -384,9 +391,9 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theDataEvtQAHist->SetLineColor( theRatioLineColor );
 	theDataEvtQAHist->SetAxisRange(0.,1.5,"Y");
 
-	//for ratio w/ 1/vzweights
+	//for ratio w/ 1./vzweights
 	TH1F* theMCEvtQAHist= (TH1F*)finMC->Get( inHistName.c_str() );
-	theMCEvtQAHist->Scale( 1/theMCEvtQAHist->GetBinWidth(0) );
+	theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(0) );
 	theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );
 	
 	TH1F *theRatio=(TH1F*)theDataEvtQAHist->Clone("DataVzClone4Ratio");
@@ -400,7 +407,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	//TH1F* theDataEvtQAHist2=(TH1F*)theDataEvtQAHist->Clone("DataVzClone4Ratio2");
 	//
 	//TH1F* theMCEvtQAHist2= (TH1F*)finMC->Get( "hpthatWeightedVz" );
-	//theMCEvtQAHist2->Scale( 1/theMCEvtQAHist2->GetBinWidth(0) );
+	//theMCEvtQAHist2->Scale( 1./theMCEvtQAHist2->GetBinWidth(0) );
 	//theMCEvtQAHist2->Scale( theDataEvtQAHist2->Integral()/theMCEvtQAHist2->Integral() );
 	//
 	//TH1F *theRatio2=theDataEvtQAHist2;
@@ -415,7 +422,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	//TH1F* theDataEvtQAHist3=(TH1F*)theDataEvtQAHist->Clone("DataVzClone4Ratio3");
 	//
 	//TH1F* theMCEvtQAHist3= (TH1F*)finMC->Get( "hWeightedAnnaVz" );
-	//theMCEvtQAHist3->Scale( 1/theMCEvtQAHist3->GetBinWidth(0) );
+	//theMCEvtQAHist3->Scale( 1./theMCEvtQAHist3->GetBinWidth(0) );
 	//theMCEvtQAHist3->Scale( theDataEvtQAHist3->Integral()/theMCEvtQAHist3->Integral() );
    	//
 	//TH1F *theRatio3=theDataEvtQAHist3;
@@ -476,8 +483,8 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theDataJetQAHist->Print("base"); 
 	std::cout<<std::endl;
 	
-	theDataJetQAHist->Scale( 1/theDataJetQAHist->GetBinWidth(1) );
-	theDataJetQAHist->Scale( 1/theLumi);
+	theDataJetQAHist->Scale( 1./theDataJetQAHist->GetBinWidth(1) );
+	theDataJetQAHist->Scale( 1./theLumi);
 	theDataJetQAHist->Print("base"); 
 	std::cout<<std::endl;
 
@@ -495,7 +502,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theMCJetQAHist->Print("base");
 	std::cout<<std::endl;
 
-	theMCJetQAHist->Scale( 1/theMCJetQAHist->GetBinWidth(1) );	  
+	theMCJetQAHist->Scale( 1./theMCJetQAHist->GetBinWidth(1) );	  
 	if( var[j]!="jtpt"&&var[j]!="rawpt"&&
 	    var[j]!="leadJetPt"&&var[j]!="subleadJetPt" )  
 	  theMCJetQAHist->Scale( theDataJetQAHist->Integral()/theMCJetQAHist->Integral() );	  
@@ -683,8 +690,8 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	    ->TH1::Rebin(jetTrigQABinning);
 	  
 	  //theJetTrigQAHist->Print("base");
-	  theJetTrigQAHist->Scale( 1/theJetTrigQAHist->GetBinWidth(1) );
-	  theJetTrigQAHist->Scale( 1/theLumi);
+	  theJetTrigQAHist->Scale( 1./theJetTrigQAHist->GetBinWidth(1) );
+	  theJetTrigQAHist->Scale( 1./theLumi);
 	  
 	  theJetTrigQAHist->SetMarkerStyle(kDot);
 	  theJetTrigQAHist->SetMarkerSize(3.0);

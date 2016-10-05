@@ -148,7 +148,8 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
 
   // hltanalysis
-  int jet40_l1s_ps_I, jet60_l1s_ps_I,  jet80_l1s_ps_I,  jet100_l1s_ps_I;   //L1
+  //int jet40_l1s_I, jet60_l1s_I,  jet80_l1s_I,  jet100_l1s_I;   //L1
+  int jet40_l1s_ps_I, jet60_l1s_ps_I,  jet80_l1s_ps_I,  jet100_l1s_ps_I;   //L1 ps
   int jet40_I, jet60_I, jet80_I, jet100_I;   //HLT
   int jet40_p_I, jet60_p_I, jet80_p_I, jet100_p_I;
 
@@ -172,6 +173,13 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   jetpp[3]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
   jetpp[3]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
   jetpp[3]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1s_ps_I);
+
+  //if(debugMode)for(int i=0;i<N_L1Bits;i++)
+  //  std::cout<<"L1Branches[i="<<i<<"]="<<L1BitStrings[i]<<std::endl;
+  //jetpp[3]->SetBranchAddress( L1BitStrings[0].c_str()  , &jet40_l1s_I  );
+  //jetpp[3]->SetBranchAddress( L1BitStrings[1].c_str()  , &jet60_l1s_I  );
+  //jetpp[3]->SetBranchAddress( L1BitStrings[2].c_str()  , &jet80_l1s_I  );
+  //jetpp[3]->SetBranchAddress( L1BitStrings[3].c_str()  , &jet100_l1s_I );
 
 
   //ONE HLT path ONE tree ONE trig obj pt branch
@@ -301,12 +309,20 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
   UInt_t NEvents_40=0, NEvents_60=0, NEvents_80=0, NEvents_100=0;  //trigger event counts
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;  
 
+
   bool filelistIsLowerJets=false; //to know if i should apply the duplicate check or not
-  std::size_t found=inFilelist.find("HighPtLowerJets");
-  if(found!=std::string::npos) filelistIsLowerJets=true;
-  if(debugMode)if(found!=std::string::npos){
-    std::cout<<"found="<<found<<std::endl;
-    std::cout<<"running HighPtLowerJets! Will employ duplicate trig. event check"<<std::endl;}
+  bool filelistIsJet80=false;
+
+  if( inFilelist.find("HighPtLowerJets")!=std::string::npos ) filelistIsLowerJets=true;
+  if( inFilelist.find("HighPtJet80")!=std::string::npos ) filelistIsJet80=true;
+
+  if(filelistIsJet80){std::cout<<"running Jet80 filelist!"<<std::endl; 
+    std::cout<<"skipping is40 or is60 or is40or60 events (depends, see code)"<<std::endl; }
+  if(filelistIsLowerJets){std::cout<<"running LowerJets filelist!"<<std::endl;
+    std::cout<<"employing duplicate skipping..."<<std::endl;   }
+  
+  assert( !filelistIsJet80 || !filelistIsLowerJets );
+  //assert(false);
 
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
       
@@ -337,9 +353,11 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     //prescale/decision arrays, total prescale=L1_ps*HLT_ps
     int treePrescl[4]={ (jet40_p_I*jet40_l1s_ps_I), (jet60_p_I*jet60_l1s_ps_I), 
 			(jet80_p_I*jet80_l1s_ps_I), (jet100_p_I*jet100_l1s_ps_I) };    
-    //l1 bits always true if they've been bothered to be written to forest... i think?
+
+    //l1 bits alwaygDes true if they've been bothered to be written to forest... i think?
     bool trgDec[4]={ (bool)jet40_I, (bool)jet60_I, //HLT decision=HLT&&L1=HLT&&true
 		     (bool)jet80_I, (bool)jet100_I  }; 
+
     
     // grab largest triggerPt among HLT paths' trigger object collectiosn
     double triggerPt=0.;
@@ -367,13 +385,54 @@ int readForests_ppData(int startfile , int endfile , std::string inFilelist , st
     if( trgDec[2] && triggerPt>=80.  && triggerPt<100. ) is80  = true;    
     if( trgDec[3] && triggerPt>=100.                   ) is100 = true;    
 
-    float weight_eS = trigComb(trgDec, treePrescl, triggerPt); //kurt method
+    if(filelistIsJet80){
+      //if( is40 ) continue;
+      //if( is60) continue;
+      if( is40 || is60) continue;
+    }
     
+    float weight_eS = trigComb(trgDec, treePrescl, triggerPt); //kurt method
+
+    //std::cout<<"before calling trigComb statements..."<<std::endl;
+    //for(int k=0;k<4;k++){if(trgDec[k]) {
+    //	std::cout<<"///////////////////////////////////"<<std::endl;
+    //	std::cout<<"trgDec["<<k<<"]="<<trgDec[k]<<std::endl;
+    //	std::cout<<"treePrescl["<<k<<"]="<<treePrescl[k]<<std::endl;
+    //	std::cout<<"triggerPt="<<triggerPt<<std::endl;
+    //	//std::cout<<"weight_eS=="<<weight_eS<<std::endl<<std::endl;
+    //  }}
+    //
+    //float weight_eS = trigComb_sanityCheck(trgDec, treePrescl, triggerPt); //kurt method
+    //
+    //std::cout<<"after trigComb has exited and returned it's stuff..."<<std::endl;
+    //for(int k=0;k<4;k++){if(trgDec[k]) {
+    //	std::cout<<"///////////////////////////////////"<<std::endl;
+    //	std::cout<<"trgDec["<<k<<"]="<<trgDec[k]<<std::endl;
+    //	std::cout<<"treePrescl["<<k<<"]="<<treePrescl[k]<<std::endl;
+    //	std::cout<<"triggerPt="<<triggerPt<<std::endl;
+    //	std::cout<<"weight_eS=="<<weight_eS<<std::endl<<std::endl;
+    //  }}
+
     if(is40)  NEvents_40++; 
     if(is60)  NEvents_60++; 
     if(is80)  NEvents_80++; 
     if(is100) NEvents_100++;
     //if(true)  NEvents_any++;
+
+    //bool truTrigDec[4]={is40,is60,is80,is100};
+    //bool truTrigDec_str[4]={"is40","is60","is80","is100"};
+    //bool L1trgDec[4]={ (bool)jet40_l1s_I, (bool)jet60_l1s_I, //HLT decision=HLT&&L1=HLT&&true
+    //		       (bool)jet80_l1s_I, (bool)jet100_l1s_I  }; 
+    //if(debugMode)for(int k=0;k<4;k++){
+    //  if(!truTrigDec[k])continue;
+    //  else{
+    //	std::cout<<"HLT/l1 trigger decisions are...."<<truTrigDec_str[k]<<std::endl;
+    //	std::cout<<"the corresponding L1 decision is..."<<L1trgDec[k]<<std::endl;
+    //	std::cout<<"the corresponding L1 prescale is..."<<treePrescl[k]<<std::endl;
+    //  }      
+    //}
+
+
 
     // fill evt vz histo
     hVz->Fill(vz_F, 1.0);    

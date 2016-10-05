@@ -54,6 +54,7 @@ fi
 
 ## some debug info, just in case
 NFilesRequested=$(( $NJobs * $NFilesPerJob ))
+echo "the readFilesScript is ${readFilesScript}"
 echo "require ${NFilesRequested} files for ${NJobs} jobs"
 echo "# of files in list ${filelist}: ${nFiles}"
 echo "starting at file position ${startFilePos}..."
@@ -169,7 +170,7 @@ EOF
     ## submit the job defined in the above submit file
     echo "running ${readFilesVersion} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 1.0s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 0.5s #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

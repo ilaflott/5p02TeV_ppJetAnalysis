@@ -53,9 +53,10 @@
 const int minArgs=1;
 
 //// readForests_ppData
-const int defStartFile=0;
-const int defEndFile=1; //inclusive boundary, runs 2 files by default
-const std::string defInFilelist = "filelists/5p02TeV_HighPtJet80_forests.txt";
+const int defStartFile=50;
+const int defEndFile=60; //inclusive boundary, runs 2 files by default
+//const std::string defInFilelist = "filelists/5p02TeV_HighPtJet80_forests.txt";
+const std::string defInFilelist = "filelists/5p02TeV_HighPtLowerJets_forests.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
 const std::string defOutputName = "readForests_ppData_defOut.root";
@@ -206,6 +207,35 @@ float trigComb(bool *trgDec, int *treePrescl, double triggerPt){
   if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS = treePrescl[1];
   if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS = treePrescl[2];
   if(trgDec[3] && triggerPt>=100. )                  weight_eS = treePrescl[3];
+  return weight_eS;
+}
+
+float trigComb_sanityCheck(bool *trgDec, int *treePrescl, double triggerPt){
+  std::cout<<"trigComb_sanityCheck Called..."<<std::endl<<std::endl;
+  
+  float weight_eS=0.;
+  std::cout<<"before if statements..."<<std::endl;
+  for(int k=0;k<4;k++){if(trgDec[k]) {
+      std::cout<<"trgDec["<<k<<"]="<<trgDec[k]<<std::endl;
+    std::cout<<"treePrescl["<<k<<"]="<<treePrescl[k]<<std::endl;
+    std::cout<<"triggerPt="<<triggerPt<<std::endl;
+    std::cout<<"weight_eS=="<<weight_eS<<std::endl<<std::endl;
+    }}
+  
+  if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS = treePrescl[0];
+  if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS = treePrescl[1];
+  if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS = treePrescl[2];
+  if(trgDec[3] && triggerPt>=100. )                  weight_eS = treePrescl[3];
+
+  std::cout<<"after if statements..."<<std::endl;
+  for(int k=0;k<4;k++){if(trgDec[k]){
+      std::cout<<"trgDec["<<k<<"]="<<trgDec[k]<<std::endl;
+    std::cout<<"treePrescl["<<k<<"]="<<treePrescl[k]<<std::endl;
+    std::cout<<"triggerPt="<<triggerPt<<std::endl;
+    std::cout<<"weight_eS=="<<weight_eS<<std::endl<<std::endl;
+    }}
+  
+  std::cout<<"trigComb_sanityCheck exiting..."<<std::endl<<std::endl;
   return weight_eS;
 }
 

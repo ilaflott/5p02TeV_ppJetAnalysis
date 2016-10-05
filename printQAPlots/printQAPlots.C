@@ -722,7 +722,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
       if(drawTrigDataRatios){		temp_canvJetRatio->cd();
 	if(debugMode)std::cout<<"drawing dataTrig QA Overlay Plots"<<std::endl;
 	
-	std::string comboPlotName="hpp_"+HLTName[4];
+	std::string comboPlotName="hpp_"+HLTName[N_trigs-1];
 	if(i==1)comboPlotName+="_wJetID";
 	comboPlotName+="_"+radius+etaWidth;
 	

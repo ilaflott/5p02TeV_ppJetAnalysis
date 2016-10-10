@@ -4,25 +4,25 @@
 echo ""
 
 ## error conditions + I/O
-if [[ $# -ne 7 ]] # not enough arguments
+if [[ $# -ne 8 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condorSubmit_ppData.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug>"
+    echo "source condorSubmit_ppData.sh <readFilesScript> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug>"
     return 1
 fi
 #if [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input against text reg ex.
 
 ## input arguments to submit script
-NJobs=$1
-NFilesPerJob=$2
-startFilePos=$3
-filelistIn=$4  #echo "filelistIn is ${filelistIn}" 
-radius=$5
-jetType=$6
-debug=$7
+readFilesScript=$1 # "readForests_ppData"
+NJobs=$2
+NFilesPerJob=$3
+startFilePos=$4
+filelistIn=$5  #echo "filelistIn is ${filelistIn}" 
+radius=$6
+jetType=$7
+debug=$8
 
 ## additional inputs to the code, may be input to this script in the near future
-readFilesScript="readForests_ppData"
 readFilesScriptExe="${readFilesScript}.exe"
 
 filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
@@ -94,6 +94,7 @@ rootcompile "${readFilesScript}.C"
 
 ## copy over code used for job running/submitting for archival purposes
 cp ${readFilesScript}.* "${logFileDir}"
+cp readForests.h "${logFileDir}"
 cp condorRun_readForests_ppData.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 cd ${logFileDir}

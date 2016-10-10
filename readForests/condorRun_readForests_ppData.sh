@@ -38,6 +38,6 @@ debug=$8
 
 echo "Processing.."
 
-./${readFilesExe} ${startfile} ${endfile} "${filelist}" "${outfile}" ${radius} "${jetType}" ${debug}
+./${readFilesExe} "${filelist}" ${startfile} ${endfile} ${radius} "${jetType}" ${debug} "${outfile}"
 
 echo "Job done!"

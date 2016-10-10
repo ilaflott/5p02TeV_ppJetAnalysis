@@ -40,30 +40,35 @@
 const int minArgs=1;
 
 //// readForests_ppData
-//const std::string defDataInFilelist = "filelists/5p02TeV_HighPtJet80_forests.txt";
-const std::string defDataInFilelist = "filelists/5p02TeV_HighPtLowerJets_forests.txt";
-const std::string defMCInFilelist = "filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
-const int defStartFile=50;
-const int defEndFile=60; //inclusive boundary, runs 2 files by default
+//const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
+const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
+const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
+const int defStartFile=1;
+const int defEndFile=16; //inclusive boundary, runs 2 files by default
 const int defRadius=4;
 const std::string defJetType="PF";
-const bool defDebugMode = true;
-const std::string defDataOutputName = "readForests_ppData_defOut.root";
+const bool defDebugMode=true;
+const std::string defDataOutputName="readForests_ppData_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut.root";
 
-int readForests_ppData( std::string inFilelist = defDataInFilelist , int startfile = defStartFile , int endfile = defEndFile ,
-                        int radius = defRadius , std::string jetType = defJetType , bool debugMode = defDebugMode ,                       
-		        std::string outfile = defDataOutputName );
+int readForests_ppData( std::string inFilelist=defDataInFilelist, int startfile=defStartFile, int endfile=defEndFile,
+                        int radius=defRadius, std::string jetType=defJetType, bool debugMode=defDebugMode,       
+		        std::string outfile=defDataOutputName                                                           );
 
-int readForests_ppMC( std::string inFilelist = defMCInFilelist ,int startfile = defStartFile , int endfile = defEndFile , 
-		      int radius = defRadius , std::string jetType=defJetType , bool debugMode = defDebugMode ,
-		      std::string outfile = defMCOutputName );
+int readForests_ppMC( std::string inFilelist=defMCInFilelist,int startfile=defStartFile, int endfile=defEndFile, 
+		      int radius=defRadius, std::string jetType=defJetType, bool debugMode=defDebugMode,
+		      std::string outfile=defMCOutputName                                                          );
 
 const int readForestsArgCount=7+minArgs;
 
-// job switches
-const bool fillEvtQAHists=true, fillJetQAHists=true, fillJetIDHists=false; //most basic-level plots
-const bool fillUnfoldingHists=false, fillJECJERHists=false; //more specialized
+// ppData switches
+const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=false; //most basic-level plots
+const bool fillDataJetTrigQAHists=true;
+//const bool fillDataUnfoldingHists=false, fillDataJECJERHists=false; //more specialized
+
+// ppMC switches
+const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=false; //most basic-level plots
+const bool fillMCUnfoldingHists=false, fillMCEffHists=false;//, fillMCJECJERHists=false;; //more specialized
 
 
 //// HELPER FUNCTIONS
@@ -76,8 +81,8 @@ const bool fillUnfoldingHists=false, fillJECJERHists=false; //more specialized
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop
-    Float_t val = h->GetBinContent(i);
-    Float_t valErr = h->GetBinError(i);
+    Float_t val=h->GetBinContent(i);
+    Float_t valErr=h->GetBinError(i);
     val/=h->GetBinWidth(i);
     valErr/=h->GetBinWidth(i);
     h->SetBinContent(i,val);
@@ -90,17 +95,17 @@ void divideBinWidth(TH1 *h){
 
 float trigComb(bool *trgDec, int *treePrescl, double triggerPt){
   float weight_eS=0.;
-  if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS = treePrescl[0];
-  if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS = treePrescl[1];
-  if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS = treePrescl[2];
-  if(trgDec[3] && triggerPt>=100. )                  weight_eS = treePrescl[3];
+  if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS=treePrescl[0];
+  if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS=treePrescl[1];
+  if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS=treePrescl[2];
+  if(trgDec[3] && triggerPt>=100. )                  weight_eS=treePrescl[3];
   return weight_eS;
 }
 
 float deltaphi(float phi1, float phi2){
   float pi=TMath::Pi();
   float dphi=TMath::Abs(phi1-phi2);
-  if(dphi > pi)dphi -= 2.*pi;
+  if(dphi > pi)dphi -=2.*pi;
   return TMath::Abs(dphi);
 }
 
@@ -110,10 +115,10 @@ float deltaphi(float phi1, float phi2){
 // ------------------------------------------------------------------------------------------------------------
 
 // eta width
-const char *etaWidth = (char*)"20_eta_20";
+const char *etaWidth=(char*)"20_eta_20";
 
 // variable names for QA Plots
-const std::string var[] = {
+const std::string var[]={
   "jtpt" ,  "rawpt",  //jets
   "jteta", "jtphi",
   "trkMax", "trkSum", "trkHardSum", //jet constituents
@@ -125,7 +130,7 @@ const std::string var[] = {
   "Aj",     "xj" , "dphi", //dijet variables
   "leadJetPt", "subleadJetPt"
 };
-const int N_vars = sizeof(var)/sizeof(std::string);
+const int N_vars=sizeof(var)/sizeof(std::string);
 
 //L1
 const std::string L1BitStrings[]={//this array is a good idea
@@ -170,13 +175,14 @@ const std::string dataTreeNames[]={
   //  "hltobject/"+Calo_HLTBitStrings[4]+"_v"  
   //  "hltobject/"+Calo_HLTBitStrings[5]+"_v"  
 };
-const int N_dataTrees = sizeof(dataTreeNames)/sizeof(std::string);
+const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);
+
 const std::string trgCombType="Calo";
 
 // MC tree name array (NOT FINISHED, WILL ERROR IN CURRENT FORM)
 const std::string MCTreeNames[]={
   "GARBAGE ENTRY",
-  "hiEvtAnalyzer/HiTree", "skimanalysis/HltTree", "hltanalysis/HltTree",
+  "hiEvtAnalyzer/HiTree", "skimanalysis/HltTree"//, "hltanalysis/HltTree",
   //  "hltobject/"+Calo_HLTBitStrings[0]+"_v" ,
   //  "hltobject/"+Calo_HLTBitStrings[1]+"_v" ,
   //  "hltobject/"+Calo_HLTBitStrings[2]+"_v" ,
@@ -184,17 +190,17 @@ const std::string MCTreeNames[]={
   //  "hltobject/"+Calo_HLTBitStrings[4]+"_v"  
   //  "hltobject/"+Calo_HLTBitStrings[5]+"_v"  
 };
-const int N_MCTrees = sizeof(MCTreeNames)/sizeof(std::string);
+const int N_MCTrees=sizeof(MCTreeNames)/sizeof(std::string);
   
 
 
 //// BINNING
 // ------------------------------------------------------------------------------------------------------
 
-const float ptbins[] = { 15., 30., 50., 80., 120., 170., 220., 300., 500. };
-const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
+const float ptbins[]={ 15., 30., 50., 80., 120., 170., 220., 300., 500. };
+const int nbins_pt=sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
-const float JEC_ptbins[] = {
+const float JEC_ptbins[]={
   17., 22., 27.,    //15-30
   33., 39., 47.,    //30-50
   55., 64., 74.,    //50-80
@@ -205,9 +211,9 @@ const float JEC_ptbins[] = {
   300., 350., 400., //300-500
   550., 790., 1000. //500-inf
 };
-const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(float)-1;
+const int nbins_JEC_ptbins=sizeof(JEC_ptbins)/sizeof(float)-1;
 
-const float etabins[] = {
+const float etabins[]={
   -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013,
   -3.839, -3.664, -3.489, -3.314, -3.139,
   -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043,
@@ -220,7 +226,7 @@ const float etabins[] = {
   +3.139, +3.314, +3.489, +3.664, +3.839,
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
-const int nbins_eta = sizeof(etabins)/sizeof(float)-1;
+const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 
 //// WEIGHTS FOR MC
@@ -308,9 +314,9 @@ const float vzWeights[]={//           HLTAK4CaloJets, HLTAK4PFJets
   /*for i=59, 14<vz<=14.5, vzWeight=*/  0.550339,  /* 0.523324, */
   /*for i=60, 14.5<vz<=15, vzWeight=*/  0.479087   /* 0.448861  */
 };
-const int nbins_vzWeights = sizeof(vzWeights)/sizeof(float);//should be 60
-const float minbinValue_vzWeights = -15., maxbinValue_vzWeights = 15.;
-const float binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
+const int nbins_vzWeights=sizeof(vzWeights)/sizeof(float);//should be 60
+const float minbinValue_vzWeights=-15., maxbinValue_vzWeights=15.;
+const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
 
 
 
@@ -318,7 +324,7 @@ const float binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/nb
 
 
 //random old binning i found in raghavs code, here for safe keeping
-//const float ptbins[] = {
+//const float ptbins[]={
 //  3,   4,   5,   7,   9,  12,  15,   18,  21,  24,  28,
 //  28,  32,  37,  43,  49,  56,  64,   74,  84,  97, 114,
 //  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395,
@@ -339,10 +345,10 @@ const float binsize_vzWeights = (maxbinValue_vzWeights-minbinValue_vzWeights)/nb
 //      std::cout<<"weight_eS=="<<weight_eS<<std::endl<<std::endl;
 //    }}
 //
-//  if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS = treePrescl[0];
-//  if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS = treePrescl[1];
-//  if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS = treePrescl[2];
-//  if(trgDec[3] && triggerPt>=100. )                  weight_eS = treePrescl[3];
+//  if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS=treePrescl[0];
+//  if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS=treePrescl[1];
+//  if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS=treePrescl[2];
+//  if(trgDec[3] && triggerPt>=100. )                  weight_eS=treePrescl[3];
 //
 //  std::cout<<"after if statements..."<<std::endl;
 //  for(int k=0;k<4;k++){if(trgDec[k]){

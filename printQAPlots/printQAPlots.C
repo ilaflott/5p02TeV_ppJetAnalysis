@@ -1,211 +1,198 @@
 #include "printQAPlots.h"
 
-
-// env ------------------------
-
-//CMSSW_BASE
-const std::string CMSSW_BASE= 
-  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";
-
-const std::string readForests_ppData_dir=CMSSW_BASE+
-  "src/readFiles/readForests_ppData/saved_outputCondor/";
-
-const std::string readForests_ppMC_dir=CMSSW_BASE+
-  "src/readFiles/readForests_ppMC/saved_outputCondor/";
-
-//output
-const std::string printQAPlots_dir=CMSSW_BASE+"src/printQAPlots/output/";
+// env and I/O ------------------------
+const std::string CMSSW_BASE="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";//CMSSW_BASE
+const std::string readForests_dir=CMSSW_BASE+"src/readForests/saved_outputCondor/";//input dir
+const std::string outputDir=CMSSW_BASE+"src/printQAPlots/output/";//output dir
 
 // code/job switches ------------------------
-const bool doEventCounts=true, drawEvtQAPlots=true;
-const bool drawJetQAPlots=true, drawJetTrigQAPlots=true;
-const bool drawMCEffPlots=true;//, drawJECandJERPlots=true;//MC Specific for now
+const bool doEventCounts=true;
+const bool drawEvtQAPlots=true, drawJetQAPlots=true, drawJetTrigQAPlots=true;
+const bool drawMCEffPlots=false;//, drawJECandJERPlots=true;//MC Specific for now
 
-const bool debugMode=true;//, dataDebugMode=true, MCDebugMode=true; //debug
+//other job switches
+const bool doJetIDPlots=false, doBasicJetQAOnly=false, doDijetQAPlots=true;
+const bool debugMode=true;
 
+// hist painting ------------------------
+const int theDataOverlayMarkerColor=2, theMCOverlayMarkerColor=4,theRatioMarkerColor=9;//red, blue, olive
+const int theDataOverlayLineColor=1, theMCOverlayLineColor=1,theRatioLineColor=1;//black
 
+const int altOverlayLineColor=3; 
+const int altRatioLineColor1=8, altRatioLineColor2=7;//green, violet or something
+
+const int theTrigCombMarkerColor=1;
+const int altTrigCombMarkerColor=12;
+const int theTrigOverlayMarker[]={20,20,20,20,20,32};
+const int theTrigOverlayMarkerColor[]={2,3,6,7,1,4};
+const int theTrigOverlayLineColor[]={1,1,1,1,1,1};
+
+const std::string crossSectionYAxis="#sigma (#mub)";
 
 // the macro ------------------------
-int printQAPlots(const std::string input_ppData_condorDir, const std::string input_ppData_Filename,
-		 const std::string input_ppMC_condorDir, const std::string input_ppMC_Filename, 
-		 const std::string output_PDFname_base_full, const bool drawDataMCOverlaysInput=true ){
+int printQAPlots(const std::string input_ppData_condorDir , const std::string input_ppMC_condorDir , 
+		 const std::string output_PDFname_base ,    const bool drawDataMCOverlaysInput=true ){
  
-  //plot style
-  const bool drawDataMCOverlays=drawDataMCOverlaysInput, drawDataMCRatios =!(drawDataMCOverlays);
-  const bool drawTrigDataOverlays=drawDataMCOverlays,    drawTrigDataRatios=!(drawTrigDataOverlays);
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetLegendFillColor(0);
 
-  //for efficiency later if/when I get a chance 
-  const bool openDataFile=true;
-  const bool openMCFile  =true;
+  // PLOT STYLE
+  const bool drawDataMCOverlays   = drawDataMCOverlaysInput;
+  const bool drawDataMCRatios     = !drawDataMCOverlays;
+  const bool drawMCEffProfiles       = drawMCEffPlots && drawDataMCOverlays;
 
+  const bool drawTrigDataOverlays = drawDataMCOverlays && drawJetTrigQAPlots;
+  const bool drawTrigDataRatios   = drawDataMCRatios   && drawJetTrigQAPlots;
+
+
+  // MAKE STRINGS
+  //format of the filename is always HighPt{filelist}_ak{3,4}{PF,Calo}-allFiles.root
+  std::size_t jobTypePos=input_ppData_condorDir.find("__")+2;  
+  const std::string jobType=input_ppData_condorDir.substr( jobTypePos);
+  if(debugMode)std::cout<<"jobType string is = "<<jobType<<std::endl;
 
   //figure out what radius/jetcollection we are looking at using the ppData filename
-  //format of the filename is always HighPt{filelist}_ak{3,4}{PF,Calo}-allFiles.root
-  std::size_t radPos=input_ppData_Filename.find("_ak")+3;  
-  const std::string radius="R"+
-    input_ppData_Filename.substr( radPos,1 )+"_";
+  std::size_t radPos=input_ppData_condorDir.find("_ak")+3;  
+  const std::string radiusInt= input_ppData_condorDir.substr( radPos,1 );
+  const std::string radius="R"+radiusInt+"_";
   if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
   
   std::size_t jetTypePos=radPos+1;
-  std::size_t hyphenPos=input_ppData_Filename.find("-allFiles");;
-  const std::string jetType=input_ppData_Filename.substr( jetTypePos,(hyphenPos-jetTypePos) );
-  if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
+  std::size_t jetsPos=input_ppData_condorDir.find("Jets");;
 
+  //make final jetType strings
+  const std::string jetType=input_ppData_condorDir.substr( jetTypePos,(jetsPos-jetTypePos) );
+  const std::string fullJetType="ak"+radiusInt+jetType;
+  if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
+  if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
+
+  //put together input file strings
+  const std::string input_ppData_Filename="/HighPtJetTrig_" +fullJetType+ "-allFiles.root";
+  const std::string input_ppMC_Filename  ="/Py8_CUETP8M1_QCDjetAllPtBins_" +fullJetType+ "-allFiles.root";
+  const std::string ppData_fullFilename=readForests_dir+input_ppData_condorDir+input_ppData_Filename;
+  const std::string ppMC_fullFilename  =readForests_dir+input_ppMC_condorDir+input_ppMC_Filename;;  
+
+  if(debugMode)std::cout<<"ppData Filename is = "<<input_ppData_Filename<<std::endl;
+  if(debugMode)std::cout<<"ppMC Filename is = "<<input_ppMC_Filename<<std::endl;
+
+
+
+  // OPEN INPUT SECTION
+  TFile *finMC=NULL, *finData=NULL;  
   std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;
 
-  //input file(s)
-  TFile *finMC=NULL, *finData=NULL;
-  assert( openMCFile||openDataFile );
+  //open the input files
+  if(debugMode)std::cout<<" now opening Data File "<<std::endl<<ppData_fullFilename<<std::endl<<std::endl;
+  else std::cout<<" now opening Data File "<<std::endl<<input_ppData_Filename<<std::endl<<std::endl;
+  finData = new TFile(ppData_fullFilename.c_str());      
+  
+  if(debugMode) std::cout<<" now opening MC File "<<std::endl<<ppMC_fullFilename<<std::endl<<std::endl;
+  else std::cout<<" now opening MC File "<<std::endl<<input_ppMC_Filename<<std::endl<<std::endl;
+  finMC = new TFile(ppMC_fullFilename.c_str());
+
+  assert( finData && finMC );
+  
 
 
-  const std::string ppData_fullFilename=readForests_ppData_dir+
-    input_ppData_condorDir+input_ppData_Filename;
-  const std::string ppMC_fullFilename  =readForests_ppMC_dir+ 
-    input_ppMC_condorDir+input_ppMC_Filename;;  
-  
-  if(openDataFile){
-    if(debugMode)std::cout<<" now opening Data File "<<std::endl<<ppData_fullFilename<<std::endl<<std::endl;
-    else std::cout<<" now opening Data File "<<std::endl<<input_ppData_Filename<<std::endl<<std::endl;
-    finData = new TFile(ppData_fullFilename.c_str());      }
-  
-  if(openMCFile){  
-    if(debugMode) std::cout<<" now opening MC File "<<std::endl<<ppMC_fullFilename<<std::endl<<std::endl;
-    else std::cout<<" now opening MC File "<<std::endl<<input_ppMC_Filename<<std::endl<<std::endl;
-    finMC = new TFile(ppMC_fullFilename.c_str());}
-  assert(finData||finMC);
-  
-  // Lumi Efficiency Calculation ------------------------
+
+  // Lumi Eff + evt + jet counts ----------------------
   long double effIntgrtdLumi_vz=1., LumiEff_vz=1.;// eff-> effective, Eff->efficiency
-  long double effIntgrtdLumi_kmat=1., LumiEff_kmat=1.;// eff-> effective, Eff->efficiency
-  long double effIntgrtdLumi_JetID=1., LumiEff_JetID=1.;// eff-> effective, Eff->efficiency
-
-  // evt counts----------------------
-  if(!doEventCounts)std::cout<<"skipping evt QA plots..."<<std::endl<<std::endl;
+  long double effIntgrtdLumi_kmat=1., LumiEff_kmat=1.;
+  long double effIntgrtdLumi_JetID=1., LumiEff_JetID=1.;
+  
+  bool didJetIDCut;
+  
+  if(!doEventCounts)std::cout<<"skipping evt/jet QA counts + plots..."<<std::endl<<std::endl;
   else{ std::cout<<" grabbing raw event counts "<<std::endl;
-
-    const bool doDataCounts=true, doMCCounts=true;
-    if(doDataCounts){ std::cout<<std::endl<<"/// Data Evt-Count Summary ///"<<std::endl<<std::endl;
-
-      TH1F *h_NEvents         = (TH1F*)finData->Get("NEvents");
-      TH1F *h_NEvents_read    = (TH1F*)finData->Get("NEvents_read");
-
-      std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl;
-
-
-      TH1F *h_NEvents_skimCut = (TH1F*)finData->Get("NEvents_skimCut");
-      TH1F *h_NEvents_vzCut   = (TH1F*)finData->Get("NEvents_vzCut");
-      
-      std::cout<<"Total Num of Events read passing skimCuts                              = " <<
-	h_NEvents_skimCut->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Events read passing vzCuts and skimCuts                   = " <<
-	h_NEvents_vzCut->GetEntries()<<std::endl;
-      std::cout<<std::endl;
-
-
-      //TH1F *h_NEvents_trgDup   = (TH1F*)finData->Get("NEvents_trgDup");   
-      //TH1F *h_NEvents_trgDupCut= (TH1F*)finData->Get("NEvents_trgDupCut");
-      //
-      //std::cout<<"Total Num of duplicate Events read post skim+vz cuts                 = " <<
-      //	h_NEvents_trgDup->GetEntries()<<std::endl;
-      //std::cout<<"Total Num of Events read passing skim+vz+duplicate (aka good events) = " <<
-      //	h_NEvents_trgDupCut->GetEntries()<<std::endl;
-      //std::cout<<std::endl;
-
-
-      TH1F *h_NEvents_withJets           = (TH1F*)finData->Get("NEvents_withJets");
-      TH1F *h_NEvents_withJets_kmatCut   = (TH1F*)finData->Get("NEvents_withJets_kmatCut");
-      TH1F *h_NEvents_withJets_JetIDCut = (TH1F*)finData->Get("NEvents_withJets_JetIDCut");
-      
-      std::cout<<"Total Num of good Events w/ jets                             = " <<
-	h_NEvents_withJets->GetEntries()<<std::endl;
-      std::cout<<"Total Num of good Events, w/ jets, post kmatCuts             = " <<
-	h_NEvents_withJets_kmatCut->GetEntries()<<std::endl;
-      std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " <<
-	h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;      
-      
-      LumiEff_vz = h_NEvents_vzCut->GetEntries()/h_NEvents->GetEntries();
-      effIntgrtdLumi_vz=intgrtdLumi*LumiEff_vz;
-      LumiEff_kmat = h_NEvents_withJets_kmatCut->GetEntries()/h_NEvents->GetEntries();
-      effIntgrtdLumi_kmat=intgrtdLumi*LumiEff_kmat;
-      LumiEff_JetID = h_NEvents_withJets_JetIDCut->GetEntries()/h_NEvents->GetEntries();
-      effIntgrtdLumi_JetID=intgrtdLumi*LumiEff_JetID;
-
-      std::cout<<std::endl<<"dataset integrated Luminosity (millibarns) ="<<intgrtdLumi<<std::endl;
-      std::cout<<std::endl<<"lumi efficiency, vz cuts="<<LumiEff_vz<<std::endl;
-      std::cout<<"effective ingrtdLumi for dataset+cuts="<<effIntgrtdLumi_vz<<std::endl;
-      std::cout<<std::endl<<"lumi efficiency, kmatCuts="<<LumiEff_kmat<<std::endl;
-      std::cout<<"effective ingrtdLumi for dataset+cuts="<<effIntgrtdLumi_kmat<<std::endl;
-      std::cout<<std::endl<<"lumi efficiency, JetID="<<LumiEff_JetID<<std::endl;
-      std::cout<<"effective ingrtdLumi for dataset+cuts="<<effIntgrtdLumi_JetID<<std::endl;
-
-
-      TH1F *h_NJets          = (TH1F*)finData->Get("NJets");
-      TH1F *h_NJets_kmatCut  = (TH1F*)finData->Get("NJets_kmatCut");
-      TH1F *h_NJets_JetIDCut = (TH1F*)finData->Get("NJets_JetIDCut");
-      
-      std::cout<<std::endl<<"/// Data Jet-Count Summary Summary ///"<<std::endl<<std::endl;
-      std::cout<<"Total Num of Jets read from good events                          = " <<
-	h_NJets->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Jets read from good events post kinCut              = " <<
-	h_NJets_kmatCut->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Jets read from good events post kinCut AND JetIDCut = " <<
-	h_NJets_JetIDCut->GetEntries()<<std::endl;
-      std::cout<<std::endl;    }
-
     
-    //MC
-    if(doMCCounts){ std::cout<<std::endl<<"/// MC Evt-Count Summary ///"<<std::endl<<std::endl;
-      TH1F *h_NEvents         = (TH1F*)finMC->Get("NEvents");
-      TH1F *h_NEvents_read    = (TH1F*)finMC->Get("NEvents_read");
-
-      std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl;
-
-
-      TH1F *h_NEvents_skimCut = (TH1F*)finMC->Get("NEvents_skimCut");
-      TH1F *h_NEvents_vzCut   = (TH1F*)finMC->Get("NEvents_vzCut");
+    for(int file=0;file<2;file++){ 
       
-      std::cout<<"Total Num of Events read passing skimCuts                              = " <<
-	h_NEvents_skimCut->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Events read passing vzCuts and skimCuts (aka good events) = " <<
-	h_NEvents_vzCut->GetEntries()<<std::endl;
-      std::cout<<std::endl;
-
-
-      TH1F *h_NEvents_withJets           = (TH1F*)finMC->Get("NEvents_withJets");
-      TH1F *h_NEvents_withJets_kmatCut   = (TH1F*)finMC->Get("NEvents_withJets_kmatCut");
-      TH1F *h_NEvents_withJets_JetIDCut = (TH1F*)finMC->Get("NEvents_withJets_JetIDCut");
+      TFile * fin=NULL;
+      if(file==0)fin=finData;
+      else fin=finMC;
       
+      if(!fin){	std::cout<<"input file not found, cannot look at event counts"<<std::endl;
+	std::cout<<"cannot compute integrated luminosity for file=="<<file<<std::endl;  continue;}
+      else{
+	
+	TH1F *h_NEvents         = (TH1F*)fin->Get("NEvents");
+	TH1F *h_NEvents_read    = (TH1F*)fin->Get("NEvents_read");      
+	TH1F *h_NEvents_skimCut = (TH1F*)fin->Get("NEvents_skimCut");
+	TH1F *h_NEvents_vzCut   = (TH1F*)fin->Get("NEvents_vzCut");
+	//TH1F *h_NEvents_trgDup   = (TH1F*)fin->Get("NEvents_trgDup");   
+	//TH1F *h_NEvents_trgDupCut= (TH1F*)fin->Get("NEvents_trgDupCut");      
+
+	TH1F *h_NEvents_withJets          = (TH1F*) fin->Get("NEvents_withJets");
+	TH1F *h_NEvents_withJets_kmatCut  = (TH1F*) fin->Get("NEvents_withJets_kmatCut");	
+	TH1F *h_NEvents_withJets_JetIDCut = (TH1F*) fin->Get("NEvents_withJets_JetIDCut");
+
+	didJetIDCut=false;
+	if(h_NEvents_withJets_JetIDCut)didJetIDCut=true&&doJetIDPlots;
+	
+	if(file==0)std::cout<<std::endl<<"/// Data Evt-Count Summary ///"<<std::endl<<std::endl;      
+	else std::cout<<std::endl<<"/// MC Evt-Count Summary ///"<<std::endl<<std::endl;      
+	std::cout<<"Total Num of Events in file(s) opened       = " <<
+	  h_NEvents->GetEntries()<<std::endl;
+	std::cout<<"Total Num of Events read from those file(s) = " <<
+	  h_NEvents_read->GetEntries()<<std::endl;
+	std::cout<<"Total Num of Events read passing skimCuts   = " <<
+	  h_NEvents_skimCut->GetEntries()<<std::endl;
+	std::cout<<"Total Num of Events read passing vzCuts and skimCuts    = " <<
+	  h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
+	//std::cout<<"Total Num of duplicate Events read post skim+vz cuts                 = " <<
+	//	h_NEvents_trgDup->GetEntries()<<std::endl;
+	//std::cout<<"Total Num of Events read passing skim+vz+duplicate (aka good events) = " <<
+	//	h_NEvents_trgDupCut->GetEntries()<<std::endl;
+	//std::cout<<std::endl;
+	
       std::cout<<"Total Num of good Events w/ jets                             = " <<
 	h_NEvents_withJets->GetEntries()<<std::endl;
       std::cout<<"Total Num of good Events, w/ jets, post kmatCuts             = " <<
 	h_NEvents_withJets_kmatCut->GetEntries()<<std::endl;
-      std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " <<
+      if(didJetIDCut)std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " <<
 	h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;      
-
-
-      TH1F *h_NJets          = (TH1F*)finMC->Get("NJets");
-      TH1F *h_NJets_kmatCut  = (TH1F*)finMC->Get("NJets_kmatCut");
-      TH1F *h_NJets_JetIDCut = (TH1F*)finMC->Get("NJets_JetIDCut");
+      
+      TH1F *h_NJets          = (TH1F*)fin->Get("NJets");
+      TH1F *h_NJets_kmatCut  = (TH1F*)fin->Get("NJets_kmatCut");
+      TH1F *h_NJets_JetIDCut = (TH1F*)fin->Get("NJets_JetIDCut");
       
       std::cout<<std::endl<<"/// Data Jet-Count Summary Summary ///"<<std::endl<<std::endl;
       std::cout<<"Total Num of Jets read from good events                          = " <<
 	h_NJets->GetEntries()<<std::endl;
       std::cout<<"Total Num of Jets read from good events post kinCut              = " <<
 	h_NJets_kmatCut->GetEntries()<<std::endl;
-      std::cout<<"Total Num of Jets read from good events post kinCut AND JetIDCut = " <<
+      if(didJetIDCut)std::cout<<"Total Num of Jets read from good events post kinCut AND JetIDCut = " <<
 	h_NJets_JetIDCut->GetEntries()<<std::endl;
+      std::cout<<std::endl;    
 
-      std::cout<<std::endl;    }
+      if(file==0){//data file evt counts
+
+	LumiEff_vz = h_NEvents_vzCut->GetEntries()/h_NEvents->GetEntries();
+	LumiEff_kmat = h_NEvents_withJets_kmatCut->GetEntries()/h_NEvents->GetEntries();
+	if(didJetIDCut) LumiEff_JetID = h_NEvents_withJets_JetIDCut->GetEntries()/h_NEvents->GetEntries();
+	
+	effIntgrtdLumi_vz=intgrtdLumi*LumiEff_vz;
+	effIntgrtdLumi_kmat=intgrtdLumi*LumiEff_kmat;
+	if(didJetIDCut)effIntgrtdLumi_JetID=intgrtdLumi*LumiEff_JetID;
+	
+	std::cout<<std::endl<<"dataset integrated Luminosity (microbarns) ="<<intgrtdLumi<<std::endl;
+	std::cout<<std::endl<<"lumi efficiency, vz cuts="<<LumiEff_vz<<std::endl;
+	std::cout<<"effective ingrtdLumi for dataset+cuts="<<effIntgrtdLumi_vz<<std::endl;
+	std::cout<<std::endl<<"lumi efficiency, kmatCuts="<<LumiEff_kmat<<std::endl;
+	std::cout<<"effective ingrtdLumi for dataset+cuts="<<effIntgrtdLumi_kmat<<std::endl;
+	if(didJetIDCut) std::cout<<std::endl<<"lumi efficiency, JetID="<<LumiEff_JetID<<std::endl;
+	if(didJetIDCut) std::cout<<"effective ingrtdLumi for dataset+cuts="<<effIntgrtdLumi_JetID<<std::endl;            }
+      }
+    }// end data/MC file loop
   }// end evt counts
   
+
   
 
-
-  std::string thePDFFileName=printQAPlots_dir;
-  if(drawDataMCOverlaysInput)thePDFFileName+=output_PDFname_base_full+"DataMCOverlaid.pdf";
-  else thePDFFileName+=output_PDFname_base_full+"DataMCRatios.pdf";
+  // OUTPUT PDF FILE
+  std::string thePDFFileName=outputDir;
+  if(drawDataMCOverlaysInput)thePDFFileName+=jobType+"_"+output_PDFname_base+"DataMCOverlaid.pdf";
+  else thePDFFileName+=jobType+"_"+output_PDFname_base+"DataMCRatios.pdf";//one of these two will ALWAYS fire
   
   std::string open_thePDFFileName, close_thePDFFileName;
   open_thePDFFileName=thePDFFileName+"[";  close_thePDFFileName=thePDFFileName+"]";
@@ -215,7 +202,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
   temp_canvOpen->Print( open_thePDFFileName.c_str() );  temp_canvOpen->Close();
 
 
-
+  
   // evt plots ----------------------
   if(!drawEvtQAPlots)std::cout<<std::endl<<"skipping evt QA plots..."<<std::endl<<std::endl;
   else { std::cout<<std::endl<<std::endl;
@@ -241,71 +228,88 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	
 	std::cout<<" drawing Data+Evt Vz hist(s) "<<inHistName<<std::endl<<std::endl;
 	
-	std::string h_Title    ="Evt QA, vz";
-	std::string h_XAx_Title="vz (cm)"                          ;
-	std::string h_YAx_Title="millibarns/bin"                   ;
+	std::string h_Title    ="EvtQA";
+	std::string h_XAx_Title="v_{z}^{evt} (cm)"                          ;
+	std::string h_YAx_Title=crossSectionYAxis;//"#sigma (#mub/bin)";
 	
 	TH1F* theDataEvtQAHist= (TH1F*)finData->Get( inHistName.c_str() );
 	theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(0) );
 	theDataEvtQAHist->Scale( 1./theLumi );
 	
-	theDataEvtQAHist->SetMarkerStyle(kDot);
-	theDataEvtQAHist->SetMarkerSize(1.3);
+	theDataEvtQAHist->SetMarkerStyle(kFullCircle);
+	//theDataEvtQAHist->SetMarkerSize(1.8);
 	theDataEvtQAHist->SetMarkerColor( theDataOverlayMarkerColor );
 	theDataEvtQAHist->SetLineColor( theDataOverlayLineColor );
 	
-	theDataEvtQAHist->SetTitle (    h_Title.c_str() );
-	theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
-	theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
-	
-	theDataEvtQAHist->Draw();
 	
 	TH1F* theMCEvtQAHist= (TH1F*)finMC->Get( inHistName.c_str() );
 	theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(0) );
 	theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );
 	
-	theMCEvtQAHist->SetMarkerStyle(kDot);
-	theMCEvtQAHist->SetMarkerSize(1.3);
+	theMCEvtQAHist->SetMarkerStyle(kFullCircle);
+	//	theMCEvtQAHist->SetMarkerSize(1.8);
 	theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
 	theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
 	
-	theMCEvtQAHist->Draw("same");
+	theMCEvtQAHist->SetTitle (    h_Title.c_str() );
+	theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
+	theMCEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
+	//theMCEvtQAHist->SetYTitle( "#frac{d\sigma}{dp_t} (\{mu}b/bin)" );
 	
-	TLegend* theEvtQALeg=new TLegend(0.72,0.84,0.98,0.98, NULL,"brNDC");//new TLegend(0.75,0.75,0.90,0.85, NULL,"brNDC");
-	theEvtQALeg->AddEntry(theDataEvtQAHist, "2015 promptReco 5.02 TeV ppData" ,"lp");
-	theEvtQALeg->AddEntry(theMCEvtQAHist,   "Py8 CUETP8M1 QCD, ppMC"       ,"lp");
-	
+	theMCEvtQAHist->Draw();
+	theDataEvtQAHist->Draw("same");	
 
- 
+	float legx1=0.78, legx2=legx1+0.07;
+	float legy1=0.76, legy2=legy1+0.11;
+	TLegend* theEvtQALeg=new TLegend(legx1,legy1,legx2,legy2, NULL,"brNDC");
+	theEvtQALeg->AddEntry(theDataEvtQAHist, "data" ,"lp");
+	theEvtQALeg->AddEntry(theMCEvtQAHist,   "MC"       ,"lp");
 
-
-	//{//pthat weighted only MC, can use this for Vz weighting
-	//  TH1F* theMCEvtQAHist2= (TH1F*)finMC->Get( "hpthatWeightedVz" );
-	//  theMCEvtQAHist2->Scale( 1./theMCEvtQAHist2->GetBinWidth(0) );
-	//  theMCEvtQAHist2->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist2->Integral() );
-	//  theMCEvtQAHist2->SetMarkerStyle(kDot);
-	//  theMCEvtQAHist2->SetMarkerSize(1.3);
-	//  theMCEvtQAHist2->SetMarkerColor( kBlack );
-	//  theMCEvtQAHist2->SetLineColor( altOverlayLineColor );
-	//  theMCEvtQAHist2->Draw("SAME");            
-	//  theEvtQALeg->AddEntry(theMCEvtQAHist2,"MC w/o vz-weights","lp");	
-	//}
-	
 	theEvtQALeg->Draw();
+	
+	float pp1x=0.14,pp1y=0.85;
+	TLatex *pp1=new TLatex(pp1x,pp1y,"pp 2015 promptReco, Jet80+LowerJets");
+	pp1->SetTextFont(63);
+	pp1->SetTextColor(kBlack);
+	pp1->SetTextSize(19);
+	pp1->SetLineWidth(1);
+	pp1->SetNDC();
+	pp1->Draw();
+	TLatex *pp2=new TLatex(pp1x,(pp1y-0.05),"L_{int} = 25.8 pb^{-1}, #sqrt{s} = 5.02 TeV");
+	pp2->SetTextFont(63);
+	pp2->SetTextColor(kBlack);
+	pp2->SetTextSize(19);
+	pp2->SetLineWidth(1);
+	pp2->SetNDC();
+	pp2->Draw();
+	//TLatex *pp3=new TLatex(pp1x,(pp1y-0.10),(fullJetType+"Jets").c_str() );
+	//pp3->SetTextFont(63);
+	//pp3->SetTextColor(kBlack);
+	//pp3->SetTextSize(19);
+	//pp3->SetLineWidth(1);
+	//pp3->SetNDC();
+	//pp3->Draw();
+	TLatex *pp4=new TLatex(pp1x,(pp1y-0.10),"Py8 Tune CUETP8M1" );
+	pp4->SetTextFont(63);
+	pp4->SetTextColor(kBlack);
+	pp4->SetTextSize(19);
+	pp4->SetLineWidth(1);
+	pp4->SetNDC();
+	pp4->Draw();
+
 	temp_canvEvt->Print( thePDFFileName.c_str() ); 
+
       }// endtotal weighted vz
-      
-      
-      
+
       
       {//MC pthat, unnweighted
 	temp_canvEvt_wLog->cd();
 	std::string inHistName="hpthat";
 	std::cout<<" drawing MC pthat hist "<<inHistName<<std::endl<<std::endl;
 	
-	std::string h_Title    ="Evt QA, pthat, MC ONLY" ;
-	std::string h_XAx_Title="pthat (GeV)"       ;
-	std::string h_YAx_Title="NEvents/bin"       ;
+	std::string h_Title    ="MC EvtQA";
+	std::string h_XAx_Title="MC evt #hat{p}_{t} (GeV)"       ;
+	std::string h_YAx_Title="A.U."       ;
 	
 	TH1F* theMCEvtQAHist= (TH1F*)finMC->Get( inHistName.c_str() );
 	theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(0) );
@@ -314,31 +318,44 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
 	theMCEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
 	
+	//theMCEvtQAHist->SetMarkerStyle(kFullCircle);
 	theMCEvtQAHist->SetMarkerStyle(kDot);
-	theMCEvtQAHist->SetMarkerSize(1.3);
+	//theMCEvtQAHist->SetMarkerSize(1.8);
 	theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
 	theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
 	
 	theMCEvtQAHist->Draw();
 	
-	//TLegend* theEvtQALeg=new TLegend(0.10,0.70,0.30,0.85, NULL,"brNDC");
-	TLegend* theEvtQALeg=new TLegend(0.72,0.84,0.98,0.98, NULL,"brNDC");//new TLegend(0.75,0.75,0.90,0.85, NULL,"brNDC");
-	theEvtQALeg->AddEntry(theMCEvtQAHist,"Py8 QCD Dijet MC","lp");
 	
-	theEvtQALeg->Draw();
+	float t1x=.70,t1y=.84;
+	TLatex *t1=new TLatex(t1x,t1y,"QCD MC, unweighted");
+	t1->SetTextFont(63);
+	t1->SetTextColor(kBlack);
+	t1->SetTextSize(22);
+	t1->SetLineWidth(1);
+	t1->SetNDC();
+	t1->Draw();	
+
+	TLatex *t2=new TLatex(t1x,t1y-0.05,"Py8 Tune CUETP8M1");
+	t2->SetTextFont(63);
+	t2->SetTextColor(kBlack);
+	t2->SetTextSize(22);
+	t2->SetLineWidth(1);
+	t2->SetNDC();
+	t2->Draw();	
+
+	//theEvtQALeg->Draw();
 	temp_canvEvt_wLog->Print( thePDFFileName.c_str() );	
       }
-      
-      
       
       {//MC pthat, weighted
 	temp_canvEvt_wLog->cd();	
 	std::string inHistName="hWeightedpthat";     
 	std::cout<<" drawing MC weighted pthat hist "<<inHistName<<std::endl<<std::endl;
 	
-	std::string h_Title    ="Evt QA, weighted pthat, MC ONLY" ;
-	std::string h_XAx_Title="pthat (GeV)"                ;
-	std::string h_YAx_Title="millibarns/bin"             ;
+	std::string h_Title    ="MC EvtQA" ;
+	std::string h_XAx_Title="MC evt #hat{p}_{t} (GeV)"                ;
+	std::string h_YAx_Title=crossSectionYAxis;//"#sigma (#mub/bin)"             ;
 	
 	TH1F* theMCEvtQAHist= (TH1F*)finMC->Get( inHistName.c_str() );
 	theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(0) );
@@ -346,19 +363,34 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theMCEvtQAHist->SetTitle (    h_Title.c_str() );
 	theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
 	theMCEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
+	//theMCEvtQAHist->SetYTitle( "#frac{d\sigma}{dp_t} (\{mu}b/bin)" );
 	
+	//theMCEvtQAHist->SetMarkerStyle(kFullCircle);
 	theMCEvtQAHist->SetMarkerStyle(kDot);
-	theMCEvtQAHist->SetMarkerSize(1.3);
+	//theMCEvtQAHist->SetMarkerSize(1.8);
 	theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
 	theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
 	
 	theMCEvtQAHist->Draw();
 	
-	TLegend* theEvtQALeg=new TLegend(0.72,0.84,0.98,0.98, NULL,"brNDC");//new TLegend(0.75,0.75,0.90,0.85, NULL,"brNDC");
-	//TLegend* theEvtQALeg=new TLegend(0.10,0.70,0.30,0.85, NULL,"brNDC");
-	theEvtQALeg->AddEntry(theMCEvtQAHist,"Py8 QCD Dijet MC","lp");
 	
-	theEvtQALeg->Draw();
+	float t1x=.70,t1y=.84;
+	TLatex *t1=new TLatex(t1x,t1y,"QCD MC, weighted");
+	t1->SetTextFont(63);
+	t1->SetTextColor(kBlack);
+	t1->SetTextSize(22);
+	t1->SetLineWidth(1);
+	t1->SetNDC();
+	t1->Draw();	
+
+	TLatex *t2=new TLatex(t1x,t1y-0.05,"Py8 Tune CUETP8M1");
+	t2->SetTextFont(63);
+	t2->SetTextColor(kBlack);
+	t2->SetTextSize(22);
+	t2->SetLineWidth(1);
+	t2->SetNDC();
+	t2->Draw();	
+
 	temp_canvEvt_wLog->Print( thePDFFileName.c_str() );	
       }
     }
@@ -372,11 +404,9 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	if(doEventCounts)theLumi=effIntgrtdLumi_vz;
 	else theLumi=intgrtdLumi;
 
-	std::string h_Title   ="Evt QA, vz, Data/MC";
-	std::string h_XAx_Title="vz (cm)", h_YAx_Title="Data/MC";
-	TLegend* theEvtQALeg=new TLegend(0.72,0.84,0.98,0.98, NULL,"brNDC");//new TLegend(0.10,0.70,0.30,0.85, NULL,"brNDC");
+	std::string h_Title   ="EvtQA, Data/MC";
+	std::string h_XAx_Title="v_{z}^{evt} (cm)", h_YAx_Title="Data/MC";
 	
-	//TH1F* theDataEvtQAHist= (TH1F*)finData->Get( inHistName.c_str() );
 	TH1F* theDataEvtQAHist= (TH1F*)finData->Get( inHistName.c_str() );
 	theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(0) );
 	theDataEvtQAHist->Scale( 1./theLumi );
@@ -385,8 +415,8 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
 	theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
 	
-	theDataEvtQAHist->SetMarkerStyle(kDot);
-	theDataEvtQAHist->SetMarkerSize(1.3);
+	theDataEvtQAHist->SetMarkerStyle(kFullCircle);
+	theDataEvtQAHist->SetMarkerSize(1.8);
 	theDataEvtQAHist->SetMarkerColor( kBlack);
 	theDataEvtQAHist->SetLineColor( theRatioLineColor );
 	theDataEvtQAHist->SetAxisRange(0.,1.5,"Y");
@@ -400,36 +430,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theRatio->Divide(theMCEvtQAHist);
 	theRatio->Draw();
 	
-	theEvtQALeg->Draw();	
-	
-	
-	////for ratio w/ pre-vz-weights MC, use this for Vz weighting
-	//TH1F* theDataEvtQAHist2=(TH1F*)theDataEvtQAHist->Clone("DataVzClone4Ratio2");
-	//
-	//TH1F* theMCEvtQAHist2= (TH1F*)finMC->Get( "hpthatWeightedVz" );
-	//theMCEvtQAHist2->Scale( 1./theMCEvtQAHist2->GetBinWidth(0) );
-	//theMCEvtQAHist2->Scale( theDataEvtQAHist2->Integral()/theMCEvtQAHist2->Integral() );
-	//
-	//TH1F *theRatio2=theDataEvtQAHist2;
-	//theRatio2->SetLineColor( altRatioLineColor1 );	
-	//theRatio2->Divide(theMCEvtQAHist2);	
-	//theEvtQALeg->AddEntry(theRatio2,"MC not vz-weighted","lp"); 		
-	//
-	//theRatio2->Draw("SAME");
-	
-	
-	////for ratio w/ vzweights
-	//TH1F* theDataEvtQAHist3=(TH1F*)theDataEvtQAHist->Clone("DataVzClone4Ratio3");
-	//
-	//TH1F* theMCEvtQAHist3= (TH1F*)finMC->Get( "hWeightedAnnaVz" );
-	//theMCEvtQAHist3->Scale( 1./theMCEvtQAHist3->GetBinWidth(0) );
-	//theMCEvtQAHist3->Scale( theDataEvtQAHist3->Integral()/theMCEvtQAHist3->Integral() );
-   	//
-	//TH1F *theRatio3=theDataEvtQAHist3;
-	//theRatio3->SetLineColor( altRatioLineColor2 );	
-	//theRatio3->Divide(theMCEvtQAHist3);	
-	//theEvtQALeg->AddEntry(theRatio3,"Annas VzWeights","lp"); 	
-	//theRatio3->Draw("SAME");
+	//theEvtQALeg->Draw();	
 	
 	temp_canvEvt->Print( thePDFFileName.c_str() );
       }
@@ -437,10 +438,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
   }//end total weighted vz
   
   
-  
-  
-  
-  
+
   // jet plots----------------------
   if(!drawJetQAPlots)std::cout<<std::endl<<"skipping jet QA plots..."<<std::endl<<std::endl;
   else { std::cout<<std::endl<<std::endl;
@@ -462,12 +460,20 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
     
     
     std::cout<<" drawing jet QA Plots..."<<std::endl;
+
     for(int j=0;j<N_vars;j++){ std::cout<<std::endl;
 
+      if(doBasicJetQAOnly && j>3 && j<19)continue;
+      if(!doDijetQAPlots && j>19 )continue;
+
       std::cout<<std::endl<<" var ="<<var[j]<<std::endl;
+      
       for(int i=0;i<2;i++){
 
-
+	if( i==1 && (!doJetIDPlots||!didJetIDCut) ) {
+	  if(j==0)std::cout<<"not drawing JetID Plots for JetQA!"<<std::endl;
+	  continue; }
+	
 	long double theLumi;
 	if(i==0)theLumi=effIntgrtdLumi_kmat;
 	else theLumi=effIntgrtdLumi_JetID;
@@ -488,8 +494,8 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	theDataJetQAHist->Print("base"); 
 	std::cout<<std::endl;
 
-	theDataJetQAHist->SetMarkerStyle(kDot);
-	theDataJetQAHist->SetMarkerSize(1.3);
+	theDataJetQAHist->SetMarkerStyle(kFullCircle);
+	theDataJetQAHist->SetMarkerSize(1.2);
 	theDataJetQAHist->SetMarkerColor( theDataOverlayMarkerColor );
 	theDataJetQAHist->SetLineColor( theDataOverlayLineColor );
 	
@@ -499,18 +505,19 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	TH1F* theMCJetQAHist= (TH1F*)
 	  ( (TH1*)finMC->Get(inHistName.c_str()) )
 	  ->TH1::Rebin(var_xAx_reBin[j]);	
+	theMCJetQAHist->Scale( 1./theMCJetQAHist->GetBinWidth(1) );	  
+	theMCJetQAHist->Scale(1000.);
 	theMCJetQAHist->Print("base");
 	std::cout<<std::endl;
 
-	theMCJetQAHist->Scale( 1./theMCJetQAHist->GetBinWidth(1) );	  
 	if( var[j]!="jtpt"&&var[j]!="rawpt"&&
 	    var[j]!="leadJetPt"&&var[j]!="subleadJetPt" )  
 	  theMCJetQAHist->Scale( theDataJetQAHist->Integral()/theMCJetQAHist->Integral() );	  
-	theMCJetQAHist->Print("base");
+
 	std::cout<<std::endl;
  
-	theMCJetQAHist->SetMarkerStyle(kDot);
-	theMCJetQAHist->SetMarkerSize(1.3);
+	theMCJetQAHist->SetMarkerStyle(kFullCircle);
+	theMCJetQAHist->SetMarkerSize(1.2);
 	theMCJetQAHist->SetMarkerColor( theMCOverlayMarkerColor );
 	theMCJetQAHist->SetLineColor( theMCOverlayLineColor );
 	
@@ -519,129 +526,301 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	
 
 	if(drawDataMCOverlays){  
-	  std::string h_XAx_Title=var_xAx_Titles[j], h_YAx_Title="millibarns/bin"; 
+	  std::string h_XAx_Title=var_xAx_Titles[j], h_YAx_Title=crossSectionYAxis;//"#sigma (#mub/bin)";
 	  if(debugMode)std::cout<<" x-axis title= "<<h_XAx_Title<<std::endl<<std::endl;
 
-	  std::string h_Title="Jet QA, "+var[j];
+	  std::string h_Title="JetQA";//, "+var[j];
 	  if(i==1)h_Title+=", w/ JetIDCut";      
 	  //else h_Title+=", no JetIDCut";
 	  
 	  theDataJetQAHist->SetTitle (    h_Title.c_str() );
 	  theDataJetQAHist->SetXTitle( h_XAx_Title.c_str() );
 	  theDataJetQAHist->SetYTitle( h_YAx_Title.c_str() );
+	  //theDataJetQAHist->SetYTitle( "#frac{d\sigma}{dp_t} (\{mu}b/bin)" );
 
 	  theMCJetQAHist->SetTitle (    h_Title.c_str() );
 	  theMCJetQAHist->SetXTitle( h_XAx_Title.c_str() );
 	  theMCJetQAHist->SetYTitle( h_YAx_Title.c_str() );
+	  //theMCJetQAHist->SetYTitle( "#frac{d\sigma}{dp_t} (\{mu}b/bin)" );
 
-
-	  TLegend* theJetQALeg=new TLegend(0.72,0.84,0.98,0.98, NULL,"brNDC");
-	  theJetQALeg->AddEntry(theDataJetQAHist,"2015 promptReco 5.02 TeV ppData","lp");
-	  theJetQALeg->AddEntry(theMCJetQAHist,  "Py8 CUETP8M1 QCD, ppMC"      ,"lp");
-	 
+	  float legx1=0.77, legx2=legx1+0.07;
+	  float legy1=0.76, legy2=legy1+0.11;
+	  TLegend* theJetQALeg=new TLegend(legx1,legy1,legx2,legy2, NULL,"brNDC");	  
+	  theJetQALeg->AddEntry(theDataJetQAHist,"data","lp");
+	  theJetQALeg->AddEntry(theMCJetQAHist,  "MC"  ,"lp");
+	  
 	  theDataJetQAHist->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X"); 
 
 	  // variable specific draw orders, canv, etc.
-	  if(var[j]=="jtpt"||var[j]=="rawpt") { 
-	    temp_canvJet->cd();
-	    theMCJetQAHist->Draw(); theDataJetQAHist->Draw("same");  
+	  if(var[j]=="jtpt"||var[j]=="rawpt") { temp_canvJet->cd();
+	    theMCJetQAHist->Draw(); 
+	    theDataJetQAHist->Draw("same");  
 	    theJetQALeg->Draw(); 
-	    temp_canvJet->Print( thePDFFileName.c_str() ); }		  
-	  else if(var[j]=="xj"||var[j]=="Aj"||
-		  var[j]=="jtphi"||var[j]=="jteta") { 
-	    temp_canvJet_noLog->cd();
-	    theDataJetQAHist->Draw(); theMCJetQAHist->Draw("SAME"); 
-	    theJetQALeg->Draw();
-	    temp_canvJet_noLog->Print( thePDFFileName.c_str() ); }		  
-	  //else if(var[j]=="dphi") { temp_canvJet->cd();
-	  //  theDataJetQAHist->Draw(); theMCJetQAHist->Draw("SAME");  
-	  //  theJetQALeg->Draw();
-	  //  temp_canvJet->Print( thePDFFileName.c_str() ); }		  
-	  else { temp_canvJet->cd();
-	    theDataJetQAHist->Draw(); theMCJetQAHist->Draw("SAME");  
-	    theJetQALeg->Draw();
-	    temp_canvJet->Print( thePDFFileName.c_str() ); }		  	  
-	  std::cout<<std::endl; }
-	
-	
-	if(drawDataMCRatios){ temp_canvJetRat->cd();
 
+	    float t1Loc1=0.73, t1Loc2=0.68; 	    
+	    TLatex *t1=new TLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());
+	    t1->SetTextFont(63);
+	    t1->SetTextColor(kBlack);
+	    t1->SetTextSize(20);
+	    t1->SetLineWidth(1);
+	    t1->SetNDC();
+	    t1->Draw();
+	    
+	    TLatex *t2=new TLatex((t1Loc1),(t1Loc2-.05),"p_{t}>15 GeV, |#eta|<2.0");
+	    t2->SetTextFont(63);
+	    t2->SetTextColor(kBlack);
+	    t2->SetTextSize(20);
+	    t2->SetLineWidth(1);
+	    t2->SetNDC();
+	    t2->Draw();	
+	    
+	    temp_canvJet->Print( thePDFFileName.c_str() ); }
+
+	  else if(var[j]=="jteta"||var[j]=="jtphi"){ temp_canvJet->cd();
+	    theDataJetQAHist->Draw(); 
+	    theMCJetQAHist->Draw("SAME"); 
+	    theJetQALeg->Draw();
+
+	    float t1Loc1=0.71, t1Loc2=0.74; 	    
+	    TLatex *t1=new TLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());
+	    t1->SetTextFont(63);
+	    t1->SetTextColor(kBlack);
+	    t1->SetTextSize(20);
+	    t1->SetLineWidth(1);
+	    t1->SetNDC();
+	    t1->Draw();
+	    
+	    TLatex *t2=new TLatex((t1Loc1),(t1Loc2-.05),"p_{t}>50 GeV   |#eta|<2.0");
+	    t2->SetTextFont(63);
+	    t2->SetTextColor(kBlack);
+	    t2->SetTextSize(20);
+	    t2->SetLineWidth(1);
+	    t2->SetNDC();
+	    t2->Draw();	
+	    //separate dijet from jetqa, put dijet cuts here
+	    temp_canvJet->Print( thePDFFileName.c_str() ); }
+
+	  else if(var[j]=="xj"||var[j]=="Aj"||var[j]=="dphi"){ temp_canvJet_noLog->cd();
+	    
+
+	    theDataJetQAHist->Draw(); 
+	    theMCJetQAHist->Draw("SAME"); 
+	    theJetQALeg->Draw();
+
+	    float t1Loc1=0.18, t1Loc2=0.72; 	    
+
+	    if(var[j]=="Aj") t1Loc1=.7;
+
+	    TLatex *t1=new TLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());
+	    t1->SetTextFont(63);
+	    t1->SetTextColor(kBlack);
+	    t1->SetTextSize(20);
+	    t1->SetLineWidth(1);
+	    t1->SetNDC();
+	    t1->Draw();
+	    
+	    TLatex *t2=new TLatex((t1Loc1),(t1Loc2-.05),"p_{t}^{ld} > 60 GeV");
+	    t2->SetTextFont(63);
+	    t2->SetTextColor(kBlack);
+	    t2->SetTextSize(20);
+	    t2->SetLineWidth(1);
+	    t2->SetNDC();
+	    t2->Draw();	
+	   
+	    TLatex *t3=new TLatex((t1Loc1),(t1Loc2-.10),"p_{t}^{subld} > 30GeV");
+	    t3->SetTextFont(63);
+	    t3->SetTextColor(kBlack);
+	    t3->SetTextSize(20);
+	    t3->SetLineWidth(1);
+	    t3->SetNDC();
+	    t3->Draw();	
+
+	    TLatex *t4=new TLatex(t1Loc1, (t1Loc2-0.17), "#Delta#phi > #frac{2}{3}#pi");	    
+	    t4->SetTextFont(63);
+	    t4->SetTextColor(kBlack);
+	    t4->SetTextSize(20);
+	    t4->SetLineWidth(1);
+	    t4->SetNDC();
+	    t4->Draw();	
+	    //separate dijet from jetqa, put dijet cuts here
+	    temp_canvJet_noLog->Print( thePDFFileName.c_str() ); }
+
+	  else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt"){ temp_canvJet->cd();
+
+	    theDataJetQAHist->Draw(); 
+	    theMCJetQAHist->Draw("SAME"); 
+	    theJetQALeg->Draw();
+
+	    float t1Loc1=0.18, t1Loc2=0.72; 	    
+
+	    if(var[j]=="Aj"||
+	       var[j]=="leadJetPt"||var[j]=="subleadJetPt") t1Loc1=.7;
+
+	    TLatex *t1=new TLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());
+	    t1->SetTextFont(63);
+	    t1->SetTextColor(kBlack);
+	    t1->SetTextSize(20);
+	    t1->SetLineWidth(1);
+	    t1->SetNDC();
+	    t1->Draw();
+	    
+	    TLatex *t2=new TLatex((t1Loc1),(t1Loc2-.05),"p_{t}^{ld} > 60 GeV");
+	    t2->SetTextFont(63);
+	    t2->SetTextColor(kBlack);
+	    t2->SetTextSize(20);
+	    t2->SetLineWidth(1);
+	    t2->SetNDC();
+	    t2->Draw();	
+	   
+	    TLatex *t3=new TLatex((t1Loc1),(t1Loc2-.10),"p_{t}^{subld} > 30GeV");
+	    t3->SetTextFont(63);
+	    t3->SetTextColor(kBlack);
+	    t3->SetTextSize(20);
+	    t3->SetLineWidth(1);
+	    t3->SetNDC();
+	    t3->Draw();	
+
+	    TLatex *t4=new TLatex(t1Loc1, (t1Loc2-0.17), "#Delta#phi > #frac{2}{3}#pi");	    
+	    t4->SetTextFont(63);
+	    t4->SetTextColor(kBlack);
+	    t4->SetTextSize(20);
+	    t4->SetLineWidth(1);
+	    t4->SetNDC();
+	    t4->Draw();	
+	    //separate dijet from jetqa, put dijet cuts here
+	    temp_canvJet->Print( thePDFFileName.c_str() ); }
+	  
+	  //else if(var[j]=="dphi") { temp_canvJet->cd();
+	  //  theDataJetQAHist->Draw(); 
+	  //  theMCJetQAHist->Draw("SAME");  
+	  //  theJetQALeg->Draw();
+	  //  
+	  //  float t1Loc1=0.73, t1Loc2=0.80; 	    
+	  //  TLatex *t1=new TLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());
+	  //  t1->SetTextFont(63);
+	  //  t1->SetTextColor(kBlack);
+	  //  t1->SetTextSize(20);
+	  //  t1->SetLineWidth(1);
+	  //  t1->SetNDC();
+	  //  t1->Draw();
+	  //  TLatex *t2=new TLatex((t1Loc1),(t1Loc2-.05),"p_t^1>60 GeV, p_t^2> 30GeV, #delta#phi<#frac{2}{3}#pi");
+	  //  t2->SetTextFont(63);
+	  //  t2->SetTextColor(kBlack);
+	  //  t2->SetTextSize(20);
+	  //  t2->SetLineWidth(1);
+	  //  t2->SetNDC();
+	  //  t2->Draw();	
+	  //  temp_canvJet->Print( thePDFFileName.c_str() ); }		  
+
+	  else { temp_canvJet->cd();
+	    theDataJetQAHist->Draw(); 
+	    theMCJetQAHist->Draw("SAME");  
+	    theJetQALeg->Draw();
+
+	    float t1Loc1=0.73, t1Loc2=0.80; 	    
+	    TLatex *t1=new TLatex(t1Loc1,t1Loc2, (fullJetType+"Jets").c_str());
+	    t1->SetTextFont(63);
+	    t1->SetTextColor(kBlack);
+	    t1->SetTextSize(20);
+	    t1->SetLineWidth(1);
+	    t1->SetNDC();
+	    t1->Draw();
+	    
+	    TLatex *t2=new TLatex(t1Loc1, (t1Loc2-.05),"p_{t}>50 GeV, |#eta|<2.0");
+	    t2->SetTextFont(63);
+	    t2->SetTextColor(kBlack);
+	    t2->SetTextSize(20);
+	    t2->SetLineWidth(1);
+	    t2->SetNDC();
+	    t2->Draw();	
+	    temp_canvJet->Print( thePDFFileName.c_str() ); 	  }		  	  
+
+	  std::cout<<std::endl; 
+
+	}//end draw overlays
+
+	else if(drawDataMCRatios){ 
+	  temp_canvJetRat->cd();	  
 	  std::string h_XAx_Title=var_xAx_Titles[j], h_YAx_Title="Data/MC"    ;
-	  std::string h_Title   ="Jet QA, Data/MC, "+var[j];
+	  std::string h_Title   ="JetQA, Data/MC";//, "+var[j];
 	  if(i==1)h_Title+=", w/ JetIDCut";      
 	  //else h_Title+=", no JetIDCut";
 	  
-
 	  TH1F* theRatio=(TH1F*)theDataJetQAHist->Clone("dataJetHistClone4Ratio");
-
+	  
 	  theRatio->SetTitle (    h_Title.c_str() );
 	  theRatio->SetXTitle( h_XAx_Title.c_str() );
 	  theRatio->SetYTitle( h_YAx_Title.c_str() );
-	  theRatio->SetMarkerColor( kBlack );
+	  theRatio->SetMarkerColor( kRed );
 	  theRatio->SetLineColor( theRatioLineColor );
-
+	  
 	  theRatio->SetAxisRange(0,2.,"Y");
 	  theRatio->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X");
 
+	  if(var[j]=="dphi") 
+	    theRatio->SetAxisRange(2.0,3.2,"X");
+	  
 	  TLine* lineAtOne          = new TLine(jetQAxmin[j],1.0,jetQAxmax[j],1.0); 
 	  TLine* lineAtOneHalf      = new TLine(jetQAxmin[j],0.5,jetQAxmax[j],0.5); 
 	  TLine* lineAtOneEtOneHalf = new TLine(jetQAxmin[j],1.5,jetQAxmax[j],1.5); 
-	           lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
-	       lineAtOneHalf->SetLineColor(12);      lineAtOneHalf->SetLineStyle(2);
+	  lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
+	  lineAtOneHalf->SetLineColor(12);      lineAtOneHalf->SetLineStyle(2);
 	  lineAtOneEtOneHalf->SetLineColor(12); lineAtOneEtOneHalf->SetLineStyle(2);
 
 	  theRatio->Divide(theMCJetQAHist);
 	  theRatio->Draw();
-
+	  
 	  lineAtOne->Draw("same");
 	  lineAtOneHalf->Draw("same");
 	  lineAtOneEtOneHalf->Draw("same");
-
-	  
+	  	  
 	  TLegend* theJetQALeg=new TLegend(0.72,0.84,0.98,0.98, NULL,"brNDC");//new TLegend(0.81,0.84,0.96,0.94, NULL,"brNDC");
 	  theJetQALeg->AddEntry(theRatio,"ppData/Py8 QCD ppMC","lp");
-	  theJetQALeg->Draw();
+	  //theJetQALeg->Draw();
 	  
 	  temp_canvJetRat->Print( thePDFFileName.c_str() );	
 	  std::cout<<std::endl;	    	
-	} 
-      } }
-    //if(debugMode)std::cout<<std::endl<<"closing the PDF file"<<std::endl<<std::endl;
-    //temp_canvJet->Print( close_thePDFFileName.c_str() );//close the output file
-    
-    temp_canvJet_noLog->Close();
+	}//end draw ratios
+
+      } }//end loop over jetQA Plots     
+    temp_canvJet_noLog->Close();//clean up neatly
     temp_canvJetRat->Close();
     temp_canvJet->Close();
-  }// end Jet QA Plots
+  }
   
   
-
-
-
+  
 
   // jet trig plots----------------------
   if(!drawJetTrigQAPlots)std::cout<<std::endl<<"skipping jet trig QA plots..."<<std::endl<<std::endl;
   else { std::cout<<std::endl<<std::endl;
     std::cout<<" drawing jet trig QA Plots..."<<std::endl;
-
+    
     if(debugMode)std::cout<<std::endl<<"creating temporary canvas for printing JetTrig plots..."<<std::endl;
     TCanvas *temp_canvJetTrig = new TCanvas("tempJetTrig", "tempJetTrig", 1200, 600);
     temp_canvJetTrig->cd();
     temp_canvJetTrig->SetLogy(1);    
-
+    
     if(debugMode)std::cout<<std::endl<<"creating temporary canvas for printing JetTrig plots..."<<std::endl;
     TCanvas *temp_canvJetRatio = new TCanvas("tempJetRatio", "tempJetRatio", 1200, 600);
     temp_canvJetRatio->cd();
     temp_canvJetRatio->SetLogy(0);
-
+    
     
     for(int i=0; i<2; i++){ if(debugMode)std::cout<<std::endl<<"i= "<<i<<std::endl;
       
+
+      if(i==1&& (!doJetIDPlots||!didJetIDCut) ){
+	std::cout<<"skipping jetID plots!!!"<<std::endl;
+	continue;}
+      
+
       long double theLumi;
       if(i==0)theLumi=effIntgrtdLumi_kmat;
       else theLumi=effIntgrtdLumi_JetID;
       
-      TLegend* JetTrigLegend=new TLegend(0.84,0.72,0.98,0.98, NULL,"brNDC");
+      TLegend* JetTrigLegend=new TLegend(0.75,0.60,0.88,0.86, NULL,"brNDC");
+      TLegend* JetTrigRatioLegend=new TLegend(0.12,0.59,0.30,0.87, NULL,"brNDC");
       
       if(drawTrigDataOverlays){   temp_canvJetTrig->cd();
 	if(debugMode)std::cout<<"drawing dataTrig QA Overlay Plots"<<std::endl;
@@ -678,6 +857,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	  // PROBLEM SECTION
 	  /////////////////////
 	  
+
 	  std::string inHistName="hpp_"+HLTName[j];
 	  if(i==1)inHistName+="_wJetID";
 	  inHistName+="_"+radius+etaWidth;
@@ -693,33 +873,78 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	  theJetTrigQAHist->Scale( 1./theJetTrigQAHist->GetBinWidth(1) );
 	  theJetTrigQAHist->Scale( 1./theLumi);
 	  
-	  theJetTrigQAHist->SetMarkerStyle(kDot);
-	  theJetTrigQAHist->SetMarkerSize(3.0);
-	  theJetTrigQAHist->SetMarkerColor( theTrigOverlayLineColor[j]+j+1 );//theTrigOverlayMarkerColor );
-	  theJetTrigQAHist->SetLineColor(   theTrigOverlayLineColor[j] );
+	  theJetTrigQAHist->SetMarkerStyle(theTrigOverlayMarker[j]);
+	  theJetTrigQAHist->SetMarkerSize(1.2);
+	  theJetTrigQAHist->SetMarkerColor( theTrigOverlayMarkerColor[j] );
+	  theJetTrigQAHist->SetLineColor(   theTrigOverlayLineColor[j]   );
 	  
-	  JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTName[j]).c_str(),"lp");
+	  JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTName_Leg[j]).c_str(),"lp");
 	  
 	  if(j==0){
-	    std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title="millibarns/bin"    ; 
-	    std::string h_Title   ="Jet Trig QA, DATA ONLY";
+	    std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title=crossSectionYAxis;//"#sigma (#mub/bin)"    ; 
+	    std::string h_Title   ="JetTrigQA";//, DATA ONLY";
 	    if(i==1)h_Title+=", w/ JetIDCut";      
 	    //else h_Title+=", no JetIDCut";
 	    theJetTrigQAHist->SetAxisRange(0.,800.,"X");
 	    theJetTrigQAHist->SetTitle (    h_Title.c_str() );
 	    theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
 	    theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
+	    //theJetTrigQAHist->SetYTitle( "#frac{d\sigma}{dp_t} (\{mu}b/bin)" );
 	    theJetTrigQAHist->Draw(); 	    }
 	  else theJetTrigQAHist->Draw("SAME");   	    
+
 	}//end loop over trigs
-	
 	JetTrigLegend->Draw();
 	temp_canvJetTrig->Print(thePDFFileName.c_str());
-      }//end DRAW TRIG OVERLAY
-      
+	
 
-      
-      if(drawTrigDataRatios){		temp_canvJetRatio->cd();
+	// trigger closure/turn on plot
+	temp_canvJetRatio->cd();
+	for(int trigTH2=0;trigTH2<3;trigTH2++){
+
+	  std::string inHistName;//="hTrgQA_";//+HLTName[j];
+	  //if(i==1)inHistName+="_wJetID";
+	  //inHistName+="_"+radius+etaWidth;	   
+
+	  if(trigTH2==0)inHistName="hTrgQA_recpt_rawpt";
+	  else if(trigTH2==1)inHistName="hTrgQA_recpt_trgpt";
+	  else if(trigTH2==2)inHistName="hTrgQA_rawpt_trgpt";
+	  else break;
+
+	  
+	  std::string h_Title   ="JetTrigQA";//, DATA ONLY";
+	  if(i==1)h_Title+=", w/ JetIDCut";      
+
+	  std::string h_XAx_Title, h_YAx_Title;
+	  if(trigTH2==0){      h_XAx_Title=" raw JetPt (GeV)";  h_YAx_Title="reco JetPt (GeV)"; }
+	  else if(trigTH2==1){ h_XAx_Title="trig JetPt (GeV)";  h_YAx_Title="reco JetPt (GeV)"; }
+	  else if(trigTH2==2){ h_XAx_Title=" raw JetPt (GeV)";  h_YAx_Title="trig JetPt (GeV)"; }
+	  else break;
+
+          if(debugMode)std::cout<<"inHistName="<<inHistName<<std::endl<<std::endl;
+
+	  //open the hists + do scaling
+          TH2F* theJetTrigQAHist=(TH2F*)((TH2*)finData->Get(inHistName.c_str()));//->TH1::Rebin(jetTrigQABinning);	  
+
+	  float jetTrigTh2_ptLow=10,jetTrigTh2_ptHigh=300;
+	  theJetTrigQAHist->SetAxisRange(jetTrigTh2_ptLow,jetTrigTh2_ptHigh,"X");
+	  theJetTrigQAHist->SetAxisRange(jetTrigTh2_ptLow,jetTrigTh2_ptHigh,"Y");
+
+	  theJetTrigQAHist->SetTitle (    h_Title.c_str() );
+	  theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
+	  theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
+
+          theJetTrigQAHist->Print("base");
+          //theJetTrigQAHist->Scale( 1./theJetTrigQAHist->GetBinWidth(1) );
+          //theJetTrigQAHist->Scale( 1./theLumi);
+
+	  theJetTrigQAHist->Draw("COLZ");
+	  temp_canvJetRatio->Print(thePDFFileName.c_str());
+     	}//end TH2Loop for trigpt/rawpt/recpt plots
+	
+      }//end DRAW TRIG OVERLAY      
+
+      else if(drawTrigDataRatios){		temp_canvJetRatio->cd();
 	if(debugMode)std::cout<<"drawing dataTrig QA Overlay Plots"<<std::endl;
 	
 	std::string comboPlotName="hpp_"+HLTName[N_trigs-1];
@@ -732,8 +957,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	  ( (TH1*)finData->Get(comboPlotName.c_str()) )
 	  ->TH1::Rebin(jetTrigQARatioBinning);
 	
-	for(int j=0; j<N_trigs; j++){ 
-	  if(j==N_trigs-1)continue;//need to divide each curve by HLT Comb
+	for(int j=0; j<(N_trigs-1); j++){ 
 	  
 	  std::string inHistName="hpp_"+HLTName[j];
 	  if(i==1)inHistName+="_wJetID";
@@ -745,48 +969,44 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 	    ( (TH1*)finData->Get(inHistName.c_str()) )
 	    ->TH1::Rebin(jetTrigQARatioBinning);
 	  
-	  theRatio->SetMarkerStyle(kDot);
-	  theRatio->SetMarkerSize(1.3);
-	  theRatio->SetMarkerColor( theTrigOverlayMarkerColor );
+	  theRatio->SetMarkerStyle(theTrigOverlayMarker[j]);
+	  theRatio->SetMarkerSize(1.2);
+	  theRatio->SetMarkerColor( theTrigOverlayMarkerColor[j] );
 	  theRatio->SetLineColor( theTrigOverlayLineColor[j] );
 	  
 	  theRatio->Divide(comboHistClone);
 	  
-	  JetTrigLegend->AddEntry(theRatio,(HLTName[j]+"/Trig Comb.").c_str(),"lp");
+	  JetTrigRatioLegend->AddEntry(theRatio,(HLTName_Leg[j]+"/TrigComb.").c_str(),"lp");
 	  
 	  if(j==0){
-	    std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title="JetTrig/JetTrigCombo"    ; 
-	    std::string h_Title   ="Jet Trig QA, DATA ONLY, Ratios";
-	    if(i==1)h_Title+=", w/ JetIDCut";      
-	    
-	    //else h_Title+=", no JetIDCut";
-	    theRatio->SetAxisRange(0.,1000.,"X");
+	    std::string h_Title   ="JetTrigQA Ratios";
+	    if(i==1)    h_Title+=", w/ JetIDCut";      
+	    std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title="Trig/TrigCombo"    ; 
+
+	    theRatio->SetAxisRange(0.,500.,"X");
+	    theRatio->SetAxisRange(0.,2.,"Y");
 	    theRatio->SetTitle (    h_Title.c_str() );
 	    theRatio->SetXTitle( h_XAx_Title.c_str() );
 	    theRatio->SetYTitle( h_YAx_Title.c_str() );
 	    theRatio->Draw(); }
-	  else theRatio->Draw("SAME");
-	}//end trig name loop	  
 
-	JetTrigLegend->Draw();
+	  else theRatio->Draw("SAME");
+	}
+	
+	JetTrigRatioLegend->Draw();
 	temp_canvJetRatio->Print(thePDFFileName.c_str());
       }//end DRAW TRIG Ratios
-
-    }//end jet ID loop, i=0,1
+      
+    }//end jet ID loop, i=0,1    
     temp_canvJetTrig->Close();        
-    temp_canvJetRatio->Close();
+    temp_canvJetRatio->Close();    
   }//end else statement for het trig plots
   
   
+  
 
-
-
-
-
-
-
-  // MCEffQAPlots plots----------------------
-  if(!drawMCEffPlots||!drawDataMCOverlays)std::cout<<std::endl<<"skipping MC Eff. QA plots..."<<std::endl<<std::endl;
+    // MCEffQAPlots plots----------------------
+  if(!drawMCEffProfiles)std::cout<<std::endl<<"skipping MC Eff. QA plots..."<<std::endl<<std::endl;
   else { std::cout<<std::endl<<std::endl;
 
     std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
@@ -884,10 +1104,7 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
   
   
   
-  
-  
-  
-    
+// for DEBUG ONLY
   if(debugMode)std::cout<<std::endl<<"closing the PDF file"<<std::endl;
   TCanvas *temp_canvClose = new TCanvas("tempClose", "tempClose", 1200, 600);
   temp_canvClose->Print( close_thePDFFileName.c_str() );  
@@ -896,7 +1113,8 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 
   if(debugMode)std::cout<<std::endl<<"closing input files"<<std::endl;
   finMC->Close();
-  finData->Close();
+  finData->Close();  
+  //assert(false);
   
   return 0;
 }// end printplots
@@ -909,16 +1127,15 @@ int printQAPlots(const std::string input_ppData_condorDir, const std::string inp
 int main(int argc, char *argv[]){
   
   int rStatus = -1;
-  if( argc!=7 ) {//no input arguments, error
-    std::cout<<"do ./printQAPlots.exe <ppDataCondorDir> <ppDataFilename> <ppMCCondorDir> <ppMCFilename> <outputNameBase> <OverlayFlag>"<<std::endl;
+  if( argc!=5 ) {//no input arguments, error
+    std::cout<<"do ./printQAPlots.exe <ppDataCondorDir> <ppMCCondorDir> <outputNameBase> <OverlayFlag>"<<std::endl;
     return rStatus;
   }
   rStatus=1;
   
   //if(argc==1)rStatus=printQAPlots();
-  if(argc==7) rStatus=printQAPlots( (const std::string) argv[1], (const std::string) argv[2],
-			     (const std::string) argv[3], (const std::string) argv[4],
-			     (const std::string) argv[5], (bool) std::atoi(argv[6])    );
+  if(argc==5) rStatus=printQAPlots( (const std::string) argv[1], (const std::string) argv[2],
+				    (const std::string) argv[3], (bool) std::atoi(argv[4])    );
   
   std::cout<<"done, rStatus="<<rStatus<<std::endl;
   return rStatus;
@@ -928,7 +1145,7 @@ int main(int argc, char *argv[]){
 
 //// I/O ------------------------
 ////input
-//const std::string input_ppData_condorDir=readForests_ppData_dir+
+//const std::string input_ppData_condorDir=readForests_dir+
 ////"ppData_HighPtJetTrig_ak4CaloJets_HLT.ak4CaloJets_09-17-16__newJetID/";
 ////"ppData_HighPtJetTrig_ak4PFJets_HLT.ak4CaloJets_09-16-16__newJetID/";
 ////"ppData_HighPtJetTrig_ak3PFJets_HLT.ak4CaloJets_09-18-16__newJetID/";
@@ -941,7 +1158,7 @@ int main(int argc, char *argv[]){
 //  "HighPtJetTrig_ak4PF-allFiles.root";
 ////"HighPtJetTrig_ak3PF-allFiles.root";
 //
-//const std::string input_ppMC_condorDir=readForests_ppMC_dir+
+//const std::string input_ppMC_condorDir=readForests_dir+
 ////"ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4CaloJets_09-17-16__newJetID/";
 //  "ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_09-16-16__newJetID/";  
 ////"ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak3PFJets_09-18-16__newJetID/";
@@ -951,7 +1168,7 @@ int main(int argc, char *argv[]){
 //  "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
 ////"Py8_CUETP8M1_QCDjetAllPtBins_ak3PF-allFiles.root";
 
-//const std::string output_PDFname_base_full=printQAPlots_dir+
+//const std::string output_PDFname_base=outputDir+
 ////"printQAplots_9.18.16_newJetID_ak4CaloJets_HLT.ak4PFJets_QAPlots_";
 //  "printQAplots_9.18.16_newJetID_ak4PFJets_HLT.ak4PFJets_QAPlots_";
 ////"printQAplots_9.18.16_newJetID_ak3PFJets_HLT.ak4PFJets_QAPlots_";

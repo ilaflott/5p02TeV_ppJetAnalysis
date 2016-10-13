@@ -5,8 +5,7 @@
 
 
 //highPtJetTrig 5.02TeV 2015 prompt reco
-//const double intgrtdLumi=25.8*pow(10.,9.);// 25.8 inv. picobarns to inv. millibarns
-const double intgrtdLumi=25.8*pow(10.,9.);// 25.8 pb^-1 to \millib^-1
+const double intgrtdLumi=25.8*pow(10.,6.);// 25.8 pb^-1 to \microbarns^-1
 
 //// other useful things
 //const std::string HLThNames[]={"HLT40_","HLT60_","HLT80_","HLT100_","HLTComb_","TrgCombTest_"};

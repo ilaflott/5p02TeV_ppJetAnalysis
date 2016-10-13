@@ -28,6 +28,7 @@
 // histos
 #include <TH1.h>
 #include <TH2.h>
+#include <TH3.h>
 #include <TH1F.h>
 #include <TH2F.h>
 
@@ -62,21 +63,18 @@ int readForests_ppMC( std::string inFilelist=defMCInFilelist,int startfile=defSt
 const int readForestsArgCount=7+minArgs;
 
 // ppData switches
-const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=false; //most basic-level plots
-const bool fillDataJetTrigQAHists=true;
-//const bool fillDataUnfoldingHists=false, fillDataJECJERHists=false; //more specialized
+const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=true; //most basic-level plots
+const bool fillDataJetTrigQAHists=true; //data-specific
+const bool fillDataJetSpectraRapHists=true; //other
 
 // ppMC switches
 const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=false; //most basic-level plots
-const bool fillMCUnfoldingHists=false, fillMCEffHists=false;//, fillMCJECJERHists=false;; //more specialized
+const bool fillMCUnfoldingHists=false,  fillMCJECHists=true; //MC-specific
+const bool fillMCEffHists=false, fillMCJetSpectraRapHists=true; //other
 
 
 //// HELPER FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------
-
-//float trigComb(bool *trg, int *pscl, float pt);
-//void divideBinWidth(TH1 *h);
-//float deltaphi(float phi1, float phi2);
 
 void divideBinWidth(TH1 *h){
   h->Sumw2();
@@ -119,15 +117,15 @@ const char *etaWidth=(char*)"20_eta_20";
 
 // variable names for QA Plots
 const std::string var[]={
-  "jtpt" ,  "rawpt",  //jets
-  "jteta", "jtphi",
+  "jtpt"  , "rawpt" ,  //jets
+  "jteta" , "jtphi" , "jty",
   "trkMax", "trkSum", "trkHardSum", //jet constituents
-  "chMax",  "chSum",  "chHardSum",
-  "phMax",  "phSum",  "phHardSum",
-  "neMax",  "neSum",
-  "eMax",   "eSum",
-  "muMax",  "muSum",
-  "Aj",     "xj" , "dphi", //dijet variables
+  "chMax" , "chSum" , "chHardSum",
+  "phMax" , "phSum" , "phHardSum",
+  "neMax" , "neSum" ,
+  "eMax"  , "eSum"  ,
+  "muMax" , "muSum" ,
+  "Aj" , "xj" , "dphi", //dijet variables
   "leadJetPt", "subleadJetPt"
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
@@ -228,6 +226,14 @@ const float etabins[]={
 };
 const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
+const float rapbins[]={ 
+  0.0, 0.5,
+  1.0, 1.5,
+  2.0, 2.5,
+  3.0, 3.2,
+  3.7
+};
+const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 
 //// WEIGHTS FOR MC
 // ------------------------------------------------------------------------------------------------------
@@ -317,11 +323,6 @@ const float vzWeights[]={//           HLTAK4CaloJets, HLTAK4PFJets
 const int nbins_vzWeights=sizeof(vzWeights)/sizeof(float);//should be 60
 const float minbinValue_vzWeights=-15., maxbinValue_vzWeights=15.;
 const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
-
-
-
-
-
 
 //random old binning i found in raghavs code, here for safe keeping
 //const float ptbins[]={

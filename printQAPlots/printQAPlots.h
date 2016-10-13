@@ -68,16 +68,16 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 
 // variable names, string array
 const std::string var_xAx_Titles[] = {   
-  "jtpt (GeV)" ,  "rawpt (GeV)",  
-  "jteta", "jtphi (rad)", 
-  "trkMax/rawpt", "trkMax/rawpt", "trkHardSum/rawpt", 
-  "chMax/rawpt",  "chSum/rawpt",  "chHardSum/rawpt", 
-  "phMax/rawpt",  "phSum/rawpt",  "phHardSum/rawpt", 
-  "neMax/rawpt",  "neSum/rawpt", 
-  "eMax/rawpt",   "eSum/rawpt", 
-  "muMax/rawpt",  "muSum/rawpt", 
-  "Aj",     "xj" , "dphi (radians)", 
-  "leadJetPt (GeV)", "subleadJetPt (GeV)"
+  "p_{t}^{reco} (GeV)" ,  "p_{t}^{raw} (GeV)",  
+  "#eta_{jet}", "#phi_{jet}", 
+  "trkMax/p_{t}^{raw}", "trkMax/p_{t}^{raw}", "trkHardSum/p_{t}^{raw}", 
+  "chMax/p_{t}^{raw}",  "chSum/p_{t}^{raw}",  "chHardSum/p_{t}^{raw}", 
+  "phMax/p_{t}^{raw}",  "phSum/p_{t}^{raw}",  "phHardSum/p_{t}^{raw}", 
+  "neMax/p_{t}^{raw}",  "neSum/p_{t}^{raw}", 
+  "eMax/p_{t}^{raw}",   "eSum/p_{t}^{raw}", 
+  "muMax/p_{t}^{raw}",  "muSum/p_{t}^{raw}", 
+  "A_{j}",     "x_{j}" , "#Delta #phi", 
+  "leadJet P_{t} (GeV)", "subleadJet P_{t} (GeV)"
 };
 //const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
 
@@ -96,32 +96,32 @@ const int var_xAx_reBin[]={
 };
 
 const float jetQAxmax[]={
-  (500.+5.), (500.+5.),
-  (3.+.2), (4.+.16),
-  (2.00+.05), (2.00+.05), (2.00+.05),
-  (2.00+.05), (2.00+.05), (2.00+.05),
-  (2.00+.05), (2.00+.05), (2.00+.05),
-  (2.00+.05), (2.00+.05), 
-  (2.00+.05), (2.00+.05), 
-  (2.00+.05), (2.00+.05), 
-  (1.+.02), (1.+.02), 
-  (3.2+.08),//(4.+.08),
-  (500.+5.), (500.+5.)
+  (500. ), (500.),
+  (3.   ), (4.  ),
+  (2.00 ), (2.00), (2.00),
+  (2.00 ), (2.00), (2.00),
+  (2.00 ), (2.00), (2.00),
+  (2.00 ), (2.00), 
+  (2.00 ), (2.00), 
+  (2.00 ), (2.00), 
+  (1.   ), (1.  ), 
+  (3.2  ),
+  (500. ), (500.)
 };
 
 
 const float jetQAxmin[]={
-  0., 0.,
-  -3., -4.,
-  0., 0., 0.,
-  0., 0., 0.,
-  0., 0., 0.,
-  0., 0., 
-  0., 0., 
-  0., 0., 
-  0., 0., 
-  0.,
-  30., 15.
+  0.  ,  0.,
+  -3. , -4.,
+  0.  ,  0., 0.,
+  0.  ,  0., 0.,
+  0.  ,  0., 0.,
+  0.  ,  0., 
+  0.  ,  0., 
+  0.  ,  0., 
+  0.  ,  0., 
+  2.0 ,
+  30. , 15.
 };
 
 const int jetTrigQABinning=10;
@@ -138,7 +138,12 @@ const int N_genVars_ptrat = sizeof(genVars_ptrat)/sizeof(std::string);
 
 // trigs
 const std::string HLTName[] = {
-  "HLT40","HLT60","HLT80","HLT100","HLTComb"// ,"TrgCombTest"
+  "HLT40","HLT60","HLT80","HLT100","HLTComb" ,"TrgCombTest"
+};
+
+// trigs
+const std::string HLTName_Leg[] = {
+  "HLTak4Calo40","HLTak4Calo60","HLTak4Calo80","HLTak4Calo100","HLTSum/4", "HLTComb" // ,"TrgCombTest"
 };
 const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 
@@ -179,17 +184,6 @@ const double etabins[] = {
   +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
 };
 const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
-
-
-// hist painting ------------------------
-const int theDataOverlayMarkerColor=1, theMCOverlayMarkerColor=1,theRatioMarkerColor=1;//black
-const int theDataOverlayLineColor=2, theMCOverlayLineColor=4,theRatioLineColor=9;//red, blue, olive
-
-const int altOverlayLineColor=3; 
-const int altRatioLineColor1=8, altRatioLineColor2=7;//green, violet or something
-
-const int theTrigOverlayMarkerColor=1;
-const int theTrigOverlayLineColor[]={9,8,7,2};//,3};
 
 
 //// HELPER FUNCTIONS

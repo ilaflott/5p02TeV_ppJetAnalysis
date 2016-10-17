@@ -582,7 +582,7 @@ int readForests_ppMC(std::string inFilelist , int startfile , int endfile ,
 	hpp_mceff_ptrat_drjt[0]->Fill(gendrjt, recpt/genpt, weight_eS); }
 
       /////   JEC AND JER   ///// 
-      if(fillMCJECHists&&!fillMCJetIDHists){	
+      if(fillMCJECHists && !fillMCJetIDHists){	
 
       	hJEC[0]->Fill(rawpt, eta_F[jet], (float)(recpt/rawpt));
 	
@@ -727,7 +727,7 @@ int readForests_ppMC(std::string inFilelist , int startfile , int endfile ,
 	
 	
 	/////   JEC AND JER   ///// 
-	if(fillMCJECHists){	
+	if(fillMCJECHists && fillMCJetIDHists){	
 	  hJEC[1]->Fill(rawpt, eta_F[jet], (float)(recpt/rawpt));
 	  
 	  int etabin = -1;

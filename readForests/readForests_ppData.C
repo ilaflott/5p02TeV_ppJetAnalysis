@@ -1,10 +1,6 @@
 // custom header
 #include "readForests.h"
 
-const float jtPtCut=15.,jtEtaCut=2.;//JETCUTS
-const float ldJetPtCut=55., subldJetPtCut=25., jetQAPtCut=50.;//DIJET CUTS, QA CUT
-const float dPhiCut=2./3.*TMath::Pi();
-
 //// readForests_ppData
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData( std::string inFilelist , int startfile , int endfile , 
@@ -509,7 +505,7 @@ int readForests_ppData( std::string inFilelist , int startfile , int endfile ,
       float recphi = phi_F[jet];
 
 
-      //// TEMP 10,12,16////
+      //// TEMP 10.12.16////
       // kmatCuts      
       if( recpt <= jtPtCut ) continue;     
       
@@ -523,21 +519,27 @@ int readForests_ppData( std::string inFilelist , int startfile , int endfile ,
 
       //temp location for jet id for rapidity hists...
       bool passesJetID=false;
-      if(fillDataJetIDHists&&fillDataJetSpectraRapHists){
+      if(fillDataJetIDHists)
 	if (  !( neSum_F[jet]/rawpt >= 0.99 || //neutral had //for abs(eta)<2.7
 		 phSum_F[jet]/rawpt >= 0.99 || //neutral em
 		 chSum_F[jet]/rawpt <= 0.   || //charged had //for abs(eta)<2.4 only
 		 eSum_F[jet]/rawpt  >= 0.99 || //electrons
 		 chN_I[jet]+neN_I[jet] <= 1 || //Nconstit.=NchHad+NneuHad
-		 chN_I[jet] <= 0 )             ) { passesJetID=true;
-	  for(int rapbin=0;rapbin<nbins_rap;++rapbin){
-	    if( rapbins[rapbin]<=fabs(recy) && 		
-		fabs(recy)<rapbins[rapbin+1] ) hJetSpectraRap[1][rapbin]->Fill(recpt,weight_eS);  } 	}}
+		 chN_I[jet] <= 0 )             )  passesJetID=true;
+      
+      if(fillDataJetSpectraRapHists&&passesJetID){
+	for(int rapbin=0;rapbin<nbins_rap;++rapbin){
+	  if( rapbins[rapbin]<=fabs(recy) && 		
+	      fabs(recy)<rapbins[rapbin+1] ) hJetSpectraRap[1][rapbin]->Fill(recpt,weight_eS);  } 	}
       
 
       //second half of kmat cut
       if( fabs(receta) > jtEtaCut ) continue;
-      //// TEMP 10,12,16////
+
+      //// kmatCut
+      //if( fabs(receta) > jtEtaCut ||
+      //    recpt <= jtPtCut           ) continue;     
+      //// END TEMP 10.12.16////
 
       // trig plots
       if(fillDataJetTrigQAHists){
@@ -553,7 +555,7 @@ int readForests_ppData( std::string inFilelist , int startfile , int endfile ,
       //	  hTrgQA_recpt_trgpt->Fill( trgPt,recpt, weight_eS);
       //	  hTrgQA_trgpt_rawpt->Fill( rawpt,trgPt, weight_eS); }      }      
       
-
+      
       // jetQA noJetID
       if(fillDataJetQAHists){
 	hJetQA[0][0]->Fill(recpt, weight_eS);
@@ -615,7 +617,7 @@ int readForests_ppData( std::string inFilelist , int startfile , int endfile ,
 	  hJetQA[0][22]->Fill( dphi , weight_eS );       
 	  hJetQA[0][23]->Fill( firstGoodJetPt , weight_eS );       
 	  hJetQA[0][24]->Fill( secondGoodJetPt , weight_eS );       	}
-      }
+      }//end fillDataJetQAHists
       
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
@@ -626,11 +628,11 @@ int readForests_ppData( std::string inFilelist , int startfile , int endfile ,
       
       // apply JetID
       if(fillDataJetIDHists){
-
+	
 	//original jetid was just chSum, neSum, chN, and phSum. 
 	//new ones are the chN+neN, and eSum, 9.19.16
-
-	//// TEMP 10,12,16////
+	
+	//// TEMP 10.12.16////
 	if(!passesJetID) continue;
 
 	//else if (  neSum_F[jet]/rawpt >= 0.99 || //neutral had //for abs(eta)<2.7
@@ -645,7 +647,7 @@ int readForests_ppData( std::string inFilelist , int startfile , int endfile ,
 	//    if( rapbins[rapbin]<=fabs(recy) && fabs(recy)<rapbins[rapbin+1] )
 	//      hJetSpectraRap[1][rapbin]->Fill(recpt,weight_eS); }
 	//}	
-	//// TEMP 10,12,16////
+	//// END TEMP 10.12.16////
 	
 	// trig plots
 	if(fillDataJetTrigQAHists){

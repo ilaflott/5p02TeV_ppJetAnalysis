@@ -44,8 +44,8 @@ const int minArgs=1;
 //const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
 const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
 const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
-const int defStartFile=1;
-const int defEndFile=16; //inclusive boundary, runs 2 files by default
+const int defStartFile=10;
+const int defEndFile=10;
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true;
@@ -62,15 +62,21 @@ int readForests_ppMC( std::string inFilelist=defMCInFilelist,int startfile=defSt
 
 const int readForestsArgCount=7+minArgs;
 
+
+// cuts common to ppMC and ppData
+const float jtPtCut=15.,jtEtaCut=2.;//JETCUTS
+const float ldJetPtCut=60., subldJetPtCut=40., jetQAPtCut=50.;//DIJET CUTS, QA CUT
+const float dPhiCut=2./3.*TMath::Pi();
+
 // ppData switches
 const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=true; //most basic-level plots
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataJetSpectraRapHists=true; //other
 
 // ppMC switches
-const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=false; //most basic-level plots
+const bool fillMCEvtQAHists=false, fillMCJetQAHists=false, fillMCJetIDHists=true; //most basic-level plots
 const bool fillMCUnfoldingHists=false,  fillMCJECHists=true; //MC-specific
-const bool fillMCEffHists=false, fillMCJetSpectraRapHists=true; //other
+const bool fillMCEffHists=false, fillMCJetSpectraRapHists=false; //other
 
 
 //// HELPER FUNCTIONS
@@ -230,8 +236,8 @@ const float rapbins[]={
   0.0, 0.5,
   1.0, 1.5,
   2.0, 2.5,
-  3.0, 3.2,
-  3.7
+  3.0//, 3.2,
+  //3.7
 };
 const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 

@@ -94,7 +94,7 @@ rootcompile "${readFilesScript}.C"
 ## copy over code used for job running/submitting for archival purposes
 cp ${readFilesScript}.* "${logFileDir}"
 cp readForests.h "${logFileDir}"
-cp condorRun_readForests_ppData.sh "${logFileDir}"
+cp condorRun_readForests.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 cd ${logFileDir}
 
@@ -149,7 +149,7 @@ do
 
 Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
-Executable     = condorRun_readForests_ppData.sh
+Executable     = condorRun_readForests.sh
 +AccountingGroup = "group_cmshi.ilaflott"
 Arguments      = $readFilesScriptExe $startfile $endfile $filelist $outfile $radius $jetType $debug
 Input          = /dev/null

@@ -138,12 +138,12 @@ const int N_genVars_ptrat = sizeof(genVars_ptrat)/sizeof(std::string);
 
 // trigs
 const std::string HLTName[] = {
-  "HLT40","HLT60","HLT80","HLT100","HLTComb" ,"TrgCombTest"
+  "HLT40","HLT60","HLT80","HLT100", /*"HLTComb",*/ "TrgCombTest"
 };
 
 // trigs
 const std::string HLTName_Leg[] = {
-  "HLTak4Calo40","HLTak4Calo60","HLTak4Calo80","HLTak4Calo100","HLTSum/4", "HLTComb" // ,"TrgCombTest"
+  "HLTak4Calo40","HLTak4Calo60","HLTak4Calo80","HLTak4Calo100", /*"HLTSum/4",*/ "HLTComb" 
 };
 const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 

@@ -1,28 +1,27 @@
 #!/bin/bash
 
-
 echo ""
 
 ## error conditions + I/O
-if [[ $# -ne 7 ]] # not enough arguments
+if [[ $# -ne 8 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condorSubmit_ppMC.sh <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug>"
+    echo "source condorSubmit_ppMC.sh <readFilesScript> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug>"
     return 1
 fi
 #if [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input against text reg ex.
 
 ## input arguments to submit script
-NJobs=$1
-NFilesPerJob=$2
-startFilePos=$3
-filelistIn=$4  #echo "filelistIn is ${filelistIn}" 
-radius=$5
-jetType=$6
-debug=$7
+readFilesScript=$1 # "readForests_ppMC"
+NJobs=$2
+NFilesPerJob=$3
+startFilePos=$4
+filelistIn=$5  #echo "filelistIn is ${filelistIn}" 
+radius=$6
+jetType=$7
+debug=$8
 
 ## additional inputs to the code, may be input to this script in the near future
-readFilesScript="readForests_ppMC"
 readFilesScriptExe="${readFilesScript}.exe"
 
 filelist=${filelistIn##*/} #echo "filelist is ${filelist}"
@@ -54,6 +53,7 @@ fi
 
 ## some debug info, just in case
 NFilesRequested=$(( $NJobs * $NFilesPerJob ))
+echo "the readFilesScript is ${readFilesScript}"
 echo "require ${NFilesRequested} files for ${NJobs} jobs"
 echo "# of files in list ${filelist}: ${nFiles}"
 echo "starting at file position ${startFilePos}..."
@@ -87,13 +87,15 @@ cmsenv
 cd -
 
 
-## compile code executable, same as rootcompile in my .bashrc
-echo "compiling..."
-rootcompile "${readFilesScript}.C"
+### compile code executable, same as rootcompile in my .bashrc
+#echo "compiling..."
+#rootcompile "${readFilesScript}.C"
+echo "no compile needed, moving on...."
 
 ## copy over code used for job running/submitting for archival purposes
 cp ${readFilesScript}.* "${logFileDir}"
-cp condorRun_readForests_ppMC.sh "${logFileDir}"
+cp readForests.h "${logFileDir}"
+cp condorRun_readForests.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 cd ${logFileDir}
 
@@ -148,7 +150,7 @@ do
 
 Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
-Executable     = condorRun_readForests_ppMC.sh
+Executable     = condorRun_readForests.sh
 +AccountingGroup = "group_cmshi.ilaflott"
 Arguments      = $readFilesScriptExe $startfile $endfile $filelist $outfile $radius $jetType $debug
 Input          = /dev/null
@@ -169,7 +171,8 @@ EOF
     ## submit the job defined in the above submit file
     echo "running ${readFilesVersion} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 1.0s #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    echo "sleeping..."
+    sleep 3s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

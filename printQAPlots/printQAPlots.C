@@ -2,7 +2,7 @@
 
 // env and I/O ------------------------
 const std::string CMSSW_BASE="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/";//CMSSW_BASE
-const std::string SCRATCH_BASE="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
+const std::string SCRATCH_BASE="/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.20.16_outputCondor/";
 
 //const std::string readForests_dir=CMSSW_BASE+"src/readForests/saved_outputCondor/";//input dir
 const std::string readForests_dir=SCRATCH_BASE;
@@ -15,10 +15,10 @@ const bool doEventCounts=true, drawEvtQAPlots=true;
 //jet switches
 const bool doJetIDPlots=true;
 const bool drawJetQAPlots=true, drawJetTrigQAPlots=true, drawJetRapBinsPlot=true;
-const bool drawMCEffPlots=false;//, drawJECandJERPlots=true;//MC Specific for now
+const bool drawMCEffPlots=true;
 //minor jet switches
-const bool drawDijetPlots=false;
-const bool doBasicJetQAOnly=true;
+const bool drawDijetPlots=true;
+const bool doBasicJetQAOnly=false;
 
 const bool debugMode=true;
 
@@ -841,7 +841,7 @@ int printQAPlots(const std::string input_ppData_condorDir , const std::string in
 	  
 	  std::string inHistName="hJetSpectraRap";
           if(i==1)inHistName+="_wJetID";
-          inHistName+="_bin_"+std::to_string(rapbin);
+          inHistName+="_bin"+std::to_string(rapbin);
           if(debugMode)std::cout<<"inHistName="<<inHistName<<std::endl<<std::endl;
 
 	  //std::string inMCHistName="hJetSpectraRap";
@@ -861,7 +861,7 @@ int printQAPlots(const std::string input_ppData_condorDir , const std::string in
           theJetSpectraRapHist->SetMarkerSize(1.1);
           theJetSpectraRapHist->SetMarkerColor( theRapOverlayMarkerColor[rapbin] );
           theJetSpectraRapHist->SetLineColor( kBlack );//theRapOverlayLineColor[j]   );
-	  //theJetSpectraRapHist->SetAxisRange(0.,800.,"X");
+	  theJetSpectraRapHist->SetAxisRange(0.,800.,"X");
 
 
           ////open the hists + do scaling
@@ -892,7 +892,8 @@ int printQAPlots(const std::string input_ppData_condorDir , const std::string in
 	    std::string h_Title   ="Jet Pt in |y| bins";//, DATA ONLY";
             if(i==1)h_Title+=", w/ JetIDCut";
             
-            theJetSpectraRapHist->SetAxisRange(std::pow(10.,-8.),std::pow(10.,5.),"Y");
+            theJetSpectraRapHist->SetAxisRange(std::pow(10.,-8.3),std::pow(10.,6.),"Y");
+            theJetSpectraRapHist->SetAxisRange(60.,500.,"X");
             theJetSpectraRapHist->SetTitle (    h_Title.c_str() );
             theJetSpectraRapHist->SetXTitle( h_XAx_Title.c_str() );
             theJetSpectraRapHist->SetYTitle( h_YAx_Title.c_str() );

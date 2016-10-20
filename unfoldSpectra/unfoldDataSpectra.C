@@ -1,45 +1,60 @@
 #include "unfoldSpectra.h"
 
+// procedural settings
+const bool doBayes=true ; 
+const int kIter = 4;//,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
-//  global settings -------------------------------------------------- 
-const int radius=4;
-const bool doToyErrs=false;
-
-// Bayesian settings 
-const int kIter = 4;
-
-// SVD settings 
+const bool doSVD=!(doBayes); 
 const int  nKregMax = 9, kRegRange=4, kRegDraw = 3, kRegCenter=21;
 
-// procedural settings
-const bool doBayes=true; 
-const bool doSVD=true; 
-
 const bool drawPDFs=true; 
-const bool drawPDFs_BayesInputHistos= true&&drawPDFs;
-const bool drawPDFs_SVDInputHistos  = true&&drawPDFs;
+const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
+const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;
 
-// I/O
-const std::string baseName="unfoldDataSpectra_defOut"; // output name
-const std::string outRootFile=baseName+".root";
-const std::string outBayesPdfFile=baseName+"_BayesianUnfoldingPlots.pdf";
-const std::string outSVDPdfFile=baseName+"_SVDUnfoldingPlots"; // see drawPDFs part for rest of string
+//other settings
+const bool doToyErrs=false;
+const bool debugMode=true;
+const bool debugPearson=(false && debugMode) ;
 
-const bool defDebugMode=false;
-const bool defDebugPearson=false;   // for easy debugging of pearson matrix stuff
-
-const std::string Rstring="_R"+std::to_string(radius); 
-const std::string RandEtaRange=Rstring+"_20_eta_20";
-
-const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
-const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
-
-const double integratedLuminosity=25.8*pow(10,9)*0.99;
-const std::string MCdesc= "MC, QCD PY8 Tune CUETP8M1"; 
+//useful strings, numbers
+const double integratedLuminosity=25.8*pow(10,9);
+const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
+const std::string Datadesc1= "pp 2015 pmptReco, #sqrt{s}=5.02 TeV"; 
+const std::string Datadesc2= "L_{int}=25.8 pb^{-1}"; 
 
 //  the code --------------------------------------------------
-int unfoldDataSpectra( bool debugMode=defDebugMode){
+int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inFile_MC_dir , 
+		       const std::string baseName ,    const bool doJetID=true ){
+  
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
+
+  //figure out what radius/jetcollection we are looking at using the MC filename
+  std::size_t radPos=inFile_MC_dir.find("_ak")+3;
+  const std::string radiusInt= inFile_MC_dir.substr( radPos,1 );
+  const std::string radius="R"+radiusInt;
+  const std::string RandEtaRange="_"+radius+"_20_eta_20";
+  if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
+  
+  const std::string Rstring="_"+radius; 
+  const std::string Rstring_plotTitle=" "+radius; 
+  const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
+
+  std::size_t jetTypePos=radPos+1, jetsPos=inFile_MC_dir.find("Jets");
+  const std::string jetType=inFile_MC_dir.substr( jetTypePos,(jetsPos-jetTypePos) );
+  if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
+
+  const std::string fullJetType="ak"+radiusInt+jetType;//"ak3PFJets";//find in dir name
+  if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
+  
+  const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
+  const std::string inFile_Data_name="/HighPtJetTrig_"+fullJetType+"-allFiles.root";
+
+  const std::string outFileName=CMSSW_BASE+unfoldSpectra_outdir+fullJetType+"_"+baseName;//+".root";  
+  const std::string outRootFile=CMSSW_BASE+unfoldSpectra_outdir+fullJetType+"_"+baseName+".root";  
+  const std::string outBayesPdfFile=baseName+"_Bayes";
+  const std::string outSVDPdfFile=baseName+"_SVD"; // see drawPDFs part for rest of string
+
+
 
   // set error handing, stat info, other settings  // fix me
   RooUnfold::ErrorTreatment errorTreatment;
@@ -60,7 +75,7 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"; 
   if(debugMode)std::cout<<": "<<inFile_Data_name; 
   std::cout<<std::endl<<std::endl;
-  TFile *fpp_Data = TFile::Open(inFile_Data.c_str());
+  TFile *fpp_Data = TFile::Open( (SCRATCH_BASE+inFile_Data_dir+inFile_Data_name).c_str());
 
   //rec
   TH1F *hrec, *hrec_anabin;
@@ -79,7 +94,7 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
   if(debugMode)std::cout<<": "<<inFile_MC_name; 
   std::cout<<std::endl<<std::endl;
-  TFile *fpp_MC = TFile::Open(inFile_MC.c_str());
+  TFile *fpp_MC = TFile::Open( (SCRATCH_BASE+inFile_MC_dir+inFile_MC_name).c_str());
 
   //mat, NOT NORMALIZED
   TH2F *hmat,*hmat_anabin;
@@ -177,7 +192,7 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
     //  drawPDFS -------------------------------------------------- 
     if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
     else{ std::cout<<std::endl<<"drawing output PDFs for Bayesian Unfolding..."<<std::endl;
-      std::string outPdfFile=outBayesPdfFile;
+      std::string outPdfFile=outBayesPdfFile+".pdf";
       std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
 
       // temp canvas for printing
@@ -289,7 +304,7 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
       if(debugMode)std::cout<<std::endl<<"calling Ereco..."<<std::endl;
       TMatrixD covmat = unf_svd.Ereco(errorTreatment);
 
-      bool debugPearson=(bool)(defDebugPearson && debugMode) ;
+
       if(debugPearson)std::cout<<"debugPearson is ON!"<<std::endl;
 
       if(debugPearson)std::cout<<std::endl;
@@ -492,15 +507,15 @@ int unfoldDataSpectra( bool debugMode=defDebugMode){
 
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
-
-  if( argc!=1 && argc!=2 ) { // input error
-    std::cout<<"do ./unfoldDataSpectra.exe <debugMode= 0or1, def="<<defDebugMode<<" to run"<<std::endl;
+  
+  if( argc!=5 ){
+    std::cout<<"do ./unfoldDataSpectra.exe "<<std::endl;
+    std::cout<<"actually... just open the damn code and look"<<std::endl;
     return rStatus;  }
-
+  
   rStatus=1; // runtime error
-  if(argc==1)   rStatus=unfoldDataSpectra();
-  if(argc==2)   rStatus=unfoldDataSpectra( (const bool) atoi(argv[1]) ); 
-
+  rStatus=unfoldDataSpectra( (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], (int)std::atoi(argv[4]) ); 
+  
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;
 }

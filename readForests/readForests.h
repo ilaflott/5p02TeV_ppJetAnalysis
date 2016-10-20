@@ -75,9 +75,9 @@ const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataJetSpectraRapHists=true; //other
 
 // ppMC switches
-const bool fillMCEvtQAHists=false, fillMCJetQAHists=false, fillMCJetIDHists=true; //most basic-level plots
-const bool fillMCUnfoldingHists=true,  fillMCJECHists=false; //MC-specific
-const bool fillMCEffHists=false, fillMCJetSpectraRapHists=false; //other
+const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
+const bool fillMCUnfoldingHists=false,  fillMCJECHists=false; //MC-specific
+const bool fillMCEffHists=true, fillMCJetSpectraRapHists=false; //other
 
 
 //// HELPER FUNCTIONS

@@ -1,11 +1,10 @@
 #include "plotNfit.h"
 
 const bool debugMode=true;
-const std::string defOutFilename="plotNfit_ppMC_defOut";
+//const std::string defOutFilename="plotNfit_ppMC_defOut";
 
-int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
-  const std::string outRootFilename=inputOutFilename+".root";
-  const std::string outPdfFilename   =inputOutFilename+".pdf";
+int plotNfit(const std::string inFile_MC_dir,const std::string baseName){
+  //const std::string inputOutFilename=defOutFilename){
 
   // root style settings
   std::cout<<std::endl<<"loading style..." <<std::endl;
@@ -13,18 +12,46 @@ int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
   gStyle->SetOptStat(1);
   gStyle->SetOptFit(1);  
 
+
+  //input stuff.
+  //figure out what radius/jetcollection we are looking at using the ppData filename
+  std::size_t radPos=inFile_MC_dir.find("_ak")+3;
+  const std::string radiusInt= inFile_MC_dir.substr( radPos,1 );
+  const std::string radius="R"+radiusInt+"_";
+  if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
+
+  std::size_t jetTypePos=radPos+1;
+  std::size_t jetsPos=inFile_MC_dir.find("Jets");;
+
+  //make final jetType strings
+  const std::string jetType=inFile_MC_dir.substr( jetTypePos,(jetsPos-jetTypePos) );
+  if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
+
+  const std::string fullJetType="ak"+radiusInt+jetType;//"ak3PFJets";//find in dir name
+  if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
+  
+  std::string doJetID=inFile_MC_dir.substr( inFile_MC_dir.find("MCJEC_JetID")+11 );
+  if(debugMode)std::cout<<"doJetID="<<doJetID<<std::endl;
+
+  const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
+
+  // input file
+  std::cout<< "input file dir is " << inFile_MC_dir<< std::endl;
+  std::cout<< "input file name is " << inFile_MC_name<< std::endl;
+
+  // input file + input hist + input jet analyzer
+  std::cout<<std::endl<<"opening input file in dir "<< inFile_MC_dir <<std::endl;
+  std::cout<<"input file name in dir "<< inFile_MC_name <<std::endl;
+  TFile *finPP=new TFile( (SCRATCH_BASE+inFile_MC_dir+inFile_MC_name).c_str() );
+  TH1F *hrsp[Nrad][nbins_pt];  
+  double array_mean[Nrad][nbins_pt];
+  
+
   // fit settings
   std::cout<<"setting up fitters..."<< std::endl;
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04); 
 
-  // input file + input hist + input jet analyzer
-  std::cout<<std::endl<<"opening input file in dir "<< inFile_MC_dir <<std::endl;
-  std::cout<<"input file name in dir "<< inFile_MC_name <<std::endl;
-  TFile *finPP=new TFile(inFile_MC.c_str());
-  TH1F *hrsp[Nrad][nbins_pt];  
-  double array_mean[Nrad][nbins_pt];
-  
   // output hists+fits
   TH1F *hMean[Nrad], *hSigma[Nrad];   // mean/sigma hists
   TF1 *fgaus=0;   // gaussian fit
@@ -66,7 +93,8 @@ int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
     std::cout<<"looping over nbins_pt= "<<nbins_pt<<" input JER hists + fitting..." <<std::endl;
     for(int ip=0; ip<nbins_pt; ip++){
 
-      std::string inputHistName="hJER_"+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);
+      std::string inputHistName="hJER_"+doJetID+"wJetID_"+std::to_string(ptbins[ip])+
+	"_pt_"+std::to_string(ptbins[ip+1]);//"hJER_"+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);
       hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );    std::cout<<std::endl; 
 
       if(!hrsp[nj][ip]){std::cout<<"no input hist, exiting..."<<std::endl;assert(false);}
@@ -118,21 +146,7 @@ int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
 	: sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) + 
 		(pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) ); 	
       
-      //// ALT METRICS
-      // mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     :  0.5*(fgaus->GetParameter(1) + hrsp[nj][ip]->GetMean());
-      // mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     : fgaus->GetParameter(1);
-      // emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError(): hrsp[nj][ip]->GetMeanError(1);
-      // emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError(): sqrt(pow(fgaus->GetParError(1),2) + pow(hrsp[nj][ip]->GetMeanError(),2));      
-      // sig   = (fitstatus!=0) ? hrsp[nj][ip]->GetRMS()/mean : fgaus->GetParameter(2)/fgaus->GetParameter(1);
-      // esig  = (fitstatus!=0) 
-      // 	? sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))) 
-      // 	: sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))); 
-      // esig  = (fitstatus!=0) 
-      // 	? sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))) 
-      // 	: sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))); 
-      //       
-      
-      //hrsp[nj][ip]->Write();
+
 
       //array_norm[nj][ip]=norm ; 
       //array_err[nj][ip]=err  ;  
@@ -162,17 +176,25 @@ int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
   std::cout<<std::endl<<"closing gPad..."<<std::endl;
   gPad->Close();
 
-  {
-    std::cout<<std::endl<<"opening output pdf file "<< outPdfFilename<<std::endl;
+  std::string jobType="_MCJEC_JetID"+doJetID;//find in dir name
+  if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
+  { //DRAW PDFS
+    //const std::string outPdfFilename   =inputOutFilename+".pdf";
+    //std::string open_outPdfFilename=outPdfFilename+"[";
+    //std::string close_outPdfFilename=outPdfFilename+"]";
+
+    std::string thePDFFileName=CMSSW_BASE+JERandJES_outdir+fullJetType+jobType+"_"+baseName+".pdf";
+    std::string open_thePDFFileName=thePDFFileName+"[";
+    std::string close_thePDFFileName=thePDFFileName+"]";
+    std::cout<<std::endl<<"opening output pdf file "<< thePDFFileName<<std::endl;
+
     TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 800);
-    std::string open_outPdfFilename=outPdfFilename+"[";
-    std::string close_outPdfFilename=outPdfFilename+"]";
-    pdfoutCanv->Print( open_outPdfFilename.c_str() );
+    pdfoutCanv->Print( open_thePDFFileName.c_str() );
     pdfoutCanv->cd();
     std::cout<<std::endl<<"printing hists to pdf file..."<<std::endl;
     for(int i=0;i<Nrad;++i){
-      hMean[i] ->Draw(); pdfoutCanv->Print(outPdfFilename.c_str());
-      hSigma[i]->Draw(); pdfoutCanv->Print(outPdfFilename.c_str());    
+      hMean[i] ->Draw(); pdfoutCanv->Print(thePDFFileName.c_str());
+      hSigma[i]->Draw(); pdfoutCanv->Print(thePDFFileName.c_str());    
       for(int j=0;j<nbins_pt;++j){
 	std::string hrspTitle="hJER_"+std::to_string(ptbins[j])+"_pt_"+std::to_string(ptbins[j+1]);	
 	hrsp[i][j]->SetTitle(hrspTitle.c_str());
@@ -184,17 +206,19 @@ int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
 				       array_mean[i][j], hrsp[i][j]->GetYaxis()->GetXmax() );// x2,y2
 	histMeanLine->Draw("same");
 	
-	pdfoutCanv->Print(outPdfFilename.c_str());
+	pdfoutCanv->Print(thePDFFileName.c_str());
       }
     }
-    std::cout<<"closing output pdf file "<<outPdfFilename<<std::endl<<std::endl;
-    pdfoutCanv->Print( close_outPdfFilename.c_str() );
+    std::cout<<"closing output pdf file "<<thePDFFileName<<std::endl<<std::endl;
+    pdfoutCanv->Print( close_thePDFFileName.c_str() );
   }
   
 
-  {
-    std::cout<<std::endl<<"opening output root file "<< outRootFilename<<std::endl;
-    TFile *rootfout = new TFile(outRootFilename.c_str(),"RECREATE"); 
+  {// SAVE OUTPUT ROOT FILE
+
+    std::string outFileName=CMSSW_BASE+JERandJES_outdir+fullJetType+jobType+"_"+baseName+".root";
+    std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
+    TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
     rootfout->cd();  
     std::cout<<"writing output to root file..."<<std::endl;
     for(int i=0;i<Nrad;++i){
@@ -212,13 +236,39 @@ int JERandJES_plotNfit(const std::string inputOutFilename=defOutFilename){
 
 int main(int argc, char*argv[]){
   int rStatus=-1;
-  if(argc!=1&&argc!=2){
-    std::cout<<"do "<<std::endl<<"./JERandJES_plotNfit.exe <outputName>"<<std::endl<<std::endl;
-    return rStatus;
-  }
+  if(argc!=3){
+    std::cout<<"no defaults. Do...."<<std::endl;
+    std::cout<<"./plotNfit.exe "<<
+      "<target_ppMC_dir> <outputNameBase>"<<std::endl<<std::endl;
+    return rStatus;  }
+  
   rStatus=1;
-  if(argc==1)  rStatus=JERandJES_plotNfit();
-  else rStatus=JERandJES_plotNfit( (const std::string)argv[1] );
-  std::cout<<"done, rStatus="<<rStatus <<std::endl<<std::endl;
+  rStatus=plotNfit((const std::string)argv[1], (const std::string)argv[2] );
   return rStatus;
 }
+
+
+
+
+
+
+
+
+
+
+
+      //// ALT METRICS
+      // mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     :  0.5*(fgaus->GetParameter(1) + hrsp[nj][ip]->GetMean());
+      // mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     : fgaus->GetParameter(1);
+      // emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError(): hrsp[nj][ip]->GetMeanError(1);
+      // emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError(): sqrt(pow(fgaus->GetParError(1),2) + pow(hrsp[nj][ip]->GetMeanError(),2));      
+      // sig   = (fitstatus!=0) ? hrsp[nj][ip]->GetRMS()/mean : fgaus->GetParameter(2)/fgaus->GetParameter(1);
+      // esig  = (fitstatus!=0) 
+      // 	? sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))) 
+      // 	: sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))); 
+      // esig  = (fitstatus!=0) 
+      // 	? sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))) 
+      // 	: sqrt((pow(1/mean,2)*pow(hrsp[nj][ip]->GetRMSError(),2))+(pow(-hrsp[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))); 
+      //       
+      
+      //hrsp[nj][ip]->Write();

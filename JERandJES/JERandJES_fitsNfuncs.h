@@ -27,6 +27,9 @@
 #include <TF1.h>
 #include <TVirtualFitter.h>
 
+const int digi = 3;
+const double fracRMS = 1.00;
+
 // fit misc ----------------------------------------------------------------------------
 void FitDist(TH1F *&, //hrsp
 	     double &, double &, double &, double &);//mean,emean,sig,esig

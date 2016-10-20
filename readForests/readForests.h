@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 // ROOTSYS
 #include <TSystem.h>
 #include <TProfile.h>
@@ -48,7 +49,7 @@ const int defStartFile=10;
 const int defEndFile=10;
 const int defRadius=4;
 const std::string defJetType="PF";
-const bool defDebugMode=true;
+const bool defDebugMode=true, fastDebugMode = true;
 const std::string defDataOutputName="readForests_ppData_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut.root";
 
@@ -75,7 +76,7 @@ const bool fillDataJetSpectraRapHists=true; //other
 
 // ppMC switches
 const bool fillMCEvtQAHists=false, fillMCJetQAHists=false, fillMCJetIDHists=true; //most basic-level plots
-const bool fillMCUnfoldingHists=false,  fillMCJECHists=true; //MC-specific
+const bool fillMCUnfoldingHists=true,  fillMCJECHists=false; //MC-specific
 const bool fillMCEffHists=false, fillMCJetSpectraRapHists=false; //other
 
 
@@ -236,8 +237,8 @@ const float rapbins[]={
   0.0, 0.5,
   1.0, 1.5,
   2.0, 2.5,
-  3.0//, 3.2,
-  //3.7
+  3.0 , 3.2,
+  3.7
 };
 const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 
@@ -337,8 +338,6 @@ const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbin
 //  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395,
 //  430, 468, 507, 548, 592, 638, 686, 1000
 //};
-
-
 
 //float trigComb_sanityCheck(bool *trgDec, int *treePrescl, double triggerPt){
 //  std::cout<<"trigComb_sanityCheck Called..."<<std::endl<<std::endl;

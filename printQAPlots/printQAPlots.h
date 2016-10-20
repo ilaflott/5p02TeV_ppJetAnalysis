@@ -14,6 +14,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 // ROOTSYS
 #include <TSystem.h>
 #include <TProfile.h>
@@ -54,7 +55,7 @@ const std::string etaWidth = "20_eta_20";
 // variable names, string array
 const std::string var[] = {   
   "jtpt" ,  "rawpt",  
-  "jteta", "jtphi", //normalize to data
+  "jteta", "jtphi", "jty", //normalize to data
   "trkMax", "trkSum", "trkHardSum", 
   "chMax",  "chSum",  "chHardSum", 
   "phMax",  "phSum",  "phHardSum", 
@@ -69,7 +70,7 @@ const int N_vars = sizeof(var)/sizeof(std::string);
 // variable names, string array
 const std::string var_xAx_Titles[] = {   
   "p_{t}^{reco} (GeV)" ,  "p_{t}^{raw} (GeV)",  
-  "#eta_{jet}", "#phi_{jet}", 
+  "#eta_{jet}", "#phi_{jet}", "y_{jet}" ,
   "trkMax/p_{t}^{raw}", "trkMax/p_{t}^{raw}", "trkHardSum/p_{t}^{raw}", 
   "chMax/p_{t}^{raw}",  "chSum/p_{t}^{raw}",  "chHardSum/p_{t}^{raw}", 
   "phMax/p_{t}^{raw}",  "phSum/p_{t}^{raw}",  "phHardSum/p_{t}^{raw}", 
@@ -83,7 +84,7 @@ const std::string var_xAx_Titles[] = {
 
 const int var_xAx_reBin[]={                                   
   5, 5,     //reco/rawjtpt //500,0,500	   
-  2,  2,    //jteta, phi   //60 ,-3,+3  and  //100,-4,+4  
+  2,  2, 2,    //jteta, phi, jty   //60 ,-3,+3  and  //100,-4,+4  
   5, 5, 5,  //trks	   //200,0,2	   				   
   5, 5, 5,  //ch  
   5, 5, 5,  //ph					           
@@ -97,7 +98,7 @@ const int var_xAx_reBin[]={
 
 const float jetQAxmax[]={
   (500. ), (500.),
-  (3.   ), (4.  ),
+  (3.   ), (4.  ), (3.  ),
   (2.00 ), (2.00), (2.00),
   (2.00 ), (2.00), (2.00),
   (2.00 ), (2.00), (2.00),
@@ -112,7 +113,7 @@ const float jetQAxmax[]={
 
 const float jetQAxmin[]={
   0.  ,  0.,
-  -3. , -4.,
+  -3. , -4., -3.,
   0.  ,  0., 0.,
   0.  ,  0., 0.,
   0.  ,  0., 0.,
@@ -125,12 +126,14 @@ const float jetQAxmin[]={
 };
 
 const int jetTrigQABinning=10;
+const int jetSpectraRapBinning=10;
 
 // gen variable names for Th2 profiles//MCEff Ploits
 const std::string genVars[] = {   
   "pt","eta","phi" //,"drjt"
 };
 const int N_genVars = sizeof(genVars)/sizeof(std::string);
+
 const std::string genVars_ptrat[] = {   
   "eta","phi" ,"drjt"
 };
@@ -155,7 +158,6 @@ const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 // binning arrays
 const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
-
 
 const double JEC_ptbins[] = {
   17, 22, 27,    //15-30
@@ -185,6 +187,14 @@ const double etabins[] = {
 };
 const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 
+const float rapbins[]={ 
+  0.0, 0.5,
+  1.0, 1.5,
+  2.0, 2.5,
+  3.0 //, 3.2,
+  //3.7
+};
+const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------

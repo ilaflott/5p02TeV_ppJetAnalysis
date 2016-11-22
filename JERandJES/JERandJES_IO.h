@@ -4,7 +4,7 @@
 const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
 const std::string SCRATCH_BASE=
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
+  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.20.16_outputCondor/";
 const std::string JERandJES_outdir="JERandJES/output/";
 
 //const std::string inFile_MC_dir=

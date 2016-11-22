@@ -32,6 +32,8 @@
 #include <TH3.h>
 #include <TH1F.h>
 #include <TH2F.h>
+// custom
+#include "L2L3ResidualWFits.h"
 
 
 //// FUNCTIONS
@@ -49,7 +51,7 @@ const int defStartFile=10;
 const int defEndFile=10;
 const int defRadius=4;
 const std::string defJetType="PF";
-const bool defDebugMode=true, fastDebugMode = true;
+const bool defDebugMode=true, fastDebugMode = false;
 const std::string defDataOutputName="readForests_ppData_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut.root";
 
@@ -65,20 +67,9 @@ const int readForestsArgCount=7+minArgs;
 
 
 // cuts common to ppMC and ppData
-const float jtPtCut=15.,jtEtaCut=2.;//JETCUTS
-const float ldJetPtCut=60., subldJetPtCut=40., jetQAPtCut=50.;//DIJET CUTS, QA CUT
-const float dPhiCut=2./3.*TMath::Pi();
-
-// ppData switches
-const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=true; //most basic-level plots
-const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetSpectraRapHists=true; //other
-
-// ppMC switches
-const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
-const bool fillMCUnfoldingHists=false,  fillMCJECHists=false; //MC-specific
-const bool fillMCEffHists=true, fillMCJetSpectraRapHists=false; //other
-
+const float jtPtCut=15.,jtEtaCut=2.;//basic cuts
+const float jetQAPtCut=50.;//for consitutent, eta, phi plots
+const float ldJetPtCut=30., subldJetPtCut=20., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 //// HELPER FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------
@@ -124,15 +115,16 @@ const char *etaWidth=(char*)"20_eta_20";
 
 // variable names for QA Plots
 const std::string var[]={
-  "jtpt"  , "rawpt" ,  //jets
+  "jtpt"  , "rawpt" , "jtpu", //jets, 0-5=6
   "jteta" , "jtphi" , "jty",
-  "trkMax", "trkSum", "trkHardSum", //jet constituents
+  "trkMax", "trkSum", "trkHardSum", //jet constituents, 6-23=18
   "chMax" , "chSum" , "chHardSum",
   "phMax" , "phSum" , "phHardSum",
   "neMax" , "neSum" ,
   "eMax"  , "eSum"  ,
   "muMax" , "muSum" ,
-  "Aj" , "xj" , "dphi", //dijet variables
+  "neN", "chN", "sumN",
+  "Aj" , "xj" , "dphi", //dijet variables, 24-28=5
   "leadJetPt", "subleadJetPt"
 };
 const int N_vars=sizeof(var)/sizeof(std::string);

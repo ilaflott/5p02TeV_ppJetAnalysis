@@ -37,6 +37,8 @@
 #include <TLegend.h>
 #include <TLatex.h>
 #include <TLine.h>
+#include <TStyle.h>
+#include <TROOT.h>
 // histos
 #include <TH1.h>
 #include <TH2.h>
@@ -112,7 +114,7 @@ const float jetQAxmax[]={
 
 
 const float jetQAxmin[]={
-  0.  ,  0.,
+  30., 30.,  //  0.  ,  0.,
   -3. , -4., -3.,
   0.  ,  0., 0.,
   0.  ,  0., 0.,
@@ -122,7 +124,7 @@ const float jetQAxmin[]={
   0.  ,  0., 
   0.  ,  0., 
   2.0 ,
-  30. , 15.
+  0. , 0.
 };
 
 const int jetTrigQABinning=10;

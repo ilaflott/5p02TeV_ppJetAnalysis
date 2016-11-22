@@ -2,11 +2,11 @@
 
 
 secondCount=0
-while [[ $secondCount -lt 1800 ]]
+while [[ $secondCount -lt 3600 ]]
 do
     condor_q ilaflott
-    sleep 3s
-    secondCount=$(( $secondCount + 3 ))
+    sleep 5s
+    secondCount=$(( $secondCount + 5 ))
 done
-echo "half-hour of condor-querying done. "
+echo "hour of condor-querying done. "
 return

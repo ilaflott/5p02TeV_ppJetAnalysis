@@ -26,6 +26,8 @@ echo "contents before job processing is..."
 ls -al
 echo ""
 
+tar -zxvf JECDataDriven.tar.gz
+
 # inputs for run+root script
 readFilesExe=$1
 startfile=$2

@@ -57,10 +57,12 @@ const int nbins_pt_jec = sizeof(ptbins_jec)/sizeof(double) -1;
 
 const int ptbins[] = {15 , 30 , 50 , 80 , 120, 170, 220, 300, 500 };
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;
+
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 
 //Error in <TAxis::TAxis::Set>: bins must be in increasing order
 const Double_t ptbins_debug[] = {15., 30., 50., 80., 120., 170., 220., 300., 500.};
 const Int_t nbins_pt_debug = nbins_pt;
+
 const double xmin=ptbins[0];
 const double xmax=ptbins[nbins_pt];
 

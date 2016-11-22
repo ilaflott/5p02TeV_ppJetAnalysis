@@ -7,6 +7,8 @@
 #include <TROOT.h>
 #include <TProfile.h>
 #include <TStyle.h>
+#include <TCanvas.h>
+#include <TFrame.h>
 #include <TFile.h>
 
 // fit + boundaries + plots

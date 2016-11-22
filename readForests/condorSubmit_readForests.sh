@@ -95,6 +95,8 @@ cp ${readForestsCode}.* "${logFileDir}"
 cp readForests.h "${logFileDir}"
 cp condorRun_readForests.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
+cp JECDataDriven.tar.gz "${logFileDir}"
+#cp L2L3ResidualWFits.h  "${logFileDir}"
 cd ${logFileDir}
 
 
@@ -161,7 +163,7 @@ GetEnv         = True
 Rank           = kflops
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
-transfer_input_files = ${filelist},${readForestsExe}
+transfer_input_files = ${filelist},${readForestsExe},JECDataDriven.tar.gz
 when_to_transfer_output = ON_EXIT
 Queue
 EOF

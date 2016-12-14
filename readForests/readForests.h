@@ -47,29 +47,37 @@ const int minArgs=1;
 //const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
 const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
 const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
-const int defStartFile=10;
-const int defEndFile=10;
+const int defStartFile=0;
+const int defEndFile=0;
 const int defRadius=4;
 const std::string defJetType="PF";
-const bool defDebugMode=true, fastDebugMode = false;
+const bool defDebugMode=true, fastDebugMode = true;
 const std::string defDataOutputName="readForests_ppData_defOut.root";
-const std::string defMCOutputName="readForests_ppMC_defOut.root";
+const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 
-int readForests_ppData( std::string inFilelist=defDataInFilelist, int startfile=defStartFile, int endfile=defEndFile,
-                        int radius=defRadius, std::string jetType=defJetType, bool debugMode=defDebugMode,       
-		        std::string outfile=defDataOutputName                                                           );
+int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
+				   int startfile=defStartFile, int endfile=defEndFile,
+				   int radius=defRadius, std::string jetType=defJetType, 
+				   bool debugMode=defDebugMode,
+				   std::string outfile=defDataOutputName      );
 
-int readForests_ppMC( std::string inFilelist=defMCInFilelist,int startfile=defStartFile, int endfile=defEndFile, 
-		      int radius=defRadius, std::string jetType=defJetType, bool debugMode=defDebugMode,
-		      std::string outfile=defMCOutputName                                                          );
+int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
+				 int startfile=defStartFile, int endfile=defEndFile, 
+				 int radius=defRadius, std::string jetType=defJetType, 
+				 bool debugMode=defDebugMode,
+				 std::string outfile=(defMCOutputName+"_jetPlots.root")     );
+
+int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_ppMC_local.txt",
+			    int startfile=defStartFile, int endfile=defEndFile, 
+			    int radius=defRadius, std::string jetType=defJetType, 
+			    bool debugMode=defDebugMode,
+			    std::string outfile=(defMCOutputName+"_MCJEC.root")      );
 
 const int readForestsArgCount=7+minArgs;
 
-
-// cuts common to ppMC and ppData
-const float jtPtCut=15.,jtEtaCut=2.;//basic cuts
-const float jetQAPtCut=50.;//for consitutent, eta, phi plots
-const float ldJetPtCut=30., subldJetPtCut=20., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
+const float jtPtCut=15.,jtEtaCut=3.;//basic cuts
+const float jetQAPtCut=15.;//for consitutent, eta, phi plots
+const float ldJetPtCut=25., subldJetPtCut=15., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 //// HELPER FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------
@@ -111,20 +119,21 @@ float deltaphi(float phi1, float phi2){
 // ------------------------------------------------------------------------------------------------------------
 
 // eta width
-const char *etaWidth=(char*)"20_eta_20";
+//const char *etaWidth=(char*)"20_eta_20";
+const std::string etaWidth="20_eta_20";
 
 // variable names for QA Plots
 const std::string var[]={
-  "jtpt"  , "rawpt" , "jtpu", //jets, 0-5=6
+  "jtpt"  , "rawpt" ,  //jets, 0-4=5
   "jteta" , "jtphi" , "jty",
-  "trkMax", "trkSum", "trkHardSum", //jet constituents, 6-23=18
+  "trkMax", "trkSum", "trkHardSum", //jet constituents, 5-22=18
   "chMax" , "chSum" , "chHardSum",
   "phMax" , "phSum" , "phHardSum",
   "neMax" , "neSum" ,
   "eMax"  , "eSum"  ,
   "muMax" , "muSum" ,
   "neN", "chN", "sumN",
-  "Aj" , "xj" , "dphi", //dijet variables, 24-28=5
+  "Aj" , "xj" , "dphi", //dijet variables, 23-27=5
   "leadJetPt", "subleadJetPt"
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
@@ -194,8 +203,26 @@ const int N_MCTrees=sizeof(MCTreeNames)/sizeof(std::string);
 //// BINNING
 // ------------------------------------------------------------------------------------------------------
 
-const float ptbins[]={ 15., 30., 50., 80., 120., 170., 220., 300., 500. };
-const int nbins_pt=sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
+
+const float ptbins[]={ 
+  15., 30., 50., 80., 
+  120., 170., 220., 300., 
+  500. 
+}; // original genpt JER binning i inherited from raghav
+const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+const float ptbins2[]={
+     3., 4., 5., 7., 9., 12., 
+     15., 18., 21., 24., 28.,
+     32., 37., 43., 49., 56.,
+     64., 74., 84., 97., 114.,
+     133., 153., 174., 196.,
+     220., 245., 272., 300., 
+     330., 362., 395., 430.,
+     468., 507., 548., 592.,
+     638., 686., 1000.//, 1500
+}; //raghavs suggested genpt binning for JER
+const int nbins_pt2=sizeof(ptbins2)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 
 const float JEC_ptbins[]={
   17., 22., 27.,    //15-30
@@ -229,7 +256,7 @@ const float rapbins[]={
   0.0, 0.5,
   1.0, 1.5,
   2.0, 2.5,
-  3.0 , 3.2,
+  3.0, 3.2,
   3.7
 };
 const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;

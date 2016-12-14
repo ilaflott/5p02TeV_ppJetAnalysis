@@ -60,7 +60,7 @@ if [[ "$dataType" == "$readForestsVer" ]]
 then
     readForestsVer=""
 else
-    readForestsVer="__${readForestsVer}"
+    readForestsVer="_${readForestsVer}"
 fi
 
 
@@ -91,6 +91,7 @@ cd -
 
 
 ## copy over code used for job running/submitting for archival purposes
+#rootcompile ${readForestsCode}.C
 cp ${readForestsCode}.* "${logFileDir}"
 cp readForests.h "${logFileDir}"
 cp condorRun_readForests.sh "${logFileDir}"
@@ -171,7 +172,7 @@ EOF
     ## submit the job defined in the above submit file
     echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 0.5s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 1s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

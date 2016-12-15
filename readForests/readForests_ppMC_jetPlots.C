@@ -9,8 +9,8 @@ const bool tightJetID=true;
 //// readForests_ppMC_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfile ,  
-		     int radius , std::string jetType , bool debugMode ,
-		     std::string outfile ){ 
+			      int radius , std::string jetType , bool debugMode ,
+			      std::string outfile ){ 
   
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
@@ -90,7 +90,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0,100); hLeadJetPtCut->Fill(ldJetPtCut);     
   TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0,100); hSubLeadJetPtCut->Fill(subldJetPtCut);  
   TH1F *hPtAveCut        =new TH1F("hPtAveCut"      ,(std::to_string(ptAveCut)).c_str(),      100, 0,100); hPtAveCut->Fill(ptAveCut);  
-
+  
   TH1F *h_NEvents         = new TH1F("NEvents","NEvents", 1,0,2);
   TH1F *h_NEvents_read    = new TH1F("NEvents_read","NEvents read", 1,0,2);
   TH1F *h_NEvents_skimCut = new TH1F("NEvents_skimCut"      ,"NEvents read post skimCut", 1,0,2);
@@ -153,13 +153,13 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 30,0,30);         
 	else //consituent binnings
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 200,0,2); }
-
+      
       if(fillgenJetQA){	
 	hMCJetQA_genpt[k]    = new TH1F(Form("hJetQA_%dwJetID_genpt",k)     , "genpt",    1000, 0,1000 );
 	hMCJetQA_geneta[k]   = new TH1F(Form("hJetQA_%dwJetID_geneta",k)    , "geneta", 200,  -6.,6. );
 	hMCJetQA_genrecpt[k] = new TH1F(Form("hJetQA_%dwJetID_genrecpt",k)  , "genrecpt",    100, 0, 2. );
 	hMCJetQA_genreceta[k]= new TH1F(Form("hJetQA_%dwJetID_genreceta",k) , "genreceta", 50,  -0.1, 2. ); }
-
+      
     }}
   
   bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  
@@ -181,17 +181,18 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	stream2.precision(1); stream2 << std::fixed << rapbins[j+1];
 	std::string h_Desc="JetPt Spectra for "+stream1.str()+"<abs(y)<"+ stream2.str();	
 	hJetSpectraRap[k][j]=new TH1F(h_Title.c_str(),h_Desc.c_str(), 2000,0,2000);  
-
+	
 	if(fillgenJetRapHists){
 	  hMCJetQA_rapBins_genpt[k][j]     = new TH1F ( Form("hJetSpectraRap_%dwJetID_bin%d_genpt",k,j), "genpt", 1000,0,1000);
 	  hMCJetQA_rapBins_geneta[k][j]    = new TH1F ( Form("hJetSpectraRap_%dwJetID_bin%d_geneta",k,j), "geneta", 200,-6.,6.);
 	  hMCJetQA_rapBins_genrecpt[k][j]  = new TH1F ( Form("hJetSpectraRap_%dwJetID_bin%d_genrecpt",k,j),  "rec/gen,pt", 100, 0.,2.);
-	  hMCJetQA_rapBins_genreceta[k][j] = new TH1F ( Form("hJetSpectraRap_%dwJetID_bin%d_genreceta",k,j), "rec/gen,eta", 105, -0.1,2.0);}
-
+	  hMCJetQA_rapBins_genreceta[k][j] = new TH1F ( Form("hJetSpectraRap_%dwJetID_bin%d_genreceta",k,j), "rec/gen,eta", 105, -0.1,2.0);
+	}
+	
       }}}
-
-
-
+  
+  
+  
   // EVENT LOOP PREP
   // declare variables/arrays + set branch address for each input tree
   //JetAnalyzer, jets
@@ -289,7 +290,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   NEvents_read = NEvents_allFiles;
   
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
-
+  
   float jetIDCut_neSum, jetIDCut_phSum;
   if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
   else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
@@ -308,14 +309,14 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
         pBeamScrapingFilter_I==0  || 
         pprimaryvertexFilter_I==0  ) continue;    
     h_NEvents_skimCut->Fill(1);
-
+    
     if( fabs(vz_F)>15.              ) continue;
     h_NEvents_vzCut->Fill(1);
     
     // compute weights, this way only works because of the previous vz>15. cut
     float vzWeight=1.;
     float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
-      
+    
     for( int i=0; i<nbins_vzWeights ; i++ ) { 
       if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
 	vzWeight=vzWeights[i];  
@@ -326,12 +327,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     
     float evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 
-
+    
     float trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
-
+    
     float weight_eS=evtPthatWeight*trigWeight*vzWeight;              
-
+    
     //vz
     if(fillMCEvtQAHists){
       hVz->Fill(vz_F, 1.);
@@ -347,7 +348,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     bool firstGoodJetFound=false, secondGoodJetFound=false; 
     float firstGoodJetPt=-1., secondGoodJetPt=-1.;
     float firstGoodJetPhi=-1., secondGoodJetPhi=-1.;
-
+    
     bool firstGoodJetFound_wJetID=false, secondGoodJetFound_wJetID=false; 
     float firstGoodJetPt_wJetID=-1., secondGoodJetPt_wJetID=-1.;
     float firstGoodJetPhi_wJetID=-1., secondGoodJetPhi_wJetID=-1.;
@@ -355,9 +356,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     // for event counting + avoiding duplicate fills in dijet hists
     bool dijetHistsFilled=false, dijetHistsFilled_wJetID=false;
     bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
-
-    for(int jet = 0; jet<nref_I; ++jet){
-
+    
+    for(int jet = 0; jet<nref_I; ++jet)      {
+      
       // event+jet counting
       h_NJets->Fill(1);
       if(!hNEvts_withJets_Filled){
@@ -373,40 +374,38 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       if( subid_F[jet]!=0 ) continue;
       if( recpt<jtPtCut   ) continue;           
       
-//      if(fabs(receta)>3.0 || fabs(geneta)>3.0){
-//	std::cout<<std::endl;
-//	std::cout<<"receta="<<receta<<std::endl;
-//	std::cout<<"geneta="<<geneta<<std::endl;
-//	std::cout<<std::endl;
-//      }
-      
-
-
-      float rawpt  = rawpt_F[jet];
-
+      float rawpt  = rawpt_F[jet];      
       float recy = y_F[jet];
       float recphi = phi_F[jet];
-
+      
       // 13 TeV JetID criterion, loose or tight
       // for loose; ne/phSum fractions = 0.99 for abs(recy)<2.7
       // for tight; ne/phSum fractions = 0.90 for abs(recy)<2.7
       bool passesJetID=false;
-      if(fillMCJetIDHists) {	
-
-	if (fabs(recy)>3.0){
-	  if(phSum_F[jet]/rawpt < 0.90 &&
-	     	     neN_I[jet]>4) 
-	     //	     neN_I[jet]>10) 
-	    passesJetID=true;		}
-	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  ){
-	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
-	      neN_I[jet] > 2  )
-	    passesJetID=true;	} 	
-	else if ( 2.4<fabs(recy) && fabs(recy)<=2.7){
+      
+      if(fillMCJetIDHists) {		
+	//	if( fabs(recy)>3.0 ) 	  {
+	//	  if( phSum_F[jet]/rawpt < 0.90 &&
+	//	      neN_I[jet] > 10) { 
+	//	    passesJetID=true; } 
+	//	}
+	//	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  )  {
+	//	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
+	//	      neN_I[jet] > 2  )
+	//	    passesJetID=true;	
+	//	} 	
+	if( fabs(recy)>2.7) {//jetIDv2
+	  if( phSum_F[jet]/rawpt<0.90 &&
+	      neSum_F[jet]/rawpt<0.99 &&
+	      ((phSum_F[jet]/rawpt>0.) || (neSum_F[jet]/rawpt>0.)) )
+	    passesJetID=true;
+	}
+	else if ( 2.4<fabs(recy) && fabs(recy)<=2.7 ) {
 	  if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&  //neutral had 
 	      phSum_F[jet]/rawpt    < jetIDCut_phSum && 
 	      chN_I[jet]+neN_I[jet] > 1 ) 
-	    passesJetID=true; 	  }	
+	    passesJetID=true; 	  
+	}
 	else { //if(fabs(recy)<=2.4) //in the barrel, strictest
 	  if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&
 	      phSum_F[jet]/rawpt    < jetIDCut_phSum &&
@@ -414,41 +413,41 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	      chSum_F[jet]/rawpt    > 0.   && //charged had 
 	      eSum_F[jet]/rawpt     < 0.99 && 
 	      chN_I[jet] > 0 )      	  
-	    passesJetID=true;  } }
-	
+	    passesJetID=true;  
+	} }
       
-
       //fill jetspectraRapHists w/ passing jetID criterion
       if(  fillMCJetSpectraRapHists ) { 
 	int theRapBin=-1;
 	for(int rapbin=0;rapbin<nbins_rap;++rapbin)
 	  if( rapbins[rapbin]<=fabs(recy)  && 		
 	      fabs(recy)<rapbins[rapbin+1]    ) {
-
+	    
 	    theRapBin=rapbin;
 	    hJetSpectraRap[0][theRapBin]->Fill(recpt,weight_eS);  
-
+	    
 	    if(fillgenJetRapHists){
 	      hMCJetQA_rapBins_genpt[0][theRapBin]     ->Fill(genpt,weight_eS);
 	      hMCJetQA_rapBins_geneta[0][theRapBin]    ->Fill(geneta,weight_eS);
 	      hMCJetQA_rapBins_genrecpt[0][theRapBin]  ->Fill(recpt/genpt,weight_eS);
 	      hMCJetQA_rapBins_genreceta[0][theRapBin] ->Fill(receta/geneta,weight_eS);	    }
-
+	    
 	    if( passesJetID ){
 	      hJetSpectraRap[1][theRapBin]->Fill(recpt,weight_eS); 
 	      if(fillgenJetRapHists){
 		hMCJetQA_rapBins_genpt[1][theRapBin]     ->Fill(genpt,weight_eS);
 		hMCJetQA_rapBins_geneta[1][theRapBin]    ->Fill(geneta,weight_eS);
 		hMCJetQA_rapBins_genrecpt[1][theRapBin]  ->Fill(recpt/genpt,weight_eS);
-		hMCJetQA_rapBins_genreceta[1][theRapBin] ->Fill(receta/geneta,weight_eS);	    }	    }
-
-	    break; }
-      }
+		hMCJetQA_rapBins_genreceta[1][theRapBin] ->Fill(receta/geneta,weight_eS);	    
+	      }	    }	    
+	    break; 
+	  }      }
       
       //second half of kmat cut
-      if( fabs(receta)<=jtEtaCut ) continue;
+      if( fabs(receta)<=2.7 ) continue;
+      else if( fabs(receta)>(5.0) ) continue;
       //if( fabs(receta)>jtEtaCut ) continue;
-      
+
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
       if(!hNEvts_withJets_kmatCut_Filled){
@@ -528,6 +527,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
 
       if(fillMCJetIDHists){
+
 	if(!passesJetID) continue;
 	
 	/////   JETQA   /////

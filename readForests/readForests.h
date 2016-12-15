@@ -48,7 +48,7 @@ const int minArgs=1;
 const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
 const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
 const int defStartFile=0;
-const int defEndFile=0;
+const int defEndFile=1;
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true, fastDebugMode = true;
@@ -67,7 +67,8 @@ int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
 				 bool debugMode=defDebugMode,
 				 std::string outfile=(defMCOutputName+"_jetPlots.root")     );
 
-int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_ppMC_local.txt",
+//int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_ppMC_local.txt",
+int readForests_ppMC_MCJEC( std::string inFilelist=defMCInFilelist,
 			    int startfile=defStartFile, int endfile=defEndFile, 
 			    int radius=defRadius, std::string jetType=defJetType, 
 			    bool debugMode=defDebugMode,
@@ -75,8 +76,9 @@ int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_p
 
 const int readForestsArgCount=7+minArgs;
 
-const float jtPtCut=15.,jtEtaCut=3.;//basic cuts
-const float jetQAPtCut=15.;//for consitutent, eta, phi plots
+const float jtPtCut=15.,jtEtaCut=2.0;//basic cuts
+//const float jetQAPtCut=50.;//for consitutent, eta, phi plots
+const float jetQAPtCut=50.;
 const float ldJetPtCut=25., subldJetPtCut=15., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 //// HELPER FUNCTIONS
@@ -257,8 +259,8 @@ const float rapbins[]={
   1.0, 1.5,
   2.0, 2.5,
   3.0, 3.2,
-  3.7
-};
+  4.7	     
+};	     
 const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 
 //// WEIGHTS FOR MC

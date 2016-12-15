@@ -5,11 +5,11 @@
 const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=true; //most basic-level plots
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataJetSpectraRapHists=true; //other
-const bool tightJetID=false;
+const bool tightJetID=true;
 
-//// readForests_ppData_jtEvtHists
+//// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
-int readForests_ppData_jtEvtHists( std::string inFilelist , int startfile , int endfile , 
+int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int endfile , 
 			int radius , std::string jetType , bool debugMode ,
 		        std::string outfile ){
 
@@ -492,20 +492,28 @@ int readForests_ppData_jtEvtHists( std::string inFilelist , int startfile , int 
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
       if(fillDataJetIDHists) {	
-
-	if (fabs(recy)>3.0){
-	  if(phSum_F[jet]/rawpt < 0.90 &&
-	     neN_I[jet]>10) 
-	    passesJetID=true;	}
-	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  ){
-	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
-	      neN_I[jet] > 2  )
-	    passesJetID=true;	} 	
-	else if ( 2.4<fabs(recy) && fabs(recy)<=2.7){
+	//	if( fabs(recy)>3.0 ) 	  {
+	//	  if( phSum_F[jet]/rawpt < 0.90 &&
+	//	      neN_I[jet] > 10) { 
+	//	    passesJetID=true; } 
+	//	}
+	//	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  )  {
+	//	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
+	//	      neN_I[jet] > 2  )
+	//	    passesJetID=true;	
+	//	} 	
+	if( fabs(recy)>2.7) {//jetIDv2
+	  if( phSum_F[jet]/rawpt<0.90 &&
+	      neSum_F[jet]/rawpt<0.99 &&
+	      ((phSum_F[jet]/rawpt>0.) || (neSum_F[jet]/rawpt>0.)) )
+	    passesJetID=true;
+	}
+	else if ( 2.4<fabs(recy) && fabs(recy)<=2.7 ) {
 	  if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&  //neutral had 
 	      phSum_F[jet]/rawpt    < jetIDCut_phSum && 
 	      chN_I[jet]+neN_I[jet] > 1 ) 
-	    passesJetID=true; 	  }	
+	    passesJetID=true; 	  
+	}
 	else { //if(fabs(recy)<=2.4) //in the barrel, strictest
 	  if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&
 	      phSum_F[jet]/rawpt    < jetIDCut_phSum &&
@@ -513,8 +521,8 @@ int readForests_ppData_jtEvtHists( std::string inFilelist , int startfile , int 
 	      chSum_F[jet]/rawpt    > 0.   && //charged had 
 	      eSum_F[jet]/rawpt     < 0.99 && 
 	      chN_I[jet] > 0 )      	  
-	    passesJetID=true;  } }
-
+	    passesJetID=true;  
+	} }
       
       //fill jetspectraRapHists w/ passing jetID criterion
       if( fillDataJetSpectraRapHists ) { 
@@ -529,8 +537,9 @@ int readForests_ppData_jtEvtHists( std::string inFilelist , int startfile , int 
 	    break;
 	  } }
       
-      //second half of kmat cut
+      //second half of kmat cut      
       if( fabs(receta) > jtEtaCut ) continue;
+
 
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
@@ -776,12 +785,12 @@ int readForests_ppData_jtEvtHists( std::string inFilelist , int startfile , int 
   trgObjpt_80->clear();
   trgObjpt_100->clear();
   
-  std::cout<<std::endl<<"readForests_ppData_jtEvtHists finished."<<std::endl;  timer.Stop();
+  std::cout<<std::endl<<"readForests_ppData_jetPlots finished."<<std::endl;  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   
   return 0;
-}    // end readForests_ppData_jtEvtHists
+}    // end readForests_ppData_jetPlots
 
 
 ////// main //////
@@ -791,10 +800,10 @@ int main(int argc, char *argv[]){
   int rStatus = -1;
   if(argc!=8 && argc!=1){
     std::cout<<"for tests on default inputs, do..." <<std::endl;
-    std::cout<<"./readForests_ppData_jtEvtHists.exe";
+    std::cout<<"./readForests_ppData_jetPlots.exe";
     std::cout<<std::endl<<std::endl;
     std::cout<<"for actually running, do..."<<std::endl;
-    std::cout<<"./readForests_ppData_jtEvtHists.exe ";
+    std::cout<<"./readForests_ppData_jetPlots.exe ";
     std::cout<<"<inputFileList> <startFile> <endFile> ";
     std::cout<<"<jetRadius> <jetType> <debugMode> ";
     std::cout<<"<outputFilename> ";
@@ -805,12 +814,12 @@ int main(int argc, char *argv[]){
   
   // good input, run
   rStatus=1;
-  if(argc==1) rStatus = readForests_ppData_jtEvtHists();
+  if(argc==1) rStatus = readForests_ppData_jetPlots();
   else{//read input argument vector
     std::string inputFileList=argv[1]; int startfile= atoi(argv[2]); int endfile= atoi(argv[3]);  
     int jetRadius= atoi(argv[4]); std::string jetType=argv[5];     bool debug=(bool)atoi(argv[6]);
     std::string outputFileName=argv[7];      
-    rStatus = readForests_ppData_jtEvtHists( inputFileList, startfile, endfile, 
+    rStatus = readForests_ppData_jetPlots( inputFileList, startfile, endfile, 
 				  jetRadius, jetType, debug,
 				  outputFileName);
   }

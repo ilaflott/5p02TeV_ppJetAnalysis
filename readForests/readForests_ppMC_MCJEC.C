@@ -5,7 +5,7 @@
 const bool fillMCEvtQAHists=true;
 const bool fillMCUnfoldingHists=false;
 const bool fillMCJECHists=true, fillMCEffHists=false;
-const bool fillMCJetIDHists=false, doTightJetID=true;
+const bool fillMCJetIDHists=true, doTightJetID=true;
 
 //// readForests_ppMC_MCJEC
 // ---------------------------------------------------------------------------------------------------------------
@@ -403,23 +403,23 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
 
       // 13 TeV JetID criterion
       bool passesJetID=false; int jtID=0;
-      if(fillMCJetIDHists) {		
-	//	if( fabs(recy)>3.0 ) 	  {
-	//	  if( phSum_F[jet]/rawpt < 0.90 &&
-	//	      neN_I[jet] > 10) { 
-	//	    passesJetID=true; } 
-	//	}
-	//	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  )  {
-	//	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
-	//	      neN_I[jet] > 2  )
-	//	    passesJetID=true;	
-	//	} 	
-	if( fabs(recy)>2.7) {//jetIDv2
-	  if( phSum_F[jet]/rawpt<0.90 &&
-	      neSum_F[jet]/rawpt<0.99 &&
-	      ((phSum_F[jet]/rawpt>0.) || (neSum_F[jet]/rawpt>0.)) )
-	    passesJetID=true;
+      if(fillMCJetIDHists) {	
+	if( fabs(recy)>3.0 ) 	  {
+	  if( phSum_F[jet]/rawpt < 0.90 &&
+	      neSum_F[jet]/rawpt<0.99 )//neN_I[jet] > 10) { 
+	    passesJetID=true; 
 	}
+	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  )  {
+	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
+	      neN_I[jet] > 2  )
+	    passesJetID=true;	
+	} 	
+	//if( fabs(recy)>2.7) {//jetIDv2
+	//  if( phSum_F[jet]/rawpt<0.90 &&
+	//      neSum_F[jet]/rawpt<0.99 &&
+	//      ((phSum_F[jet]/rawpt>0.) || (neSum_F[jet]/rawpt>0.)) )
+	//    passesJetID=true;
+	//}
 	else if ( 2.4<fabs(recy) && fabs(recy)<=2.7 ) {
 	  if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&  //neutral had 
 	      phSum_F[jet]/rawpt    < jetIDCut_phSum && 
@@ -433,8 +433,7 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
 	      chSum_F[jet]/rawpt    > 0.   && //charged had 
 	      eSum_F[jet]/rawpt     < 0.99 && 
 	      chN_I[jet] > 0 )      	  
-	    passesJetID=true;  
-	} 
+	    passesJetID=true;  }
 	if(passesJetID)jtID=1;
 	else continue;      //continue because we do jtIDT, jtIDL, and jtID0 all in different job
       }      
@@ -444,7 +443,7 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
       if(!hNEvts_withJets_kmatCut1_Filled){
 	h_NEvents_withJets_kmatCut1->Fill(1);
 	hNEvts_withJets_kmatCut1_Filled=true;      }
-
+      
       float genpt= refpt_F[jet];
       float geneta = refeta_F[jet];
       float genphi = refphi_F[jet];

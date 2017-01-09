@@ -492,22 +492,22 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
       if(fillDataJetIDHists) {	
-	//	if( fabs(recy)>3.0 ) 	  {
-	//	  if( phSum_F[jet]/rawpt < 0.90 &&
-	//	      neN_I[jet] > 10) { 
-	//	    passesJetID=true; } 
-	//	}
-	//	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  )  {
-	//	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
-	//	      neN_I[jet] > 2  )
-	//	    passesJetID=true;	
-	//	} 	
-	if( fabs(recy)>2.7) {//jetIDv2
-	  if( phSum_F[jet]/rawpt<0.90 &&
-	      neSum_F[jet]/rawpt<0.99 &&
-	      ((phSum_F[jet]/rawpt>0.) || (neSum_F[jet]/rawpt>0.)) )
-	    passesJetID=true;
+	if( fabs(recy)>3.0 ) 	  {
+	  if( phSum_F[jet]/rawpt < 0.90 &&
+	      neSum_F[jet]/rawpt<0.99 )//neN_I[jet] > 10) { 
+	    passesJetID=true; 
 	}
+	else if ( 2.7<fabs(recy) && fabs(recy)<=3.0  )  {
+	  if( phSum_F[jet]/rawpt < 0.90 && //neutral em
+	      neN_I[jet] > 2  )
+	    passesJetID=true;	
+	} 	
+	//if( fabs(recy)>2.7) {//jetIDv2
+	//  if( phSum_F[jet]/rawpt<0.90 &&
+	//      neSum_F[jet]/rawpt<0.99 &&
+	//      ((phSum_F[jet]/rawpt>0.) || (neSum_F[jet]/rawpt>0.)) )
+	//    passesJetID=true;
+	//}
 	else if ( 2.4<fabs(recy) && fabs(recy)<=2.7 ) {
 	  if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&  //neutral had 
 	      phSum_F[jet]/rawpt    < jetIDCut_phSum && 

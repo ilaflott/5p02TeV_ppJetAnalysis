@@ -59,8 +59,8 @@ const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/";//11.22.16_outputCondor/";
 const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
 
-const std::string inputDir=SCRATCH_BASE;
-//const std::string inputDir=CMSSW_BASE+"readForests/";
+//const std::string inputDir=SCRATCH_BASE;
+const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
 
 
 
@@ -172,8 +172,6 @@ const int jetSpectraRapBinning=10;
 //};
 //const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 
-
-
 //// MC+DATA COMMON BINNING
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -213,8 +211,8 @@ const float rapbins[]={
   0.0, 0.5,
   1.0, 1.5,
   2.0, 2.5,
-  3.0 //, 3.2,
-  //3.7
+  3.0, 3.2,
+  4.7
 };
 const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 

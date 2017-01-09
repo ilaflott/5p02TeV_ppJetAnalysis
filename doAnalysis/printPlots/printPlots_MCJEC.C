@@ -699,7 +699,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
     }
   }
 
-
+  /*
   gStyle->SetOptStat(0);
   gROOT->ForceStyle();
   { 
@@ -869,7 +869,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
     temp_canvMCEff->Print(close_thePDFFileName.c_str());   	
     temp_canvMCEff->Close();        
   }//end  MCEff Plots else
-
+  */
 
   std::cout<<"closing output root file"<<std::endl<<std::endl;
   rootfout->Close();

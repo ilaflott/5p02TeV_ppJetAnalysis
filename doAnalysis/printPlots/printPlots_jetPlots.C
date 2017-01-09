@@ -7,11 +7,9 @@ const bool debugMode=true, doEventCounts=true, doJetIDPlots=true;
 //draw switches
 const bool drawEvtQAPlots=true;
 const bool drawJetQAPlots=true;
-const bool drawJetConstituentPlots=true, drawDijetPlots=true;//, doBasicJetQAOnly=false;
+const bool drawJetConstituentPlots=true, drawDijetPlots=true;//, doBasicJetQAOnly=true;
 const bool drawJetTrigQAPlots=true, drawJetRapBinsPlot=true;
 //const bool drawMCEffPlots=false;
-
-
 // hist painting ------------------------
 // line colors
 const int theDataOverlayLineColor=1, theMCOverlayLineColor=1, altOverlayLineColor=3; 
@@ -21,7 +19,7 @@ const int theTrigOverlayLineColor[]  ={  1,  1,  1,  1,  1,  1 };
 const int theDataOverlayMarkerColor=2, theMCOverlayMarkerColor=4,theRatioMarkerColor=9;
 const int theTrigCombMarkerColor=1, altTrigCombMarkerColor=12;
 const int theTrigOverlayMarkerColor[]={  2,  3,  6,  7,  1,  4 };
-const int theRapOverlayMarkerColor[] ={  2,  3,  6,  7,  1,  4 };
+const int theRapOverlayMarkerColor[] ={  2,  3,  6,  7,  1,  4 , 8, 9};
 // markers
 const int theTrigOverlayMarker[]     ={ 20, 20, 20, 20, 20, 32 };
 
@@ -88,8 +86,8 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
   //put together input file strings
   const std::string input_ppData_Filename="/HighPtJetTrig_" +fullJetType+ "-allFiles.root";
   const std::string input_ppMC_Filename  ="/Py8_CUETP8M1_QCDjetAllPtBins_" +fullJetType+ "-allFiles.root";
-  const std::string ppData_fullFilename=SCRATCH_BASE+input_ppData_condorDir+input_ppData_Filename;
-  const std::string ppMC_fullFilename  =SCRATCH_BASE+input_ppMC_condorDir+input_ppMC_Filename;;  
+  const std::string ppData_fullFilename=inputDir+input_ppData_condorDir+input_ppData_Filename;
+  const std::string ppMC_fullFilename  =inputDir+input_ppMC_condorDir+input_ppMC_Filename;;  
   
   
   // OPEN INPUT SECTION
@@ -846,25 +844,35 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
     
     if(drawDataMCOverlays){     temp_canvJetRapBins->cd();
       
-      float power=std::pow(10., 5.);
+      float power=std::pow(10., 6.);
       //float power=std::pow(10., 0.);
       std::cout<<"drawing dual-differential cross section plot"<<std::endl;	
-      std::cout<<"looping over rapidity bins"<<std::endl;
+      std::cout<<"looping over "<<nbins_rap<<" rapidity bins"<<std::endl;
       
-      for(int rapbin=0; rapbin<nbins_rap; ++rapbin){	
+      for(int rapbin=0; rapbin<8; ++rapbin){	
 	
 	// assert(rapbin!=0);
 	// assert(rapbin!=-1);
+	
 	int bincounter = nbins_rap-rapbin;
 	std::cout<<"bincounter = "<<bincounter<<" "<<std::endl;
+
 	//open the hists + rebin
 	std::string inHistName="hJetSpectraRap";	
 	if(doJetIDPlots) inHistName+="_wJetID"; 
 	inHistName+="_bin"+std::to_string(rapbin);
-	if(debugMode)std::cout<<"inHistName="<<inHistName<<std::endl<<std::endl;	
+	if(debugMode)std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl<<std::endl;	
+
+	if(rapbin==6){
+	  std::cout<<"rapbin==6, continuing on..."<<std::endl;
+	  continue;//still not sure why i need this...
+	}
+	
 	TH1F* theJetSpectraRapHist= (TH1F*)
 	  ( (TH1*)finData->Get(inHistName.c_str()) )
 	  ->TH1::Rebin(jetSpectraRapBinning);
+
+	theJetSpectraRapHist->Print( "base" );
 
 	theJetSpectraRapHist->Scale( 1./theJetSpectraRapHist->GetBinWidth(1) );
 	theJetSpectraRapHist->Scale( 1./theLumi);
@@ -914,7 +922,7 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
 	  theJetRapHistLeg->Draw(); }
 	else { 
 	  theJetSpectraRapHist->Draw("SAME");}
-	power/=10.;
+	power/=10.;	
       }//end rapbin hist loop
     
     float t1Loc1=0.42, t1Loc2=0.83; 	    

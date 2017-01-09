@@ -62,9 +62,9 @@ int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist,
 				   std::string outfile=defDataOutputName      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-				 int startfile=defStartFile, int endfile=defEndFile, 
+				 int startfile=defStartFile, int endfile=defEndFile+5, 
 				 int radius=defRadius, std::string jetType=defJetType, 
-				 bool debugMode=defDebugMode,
+			       bool debugMode=false,			       //bool debugMode=defDebugMode,
 				 std::string outfile=(defMCOutputName+"_jetPlots.root")     );
 
 //int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_ppMC_local.txt",
@@ -76,9 +76,9 @@ int readForests_ppMC_MCJEC( std::string inFilelist=defMCInFilelist,
 
 const int readForestsArgCount=7+minArgs;
 
-const float jtPtCut=15.,jtEtaCut=2.0;//basic cuts
+const float jtPtCut=15.,jtEtaCut=4.7;//basic cuts
 //const float jetQAPtCut=50.;//for consitutent, eta, phi plots
-const float jetQAPtCut=50.;
+const float jetQAPtCut=15.;
 const float ldJetPtCut=25., subldJetPtCut=15., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 //// HELPER FUNCTIONS

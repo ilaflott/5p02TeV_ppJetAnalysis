@@ -2,7 +2,7 @@
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later
 // compile with...
-// g++ readForests_ppData.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests_ppData.exe
+// g++ readForests.C $(root-config --cflags --libs) -Werror -Wall -O2 -o readForests.exe
 
 
 ////////// (initializa/declara)tions //////////
@@ -51,35 +51,42 @@ const int defStartFile=0;
 const int defEndFile=1;
 const int defRadius=4;
 const std::string defJetType="PF";
-const bool defDebugMode=true, fastDebugMode = true;
+const bool defDebugMode=true;//, fastDebugMode = true;
 const std::string defDataOutputName="readForests_ppData_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				   int startfile=defStartFile, int endfile=defEndFile,
+				   int startfile=defStartFile, int endfile=5,
 				   int radius=defRadius, std::string jetType=defJetType, 
 				   bool debugMode=defDebugMode,
 				   std::string outfile=defDataOutputName      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-				 int startfile=defStartFile, int endfile=defEndFile+5, 
+				 int startfile=defStartFile, int endfile=20, 
 				 int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=false,			       //bool debugMode=defDebugMode,
 				 std::string outfile=(defMCOutputName+"_jetPlots.root")     );
 
 //int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_ppMC_local.txt",
 int readForests_ppMC_MCJEC( std::string inFilelist=defMCInFilelist,
-			    int startfile=defStartFile, int endfile=defEndFile, 
+			    int startfile=defStartFile, int endfile=20, 
 			    int radius=defRadius, std::string jetType=defJetType, 
 			    bool debugMode=defDebugMode,
 			    std::string outfile=(defMCOutputName+"_MCJEC.root")      );
 
 const int readForestsArgCount=7+minArgs;
 
-const float jtPtCut=15.,jtEtaCut=4.7;//basic cuts
-//const float jetQAPtCut=50.;//for consitutent, eta, phi plots
-const float jetQAPtCut=15.;
-const float ldJetPtCut=25., subldJetPtCut=15., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
+////for MC jet closure
+//const float jtPtCut=15.;
+//const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;//make htEtaCutHi 100. for inf.
+//const float jetQAPtCut=15.;//50.;
+//const float ldJetPtCut=20., subldJetPtCut=10., ptAveCut=15., dPhiCut=2./3.*TMath::Pi();//dijet cuts
+
+//for unfolding + later primary result
+const float jtPtCut=15.;
+const float jtEtaCutLo=0.0, jtEtaCutHi=2.0;//make htEtaCutHi 100. for inf.
+const float jetQAPtCut=50.;//50.;
+const float ldJetPtCut=50., subldJetPtCut=25., ptAveCut=30., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 //// HELPER FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------

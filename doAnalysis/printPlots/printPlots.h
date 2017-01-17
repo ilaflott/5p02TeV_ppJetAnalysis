@@ -46,24 +46,18 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TF1.h>
-
 // custom
-//#include "ppMC_etc.h"
-//#include "ppData_etc.h"
 #include "printPlots_ppMC.h"
 #include "printPlots_ppData.h"
 
 const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
 const std::string SCRATCH_BASE=
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/";//11.22.16_outputCondor/";
+  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/";
+
 const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
-
-//const std::string inputDir=SCRATCH_BASE;
-const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
-
-
-
+const std::string inputDir=SCRATCH_BASE+"readForests/1.16.17_outputCondor/";
+//const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
 
 //// combos
 //const std::string etaWidth = "20_eta_20";

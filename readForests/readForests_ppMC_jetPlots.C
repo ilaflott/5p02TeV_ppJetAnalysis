@@ -1,9 +1,10 @@
 // Custom header
-#include "readForests.h"
+#include "readForests_jetPlots.h"
 
 // ppMC switches
 const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
-const bool fillMCJetSpectraRapHists=false; //other
+const bool fillMCJetSpectraRapHists=true; //other
+const bool fillBasicJetPlotsOnly=true;
 const bool tightJetID=false;
 
 //// readForests_ppMC_jetPlots
@@ -459,12 +460,6 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       /////   JETQA   ///// 
       if(fillMCJetQAHists){
 	
-	if(fillgenJetQA){
-	  hMCJetQA_genpt[0]    ->Fill(genpt,weight_eS);
-	  hMCJetQA_geneta[0]   ->Fill(geneta,weight_eS);
-	  hMCJetQA_genrecpt[0] ->Fill(recpt/genpt,weight_eS);
-	  hMCJetQA_genreceta[0]->Fill(receta/geneta,weight_eS);	}
-
 	hJetQA[0][0]->Fill(recpt, weight_eS);
 	hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
 	if(recpt>jetQAPtCut){
@@ -488,44 +483,53 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	  hJetQA[0][19]->Fill(muSum_F[jet]/rawpt, weight_eS);   
 	  hJetQA[0][20]->Fill(neN_I[jet], weight_eS);   
 	  hJetQA[0][21]->Fill(chN_I[jet], weight_eS);   
-	  hJetQA[0][22]->Fill(chN_I[jet]+neN_I[jet], weight_eS);   	}
+	  hJetQA[0][22]->Fill(chN_I[jet]+neN_I[jet], weight_eS);   	
+
+	  if(fillgenJetQA){
+	    hMCJetQA_genpt[0]    ->Fill(genpt,weight_eS);
+	    hMCJetQA_geneta[0]   ->Fill(geneta,weight_eS);
+	    hMCJetQA_genrecpt[0] ->Fill(recpt/genpt,weight_eS);
+	    hMCJetQA_genreceta[0]->Fill(receta/geneta,weight_eS);		}
+	}
 
 	//looking for the first two good jets that meet the criteria specified
-	if ( !firstGoodJetFound ){
-	  if(recpt>ldJetPtCut) { firstGoodJetFound=true;
-	    firstGoodJetPt =recpt; 
-	    firstGoodJetPhi=recphi; } }
-	
-	else if ( !secondGoodJetFound && 
-		  firstGoodJetFound      ) {
-	  if (recpt>subldJetPtCut) { 
-	    float checkdPhi=deltaphi(firstGoodJetPhi,recphi);
-	    float ptAve=(firstGoodJetPt+recpt)/2.;
-	    if( checkdPhi>dPhiCut && ptAve>ptAveCut) {
-	      if(recpt>firstGoodJetPt){secondGoodJetFound=true;
-		std::cout<<std::endl<<
-		  "WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
-		secondGoodJetPt  = firstGoodJetPt;          
-		secondGoodJetPhi = firstGoodJetPhi;
-		firstGoodJetPt   = recpt;          
-		firstGoodJetPhi  = recphi; }
-	      else { secondGoodJetFound=true;
-		secondGoodJetPt  = recpt;
-		secondGoodJetPhi = recphi; }}} }
-	
-	if (!dijetHistsFilled &&
-	    firstGoodJetFound && 
-	    secondGoodJetFound ) { dijetHistsFilled=true;
-	  float A_j=(firstGoodJetPt-secondGoodJetPt)
-	    /(firstGoodJetPt+secondGoodJetPt);
-	  float x_j=(secondGoodJetPt/firstGoodJetPt); 	
-	  float dphi=deltaphi(firstGoodJetPhi,secondGoodJetPhi);
-	  hJetQA[0][23]->Fill( A_j , weight_eS ); 
-	  hJetQA[0][24]->Fill( x_j , weight_eS );       
-	  hJetQA[0][25]->Fill( dphi , weight_eS );       
-	  hJetQA[0][26]->Fill( firstGoodJetPt , weight_eS );       
-	  hJetQA[0][27]->Fill( secondGoodJetPt , weight_eS );       } 
-      }//end fillMCJetQAHists	      
+	if(!fillBasicJetPlotsOnly){
+	  if ( !firstGoodJetFound ){
+
+	    if(recpt>ldJetPtCut) { firstGoodJetFound=true;
+	      firstGoodJetPt =recpt; 
+	      firstGoodJetPhi=recphi; } }
+	  
+	  else if ( !secondGoodJetFound && 
+		    firstGoodJetFound      ) {
+	    if (recpt>subldJetPtCut) { 
+	      float checkdPhi=deltaphi(firstGoodJetPhi,recphi);
+	      float ptAve=(firstGoodJetPt+recpt)/2.;
+	      if( checkdPhi>dPhiCut && ptAve>ptAveCut) {
+		if(recpt>firstGoodJetPt){secondGoodJetFound=true;
+		  std::cout<<std::endl<<
+		    "WARNING: picked wrong jet for lead jet! Swapping..."<<std::endl<<std::endl;
+		  secondGoodJetPt  = firstGoodJetPt;          
+		  secondGoodJetPhi = firstGoodJetPhi;
+		  firstGoodJetPt   = recpt;          
+		  firstGoodJetPhi  = recphi; }
+		else { secondGoodJetFound=true;
+		  secondGoodJetPt  = recpt;
+		  secondGoodJetPhi = recphi; }}} }
+	  
+	  if (!dijetHistsFilled &&
+	      firstGoodJetFound && 
+	      secondGoodJetFound ) { dijetHistsFilled=true;
+	    float A_j=(firstGoodJetPt-secondGoodJetPt)
+	      /(firstGoodJetPt+secondGoodJetPt);
+	    float x_j=(secondGoodJetPt/firstGoodJetPt); 	
+	    float dphi=deltaphi(firstGoodJetPhi,secondGoodJetPhi);
+	    hJetQA[0][23]->Fill( A_j , weight_eS ); 
+	    hJetQA[0][24]->Fill( x_j , weight_eS );       
+	    hJetQA[0][25]->Fill( dphi , weight_eS );       
+	    hJetQA[0][26]->Fill( firstGoodJetPt , weight_eS );       
+	    hJetQA[0][27]->Fill( secondGoodJetPt , weight_eS );       } }
+	}//end fillMCJetQAHists	      
       
 
       if(fillMCJetIDHists){
@@ -534,12 +538,6 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	
 	/////   JETQA   /////
 	if(fillMCJetQAHists){
-
-	  if(fillgenJetQA){
-	    hMCJetQA_genpt[1]    ->Fill(genpt,weight_eS);
-	    hMCJetQA_geneta[1]   ->Fill(geneta,weight_eS);
-	    hMCJetQA_genrecpt[1] ->Fill(recpt/genpt,weight_eS);
-	    hMCJetQA_genreceta[1]->Fill(receta/geneta,weight_eS);	}	  
 
 	  hJetQA[1][0]->Fill(recpt, weight_eS);
 	  hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
@@ -564,11 +562,18 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	    hJetQA[1][19]->Fill(muSum_F[jet]/rawpt, weight_eS);   
 	    hJetQA[1][20]->Fill(neN_I[jet], weight_eS);
 	    hJetQA[1][21]->Fill(chN_I[jet], weight_eS);
-	    hJetQA[1][22]->Fill(chN_I[jet]+neN_I[jet], weight_eS); }
+	    hJetQA[1][22]->Fill(chN_I[jet]+neN_I[jet], weight_eS); 
+	    if(fillgenJetQA){
+	      hMCJetQA_genpt[1]    ->Fill(genpt,weight_eS);
+	      hMCJetQA_geneta[1]   ->Fill(geneta,weight_eS);
+	      hMCJetQA_genrecpt[1] ->Fill(recpt/genpt,weight_eS);
+	      hMCJetQA_genreceta[1]->Fill(receta/geneta,weight_eS);	}	  
+	  }
 	  
 	  
 	  //looking for the first two good jets that meet the criteria specified
-	  if ( !firstGoodJetFound_wJetID ){
+	  if(!fillBasicJetPlotsOnly){
+	    if ( !firstGoodJetFound_wJetID ){
 	    if(recpt>ldJetPtCut) { firstGoodJetFound_wJetID=true;
 	      firstGoodJetPt_wJetID =recpt; 
 	      firstGoodJetPhi_wJetID=recphi; } }
@@ -601,7 +606,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	    hJetQA[1][24]->Fill( x_j , weight_eS );       
 	    hJetQA[1][25]->Fill( dphi , weight_eS );       
 	    hJetQA[1][26]->Fill( firstGoodJetPt_wJetID , weight_eS );       
-	    hJetQA[1][27]->Fill( secondGoodJetPt_wJetID , weight_eS );       } 
+	    hJetQA[1][27]->Fill( secondGoodJetPt_wJetID , weight_eS );       } }
 	}//end fillMCJetQAHists
 	
 	// jet/event counts

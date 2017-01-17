@@ -44,6 +44,7 @@
 const int minArgs=1;
 
 //// readForests_ppData
+//const std::string defDataInFilelist="filelists/test_readForests_ppData_Jet80_local.txt";
 //const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
 const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
 const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
@@ -56,7 +57,7 @@ const std::string defDataOutputName="readForests_ppData_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				   int startfile=defStartFile, int endfile=5,
+				   int startfile=defStartFile, int endfile=1,
 				   int radius=defRadius, std::string jetType=defJetType, 
 				   bool debugMode=defDebugMode,
 				   std::string outfile=defDataOutputName      );
@@ -67,26 +68,18 @@ int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
 			       bool debugMode=false,			       //bool debugMode=defDebugMode,
 				 std::string outfile=(defMCOutputName+"_jetPlots.root")     );
 
-//int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_ppMC_local.txt",
-int readForests_ppMC_MCJEC( std::string inFilelist=defMCInFilelist,
-			    int startfile=defStartFile, int endfile=20, 
-			    int radius=defRadius, std::string jetType=defJetType, 
-			    bool debugMode=defDebugMode,
-			    std::string outfile=(defMCOutputName+"_MCJEC.root")      );
-
 const int readForestsArgCount=7+minArgs;
 
-////for MC jet closure
-//const float jtPtCut=15.;
-//const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;//make htEtaCutHi 100. for inf.
-//const float jetQAPtCut=15.;//50.;
-//const float ldJetPtCut=20., subldJetPtCut=10., ptAveCut=15., dPhiCut=2./3.*TMath::Pi();//dijet cuts
-
-//for unfolding + later primary result
+// extended eta range for jetID Eff, or more QA in diff region... etc.
 const float jtPtCut=15.;
-const float jtEtaCutLo=0.0, jtEtaCutHi=2.0;//make htEtaCutHi 100. for inf.
-const float jetQAPtCut=50.;//50.;
-const float ldJetPtCut=50., subldJetPtCut=25., ptAveCut=30., dPhiCut=2./3.*TMath::Pi();//dijet cuts
+const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;
+const float jetQAPtCut=15.;
+
+////for unfolding + later primary result
+//const float jtPtCut=15.;
+//const float jtEtaCutLo=0.0, jtEtaCutHi=2.0;//make htEtaCutHi 100. for inf.
+//const float jetQAPtCut=50.;//50.;
+const float ldJetPtCut=55., subldJetPtCut=20., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 //// HELPER FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------

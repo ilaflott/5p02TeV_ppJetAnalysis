@@ -6,7 +6,7 @@
 const bool debugMode=true;
 //const std::string defOutFilename="printPlots_MCJEC_ppMC_defOut";
 
-int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName){
+int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag){
 
   // root style settings.
   std::cout<<std::endl<<"loading style..." <<std::endl;
@@ -32,24 +32,26 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
   //if(debugMode)std::cout<<"doJetID="<<doJetID<<std::endl;
   
   std::string doJetID;
-  if(didJetID=="0") doJetID=didJetID;
-  else if (didJetID=="L"||didJetID=="T") doJetID="1";
+  if(didJetID=="0") doJetID="0";
+  else {
+    didJetID="L"; doJetID="1";
+  }
   
   std::string jobType="_MCJEC_jtID"+didJetID;
   if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
 
   // input file
   const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
-  std::cout<<std::endl<<"opening input file in dir "<< inFile_MC_dir <<std::endl;
+  std::cout<<std::endl<<"nput file dir "<< inputDir+inFile_MC_dir <<std::endl;
   std::cout<<"input file name in dir "<< inFile_MC_name <<std::endl;
   TFile *finPP=new TFile( (inputDir+inFile_MC_dir+inFile_MC_name).c_str() );
+  //TFile *finPP=new TFile( (inputDir+inFile_MC_name).c_str() );
   
   // fit + fit settings
   std::cout<<"setting up fitters..."<< std::endl;
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04); 
   TF1 *fgaus=NULL;   
-  
   
 
   // input hists
@@ -93,14 +95,14 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
 
 
     // pt bin hJER-fit loop
-    std::cout<<"looping over nbins_pt="<<nbins_pt<<std::endl;
-    for(int ip=0; ip<nbins_pt; ip++){
+    std::cout<<"looping over nbins_pt="<<nbins_pt_debug<<std::endl;
+    for(int ip=0; ip<nbins_pt_debug; ip++){
 
       // input hist title string
       if(debugMode)std::cout<<"for pt range "<<ptbins[ip]<<" to "<<ptbins[ip+1]<<std::endl;
       std::string inputHistName="hJER_"+doJetID+"wJetID_"+std::to_string(ptbins[ip])+
 	"_pt_"+std::to_string(ptbins[ip+1]);//"hJER_"+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);      
-
+      //if (ptbins[ip]<6.)continue;
       // open the input hist
       hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );    
       if(!hrsp[nj][ip]){std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;assert(false);}      
@@ -174,7 +176,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
 
   {     
     // DRAW THOSE PDFS //
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+baseName+".pdf";
+    std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+".pdf";
     std::string open_thePDFFileName=thePDFFileName+"[";
     std::string close_thePDFFileName=thePDFFileName+"]";
     
@@ -183,28 +185,44 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
     pdfoutCanv_wLog->Print( open_thePDFFileName.c_str() );
     pdfoutCanv_wLog->cd();
     pdfoutCanv_wLog->SetLogy(1);
-    
+
     TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 600);
     pdfoutCanv->cd();
-    pdfoutCanv->SetLogy(0);
+    //pdfoutCanv->SetLogy(0);
     pdfoutCanv->Divide(1,2);
+    
+
+    TCanvas* pdfoutCanv_wLogx=new TCanvas("outputPdfwLogx","output Pdf wLogx", 800, 800);
+    //pdfoutCanv_wLogx->Print( open_thePDFFileName.c_str() );
+    pdfoutCanv_wLogx->cd();
+    pdfoutCanv_wLogx->Divide(1,2);
+
+    pdfoutCanv_wLogx->cd(2);
+    pdfoutCanv_wLogx->SetLogx(1);
+    pdfoutCanv_wLogx->cd(1);
+    pdfoutCanv_wLogx->SetLogx(1);
+
     
     // draw and print pdfs. //
     std::cout<<std::endl<<"printing hists to pdf file..."<<std::endl;
     for(int i=0;i<Nrad;++i){
-      pdfoutCanv->cd(1);
+
       hMean[i] ->Draw("e"); //pdfoutCanv->Print(thePDFFileName.c_str());
       TLine* meanLine=new TLine(15,1.,500,1.);
+      meanLine->SetLineStyle(2);       meanLine->SetLineColor(kBlue);
       meanLine->Draw();
-
-      pdfoutCanv->cd(2);
+      
+      pdfoutCanv_wLogx->cd(2);
       hSigma[i]->Draw("e"); 
+      
       TLine* sigmaLine=new TLine(15,0.1,500,0.1);
+      sigmaLine->SetLineStyle(2);       sigmaLine->SetLineColor(kBlue);
       sigmaLine->Draw();
+      
+      pdfoutCanv_wLogx->Print(thePDFFileName.c_str());    
 
-      pdfoutCanv->Print(thePDFFileName.c_str());    
       pdfoutCanv_wLog->cd();
-      for(int j=0;j<nbins_pt;++j){
+      for(int j=0;j<nbins_pt_debug;++j){
 	std::string hrspTitle="hJER_"+std::to_string(ptbins[j])+"_pt_"+std::to_string(ptbins[j+1]);
 	hrsp[i][j]->SetTitle(hrspTitle.c_str());
 	hrsp[i][j]->SetMarkerStyle(8);
@@ -233,7 +251,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
   }
 
   // save output root file. //
-  std::string outFileName=outputDir+fullJetType+jobType+"_"+baseName+".root";
+  std::string outFileName=outputDir+fullJetType+jobType+"_"+outputTag+".root";
   std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
   TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
 
@@ -289,7 +307,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
     hMean_gen150[nj]->SetMarkerStyle(20);
     hMean_gen150[nj]->SetLineColor(1);
     hMean_gen150[nj]->SetMarkerSize(1.1);
-    MakeHistMean(hMean_gen150[nj],1.082,0.858); 
+    MakeHistMeanEta(hMean_gen150[nj],1.082,0.858); 
     hMean_gen150[nj]->SetAxisRange(0.8,1.2, "Y");
     hMean_gen150[nj]->SetAxisRange(-5.3,5.3, "X");
 
@@ -301,7 +319,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
     hSigma_gen150[nj]->SetMarkerStyle(20);
     hSigma_gen150[nj]->SetLineColor(1);
     hSigma_gen150[nj]->SetMarkerSize(1.1);
-    MakeHistRMS(hSigma_gen150[nj],0.563,0.001); 
+    MakeHistRMSEta(hSigma_gen150[nj],0.563,0.001); 
     hSigma_gen150[nj]->SetAxisRange(0.0,0.5, "Y");
     hSigma_gen150[nj]->SetAxisRange(-5.3,5.3, "X");
 
@@ -398,7 +416,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
   //std::string jobType="_MCJEC_JetID"+doJetID;
   //if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
   { 
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_150to200_"+baseName+".pdf";
+    std::string thePDFFileName=outputDir+fullJetType+jobType+"_150to200_"+outputTag+".pdf";
     std::string open_thePDFFileName=thePDFFileName+"[";
     std::string close_thePDFFileName=thePDFFileName+"]";
 
@@ -461,7 +479,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
 
   {
 
-    //std::string outFileName=outputDir+fullJetType+jobType+"_150to200_"+baseName+".root";
+    //std::string outFileName=outputDir+fullJetType+jobType+"_150to200_"+outputTag+".root";
     //std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
     //TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
     rootfout->cd();  
@@ -512,7 +530,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
     hMean_gen30[nj]->SetMarkerStyle(20);
     hMean_gen30[nj]->SetLineColor(1);
     hMean_gen30[nj]->SetMarkerSize(1.1);
-    MakeHistMean(hMean_gen30[nj],1.082,0.858); 
+    MakeHistMeanEta(hMean_gen30[nj],1.082,0.858); 
     hMean_gen30[nj]->SetAxisRange(0.8,1.2, "Y");
     hMean_gen30[nj]->SetAxisRange(-5.3,5.3, "X");
 
@@ -524,7 +542,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
     hSigma_gen30[nj]->SetMarkerStyle(20);
     hSigma_gen30[nj]->SetLineColor(1);
     hSigma_gen30[nj]->SetMarkerSize(1.1);
-    MakeHistRMS(hSigma_gen30[nj],0.563,0.001); 
+    MakeHistRMSEta(hSigma_gen30[nj],0.563,0.001); 
     hSigma_gen30[nj]->SetAxisRange(0.0,0.5, "Y");
     hSigma_gen30[nj]->SetAxisRange(-5.3,5.3, "X");
 
@@ -621,7 +639,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
   //std::string jobType="_MCJEC_JetID"+doJetID;
   //if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
   { 
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_30to50_"+baseName+".pdf";
+    std::string thePDFFileName=outputDir+fullJetType+jobType+"_30to50_"+outputTag+".pdf";
     std::string open_thePDFFileName=thePDFFileName+"[";
     std::string close_thePDFFileName=thePDFFileName+"]";
 
@@ -684,7 +702,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
 
   {
 
-    //std::string outFileName=outputDir+fullJetType+jobType+"_30to50_"+baseName+".root";
+    //std::string outFileName=outputDir+fullJetType+jobType+"_30to50_"+outputTag+".root";
     //std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
     //TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
     rootfout->cd();  
@@ -705,7 +723,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string baseName)
   { 
     std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
     
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_MCEff_"+baseName+".pdf";
+    std::string thePDFFileName=outputDir+fullJetType+jobType+"_MCEff_"+outputTag+".pdf";
     std::string open_thePDFFileName=thePDFFileName+"[";
     std::string close_thePDFFileName=thePDFFileName+"]";
     std::cout<<std::endl<<"creating temporary canvas for printing MCEff plots..."<<std::endl;
@@ -882,7 +900,7 @@ int main(int argc, char*argv[]){
   if(argc!=3){
     std::cout<<"no defaults. Do...."<<std::endl;
     std::cout<<"./printPlots_MCJEC.exe "<<
-      "<target_ppMC_dir> <outputNameBase>"<<std::endl<<std::endl;
+      "<target_ppMC_dir> <output tag>"<<std::endl<<std::endl;
     return rStatus;  }
   
   rStatus=1;

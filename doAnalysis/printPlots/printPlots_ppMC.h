@@ -37,15 +37,15 @@ const double pthatWeights[]={//from jetWeights/jetWeights_Py8_CUETP8M1_QCDjetAll
 // binning arrays
 //const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
 const int ptbins[]={
-     3, 4, 5, 7, 9, 12, 
-     15, 18, 21, 24, 28,
-     32, 37, 43, 49, 56,
-     64, 74, 84, 97, 114,
-     133, 153, 174, 196,
-     220, 245, 272, 300, 
-     330, 362, 395, 430,
-     468, 507, 548, 592,
-     638, 686, 1000//, 1500
+  7, 9, 12, /*3, 4, 5, */
+  15, 18, 21, 24, 28,
+  32, 37, 43, 49, 56,
+  64, 74, 84, 97, 114,
+  133, 153, 174, 196,
+  220, 245, 272, 300, 
+  330, 362, 395, 430,
+  468, 507, 548, 592,
+  638, 686, 1000//, 1500
 }; //raghavs suggested genpt binning for JER
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 

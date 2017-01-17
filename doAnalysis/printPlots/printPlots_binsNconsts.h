@@ -61,19 +61,20 @@ const int nbins_pt_jec = sizeof(ptbins_jec)/sizeof(double) -1;
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 
 // Error in <TAxis::TAxis::Set>: bins must be in increasing order
 // const Double_t ptbins_debug[] = {15., 30., 50., 80., 120., 170., 220., 300., 500.};
-const Int_t nbins_pt_debug = nbins_pt;
+//const Int_t nbins_pt_debug = nbins_pt;
+/*3., 4., 5., */
 const Double_t ptbins_debug[]={
-     3., 4., 5., 7., 9., 12., 
-     15., 18., 21., 24., 28.,
-     32., 37., 43., 49., 56.,
-     64., 74., 84., 97., 114.,
-     133., 153., 174., 196.,
-     220., 245., 272., 300., 
-     330., 362., 395., 430.,
-     468., 507., 548., 592.,
-     638., 686., 1000.//, 1500
+  7., 9., 12., 
+  15., 18., 21., 24., 28.,
+  32., 37., 43., 49., 56.,
+  64., 74., 84., 97., 114.,
+  133., 153., 174., 196.,
+  220., 245., 272., 300., 
+  330., 362., 395., 430.,
+  468., 507., 548., 592.,
+  638., 686., 1000.//, 1500
 }; //raghavs suggested genpt binning for JER
-///const int nbins_pt_debug = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
+const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;//above values define edges of bins, not centers, so subtract one
 
 //const double xmin=ptbins[0];
 //const double xmax=ptbins[nbins_pt];

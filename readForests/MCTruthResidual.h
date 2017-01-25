@@ -16,7 +16,7 @@ class MCTruthResidual
     TFile *fileUnf;
     TFile *fileResMC[3];
     TFile *fileHFWeight;
-	TH1D *histHFMweight;
+    TH1D *histHFMweight;
     int nstep;
   public:
     MCTruthResidual(TString mode): fmode(mode){//mode can be pPb5, Pbp5, pp5

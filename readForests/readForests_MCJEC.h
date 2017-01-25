@@ -33,6 +33,7 @@
 #include <TH2F.h>
 // custom
 #include "L2L3ResidualWFits.h"
+//#include "MCTruthResidual.h"
 
 
 //// FUNCTIONS
@@ -58,6 +59,7 @@ int readForests_ppMC_MCJEC( std::string inFilelist=defMCInFilelist,
 const int readForestsArgCount=7+minArgs;
 
 const float jtPtCut=15.;
+const float genPtCut=32.;
 const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;//make htEtaCutHi 100. for inf.
 const float jetQAPtCut=15.;//50.;
 const float ldJetPtCut=20., subldJetPtCut=10., ptAveCut=15., dPhiCut=2./3.*TMath::Pi();//dijet cuts
@@ -187,25 +189,65 @@ const int N_MCTrees=sizeof(MCTreeNames)/sizeof(std::string);
 // ------------------------------------------------------------------------------------------------------
 
 
-const float ptbins[]={ 
-  15., 30., 50., 80., 
-  120., 170., 220., 300., 
-  500. 
-}; // original genpt JER binning i inherited from raghav
+// original genpt JER binning i inherited from raghav
+//const float ptbins[]={ 
+//  3., 15., 30., 50., 80., 
+//  120., 170., 220., 280, 370., 460, 
+//  540., 
+//}; 
+//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+const float ptbins[]={
+  //     3., 4., 5., 7., 9., 12., 
+  5.,
+  15., 18., 21., 24., 28.,
+  32., 37., 43., 49., 56.,
+  64., 74., 84., 97., 114.,
+  133., 153., 174., 196.,
+  220., 245., 272., 300., 
+  330., 362., 395., 430.,
+  468., 507., 548., 592.,
+  638., 686., 1000.//, 1500
+}; //raghavs suggested genpt binning for JER
 const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 
-const float ptbins2[]={
-     3., 4., 5., 7., 9., 12., 
-     15., 18., 21., 24., 28.,
-     32., 37., 43., 49., 56.,
-     64., 74., 84., 97., 114.,
-     133., 153., 174., 196.,
-     220., 245., 272., 300., 
-     330., 362., 395., 430.,
-     468., 507., 548., 592.,
-     638., 686., 1000.//, 1500
-}; //raghavs suggested genpt binning for JER
-const int nbins_pt2=sizeof(ptbins2)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+const float etabins[]={
+  -5.0 ,
+  -4.7 , -4.4 , -4.1 , -3.8 , -3.5 ,          
+  -3.2 , -3.0 , -2.7 , -2.4 , -2.1 ,            
+  -1.8 , -1.5 , -1.2 ,      
+  -0.9 , -0.6 , -0.3 ,      
+  0.0 ,  
+  0.3 ,  0.6 ,  0.9 ,  
+  1.2 ,  1.5 ,  1.8 ,  
+  2.1 ,  2.4 ,  2.7 ,  3.0 ,  3.2 ,    
+  3.5 ,  3.8 ,  4.1 ,  4.4 ,  4.7 ,    
+  5.0
+};
+const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
+//const float etabins[]={
+//  -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013,
+//  -3.839, -3.664, -3.489, -3.314, -3.139,
+//  -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043,
+//  -1.930, -1.830, -1.740, -1.653, -1.566, -1.479, -1.392, -1.305, -1.218, -1.131, -1.044,
+//  -0.957, -0.879, -0.783, -0.696, -0.609, -0.522, -0.435, -0.348, -0.261, -0.174,
+//  -0.087, +0.000, +0.087,
+//  +0.174, +0.261, +0.348, +0.435, +0.522, +0.609, +0.696, +0.783, +0.879, +0.957,
+//  +1.044, +1.131, +1.218, +1.305, +1.392, +1.479, +1.566, +1.653, +1.740, +1.830, +1.930,
+//  +2.043, +2.172, +2.322, +2.500, +2.650, +2.853, +2.964,
+//  +3.139, +3.314, +3.489, +3.664, +3.839,
+//  +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
+//};
+//const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
+
+const float absetabins[]={ 
+  0.0, 0.5,
+  1.0, 1.5,
+  2.0, 2.5,
+  3.0, 3.2,
+  4.7, 5.7	     
+};	     
+const int nbins_abseta=sizeof(absetabins)/sizeof(float)-1;
 
 const float JEC_ptbins[]={
   17., 22., 27.,    //15-30
@@ -219,30 +261,6 @@ const float JEC_ptbins[]={
   550., 790., 1000. //500-inf
 };
 const int nbins_JEC_ptbins=sizeof(JEC_ptbins)/sizeof(float)-1;
-
-const float etabins[]={
-  -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013,
-  -3.839, -3.664, -3.489, -3.314, -3.139,
-  -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043,
-  -1.930, -1.830, -1.740, -1.653, -1.566, -1.479, -1.392, -1.305, -1.218, -1.131, -1.044,
-  -0.957, -0.879, -0.783, -0.696, -0.609, -0.522, -0.435, -0.348, -0.261, -0.174,
-  -0.087, +0.000, +0.087,
-  +0.174, +0.261, +0.348, +0.435, +0.522, +0.609, +0.696, +0.783, +0.879, +0.957,
-  +1.044, +1.131, +1.218, +1.305, +1.392, +1.479, +1.566, +1.653, +1.740, +1.830, +1.930,
-  +2.043, +2.172, +2.322, +2.500, +2.650, +2.853, +2.964,
-  +3.139, +3.314, +3.489, +3.664, +3.839,
-  +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
-};
-const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
-
-const float rapbins[]={ 
-  0.0, 0.5,
-  1.0, 1.5,
-  2.0, 2.5,
-  3.0, 3.2,
-  4.7	     
-};	     
-const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 
 //// WEIGHTS FOR MC
 // ------------------------------------------------------------------------------------------------------

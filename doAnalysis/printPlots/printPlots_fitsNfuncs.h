@@ -170,6 +170,8 @@ void MakeHistMean(TH1F *& , // mean
 		 float , float);// max, min 
 void MakeHistRMSEta(TH1F *&  , // hRMS 
 		 float , float);// max, min 
+void MakeHistRMSAbsEta(TH1F *&  , // hRMS 
+		 float , float);// max, min 
 void MakeHistMeanEta(TH1F *& , // mean 
 		 float , float);// max, min 
 void MakeZero(TH1F *& ); //hist 
@@ -280,156 +282,225 @@ void MakeHist(TH1F *&histo,int istat,const char *xname, const char *yname){
 }
 
 
-void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
+void MakeHistMean(TH1F *&h1,float ymax,float ymin){
   // hist
-  h1->SetTitle("");
-  h1->SetMaximum(ymax);
-  h1->SetMinimum(ymin);
+  //h1->SetMaximum(ymax);
+  //h1->SetMinimum(ymin);
+  //h1->SetTitle("");
+
+  h1->SetLineColor(kBlue);
+  h1->SetMarkerColor(kBlack);
+  h1->SetMarkerSize(.8);
 
   // x axis
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  h1->GetXaxis()->SetTitle("GenJet p_{T} (GeV/c)");
-  h1->GetXaxis()->CenterTitle(true);
-  h1->GetXaxis()->SetMoreLogLabels();
-  h1->GetXaxis()->SetNoExponent();
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  //h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
+  //h1->GetXaxis()->CenterTitle(true);
+  //h1->GetXaxis()->SetMoreLogLabels();
+  //h1->GetXaxis()->SetNoExponent();
   //title/label
-  h1->GetXaxis()->SetTitleFont(42);
-  h1->GetXaxis()->SetTitleSize(0.04);
-  h1->GetXaxis()->SetTitleOffset(1.0);
+  //h1->GetXaxis()->SetTitleFont(42);
+  //h1->GetXaxis()->SetTitleSize(0.03);
+  //h1->GetXaxis()->SetTitleOffset(1.0);
   h1->GetXaxis()->SetLabelFont(42);
-  h1->GetXaxis()->SetLabelSize(0.02);
-  h1->GetXaxis()->SetLabelOffset(0.01);
-  
-  h1->GetXaxis()->SetNdivisions(507);
+  h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelOffset(0.005);
+
+  //h1->GetXaxis()->SetNdivisions(507);
 
   // y axis
-  h1->GetYaxis()->SetTitle("#sigma / #mu");
-  h1->GetYaxis()->CenterTitle(true);
+  h1->GetYaxis()->SetTitle("#mu");
+  //h1->GetYaxis()->CenterTitle(true);
   //title/label
   h1->GetYaxis()->SetTitleFont(42);
   h1->GetYaxis()->SetTitleSize(0.04);
-  h1->GetYaxis()->SetTitleOffset(1.0);
+  //h1->GetYaxis()->SetTitleOffset(1.00);
+  h1->GetYaxis()->SetLabelFont(42);
+  h1->GetYaxis()->SetLabelSize(0.03);
+
+  //h1->GetYaxis()->SetNdivisions(507);
+  h1->GetYaxis()->SetDecimals(true);
+}
+
+void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
+  // hist
+  h1->SetTitle("");
+  //h1->SetMaximum(ymax);
+  //h1->SetMinimum(ymin);
+
+  h1->SetLineColor(kBlue);
+  h1->SetMarkerColor(kBlack);
+  h1->SetMarkerSize(.8);
+
+  // x axis
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
+  //h1->GetXaxis()->CenterTitle(true);
+  //h1->GetXaxis()->SetMoreLogLabels();
+  //h1->GetXaxis()->SetNoExponent();
+  //title/label
+  h1->GetXaxis()->SetTitleFont(42);
+  h1->GetXaxis()->SetTitleSize(0.04);
+  //h1->GetXaxis()->SetTitleOffset(1.0);
+  h1->GetXaxis()->SetLabelFont(42);
+  h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelOffset(0.01);
+  
+  //h1->GetXaxis()->SetNdivisions(507);
+
+  // y axis
+  h1->GetYaxis()->SetTitle("#sigma / #mu");
+  //h1->GetYaxis()->CenterTitle(true);
+  //title/label
+  h1->GetYaxis()->SetTitleFont(42);
+  h1->GetYaxis()->SetTitleSize(0.04);
+  //h1->GetYaxis()->SetTitleOffset(1.0);
   h1->GetYaxis()->SetLabelFont(42);
   h1->GetYaxis()->SetLabelSize(0.02);
-  h1->GetYaxis()->SetLabelOffset(0.01);
+  //h1->GetYaxis()->SetLabelOffset(0.01);
 
-  h1->GetYaxis()->SetNdivisions(507);
+  //h1->GetYaxis()->SetNdivisions(507);
   h1->GetYaxis()->SetDecimals(true);
+}
+
+void MakeHistMeanEta(TH1F *&h1,float ymax,float ymin){
+  // hist
+  //h1->SetMaximum(ymax);
+  //h1->SetMinimum(ymin);
+  //h1->SetTitle("");
+  h1->SetLineColor(kBlue);
+  h1->SetMarkerColor(kBlack);
+  h1->SetMarkerSize(.8);
+
+  // x axis
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  //h1->GetXaxis()->SetTitle("gen #eta");
+  //h1->GetXaxis()->CenterTitle(true);
+  //h1->GetXaxis()->SetMoreLogLabels();
+  //h1->GetXaxis()->SetNoExponent();
+
+  //title/label
+  h1->GetXaxis()->SetTitleFont(42);
+  h1->GetXaxis()->SetTitleSize(0.04);
+  //h1->GetXaxis()->SetTitleOffset(1.0);
+  h1->GetXaxis()->SetLabelFont(42);
+  h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelOffset(0.005);
+
+  //h1->GetXaxis()->SetNdivisions(507);
+
+  // y axis
+  h1->GetYaxis()->SetTitle("#mu");
+  //h1->GetYaxis()->CenterTitle(true);
+  //title/label
+  h1->GetYaxis()->SetTitleFont(42);
+  h1->GetYaxis()->SetTitleSize(0.04);
+  //h1->GetYaxis()->SetTitleOffset(1.00);
+  h1->GetYaxis()->SetLabelFont(42);
+  h1->GetYaxis()->SetLabelSize(0.03);
+
+  //h1->GetYaxis()->SetNdivisions(507);
+  //h1->GetYaxis()->SetDecimals(true);
+
 }
 
 void MakeHistRMSEta(TH1F *&h1,float ymax,float ymin){
   // hist
   h1->SetTitle("");
-  h1->SetMaximum(ymax);
-  h1->SetMinimum(ymin);
+  //h1->SetMaximum(ymax);
+  //h1->SetMinimum(ymin);
+
+  h1->SetLineColor(kBlue);
+  h1->SetMarkerColor(kBlack);
+  h1->SetMarkerSize(.8);
 
   // x axis
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  h1->GetXaxis()->SetTitle("GenJet #eta_{T} (GeV/c)");
-  h1->GetXaxis()->CenterTitle(true);
-  h1->GetXaxis()->SetMoreLogLabels();
-  h1->GetXaxis()->SetNoExponent();
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  h1->GetXaxis()->SetTitle("#eta");
+  //h1->GetXaxis()->CenterTitle(true);
+  //h1->GetXaxis()->SetMoreLogLabels();
+  //h1->GetXaxis()->SetNoExponent();
   //title/label
   h1->GetXaxis()->SetTitleFont(42);
   h1->GetXaxis()->SetTitleSize(0.04);
-  h1->GetXaxis()->SetTitleOffset(1.0);
+  //h1->GetXaxis()->SetTitleOffset(1.0);
   h1->GetXaxis()->SetLabelFont(42);
-  h1->GetXaxis()->SetLabelSize(0.02);
-  h1->GetXaxis()->SetLabelOffset(0.01);
+  h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelOffset(0.01);
   
-  h1->GetXaxis()->SetNdivisions(507);
+  //h1->GetXaxis()->SetNdivisions(507);
 
   // y axis
   h1->GetYaxis()->SetTitle("#sigma / #mu");
-  h1->GetYaxis()->CenterTitle(true);
+  //h1->GetYaxis()->CenterTitle(true);
   //title/label
   h1->GetYaxis()->SetTitleFont(42);
   h1->GetYaxis()->SetTitleSize(0.04);
-  h1->GetYaxis()->SetTitleOffset(1.0);
+  //h1->GetYaxis()->SetTitleOffset(1.0);
   h1->GetYaxis()->SetLabelFont(42);
-  h1->GetYaxis()->SetLabelSize(0.02);
-  h1->GetYaxis()->SetLabelOffset(0.01);
+  h1->GetYaxis()->SetLabelSize(0.03);
+  //h1->GetYaxis()->SetLabelOffset(0.01);
 
-  h1->GetYaxis()->SetNdivisions(507);
+  //h1->GetYaxis()->SetNdivisions(507);
   h1->GetYaxis()->SetDecimals(true);
 }
 
 
-void MakeHistMean(TH1F *&h1,float ymax,float ymin){
+void MakeHistRMSAbsEta(TH1F *&h1,float ymax,float ymin){
   // hist
-  h1->SetMaximum(ymax);
-  h1->SetMinimum(ymin);
   h1->SetTitle("");
+  //h1->SetMaximum(ymax);
+  //h1->SetMinimum(ymin);
+
+  h1->SetLineColor(kBlue);
+  h1->SetMarkerColor(kBlack);
+  h1->SetMarkerSize(.8);
 
   // x axis
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  h1->GetXaxis()->SetTitle("GenJet p_{T} (GeV/c)");
-  h1->GetXaxis()->CenterTitle(true);
-  h1->GetXaxis()->SetMoreLogLabels();
-  h1->GetXaxis()->SetNoExponent();
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  h1->GetXaxis()->SetTitle("|#eta|");
+  //h1->GetXaxis()->CenterTitle(true);
+  //h1->GetXaxis()->SetMoreLogLabels();
+  //h1->GetXaxis()->SetNoExponent();
   //title/label
   h1->GetXaxis()->SetTitleFont(42);
-  h1->GetXaxis()->SetTitleSize(0.03);
-  h1->GetXaxis()->SetTitleOffset(1.0);
+  h1->GetXaxis()->SetTitleSize(0.04);
+  //h1->GetXaxis()->SetTitleOffset(1.0);
   h1->GetXaxis()->SetLabelFont(42);
-  h1->GetXaxis()->SetLabelSize(0.02);
-  h1->GetXaxis()->SetLabelOffset(0.005);
-
-  h1->GetXaxis()->SetNdivisions(507);
+  h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelOffset(0.01);
+  
+  //h1->GetXaxis()->SetNdivisions(507);
 
   // y axis
-  h1->GetYaxis()->SetTitle("#mu");
-  h1->GetYaxis()->CenterTitle(true);
+  h1->GetYaxis()->SetTitle("#sigma / #mu");
+  //h1->GetYaxis()->CenterTitle(true);
   //title/label
   h1->GetYaxis()->SetTitleFont(42);
   h1->GetYaxis()->SetTitleSize(0.04);
-  h1->GetYaxis()->SetTitleOffset(1.00);
+  //h1->GetYaxis()->SetTitleOffset(1.0);
   h1->GetYaxis()->SetLabelFont(42);
-  h1->GetYaxis()->SetLabelSize(0.02);
+  h1->GetYaxis()->SetLabelSize(0.03);
+  //h1->GetYaxis()->SetLabelOffset(0.01);
 
-  h1->GetYaxis()->SetNdivisions(507);
+  //h1->GetYaxis()->SetNdivisions(507);
   h1->GetYaxis()->SetDecimals(true);
-
-
 }
 
-void MakeHistMeanEta(TH1F *&h1,float ymax,float ymin){
-  // hist
-  h1->SetMaximum(ymax);
-  h1->SetMinimum(ymin);
-  h1->SetTitle("");
-
-  // x axis
-  h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  h1->GetXaxis()->SetTitle("GenJet #eta_{T} (GeV/c)");
-  h1->GetXaxis()->CenterTitle(true);
-  h1->GetXaxis()->SetMoreLogLabels();
-  h1->GetXaxis()->SetNoExponent();
-  //title/label
-  h1->GetXaxis()->SetTitleFont(42);
-  h1->GetXaxis()->SetTitleSize(0.03);
-  h1->GetXaxis()->SetTitleOffset(1.0);
-  h1->GetXaxis()->SetLabelFont(42);
-  h1->GetXaxis()->SetLabelSize(0.02);
-  h1->GetXaxis()->SetLabelOffset(0.005);
-
-  h1->GetXaxis()->SetNdivisions(507);
-
-  // y axis
-  h1->GetYaxis()->SetTitle("#mu");
-  h1->GetYaxis()->CenterTitle(true);
-  //title/label
-  h1->GetYaxis()->SetTitleFont(42);
-  h1->GetYaxis()->SetTitleSize(0.04);
-  h1->GetYaxis()->SetTitleOffset(1.00);
-  h1->GetYaxis()->SetLabelFont(42);
-  h1->GetYaxis()->SetLabelSize(0.02);
-
-  h1->GetYaxis()->SetNdivisions(507);
-  h1->GetYaxis()->SetDecimals(true);
 
 
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void MakeZero(TH1F *&h1){

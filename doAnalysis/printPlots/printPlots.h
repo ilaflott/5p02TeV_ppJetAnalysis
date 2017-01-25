@@ -49,6 +49,8 @@
 // custom
 #include "printPlots_ppMC.h"
 #include "printPlots_ppData.h"
+#include "printPlots_binsNconsts.h"
+#include "printPlots_fitsNfuncs.h"
 
 const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
@@ -56,7 +58,7 @@ const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/";
 
 const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
-const std::string inputDir=SCRATCH_BASE+"readForests/1.16.17_outputCondor/";
+const std::string inputDir=SCRATCH_BASE+"readForests/";///1.16.17_outputCondor/";
 //const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
 
 //// combos
@@ -144,71 +146,6 @@ const float jetQAxmin[]={
 //const int jetTrigQABinning=10;
 const int jetSpectraRapBinning=10;
 
-//// gen variable names for Th2 profiles//MCEff Ploits
-//const std::string genVars[] = {   
-//  "pt","eta","phi" //,"drjt"
-//};
-//const int N_genVars = sizeof(genVars)/sizeof(std::string);
-
-//const std::string genVars_ptrat[] = {   
-//  "eta","phi" ,"drjt"
-//};
-//const int N_genVars_ptrat = sizeof(genVars_ptrat)/sizeof(std::string);
-
-// trigs
-//const std::string HLTName[] = {
-//  "HLT40","HLT60","HLT80","HLT100", /*"HLTComb",*/ "TrgCombTest"
-//};
-
-// trigs
-//const std::string HLTName_Leg[] = {
-//  "HLTak4Calo40","HLTak4Calo60","HLTak4Calo80","HLTak4Calo100", /*"HLTSum/4",*/ "HLTComb" 
-//};
-//const int N_trigs=sizeof(HLTName)/sizeof(std::string);
-
-//// MC+DATA COMMON BINNING
-// ---------------------------------------------------------------------------------------------------------------
-
-//// binning arrays
-//const int ptbins[] = { 15, 30, 50, 80, 120, 170, 220, 300, 500 };
-//const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
-//
-//const double JEC_ptbins[] = {
-//  17, 22, 27,    //15-30
-//  33, 39, 47,    //30-50
-//  55, 64, 74,    //50-80
-//  84, 97, 114,   //80-120
-//  133, 153,      //120-170
-//  174, 196,      //170-220
-//  220, 245, 272, //220-300
-//  300, 350, 400, //300-500
-//  550, 790, 1000 //500-inf
-//};
-//const int nbins_JEC_ptbins = sizeof(JEC_ptbins)/sizeof(double)-1;
-
-//const double etabins[] = {
-//  -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013, 
-//  -3.839, -3.664, -3.489, -3.314, -3.139, 
-//  -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043, 
-//  -1.930, -1.830, -1.740, -1.653, -1.566, -1.479, -1.392, -1.305, -1.218, -1.131, -1.044, 
-//  -0.957, -0.879, -0.783, -0.696, -0.609, -0.522, -0.435, -0.348, -0.261, -0.174, 
-//  -0.087, +0.000, +0.087, 
-//  +0.174, +0.261, +0.348, +0.435, +0.522, +0.609, +0.696, +0.783, +0.879, +0.957, 
-//  +1.044, +1.131, +1.218, +1.305, +1.392, +1.479, +1.566, +1.653, +1.740, +1.830, +1.930, 
-//  +2.043, +2.172, +2.322, +2.500, +2.650, +2.853, +2.964, 
-//  +3.139, +3.314, +3.489, +3.664, +3.839, 
-//  +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
-//};
-//const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
-
-const float rapbins[]={ 
-  0.0, 0.5,
-  1.0, 1.5,
-  2.0, 2.5,
-  3.0, 3.2,
-  4.7
-};
-const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
 
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------

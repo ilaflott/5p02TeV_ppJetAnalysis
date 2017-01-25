@@ -3,9 +3,9 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true;
-const bool fillMCUnfoldingHists=true;
+const bool fillMCUnfoldingHists=false;
 const bool fillMCJECHists=true, fillMCEffHists=true;
-const bool fillMCJetIDHists=false, doTightJetID=false;
+const bool fillMCJetIDHists=true, doTightJetID=false;
 
 //// readForests_ppMC_MCJEC
 // ---------------------------------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
   // declare hists
   /////   EVT+JET COUNTS AND METADATA   ///// 
   TH1F *hJetPtCut        =new TH1F("hJetPtCut"      ,(std::to_string(jtPtCut)).c_str()   ,    100, 0,100); hJetPtCut->Fill(jtPtCut);           
-  TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);	        
+  TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);
   TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6  ); hJetEtaCutLo->Fill(jtEtaCutLo);	
   //TH1F *hJetQAPtCut      =new TH1F("hJetQAPtCut"    ,(std::to_string(jetQAPtCut)).c_str(),    100, 0,100); hJetQAPtCut->Fill(jetQAPtCut);     
   //TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0,100); hLeadJetPtCut->Fill(ldJetPtCut);     
@@ -190,11 +190,18 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
   TH1F * hJER_jtetaQA;
   //TH1F * hJEC_check[2][nbins_JEC_ptbins][nbins_eta]={};
   //TH1F * hJER[2][nbins_pt]={};  
-  TH1F * hJER[2][nbins_pt2]={};  
+  TH1F * hJER[2][nbins_pt]={};  
   TH1F *hJER_eta_30pt50[2][nbins_eta]={}, *hJER_eta_150pt200[2][nbins_eta]={};
-  TH1F *hJER_rapbins[2][nbins_rap];
-  TH1F *hJER_rapbins_genptBin1[2][nbins_rap]; int genptBin1Low=12, genptBin1High=15;
-  TH1F *hJER_rapbins_genptBin2[2][nbins_rap]; int genptBin2Low=84, genptBin2High=97;
+
+  TH1F *hJER_rapbins[2][nbins_abseta];
+  TH1F *hJER_rapbins_genptBin1[2][nbins_abseta]; int genptBin1Low=49, genptBin1High=56;
+  TH1F *hJER_rapbins_genptBin2[2][nbins_abseta]; int genptBin2Low=430, genptBin2High=468;
+
+  TH1F *hGenPtCutHi1       =new TH1F("hJetEtaCutHi1"     , (std::to_string(genptBin1Low)).c_str()   ,    1000,   0., 1000.  ); hGenPtCutHi1->Fill((float)genptBin1Low);
+  TH1F *hGenPtCutLo1      =new TH1F("hJetEtaCutLo1"      , (std::to_string(genptBin1High)).c_str()  ,    1000,   0., 1000.  ); hGenPtCutLo1->Fill((float)genptBin1High);	
+  TH1F *hGenPtCutHi2       =new TH1F("hJetEtaCutHi2"     , (std::to_string(genptBin2Low)).c_str()   ,    1000,   0., 1000.  ); hGenPtCutHi2->Fill((float)genptBin2Low);
+  TH1F *hGenPtCutLo2      =new TH1F("hJetEtaCutLo2"      , (std::to_string(genptBin2High)).c_str()  ,    1000,   0., 1000.  ); hGenPtCutLo2->Fill((float)genptBin2High);	
+
   if(fillMCJECHists){        
     int jtID=0;
     if(fillMCJetIDHists)jtID=1;
@@ -213,25 +220,24 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
 					  Form("rawpt/genpt, %2.0f<genpt<%2.0f, %2.4f<geneta<%2.4f", 
 					       JEC_ptbins[x],JEC_ptbins[x+1], etabins[y],etabins[y+1]),
 					  100,0.,3.);           }*/ }    
-    //for(int bin = 0; bin<nbins_pt; ++bin) {      
-    for(int bin = 0; bin<nbins_pt2; ++bin) {      
-      std::string hTitleJER="hJER_"+std::to_string(jtID)+"wJetID_"+
-	std::to_string((int)ptbins2[bin])+"_pt_"+std::to_string((int)ptbins2[bin+1]);      
-      //	std::to_string((int)ptbins[bin])+"_pt_"+std::to_string((int)ptbins[bin+1]);      
-      hJER[jtID][bin] = new TH1F(hTitleJER.c_str(),"matched jets, recpt/genpt, genptbins", 100,0.,2.); 
+    for(int bin = 0; bin<nbins_pt; ++bin) {      
+      std::string hTitleJER="hJER_"+std::to_string(jtID)+"wJetID_ptbin"+std::to_string(bin);
+      hJER[jtID][bin] = new TH1F(hTitleJER.c_str()," jets, recpt/genpt, genptbins", 100,0.,2.); 
     } 
-
-    for(int bin = 0; bin<nbins_rap; ++bin) {      
+    
+    for(int bin = 0; bin<nbins_abseta; ++bin) {      
       std::string hTitleJER="hJER_"+std::to_string(jtID)+"wJetID_jty_bin"+std::to_string(bin);      
-      hJER_rapbins[jtID][bin] = new TH1F(hTitleJER.c_str(),"matched jets, recpt/genpt, abs(y) bins", 100,0.,2.); 
-
-      std::string hTitleJER_1="hJER_"+std::to_string(jtID)+"wJetID_jty_bin"+std::to_string(bin)+
-	"_genpt_"+std::to_string(genptBin1Low)+"to"+std::to_string(genptBin1High);      
-      hJER_rapbins_genptBin1[jtID][bin] = new TH1F(hTitleJER_1.c_str(),"matched jets, recpt/genpt, abs(y) bins", 100,0.,2.); 
-
-      std::string hTitleJER_2="hJER_"+std::to_string(jtID)+"wJetID_jty_bin"+std::to_string(bin)+
-	"_genpt_"+std::to_string(genptBin2Low)+"to"+std::to_string(genptBin2High);      
-      hJER_rapbins_genptBin2[jtID][bin] = new TH1F(hTitleJER_2.c_str(),"matched jets, recpt/genpt, abs(y) bins", 100,0.,2.); 
+      hJER_rapbins[jtID][bin] = new TH1F(hTitleJER.c_str(),("recpt/genpt, absetaBin"+std::to_string(bin)).c_str(), 100,0.,2.); 
+      
+      std::string hTitleJER_1="hJER_"+std::to_string(jtID)+"wJetID_jty_etabin"+std::to_string(bin)+
+	"_genptBin1";
+      hJER_rapbins_genptBin1[jtID][bin] = new TH1F(hTitleJER_1.c_str(),("absetaBin "+std::to_string(bin)+", "						   
+								       	"genpt "+std::to_string(genptBin1Low)+" to "+std::to_string(genptBin1High)).c_str(), 100,0.,2.); 
+      
+      std::string hTitleJER_2="hJER_"+std::to_string(jtID)+"wJetID_jty_etabin"+std::to_string(bin)+
+	"_genptBin2";
+      hJER_rapbins_genptBin2[jtID][bin] = new TH1F(hTitleJER_2.c_str(),("absetaBin "+std::to_string(bin)+", "						   
+						                       	"genpt "+std::to_string(genptBin2Low)+" to "+std::to_string(genptBin2High)).c_str(), 100,0.,2.); 
     }
         
     hJER_jtetaQA=new TH1F("jtEtaSanityCheckJER", "jetEta Dist Check" , 100, -6., 6.);
@@ -338,6 +344,8 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
   
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
 
+  //MCTruthResidual* MCResidual = new MCTruthResidual( "pp5");
+
   float jetIDCut_neSum=0.99, jetIDCut_phSum=0.99;
   if(doTightJetID){     
     jetIDCut_neSum=0.90;  
@@ -393,18 +401,27 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
       
       //if reco jet w/o matched gen jet, skip.
       if( subid_F[jet]!=0 ) continue;
-      
-      float recpt  = pt_F[jet];
+
+      float genpt= refpt_F[jet];
+      if( genpt< genPtCut ) continue;
+
       float receta = eta_F[jet];
       float absreceta=fabs(receta);
-      float rawpt  = rawpt_F[jet];
-      //float recy = y_F[jet];
-      float recphi = phi_F[jet];
-
-      if( recpt<jtPtCut   ) continue;                 
-
       if( absreceta >= jtEtaCutHi ) continue;
       else if ( absreceta<jtEtaCutLo ) continue;
+
+      float recpt  = pt_F[jet];
+      //std::cout<<std::endl<<"recpt pre-residual="<<recpt<<std::endl;
+      //recpt=MCResidual->getResidualCorr(recpt,receta);
+      //std::cout<<std::endl<<"recpt post-residual="<<recpt<<std::endl;
+      if( recpt<jtPtCut   ) continue;                 
+
+
+      float gendrjt = refdrjt_F[jet];     
+      //if( gendrjt>0.2 ) continue;
+
+      float rawpt  = rawpt_F[jet];
+      float recphi = phi_F[jet];
 
       // 13 TeV JetID criterion
       bool passesJetID=false; int jtID=0;
@@ -455,11 +472,10 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
 	h_NEvents_withJets_kmatCut1->Fill(1);
 	hNEvts_withJets_kmatCut1_Filled=true;      }
       
-      float genpt= refpt_F[jet];
       float geneta = refeta_F[jet];
-      float absgeneta = fabs(geneta);
+      //float absgeneta = fabs(geneta);
       float genphi = refphi_F[jet];
-      float gendrjt = refdrjt_F[jet];     
+
       
       /////   JEC AND JER   ///// 
       if(fillMCJECHists ){
@@ -471,25 +487,29 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
 
 	// dual-diff xsec bins + two genpt bins from rag
 	int absetabin=-1;
-	if(absgeneta>rapbins[nbins_rap]) absetabin = -1;
+	//if(absgeneta>absetabins[nbins_abseta]) absetabin = -1;
+	if(absreceta>absetabins[nbins_abseta]) absetabin = -1;
 	else{
-	  for(int bin=0; bin < nbins_rap; bin++)
-	    if( absgeneta>=rapbins[bin] ) absetabin = bin; 				}
+	  for(int bin=0; bin < nbins_abseta; bin++)
+	    if( absreceta>=absetabins[bin] ) absetabin = bin; 				}
+	    //	    if( absgeneta>=absetabins[bin] ) absetabin = bin; 				}
 	
 	if(absetabin != -1 ){
 	  hJER_rapbins[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
-	  if( ((float)genptBin1Low)<=genpt && genpt<((float)genptBin1High) ) 
+
+	  if( ((float)genptBin1Low)<= genpt && genpt <((float)genptBin1High) ) 
 	    hJER_rapbins_genptBin1[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
+
 	  if( ((float)genptBin2Low)<=genpt && genpt<((float)genptBin2High) ) 	  
 	    hJER_rapbins_genptBin2[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     	}       
 
 
 	// gen pt binnings from raghav
 	int ptbin = -1; 
-	if(genpt>=ptbins2[nbins_pt2])ptbin=-1;
+	if(genpt>=ptbins[nbins_pt])ptbin=-1;
 	else {
-	  for(int bin = 0; bin<nbins_pt2; ++bin)  { // binning recommended by raghav for 5TeVppJets
-	    if(genpt >= ptbins2[bin]) ptbin = bin; }		}
+	  for(int bin = 0; bin<nbins_pt; ++bin)  { // binning recommended by raghav for 5TeVppJets
+	    if(genpt >= ptbins[bin]) ptbin = bin; }		}
 
 	if(ptbin != -1) {
 	  hJER[jtID][ptbin]->Fill( (float)(recpt/genpt), weight_eS); }
@@ -497,15 +517,15 @@ int readForests_ppMC_MCJEC(std::string inFilelist , int startfile , int endfile 
 
 	// gen eta binnings from raghav
 	int etabin = -1;
-	if(fabs(geneta)>=etabins[nbins_eta])etabin=-1;//i made the fabs explicit here because i'm doing things in bins of geneta, not absgeneta ala anal binning
+	if(fabs(geneta) >= etabins[nbins_eta]) etabin=-1;//i made the fabs explicit here because i'm doing things in bins of geneta, not absgeneta ala anal binning
 	else{
 	  for(int bin = 0; bin<nbins_eta; ++bin)    
 	    if(geneta >= etabins[bin]) etabin = bin;	}
 
 	if(etabin != -1) {
-	  if(genpt >= 30  && genpt<50 ) 
+	  if(genpt >= 30.  && genpt<50. ) 
 	    hJER_eta_30pt50[jtID][etabin]->Fill((float)recpt/genpt, weight_eS);
-	  else if(genpt >= 150 && genpt<200) 
+	  else if(genpt >= 150. && genpt<200.) 
 	    hJER_eta_150pt200[jtID][etabin]->Fill((float)recpt/genpt, weight_eS);	
 
 	  /*int binx = -1; //genpt JEC bin

@@ -3,15 +3,15 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
-const bool fillMCJetSpectraRapHists=true; //other
-const bool fillBasicJetPlotsOnly=true;
+const bool fillMCJetSpectraRapHists=false; //other
+const bool fillBasicJetPlotsOnly=false;
 const bool tightJetID=false;
 
 //// readForests_ppMC_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfile ,  
 			      int radius , std::string jetType , bool debugMode ,
-			      std::string outfile ){ 
+				 std::string outfile, float jtEtaCutLo, float jtEtaCutHi){
   
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
@@ -668,30 +668,40 @@ int main(int argc, char *argv[]){
   
   // error, not enough arguments
   int rStatus = -1;
-  if(argc!=8 && argc!=1){
-    std::cout<<"for tests on default inputs, do..." <<std::endl;
-    std::cout<<"./readForests_ppMC_jetPlots.exe";
+  if(argc!=8 && argc!=1 && argc!=10){
     std::cout<<std::endl<<std::endl;
     std::cout<<"for actually running, do..."<<std::endl;
     std::cout<<"./readForests_ppMC_jetPlots.exe ";
     std::cout<<"<inputFileList> <startFile> <endFile> ";
     std::cout<<"<jetRadius> <jetType> <debugMode> ";
-    std::cout<<"<outputFilename> ";
+    std::cout<<"<outputFilename> [<absEtaCutLo> <absEtaCutHi>]";
+    std::cout<<std::endl<<std::endl;
+    std::cout<<"where args in [] are optional."<<std::endl;
     std::cout<<std::endl<<std::endl;
     std::cout<<"rStatus="<<rStatus<<std::endl;
+    std::cout<<std::endl<<std::endl;
     return rStatus;
   }
   
   // good input, run
   rStatus=1;
   if(argc==1) rStatus = readForests_ppMC_jetPlots();
-  else{//read input argument vector
+  else if (argc==8){//read input argument vector
     std::string inputFileList=argv[1]; int startfile= atoi(argv[2]); int endfile= atoi(argv[3]);  
     int jetRadius= atoi(argv[4]); std::string jetType=argv[5];     bool debug=(bool)atoi(argv[6]);
     std::string outputFileName=argv[7];      
     rStatus = readForests_ppMC_jetPlots( inputFileList, startfile, endfile, 
-				jetRadius, jetType, debug,
-				outputFileName);  }
+				  jetRadius, jetType, debug,
+				  outputFileName);
+  }
+  else if (argc==10){//read input argument vector
+    std::string inputFileList=argv[1]; int startfile= atoi(argv[2]); int endfile= atoi(argv[3]);  
+    int jetRadius= atoi(argv[4]); std::string jetType=argv[5];     bool debug=(bool)atoi(argv[6]);
+    std::string outputFileName=argv[7];      float jtEtaCutLo= atof( argv[8] ) ; float jtEtaCutHi=atof( argv[9] ) ;
+    rStatus = readForests_ppMC_jetPlots( inputFileList, startfile, endfile, 
+				  jetRadius, jetType, debug,
+					   outputFileName, jtEtaCutLo, jtEtaCutHi);
+  }
   std::cout<<"rStatus="<<rStatus<<std::endl;
   return rStatus;
 }

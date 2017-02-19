@@ -55,31 +55,28 @@ const std::string defJetType="PF";
 const bool defDebugMode=true;//, fastDebugMode = true;
 const std::string defDataOutputName="readForests_ppData_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
+const float defEtaCutLo=0.0, defEtaCutHi=4.7;//really absetacut
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				   int startfile=defStartFile, int endfile=1,
-				   int radius=defRadius, std::string jetType=defJetType, 
-				   bool debugMode=defDebugMode,
-				   std::string outfile=defDataOutputName      );
+				 int startfile=defStartFile, int endfile=1,
+				 int radius=defRadius, std::string jetType=defJetType, 
+				 bool debugMode=defDebugMode,
+				 std::string outfile=defDataOutputName, 
+				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-				 int startfile=defStartFile, int endfile=20, 
-				 int radius=defRadius, std::string jetType=defJetType, 
-			       bool debugMode=false,			       //bool debugMode=defDebugMode,
-				 std::string outfile=(defMCOutputName+"_jetPlots.root")     );
+			       int startfile=defStartFile, int endfile=20, 
+			       int radius=defRadius, std::string jetType=defJetType, 
+			       bool debugMode=defDebugMode,			
+			       std::string outfile=(defMCOutputName+"_jetPlots.root"),
+			       float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
-const int readForestsArgCount=7+minArgs;
+const int readForestsArgCount=9+minArgs;
 
 // extended eta range for jetID Eff, or more QA in diff region... etc.
-const float jtPtCut=15.;
-const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;
-const float jetQAPtCut=15.;
-
-////for unfolding + later primary result
-//const float jtPtCut=15.;
-//const float jtEtaCutLo=0.0, jtEtaCutHi=2.0;//make htEtaCutHi 100. for inf.
-//const float jetQAPtCut=50.;//50.;
-const float ldJetPtCut=55., subldJetPtCut=20., ptAveCut=25., dPhiCut=2./3.*TMath::Pi();//dijet cuts
+const float jtPtCut=60.;
+const float jetQAPtCut=60.;
+const float ldJetPtCut=60., subldJetPtCut=20., ptAveCut=50., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 //// HELPER FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------

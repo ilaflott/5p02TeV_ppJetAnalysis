@@ -11,9 +11,9 @@ const bool tightJetID=false;
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int endfile , 
-			int radius , std::string jetType , bool debugMode ,
-		        std::string outfile ){
-
+				 int radius , std::string jetType , bool debugMode ,
+				 std::string outfile, float jtEtaCutLo, float jtEtaCutHi){
+  
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl;
@@ -91,8 +91,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
   // declare hists
   TH1F *hJetPtCut        =new TH1F("hJetPtCut"      ,(std::to_string(jtPtCut)).c_str()   ,    100, 0,100); hJetPtCut->Fill(jtPtCut);           
-  TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);	        
-  TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6  ); hJetEtaCutLo->Fill(jtEtaCutLo);	        
+  TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6.  ); hJetEtaCutHi->Fill(jtEtaCutHi); 
+  TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6.  ); hJetEtaCutLo->Fill(jtEtaCutLo);     
   TH1F *hJetQAPtCut      =new TH1F("hJetQAPtCut"    ,(std::to_string(jetQAPtCut)).c_str(),    100, 0,100); hJetQAPtCut->Fill(jetQAPtCut);     
   TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0,100); hLeadJetPtCut->Fill(ldJetPtCut);     
   TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0,100); hSubLeadJetPtCut->Fill(subldJetPtCut);
@@ -404,7 +404,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if(filelistIsJet80)
       if( (bool)CaloJet40_I || (bool)CaloJet60_I || (bool)PFJet40_I || (bool)PFJet60_I ) {
 	if(debugMode)std::cout<<"this event is in Jet80 AND LowerJets dataset.!"<<std::endl;
-	if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	continue; }
+	if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
+	continue; }
     
 
     // skim/HiEvtAnalysis criteria
@@ -860,8 +861,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     h_NJets_JetIDCut->GetEntries()<<std::endl<<std::endl;
   
   std::cout<<"writing output file... ";
-  if(debugMode)std::cout<<outfile;
-  std::cout<<std::endl;
+  //std::cout<<outfile<<std::endl<<std::endl;
+
   fout->Write(); 
   
   trgObjpt_40->clear();
@@ -872,7 +873,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   std::cout<<std::endl<<"readForests_ppData_jetPlots finished."<<std::endl;  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
-  
+  std::cout<<"output file written is  "<<outfile<<std::endl<<std::endl;
   return 0;
 }    // end readForests_ppData_jetPlots
 
@@ -882,30 +883,39 @@ int main(int argc, char *argv[]){
   
   // error, not enough arguments
   int rStatus = -1;
-  if(argc!=8 && argc!=1){
-    std::cout<<"for tests on default inputs, do..." <<std::endl;
-    std::cout<<"./readForests_ppData_jetPlots.exe";
+  if(argc!=8 && argc!=1 && argc!=10){
     std::cout<<std::endl<<std::endl;
     std::cout<<"for actually running, do..."<<std::endl;
     std::cout<<"./readForests_ppData_jetPlots.exe ";
     std::cout<<"<inputFileList> <startFile> <endFile> ";
     std::cout<<"<jetRadius> <jetType> <debugMode> ";
-    std::cout<<"<outputFilename> ";
+    std::cout<<"<outputFilename> [<absEtaCutLo> <absEtaCutHi>]";
+    std::cout<<std::endl<<std::endl;
+    std::cout<<"where args in [] are optional."<<std::endl;
     std::cout<<std::endl<<std::endl;
     std::cout<<"rStatus="<<rStatus<<std::endl;
+    std::cout<<std::endl<<std::endl;
     return rStatus;
   }
   
   // good input, run
   rStatus=1;
   if(argc==1) rStatus = readForests_ppData_jetPlots();
-  else{//read input argument vector
+  else if (argc==8){//read input argument vector
     std::string inputFileList=argv[1]; int startfile= atoi(argv[2]); int endfile= atoi(argv[3]);  
     int jetRadius= atoi(argv[4]); std::string jetType=argv[5];     bool debug=(bool)atoi(argv[6]);
     std::string outputFileName=argv[7];      
     rStatus = readForests_ppData_jetPlots( inputFileList, startfile, endfile, 
 				  jetRadius, jetType, debug,
 				  outputFileName);
+  }
+  else if (argc==10){//read input argument vector
+    std::string inputFileList=argv[1]; int startfile= atoi(argv[2]); int endfile= atoi(argv[3]);  
+    int jetRadius= atoi(argv[4]); std::string jetType=argv[5];     bool debug=(bool)atoi(argv[6]);
+    std::string outputFileName=argv[7];      float jtEtaCutLo= atof( argv[8] ) ; float jtEtaCutHi=atof( argv[9] ) ;
+    rStatus = readForests_ppData_jetPlots( inputFileList, startfile, endfile, 
+				  jetRadius, jetType, debug,
+					   outputFileName, jtEtaCutLo, jtEtaCutHi);
   }
   std::cout<<"rStatus="<<rStatus<<std::endl;
   return rStatus;

@@ -6,9 +6,9 @@
 const bool debugMode=true, doEventCounts=true, doJetIDPlots=true;
 //draw switches
 const bool drawEvtQAPlots=true;
-const bool drawJetQAPlots=true;
-const bool drawJetConstituentPlots=true, drawDijetPlots=true;//, doBasicJetQAOnly=true;
-const bool drawJetTrigQAPlots=true, drawJetRapBinsPlot=true;
+const bool drawJetQAPlots=false;
+const bool drawJetConstituentPlots=true, drawDijetPlots=false;//, doBasicJetQAOnly=true;
+const bool drawJetTrigQAPlots=true, drawJetRapBinsPlot=true ;
 //const bool drawMCEffPlots=false;
 // hist painting ------------------------
 // line colors
@@ -835,7 +835,7 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
     std::cout<<" drawing jet rap bin Plots..."<<std::endl;
     
     if(debugMode)std::cout<<std::endl<<"creating temporary canvas for printing Jet rapBins plots..."<<std::endl;
-    TCanvas *temp_canvJetRapBins = new TCanvas("tempJetRapBins", "tempJetRapBins", 900, 600);
+    TCanvas *temp_canvJetRapBins = new TCanvas("tempJetRapBins", "tempJetRapBins", 900, 700);
     temp_canvJetRapBins->SetLogy(1);    
 
     TLegend* theJetRapHistLeg=new TLegend(0.72,0.60,0.85,0.86, NULL,"brNDC");
@@ -847,14 +847,14 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
       float power=std::pow(10., 6.);
       //float power=std::pow(10., 0.);
       std::cout<<"drawing dual-differential cross section plot"<<std::endl;	
-      std::cout<<"looping over "<<nbins_rap<<" rapidity bins"<<std::endl;
+      std::cout<<"looping over "<<nbins_abseta<<" rapidity bins"<<std::endl;
       
       for(int rapbin=0; rapbin<8; ++rapbin){	
 	
 	// assert(rapbin!=0);
 	// assert(rapbin!=-1);
 	
-	int bincounter = nbins_rap-rapbin;
+	int bincounter = nbins_abseta-rapbin;
 	std::cout<<"bincounter = "<<bincounter<<" "<<std::endl;
 
 	//open the hists + rebin
@@ -862,10 +862,10 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
 	if(doJetIDPlots) inHistName+="_wJetID"; 
 	inHistName+="_bin"+std::to_string(rapbin);
 	if(debugMode)std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl<<std::endl;	
-
+	
 	if(rapbin==6){
 	  std::cout<<"rapbin==6, continuing on..."<<std::endl;
-	  continue;//still not sure why i need this...
+	  continue;
 	}
 	
 	TH1F* theJetSpectraRapHist= (TH1F*)
@@ -900,8 +900,8 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
 	////theJetSpectraRapHist->SetAxisRange(0.,800.,"X");	 
 	
 	std::stringstream stream1, stream2;
-	stream1.precision(1); stream1 << std::fixed << rapbins[rapbin];
-	stream2.precision(1); stream2 << std::fixed << rapbins[rapbin+1];
+	stream1.precision(1); stream1 << std::fixed << absetabins[rapbin];
+	stream2.precision(1); stream2 << std::fixed << absetabins[rapbin+1];
 	
 	std::string rapHistLegDesc=stream1.str()+"<|y|<"+stream2.str()+" x10^{"+std::to_string(bincounter-1)+"}";	
 	theJetRapHistLeg->AddEntry(theJetSpectraRapHist,(rapHistLegDesc).c_str(),"lp");
@@ -1042,7 +1042,7 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
       comboPlotName+="_"+radius+etaWidth;
       TH1F* theComboHist=(TH1F*)
 	( (TH1*)finData->Get(comboPlotName.c_str()) )
-	  ->TH1::Rebin(jetTrigQABinning/2);
+	  ->TH1::Rebin(jetTrigQABinning);
       
       for(int j=0; j<(N_trigs-1); j++){ 
 	
@@ -1051,7 +1051,7 @@ int printPlots_jtEvtHists(const std::string input_ppData_condorDir , const std::
 	inHistName+="_"+radius+etaWidth;	
 	TH1F* theRatio=(TH1F*)
 	  ( (TH1*)finData->Get(inHistName.c_str()) )
-	  ->TH1::Rebin(jetTrigQABinning/2);
+	  ->TH1::Rebin(jetTrigQABinning);
 	
 	theRatio->SetMarkerStyle(theTrigOverlayMarker[j]);
 	theRatio->SetMarkerSize(0.99);

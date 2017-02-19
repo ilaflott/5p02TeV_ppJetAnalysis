@@ -1,51 +1,58 @@
 #!/bin/bash
 
 
-
-##### ppData, eta20, jetQAPlots 
-##### R=3
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta20  -1 6 0 filelists/5p02TeV_HighPtJet80_forests.txt 3 PF 0
-#sleep 10s
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta20  -1 6 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 3 PF 0
-#sleep 10s
+##### R=4, all eta
+#source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 6 0 filelists/5p02TeV_HighPtJet80_forests.txt 4 PF 0  0.0 4.7
+#sleep 1s
+#source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 6 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 4 PF 0 0.0 4.7
+#sleep 1s
 #
-##### R=4
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta20  -1 6 0 filelists/5p02TeV_HighPtJet80_forests.txt 4 PF 0
-#sleep 10s
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta20  -1 6 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 4 PF 0
-#sleep 10s
-#
-#
-##### ppData, eta47, jetPlots + jetIDEff Plots
-##### R=3
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta47  -1 6 0 filelists/5p02TeV_HighPtJet80_forests.txt 3 PF 0
-#sleep 10s
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta47  -1 6 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 3 PF 0
-#sleep 10s
-#
-##### R=4
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta47  -1 6 0 filelists/5p02TeV_HighPtJet80_forests.txt 4 PF 0
-#sleep 10s
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots_jtIDv3L_eta47  -1 6 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 4 PF 0
-#sleep 10s
+#source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 4 PF 0 0.0 4.7
+#sleep 1s
+
+
+#### R=4, up to 2.4
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt 4 PF 0  0.0 2.4
+sleep 2s
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 4 PF 0 0.0 2.4
+sleep 2s
+
+source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 4 PF 0 0.0 2.4
+sleep 2s
 
 
 
 
-#### ppMC, eta20, jetQA, jetIDEff
-### R=3
-source condorSubmit_readForests.sh readForests_ppMC_jetPlots_jtIDv3L_eta20 -1 25 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 3 PF 0
-sleep 30s
+#### R=4, 2.4 to  2.7
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt 4 PF 0  2.4 2.7
+sleep 2s
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 4 PF 0 2.4 2.7
+sleep 2s
 
-### R=4
-source condorSubmit_readForests.sh readForests_ppMC_jetPlots_jtIDv3L_eta20 -1 25 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 4 PF 0
-sleep 30s
+source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 4 PF 0 2.4 2.7
+sleep 2s
 
-#### ppMC, eta47, jetQA, jetIDEff Plots
-### R=3
-source condorSubmit_readForests.sh readForests_ppMC_jetPlots_jtIDv3L_eta47 -1 25 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 3 PF 0
-sleep 30s
 
-### R=4
-source condorSubmit_readForests.sh readForests_ppMC_jetPlots_jtIDv3L_eta47 -1 25 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 4 PF 0
-sleep 30s
+
+
+#### R=4, 2.7 to 3.0
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt 4 PF 0  2.7 3.0
+sleep 2s
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 4 PF 0 2.7 3.0
+sleep 2s
+
+source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 4 PF 0 2.7 3.0
+sleep 2s
+
+
+
+
+
+#### R=4, 3.2 4.7
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt 4 PF 0  3.2 4.7
+sleep 2s
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt 4 PF 0 3.2 4.7
+sleep 2s
+
+source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt 4 PF 0 3.2 4.7
+sleep 2s

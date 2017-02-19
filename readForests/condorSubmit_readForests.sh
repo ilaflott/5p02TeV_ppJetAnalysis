@@ -3,10 +3,10 @@
 echo ""
 
 ## error conditions + I/O
-if [[ $# -ne 8 ]] # not enough arguments
+if [[ $# -ne 10 ]] # not enough arguments
 then
     echo "Usage is... "
-    echo "source condorSubmit_readForests.sh <readForestsCode> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug>"
+    echo "source condorSubmit_readForests.sh <readForestsCode> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug> [<etaCutLo> <etaCutHi>]"
     echo "to run over all files with <NFilesPerJob>, set <NJobs> to -1"
     return 1
 fi
@@ -20,7 +20,11 @@ startFilePos=$4
 radius=$6
 jetType=$7
 debug=$8
+etaCutLo=$9
+etaCutHi=${10}
 
+echo "etaCutLo=$etaCutLo"
+echo "etaCutHi=$etaCutHi"
 
 ## NJobs=-1 case
 nFiles=`wc -l < $filelistIn`
@@ -153,7 +157,7 @@ Universe       = vanilla
 Environment = "HOSTNAME=$HOSTNAME"
 Executable     = condorRun_readForests.sh
 +AccountingGroup = "group_cmshi.ilaflott"
-Arguments      = $readForestsExe $startfile $endfile $filelist $outfile $radius $jetType $debug
+Arguments      = $readForestsExe $startfile $endfile $filelist $outfile $radius $jetType $debug $etaCutLo $etaCutHi
 Input          = /dev/null
 Error          = ${logFileDir}/$Error
 Output         = ${logFileDir}/$Output
@@ -172,7 +176,7 @@ EOF
     ## submit the job defined in the above submit file
     echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 0.5s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 0.3s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

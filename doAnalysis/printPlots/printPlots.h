@@ -144,7 +144,7 @@ const float jetQAxmin[]={
 };
 
 //const int jetTrigQABinning=10;
-const int jetSpectraRapBinning=10;
+const int jetSpectraRapBinning=20;
 
 
 //// HELPER FUNCTIONS

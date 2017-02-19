@@ -122,7 +122,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
       // open the input hist    
       hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
       if(!hrsp[nj][ip]){std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;assert(false);}          
-      
+      if(hrsp[nj][ip]->GetEntries()<3)continue;
       // print the details...    
       std::cout<<std::endl;  hrsp[nj][ip]->Print("base");    
       hrsp[nj][ip]->Scale( 1./ hrsp[nj][ip]->Integral() );    
@@ -176,6 +176,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
       
       if(debugMode)std::cout<<"sig ="<< sig<<std::endl;    
       if(debugMode)std::cout<<"esig ="<< esig<<std::endl;    
+      
       hSigma[nj]->SetBinContent (ip+1, sig);    
       hSigma[nj]->SetBinError   (ip+1, esig);    
       
@@ -700,16 +701,17 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
       // open the input hist    
       hrsp_genBin2[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
       if(!hrsp_genBin2[nj][ip]){std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;assert(false);}          
+      //if(hrsp_genBin2[nj][ip]->GetEntries()<100){std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;assert(false);}          
       
       // print the details...    
       //std::cout<<std::endl;  hrsp_genBin2[nj][ip]->Print("base");    
-      float binSize=1.0;
-      if(absetabins[ip]==3.0) binSize=0.2*2.;//3.0-3.2
-      else if(absetabins[ip]==3.2) binSize=1.5*2.;//3.2-4.7
-      hrsp_genBin2[nj][ip]->Scale( 1./ (binSize * hrsp_genBin2[nj][ip]->Integral()) );    
-          
+      //float binSize=1.0;
+      //if(absetabins[ip]==3.0) binSize=0.2*2.;//3.0-3.2
+      //else if(absetabins[ip]==3.2) binSize=1.5*2.;//3.2-4.7
+      hrsp_genBin2[nj][ip]->Scale( 1./ ( hrsp_genBin2[nj][ip]->Integral()) );    
+      
       // get some quick stats    
-      double norm  = hrsp_genBin2[nj][ip]->GetMaximumStored();    
+      //double norm  = hrsp_genBin2[nj][ip]->GetMaximumStored();    
       double err   = hrsp_genBin2[nj][ip]->GetStdDevError();    
       double mean  = hrsp_genBin2[nj][ip]->GetMean();    
       double emean = hrsp_genBin2[nj][ip]->GetMeanError();    
@@ -719,8 +721,9 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
           
       //fgaus = new TF1("fgaus","gaus", mean - 2.15*hrsp_genBin2[nj][ip]->GetRMS(), mean + 2.15*hrsp_genBin2[nj][ip]->GetRMS());    
       //fgaus = new TF1("fgaus","gaus", 0.80, 1.20);    
+      //if(ip==0)fgaus->Clear();
       fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
-      fgaus->SetParameters(norm, 0.9999, 0.5);    
+      //fgaus->SetParameters(norm, 1.05, 0.05);    
       //fgaus->SetParameters(norm, 1.00, 0.6);    
       //fgaus->SetParameters(norm, 0.9999, 0.5);    
       //fgaus->SetParLimits(1,0.60,1.30);    
@@ -732,9 +735,9 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
       std::cout<< "Mean= "<< hrsp_genBin2[nj][ip]->GetMean()<<" +/- " <<hrsp_genBin2[nj][ip]->GetMeanError()<< std::endl;    
       
       std::cout<<"fitting..."<<std::endl;    
-      fitstatus = hrsp_genBin2[nj][ip]->Fit(fgaus,"RQ");    
       std::cout<< "Fit Status: "<< fitstatus<< ", Fit Error: "<< fgaus->GetParError(1)<< std::endl;    
-      
+
+      //if(fitstatus!=0)continue;
       std::cout<<"grabbing metrics (whatever this means)...."<<std::endl;    
       mean  = (fitstatus!=0) ? hrsp_genBin2[nj][ip]->GetMean()     : fgaus->GetParameter(1);    
       emean = (fitstatus!=0) ? hrsp_genBin2[nj][ip]->GetMeanError(): fgaus->GetParError(1) ; // hrsp_genBin2[nj][ip]->GetMeanError(); //debug    
@@ -745,6 +748,9 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
 	: sqrt( (pow(1/mean,2) * pow(hrsp_genBin2[nj][ip]->GetStdDevError(),2)) +     
 		(pow(-hrsp_genBin2[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) );     
       
+      if(fitstatus!=0){std::cout<<"fit did not converge on first try; continuing...."<<std::endl;continue;}
+
+
       // set contents+errors in specific bin    
       if(debugMode)std::cout<<"setting bin content for hMean_genBin2[nj][ip]=["<< nj<<"]["<< ip<<"] "<<std::endl;    
       if(debugMode)std::cout<<"mean ="<< mean<<std::endl;    
@@ -1120,9 +1126,9 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       hrsp_gen150[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );    
       if(!hrsp_gen150[nj][ip]){std::cout<<"no input hist, exiting..."<<std::endl;assert(false);}      
       if(hrsp_gen150[nj][ip]->GetEntries()<5){//not enough entries
-std::cout<<"hist has less than five entries... continuing"<<std::endl;
-hrsp_gen150[nj][ip]=NULL;
-continue;      }
+	std::cout<<"hist has less than five entries... continuing"<<std::endl;
+	hrsp_gen150[nj][ip]=NULL;
+	continue;      }
 
       // print the details...
       std::cout<<std::endl;  

@@ -97,8 +97,8 @@ const double etabins[] = {
 //};//original eta binning
 const int nbins_eta = sizeof(etabins)/sizeof(double)-1;
 
-const double xmin=ptbins[0];
-const double xmax=ptbins[nbins_pt];
+//const double xmin=ptbins[0];
+//const double xmax=ptbins[nbins_pt];
 
 //// tree names+directories
 //const std::string treeNames_ppMC[]={ 

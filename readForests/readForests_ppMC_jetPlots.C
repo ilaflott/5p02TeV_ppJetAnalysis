@@ -265,11 +265,11 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   jetpp[1]->SetBranchAddress("vz",&vz_F);
   
   // skimanalysis
-  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I;
+  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I, puvertexFilter_I;
   jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
   jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
-  
+  jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
   
   // event count from files
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
@@ -305,7 +305,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0     || 
         pBeamScrapingFilter_I==0  || 
-        pprimaryvertexFilter_I==0  ) continue;    
+        pprimaryvertexFilter_I==0 ||
+	puvertexFilter_I==0  	) continue;    
     h_NEvents_skimCut->Fill(1);
     
     if( fabs(vz_F)>15.              ) continue;

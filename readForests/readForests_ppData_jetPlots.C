@@ -284,10 +284,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
 
   // skimanalysis
-  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I;
+  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I,puvertexFilter_I;
   jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
   jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
+  jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
 
 
   // hltanalysis
@@ -409,9 +410,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
 
     // skim/HiEvtAnalysis criteria
-    if( pHBHENoiseFilter_I==0     || 
-        pBeamScrapingFilter_I==0  || 
-        pprimaryvertexFilter_I==0  ) continue;    
+    if( pHBHENoiseFilter_I==0      || 
+        pBeamScrapingFilter_I==0   || 
+        pprimaryvertexFilter_I==0  ||
+	puvertexFilter_I==0  	) continue;    
     h_NEvents_skimCut->Fill(1);
     
 

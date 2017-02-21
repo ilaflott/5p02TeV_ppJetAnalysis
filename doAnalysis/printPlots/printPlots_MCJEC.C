@@ -19,7 +19,7 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
   gStyle->SetOptStat(0);
   //  gStyle->SetOptStat(1);
   gStyle->SetOptFit(1);  
-  //gStyle->SetOptFit(1110);  
+  // gStyle->SetOptFit(1110);  
   gStyle->SetTitleBorderSize(0);
   gROOT->ForceStyle();
   

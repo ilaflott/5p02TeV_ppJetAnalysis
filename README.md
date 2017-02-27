@@ -6,7 +6,7 @@ ian w laflotte, started on 6/15/2016, last updated on 2.27.2017
 
 
 
-// ABOUT --------------------------------------------------------
+// ABOUT THE REPO --------------------------------------------------------
 
 The primary analysis folder for 5p02TeV_ppJetAnalysis github repository. This repository is built on code inherited from Raghav Kunnawalkam's RAA_5p02_code repository. 
 
@@ -253,6 +253,24 @@ source condorSubmit_readForests.sh readForests_ppMC_jetPlots_v4 -1 30 0 filelist
 -----
 
 
+
+
+
+
+
+
+
+
+-------------------------------------------------------
+// UNDER CONSTRUCTION                             -----
+-------------------------------------------------------
+
+// ABOUT printPlots --------------------------------------------------------
+
+purpose;
+to take in hadd'd output from readForests code and conduct analysis/create graphical output
+
+ 
 
 
 

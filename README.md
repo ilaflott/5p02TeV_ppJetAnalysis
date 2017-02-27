@@ -64,12 +64,19 @@ note; $CMSSW_BASE/src is a SCRAM-based area of your choice, no particular CMSSW 
 
 -----
 cd $CMSSW_BASE/src
+
 source /osg/app/cmssoft/cms/cmsset_default.sh
+
 cmsenv
+
 voms-proxy-init -voms cms
+
 export CVMFS_758=/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_5_8/src/
+
 cd readForests
+
 tar -zxvf JECDataDriven.tar.gz
+
 tar -zxvf residualMCTruth.tar.gz
 -----
 

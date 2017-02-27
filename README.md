@@ -7,6 +7,7 @@ ian w laflotte, started on 6/15/2016, last updated on 2.27.2017
 
 
 // ABOUT THE REPO --------------------------------------------------------
+------------------------
 
 The primary analysis folder for 5p02TeV_ppJetAnalysis github repository. This repository is built on code inherited from Raghav Kunnawalkam's RAA_5p02_code repository. 
 
@@ -19,6 +20,7 @@ Some of this may be more readable in github via the RAW format button.
 
 
 // ABOUT readForests --------------------------------------------------------
+------------------------
 
 purpose; 
 to run over HiForests on hidsk, either locally or via condor batch, and create root files with histograms of interest for later plotting and analysis.
@@ -33,7 +35,7 @@ readForests_jetPlots.h
 readForests_ppMC_MCJEC.Cr
 readForests_MCJEC.h
 
-------------------------
+
 // secondaryCODE(s) -----
 ------------------------
 
@@ -42,7 +44,7 @@ MCTruthResidual.h
 JECDataDriven.tar.gz
 residualMCTruth.tar.gz
 
-------------------------
+
 // steering/condorMACRO(s) -----
 ------------------------
 

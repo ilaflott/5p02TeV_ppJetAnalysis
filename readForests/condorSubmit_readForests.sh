@@ -97,11 +97,10 @@ cd -
 ## copy over code used for job running/submitting for archival purposes
 #rootcompile ${readForestsCode}.C
 cp ${readForestsCode}.* "${logFileDir}"
-cp readForests.h "${logFileDir}"
+cp readForests_*.h "${logFileDir}"
 cp condorRun_readForests.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 cp JECDataDriven.tar.gz "${logFileDir}"
-#cp L2L3ResidualWFits.h  "${logFileDir}"
 cd ${logFileDir}
 
 

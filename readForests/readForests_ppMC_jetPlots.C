@@ -3,8 +3,12 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
-const bool fillMCJetSpectraRapHists=false; //other
+const bool fillMCJetSpectraRapHists=true; //other
+//other switches
 const bool fillBasicJetPlotsOnly=false;
+const bool fillgenJetQA=true&&fillMCJetQAHists;
+const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  
+
 const bool tightJetID=false;
 
 //// readForests_ppMC_jetPlots
@@ -131,7 +135,6 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   //jet QA
   TH1F *hJetQA[2][N_vars]={};
   //MC JetQA
-  bool fillgenJetQA=true&&fillMCJetQAHists;
   TH1F *hMCJetQA_genpt[2]={}, *hMCJetQA_geneta[2]={};
   TH1F *hMCJetQA_genrecpt[2]={}, *hMCJetQA_genreceta[2]={};
   if(fillMCJetQAHists){
@@ -163,7 +166,6 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
     }}
   
-  bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  
   TH1F *hJetSpectraRap[2][nbins_rap]={};
   TH1F *hMCJetQA_rapBins_genpt[2][nbins_rap]={};
   TH1F *hMCJetQA_rapBins_geneta[2][nbins_rap]={};
@@ -378,48 +380,36 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       //float recy = y_F[jet];
       float recphi = phi_F[jet];
       
-      // 13 TeV JetID criterion, loose or tight
-      // for loose; ne/phSum fractions = 0.99 for abs(recy)<2.7
-      // for tight; ne/phSum fractions = 0.90 for abs(recy)<2.7
       bool passesJetID=false;
       
-      if(fillMCJetIDHists) {		
-	//if( absreceta>3.0 ) 	  {
-	//  if( phSum_F[jet]/rawpt < 0.90 &&
-	//      true &&  // neN_I[jet] > 10 &&
-	//      neSum_F[jet]/rawpt<0.99 )
-	//    passesJetID=true; 
-	//}
-	//else if ( 2.7<absreceta && absreceta<=3.0  )  {
-	//  if( phSum_F[jet]/rawpt < 0.90 && 
-	//      neN_I[jet] > 2  )
-	//    passesJetID=true;	
-	//} 	
-	if( absreceta>3.0) {
-	  if( neSum_F[jet]/rawpt<0.99 &&
-	      phSum_F[jet]/rawpt<0.99 )
-	    passesJetID=true;
-	}
-	if( absreceta>2.7 && absreceta<=3.0) {
-	  if(  neN_I[jet] > 0 && //neSum_F[jet]/rawpt<jetIDCut_neSum &&
-	       phSum_F[jet]/rawpt < 0.99 )
-	    passesJetID=true;
-	}
-	else if ( absreceta>2.4 && absreceta<=2.7 ) {
-	if( neSum_F[jet]/rawpt     < 0.99 &&  //jetIDCut_neSum &&  //neutral had 
-	    phSum_F[jet]/rawpt     < 0.99 &&  //jetIDCut_phSum && 		
-	      neN_I[jet] +chN_I[jet] > 0 ) 
-	    passesJetID=true; 	  
-	}
-	else { //if(absreceta<=2.4) //in the barrel, strictest
-	  if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&
-	      phSum_F[jet]/rawpt    < jetIDCut_phSum &&
-	      chN_I[jet]+neN_I[jet] > 0    && //1    &&
-	      chSum_F[jet]/rawpt    > 0.   && //charged had 
-	      eSum_F[jet]/rawpt     < 0.99 && 
-	      chN_I[jet] > 0 )      	  
-	    passesJetID=true;  
-	} }
+      if(fillMCJetIDHists) 
+	{
+	  if (absreceta<=2.4) 
+	    { 
+	      if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&
+		  phSum_F[jet]/rawpt    < jetIDCut_phSum &&
+		  chN_I[jet]+neN_I[jet] > 0    && 
+		  chSum_F[jet]/rawpt    > 0.   && 
+		  eSum_F[jet]/rawpt     < 0.99 &&
+		  chN_I[jet]            > 0                 ) passesJetID=true;	      
+	    } 
+	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
+	    {
+	      if( neSum_F[jet]/rawpt     < 0.99 &&		
+		  phSum_F[jet]/rawpt     < 0.99 &&
+		  neN_I[jet] +chN_I[jet] > 0         ) passesJetID=true;
+	    }
+	  else if( absreceta<=3.0 && absreceta>2.7 ) 
+	    {
+	      if(  neN_I[jet] > 0 && 
+		   phSum_F[jet]/rawpt < 0.99 ) passesJetID=true;
+	    }
+	  else //( absreceta>3.0) 
+	    {
+	      if( neSum_F[jet]/rawpt<0.99 &&
+		  phSum_F[jet]/rawpt<0.99     ) passesJetID=true;
+	    }	  	  
+	} 
       
       //fill jetspectraRapHists w/ passing jetID criterion
       if(  fillMCJetSpectraRapHists ) { 
@@ -429,29 +419,29 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	      absreceta<rapbins[rapbin+1]    ) {
 	    
 	    theRapBin=rapbin;
+	    
 	    hJetSpectraRap[0][theRapBin]->Fill(recpt,weight_eS);  
+	    if(passesJetID) hJetSpectraRap[1][theRapBin]->Fill(recpt,weight_eS); 	    
 	    
 	    if(fillgenJetRapHists){
-	      hMCJetQA_rapBins_genpt[0][theRapBin]     ->Fill(genpt,weight_eS);
-	      hMCJetQA_rapBins_geneta[0][theRapBin]    ->Fill(geneta,weight_eS);
-	      hMCJetQA_rapBins_genrecpt[0][theRapBin]  ->Fill(recpt/genpt,weight_eS);
-	      hMCJetQA_rapBins_genreceta[0][theRapBin] ->Fill(receta/geneta,weight_eS);	    }
-	    
-	    if( passesJetID ){
-	      hJetSpectraRap[1][theRapBin]->Fill(recpt,weight_eS); 
-	      if(fillgenJetRapHists){
+	      
+	      if( passesJetID ){
 		hMCJetQA_rapBins_genpt[1][theRapBin]     ->Fill(genpt,weight_eS);
 		hMCJetQA_rapBins_geneta[1][theRapBin]    ->Fill(geneta,weight_eS);
 		hMCJetQA_rapBins_genrecpt[1][theRapBin]  ->Fill(recpt/genpt,weight_eS);
-		hMCJetQA_rapBins_genreceta[1][theRapBin] ->Fill(receta/geneta,weight_eS);	    
-	      }	    }	    
-	    break; 
-	  }      }
+		hMCJetQA_rapBins_genreceta[1][theRapBin] ->Fill(receta/geneta,weight_eS);  }
+	      
+	      hMCJetQA_rapBins_genpt[0][theRapBin]     ->Fill(genpt,weight_eS);
+	      hMCJetQA_rapBins_geneta[0][theRapBin]    ->Fill(geneta,weight_eS);
+	      hMCJetQA_rapBins_genrecpt[0][theRapBin]  ->Fill(recpt/genpt,weight_eS);
+	      hMCJetQA_rapBins_genreceta[0][theRapBin] ->Fill(receta/geneta,weight_eS);	 }	    
+	    break; 	  }      
+      }
       
       ////second half of kmat cut
-      if( absreceta>=jtEtaCutHi ) continue;
-      else if( absreceta<jtEtaCutLo ) continue;
-
+      if( absreceta >= jtEtaCutHi ) continue;
+      else if( absreceta < jtEtaCutLo ) continue;
+      
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
       if(!hNEvts_withJets_kmatCut_Filled){
@@ -463,7 +453,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	
 	hJetQA[0][0]->Fill(recpt, weight_eS);
 	hJetQA[0][1]->Fill(rawpt_F[jet], weight_eS);
-	if(recpt>jetQAPtCut){
+
+	if(recpt>jetQAPtCut) {
+	  
 	  hJetQA[0][2]->Fill(eta_F[jet], weight_eS);
 	  hJetQA[0][3]->Fill(phi_F[jet], weight_eS);
 	  hJetQA[0][4]->Fill(y_F[jet], weight_eS);	  	  
@@ -490,13 +482,13 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	    hMCJetQA_genpt[0]    ->Fill(genpt,weight_eS);
 	    hMCJetQA_geneta[0]   ->Fill(geneta,weight_eS);
 	    hMCJetQA_genrecpt[0] ->Fill(recpt/genpt,weight_eS);
-	    hMCJetQA_genreceta[0]->Fill(receta/geneta,weight_eS);		}
+	    hMCJetQA_genreceta[0]->Fill(receta/geneta,weight_eS);	}
 	}
-
+	
 	//looking for the first two good jets that meet the criteria specified
 	if(!fillBasicJetPlotsOnly){
-	  if ( !firstGoodJetFound ){
 
+	  if ( !firstGoodJetFound ){
 	    if(recpt>ldJetPtCut) { firstGoodJetFound=true;
 	      firstGoodJetPt =recpt; 
 	      firstGoodJetPhi=recphi; } }
@@ -543,6 +535,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	  hJetQA[1][0]->Fill(recpt, weight_eS);
 	  hJetQA[1][1]->Fill(rawpt_F[jet], weight_eS);
 	  if(recpt>jetQAPtCut){
+
 	    hJetQA[1][2]->Fill(eta_F[jet], weight_eS);
 	    hJetQA[1][3]->Fill(phi_F[jet], weight_eS);
 	    hJetQA[1][4]->Fill(y_F[jet], weight_eS);	  	  
@@ -564,11 +557,13 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	    hJetQA[1][20]->Fill(neN_I[jet], weight_eS);
 	    hJetQA[1][21]->Fill(chN_I[jet], weight_eS);
 	    hJetQA[1][22]->Fill(chN_I[jet]+neN_I[jet], weight_eS); 
+
 	    if(fillgenJetQA){
 	      hMCJetQA_genpt[1]    ->Fill(genpt,weight_eS);
 	      hMCJetQA_geneta[1]   ->Fill(geneta,weight_eS);
 	      hMCJetQA_genrecpt[1] ->Fill(recpt/genpt,weight_eS);
 	      hMCJetQA_genreceta[1]->Fill(receta/geneta,weight_eS);	}	  
+
 	  }
 	  
 	  

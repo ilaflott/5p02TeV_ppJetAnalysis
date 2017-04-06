@@ -2,7 +2,7 @@
 
 
 secondCount=0
-while [[ $secondCount -lt 18000 ]]
+while [[ $secondCount -lt 3000 ]]
 do
     condor_q ilaflott
     sleep 10s

@@ -75,10 +75,44 @@
 
 //-----------------------------------------------------------------------------------------------------------------------
 const std::string CMSSW_BASE=
-  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/";
+  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
-const std::string unfoldSpectra_outdir="unfoldSpectra/output/";
+const std::string unfoldSpectra_outdir="output/";
+
+
+//useful strings, numbers
+const double integratedLuminosity=25.8*pow(10,9);
+const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
+const std::string Datadesc1= "pp 2015 pmptReco, #sqrt{s}=5.02 TeV"; 
+const std::string Datadesc2= "L_{int}=25.8 pb^{-1}"; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //const std::string inFile_MC_dir=
 //  "readFiles/ppMC/saved_outputCondor/readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_2016-07-09/";

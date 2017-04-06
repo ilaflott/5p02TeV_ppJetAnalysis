@@ -1,9 +1,11 @@
+#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <cassert>
-#include <string.h>
+#include <string>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -13,21 +15,29 @@
 
 
 // definition and default values
-const std::string ppMCfilelistFolder="../filelists/ppMC/";
-//const std::string ppDatafilelistFolder="../filelists/ppData/";
-const std::string defDatasetFilelist=ppMCfilelistFolder+"5p02TeV_Py8_CUETP8M1_QCDjet15_2Files_debug_forests.txt";
+
+const std::string filelistFolder="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/filelists/";
+const std::string defMCFilelist="test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
+//const std::string defMCFilelist="5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_Official_forests.txt";
 const std::string defOutputWeightFile="evtPthatWeights_defOutput.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
-int evtPthatWeights(std::string infile_Forest=defDatasetFilelist , std::string outputWeightFile=defOutputWeightFile,
+// constants
+//const bool doVzCuts=false, doNoiseFilterCuts=false, doEvtCuts=doVzCuts||doNoiseFilterCuts;
+
+//semi-private ppMC https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiForest#Dijet_Cross_Sections_for_reweigh
+//const double pthatBins[] = {15.,30.,50.,80.,120.,170.,220.,280.,370.,460.,540.,9999.};
+//const double xs2015[] = {5.269E-01, 3.455E-02, 4.068E-03, 4.959E-04, 7.096E-05, 1.223E-05, 3.031E-06, 7.746E-07, 1.410E-07, 3.216E-08, 1.001E-08, 0.0};
+
+//official ppMC , xsec from test files seems like xsec units are different?
+const double pthatBins[] = {15.,30.,50.,80.,120.,170.,220.,280.,370.,9999.};
+const double xs2015[] = { 5.115E+08 , 3.734E+07 , 4.005E+06 , 5.543E+05 , 6.423E+04, 1.346E+04 , 3.091E+03 , 7.597E+02 , 1.416E+02, 0.0 };
+
+int evtPthatWeights(std::string inputFilelist=defMCFilelist , std::string outputWeightFile=defOutputWeightFile,
 		    const int radius=defRadius, std::string jetType=defJetType);
+
 std::string formCutString(double pthat_i,double pthat_iadd1);//,bool doNoiseFilterCuts,bool doVzCuts);
 
-// constants
-//source for bins+weights: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiForest#Dijet_Cross_Sections_for_reweigh
-const bool doVzCuts=false, doNoiseFilterCuts=false, doEvtCuts=doVzCuts||doNoiseFilterCuts;
-const double pthatBins[] = {15.,30.,50.,80.,120.,170.,220.,280.,370.,460.,540.,9999.};
-const double xs2015[] = {5.269E-01, 3.455E-02, 4.068E-03, 4.959E-04, 7.096E-05, 1.223E-05, 3.031E-06, 7.746E-07, 1.410E-07, 3.216E-08, 1.001E-08, 0.0};
 const int Npthats=sizeof(pthatBins)/sizeof(double);//should be 12
 const int NpthatBins=Npthats-1;//should be 11
 
@@ -35,13 +45,13 @@ const int NpthatBins=Npthats-1;//should be 11
 // ---------------------------------------------------------------------------------------------------------------
 // evtPthatWeights
 // compute the MC QCD dijet weights based on input filelist.
-int evtPthatWeights( std::string infile_Forest , std::string outputWeightFile,
+int evtPthatWeights( std::string inputFilelist , std::string outputWeightFile,
 		     const int radius, std::string jetType ){
   TStopwatch timer;  timer.Start();
   
   // basic info the screen
   std::cout<<std::endl<<"///////////////////"<<std::endl;
-  std::cout<<"reading filelist "<<infile_Forest<<std::endl;
+  std::cout<<"reading filelist "<<inputFilelist<<std::endl;
   std::cout<<"///////////////////"<<std::endl<<std::endl;
 
   // initialize variables
@@ -50,46 +60,41 @@ int evtPthatWeights( std::string infile_Forest , std::string outputWeightFile,
   int fileCount=0;
 
   // open filelist, loop over files and close them to save memory
-  std::cout<<"looping over files..."<<std::endl;
-  std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
+  std::cout<<"making TChain w filelist..."<<std::endl;
+  inputFilelist=filelistFolder+inputFilelist;
+  std::ifstream instr_Forest(inputFilelist.c_str(),std::ifstream::in);
+
+  std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";  
+  TChain * finMC = new TChain( jetTreeName.data() );
 
   while(!endOfFilelist){
-    std::string filename_Forest;
 
+    std::string filename_Forest;
     instr_Forest>>filename_Forest;
     if(filename_Forest==""){
-      std::cout<<"end of filelist!"<<std::endl; 
+      std::cout<<"end of filelist!"<<std::endl<<std::endl; 
       endOfFilelist=true; 
       break;    }//end of filelist condition
-
-    if(fileCount%10==0)std::cout<<"opening file #"<<fileCount<<",  "<<filename_Forest<<std::endl;
-    TFile *fin = TFile::Open(filename_Forest.c_str());     
-
-    std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
-
-    // grab tree(s), declare branches if needed
-    TTree *t = (TTree*)fin->Get( jetTreeName.c_str()  );
-
-    TTree *evt=NULL;
-    if(doEvtCuts){evt=(TTree*)fin->Get( "HiEvtAnalyzer/HiEvt"  );
-      t->AddFriend(evt);}
     
+    if(fileCount%100==0)std::cout<<std::endl<<"adding to TChain, file "<<filename_Forest<<std::endl<<std::endl;
+    else if(fileCount%10==0)std::cout<<"adding file #"<<fileCount<<", to TChain "<<std::endl;
 
-    // loop over pthat bins for this file
-    for(int i = 0; i < NpthatBins; ++i){
-      std::string theCut=formCutString(pthatBins[i],pthatBins[i+1]);
-      TCut pthatCut(theCut.c_str());
-      n[i] += t->GetEntries(pthatCut);    }
+    finMC->AddFile( filename_Forest.c_str() );
     
-    fin->Close();
-    if(fileCount%10==0)std::cout<<"closing file #"<<fileCount<<",  "<<filename_Forest<<std::endl;
     fileCount++;
+
   }//end file loop
-  assert(endOfFilelist);//otherwise why bother, make sure i'm hitting all the files
+  assert(endOfFilelist);
+  
+  // loop over pthat bins for this file
+  std::cout<<"looping over pthat bins..."<<std::endl;
+  for(int i = 0; i < NpthatBins; ++i){
+    std::string theCut=formCutString(pthatBins[i],pthatBins[i+1]);
+    n[i] += finMC->GetEntries(theCut.c_str());    
+  }
 
 
-
-  std::cout<<"all files read, computing weights..."<<std::endl;
+  std::cout<<"all files read and done with loop, the pthat weights are..."<<std::endl<<std::endl;
   std::ofstream outputFile; outputFile.open(outputWeightFile);
   for(int i=0 ; i<NpthatBins;i++){
 
@@ -103,16 +108,24 @@ int evtPthatWeights( std::string infile_Forest , std::string outputWeightFile,
 
     std::cout<<"for cut = "<<theCut<<std::endl;
     std::cout<<"there are "<<n[i]<<" events and ";
-    std::cout<<"the weight is "<<pthatweight<<" mb"<<std::endl<<std::endl;
+    std::cout<<"the weight is "<<pthatweight<<" pb"<<std::endl<<std::endl;
     
     //output weights to text file
-    outputFile<<theCut<<", n["<<i<<"]="<<n[i]<<", ";  
-    outputFile<<"xsDiff="<<xsDiff<<" mb^-3, ";
-    outputFile<<"weight="<<pthatweight; 
+    // this mess is for easy copy/pasting for later when wanting to run parts of job at a time.
+    outputFile<<theCut;
+    if(i<=2)outputFile<<"    ";
+    else if(i<=3)outputFile<<"   ";
+    else if(i<=7)outputFile<<"  ";
+    else if(i<=8)outputFile<<" ";
+    outputFile<<", n["<<i<<"]="<<n[i]<<", ";
+    outputFile<<"   ";
+    //outputFile<<"xsDiff="<<xsDiff<<" mb^, ";
+    outputFile<<"xsDiff="<<xsDiff<<" pb^, ";
+    outputFile<<"weight="<<pthatweight<<" pb^, ";
     outputFile<<"\n";   }//end pthatbin loop for weight CPU
 
 
-  std::cout<<"done computing weights, closing output file!"<<std::endl;
+  std::cout<<"done computing weights, closing output file "<< outputWeightFile <<std::endl;
   outputFile.close();
 
   timer.Stop();

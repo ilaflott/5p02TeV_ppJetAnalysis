@@ -1,10 +1,10 @@
 #include "unfoldSpectra.h"
 
 // procedural settings
-const bool doBayes=true ; 
+const bool doBayes=true; 
 const int kIter = 4;//,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
-const bool doSVD=!(doBayes); 
+const bool doSVD=true; //!(doBayes); 
 const int  nKregMax = 9, kRegRange=4, kRegDraw = 3, kRegCenter=21;
 
 const bool drawPDFs=true; 
@@ -16,11 +16,6 @@ const bool doToyErrs=false;
 const bool debugMode=true;
 const bool debugPearson=(false && debugMode) ;
 
-//useful strings, numbers
-const double integratedLuminosity=25.8*pow(10,9);
-const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
-const std::string Datadesc1= "pp 2015 pmptReco, #sqrt{s}=5.02 TeV"; 
-const std::string Datadesc2= "L_{int}=25.8 pb^{-1}"; 
 
 //  the code --------------------------------------------------
 int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inFile_MC_dir , 
@@ -49,8 +44,8 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
   const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
   const std::string inFile_Data_name="/HighPtJetTrig_"+fullJetType+"-allFiles.root";
 
-  const std::string outFileName=CMSSW_BASE+unfoldSpectra_outdir+fullJetType+"_"+baseName;//+".root";  
-  const std::string outRootFile=CMSSW_BASE+unfoldSpectra_outdir+fullJetType+"_"+baseName+".root";  
+  const std::string outFileName=unfoldSpectra_outdir+fullJetType+"_"+baseName;//+".root";  
+  const std::string outRootFile=unfoldSpectra_outdir+fullJetType+"_"+baseName+".root";  
   const std::string outBayesPdfFile=baseName+"_Bayes";
   const std::string outSVDPdfFile=baseName+"_SVD"; // see drawPDFs part for rest of string
 
@@ -72,33 +67,43 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
 
 
   //  ppData input histos --------------------------------------------------
-  std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"; 
-  if(debugMode)std::cout<<": "<<inFile_Data_name; 
-  std::cout<<std::endl<<std::endl;
-  TFile *fpp_Data = TFile::Open( (SCRATCH_BASE+inFile_Data_dir+inFile_Data_name).c_str());
+  std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"<<std::endl;
+
+  if(debugMode){
+    std::cout<<"BASE : "<< (CMSSW_BASE) <<std::endl; 
+    std::cout<<"input data dir : "<< (inFile_Data_dir)  <<std::endl; 
+    std::cout<<"data file name : "<< (inFile_Data_name)<<std::endl; 
+    std::cout<<std::endl<<std::endl;  }
+
+  TFile *fpp_Data = TFile::Open( (CMSSW_BASE+inFile_Data_dir+inFile_Data_name).c_str());
 
   //rec
   TH1F *hrec, *hrec_anabin;
-  hrec = (TH1F*)fpp_Data->Get( ("hpp_TrgCombTest_JetID"+RandEtaRange).c_str() );
-  hrec->Scale(1/integratedLuminosity);
+  hrec = (TH1F*)fpp_Data->Get( "hJetQA_1wJetID_jtpt" );
+  //hrec->Scale(1/integratedLuminosity);
   hrec->Print("base");
 
-  hrec_anabin = (TH1F*)hrec->Clone( ("hpp_anaBin_HLTComb"+RandEtaRange).c_str() );
-  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, ("hpp_anaBin_HLTComb"+RandEtaRange).c_str(), ptbins);
-  divideBinWidth(hrec_anabin);
-  //hrec_anabin->Scale(1/integratedLuminosity);
+  hrec_anabin = (TH1F*)hrec->Clone( "hpp_anaBin_hJetQA_1wJetID_jtpt" );
+  hrec_anabin = (TH1F*)hrec_anabin->Rebin(10);
+  //hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, "hpp_anaBin_hJetQA_1wJetID_jtpt" , ptbins);
+  //divideBinWidth(hrec_anabin);
+  hrec_anabin->Scale(1/integratedLuminosity);
+  hrec_anabin->Scale(1./10.);
   hrec_anabin->Print("base");    
   
 
   // ppMC input histos -------------------------
-  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
-  if(debugMode)std::cout<<": "<<inFile_MC_name; 
-  std::cout<<std::endl<<std::endl;
-  TFile *fpp_MC = TFile::Open( (SCRATCH_BASE+inFile_MC_dir+inFile_MC_name).c_str());
+  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"<<std::endl; 
+  if(debugMode){
+    //std::cout<<"BASE : "<< (CMSSW_BASE) <<std::endl; 
+    std::cout<<"input MC dir : "<< (inFile_MC_dir)  <<std::endl; 
+    std::cout<<"MC file name : "<< (inFile_MC_name)<<std::endl; 
+    std::cout<<std::endl<<std::endl;  }
+  TFile *fpp_MC = TFile::Open( (CMSSW_BASE+inFile_MC_dir+inFile_MC_name).c_str());
 
   //mat, NOT NORMALIZED
   TH2F *hmat,*hmat_anabin;
-  hmat = (TH2F*)fpp_MC->Get( ("hpp_matrix"+RandEtaRange).c_str() );
+  hmat = (TH2F*)fpp_MC->Get( ("hpp_matrix_wJetID"+RandEtaRange).c_str() );
   hmat->Print("base");
 
   hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
@@ -107,13 +112,14 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
   
   //gen
   TH1F*hgen,*hgen_anabin;
-  hgen= (TH1F*)fpp_MC->Get( ("hpp_gen"+RandEtaRange).c_str() );
+  hgen= (TH1F*)fpp_MC->Get( ("hpp_gen_wJetID"+RandEtaRange).c_str() );
   hgen->Print("base");
 
   hgen_anabin = (TH1F*)hgen->Clone( ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str() );
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
-
-  divideBinWidth(hgen_anabin);
+  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
+  //divideBinWidth(hgen_anabin);
+  hgen_anabin->Scale(1/10.);
   hgen_anabin->Scale(hrec_anabin->Integral()/hgen_anabin->Integral());
   hgen_anabin->Print("base");
 
@@ -192,7 +198,7 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
     //  drawPDFS -------------------------------------------------- 
     if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
     else{ std::cout<<std::endl<<"drawing output PDFs for Bayesian Unfolding..."<<std::endl;
-      std::string outPdfFile=outBayesPdfFile+".pdf";
+      std::string outPdfFile=unfoldSpectra_outdir+outBayesPdfFile+".pdf";
       std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
 
       // temp canvas for printing
@@ -453,7 +459,7 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
     else{ std::cout<<std::endl<<"drawing PDFs for SVD Unfolding..."<<std::endl;
       
       // form filename string, open pdf file and draw the canvases we have so far
-      std::string outPdfFile=outSVDPdfFile+".pdf";
+      std::string outPdfFile=unfoldSpectra_outdir+outSVDPdfFile+".pdf";
       std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
       cPearsonMatrixIter->Print(open_outPdfFile.c_str());
 

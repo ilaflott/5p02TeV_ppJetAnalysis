@@ -43,26 +43,28 @@
 //// main
 const int minArgs=1;
 
-const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
+//const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
+//const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
+//const defEndile=10;
+const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_acrossBins.txt";
+const int defEndfile=55;
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true;//, fastDebugMode = true;
-const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
+const std::string defMCOutputName="readForests_ppMC_";//.root";
 
-//int readForests_ppMC_MCJEC( std::string inFilelist="filelists/test_readForests_ppMC_local.txt",
-int readForests_ppMC_MCJEC( std::string inFilelist=defMCInFilelist,
-			    int startfile=0, int endfile=20, 
-			    int radius=defRadius, std::string jetType=defJetType, 
-			    bool debugMode=defDebugMode,
-			    std::string outfile=(defMCOutputName+"_MCJEC.root")      );
+int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist,
+			   int startfile=0, int endfile=defEndfile,
+			   int radius=defRadius, std::string jetType=defJetType,
+			   bool debugMode=defDebugMode,
+			   std::string outfile=(defMCOutputName+"JERS.root"),
+			   float jtEtaCutLo=0., float jtEtaCutHi=4.7      );
 
 const int readForestsArgCount=7+minArgs;
 
-const float jtPtCut=15.;
-const float genPtCut=32.;
-const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;//make htEtaCutHi 100. for inf.
-const float jetQAPtCut=15.;//50.;
-const float ldJetPtCut=20., subldJetPtCut=10., ptAveCut=15., dPhiCut=2./3.*TMath::Pi();//dijet cuts
+const float jtPtCut=30.;
+const float jtGenPtCut=30.;
+//const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;
 
 //// HELPER FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------
@@ -109,19 +111,27 @@ const std::string etaWidth="20_eta_20";
 
 // variable names for QA Plots
 const std::string var[]={
-  "jtpt"  , "rawpt" ,  //jets, 0-4=5
-  "jteta" , "jtphi" , "jty",
-  "trkMax", "trkSum", "trkHardSum", //jet constituents, 5-22=18
-  "chMax" , "chSum" , "chHardSum",
-  "phMax" , "phSum" , "phHardSum",
-  "neMax" , "neSum" ,
-  "eMax"  , "eSum"  ,
-  "muMax" , "muSum" ,
-  "neN", "chN", "sumN",
-  "Aj" , "xj" , "dphi", //dijet variables, 23-27=5
-  "leadJetPt", "subleadJetPt"
+  //jets, 0-3=4 vars
+  "jtpt"  , "rawpt" ,
+  "jteta" , "jtphi" ,
+  //jet constituents, 4-30=27 vars
+  "trkN", "trkSum", "trkMax", //trk
+  "trkHardN", "trkHardSum",
+  "phN", "phSum", "phMax",    //ph
+  "phHardN", "phHardSum",
+  "chN", "chSum", "chMax",    //ch
+  "chHardN", "chHardSum",
+  "neN" ,  "neSum" , "neMax" , //ne
+  "eN"  ,  "eSum"  , "eMax"  ,    //e
+  "muN" ,  "muSum" , "muMax" , //mu
+  "neuMult", "chMult", "numConst"
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
+//"hcalSum", "ecalSum",       //hcal and ecal
+// dijets, 31-35=5 vars
+//"Aj" , "xj" , "dphi",
+//"leadJetPt", "subleadJetPt"
+//const int jtInd=0, jtConInd=4, dijtInd=31;
 
 //L1
 const std::string L1BitStrings[]={//this array is a good idea
@@ -225,6 +235,7 @@ const float etabins[]={
   5.0
 };
 const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
+
 //const float etabins[]={
 //  -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013,
 //  -3.839, -3.664, -3.489, -3.314, -3.139,
@@ -245,7 +256,7 @@ const float absetabins[]={
   1.0, 1.5,
   2.0, 2.5,
   3.0, 3.2,
-  4.7, 5.7	     
+  4.7
 };	     
 const int nbins_abseta=sizeof(absetabins)/sizeof(float)-1;
 

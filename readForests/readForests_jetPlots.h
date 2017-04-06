@@ -45,9 +45,11 @@ const int minArgs=1;
 
 //// readForests_ppData
 //const std::string defDataInFilelist="filelists/test_readForests_ppData_Jet80_local.txt";
+const std::string defDataInFilelist="filelists/test_readForests_ppData_LowerJets_local.txt";
 //const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
-const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
+//const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
 const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
+//const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
 const int defStartFile=0;
 const int defEndFile=1;
 const int defRadius=4;
@@ -58,14 +60,14 @@ const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 const float defEtaCutLo=0.0, defEtaCutHi=4.7;//really absetacut
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				 int startfile=defStartFile, int endfile=1,
+				 int startfile=0, int endfile=1,
 				 int radius=defRadius, std::string jetType=defJetType, 
 				 bool debugMode=defDebugMode,
 				 std::string outfile=defDataOutputName, 
 				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-			       int startfile=defStartFile, int endfile=20, 
+			       int startfile=0, int endfile=10, 
 			       int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=defDebugMode,			
 			       std::string outfile=(defMCOutputName+"_jetPlots.root"),
@@ -123,19 +125,27 @@ const std::string etaWidth="20_eta_20";
 
 // variable names for QA Plots
 const std::string var[]={
-  "jtpt"  , "rawpt" ,  //jets, 0-4=5
-  "jteta" , "jtphi" , "jty",
-  "trkMax", "trkSum", "trkHardSum", //jet constituents, 5-22=18
-  "chMax" , "chSum" , "chHardSum",
-  "phMax" , "phSum" , "phHardSum",
-  "neMax" , "neSum" ,
-  "eMax"  , "eSum"  ,
-  "muMax" , "muSum" ,
-  "neN", "chN", "sumN",
-  "Aj" , "xj" , "dphi", //dijet variables, 23-27=5
+  //jets, 0-3=4 vars
+  "jtpt"  , "rawpt" ,  
+  "jteta" , "jtphi" , 
+  //jet constituents, 4-30=27 vars
+  "trkN", "trkSum", "trkMax", //trk
+  "trkHardN", "trkHardSum", 
+  "phN", "phSum", "phMax",    //ph
+  "phHardN", "phHardSum", 
+  "chN", "chSum", "chMax",    //ch
+  "chHardN", "chHardSum", 
+  "neN" ,  "neSum" , "neMax" , //ne
+  "eN"  ,  "eSum"  , "eMax"  ,    //e
+  "muN" ,  "muSum" , "muMax" , //mu
+  "neuMult", "chMult", "numConst",
+  //"hcalSum", "ecalSum",       //hcal and ecal
+  // dijets, 31-35=5 vars
+  "Aj" , "xj" , "dphi", 
   "leadJetPt", "subleadJetPt"
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
+const int jtInd=0, jtConInd=4, dijtInd=31;
 
 //L1
 const std::string L1BitStrings[]={//this array is a good idea

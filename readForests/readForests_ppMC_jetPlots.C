@@ -5,7 +5,7 @@
 const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
 const bool fillMCJetSpectraRapHists=true; //other
 //other switches
-const bool fillBasicJetPlotsOnly=false;
+const bool fillBasicJetPlotsOnly=true;
 const bool fillgenJetQA=true&&fillMCJetQAHists;
 const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  
 

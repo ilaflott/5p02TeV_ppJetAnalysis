@@ -2,7 +2,7 @@
 #include "readForests_JERS.h"
 
 // ppMC switches
-const bool fillMCEvtQAHists=true, fillMCUnfoldingHists=true, fillMCJetIDHists=true;
+const bool fillMCEvtQAHists=true, fillMCUnfoldingHists=false, fillMCJetIDHists=false;
 const bool fillJERSHists=true, fillMCEffHists=true;
 const bool tightJetID=false;
 
@@ -398,12 +398,15 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     // compute weights, this way only works because of the previous vz>15. cut
     float vzWeight=1.;
     float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
-    for( int i=0; i<nbins_vzWeights ; i++ ) { 
-      if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
-	vzWeight=vzWeights[i];  
-	break; }       
-      vzBinLeftSide+=binsize_vzWeights;
-      vzBinRightSide+=binsize_vzWeights;  }    
+    if(doVzWeights){
+      for( int i=0; i<nbins_vzWeights ; i++ ) { 
+	if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
+	  vzWeight=vzWeights[i];  
+	  break; }       
+	vzBinLeftSide+=binsize_vzWeights;
+	vzBinRightSide+=binsize_vzWeights;  }    
+    }
+
     float evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }     
     float trigWeight=1.;

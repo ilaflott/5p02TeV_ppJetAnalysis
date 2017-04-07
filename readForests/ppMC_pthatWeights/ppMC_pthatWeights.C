@@ -16,12 +16,15 @@
 
 // definition and default values
 
-const std::string filelistFolder="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/filelists/";
-const std::string defMCFilelist="test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
-//const std::string defMCFilelist="5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_Official_forests.txt";
+//const std::string filelistFolder="/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/filelists/";
+const std::string filelistFolder="filelists/";
+//const std::string defMCFilelist="test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
+const std::string defMCFilelist="5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_Official_forests.txt";
 const std::string defOutputWeightFile="evtPthatWeights_defOutput.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
+const float defpthatMin=99999.;
+//const float defpthatMin=220;
 // constants
 //const bool doVzCuts=false, doNoiseFilterCuts=false, doEvtCuts=doVzCuts||doNoiseFilterCuts;
 
@@ -34,7 +37,7 @@ const double pthatBins[] = {15.,30.,50.,80.,120.,170.,220.,280.,370.,9999.};
 const double xs2015[] = { 5.115E+08 , 3.734E+07 , 4.005E+06 , 5.543E+05 , 6.423E+04, 1.346E+04 , 3.091E+03 , 7.597E+02 , 1.416E+02, 0.0 };
 
 int evtPthatWeights(std::string inputFilelist=defMCFilelist , std::string outputWeightFile=defOutputWeightFile,
-		    const int radius=defRadius, std::string jetType=defJetType);
+		    const int radius=defRadius, std::string jetType=defJetType, float pthatMin = defpthatMin );
 
 std::string formCutString(double pthat_i,double pthat_iadd1);//,bool doNoiseFilterCuts,bool doVzCuts);
 
@@ -46,7 +49,7 @@ const int NpthatBins=Npthats-1;//should be 11
 // evtPthatWeights
 // compute the MC QCD dijet weights based on input filelist.
 int evtPthatWeights( std::string inputFilelist , std::string outputWeightFile,
-		     const int radius, std::string jetType ){
+		     const int radius, std::string jetType , float pthatMin ){
   TStopwatch timer;  timer.Start();
   
   // basic info the screen
@@ -62,6 +65,7 @@ int evtPthatWeights( std::string inputFilelist , std::string outputWeightFile,
   // open filelist, loop over files and close them to save memory
   std::cout<<"making TChain w filelist..."<<std::endl;
   inputFilelist=filelistFolder+inputFilelist;
+  //inputFilelist=inputFilelist
   std::ifstream instr_Forest(inputFilelist.c_str(),std::ifstream::in);
 
   std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";  
@@ -77,11 +81,16 @@ int evtPthatWeights( std::string inputFilelist , std::string outputWeightFile,
       break;    }//end of filelist condition
     
     if(fileCount%100==0)std::cout<<std::endl<<"adding to TChain, file "<<filename_Forest<<std::endl<<std::endl;
-    else if(fileCount%10==0)std::cout<<"adding file #"<<fileCount<<", to TChain "<<std::endl;
+    else if(fileCount%1==0)std::cout<<"adding file #"<<fileCount<<", to TChain "<<std::endl;
 
     finMC->AddFile( filename_Forest.c_str() );
     
     fileCount++;
+    
+    //if (fileCount%10==0){
+    //  endOfFilelist=true;
+    //  break;
+    //}
 
   }//end file loop
   assert(endOfFilelist);
@@ -89,6 +98,7 @@ int evtPthatWeights( std::string inputFilelist , std::string outputWeightFile,
   // loop over pthat bins for this file
   std::cout<<"looping over pthat bins..."<<std::endl;
   for(int i = 0; i < NpthatBins; ++i){
+    if(pthatBins[i] < pthatMin )continue;
     std::string theCut=formCutString(pthatBins[i],pthatBins[i+1]);
     n[i] += finMC->GetEntries(theCut.c_str());    
   }
@@ -151,7 +161,7 @@ int main(int argc, char* argv[]){
 
   // error, not enough arguments
   int rStatus = -1;  
-  if(argc!=5&&argc!=1){
+  if(argc!=6 && argc!=5 && argc!=1){
     std::cout<<"to use evtPthatWeights, you need a filelist. Then do..."<<std::endl;
     std::cout<<"./evtPthatWeights.exe <inputFileList> <outputWeightFile> <radius> <jetType>"<<std::endl;
     std::cout<<"or leave arguments blank for default tests"<<std::endl;
@@ -159,8 +169,11 @@ int main(int argc, char* argv[]){
     return rStatus;  }
   
   if (argc==1) rStatus=evtPthatWeights();
-  else{  std::string datasetFilelist =argv[1], outputWeightFile=argv[2];
+  else if (argc==5){  std::string datasetFilelist =argv[1], outputWeightFile=argv[2];
     int radius = std::atoi(argv[3]); std::string jetType= argv[4];
     rStatus = evtPthatWeights( datasetFilelist, outputWeightFile, radius, jetType);  }
+  else {  std::string datasetFilelist =argv[1], outputWeightFile=argv[2];
+    int radius = std::atoi(argv[3]); std::string jetType= argv[4]; float pthatMin= std::atof(argv[4]);
+    rStatus = evtPthatWeights( datasetFilelist, outputWeightFile, radius, jetType, pthatMin);  }
   return rStatus;
 }

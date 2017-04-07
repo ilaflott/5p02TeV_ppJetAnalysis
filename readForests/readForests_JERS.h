@@ -46,7 +46,7 @@ const int minArgs=1;
 //const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
 //const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
 //const defEndile=10;
-const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_acrossBins.txt";
+const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
 const int defEndfile=55;
 const int defRadius=4;
 const std::string defJetType="PF";
@@ -62,8 +62,8 @@ int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist,
 
 const int readForestsArgCount=7+minArgs;
 
-const float jtPtCut=30.;
-const float jtGenPtCut=30.;
+const float jtPtCut=15.;
+const float jtGenPtCut=5.;
 //const float jtEtaCutLo=0.0, jtEtaCutHi=4.7;
 
 //// HELPER FUNCTIONS
@@ -277,25 +277,49 @@ const int nbins_JEC_ptbins=sizeof(JEC_ptbins)/sizeof(float)-1;
 // ------------------------------------------------------------------------------------------------------
 
 // pthat binning and weights
-const float pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. };
-//const int pthatbins[]={ 15, 30, 50, 80, 120, 170, 220, 280, 9999 }; //2015 bins?
+//const float pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. }; //semi-private
+
+const float pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 9999. }; //official
 const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
 
-const float pthatWeights[]={//from evtPthatWeights/evtPthatWeights_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets.txt
-  /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/        5.27832e-07,
-  /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/       3.37352e-08,
-  /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/      3.63191e-09,
-  /*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 mb^-3, weight=*/   2.33383e-10,
-  /*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 mb^-3, weight=*/   5.43517e-11,
-  /*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 mb^-3, weight=*/    1.10016e-11,
-  /*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 mb^-3, weight=*/   2.36422e-12,
-  /*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 mb^-3, weight=*/   5.84505e-13,
-  /*(pthat>=370)&&(pthat<460), n[8]=948240, xsDiff=1.0884e-07 mb^-3, weight=*/   1.14781e-13,
-  /*(pthat>=460)&&(pthat<540), n[9]=1558268, xsDiff=2.215e-08 mb^-3, weight=*/   1.42145e-14,
-  /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
+//for semi-private MC
+//const float pthatWeights[]={
+//  /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/        5.27832e-07,
+//  /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/       3.37352e-08,
+//  /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/      3.63191e-09,
+//  /*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 mb^-3, weight=*/   2.33383e-10,
+//  /*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 mb^-3, weight=*/   5.43517e-11,
+//  /*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 mb^-3, weight=*/    1.10016e-11,
+//  /*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 mb^-3, weight=*/   2.36422e-12,
+//  /*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 mb^-3, weight=*/   5.84505e-13,
+//  /*(pthat>=370)&&(pthat<460), n[8]=948240, xsDiff=1.0884e-07 mb^-3, weight=*/   1.14781e-13,
+//  /*(pthat>=460)&&(pthat<540), n[9]=1558268, xsDiff=2.215e-08 mb^-3, weight=*/   1.42145e-14,
+//  /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb^-3, weight=*/ 3.85395e-15
+//};
+
+//for official MC
+const float pthatWeights[]={
+  /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb^-3, weight=*/         2.54e+03,
+  /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb^-3, weight=*/        1.77e+02,
+  /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb^-3, weight=*/       1.75e+01,
+  /*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 mb^-3, weight=*/    2.53e+00,
+  /*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 mb^-3, weight=*/    2.65e-01,
+  /*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 mb^-3, weight=*/     5.78e-02,
+  /*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 mb^-3, weight=*/    1.20e-02,
+  /*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 mb^-3, weight=*/    2.84e-03,
+  /*(pthat>=370)&&(pthat<9990), n[8]=948240, xsDiff=1.0884e-07 mb^-3, weight=*/   5.71e-04
 };
 
+
+
+
+
+
+
+
+
 // vz binning and weights
+const bool doVzWeights=false;
 const float vzWeights[]={//           HLTAK4CaloJets, HLTAK4PFJets
   /*for i=1, -15<vz<=-14.5, vzWeight=*/ 0.381083,  /* 0.35749,  */
   /*for i=2, -14.5<vz<=-14, vzWeight=*/ 0.420849,  /* 0.400545, */

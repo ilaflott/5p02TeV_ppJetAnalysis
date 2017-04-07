@@ -25,8 +25,8 @@
 #include <TH3.h>
 #include <TH1F.h>
 #include <TH2F.h>
-// custom
-#include "L2L3ResidualWFits.h"
+//// custom
+//#include "L2L3ResidualWFits.h"
 //#include "MCTruthResidual.h"
 
 void divideBinWidth(TH1 *h){
@@ -92,14 +92,12 @@ const std::string var[]={
   "Aj" , "xj" , "dphi",    //JERS might not like me
   "leadJetPt", "subleadJetPt"
 };
-
-
 const int N_vars=sizeof(var)/sizeof(std::string);
 //"hcalSum", "ecalSum",       //hcal and ecal
 // dijets, 31-35=5 vars
 //"Aj" , "xj" , "dphi",
 //"leadJetPt", "subleadJetPt"
-//const int jtInd=0, jtConInd=4, dijtInd=31;
+const int jtInd=0, jtConInd=4, dijtInd=31;
 
 //L1
 const std::string L1BitStrings[]={//this array is a good idea
@@ -110,21 +108,8 @@ const std::string L1BitStrings[]={//this array is a good idea
   //  "L1_SingleJet52_BptxAND",
   //  "L1_SingleJet68_BptxAND"
 };
-
-
 //const int N_L1Bits=N_HLTBits;
 const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
-
-// HLT, both Calo and PF available
-const std::string Calo_HLTBitStrings[]={
-  "HLT_AK4CaloJet40_Eta5p1",
-  "HLT_AK4CaloJet60_Eta5p1",
-  "HLT_AK4CaloJet80_Eta5p1",
-  "HLT_AK4CaloJet100_Eta5p1" //,
-  //  "HLT_AK4CaloJet110_Eta5p1" ,
-  //  "HLT_AK4CaloJet120_Eta5p1"
-};
-
 
 
 // HLT, both Calo and PF available
@@ -233,12 +218,12 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 
 // original genpt JER binning i inherited from raghav
-const float ptbins[]={
-  15., 30., 50., 80.,
-  120., 170., 220., 300.,
-  500.
-}; // original genpt JER binning i inherited from raghav
-const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+//const float ptbins[]={
+//  15., 30., 50., 80.,
+//  120., 170., 220., 300.,
+//  500.
+//}; // original genpt JER binning i inherited from raghav
+//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 
 const float ptbins[]={
   //     3., 4., 5., 7., 9., 12.,

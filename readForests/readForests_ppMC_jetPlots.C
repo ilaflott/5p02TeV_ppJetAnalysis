@@ -5,7 +5,7 @@
 const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
 const bool fillMCJetSpectraRapHists=true; //other
 //other switches
-const bool fillBasicJetPlotsOnly=true;
+const bool fillBasicJetPlotsOnly=false;
 const bool fillgenJetQA=true&&fillMCJetQAHists;
 const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  
 
@@ -356,15 +356,16 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     // compute weights, this way only works because of the previous vz>15. cut
     float vzWeight=1.;
     float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
-    
-    for( int i=0; i<nbins_vzWeights ; i++ ) { 
-      if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
-	vzWeight=vzWeights[i];  
-	break; } 
-      else {
-	vzBinLeftSide+=binsize_vzWeights;
-	vzBinRightSide+=binsize_vzWeights; } }
-    
+    if(doVzWeights){
+      for( int i=0; i<nbins_vzWeights ; i++ ) { 
+	if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
+	  vzWeight=vzWeights[i];  
+	  break; } 
+	else {
+	  vzBinLeftSide+=binsize_vzWeights;
+	  vzBinRightSide+=binsize_vzWeights; } }
+    }
+
     float evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 
     

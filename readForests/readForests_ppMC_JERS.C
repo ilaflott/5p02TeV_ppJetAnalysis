@@ -194,18 +194,30 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   // TH1F * hJER[2][nbins_pt]={};  
   // TH3F * hJEC[2]={};
 
+  //sanity jteta check
   TH1F * hJER_jtetaQA;
+
+  //all eta in bins of genpt
   TH1F * hJER[2][nbins_pt]={};  
-  TH1F *hJER_eta_30pt50[2][nbins_eta]={}, *hJER_eta_150pt200[2][nbins_eta]={};
 
-  TH1F *hJER_rapbins[2][nbins_abseta];
-  TH1F *hJER_rapbins_genptBin1[2][nbins_abseta]; int genptBin1Low=49, genptBin1High=56;
-  TH1F *hJER_rapbins_genptBin2[2][nbins_abseta]; int genptBin2Low=430, genptBin2High=468;
+  //two specific genpt ranges across eta bins
+  TH1F * hJER_eta_30pt50[2][nbins_eta]={};
+  TH1F * hJER_eta_150pt200[2][nbins_eta]={};
 
-  TH1F *hGenPtCutHi1       =new TH1F("hGenPtCutHi1"     , (std::to_string(genptBin1High)).c_str()   ,    100,   0., 100.  ); hGenPtCutHi1->Fill((float)genptBin1High);
-  TH1F *hGenPtCutLo1      =new TH1F("hGenPtCutLo1"      , (std::to_string(genptBin1Low)).c_str()  ,    100,   0., 100.  ); hGenPtCutLo1->Fill((float)genptBin1Low);	
-  TH1F *hGenPtCutHi2       =new TH1F("hGenPtCutHi2"     , (std::to_string(genptBin2High)).c_str()   ,    100,   0., 100.  ); hGenPtCutHi2->Fill((float)genptBin2High);
-  TH1F *hGenPtCutLo2      =new TH1F("hGenPtCutLo2"      , (std::to_string(genptBin2Low)).c_str()  ,    100,   0., 100.  ); hGenPtCutLo2->Fill((float)genptBin2Low);	
+  //all genpt, and two specifically set genpt bins, across abs eta
+  TH1F *hJER_absetabins[2][nbins_abseta];
+
+  TH1F *hJER_absetabins_genptBin1[2][nbins_abseta]; 
+  int genptBin1Low=49, genptBin1High=56;	 
+  TH1F *hGenPtCutHi1   = new TH1F("hGenPtCutHi1"  , (std::to_string(genptBin1High)).c_str() ,  100,  0., 100.  ); 
+  TH1F *hGenPtCutLo1   = new TH1F("hGenPtCutLo1"  , (std::to_string(genptBin1Low)).c_str()  ,  100,  0., 100.  ); 	
+  hGenPtCutHi1->Fill((float)genptBin1High);  hGenPtCutLo1->Fill((float)genptBin1Low); 
+
+  TH1F *hJER_absetabins_genptBin2[2][nbins_abseta]; 
+  int genptBin2Low=430, genptBin2High=468;
+  TH1F *hGenPtCutHi2   = new TH1F("hGenPtCutHi2"  , (std::to_string(genptBin2High)).c_str() ,  100,  0., 100.  ); 
+  TH1F *hGenPtCutLo2   = new TH1F("hGenPtCutLo2"  , (std::to_string(genptBin2Low)).c_str()  ,  100,  0., 100.  ); 
+  hGenPtCutHi2->Fill((float)genptBin2High);  hGenPtCutLo2->Fill((float)genptBin2Low); 
 
   if(fillJERSHists){        
     int jtID=0;
@@ -232,16 +244,16 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     
     for(int bin = 0; bin<nbins_abseta; ++bin) {      
       std::string hTitleJER="hJER_"+std::to_string(jtID)+"wJetID_jty_bin"+std::to_string(bin);      
-      hJER_rapbins[jtID][bin] = new TH1F(hTitleJER.c_str(),("recpt/genpt, absetaBin"+std::to_string(bin)).c_str(), 100,0.,2.); 
+      hJER_absetabins[jtID][bin] = new TH1F(hTitleJER.c_str(),("recpt/genpt, absetaBin"+std::to_string(bin)).c_str(), 100,0.,2.); 
       
       std::string hTitleJER_1="hJER_"+std::to_string(jtID)+"wJetID_jty_etabin"+std::to_string(bin)+
 	"_genptBin1";
-      hJER_rapbins_genptBin1[jtID][bin] = new TH1F(hTitleJER_1.c_str(),("absetaBin "+std::to_string(bin)+", "						   
+      hJER_absetabins_genptBin1[jtID][bin] = new TH1F(hTitleJER_1.c_str(),("absetaBin "+std::to_string(bin)+", "						   
 								       	"genpt "+std::to_string(genptBin1Low)+" to "+std::to_string(genptBin1High)).c_str(), 100,0.,2.); 
       
       std::string hTitleJER_2="hJER_"+std::to_string(jtID)+"wJetID_jty_etabin"+std::to_string(bin)+
 	"_genptBin2";
-      hJER_rapbins_genptBin2[jtID][bin] = new TH1F(hTitleJER_2.c_str(),("absetaBin "+std::to_string(bin)+", "						   
+      hJER_absetabins_genptBin2[jtID][bin] = new TH1F(hTitleJER_2.c_str(),("absetaBin "+std::to_string(bin)+", "						   
 						                       	"genpt "+std::to_string(genptBin2Low)+" to "+std::to_string(genptBin2High)).c_str(), 100,0.,2.); 
     }
         
@@ -257,28 +269,22 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   int nref_I;  
   float pt_F[1000];  float eta_F[1000];   float phi_F[1000];
   float rawpt_F[1000]; //float y_F[1000], float jtpu_F[1000];
-
   //tracks
   int trkN_I[1000], trkHardN_I[1000];
   float trkSum_F[1000],  trkMax_F[1000], trkHardSum_F[1000];
-
   //charged hadrons
   int chN_I[1000], chHardN_I[1000];
   float chSum_F[1000],  chMax_F[1000], chHardSum_F[1000];
-
   //photons
   int phN_I[1000], phHardN_I[1000];
   float phSum_F[1000],  phMax_F[1000], phHardSum_F[1000];
-
   //leptons
   int eN_I[1000], muN_I[1000];
   float eSum_F[1000];   float eMax_F[1000];
   float muSum_F[1000];  float muMax_F[1000];
-
   //neutrals
   int neN_I[1000];
   float neSum_F[1000];  float neMax_F[1000];
-
   //MC jet variable
   float pthat_F;
   int subid_F[1000];    int refparton_F[1000];
@@ -291,45 +297,36 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   jetpp[0]->SetBranchAddress("jteta",&eta_F);
   jetpp[0]->SetBranchAddress("jtphi",&phi_F);
   jetpp[0]->SetBranchAddress("rawpt",&rawpt_F);
-  //jetpp[0]->SetBranchAddress("jtpu",&jtpu_F);
-  //jetpp[0]->SetBranchAddress("jty",&y_F);
-
   //tracks
   jetpp[0]->SetBranchAddress("trackN",&trkN_I);
   jetpp[0]->SetBranchAddress("trackSum",&trkSum_F);
   jetpp[0]->SetBranchAddress("trackMax",&trkMax_F);
   jetpp[0]->SetBranchAddress("trackHardN",&trkHardN_I);
   jetpp[0]->SetBranchAddress("trackHardSum",&trkHardSum_F);
-
   //charged hadrons from PF (no HF-Calo ctontributions)
   jetpp[0]->SetBranchAddress("chargedN",&chN_I);
   jetpp[0]->SetBranchAddress("chargedSum",&chSum_F);
   jetpp[0]->SetBranchAddress("chargedMax",&chMax_F);
   jetpp[0]->SetBranchAddress("chargedHardN",&chHardN_I);
   jetpp[0]->SetBranchAddress("chargedHardSum",&chHardSum_F);
-
   //photons from PF (no HF-Calo contributions)
   jetpp[0]->SetBranchAddress("photonN",&phN_I);
   jetpp[0]->SetBranchAddress("photonSum",&phSum_F);
   jetpp[0]->SetBranchAddress("photonMax",&phMax_F);
   jetpp[0]->SetBranchAddress("photonHardN",&phHardN_I);
   jetpp[0]->SetBranchAddress("photonHardSum",&phHardSum_F);
-
   //electrons from PF
   jetpp[0]->SetBranchAddress("eN",&eN_I);
   jetpp[0]->SetBranchAddress("eSum",&eSum_F);
   jetpp[0]->SetBranchAddress("eMax",&eMax_F);
-
   //muons from PF
   jetpp[0]->SetBranchAddress("muN",&muN_I);
   jetpp[0]->SetBranchAddress("muSum",&muSum_F);
   jetpp[0]->SetBranchAddress("muMax",&muMax_F);
-
   //neutral hadrons from PF (no HF-Calo contributions)
   jetpp[0]->SetBranchAddress("neutralN",&neN_I);
   jetpp[0]->SetBranchAddress("neutralSum",&neSum_F);
   jetpp[0]->SetBranchAddress("neutralMax",&neMax_F);
-
   //MC jet variables
   jetpp[0]->SetBranchAddress( "pthat"   , &pthat_F);
   jetpp[0]->SetBranchAddress( "subid"	, &subid_F     );
@@ -368,8 +365,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
   
   UInt_t NEvents_read=0;
-  //if(debugMode)NEvents_read = (int)NEvents_allFiles/4 ;
-  //else NEvents_read = NEvents_allFiles;
   NEvents_read = NEvents_allFiles;
   
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
@@ -482,12 +477,11 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	    if( phSum_F[jet]/rawpt < 1.00 &&
 		numConst > 0 ) passesJetID=true;
 	  }
+	if(passesJetID)jtID=1;
+	else continue;      //continue because we do jtIDT, jtIDL, and jtID0 all in different job
       }
       
 
-
-      if(passesJetID)jtID=1;
-      else continue;      //continue because we do jtIDT, jtIDL, and jtID0 all in different job
       
 
 
@@ -523,13 +517,13 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	    //	    if( absgeneta>=absetabins[bin] ) absetabin = bin; 				}
 	
 	if(absetabin != -1 ){
-	  hJER_rapbins[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
+	  hJER_absetabins[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
 
 	  if( ((float)genptBin1Low)<= genpt && genpt <((float)genptBin1High) ) 
-	    hJER_rapbins_genptBin1[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
+	    hJER_absetabins_genptBin1[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
 
 	  if( ((float)genptBin2Low)<=genpt && genpt<((float)genptBin2High) ) 	  
-	    hJER_rapbins_genptBin2[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     	}       
+	    hJER_absetabins_genptBin2[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     	}       
 
 
 	// gen pt binnings from raghav

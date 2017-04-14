@@ -23,7 +23,7 @@ const std::string defMCFilelist="5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_Official_f
 const std::string defOutputWeightFile="evtPthatWeights_defOutput.txt";
 const int defRadius=4;
 const std::string defJetType="PF";
-const float defpthatMin=99999.;
+const float defpthatMin=0.;
 //const float defpthatMin=220;
 // constants
 //const bool doVzCuts=false, doNoiseFilterCuts=false, doEvtCuts=doVzCuts||doNoiseFilterCuts;

@@ -2,7 +2,7 @@
 #include "readForests_JERS.h"
 
 // ppMC switches
-const bool fillMCEvtQAHists=true, fillMCUnfoldingHists=false, fillMCJetIDHists=false;
+const bool fillMCEvtQAHists=true, fillMCUnfoldingHists=true, fillMCJetIDHists=false;
 const bool fillJERSHists=true, fillMCEffHists=true;
 const bool tightJetID=false;
 
@@ -200,6 +200,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   //all eta in bins of genpt
   TH1F * hJER[2][nbins_pt]={};  
 
+  int genptBin1Low=10, genptBin1High=30;	 
+  int genptBin2Low=50, genptBin2High=70;
+
   //two specific genpt ranges across eta bins
   TH1F * hJER_eta_30pt50[2][nbins_eta]={};
   TH1F * hJER_eta_150pt200[2][nbins_eta]={};
@@ -208,13 +211,11 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   TH1F *hJER_absetabins[2][nbins_abseta];
 
   TH1F *hJER_absetabins_genptBin1[2][nbins_abseta]; 
-  int genptBin1Low=49, genptBin1High=56;	 
   TH1F *hGenPtCutHi1   = new TH1F("hGenPtCutHi1"  , (std::to_string(genptBin1High)).c_str() ,  100,  0., 100.  ); 
   TH1F *hGenPtCutLo1   = new TH1F("hGenPtCutLo1"  , (std::to_string(genptBin1Low)).c_str()  ,  100,  0., 100.  ); 	
   hGenPtCutHi1->Fill((float)genptBin1High);  hGenPtCutLo1->Fill((float)genptBin1Low); 
 
   TH1F *hJER_absetabins_genptBin2[2][nbins_abseta]; 
-  int genptBin2Low=430, genptBin2High=468;
   TH1F *hGenPtCutHi2   = new TH1F("hGenPtCutHi2"  , (std::to_string(genptBin2High)).c_str() ,  100,  0., 100.  ); 
   TH1F *hGenPtCutLo2   = new TH1F("hGenPtCutLo2"  , (std::to_string(genptBin2Low)).c_str()  ,  100,  0., 100.  ); 
   hGenPtCutHi2->Fill((float)genptBin2High);  hGenPtCutLo2->Fill((float)genptBin2Low); 
@@ -402,7 +403,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	vzBinRightSide+=binsize_vzWeights;  }    
     }
 
-    float evtPthatWeight=0.;    
+    float evtPthatWeight=1.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }     
     float trigWeight=1.;
     float weight_eS=evtPthatWeight*trigWeight*vzWeight;              
@@ -419,6 +420,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     // for event counting + avoiding duplicate fills in dijet hists
     bool hNEvts_withJets_Filled=false;
     bool hNEvts_withJets_kmatCut1_Filled=false, hNEvts_withJets_kmatCut2_Filled=false; 
+
     for(int jet = 0; jet<nref_I; ++jet){
 
       // event+jet counting
@@ -430,20 +432,25 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       //if reco jet w/o matched gen jet, skip.
       if( subid_F[jet]!=0 ) continue;
 
+      float genpt= refpt_F[jet];
       float recpt  = pt_F[jet];
       float receta = eta_F[jet];
       float absreceta=fabs(receta);
-      float genpt= refpt_F[jet];
       
       if( genpt < jtGenPtCut ) continue;
-      else if ( absreceta >= jtEtaCutHi ) continue;
-      else if ( absreceta < jtEtaCutLo ) continue;
       else if ( recpt < jtPtCut   ) continue;                 
+      else if (absreceta > 4.7) continue;
 
+      bool passesEtaCut;
+      if (absreceta >= jtEtaCutHi || absreceta < jtEtaCutLo)passesEtaCut=false;
+      else passesEtaCut=true;
+      
+      float geneta = refeta_F[jet];
+      float genphi = refphi_F[jet];
+      float gendrjt = refdrjt_F[jet];     
       float rawpt  = rawpt_F[jet];
       float recphi = phi_F[jet];
-      float gendrjt = refdrjt_F[jet];     
-
+      
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
@@ -482,69 +489,46 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       }
       
 
-      
-
-
       // jet/event counts
       h_NJets_kmatCut1->Fill(1);
       if(!hNEvts_withJets_kmatCut1_Filled){
 	h_NEvents_withJets_kmatCut1->Fill(1);
 	hNEvts_withJets_kmatCut1_Filled=true;      }
       
-
-
-
-      float geneta = refeta_F[jet];
-      float genphi = refphi_F[jet];
-      //float absgeneta = fabs(geneta);
-
-
+      
+      
+      
       
       /////   JERS HISTS   ///// 
       if(fillJERSHists ){
 	
-	// sanity check
-	hJER_jtetaQA->Fill(receta,weight_eS);      
-	//hJEC[jtID]->Fill( rawpt,eta_F[jet],(float)(recpt/rawpt), weight_eS );
-
-	// dual-diff xsec bins + two genpt bins
+	// dual-diff xsec abseta bins for two spec genpt bins and all genpt bins
 	int absetabin=-1;
-	//if(absgeneta>absetabins[nbins_abseta]) absetabin = -1;
-	if(absreceta>absetabins[nbins_abseta]) absetabin = -1;
+	if(absreceta>absetabins[nbins_abseta]) absetabin = -1;//check end of array
 	else{
 	  for(int bin=0; bin < nbins_abseta; bin++)
-	    if( absreceta>=absetabins[bin] ) absetabin = bin; 				}
-	    //	    if( absgeneta>=absetabins[bin] ) absetabin = bin; 				}
+	    if( absreceta>=absetabins[bin] ) absetabin = bin; 				
+	}
 	
 	if(absetabin != -1 ){
+	  
 	  hJER_absetabins[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
-
-	  if( ((float)genptBin1Low)<= genpt && genpt <((float)genptBin1High) ) 
+	  
+	  if( genpt >= ( (float) genptBin1Low  )  && 
+	      genpt <  ( (float) genptBin1High )    ) 
 	    hJER_absetabins_genptBin1[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
-
-	  if( ((float)genptBin2Low)<=genpt && genpt<((float)genptBin2High) ) 	  
-	    hJER_absetabins_genptBin2[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     	}       
-
-
-	// gen pt binnings from raghav
-	int ptbin = -1; 
-	if(genpt>=ptbins[nbins_pt])ptbin=-1;
-	else {
-	  for(int bin = 0; bin<nbins_pt; ++bin)  { // binning recommended by raghav for 5TeVppJets
-	    if(genpt >= ptbins[bin]) ptbin = bin; }		}
-
-	if(ptbin != -1) {
-	  hJER[jtID][ptbin]->Fill( (float)(recpt/genpt), weight_eS); }
-	
-
-	// gen eta binnings from raghav
-
+	  
+	  if( genpt >= ( (float) genptBin2Low  )  && 
+	      genpt <  ( (float) genptBin2High )    ) 
+	    hJER_absetabins_genptBin2[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     	
+	}       
+		
+	// hJER, genpt30-50, 150-200, across geneta bins array (note, NOT abs-value geneta bins)
 	int etabin = -1;
-	if(fabs(geneta) >= etabins[nbins_eta]) etabin=-1; 	//check end of array
-	else
-	  {
-	    for(int bin = 0; bin<nbins_eta; ++bin)  if(geneta >= etabins[bin]) etabin = bin;	
-	  }
+	if(fabs(geneta) >= etabins[nbins_eta]) etabin=-1; //check end of array
+	else {
+	  for(int bin = 0; bin<nbins_eta; ++bin)  //notice that the loop does not hit end of this array
+	      if(geneta >= etabins[bin]) etabin = bin;	  }
 	
 	if(etabin != -1) {
 	  if(genpt >= 30.  && genpt<50. ) 
@@ -552,16 +536,26 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  else if(genpt >= 150. && genpt<200.) 
 	    hJER_eta_150pt200[jtID][etabin]->Fill((float)recpt/genpt, weight_eS);	
 	}
-	/*int binx = -1; //genpt JEC bin
-	  for(int bin = 0; bin<nbins_JEC_ptbins; ++bin) 
-	  if(genpt > JEC_ptbins[bin]) binx = bin;      	
-	  //std::cout <<"binx="<<binx<<std::endl;	    	  
-	  if(binx != -1)
-	  hJEC_check[jtID][binx][etabin]->Fill( (float)(rawpt/genpt) , weight_eS); 	*/   
-      } 
+
+	//JER in genptbins array, according to input absetacuts
+	int ptbin = -1; 
+	if( genpt >= ptbins[nbins_pt] ) ptbin=-1;//check end of binning array
+	else if (!passesEtaCut) ptbin=-1;
+	else {
+	  for(int bin = 0; bin<nbins_pt; ++bin)      
+	    if(genpt >= ptbins[bin]) ptbin = bin;  	}
+	
+	if(ptbin != -1) {
+	  hJER_jtetaQA->Fill(receta,weight_eS);      
+	  hJER[jtID][ptbin]->Fill( (float)(recpt/genpt), weight_eS); }	
+
+      }
+
+
+      if(!passesEtaCut)continue; //i want other plots to be made despite input eta range
       
       /////   GEN/RECO MATCHING   /////
-
+      
       if(fillMCEffHists){	
 	hpp_mceff_pt[jtID]->Fill(         recpt/genpt   , genpt   ,  weight_eS);
 	hpp_mceff_eta[jtID]->Fill(        receta/geneta , geneta  ,  weight_eS);
@@ -569,7 +563,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	hpp_mceff_ptrat_drjt[jtID]->Fill( recpt/genpt   , gendrjt ,  weight_eS);	
 	hpp_mceff_ptrat_eta[jtID]->Fill(  recpt/genpt   , geneta  ,  weight_eS);
 	hpp_mceff_ptrat_phi[jtID]->Fill(  recpt/genpt   , genphi  ,  weight_eS);       }
-
+      
       // jet/event counts
       h_NJets_kmatCut2->Fill(1);
       if(!hNEvts_withJets_kmatCut2_Filled){
@@ -587,8 +581,8 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  hpp_mcclosure_matrix[jtID]->Fill(recpt, genpt, weight_eS);
 	  hpp_mcclosure_gen[jtID]->Fill(genpt, weight_eS);
 	  hpp_mcclosure_data_train[jtID]->Fill(recpt, weight_eS); 	} 
-      }      
-    
+      }
+      
       
     }//end jet loop
   }//end event loop
@@ -662,11 +656,11 @@ int main(int argc, char *argv[]){
     std::string inputFileList=argv[1]; int startfile= atoi(argv[2]); int endfile= atoi(argv[3]);  
     int jetRadius= atoi(argv[4]); std::string jetType=argv[5];     bool debug=(bool)atoi(argv[6]);
     std::string outputFileName=argv[7];      
-    if(argc==8){
+    if(argc==minArgs){
       rStatus = readForests_ppMC_JERS( inputFileList, startfile, endfile, 
 				       jetRadius, jetType, debug,
 				       outputFileName);                              }    
-    else if(argc==10){
+    else if(argc==(minArgs+2)){
       float jtEtaCutLo= atof( argv[8] ) ; float jtEtaCutHi=atof( argv[9] ) ;
       rStatus = readForests_ppMC_JERS( inputFileList, startfile, endfile,
 				       jetRadius, jetType, debug,

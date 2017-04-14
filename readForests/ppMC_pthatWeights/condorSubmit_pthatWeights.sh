@@ -7,7 +7,7 @@ if [[ $# -ne 1 ]] # not enough arguments
 then
     echo "Usage is... "
     echo "source condorSubmit_pthatWeights.sh <minPthatBin>"
-    #echo "to run over all files with <NFilesPerJob>, set <NJobs> to -1"
+
     return 1
 fi
 

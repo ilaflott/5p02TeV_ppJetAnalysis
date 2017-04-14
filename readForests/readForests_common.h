@@ -28,7 +28,6 @@
 //// custom
 //#include "L2L3ResidualWFits.h"
 //#include "MCTruthResidual.h"
-
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop
@@ -215,8 +214,6 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 //const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 
-
-
 // original genpt JER binning i inherited from raghav
 //const float ptbins[]={
 //  15., 30., 50., 80.,
@@ -278,36 +275,48 @@ const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
 
 //for semi-private MC in millibarns
 //const float pthatWeights[]={
-//  /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 mb, weight=*/        5.27832e-07,
-//  /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 mb, weight=*/       3.37352e-08,
-//  /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 mb, weight=*/      3.63191e-09,
-//  /*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 mb, weight=*/   2.33383e-10,
-//  /*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 mb, weight=*/   5.43517e-11,
-//  /*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 mb, weight=*/    1.10016e-11,
-//  /*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 mb, weight=*/   2.36422e-12,
-//  /*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 mb, weight=*/   5.84505e-13,
-//  /*(pthat>=370)&&(pthat<460), n[8]=948240, xsDiff=1.0884e-07 mb, weight=*/   1.14781e-13,
-//  /*(pthat>=460)&&(pthat<540), n[9]=1558268, xsDiff=2.215e-08 mb, weight=*/   1.42145e-14,
-//  /*(pthat>=540)&&(pthat<9999), n[10]=2597338, xsDiff=1.001e-08 mb, weight=*/ 3.85395e-15
+//  /*(pthat>=15)&&(pthat<30)    , n[0]=932778   , xsDiff=0.49235 mb    , weight= */ 5.27832e-07,
+//  /*(pthat>=30)&&(pthat<50)    , n[1]=903567   , xsDiff=0.030482 mb   , weight= */ 3.37352e-08,
+//  /*(pthat>=50)&&(pthat<80)    , n[2]=983531   , xsDiff=0.0035721 mb  , weight= */ 3.63191e-09,
+//  /*(pthat>=80)&&(pthat<120)   , n[3]=1820782  , xsDiff=0.00042494 mb , weight= */ 2.33383e-10,
+//  /*(pthat>=120)&&(pthat<170)  , n[4]=1080554  , xsDiff=5.873e-05 mb  , weight= */ 5.43517e-11,
+//  /*(pthat>=170)&&(pthat<220)  , n[5]=836152   , xsDiff=9.199e-06 mb  , weight= */ 1.10016e-11,
+//  /*(pthat>=220)&&(pthat<280)  , n[6]=954396   , xsDiff=2.2564e-06 mb , weight= */ 2.36422e-12,
+//  /*(pthat>=280)&&(pthat<370)  , n[7]=1083994  , xsDiff=6.336e-07 mb  , weight= */ 5.84505e-13,
+//  /*(pthat>=370)&&(pthat<460)  , n[8]=948240   , xsDiff=1.0884e-07 mb , weight= */ 1.14781e-13,
+//  /*(pthat>=460)&&(pthat<540)  , n[9]=1558268  , xsDiff=2.215e-08 mb  , weight= */ 1.42145e-14,
+//  /*(pthat>=540)&&(pthat<9999) , n[10]=2597338 , xsDiff=1.001e-08 mb  , weight= */ 3.85395e-15
 //};
-
-
-
-
-
 
 //for official MC, in picobarns i think...
 const float pthatWeights[]={
-  /*(pthat>=15)&&(pthat<30), n[0]=932778, xsDiff=0.49235 pb, weight=*/         2.54e+03,
-  /*(pthat>=30)&&(pthat<50), n[1]=903567, xsDiff=0.030482 pb, weight=*/        1.77e+02,
-  /*(pthat>=50)&&(pthat<80), n[2]=983531, xsDiff=0.0035721 pb, weight=*/       1.75e+01,
-  /*(pthat>=80)&&(pthat<120), n[3]=1820782, xsDiff=0.00042494 pb, weight=*/    2.53e+00,
-  /*(pthat>=120)&&(pthat<170), n[4]=1080554, xsDiff=5.873e-05 pb, weight=*/    2.65e-01,
-  /*(pthat>=170)&&(pthat<220), n[5]=836152, xsDiff=9.199e-06 pb, weight=*/     5.78e-02,
-  /*(pthat>=220)&&(pthat<280), n[6]=954396, xsDiff=2.2564e-06 pb, weight=*/    1.20e-02,
-  /*(pthat>=280)&&(pthat<370), n[7]=1083994, xsDiff=6.336e-07 pb, weight=*/    2.84e-03,
-  /*(pthat>=370)&&(pthat<9990), n[8]=948240, xsDiff=1.0884e-07 pb, weight=*/   5.71e-04
+  /*(pthat>=15)&&(pthat<30)    , */ 2.540262275057730E+03, 
+  /*(pthat>=30)&&(pthat<50)    , */ 1.767997146221660E+02, 
+  /*(pthat>=50)&&(pthat<80)    , */ 1.748384675401000E+01, 
+  /*(pthat>=80)&&(pthat<120)   , */ 2.527276114938740E+00, 
+  /*(pthat>=120)&&(pthat<170)  , */ 2.645390892038350E-01, 
+  /*(pthat>=170)&&(pthat<220)  , */ 5.783189549917210E-02, 
+  /*(pthat>=220)&&(pthat<280)  , */ 1.201435553860580E-02, 
+  /*(pthat>=280)&&(pthat<370)  , */ 2.701122150547510E-03, 
+  /*(pthat>=370)&&(pthat<9999)  , */ 6.905320062057990E-04  
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -319,9 +328,11 @@ const float pthatWeights[]={
 
 // vz binning and weights
 //from left column to right
-//semiofficial MC + HLTAK4CaloJets, semiofficial MC + HLTAK4PFJets, official MC + HLTak4CaloJets
-const bool doVzWeights=true;
+
+const bool doVzWeights=false;
 const float vzWeights[]={           
+//columns are, in order...
+//semiofficial MC/{HLTAK4CaloJets,HLTAK4PFJets}, official MC + HLTak4CaloJets
   /*for i=1 ,    0.381083,   0.35749,  */   1.89758, 
   /*for i=2 ,    0.420849,   0.400545, */   1.89377,
   /*for i=3 ,    0.457166,   0.433741, */   1.75682,

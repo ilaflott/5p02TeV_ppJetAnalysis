@@ -4,13 +4,13 @@
 // code/job switches ------------------------
 
 //options
-const bool debugMode=true, doEventCounts=true, doJetIDPlots=true;
+const bool debugMode=true, doEventCounts=true, doJetIDPlots=false;
 
 //draw switches
 const bool drawEvtQAPlots=true;
 const bool drawJetQAPlots=true;
 const bool drawJetConstituentPlots=true, drawDijetPlots=false;
-const bool drawJetTrigQAPlots=false, drawJetRapBinsPlot=false;
+const bool drawJetTrigQAPlots=true, drawJetRapBinsPlot=true;
 
 const bool drawDataMCOverlaysInput=false; 		 //this should always be false, but needs to be cleaned up later.
 const bool drawDataMCOverlays   = drawDataMCOverlaysInput;

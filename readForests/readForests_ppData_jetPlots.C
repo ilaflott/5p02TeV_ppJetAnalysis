@@ -2,7 +2,7 @@
 #include "readForests_jetPlots.h"
 
 // ppData switches
-const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=true; //most basic-level plots
+const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=false; //most basic-level plots
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataJetSpectraRapHists=true; //other
 const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots

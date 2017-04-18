@@ -57,7 +57,7 @@ const std::string CMSSW_BASE=
 const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/";
 
-const std::string inputDir=SCRATCH_BASE+"readForests/";
+const std::string inputDir=SCRATCH_BASE+"readForests/4.17.17_outputCondor/";
 //const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
 
 const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
@@ -65,17 +65,24 @@ const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
 
 // variable names for QA Plots
 const std::string var[]={
-  "jtpt"  , "rawpt" ,  //jets, 0-3=4
-  "jteta" , "jtphi" , //"jty",
-  "trkMax", "trkSum", "trkHardSum", //jet constituents, 4-21=18
-  "chMax" , "chSum" , "chHardSum",
-  "phMax" , "phSum" , "phHardSum",
-  "neMax" , "neSum" ,
-  "eMax"  , "eSum"  ,
-  "muMax" , "muSum" ,
-  "neN", "chN", "sumN",
-  "Aj" , "xj" , "dphi", //dijet variables, 22-26=5
-  "leadJetPt", "subleadJetPt"
+  //jets, 0-3=4 vars
+  "jtpt"  , "rawpt" ,
+  "jteta" , "jtphi" ,
+  //jet constituents, 4-30=27 vars
+  "trkN", "trkSum", "trkMax", //trk
+  "trkHardN", "trkHardSum",
+  "phN", "phSum", "phMax",    //ph
+  "phHardN", "phHardSum",
+  "chN", "chSum", "chMax",    //ch
+  "chHardN", "chHardSum",
+  "neN" ,  "neSum" , "neMax" , //ne
+  "eN"  ,  "eSum"  , "eMax"  ,    //e
+  "muN" ,  "muSum" , "muMax" , //mu
+  "neuMult", "chMult", "numConst",
+  //"hcalSum", "ecalSum",       //hcal and ecal
+  // dijets, 31-35=5 vars
+  "Aj" , "xj" , "dphi",    //JERS might not like me
+  "leadJetPt", "subleadJetPt"  
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
 const int jetQA_varStart=0;
@@ -165,3 +172,17 @@ void divideBinWidth(TH1 *h){
   h->GetYaxis()->CenterTitle();
   return;
 }
+
+
+
+//  "jtpt"  , "rawpt" ,  //jets, 0-3=4
+//  "jteta" , "jtphi" , //"jty",
+//  "trkMax", "trkSum", "trkHardSum", //jet constituents, 4-21=18
+//  "chMax" , "chSum" , "chHardSum",
+//  "phMax" , "phSum" , "phHardSum",
+//  "neMax" , "neSum" ,
+//  "eMax"  , "eSum"  ,
+//  "muMax" , "muSum" ,
+//  "neN", "chN", "sumN",
+//  "Aj" , "xj" , "dphi", //dijet variables, 22-26=5
+//  "leadJetPt", "subleadJetPt"

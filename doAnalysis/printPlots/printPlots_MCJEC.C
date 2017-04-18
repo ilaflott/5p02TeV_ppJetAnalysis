@@ -41,8 +41,9 @@ int printPlots_MCJEC(const std::string inFile_MC_dir,const std::string outputTag
   //if(debugMode)std::cout<<"doJetID="<<doJetID<<std::endl;
   
   std::string doJetID;
-  if(didJetID=="0") doJetID=didJetID;
-  else doJetID="1";
+  doJetID="0";
+  //if(didJetID=="0") doJetID="0";
+  //else doJetID="1";
   
   std::string jobType="_MCJEC";
   if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;

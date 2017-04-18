@@ -5,19 +5,21 @@
 
 #################################
 
-# in /export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/
-
 # DATA
-# 2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta0to24/
-# 2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta24to27/
-# 2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta27to30/
-# 2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta32to47/
+# 4.17.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta0to10/
+# 4.17.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta10to20/
+# 4.17.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta20to30/
+# 4.17.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta32to47/
 
 # MC
-# 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta0to24/
-# 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta24to27/
-# 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta27to30/
-# 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta32to47/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta0to10/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta10to20/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta20to30/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta32to47/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_Official_ak4PFJets_04-18-17_jetPlots_eta0to10/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_Official_ak4PFJets_04-18-17_jetPlots_eta10to20/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_Official_ak4PFJets_04-18-17_jetPlots_eta20to30/
+# 4.17.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_Official_ak4PFJets_04-18-17_jetPlots_eta32to47/
 
 
 echo ""
@@ -37,43 +39,32 @@ sleep 2s
 
 echo ""
 echo ""
+echo "Running eta0to10..."
 echo ""
 echo ""
-echo "Running eta0to24..."
-./printPlots_jetPlots_combine.exe  2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta0to24/ 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta0to24/ eta0to24
+./printPlots_jetPlots_combine.exe   ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta0to10/ ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta0to10/   eta0to10_semiOffPy8_ppMC
 sleep 1s
 
-
-
-
-
-
-
 echo ""
 echo ""
+echo "Running eta10to20..."
 echo ""
 echo ""
-echo "Running eta24to27..."
-./printPlots_jetPlots_combine.exe  2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta24to27/ 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta24to27/ eta24to27
+./printPlots_jetPlots_combine.exe   ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta10to20/ ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta10to20/   eta10to20_semiOffPy8_ppMC
 sleep 1s
 
-
-
-
 echo ""
 echo ""
+echo "Running eta20to30..."
 echo ""
 echo ""
-echo "Running eta27to30..."
-./printPlots_jetPlots_combine.exe  2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta27to30/ 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta27to30/ eta27to30
+./printPlots_jetPlots_combine.exe   ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta20to30/ ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta20to30/   eta20to30_semiOffPy8_ppMC
 sleep 1s
 
-
-
-echo ""
-echo ""
 echo ""
 echo ""
 echo "Running eta32to47..."
-./printPlots_jetPlots_combine.exe  2.20.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-20-17_jetPlots_eta32to47/ 2.20.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-17_jetPlots_eta32to47/ eta32to47
+echo ""
+echo ""
+./printPlots_jetPlots_combine.exe   ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta32to47/ ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-18-17_jetPlots_eta32to47/   eta32to47_semiOffPy8_ppMC
 sleep 1s

@@ -2,7 +2,7 @@
 #include "readForests_jetPlots.h"
 
 // ppMC switches
-const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=true; //most basic-level plots
+const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=false; //most basic-level plots
 const bool fillMCJetSpectraRapHists=true; //other
 //other switches
 const bool fillBasicJetPlotsOnly=false;
@@ -414,8 +414,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
       //if reco jet w/o matched gen jet, skip.
       if( subid_F[jet]!=0 ) continue;
-      if( recpt<jtPtCut   ) continue;           
-      
+      else if( recpt<jtPtCut   ) continue;           
+      else if( genpt<50.       ) continue;
+
       float rawpt  = rawpt_F[jet];      
       //float recy = y_F[jet];
       float recphi = phi_F[jet];

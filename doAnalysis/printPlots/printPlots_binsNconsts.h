@@ -46,8 +46,10 @@ const int N_weight_xsec=sizeof(weight_xsec)/sizeof(double);
 
 
 // momentum bins/boundaries
+//const double pthat[]={ 15, 30, 50, 80, 120, 170, 
+//		       220, 280, 370, 460, 540, 2000 };
 const double pthat[]={ 15, 30, 50, 80, 120, 170, 
-		       220, 280, 370, 460, 540, 2000 };
+		       220, 280, 370, 9999 };
 const int Nbins_pthat=sizeof(pthat)/sizeof(double);
 
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 

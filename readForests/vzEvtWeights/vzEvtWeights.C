@@ -46,16 +46,16 @@ const std::string CMSSW_BASE=
 const std::string SCRATCH_BASE= 
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/";
 
-const std::string readForests_condor_dir=SCRATCH_BASE+"4.07.16_outputCondor/readForests_HIJetRECO_4-07-17/";
+const std::string input_dir=SCRATCH_BASE;//+"4.07.16_outputCondor/readForests_HIJetRECO_4-07-17/";
 //const std::string readForests_condor_dir=CMSSW_BASE+"src/readForests/outputCondor";
 
-const std::string ppData_inCondorDir=readForests_condor_dir+"ppData_HighPtJetTrig_ak4PFJets_04-07-17_jetPlots/";
-//const std::string input_ppData_Filename=ppData_inCondorDir+"HighPtJetTrig_ak4PF-allFiles.root";
-const std::string input_ppData_Filename="HighPtJetTrig_ak4PF-allFiles.root";
+const std::string ppData_inCondorDir=input_dir+"4.07.17_outputCondor/readForests_HIJetRECO_4-07-17/ppData_HighPtJetTrig_ak4PFJets_04-07-17_jetPlots_eta0to24/";
+const std::string input_ppData_Filename=ppData_inCondorDir+"HighPtJetTrig_ak4PF-allFiles.root";
+//const std::string input_ppData_Filename="HighPtJetTrig_ak4PF-allFiles.root";
 
-const std::string ppMC_inCondorDir  =readForests_condor_dir+"ppMC_Py8_CUETP8M1_QCDjetAllPtBins_Official_ak4PFJets_04-07-17_jetPlots/";
-//const std::string input_ppMC_Filename=ppMC_inCondorDir+"Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
-const std::string input_ppMC_Filename="Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
+const std::string ppMC_inCondorDir  =input_dir+"4.14.17_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_Official_ak4PFJets_04-14-17_JERS/";
+const std::string input_ppMC_Filename=ppMC_inCondorDir+"Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
+//const std::string input_ppMC_Filename="Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
 
 int main (int argc, char *argv[]){
   

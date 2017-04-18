@@ -47,8 +47,10 @@
 #include <TH2F.h>
 #include <TF1.h>
 // custom
+
 #include "printPlots_ppMC.h"
 #include "printPlots_ppData.h"
+
 #include "printPlots_binsNconsts.h"
 #include "printPlots_fitsNfuncs.h"
 
@@ -57,9 +59,11 @@ const std::string CMSSW_BASE=
 const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/";
 
-const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
-const std::string inputDir=SCRATCH_BASE+"readForests/";///1.16.17_outputCondor/";
+const std::string inputDir=SCRATCH_BASE+"readForests/4.17.17_outputCondor/";
 //const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
+
+const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
+
 
 //// combos
 //const std::string etaWidth = "20_eta_20";

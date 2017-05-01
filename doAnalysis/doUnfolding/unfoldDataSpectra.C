@@ -5,22 +5,24 @@ const bool doBayes=true;
 const int kIter = 4;//,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
 const bool doSVD=true; //!(doBayes); 
-const int  nKregMax = 9, kRegRange=4, kRegDraw = 3, kRegCenter=21;
+const int  nKregMax = 9, kRegRange=4, kRegDraw = 4, kRegCenter=5;
 
 const bool drawPDFs=true; 
 const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
 const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;
 
 //other settings
-const bool doToyErrs=false;
+const bool doToyErrs=true;
 const bool debugMode=true;
 const bool debugPearson=(false && debugMode) ;
-
+const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
 
 //  the code --------------------------------------------------
-int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inFile_MC_dir , 
+int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir , 
 		       const std::string baseName ,    const bool doJetID=true ){
   
+  inFile_Data_dir=SCRATCH_BASE+inFile_Data_dir;
+  inFile_MC_dir=SCRATCH_BASE+inFile_MC_dir;
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
 
   //figure out what radius/jetcollection we are looking at using the MC filename
@@ -70,25 +72,54 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"<<std::endl;
 
   if(debugMode){
-    std::cout<<"BASE : "<< (CMSSW_BASE) <<std::endl; 
+    //std::cout<<"BASE : "<< (CMSSW_BASE) <<std::endl; 
     std::cout<<"input data dir : "<< (inFile_Data_dir)  <<std::endl; 
     std::cout<<"data file name : "<< (inFile_Data_name)<<std::endl; 
     std::cout<<std::endl<<std::endl;  }
 
-  TFile *fpp_Data = TFile::Open( (CMSSW_BASE+inFile_Data_dir+inFile_Data_name).c_str());
+  //TFile *fpp_Data = TFile::Open( (CMSSW_BASE+inFile_Data_dir+inFile_Data_name).c_str());
+  TFile *fpp_Data = TFile::Open( (inFile_Data_dir+inFile_Data_name).c_str());
 
-  //rec
+  //reco jetpt spectra to unfold
+  std::string histTitle="hJetQA_";
+  if(doJetID)histTitle+="1wJetID_jtpt";
+  else histTitle+="0wJetID_jtpt";
   TH1F *hrec, *hrec_anabin;
-  hrec = (TH1F*)fpp_Data->Get( "hJetQA_1wJetID_jtpt" );
-  //hrec->Scale(1/integratedLuminosity);
+  hrec = (TH1F*)fpp_Data->Get( histTitle.c_str() );
   hrec->Print("base");
 
-  hrec_anabin = (TH1F*)hrec->Clone( "hpp_anaBin_hJetQA_1wJetID_jtpt" );
-  hrec_anabin = (TH1F*)hrec_anabin->Rebin(10);
-  //hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, "hpp_anaBin_hJetQA_1wJetID_jtpt" , ptbins);
-  //divideBinWidth(hrec_anabin);
-  hrec_anabin->Scale(1/integratedLuminosity);
-  hrec_anabin->Scale(1./10.);
+  std::string newHistTitle="hpp_anaBin_"+histTitle;
+  hrec_anabin = (TH1F*)hrec->Clone( newHistTitle.c_str() );
+
+  //std::cout<<std::endl<<"rebinning; i'll likely crash!!"<<std::endl<<std::endl;  
+  //rebin/scaling and binwidth
+  //hrec_anabin = (TH1F*)hrec_anabin->Rebin(10);
+  //hrec_anabin->Scale(1./10.);
+  //hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, newHistTitle.c_str() , ptbins);
+
+  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt, newHistTitle.c_str() , boundaries_pt);
+  hrec_anabin->Print("base");    
+
+  divideBinWidth(hrec_anabin);
+  hrec_anabin->Print("base");    
+
+  //assert(false);
+
+  //intlumi efficiency/scaling
+  TH1F *h_NEvents_vzCut   = (TH1F*)fpp_Data->Get("NEvents_vzCut");
+  TH1F *h_NEvents         = (TH1F*)fpp_Data->Get("NEvents");
+  long double effIntgrtdLumi_vz=integratedLuminosity, LumiEff_vz=1.;
+  LumiEff_vz = h_NEvents_vzCut->GetEntries()/h_NEvents->GetEntries();
+  effIntgrtdLumi_vz*=LumiEff_vz;
+  std::cout<<std::endl<<"integrated luminosity of jet80+LowerJets datasets: ";
+  std::cout<< std::endl << integratedLuminosity << std::endl;
+  std::cout<<"luminosity efficiency: " << std::endl << LumiEff_vz << std::endl;
+  std::cout<<"effective integrated luminosity: " << std::endl ;
+  std::cout<< effIntgrtdLumi_vz << std::endl<< std::endl;
+
+  //hrec_anabin = (TH1F*)hrec_anabin->Rebin(10);
+  //hrec_anabin->Scale(1./10.);
+  hrec_anabin->Scale(1/effIntgrtdLumi_vz);
   hrec_anabin->Print("base");    
   
 
@@ -99,29 +130,45 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
     std::cout<<"input MC dir : "<< (inFile_MC_dir)  <<std::endl; 
     std::cout<<"MC file name : "<< (inFile_MC_name)<<std::endl; 
     std::cout<<std::endl<<std::endl;  }
-  TFile *fpp_MC = TFile::Open( (CMSSW_BASE+inFile_MC_dir+inFile_MC_name).c_str());
+  //TFile *fpp_MC = TFile::Open( (CMSSW_BASE+inFile_MC_dir+inFile_MC_name).c_str());
+  TFile *fpp_MC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
 
   //mat, NOT NORMALIZED
+  std::string TH2_title="hpp_matrix"+RandEtaRange;
+  std::string TH2_newTitle="hpp_anaBin_Trans_matrix_HLT"+RandEtaRange;
   TH2F *hmat,*hmat_anabin;
-  hmat = (TH2F*)fpp_MC->Get( ("hpp_matrix_wJetID"+RandEtaRange).c_str() );
+  hmat = (TH2F*)fpp_MC->Get( TH2_title.c_str() );
   hmat->Print("base");
 
-  hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
-  hmat_anabin->Rebin2D(10, 10);
+  std::cout<<std::endl<<"trying to rebin a TH2; brace for impact!!!"<<std::endl<<std::endl;
+
+  //hmat_anabin = (TH2F*)hmat->Clone( TH2_newTitle.c_str() );
+  hmat_anabin=reBinTH2(hmat, TH2_newTitle);
   hmat_anabin->Print("base");    
+
+  //assert(false);
+  //hmat_anabin->Rebin2D(10, 10);
   
   //gen
+  std::string genHistTitle="hpp_gen"+RandEtaRange;
+  std::string newGenHistTitle="hpp_anaBin_gen"+RandEtaRange;//"hpp_anaBin_gen_JetComb"+RandEtaRange;
   TH1F*hgen,*hgen_anabin;
-  hgen= (TH1F*)fpp_MC->Get( ("hpp_gen_wJetID"+RandEtaRange).c_str() );
+  hgen= (TH1F*)fpp_MC->Get( genHistTitle.c_str() );
   hgen->Print("base");
 
-  hgen_anabin = (TH1F*)hgen->Clone( ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str() );
-  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
-  //divideBinWidth(hgen_anabin);
-  hgen_anabin->Scale(1/10.);
-  hgen_anabin->Scale(hrec_anabin->Integral()/hgen_anabin->Integral());
+  hgen_anabin = (TH1F*)hgen->Clone( newGenHistTitle.c_str() );
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt, newGenHistTitle.c_str() , boundaries_pt);
+  hgen_anabin->Print("base");    
+
+  divideBinWidth(hgen_anabin);
   hgen_anabin->Print("base");
+
+  //assert(false);
+  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);
+  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
+  //hgen_anabin->Scale(1/10.);
+  //hgen_anabin->Scale(hrec_anabin->Integral()/hgen_anabin->Integral());
+
 
 
   // output histos -------------------------
@@ -133,7 +180,8 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
 			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
   hgen_resp->Print("base");
-  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", nbins, ptbins);
+  //  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", nbins, ptbins);
+  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", nbins_pt, boundaries_pt);
   hgen_resp_anabin->Sumw2();
   hgen_resp_anabin->Print("base");
   
@@ -144,7 +192,7 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
 		       hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
   hrec_resp->Sumw2();
   hrec_resp->Print("base");
-  hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", nbins, ptbins);
+  hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", nbins_pt, boundaries_pt);//nbins, ptbins);
   hrec_resp_anabin->Sumw2();
   hrec_resp_anabin->Print("base");
   
@@ -175,7 +223,6 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
     hratio->Divide(hgen_anabin);
     hratio->Print("base");
 
-
     std::cout<<std::endl<<"writing bayesian unfolding output to file..."<<std::endl;
     fout->cd();
 
@@ -202,15 +249,80 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
       std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
 
       // temp canvas for printing
-      TCanvas* tempCanvForPdfPrint=new TCanvas("","",800,800);    
-      tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
+      TCanvas* tempCanvForPdfPrint_wLogy=new TCanvas("tempCanv_Logy","",1000,800);    
+      tempCanvForPdfPrint_wLogy->cd();
+      tempCanvForPdfPrint_wLogy->SetLogy(1);
+
+      TCanvas* tempCanvForPdfPrint_wLogz=new TCanvas("tempCanv_Logz","",1200,800);    
+      tempCanvForPdfPrint_wLogz->cd();
+      tempCanvForPdfPrint_wLogz->SetLogz(1);
+      
+      TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv","",1000,800);    
       tempCanvForPdfPrint->cd();
+      tempCanvForPdfPrint->SetLogy(0);
+      tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
+      
+      if(drawPDFs_BayesInputHistos){
+
+	//---------------
+
+	tempCanvForPdfPrint_wLogz->cd();
+
+	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
+	hmat_anabin->SetAxisRange(0.0000000000001,.001,"Z");
+        hmat_anabin->SetTitle("ppMC jet input");
+        hmat_anabin->GetZaxis()->SetLabelSize(0.028);
+
+        hmat_anabin->GetYaxis()->SetLabelSize(0.02);
+        hmat_anabin->GetYaxis()->SetTitleSize(0.03);
+        hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
+
+        hmat_anabin->GetXaxis()->SetLabelSize(0.02);
+        hmat_anabin->GetXaxis()->SetTitleSize(0.03);
+        hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+	hmat_anabin->Draw("COLZ");           
+
+	tempCanvForPdfPrint_wLogz->Print(outPdfFile.c_str());
+
+	//---------------
+
+	tempCanvForPdfPrint_wLogy->cd();
+
+        hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
+        hrec_anabin->SetMarkerColor(kBlue);     
+        hrec_anabin->SetMarkerSize(0.90);     
+        hrec_anabin->SetTitle("input hists and unfolded data");
+        hrec_anabin->Draw();           
+
+        hgen_anabin->SetMarkerStyle(kOpenSquare);
+        hgen_anabin->SetMarkerColor(kGreen+2);
+        hgen_anabin->SetMarkerSize(0.90);     
+	hgen_anabin->Draw("SAME");           
+
+	hunf->SetMarkerStyle(kCircle);
+        hunf->SetMarkerColor(kRed);
+        hunf->SetMarkerSize(0.92);     
+	hunf->Draw("SAME");           
+
+	
+	TLegend* legend = new TLegend( 0.7,0.8,0.9,0.9 );
+	legend->AddEntry(hgen_anabin, "MC gen jet", "p");
+	legend->AddEntry(hrec_anabin, "data reco jet", "p");
+	legend->AddEntry(hunf, "unfolded data", "p");
+	legend->Draw();
+
+	tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
+
+	//---------------
+	
+
+      }
 
       // draw and print unfold/ratio plots
-      tempCanvForPdfPrint->SetLogy(1);
-      hunf->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      //tempCanvForPdfPrint_wLogy->cd();
+      //hunf->Draw();         tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
 
-      tempCanvForPdfPrint->SetLogy(0);
+      tempCanvForPdfPrint->cd();
       hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
       // draw and print response output, all of these plots draw empty though...
@@ -219,30 +331,6 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
       //hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());	      //empty
       //hrec_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty
 
-      if(drawPDFs_BayesInputHistos){
-	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-        hmat->SetTitle("ppMC jet input, genpt v. recopt");
-        hmat->GetYaxis()->SetLabelSize(0.02);
-        hmat->GetYaxis()->SetTitleSize(0.04);
-        hmat->GetXaxis()->SetLabelSize(0.02);
-        hmat->GetXaxis()->SetTitleSize(0.04);
-        tempCanvForPdfPrint->SetLogy(0);
-        hmat->Draw();           tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-        hgen->SetMarkerStyle(24);
-        hgen->SetMarkerColor(kRed);
-        hgen->SetTitle("ppMC genjet input, genpt");
-        tempCanvForPdfPrint->SetLogy(1);
-        hgen->Draw();           tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-	TH1F* hrec_clone=(TH1F*)hrec->Clone("hrec_clone");
-	hrec_clone->SetAxisRange(0.,1000.,"X");
-        hrec_clone->SetMarkerStyle(24);
-        hrec_clone->SetMarkerColor(kRed);
-        hrec_clone->SetTitle("ppData recojet input, recopt");
-        tempCanvForPdfPrint->SetLogy(1);
-        hrec_clone->Draw();           tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      }
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
     }// end draw pdfs
   }  // end doBayes
@@ -320,19 +408,38 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
 
       if(debugMode)std::cout<<"creating TH2 for pearson matrix..."<<std::endl;
       hPearsonSVDPriorMeas[kr] = new TH2D (*pearson);
+      //hPearsonSVDPriorMeas[kr] = reBinPearsonTH2( pearson );
+      
       
       // drawing/visuals
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);
-
-      float ZminNmax=1.0;             int XYmin=1; int XYmax=99;
-      hPearsonSVDPriorMeas[kr]->SetMinimum(-1*ZminNmax);  hPearsonSVDPriorMeas[kr]->SetMaximum(ZminNmax);
+      //cPearsonMatrixIter->cd(kr+1)->SetLogz(1);
+      //int kr_add1=kr+1;
+      //i'm sorry, programming gods
+      //TPad * thePad;
+      //if       (kr<3)   thePad = new TPad( ("pad"+std::to_string(kr)).c_str(), "thepad" , 0.33*kr    , 0.67 , 0.33*(kr+1)     , 1.00 );
+      //else if  (kr<6)   thePad = new TPad( ("pad"+std::to_string(kr)).c_str(), "thepad" , 0.33*(kr%3), 0.34 , 0.33*((kr%3)+1) , 0.67 );
+      //else /*if(kr<9)*/ thePad = new TPad( ("pad"+std::to_string(kr)).c_str(), "thepad" , 0.33*(kr%3), 0.00 , 0.33*((kr%3)+1) , 0.34 );
+      //cPearsonMatrixIter->SetLogz(1);
+      //thePad->SetLogz(1);
+      //thePad->Draw();
+      //thePad->cd();
+      
+      //float ZminNmax=1.0;             //int XYmin=1; int XYmax=99;
+      //int XYmin=1; int XYmax=1000;
+      //hPearsonSVDPriorMeas[kr]->SetMinimum(-1*ZminNmax);  
+      //hPearsonSVDPriorMeas[kr]->SetMaximum(1.0);
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
-      hPearsonSVDPriorMeas[kr]->SetAxisRange(XYmin, XYmax, "X");
-      hPearsonSVDPriorMeas[kr]->SetAxisRange(XYmin, XYmax, "Y");
+      hPearsonSVDPriorMeas[kr]->GetXaxis()->SetTitle("reco bin num");
+      hPearsonSVDPriorMeas[kr]->GetYaxis()->SetTitle("gen bin num");
+      //hPearsonSVDPriorMeas[kr]->SetAxisRange(0, nbins_pt, "X");
+      //hPearsonSVDPriorMeas[kr]->SetAxisRange(0, nbins_pt, "Y");
+      //hPearsonSVDPriorMeas[kr]->SetAxisRange(.0000000001, 1, "Z");
+      hPearsonSVDPriorMeas[kr]->SetAxisRange(-1., 1., "Z");
       hPearsonSVDPriorMeas[kr]->SetName( ("hPearsonSVDPriorMeas"+kRegRandEtaRange).c_str() );
       hPearsonSVDPriorMeas[kr]->SetTitle( ("pearsonMatrix SVDPriorMeas"+kRegRandEtaRange_plotTitle).c_str()  );
-      hPearsonSVDPriorMeas[kr]->Draw("colz");
+      hPearsonSVDPriorMeas[kr]->Draw("COLZ");
 
       if(debugMode)std::cout<<"applying roo_resp to \"truth\" histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
@@ -340,6 +447,9 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
       hFoldedSVDPriorMeas[kr]->SetLineStyle(33);
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
       
+
+
+
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cSpectra canvas..."<<std::endl<<std::endl;
       cSpectra->cd(kr+1);
       cSpectra->cd(kr+1)->SetLogy();
@@ -374,8 +484,8 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
-      hrec_folded_ratio[kr]->SetAxisRange(45, 1000, "X");
-      hrec_folded_ratio[kr]->SetAxisRange(0.5, 1.5, "Y");
+      hrec_folded_ratio[kr]->SetAxisRange(0., 1000., "X");
+      hrec_folded_ratio[kr]->SetAxisRange(0.1, 1.9, "Y");
       hrec_folded_ratio[kr]->Divide(hrec_anabin);
       hrec_folded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Draw();
@@ -398,8 +508,8 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
       //  singular values and d_i vector ---------------------------
       //Note that these do not depend on the regularization.
       //The opposite: they tell you which regularization to use! (ian note: how?)
-      if(kr == 0){      TSVDUnfold *svdUnfold = unf_svd.Impl();
-        if(debugMode) std::cout<<std::endl<<"    !!! kr==0 !!!"<<std::endl<<std::endl;
+      if(kr == kRegDraw){      TSVDUnfold *svdUnfold = unf_svd.Impl();
+        //if(debugMode) std::cout<<std::endl<<"    !!! kr==0 !!!"<<std::endl<<std::endl;
 
         // singular values
         if(debugMode)std::cout << "  getting singular values... " << std::endl;
@@ -414,8 +524,8 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
         hSVal->SetXTitle(" singular values ");
         hSVal->SetAxisRange(0,35,"X");
         hSVal->DrawCopy();
-        drawText( "5.02 TeV pp, ak4PFJets",0.358173, 0.8459761, 19);
-	drawText( "Data, Prompt-Reco, HighPtJets",0.358173, 0.8159761, 19);
+        drawText( "5.02 TeV pp, ak4PF Jets",0.358173, 0.8459761, 19);
+	drawText( "Prompt-Reco, Jet80+LowerJets",0.358173, 0.8159761, 19);
 	drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
 	drawText( ("kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);
 
@@ -436,7 +546,7 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
 	//drawText( "ppData, Prompt Reco HighPtJets",0.358173, 0.8159761, 19);
 	//drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
 	//drawText( ("kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);
-	  const std:: string MCdesc= "QCD Dijets, PY8 Tune CUETP8M1"; 
+	const std:: string MCdesc= "QCD Dijets, PY8 Tune CUETP8M1"; 
         if(debugMode)std::cout<<std::endl<<"done with kr==0 specifics"<<std::endl<<std::endl;
       }
 
@@ -474,22 +584,22 @@ int unfoldDataSpectra( const std::string inFile_Data_dir , const std::string inF
       //  cRatio Check --------------------------------------------------
       cRatioCheck->cd();
 
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(0.1, 1.9, "Y");
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(0., 1000., "X");
       hrec_folded_ratio[kRegDraw]->SetTitle("(Un)Fold/Meas");
       hrec_folded_ratio[kRegDraw]->Draw();
 
-      TLegend * leg2 = new TLegend(0.1, 0.1, 0.30, 0.20, NULL,"NBNDC");
-      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfold/Meas","pl");
-      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Fold/Meas","pl");
+      TLegend * leg2 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
+      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded Data/Data","pl");
+      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"reFolded Data/Data","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
-      leg2->SetTextSize(0.03);
+      leg2->SetTextSize(0.02);
       leg2->Draw();
 
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
-      drawText( "5.02 TeV pp, ak4PFJets",                               0.13, 0.46, 22);
-      drawText( "Data, Prompt-Reco HighPtJets",                  0.13, 0.43, 22);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.13, 0.40, 22);
+      drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+      drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
 
       cRatioCheck->Print(outPdfFile.c_str());
       cRatioCheck->Print(close_outPdfFile.c_str());

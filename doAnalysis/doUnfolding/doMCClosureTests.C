@@ -20,10 +20,6 @@ const bool drawPDFs_BayesInputHistos= true&&drawPDFs;
 const bool drawPDFs_SVDInputHistos  = true&&drawPDFs;
 
 // I/O
-const std::string baseName="doMCClosureTests_defOut"; 
-const std::string outRootFile=baseName+".root";
-const std::string outBayesPdfFile=baseName+"_BayesianUnfoldingPlots.pdf";
-const std::string outSVDPdfFile=baseName+"_SVDUnfoldingPlots"; // see drawPDFs for rest
 
 // debug settings, other useful things, etc
 const bool defDebugMode=false; 
@@ -35,12 +31,17 @@ const std::string RandEtaRange=Rstring+"_20_eta_20";
 const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
 const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
 
-const std:: string MCdesc= "MC, QCD PY8 Tune CUETP8M1"; 
-
 
 //  the code --------------------------------------------------
-int doMCClosureTests( const bool debugMode=defDebugMode){
+int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , const bool debugMode=defDebugMode ) {
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
+
+  //inFile_MC_dir=SCRATCH_BASE+inFile_MC_dir;
+  std::string inFile_MC_name=SCRATCH_BASE+inFile_MC_dir+"/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
+  //std::string baseName="doMCClosureTests_defOut"; 
+  std::string outRootFile=baseName+".root";
+  std::string outBayesPdfFile=baseName+"_BayesianUnfoldingPlots.pdf";
+  std::string outSVDPdfFile=baseName+"_SVDUnfoldingPlots"; // see drawPDFs for rest
 
   // set error handing, stat info, other settings  // fix me
   RooUnfold::ErrorTreatment errorTreatment;
@@ -58,9 +59,11 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
   
   //  ppMC input histos --------------------------------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
-  if(debugMode)std::cout<<": "<<inFile_MC_name; 
-  std::cout<<std::endl<<std::endl;
-  TFile *fpp_MC = TFile::Open( inFile_MC.c_str() );
+  if(debugMode)std::cout<<"BASE: "<<      SCRATCH_BASE << std::endl;
+  if(debugMode)std::cout<<"condorDir: "<< inFile_MC_dir << std::endl;
+  if(debugMode)std::cout<<"fileName "<<   inFile_MC_name << std::endl << std::endl;
+  //std::cout<<std::endl<<std::endl;
+  TFile *fpp_MC = TFile::Open( inFile_MC_name.c_str() );
 
   //mat
   TH2F *hmat,*hmat_anabin;
@@ -619,14 +622,15 @@ int doMCClosureTests( const bool debugMode=defDebugMode){
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){
   int rStatus = -1;
-  if( argc!=1 && argc!=2 ) {//no input arguments, error
+
+  if( argc!=1 && argc!=4 ) {//no input arguments, error
     std::cout<<"do ./doMCClosureTests.exe <debugMode,def0> to run"<<std::endl;
     return rStatus;
   }
   
   rStatus=1;//1 until a function returns 0 (normal exit by my convention)
-  if(argc==1)   rStatus=doMCClosureTests();
-  if(argc==2)   rStatus=doMCClosureTests( (const bool) atoi(argv[1]) ); 
+  //if(argc==1)   rStatus=doMCClosureTests();
+  if(argc==4)   rStatus=doMCClosureTests( (std::string) argv[1], (const std::string) argv[2], (const bool) atoi(argv[3]) ); 
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;
 }

@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <cassert>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -77,8 +78,11 @@
 const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
-const std::string unfoldSpectra_outdir="output/";
+  //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
+  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/4.17.17_outputCondor/";
+//const std::string unfoldSpectra_outdir="output/";
+const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra";
+const std::string doMCClosureTests_outdir="output/doMCClosureTests";
 
 
 //useful strings, numbers
@@ -153,7 +157,7 @@ const Int_t emstyle[6] = {24,25,26,27,30,28};
 //-----------------------------------------------------------------------------------------------------------------------
 TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false) {
 
-  int startRowColInt=0, skipRowColInt=10;   
+  int startRowColInt=0, skipRowColInt=1;   
   int NanCount=0, gt1Count=0, EntryCount=0;
   int nrows = covmat->GetNrows(), ncols = covmat->GetNcols();
 
@@ -169,24 +173,25 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
       bool notNan=true;
       if(pearson!=pearson){ 	pearson=-10.;
 	if(debugPearson&&(row%skipRowColInt==0||col%skipRowColInt==0)) { 
-	  std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
-	  std::cout<<"NaN!, pearson=-10."<<std::endl; 	}
-	NanCount++;	notNan=false;      }
-
+	  //std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;
+	  std::cout<<"NaN! pearson("<<row<<","<<col<<")=-10."<<std::endl; 	}
+	NanCount++;	notNan=false;    gt1Count++;  }
+      
       // assign the value to the TMatrix
       (*pearsonCoefs)(row,col) = pearson;            
 
       // debug
-      if(debugPearson&&abs(pearson)>1.) {
+      
+      if(notNan&&debugPearson&&abs(pearson)>1.) {
 	std::cout<<"warning, abs(pearson)="<<abs(pearson)<<std::endl; 
-	gt1Count++;      }
+	gt1Count++;      } 
       if( debugPearson&&(row%skipRowColInt==0&&col%skipRowColInt==0&&notNan) ) {
-	std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;	
-	std::cout<<"covmat(row,row)="<< covmatElement_rowrow<<std::endl;       
-	std::cout<<"covmat(col,col)="<< covmatElement_colcol<<std::endl;       
-	std::cout<<"covmat(row,col)="<< covmatElement_rowcol<<std::endl;       
-	std::cout<<"pearson="<<pearson <<std::endl;       
-	std::cout<<"pearsonCoefs(row,col)="<<( TMatrixD (*pearsonCoefs) )(row,col) <<std::endl;       }
+	//std::cout<<"for (row,col)= "<<row <<" , "<<col <<std::endl;	
+	//std::cout<<"covmat(row,row)="<< covmatElement_rowrow<<std::endl;       
+	//std::cout<<"covmat(col,col)="<< covmatElement_colcol<<std::endl;       
+	//std::cout<<"covmat(row,col)="<< covmatElement_rowcol<<std::endl;       
+	//std::cout<<"pearson="<<pearson <<std::endl;       
+	std::cout<<"pearsonCoefs("<<row<<","<<col<<")="<<( TMatrixD (*pearsonCoefs) )(row,col) <<std::endl;       }
       EntryCount++;      
     } // end col loop
   } // end row loop
@@ -196,6 +201,42 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
   if(debugPearson)std::cout<<"Nan Entries="<<NanCount<<std::endl;  
   return pearsonCoefs;
 }
+
+
+TH2F* reBinPearsonTH2(TMatrixD* pearson){
+  bool debugPearson=false;
+  const double* the_ptBins=boundaries_pt;//ptbins
+  const int numbins=nbins_pt;//nbins
+
+  TH2F *reBinnedTH2 = new TH2F(  "pearsonCustomBins" , "pearsonMatrix custom bins"   , numbins,the_ptBins,numbins,the_ptBins);
+  std::cout<<std::endl<<"in reBinPearsonTH2 function..."<<std::endl;  
+  reBinnedTH2->Print("base");
+  
+  for (int j=1; j<=numbins;j++) {
+    for (int i=1; i<=numbins;i++) {
+
+      double pearson_i_j=(*pearson)(i-1,j-1);
+      
+      if(fabs(pearson_i_j) > 1.0) {
+	if(debugPearson)std::cout <<std::endl<<"WARNING:: pearson["<<i-1<<"]["<<j-1<<"]="<<pearson_i_j<<std::endl<<std::endl;
+	//	pearson_i_j=10.;
+	//std::cout<< "pearson_i_j=10"<<std::endl
+	continue; }
+      else {
+	if(debugPearson)std::cout <<"pearson["<<i-1<<"]["<<j-1<<"]="<<pearson_i_j<<std::endl;	}
+
+      reBinnedTH2->Fill( i, j, fabs( (float) pearson_i_j ) );
+    }
+  }
+
+  std::cout<<std::endl<<"done rebinning pearson matrix..."<<std::endl;
+  reBinnedTH2->Print("base");
+
+
+  std::cout<<std::endl<<"exiting reBinPearsonTH2 function..."<<std::endl;  
+  return reBinnedTH2;
+}
+
 
 
 // PrintMatrix
@@ -272,7 +313,6 @@ void divideBinWidth(TH1 *h){
   h->GetYaxis()->CenterTitle();
 }
 
-
 void drawText(const char *text, float xp, float yp, int size){
   TLatex *tex = new TLatex(xp,yp,text);
   tex->SetTextFont(63);
@@ -283,3 +323,57 @@ void drawText(const char *text, float xp, float yp, int size){
   tex->SetNDC();
   tex->Draw();
 }
+
+void divideBinWidth_TH2(TH2F *h){
+  
+  std::cout<<" in divideBinWidth_TH2"<<std::endl;
+
+  h->Sumw2();
+
+  for (int i=0;i<=h->GetNbinsX();i++)    {    
+    for (int j=0;j<=h->GetNbinsY();j++)    {
+      
+      Float_t xWidth=h->GetXaxis()->GetBinWidth(i);
+      Float_t yWidth=h->GetYaxis()->GetBinWidth(j);
+
+      Float_t val = (h->GetBinContent(i,j))/(xWidth*yWidth);
+      Float_t valErr = (h->GetBinError(i,j))/(xWidth*yWidth);
+
+      h->SetBinContent(i,j,val);
+      h->SetBinError(i,j,valErr);
+    }}
+
+  std::cout<<" about to exit divideBinWidth_TH2 function"<<std::endl;
+  return;
+}
+
+
+
+TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title){
+  
+  const double* the_ptBins=boundaries_pt;//ptbins
+  const int numbins=nbins_pt;//nbins
+
+  TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(),numbins,the_ptBins,numbins,the_ptBins);
+  std::cout<<std::endl<<"in reBinTH2 function..."<<std::endl;  
+  reBinnedTH2->Print("base");
+  
+  TAxis *xaxis = inputTH2->GetXaxis();
+  TAxis *yaxis = inputTH2->GetYaxis();
+  for (int j=1; j<=yaxis->GetNbins();j++) {
+    for (int i=1; i<=xaxis->GetNbins();i++) {
+      reBinnedTH2->Fill( xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),
+			 inputTH2->GetBinContent(i,j) );
+    }
+  }
+  std::cout<<std::endl<<"calling divideBinWidth_TH2..."<<std::endl;
+  reBinnedTH2->Print("base");
+
+  divideBinWidth_TH2(reBinnedTH2);
+
+  std::cout<<"exiting reBinTH2..."<<std::endl;
+  return reBinnedTH2;
+}
+
+
+

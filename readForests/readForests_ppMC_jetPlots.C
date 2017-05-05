@@ -2,14 +2,18 @@
 #include "readForests_jetPlots.h"
 
 // ppMC switches
-const bool fillMCEvtQAHists=true, fillMCJetQAHists=true, fillMCJetIDHists=false; //most basic-level plots
-const bool fillMCJetSpectraRapHists=true; //other
-//other switches
+const bool fillMCEvtQAHists=true;
+const bool fillMCJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;
 const bool fillgenJetQA=true&&fillMCJetQAHists;
-const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  
 
-const bool tightJetID=false;
+const bool fillMCJetIDHists=true, tightJetID=false;
+
+const bool fillMCJetSpectraRapHists=false; //other
+const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
+
+
+
 
 //// readForests_ppMC_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -164,7 +168,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
         else if(var[j]=="dphi")
           hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 50,0,+4);
         else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt")
-          hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 500,0,500);
+          hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 1000,0,1000);
 
         //consituent + xj and Aj binnings
         else
@@ -197,7 +201,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	stream1.precision(1); stream1 << std::fixed << rapbins[j];
 	stream2.precision(1); stream2 << std::fixed << rapbins[j+1];
 	std::string h_Desc="JetPt Spectra for "+stream1.str()+"<abs(y)<"+ stream2.str();	
-	hJetSpectraRap[k][j]=new TH1F(h_Title.c_str(),h_Desc.c_str(), 2000,0,2000);  
+	hJetSpectraRap[k][j]=new TH1F(h_Title.c_str(),h_Desc.c_str(), 1000,0,1000);  
 	
 	if(fillgenJetRapHists){
 	  hMCJetQA_rapBins_genpt[k][j]     = new TH1F ( Form("hJetSpectraRap_%dwJetID_bin%d_genpt",k,j), "genpt", 1000,0,1000);
@@ -413,9 +417,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       float geneta = refeta_F[jet];
       
       //if reco jet w/o matched gen jet, skip.
-      if( subid_F[jet]!=0 ) continue;
-      else if( recpt<jtPtCut   ) continue;           
-      else if( genpt<50.       ) continue;
+      if( subid_F[jet] != 0 ) continue;
+      else if( recpt < jtPtCut   ) continue;           
+      else if( genpt < jtPtCut   ) continue;
 
       float rawpt  = rawpt_F[jet];      
       //float recy = y_F[jet];
@@ -431,12 +435,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	{
           if (absreceta<=2.4)
             {
-	      if( neSum_F[jet]/rawpt    < 1.00 &&
-                  phSum_F[jet]/rawpt    < 1.00 &&
+	      if( neSum_F[jet]/rawpt    < 0.99 &&
+                  phSum_F[jet]/rawpt    < 0.99 &&
                   chSum_F[jet]/rawpt    > 0.00 &&
-                  eSum_F[jet]/rawpt       < 1.00 &&
+                  eSum_F[jet]/rawpt     < 0.99 &&
                   chMult > 0  &&
-                  numConst > 0          ) passesJetID=true;
+                  numConst > 1          ) passesJetID=true;
             }
           else if ( absreceta<=2.7 && absreceta>2.4 )
             {

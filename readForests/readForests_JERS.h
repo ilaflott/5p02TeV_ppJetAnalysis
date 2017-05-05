@@ -17,16 +17,18 @@ const int minArgs=1+7;//jtetalo/hi optional, default is 0to4.7
 const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
 const std::string defMCOutputName="readForests_ppMC_JERS.root";
 
-int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile=0, int endfile=5,
+int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile=0, int endfile=20,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,
 			   float jtEtaCutLo=0., float jtEtaCutHi=4.7      );
 
 //const int readForestsArgCount=7+minArgs;
-const float jtGenPtCut=50.;
-const float jtPtCut=60.;
+const float jtPtCut=56.;
+const float jtGenPtCut=jtPtCut;//56.;
 
+const int genptBin1Low=56, genptBin1High=64;	 
+const int genptBin2Low=196, genptBin2High=220;
 
 
 // Apr 29th 2016

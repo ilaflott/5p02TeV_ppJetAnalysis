@@ -2,12 +2,13 @@
 #include "readForests_jetPlots.h"
 
 // ppData switches
-const bool fillDataEvtQAHists=true, fillDataJetQAHists=true, fillDataJetIDHists=false; //most basic-level plots
-const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetSpectraRapHists=true; //other
+const bool fillDataEvtQAHists=true;
+const bool fillDataJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots
-const bool tightJetID=false;
+const bool fillDataJetTrigQAHists=true; //data-specific
 const bool doHLTInEffCheck=false;
+const bool fillDataJetIDHists=true, tightJetID=false;
+const bool fillDataJetSpectraRapHists=false; //other
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -158,7 +159,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	else if(var[j]=="dphi") 
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 50,0,+4);
 	else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt") 
-	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 500,0,500);
+	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 1000,0,1000);
 
 	//consituent + xj and Aj binnings
 	else 
@@ -178,7 +179,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	stream1.precision(1); stream1 << std::fixed << rapbins[j];
 	stream2.precision(1); stream2 << std::fixed << rapbins[j+1];
 	h_Desc="JetPt Spectra for "+stream1.str()+"<abs(y)<"+ stream2.str();	
-	hJetSpectraRap[k][j]=new TH1F(h_Title.c_str(),h_Desc.c_str(), 2000,0,2000);  
+	hJetSpectraRap[k][j]=new TH1F(h_Title.c_str(),h_Desc.c_str(), 1000,0,1000);  
       } }
 
   // trigger (also jet) level
@@ -195,11 +196,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   if(fillDataJetTrigQAHists){
 
     if(doHLTInEffCheck) {
-      hpp_HLT40InEff  = new TH1F( "isHLT40_inEff"  , "isHLT40  inEff Check", 200, 0,2000 ); 
-      hpp_HLT60InEff  = new TH1F( "isHLT60_inEff"  , "isHLT60  inEff Check", 200, 0,2000 ); 
-      hpp_HLT80InEff  = new TH1F( "isHLT80_inEff"  , "isHLT80  inEff Check", 200, 0,2000 ); 
-      hpp_HLT100InEff = new TH1F( "isHLT100_inEff" , "isHLT100 inEff Check", 200, 0,2000 );       
-      hpp_HLTAllInEff = new TH1F( "isHLTAll_inEff" , "isHLTAll inEff Check", 200, 0,2000 );           }
+      hpp_HLT40InEff  = new TH1F( "isHLT40_inEff"  , "isHLT40  inEff Check", 1000, 0,1000 ); 
+      hpp_HLT60InEff  = new TH1F( "isHLT60_inEff"  , "isHLT60  inEff Check", 1000, 0,1000 ); 
+      hpp_HLT80InEff  = new TH1F( "isHLT80_inEff"  , "isHLT80  inEff Check", 1000, 0,1000 ); 
+      hpp_HLT100InEff = new TH1F( "isHLT100_inEff" , "isHLT100 inEff Check", 1000, 0,1000 );       
+      hpp_HLTAllInEff = new TH1F( "isHLTAll_inEff" , "isHLTAll inEff Check", 1000, 0,1000 );           }
         
     std::string hJetTrigQATitleArray[]={ "hpp_HLT40", "hpp_HLT60",  "hpp_HLT80", "hpp_HLT100", "hpp_HLTComb","hpp_TrgCombTest" };
     std::string hJetTrigQADescArray[]={ "HLT40Jet","HLT60Jet",  "HLT80Jet", "HLT100Jet", "HLTCombo","HLTAltComb" };
@@ -208,22 +209,26 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     for(int j=0;j<2;j++){      
 
       if(!fillDataJetIDHists && j==1) continue;    
-      if(debugMode&&false) std::cout<<"j=="<<j<<std::endl;
+      if(debugMode&&true) std::cout<<"j=="<<j<<std::endl;
 
       for(int k=0; k<nJetTrigQATitles; k++){
 
-	if(debugMode&&false) std::cout<<"k=="<<k<<std::endl;	
+	if(debugMode&&true) std::cout<<"k=="<<k<<std::endl;	
+
 	std::string hTitle=hJetTrigQATitleArray[k];
+	std::string hDesc=hJetTrigQADescArray[k];
 	if(j==1)hTitle+="_wJetID";
+	if(j==1)hDesc+=" w/ JetID";
 	hTitle+="_R"+std::to_string(radius)+"_"+etaWidth;
-	if(debugMode&&false)std::cout<<"hTitle="<<hTitle<<std::endl;
+	if(debugMode&&true)std::cout<<"hTitle="<<hTitle<<std::endl;
+	if(debugMode&&true)std::cout<<"hDesc="<<hDesc<<std::endl;
 	
-	if     (hJetTrigQATitleArray[k]=="hpp_HLT40")  hpp_TrgObj40[j]   = new TH1F(hTitle.c_str(), (hJetTrigQADescArray[j]).c_str(), 2000,0,2000);
-	else if(hJetTrigQATitleArray[k]=="hpp_HLT60")  hpp_TrgObj60[j]   = new TH1F(hTitle.c_str(), (hJetTrigQADescArray[j]).c_str(), 2000,0,2000);
-	else if(hJetTrigQATitleArray[k]=="hpp_HLT80")  hpp_TrgObj80[j]   = new TH1F(hTitle.c_str(), (hJetTrigQADescArray[j]).c_str(), 2000,0,2000);
-	else if(hJetTrigQATitleArray[k]=="hpp_HLT100") hpp_TrgObj100[j]  = new TH1F(hTitle.c_str(), (hJetTrigQADescArray[j]).c_str(), 2000,0,2000);	
-	else if(hJetTrigQATitleArray[k]=="hpp_HLTComb")     hpp_TrgObjComb[j] = new TH1F(hTitle.c_str(), (hJetTrigQADescArray[j]).c_str(), 2000,0,2000);
-	else if(hJetTrigQATitleArray[k]=="hpp_TrgCombTest") hpp_CombJetpT[j]  = new TH1F(hTitle.c_str(), (hJetTrigQADescArray[j]).c_str(), 2000,0,2000);       
+	if     (hJetTrigQATitleArray[k]=="hpp_HLT40"  )  hpp_TrgObj40[j]     = new TH1F( hTitle.c_str(), (hDesc).c_str(), 1000,0,1000);
+	else if(hJetTrigQATitleArray[k]=="hpp_HLT60"  )  hpp_TrgObj60[j]     = new TH1F( hTitle.c_str(), (hDesc).c_str(), 1000,0,1000);
+	else if(hJetTrigQATitleArray[k]=="hpp_HLT80"  )  hpp_TrgObj80[j]     = new TH1F( hTitle.c_str(), (hDesc).c_str(), 1000,0,1000);
+	else if(hJetTrigQATitleArray[k]=="hpp_HLT100" )  hpp_TrgObj100[j]    = new TH1F( hTitle.c_str(), (hDesc).c_str(), 1000,0,1000);	
+	else if(hJetTrigQATitleArray[k]=="hpp_HLTComb")  hpp_TrgObjComb[j]   = new TH1F( hTitle.c_str(), (hDesc).c_str(), 1000,0,1000);
+	else if(hJetTrigQATitleArray[k]=="hpp_TrgCombTest") hpp_CombJetpT[j] = new TH1F( hTitle.c_str(), (hDesc).c_str(), 1000,0,1000);       
 
       } } }
 
@@ -449,8 +454,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if( pHBHENoiseFilter_I==0      || 
         pBeamScrapingFilter_I==0   || 
         pprimaryvertexFilter_I==0  ) continue;
-//||
-	//	puvertexFilter_I==0  	) continue;    
+//	//	puvertexFilter_I==0  	) continue;    
 
     h_NEvents_skimCut->Fill(1);
     
@@ -601,12 +605,12 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	{
 	  if (absreceta<=2.4) 
 	    { 
-	      if( neSum_F[jet]/rawpt    < 1.00 &&
-		  phSum_F[jet]/rawpt    < 1.00 &&
+	      if( neSum_F[jet]/rawpt    < 0.99 &&
+		  phSum_F[jet]/rawpt    < 0.99 &&
 		  chSum_F[jet]/rawpt    > 0.00 && 
-		  eSum_F[jet]/rawpt       < 1.00 &&
+		  eSum_F[jet]/rawpt     < 0.99 &&
 		  chMult > 0  &&
-		  numConst > 0          ) passesJetID=true;	      
+		  numConst > 1          ) passesJetID=true;	      
 	    }
 	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
 	    {	  
@@ -884,7 +888,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     if(fillDataJetIDHists){
 
-      if(debugMode&&false){
+      if(debugMode&&true){
 	hpp_TrgObj40[1]->Print("base");
 	hpp_TrgObj60[1]->Print("base");
 	hpp_TrgObj80[1]->Print("base");
@@ -896,9 +900,9 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       hpp_TrgObjComb[1]->Add(hpp_TrgObj60[1] );
       hpp_TrgObjComb[1]->Add(hpp_TrgObj40[1] );
       hpp_TrgObjComb[1]->Scale(1./4.);      
-      if(debugMode&&false)hpp_TrgObjComb[1]->Print("base");          }
+      if(debugMode&&true)hpp_TrgObjComb[1]->Print("base");          }
     
-    if(debugMode&&false){
+    if(debugMode&&true){
       hpp_TrgObj40[0]->Print("base");
       hpp_TrgObj60[0]->Print("base");
       hpp_TrgObj80[0]->Print("base");
@@ -910,7 +914,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hpp_TrgObjComb[0]->Add(hpp_TrgObj60[0] );
     hpp_TrgObjComb[0]->Add(hpp_TrgObj40[0] );
     hpp_TrgObjComb[0]->Scale(1./4.);      
-    if(debugMode&&false)hpp_TrgObjComb[0]->Print("base");      
+    if(debugMode&&true)hpp_TrgObjComb[0]->Print("base");      
     
     if(doHLTInEffCheck){
       hpp_HLTAllInEff->Add(hpp_HLT40InEff );

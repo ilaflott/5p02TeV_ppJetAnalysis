@@ -70,7 +70,7 @@ fi
 
 ## make strings from input 
 outName="${dataType}_${trig}_ak${radius}${jetType}Jets" #echo "outName is ${outName}" #debug
-dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}"
+dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}_${etaCutLo}eta${etaCutHi}"
 logFileDir="${PWD}/outputCondor/${dirName}"
 
 
@@ -80,7 +80,7 @@ while [[ -d "${logFileDir}"  ]]
   do
   AltCounter=$(( $AltCounter + 1 ))
   echo "dir exists!"
-  dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}_${AltCounter}"
+  dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}__${etaCutLo}eta${etaCutHi}_${AltCounter}"
   logFileDir="${PWD}/outputCondor/${dirName}"    
 done
 echo "output in outputCondor/${dirName}"
@@ -176,7 +176,7 @@ EOF
     echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
 #    sleep 1.0s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
-    sleep 0.1s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 0.3s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

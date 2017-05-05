@@ -1,29 +1,51 @@
 #!/bin/bash
 
-#### unfoldDataSpectra
-#rooUnfoldCompile unfoldDataSpectra.C
-#
-#./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta0to10   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta0to10      HPtJetTrig_Py8_unfoldedData_eta0to10   0
-#./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta10to20  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta10to20     HPtJetTrig_Py8_unfoldedData_eta10to20  0
-#./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta20to30  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta20to30     HPtJetTrig_Py8_unfoldedData_eta20to30  0
-#./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_04-18-17_jetPlots_eta32to47  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta32to47     HPtJetTrig_Py8_unfoldedData_eta32to47  0
+### unfoldDataSpectra
+echo ""
+echo "compiling unfoldDataSpectra"
+echo ""
+rooUnfoldCompile unfoldDataSpectra.C
+
+echo ""
+echo "done compiling. sleep."
+echo ""
+sleep 3s
+
+echo ""
+echo "running unfoldDataSpectra"
+echo ""
+
+./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-04-17_jetPlots_  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_     HPtJetTrig_Py8_unfoldedData_eta0to10   0
+./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-04-17_jetPlots_  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_     HPtJetTrig_Py8_unfoldedData_eta10to20  0
+./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-04-17_jetPlots_  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_     HPtJetTrig_Py8_unfoldedData_eta20to30  0
+./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-04-17_jetPlots_  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_     HPtJetTrig_Py8_unfoldedData_eta32to47  0
+
+echo ""
+echo "done running unfoldDataSpectra. sleep."
+echo ""
+sleep 3s
 
 
-### closure 
+### doMCClosureTests
 echo ""
 echo "compiling doMCClosureTests"
 echo ""
 rooUnfoldCompile doMCClosureTests.C
 
 echo ""
+echo "done compiling. sleep."
+echo ""
+sleep 3s
+
+
+echo ""
 echo "running do MCClosureTests"
 echo ""
-./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta0to10      Py8_closureTest_eta0to10   0
-#./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta10to20     Py8_closureTest_eta10to20  0
-#./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta20to30     Py8_closureTest_eta20to30  0
-#./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-17-17_JERS_eta32to47     Py8_closureTest_eta32to47  0
-##./doMCClosureTests.exe ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_   pp_MCPy8_closureTests 0
-##./doMCClosureTests.exe ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_   pp_MCPy8_closureTests 1
+
+./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_eta0to10      Py8_closureTest_eta0to10   1
+./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_eta10to20     Py8_closureTest_eta10to20  1
+./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_eta20to30     Py8_closureTest_eta20to30  1
+./doMCClosureTests.exe   ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-04-17_JERS_eta32to47     Py8_closureTest_eta32to47  1
 
 echo ""
 echo "done!"

@@ -81,8 +81,8 @@ const std::string SCRATCH_BASE=
   //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/4.17.17_outputCondor/";
 //const std::string unfoldSpectra_outdir="output/";
-const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra";
-const std::string doMCClosureTests_outdir="output/doMCClosureTests";
+const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
+const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
 
 
 //useful strings, numbers

@@ -9,15 +9,15 @@ const bool doToyErrs=false;
 const int kIter = 4;
 
 // SVD settings 
-const int  nKregMax = 9, kRegRange=4, kRegDraw = 3, kRegCenter=21;
+const int  nKregMax = 9, kRegRange=4, kRegDraw = 4, kRegCenter=9;
 
 // procedural settings
 const bool doBayes=true; 
 const bool doSVD=true; 
 
 const bool drawPDFs=true; 
-const bool drawPDFs_BayesInputHistos= true&&drawPDFs;
-const bool drawPDFs_SVDInputHistos  = true&&drawPDFs;
+const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
+const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;
 
 // I/O
 
@@ -39,9 +39,9 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
   //inFile_MC_dir=SCRATCH_BASE+inFile_MC_dir;
   std::string inFile_MC_name=SCRATCH_BASE+inFile_MC_dir+"/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
   //std::string baseName="doMCClosureTests_defOut"; 
-  std::string outRootFile=baseName+".root";
-  std::string outBayesPdfFile=baseName+"_BayesianUnfoldingPlots.pdf";
-  std::string outSVDPdfFile=baseName+"_SVDUnfoldingPlots"; // see drawPDFs for rest
+  std::string outRootFile    =doMCClosureTests_outdir+baseName+".root";
+  std::string outBayesPdfFile=doMCClosureTests_outdir+baseName+"_BayesianUnfoldingPlots.pdf";
+  std::string outSVDPdfFile  =doMCClosureTests_outdir+baseName+"_SVDUnfoldingPlots"; // see drawPDFs for rest
 
   // set error handing, stat info, other settings  // fix me
   RooUnfold::ErrorTreatment errorTreatment;
@@ -58,54 +58,55 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
   //timer.Start();
   
   //  ppMC input histos --------------------------------------------------
-  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"; 
+  std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"<<std::endl; 
   if(debugMode)std::cout<<"BASE: "<<      SCRATCH_BASE << std::endl;
   if(debugMode)std::cout<<"condorDir: "<< inFile_MC_dir << std::endl;
   if(debugMode)std::cout<<"fileName "<<   inFile_MC_name << std::endl << std::endl;
   //std::cout<<std::endl<<std::endl;
   TFile *fpp_MC = TFile::Open( inFile_MC_name.c_str() );
 
-  //mat
+  //mat, should be filled with only 1/2 MC sample, for the response matrix
   TH2F *hmat,*hmat_anabin;
   hmat = (TH2F*)fpp_MC->Get( ("hpp_mcclosure_matrix"+RandEtaRange).c_str() );
   hmat->Print("base");
-  hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
-  hmat_anabin->Rebin2D(10, 10);
+
+  //hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
+  hmat_anabin=reBinTH2(hmat, "hpp_anaBin_Trans_matrix_HLT"+RandEtaRange);//note, reBinTH2 calls divideBinWidth_TH2
   hmat_anabin->Print("base");    
   
-  //gen
+  //gen dist used to make response matrix
   TH1F*hgen,*hgen_anabin;
   hgen= (TH1F*)fpp_MC->Get(("hpp_mcclosure_gen"+RandEtaRange).c_str());
   hgen->Print("base");
+
   hgen_anabin = (TH1F*)hgen->Clone( ("hpp_anaBin_mcclosure_gen_JetComb"+RandEtaRange).c_str() );
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_mcclosure_gen_JetComb"+RandEtaRange).c_str(), ptbins);
-  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt, ("hpp_anaBin_mcclosure_gen_JetComb"+RandEtaRange).c_str(), boundaries_pt);
   divideBinWidth(hgen_anabin);
   hgen_anabin->Print("base");
 
-  //rec
-  TH1F*hrec,*hrec_anabin;
-  hrec = (TH1F*)fpp_MC->Get(( "hpp_mcclosure_data"+RandEtaRange).c_str() );
-  hrec->Print("base");
-  hrec_anabin = (TH1F*)hrec->Clone( ("hpp_anaBin_mcclosure_rec_JetComb"+RandEtaRange).c_str() );
-  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins, ("hpp_anaBin_mcclosure_rec_JetComb"+RandEtaRange).c_str(), ptbins);
-  //hrec_anabin = (TH1F*)hrec_anabin->Rebin(10);
-  divideBinWidth(hrec_anabin);
-  hrec_anabin->Print("base");
-  //if(dotrigcor) doTrigCorr(hrec_anabin, hMC_turnon);
-
-  //rec_check
+  //rec_check, rec dist used to make the response matrix
   TH1F *hrec_check, *hrec_check_anabin;
   hrec_check = (TH1F*)fpp_MC->Get( ("hpp_mcclosure_data_train"+RandEtaRange).c_str() );
   hrec_check->Print("base");
   //if(dotrigcor) doTrigCorr(hrec_check, hMC_turnon);
+
   hrec_check_anabin = (TH1F*)hrec_check->Clone( ("hpp_mcclosure_JetComb_data_train"+RandEtaRange).c_str() );
-  hrec_check_anabin = (TH1F*)hrec_check_anabin->Rebin(nbins, ("hpp_mcclosure_JetComb_data_train"+RandEtaRange).c_str(), ptbins);
-  //hrec_check_anabin = (TH1F*)hrec_check_anabin->Rebin(10);
+  hrec_check_anabin = (TH1F*)hrec_check_anabin->Rebin(nbins_pt, ("hpp_mcclosure_JetComb_data_train"+RandEtaRange).c_str(), boundaries_pt);
   divideBinWidth(hrec_check_anabin);
   hrec_check_anabin->Print("base");
 
   
+  //rec, rec dist from OTHER 1/2 of MC sample to test the unfolding on.
+  TH1F*hrec,*hrec_anabin;
+  hrec = (TH1F*)fpp_MC->Get(( "hpp_mcclosure_data"+RandEtaRange).c_str() );
+  hrec->Print("base");
+
+  hrec_anabin = (TH1F*)hrec->Clone( ("hpp_anaBin_mcclosure_rec_JetComb"+RandEtaRange).c_str() );
+  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt, ("hpp_anaBin_mcclosure_rec_JetComb"+RandEtaRange).c_str(), boundaries_pt);
+  divideBinWidth(hrec_anabin);
+  hrec_anabin->Print("base");
+  //if(dotrigcor) doTrigCorr(hrec_anabin, hMC_turnon);
+
   //  new histos --------------------------------------------------
   std::cout<<std::endl<<std::endl<<"creating NEW histos..."<<std::endl<<std::endl;
 
@@ -114,7 +115,8 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
 			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
   hgen_resp->Sumw2();
   hgen_resp->Print("base");
-  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str(), "", nbins, ptbins);
+
+  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str(), "", nbins_pt, boundaries_pt);
   hgen_resp_anabin->Sumw2();
   hgen_resp_anabin->Print("base");
   
@@ -123,7 +125,8 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
 		       hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
   hrec_resp->Sumw2();
   hrec_resp->Print("base");
-  hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", nbins, ptbins);
+
+  hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", nbins_pt, boundaries_pt);
   hrec_resp_anabin->Sumw2();
   hrec_resp_anabin->Print("base");
   
@@ -136,16 +139,21 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
   else { std::cout<<std::endl<<std::endl<<std::endl<<"   beginning Bayesian MC Closure Test..."<<std::endl;
 
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldResponse..."<<std::endl;
+    //defines response matrix w/ th2... what's the response TH1s again?
     RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str());
 
     if(debugMode)std::cout<<"calling RooUnfoldBayes and Hreco..."<<std::endl<<std::endl;
+    //use response matrix to unfold hrec_anabin, the OTHER 1/2 of the MC sample, should show fluctuations
     RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
 
+    //change unfolded hrec_anabin into the unfolded histogram
     TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
     hunf->SetName("ppMC_BayesianClosure_UnfoldSpectra");
     hunf->SetTitle("ppMC Closure, Bayesian Unfolded Spectra");    
-    std::cout<<std::endl;     hunf->Print("base");
+    std::cout<<std::endl;     
+    hunf->Print("base");
 
+    //compare unfolded OTHER 1/2 to the gen dist of the first 1/2 of the MC sample. 
     TH1F *hratio = (TH1F*)hunf->Clone( "ppMC_BayesianClosure_UnfoldRatio" );
     hratio->SetTitle( "ppMC Closure, Bayesian Unfolded/Gen" );
     hratio->SetMarkerStyle(24);
@@ -158,7 +166,9 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
     if(debugMode)std::cout<<"calling RooUnfoldBayes and Hreco for MC Closure..."<<std::endl; 
     
     std::cout<<std::endl;    
+    //use response matrix to unfold hrec_check_anabin, the SAME 1/2 of the MC sample, should look too good
     RooUnfoldBayes unf_bayes_check(&roo_resp, hrec_check_anabin, kIter);
+    //change unfolded hrec_check_anabin into the unfolded histogram
     TH1F *hunf_check = (TH1F*)unf_bayes_check.Hreco(errorTreatment);
     hunf_check->SetName("ppMC_BayesianClosureTest_UnfoldSpectra");
     hunf_check->SetTitle("ppMC Closure Test, Bayesian Unfolded Spectra");    
@@ -174,16 +184,12 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
     std::cout<<std::endl<<"writing bayesian unfolding output to file..."<<std::endl;
     fout->cd();
 
-    hunf->SetMarkerStyle(24);    hunf_check->SetMarkerStyle(24); 
-    hunf->SetMarkerColor(kRed);  hunf_check->SetMarkerColor(kBlack);    
-    hunf->Write();    hunf_check->Write();
+    //i dont think these matter for bayes...
+    //hgen_resp->Write();  hgen_resp_anabin->Write();//"response" spectra, input and JER analysis bins
+    //hrec_resp->Write();	 hrec_resp_anabin->Write();
 
-    hgen_resp->Write();  hgen_resp_anabin->Write();
-    hrec_resp->Write();	 hrec_resp_anabin->Write();
-
-    hratio->SetMarkerStyle(24);    hratio_check->SetMarkerStyle(24); 
-    hratio->SetMarkerColor(kRed);  hratio_check->SetMarkerColor(kBlack);    
-    hratio->Write();               hratio_check->Write();
+    hunf->Write();    hunf_check->Write();//unfolded spectra (both halves)
+    hratio->Write();  hratio_check->Write();//unfolded spectra (both halves) div by gen spectra input
 
     std::cout<<"writing input histos to output file for easy access later..."<<std::endl;
     hmat->Write(); hmat_anabin->Write(); 
@@ -202,49 +208,91 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
       TCanvas* tempCanvForPdfPrint=new TCanvas("","",800,800);    
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
       tempCanvForPdfPrint->cd();
+      /////////////// matrix input
 
-      // draw and print unfold/ratio plots
-      tempCanvForPdfPrint->SetLogy(1);
-      hunf->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-      tempCanvForPdfPrint->SetLogy(0);
-      hratio->Draw();       tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      tempCanvForPdfPrint->SetLogz(1);            
+      hmat_anabin->SetAxisRange(0.0000000000001,.001,"Z");
+      hmat_anabin->SetTitle("ppMC jet input matrix");
+      hmat_anabin->GetZaxis()->SetLabelSize(0.028);
       
+      hmat_anabin->GetYaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetYaxis()->SetTitleSize(0.03);
+      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_anabin->GetXaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetXaxis()->SetTitleSize(0.03);
+      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_anabin->Draw("COLZ");         	
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      
+      /////////////// jet spectra input
+      
+      tempCanvForPdfPrint->SetLogz(0);      	
       tempCanvForPdfPrint->SetLogy(1);      
-      hunf_check->Draw();   tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      hgen_anabin->SetMarkerStyle(kOpenCircle);    
+      hgen_anabin->SetMarkerColor(kBlack);  
+      hgen_anabin->SetTitle("ppMC genjet input");
+      hgen_anabin->Draw();   
+      
+      hrec_anabin->SetMarkerStyle(kOpenSquare);    
+      hrec_anabin->SetMarkerColor(kBlack);  
+      hrec_anabin->SetTitle("ppMC recojet input");
+      hrec_anabin->Draw("SAME"); 
+      
+      hrec_check_anabin->SetMarkerStyle(kOpenSquare); 
+      hrec_check_anabin->SetMarkerColor(kRed);    
+      hrec_check_anabin->SetTitle("ppMC recojet test input");         
+      hrec_check_anabin->Draw("SAME");	
+      
+      TLegend* legend = new TLegend( 0.7,0.8,0.9,0.9 );
+      legend->AddEntry(hgen_anabin,       "MC gen jet input", "p");
+      legend->AddEntry(hrec_anabin,       "MC recojet input", "p");
+      legend->AddEntry(hrec_check_anabin, "MC recojet test input", "p");
+      legend->Draw();	
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      
+      /////////////// spectra, unfolded
+
+      tempCanvForPdfPrint->SetLogy(1);
+      hgen_anabin->SetMarkerStyle(kOpenSquare); 
+      hgen_anabin->Draw();   
+
+      hunf->SetMarkerStyle(24);      
+      hunf->SetMarkerColor(kRed);    
+      hunf->Draw("SAME"); 
+
+      hunf_check->SetMarkerStyle(24); 	    
+      hunf_check->SetMarkerColor(kBlack);    
+      hunf_check->Draw("SAME");   
+
+      TLegend* outLegend1 = new TLegend( 0.7,0.8,0.9,0.9 );
+      outLegend1->AddEntry(hgen_anabin, "gen jet input", "p");
+      outLegend1->AddEntry(hunf,        "unf reco jet spectra", "p");
+      outLegend1->AddEntry(hunf_check,  "unf reco jet test spectra", "p");
+      outLegend1->Draw();
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+      /////////////// ratios, unfolded to gen
 
       tempCanvForPdfPrint->SetLogy(0);
-      hratio_check->Draw(); tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
-      if(drawPDFs_BayesInputHistos){
-	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
+      hratio->SetMarkerStyle(24);    
+      hratio->SetMarkerColor(kRed);  
+      hratio->Draw();           
 
-	hmat->SetTitle("ppMC jet input, genpt v. recopt");         
-	hmat->GetYaxis()->SetLabelSize(0.02);
-	hmat->GetYaxis()->SetTitleSize(0.04);
-	hmat->GetXaxis()->SetLabelSize(0.02);
-	hmat->GetXaxis()->SetTitleSize(0.04);
-	tempCanvForPdfPrint->SetLogy(0);      
-	hmat->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      hratio_check->SetMarkerStyle(24); 	      
+      hratio_check->SetMarkerColor(kBlack);          
+      hratio_check->Draw("SAME"); 
 
-	hgen->SetMarkerStyle(24);    
-	hgen->SetMarkerColor(kRed);  
-	hgen->SetTitle("ppMC genjet input");
-	tempCanvForPdfPrint->SetLogy(1);      
-	hgen->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      TLegend* outLegend2 = new TLegend( 0.7,0.8,0.9,0.9 );
+      outLegend2->AddEntry(hratio,       "unf reco jet input", "p");
+      outLegend2->AddEntry(hratio_check, "unf reco jet test input", "p");
+      outLegend2->Draw();
 
-	hrec->SetMarkerStyle(24);    
-	hrec->SetMarkerColor(kRed);  
-	hrec->SetTitle("ppMC recojet input");
-	tempCanvForPdfPrint->SetLogy(1);      
-	hrec->Draw();         	tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
-	hrec_check->SetMarkerStyle(24); 
-	hrec_check->SetMarkerColor(kBlack);    
-	hrec_check->SetTitle("ppMC recojet test input");         
-	tempCanvForPdfPrint->SetLogy(1);      
-	hrec_check->Draw();	tempCanvForPdfPrint->Print(outPdfFile.c_str());
-      }
+      /////////////// close
+      
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
     }// end draw pdfs
   }  // end doBayes
@@ -328,7 +376,7 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
       cPearsonMatrixIter->cd(kr+1);  
       
-      float ZminNmax=1.0;             int XYmin=1; int XYmax=99;
+      float ZminNmax=1.0;             int XYmin=0; int XYmax=38;
       hPearsonSVDPriorMeas[kr]->SetMinimum(-1*ZminNmax);  hPearsonSVDPriorMeas[kr]->SetMaximum(ZminNmax);
       hPearsonSVDPriorMeas[kr]->GetZaxis()->SetLabelSize(0.035);
       hPearsonSVDPriorMeas[kr]->SetAxisRange(XYmin, XYmax, "X");
@@ -522,7 +570,7 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
       
       //hrec_folded_ratio[kRegDraw]->SetTitle(" ");
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.4, 1.2, "Y");
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(45, 1000, "X");     
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(0, 1200, "X");     
       hrec_folded_ratio[kRegDraw]->SetTitle("Ratio plot check"); 
       hrec_folded_ratio[kRegDraw]->Draw();
       
@@ -546,9 +594,9 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
       if(debugMode)std::cout<<std::endl<<"drawing MCClosure plot..."<<std::endl;      
       TCanvas *c1 = new TCanvas("c1","Spectra",1300,1000);  c1->cd();
 
-      TH1F *hDum = new TH1F("MC_Unfold_Closure_genpt","Ratio, (un)folded over Gen",250, 30, 900);      
-      hDum->SetYTitle("Closure");//y-axis
-      hDum->GetYaxis()->SetNdivisions(610); 
+      TH1F *hDum = new TH1F("MC_Unfold_Closure_genpt","MCClosure Ratios",250, 0, 1000);      
+      hDum->SetYTitle("corrected/gen-truth");//y-axis
+      //hDum->GetYaxis()->SetNdivisions(610); 
       hDum->GetYaxis()->SetLabelFont(43);
       hDum->GetYaxis()->SetLabelSize(20);
       hDum->GetYaxis()->SetTitleFont(43);
@@ -563,40 +611,48 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
       hDum->GetXaxis()->SetTitleOffset(2.0);
       hDum->GetXaxis()->SetNoExponent();
       hDum->GetXaxis()->SetMoreLogLabels();
-      hDum->SetAxisRange(0.8,1.2,"Y");
+      hDum->SetAxisRange(0.5,1.5,"Y");
       
       hDum->Draw("hist");
       
-      TLegend *leg0 = new TLegend(0.25, 0.15, 0.60, 0.35, NULL,"NBNDC");
+      TLegend *leg0 = new TLegend(0.6, 0.8, 0.8, 0.9, NULL,"NBNDC");
       leg0->SetTextSize(0.02);
       
       if(doBayes){ std::cout<<"adding Bayesian Closure to plot..."<<std::endl<<std::endl;
 	TH1F* hratio=(TH1F*)fout->Get( "ppMC_BayesianClosure_UnfoldRatio" );
 	//hratio->Print("base");
+	hratio->SetMarkerStyle(kOpenTriangleUp);
+	hratio->SetMarkerSize(1.1);
 	hratio->Draw("psame");
-	leg0->AddEntry(hratio, "OppSide, Bayesian","p");
+	leg0->AddEntry(hratio, "test MC data, Bayes","p");
 	
 	TH1F* hratio_check=(TH1F*)fout->Get( "ppMC_BayesianClosureTest_UnfoldRatio");
 	//hratio_check->Print("base");
+	hratio_check->SetMarkerStyle(kOpenTriangleDown);
+	hratio_check->SetMarkerSize(1.1);
 	hratio_check->Draw("psame");
-	leg0->AddEntry(hratio_check, "SameSide \"check\", Bayesian","p");
+	leg0->AddEntry(hratio_check, "same MC data, Bayesian","p");
       }
 
+      hratio_svd[kRegDraw]->SetMarkerStyle(kOpenSquare);
+      hratio_svd[kRegDraw]->SetMarkerSize(1.1);
       hratio_svd[kRegDraw]->Draw("psame");
-      leg0->AddEntry(hratio_svd[kRegDraw],"OppSide, SVD","p");
+      leg0->AddEntry(hratio_svd[kRegDraw],"test MC data, SVD","p");
 
+      hratio_svd_check[kRegDraw]->SetMarkerStyle(kOpenCircle);
+      hratio_svd_check[kRegDraw]->SetMarkerSize(1.1);
       hratio_svd_check[kRegDraw]->Draw("psame");
-      leg0->AddEntry(hratio_svd_check[kRegDraw],"SameSide \"check\", SVD","p");
+      leg0->AddEntry(hratio_svd_check[kRegDraw],"same MC data, SVD","p");
       
-      TLine *line = new TLine(30,1,1000,1);
+      TLine *line = new TLine(00,1,1000,1);
       line->SetLineStyle(2); 
-      line->SetLineWidth(2);
+      line->SetLineWidth(1);
       line->Draw();
 
       //drawText( "MCClosure Tests", 0.608173, 0.8659761, 22);
-      drawText( "5.02 TeV pp, ak4PFJets", 0.608173, 0.8659761, 22);
-      drawText( MCdesc.c_str(), 0.608173, 0.8359761, 21);
-      drawText( Form("kReg=%d",kReg[kRegDraw])  , 0.608173, 0.8059761, 21);
+      drawText( "5.02 TeV pp, ak4PFJets", .16,.86,21  );// 0.608173, 0.8659761, 22);
+      drawText( MCdesc.c_str(), 0.16, 0.83, 20);
+      drawText( Form("kReg=%d",kReg[kRegDraw])  , 0.16, 0.80, 20);
       leg0->Draw();
 
       c1->Print(outPdfFile.c_str());

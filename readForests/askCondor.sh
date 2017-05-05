@@ -1,12 +1,19 @@
 #!/bin/bash
 
+Nasks=$1
+T=$2
+Ncount=0
 
-secondCount=0
-while [[ $secondCount -lt 3000 ]]
+#secondCount=0
+while [[ $Ncount -lt $Nasks ]]
 do
     condor_q ilaflott
-    sleep 30s
-    secondCount=$(( $secondCount + 5 ))
+    sleep ${T}s
+#    secondCount=$(( $secondCount + 5 ))
+    Ncount=$(( $Ncount + 1 ))
 done
-echo "hour of condor-querying done. "
+#echo "hour of condor-querying done. "
+echo ""
+echo "done asking condor."
+echo ""
 return

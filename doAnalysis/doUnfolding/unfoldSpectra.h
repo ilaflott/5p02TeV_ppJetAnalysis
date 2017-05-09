@@ -79,7 +79,7 @@ const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
   //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/4.17.17_outputCondor/";
+  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.4.17_outputCondor/";
 //const std::string unfoldSpectra_outdir="output/";
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
@@ -90,15 +90,6 @@ const double integratedLuminosity=25.8*pow(10,9);
 const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
 const std::string Datadesc1= "pp 2015 pmptReco, #sqrt{s}=5.02 TeV"; 
 const std::string Datadesc2= "L_{int}=25.8 pb^{-1}"; 
-
-
-
-
-
-
-
-
-
 
 
 
@@ -130,17 +121,18 @@ const std::string Datadesc2= "L_{int}=25.8 pb^{-1}";
 
 //-----------------------------------------------------------------------------------------------------------------------
 const double boundaries_pt[] = {
-3, 4, 5, 7, 9, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84, 97, 114, 133, 153, 
-174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468, 507, 548, 592, 638, 686, 1000};
+  //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 32., 37., 43., 49., 
+  56., 64., 74., 84., 97., 114., 133., 153., 
+  174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468., 507., 548., 592., 638., 686., 1000.};
 const int nbins_pt = sizeof(boundaries_pt)/sizeof(double)-1;
 
 const double ptbins[] = {
-0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 
-200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 
-380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 
-560, 570, 580, 590, 600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730, 
-740, 750, 760, 770, 780, 790, 800, 810, 820, 830, 840, 850, 860, 870, 880, 890, 900, 910, 
-920, 930, 940, 950, 960, 970, 980, 990, 1000};
+0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100., 110., 120., 130., 140., 150., 160., 170., 180., 190., 
+200., 210., 220., 230., 240., 250., 260., 270., 280., 290., 300., 310., 320., 330., 340., 350., 360., 370., 
+380., 390., 400., 410., 420., 430., 440., 450., 460., 470., 480., 490., 500., 510., 520., 530., 540., 550., 
+560., 570., 580., 590., 600., 610., 620., 630., 640., 650., 660., 670., 680., 690., 700., 710., 720., 730., 
+740., 750., 760., 770., 780., 790., 800., 810., 820., 830., 840., 850., 860., 870., 880., 890., 900., 910., 
+920., 930., 940., 950., 960., 970., 980., 990., 1000.};
 const int nbins = sizeof(ptbins)/sizeof(double)-1;
 
 //-----------------------------------------------------------------------------------------------------------------------
@@ -154,7 +146,24 @@ const Int_t fmstyle[6] = {20,21,22,23,29,3};
 const Int_t emstyle[6] = {24,25,26,27,30,28};
 
 
-//-----------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+void drawText(const char *text, float xp, float yp, int size){
+  TLatex *tex = new TLatex(xp,yp,text);
+  tex->SetTextFont(63);
+  tex->SetTextSize(size);
+  tex->SetTextColor(kBlack);
+  tex->SetLineWidth(1);
+  //tex->SetTextFont(42);
+  tex->SetNDC();
+  tex->Draw();
+}
+
+
+
 TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false) {
 
   int startRowColInt=0, skipRowColInt=1;   
@@ -203,6 +212,149 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
 }
 
 
+//-----------------------------------------------------------------------------------------------------------------------
+
+
+void divideBinWidth(TH1 *h){
+
+  h->Sumw2();
+
+  double nEntries=h->GetEntries();
+
+  int numbins=h->GetNbinsX();
+  //std::cout<<"#of bins is "<<numbins<<std::endl;
+  //std::cout<<"according to array... "<<nbins_pt<<std::endl;
+  //std::cout<<"integral before:  "<<h->Integral()<<std::endl;
+
+  for (int i=1;i<=numbins;i++)
+    {
+
+      //std::cout<<"before.. i = numbins = "<< numbins<<std::endl;
+      //std::cout<<"bin width = "<<   h->GetBinWidth(i)   << std::endl;
+      //std::cout<<"bin center = "<<  h->GetBinCenter(i)  << std::endl;
+      //std::cout<<"val = "   <<      h->GetBinContent(i) << std::endl;
+      //std::cout<<"valErr = "<<      h->GetBinError(i)   << std::endl;
+
+      
+      Float_t val    = h->GetBinContent(i);
+      Float_t valErr = h->GetBinError(i);
+
+      val    /= h->GetBinWidth(i);
+      valErr /= h->GetBinWidth(i);
+
+      h->SetBinContent(i,val);
+      h->SetBinError(i,valErr);
+      
+      //std::cout<<"after... i = numbins = "<< numbins<<std::endl;
+      //std::cout<<"bin width = "<<   h->GetBinWidth(i)   << std::endl;
+      //std::cout<<"bin center = "<<  h->GetBinCenter(i)  << std::endl;
+      //std::cout<<"val = "   <<      h->GetBinContent(i) << std::endl;
+      //std::cout<<"valErr = "<<      h->GetBinError(i)   << std::endl;
+    }
+
+  std::cout<<"integral after:  "<<h->Integral()<<std::endl;
+  h->SetEntries(nEntries);
+  
+  //h->GetXaxis()->CenterTitle();
+  //h->GetYaxis()->CenterTitle();
+
+  return;
+}
+
+
+
+void divideBinWidth_TH2(TH2F *h){
+  
+  std::cout<<" in divideBinWidth_TH2"<<std::endl<<std::endl;
+
+  h->Sumw2();
+  float numEntries=h->GetEntries();
+
+  std::cout<<"base of hist in divideBinWidth_TH2:"<<std::endl;
+  h->Print("base");    
+  std::cout<<std::endl;
+
+  //for (int i=0;i<=h->GetNbinsX();i++)    {    
+  //  for (int j=0;j<=h->GetNbinsY();j++)    {
+  for (int i=1;i<=h->GetNbinsX();i++)    {    
+    for (int j=1;j<=h->GetNbinsY();j++)    {
+      
+      Float_t xWidth=h->GetXaxis()->GetBinWidth(i);
+      Float_t yWidth=h->GetYaxis()->GetBinWidth(j);
+
+      Float_t val = (h->GetBinContent(i,j))/(xWidth*yWidth);
+      Float_t valErr = (h->GetBinError(i,j))/(xWidth*yWidth);
+
+      h->SetBinContent(i,j,val);
+      h->SetBinError(i,j,valErr);
+    }}
+  h->SetEntries(numEntries);
+
+  std::cout<<"base of hist in divideBinWidth_TH2 after dividing:"<<std::endl;
+  h->Print("base");    
+  std::cout<<std::endl;
+
+  std::cout<<" about to exit divideBinWidth_TH2 function"<<std::endl<<std::endl;
+  return;
+}
+
+
+
+TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title){
+
+  std::cout<<std::endl<<"in reBinTH2 function..."<<std::endl <<std::endl;    
+
+  inputTH2->Sumw2();
+  
+  const double* the_ptBins=boundaries_pt;//ptbins
+  const int numbins=nbins_pt;//nbins 
+  float numEntries=inputTH2->GetEntries();
+
+  std::cout<<"input TH2 base:"<<std::endl;
+  inputTH2->Print("base");
+  std::cout<<std::endl;
+
+  TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(), numbins,the_ptBins,numbins,the_ptBins);
+  reBinnedTH2->Sumw2();
+  
+  TAxis *xaxis = inputTH2->GetXaxis();
+  TAxis *yaxis = inputTH2->GetYaxis();
+
+  for (int j=1; j<=yaxis->GetNbins();j++) {
+    for (int i=1; i<=xaxis->GetNbins();i++) {
+      //if(j >= 975 && i >= 975  ) {
+      //	std::cout<<"for orig TH2, j="<<j<<" and i="<<i<<std::endl;
+      //	std::cout<<"bin content   : " <<inputTH2->GetBinContent(i,j) << std::endl;	
+      //}
+      //std::cout<<"x-bin-center  : " <<xaxis->GetBinCenter(i)       << std::endl;
+      //std::cout<<"y-bin-center  : " <<yaxis->GetBinCenter(j)       << std::endl;
+      reBinnedTH2->Fill( xaxis->GetBinCenter(i)       ,
+			 yaxis->GetBinCenter(j)       ,
+			 inputTH2->GetBinContent(i,j) );
+    }
+  }
+
+  reBinnedTH2->SetEntries(numEntries);
+
+  std::cout<<"rebinned TH2 base in function..."<<std::endl;
+  reBinnedTH2->Print("base");
+  std::cout<<std::endl;
+
+  //std::cout<<std::endl<<"calling divideBinWidth_TH2..."<<std::endl;
+  //divideBinWidth_TH2(reBinnedTH2);
+
+  std::cout<<"exiting reBinTH2..."<<std::endl<<std::endl;    
+  return reBinnedTH2;
+}
+
+
+
+
+
+
+
+
+
 TH2F* reBinPearsonTH2(TMatrixD* pearson){
   bool debugPearson=false;
   const double* the_ptBins=boundaries_pt;//ptbins
@@ -236,6 +388,17 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson){
   std::cout<<std::endl<<"exiting reBinPearsonTH2 function..."<<std::endl;  
   return reBinnedTH2;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -296,84 +459,5 @@ int PrintMatrix( const TMatrixD& m,
   printf("\n");
   return 0;
 } // end PrintMatrix
-
-
-void divideBinWidth(TH1 *h){
-  h->Sumw2();
-  for (int i=0;i<=h->GetNbinsX();i++)
-    {
-      Float_t val = h->GetBinContent(i);
-      Float_t valErr = h->GetBinError(i);
-      val/=h->GetBinWidth(i);
-      valErr/=h->GetBinWidth(i);
-      h->SetBinContent(i,val);
-      h->SetBinError(i,valErr);
-    }
-  h->GetXaxis()->CenterTitle();
-  h->GetYaxis()->CenterTitle();
-}
-
-void drawText(const char *text, float xp, float yp, int size){
-  TLatex *tex = new TLatex(xp,yp,text);
-  tex->SetTextFont(63);
-  tex->SetTextSize(size);
-  tex->SetTextColor(kBlack);
-  tex->SetLineWidth(1);
-  //tex->SetTextFont(42);
-  tex->SetNDC();
-  tex->Draw();
-}
-
-void divideBinWidth_TH2(TH2F *h){
-  
-  std::cout<<" in divideBinWidth_TH2"<<std::endl;
-
-  h->Sumw2();
-
-  for (int i=0;i<=h->GetNbinsX();i++)    {    
-    for (int j=0;j<=h->GetNbinsY();j++)    {
-      
-      Float_t xWidth=h->GetXaxis()->GetBinWidth(i);
-      Float_t yWidth=h->GetYaxis()->GetBinWidth(j);
-
-      Float_t val = (h->GetBinContent(i,j))/(xWidth*yWidth);
-      Float_t valErr = (h->GetBinError(i,j))/(xWidth*yWidth);
-
-      h->SetBinContent(i,j,val);
-      h->SetBinError(i,j,valErr);
-    }}
-
-  std::cout<<" about to exit divideBinWidth_TH2 function"<<std::endl;
-  return;
-}
-
-
-
-TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title){
-  
-  const double* the_ptBins=boundaries_pt;//ptbins
-  const int numbins=nbins_pt;//nbins
-
-  TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(),numbins,the_ptBins,numbins,the_ptBins);
-  std::cout<<std::endl<<"in reBinTH2 function..."<<std::endl;  
-  reBinnedTH2->Print("base");
-  
-  TAxis *xaxis = inputTH2->GetXaxis();
-  TAxis *yaxis = inputTH2->GetYaxis();
-  for (int j=1; j<=yaxis->GetNbins();j++) {
-    for (int i=1; i<=xaxis->GetNbins();i++) {
-      reBinnedTH2->Fill( xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),
-			 inputTH2->GetBinContent(i,j) );
-    }
-  }
-  std::cout<<std::endl<<"calling divideBinWidth_TH2..."<<std::endl;
-  reBinnedTH2->Print("base");
-
-  divideBinWidth_TH2(reBinnedTH2);
-
-  std::cout<<"exiting reBinTH2..."<<std::endl;
-  return reBinnedTH2;
-}
-
 
 

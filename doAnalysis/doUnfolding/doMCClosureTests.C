@@ -1,20 +1,17 @@
 #include "unfoldSpectra.h"
 
 
-//  global settings -------------------------------------------------- 
-const int radius=4;
-const bool doToyErrs=false;
-
 // Bayesian settings 
+const bool doBayes=true; 
 const int kIter = 4;
 
 // SVD settings 
+const bool doSVD=true; 
 const int  nKregMax = 9, kRegRange=4, kRegDraw = 4, kRegCenter=9;
 
 // procedural settings
-const bool doBayes=true; 
-const bool doSVD=true; 
-
+const int radius=4;
+const bool doToyErrs=true;
 const bool drawPDFs=true; 
 const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
 const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;

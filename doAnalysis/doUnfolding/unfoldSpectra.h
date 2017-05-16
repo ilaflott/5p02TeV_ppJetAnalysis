@@ -86,10 +86,10 @@ const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
 
 
 //useful strings, numbers
-const double integratedLuminosity=25.8*pow(10,9);
+const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
 const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
 const std::string Datadesc1= "pp 2015 pmptReco, #sqrt{s}=5.02 TeV"; 
-const std::string Datadesc2= "L_{int}=25.8 pb^{-1}"; 
+const std::string Datadesc2= "L_{int}=27.4 pb^{-1}"; 
 
 
 

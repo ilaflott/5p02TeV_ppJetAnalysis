@@ -19,7 +19,7 @@ const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;
 // I/O
 
 // debug settings, other useful things, etc
-const bool defDebugMode=false; 
+const bool defDebugMode=true; 
 const bool defDebugPearson=false;
 
 const std::string Rstring="_R"+std::to_string(radius); 
@@ -28,19 +28,17 @@ const std::string RandEtaRange=Rstring+"_20_eta_20";
 const std::string Rstring_plotTitle=" R"+std::to_string(radius); 
 const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";
 
-
+const bool debugMode=defDebugMode;
 //  the code --------------------------------------------------
-int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , const bool debugMode=defDebugMode ) {
+int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , const bool doJetID=false ) {
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
 
-  //inFile_MC_dir=SCRATCH_BASE+inFile_MC_dir;
   std::string inFile_MC_name=SCRATCH_BASE+inFile_MC_dir+"/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
-  //std::string baseName="doMCClosureTests_defOut"; 
   std::string outRootFile    =doMCClosureTests_outdir+baseName+".root";
   std::string outBayesPdfFile=doMCClosureTests_outdir+baseName+"_BayesianUnfoldingPlots.pdf";
   std::string outSVDPdfFile  =doMCClosureTests_outdir+baseName+"_SVDUnfoldingPlots"; // see drawPDFs for rest
-
-  // set error handing, stat info, other settings  // fix me
+  
+  // set error handing, stat info, other settings
   RooUnfold::ErrorTreatment errorTreatment;
   if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
   else errorTreatment = RooUnfold::kCovToy; 
@@ -50,61 +48,70 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
   TH2::SetDefaultSumw2();
   gStyle->SetOptStat(0);
 
-  //// script performance tracking if needed
-  //TStopwatch timer; 
-  //timer.Start();
-  
+
   //  ppMC input histos --------------------------------------------------
+
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"<<std::endl; 
   if(debugMode)std::cout<<"BASE: "<<      SCRATCH_BASE << std::endl;
   if(debugMode)std::cout<<"condorDir: "<< inFile_MC_dir << std::endl;
   if(debugMode)std::cout<<"fileName "<<   inFile_MC_name << std::endl << std::endl;
-  //std::cout<<std::endl<<std::endl;
+
   TFile *fpp_MC = TFile::Open( inFile_MC_name.c_str() );
 
-  //mat, should be filled with only 1/2 MC sample, for the response matrix
-  TH2F *hmat,*hmat_anabin;
-  hmat = (TH2F*)fpp_MC->Get( ("hpp_mcclosure_matrix"+RandEtaRange).c_str() );
+  // hmat, resp matric for 1/2 MC sample only
+  std::string hmat_name="hpp_mcclosure_matrix";
+  if(doJetID)hmat_name+="_wJetID"+RandEtaRange;
+  else hmat_name+=RandEtaRange;
+
+  TH2F* hmat = (TH2F*)fpp_MC->Get( (hmat_name).c_str() );
   hmat->Print("base");
 
-  //hmat_anabin = (TH2F*)hmat->Clone( ("hpp_anaBin_Trans_matrix_HLT"+RandEtaRange).c_str() );
-  hmat_anabin=reBinTH2(hmat, "hpp_anaBin_Trans_matrix_HLT"+RandEtaRange);//note, reBinTH2 calls divideBinWidth_TH2
+  TH2F* hmat_anabin=reBinTH2(hmat, "hpp_mcclosure_matrix_anabin"+RandEtaRange);
   hmat_anabin->Print("base");    
   
-  //gen dist used to make response matrix
-  TH1F*hgen,*hgen_anabin;
-  hgen= (TH1F*)fpp_MC->Get(("hpp_mcclosure_gen"+RandEtaRange).c_str());
+
+  // hgen, 1/2 gen used to make response matrix
+  std::string hgen_name="hpp_mcclosure_gen";
+  if(doJetID)hgen_name+="_wJetID"+RandEtaRange;
+  else hgen_name+=RandEtaRange;
+
+  TH1F* hgen= (TH1F*)fpp_MC->Get( hgen_name.c_str());
   hgen->Print("base");
 
-  hgen_anabin = (TH1F*)hgen->Clone( ("hpp_anaBin_mcclosure_gen_JetComb"+RandEtaRange).c_str() );
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt, ("hpp_anaBin_mcclosure_gen_JetComb"+RandEtaRange).c_str(), boundaries_pt);
+  TH1F* hgen_anabin = (TH1F*)hgen->Clone( ("hpp_mcclosure_gen_clone"+RandEtaRange).c_str() );
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt, ("hpp_mcclosure_gen_anabin"+RandEtaRange).c_str(), boundaries_pt);
   divideBinWidth(hgen_anabin);
   hgen_anabin->Print("base");
 
-  //rec_check, rec dist used to make the response matrix
-  TH1F *hrec_check, *hrec_check_anabin;
-  hrec_check = (TH1F*)fpp_MC->Get( ("hpp_mcclosure_data_train"+RandEtaRange).c_str() );
+
+  // hrec_check, 1/2 reco used to make response matrix
+  std::string hrec_check_name="hpp_mcclosure_reco";
+  if(doJetID)hrec_check_name+="_wJetID"+RandEtaRange;
+  else hrec_check_name+=RandEtaRange;
+
+  TH1F* hrec_check = (TH1F*)fpp_MC->Get( hrec_check_name.c_str() );
   hrec_check->Print("base");
   //if(dotrigcor) doTrigCorr(hrec_check, hMC_turnon);
 
-  hrec_check_anabin = (TH1F*)hrec_check->Clone( ("hpp_mcclosure_JetComb_data_train"+RandEtaRange).c_str() );
-  hrec_check_anabin = (TH1F*)hrec_check_anabin->Rebin(nbins_pt, ("hpp_mcclosure_JetComb_data_train"+RandEtaRange).c_str(), boundaries_pt);
-  divideBinWidth(hrec_check_anabin);
+  TH1F* hrec_check_anabin = (TH1F*)hrec_check->Clone( ("hpp_mcclosure_reco_clone"+RandEtaRange).c_str() );
+  hrec_check_anabin = (TH1F*)hrec_check_anabin->Rebin(nbins_pt, ("hpp_mcclosure_reco_anabin_"+RandEtaRange).c_str(), boundaries_pt);
+  divideBinWidth(hrec_check_anabin);  
+  std::cout<<"done dividing bin width. Base of hist is..."<<std::endl<<std::endl;
   hrec_check_anabin->Print("base");
 
-  
-  //rec, rec dist from OTHER 1/2 of MC sample to test the unfolding on.
-  TH1F*hrec,*hrec_anabin;
-  hrec = (TH1F*)fpp_MC->Get(( "hpp_mcclosure_data"+RandEtaRange).c_str() );
+
+  // hrec, other 1/2 reco use to test mcclosure of unfolding
+  //TH1F*hrec,*hrec_anabin;
+  TH1F* hrec = (TH1F*)fpp_MC->Get(( "hpp_mcclosure_reco_test"+RandEtaRange).c_str() );
   hrec->Print("base");
 
-  hrec_anabin = (TH1F*)hrec->Clone( ("hpp_anaBin_mcclosure_rec_JetComb"+RandEtaRange).c_str() );
-  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt, ("hpp_anaBin_mcclosure_rec_JetComb"+RandEtaRange).c_str(), boundaries_pt);
+  TH1F* hrec_anabin = (TH1F*)hrec->Clone( ("hpp_mcclosure_reco_test_clone"+RandEtaRange).c_str() );
+  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt, ("hpp_mcclosure_reco_test_anabin"+RandEtaRange).c_str(), boundaries_pt);
   divideBinWidth(hrec_anabin);
   hrec_anabin->Print("base");
   //if(dotrigcor) doTrigCorr(hrec_anabin, hMC_turnon);
 
-  //  new histos --------------------------------------------------
+  // new "response" histos
   std::cout<<std::endl<<std::endl<<"creating NEW histos..."<<std::endl<<std::endl;
 
   TH1F *hgen_resp, *hgen_resp_anabin;
@@ -137,7 +144,7 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
 
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldResponse..."<<std::endl;
     //defines response matrix w/ th2... what's the response TH1s again?
-    RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str());
+    RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str() ) ;
 
     if(debugMode)std::cout<<"calling RooUnfoldBayes and Hreco..."<<std::endl<<std::endl;
     //use response matrix to unfold hrec_anabin, the OTHER 1/2 of the MC sample, should show fluctuations
@@ -147,7 +154,7 @@ int doMCClosureTests( std::string inFile_MC_dir , const std::string baseName , c
     TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
     hunf->SetName("ppMC_BayesianClosure_UnfoldSpectra");
     hunf->SetTitle("ppMC Closure, Bayesian Unfolded Spectra");    
-    std::cout<<std::endl;     
+    std::cout<<std::endl;    
     hunf->Print("base");
 
     //compare unfolded OTHER 1/2 to the gen dist of the first 1/2 of the MC sample. 
@@ -677,7 +684,8 @@ int main(int argc, char* argv[]){
   int rStatus = -1;
 
   if( argc!=1 && argc!=4 ) {//no input arguments, error
-    std::cout<<"do ./doMCClosureTests.exe <debugMode,def0> to run"<<std::endl;
+    //std::cout<<"do ./doMCClosureTests.exe <debugMode,def0> to run"<<std::endl;
+    std::cout<<"bad input. try ./doMCClosureTests.exe to run"<<std::endl;
     return rStatus;
   }
   

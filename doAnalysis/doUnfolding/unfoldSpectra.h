@@ -120,20 +120,21 @@ const std::string Datadesc2= "L_{int}=25.8 pb^{-1}";
 //const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
 
 //-----------------------------------------------------------------------------------------------------------------------
-const double boundaries_pt[] = {
+const double anabins_pt[] = {//analysis pt bins
   //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 32., 37., 43., 49., 
   56., 64., 74., 84., 97., 114., 133., 153., 
   174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468., 507., 548., 592., 638., 686., 1000.};
-const int nbins_pt = sizeof(boundaries_pt)/sizeof(double)-1;
+const int n_anabins_pt = sizeof(anabins_pt)/sizeof(double)-1;
 
-const double ptbins[] = {
-0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100., 110., 120., 130., 140., 150., 160., 170., 180., 190., 
-200., 210., 220., 230., 240., 250., 260., 270., 280., 290., 300., 310., 320., 330., 340., 350., 360., 370., 
-380., 390., 400., 410., 420., 430., 440., 450., 460., 470., 480., 490., 500., 510., 520., 530., 540., 550., 
-560., 570., 580., 590., 600., 610., 620., 630., 640., 650., 660., 670., 680., 690., 700., 710., 720., 730., 
-740., 750., 760., 770., 780., 790., 800., 810., 820., 830., 840., 850., 860., 870., 880., 890., 900., 910., 
-920., 930., 940., 950., 960., 970., 980., 990., 1000.};
-const int nbins = sizeof(ptbins)/sizeof(double)-1;
+const double simpbins_pt[] = {//simple 10 GeV pt bins
+  56.,  66., 76., 86., 96., 106., 116., 126., 136., 146., 156., 166., 176., 186., 196., 
+  206., 216., 226., 236., 246., 256., 266., 276., 286., 296., 306., 316., 326., 336., 346., 356., 366., 376., 
+  386., 396., 406., 416., 426., 436., 446., 456., 466., 476., 486., 496., 506., 516., 526., 536., 546., 556., 
+  566., 576., 586., 596., 606., 616., 626., 636., 646., 656., 666., 676., 686., 696., 706., 716., 726., 736., 
+  746., 756., 766., 776., 786., 796., 806., 816., 826., 836., 846., 856., 866., 876., 886., 896., 906., 916., 
+  926., 936., 946., 956., 966., 976., 986., 1000.
+};
+const int n_simpbins_pt = sizeof(simpbins_pt)/sizeof(double)-1;
 
 //-----------------------------------------------------------------------------------------------------------------------
 // color scheme for different color
@@ -152,6 +153,8 @@ const Int_t emstyle[6] = {24,25,26,27,30,28};
 
 
 void drawText(const char *text, float xp, float yp, int size){
+  std::cout<<std::endl<<"in drawText"<<std::endl<<std::endl;
+
   TLatex *tex = new TLatex(xp,yp,text);
   tex->SetTextFont(63);
   tex->SetTextSize(size);
@@ -160,11 +163,15 @@ void drawText(const char *text, float xp, float yp, int size){
   //tex->SetTextFont(42);
   tex->SetNDC();
   tex->Draw();
+
+  std::cout<<std::endl<<"drawText done"<<std::endl<<std::endl;
+  return;
 }
 
 
 
 TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false) {
+  std::cout<<std::endl<<"in CalculatePearsonCoefficients"<<std::endl<<std::endl;
 
   int startRowColInt=0, skipRowColInt=1;   
   int NanCount=0, gt1Count=0, EntryCount=0;
@@ -208,6 +215,8 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
   if(debugPearson)std::cout<<"Entries in Pearson Matrix="<<EntryCount<<std::endl;  
   if(debugPearson)std::cout<<"pearson>1 Entries="<<gt1Count<<std::endl;  
   if(debugPearson)std::cout<<"Nan Entries="<<NanCount<<std::endl;  
+
+  std::cout<<std::endl<<"calculatePearsonCoefficients done"<<std::endl<<std::endl;
   return pearsonCoefs;
 }
 
@@ -216,32 +225,33 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
 
 
 void divideBinWidth(TH1 *h){
+  std::cout<<std::endl<<"in divideBinWidth"<<std::endl<<std::endl;
 
   h->Sumw2();
-
   double nEntries=h->GetEntries();
-
   int numbins=h->GetNbinsX();
-  //std::cout<<"#of bins is "<<numbins<<std::endl;
-  //std::cout<<"according to array... "<<nbins_pt<<std::endl;
-  //std::cout<<"integral before:  "<<h->Integral()<<std::endl;
 
+  //std::cout<<"#of bins is "<<numbins<<std::endl;
+  //std::cout<<"according to consts array... "<<nbins_pt<<std::endl;
+  std::cout<<"integral before:  "<<h->Integral()<<std::endl;
+  //std::cout<<"entries before:  "<<nEntries<<std::endl;
+  
   for (int i=1;i<=numbins;i++)
     {
-
+      
       //std::cout<<"before.. i = numbins = "<< numbins<<std::endl;
       //std::cout<<"bin width = "<<   h->GetBinWidth(i)   << std::endl;
       //std::cout<<"bin center = "<<  h->GetBinCenter(i)  << std::endl;
       //std::cout<<"val = "   <<      h->GetBinContent(i) << std::endl;
       //std::cout<<"valErr = "<<      h->GetBinError(i)   << std::endl;
-
+      
       
       Float_t val    = h->GetBinContent(i);
       Float_t valErr = h->GetBinError(i);
-
+      
       val    /= h->GetBinWidth(i);
       valErr /= h->GetBinWidth(i);
-
+      
       h->SetBinContent(i,val);
       h->SetBinError(i,valErr);
       
@@ -253,119 +263,127 @@ void divideBinWidth(TH1 *h){
     }
 
   std::cout<<"integral after:  "<<h->Integral()<<std::endl;
-  h->SetEntries(nEntries);
-  
-  //h->GetXaxis()->CenterTitle();
-  //h->GetYaxis()->CenterTitle();
+  //std::cout<<"entries after:  "<<h->GetEntries()<<std::endl;
 
+  h->SetEntries(nEntries);
+
+  //std::cout<<"exiting function"<<std::endl;
+  std::cout<<std::endl<<"divideBinWidth done"<<std::endl<<std::endl;
   return;
 }
 
 
 
 void divideBinWidth_TH2(TH2F *h){
-  
-  std::cout<<" in divideBinWidth_TH2"<<std::endl<<std::endl;
+  std::cout<<std::endl<<"in divideBinWidth_TH2"<<std::endl<<std::endl;
 
   h->Sumw2();
-  float numEntries=h->GetEntries();
+  h->Print("base");      std::cout<<std::endl;
 
-  std::cout<<"base of hist in divideBinWidth_TH2:"<<std::endl;
-  h->Print("base");    
-  std::cout<<std::endl;
+  double numEntries=h->GetEntries();
 
-  //for (int i=0;i<=h->GetNbinsX();i++)    {    
-  //  for (int j=0;j<=h->GetNbinsY();j++)    {
   for (int i=1;i<=h->GetNbinsX();i++)    {    
     for (int j=1;j<=h->GetNbinsY();j++)    {
       
       Float_t xWidth=h->GetXaxis()->GetBinWidth(i);
       Float_t yWidth=h->GetYaxis()->GetBinWidth(j);
-
+      
       Float_t val = (h->GetBinContent(i,j))/(xWidth*yWidth);
       Float_t valErr = (h->GetBinError(i,j))/(xWidth*yWidth);
-
+      
       h->SetBinContent(i,j,val);
       h->SetBinError(i,j,valErr);
-    }}
-  h->SetEntries(numEntries);
+    }
+  }
 
   std::cout<<"base of hist in divideBinWidth_TH2 after dividing:"<<std::endl;
-  h->Print("base");    
-  std::cout<<std::endl;
+  h->Print("base");      std::cout<<std::endl;
 
-  std::cout<<" about to exit divideBinWidth_TH2 function"<<std::endl<<std::endl;
+  h->SetEntries(numEntries);
+
+  //std::cout<<" divideBinWidth_TH2 done"<<std::endl<<std::endl;
+  std::cout<<std::endl<<"divideBinWidth_TH2 done"<<std::endl<<std::endl;
   return;
 }
 
 
 
-TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title){
-
-  std::cout<<std::endl<<"in reBinTH2 function..."<<std::endl <<std::endl;    
-
-  inputTH2->Sumw2();
+//TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, const double* boundaries_pt, const int nbins_pt){
+TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, double* boundaries_pt, int nbins_pt){
+  std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
+  //std::cout<<std::endl<<"rebinning TH2 ..."<<std::endl <<std::endl;    
   
-  const double* the_ptBins=boundaries_pt;//ptbins
-  const int numbins=nbins_pt;//nbins 
   float numEntries=inputTH2->GetEntries();
+  inputTH2->Sumw2();
+  //std::cout<<"input TH2 base:"<<std::endl;
+  inputTH2->Print("base");  std::cout<<std::endl;
+  
+  //const double* boundaries_pt;
+  //int nbins_pt;
+  
+  //if(useSimpleBinning){    
+  //  boundaries_pt=simpbins_pt;
+  //  nbins_pt=n_simpbins_pt;  }
+  //else {
+  //  boundaries_pt=anabins_pt;
+  //  nbins_pt=n_anabins_pt;  }
 
-  std::cout<<"input TH2 base:"<<std::endl;
-  inputTH2->Print("base");
-  std::cout<<std::endl;
 
-  TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(), numbins,the_ptBins,numbins,the_ptBins);
-  reBinnedTH2->Sumw2();
   
   TAxis *xaxis = inputTH2->GetXaxis();
+  int nbins_x= xaxis->GetNbins()+1;//includes overflow bin
   TAxis *yaxis = inputTH2->GetYaxis();
-
-  for (int j=1; j<=yaxis->GetNbins();j++) {
-    for (int i=1; i<=xaxis->GetNbins();i++) {
-      //if(j >= 975 && i >= 975  ) {
-      //	std::cout<<"for orig TH2, j="<<j<<" and i="<<i<<std::endl;
-      //	std::cout<<"bin content   : " <<inputTH2->GetBinContent(i,j) << std::endl;	
-      //}
-      //std::cout<<"x-bin-center  : " <<xaxis->GetBinCenter(i)       << std::endl;
-      //std::cout<<"y-bin-center  : " <<yaxis->GetBinCenter(j)       << std::endl;
-      reBinnedTH2->Fill( xaxis->GetBinCenter(i)       ,
-			 yaxis->GetBinCenter(j)       ,
-			 inputTH2->GetBinContent(i,j) );
-    }
-  }
-
+  int nbins_y = yaxis->GetNbins()+1; //includes overflow bin
+  
+  TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(), 
+			       nbins_pt, boundaries_pt , 
+			       nbins_pt, boundaries_pt );
+  reBinnedTH2->Sumw2();
+  
+  for (int i=0 ; i <= (nbins_x) ; i++ ) {
+    for (  int j=0 ; j <= (nbins_y) ; j++ ) {
+      
+      //std::cout<<"i="<<i<<" and j="<<j<<std::endl; 
+      //std::cout<<"bin x center = "<<xaxis->GetBinCenter(i)<< std::endl ;
+      //std::cout<<"bin y center = "<<yaxis->GetBinCenter(j)<< std::endl ;
+      
+      if(j==0 || i==0 || j==nbins_y || i==nbins_x){	
+	if( inputTH2->GetBinContent(i,j) != 0 )	  {
+	  //std::cout<<"i="<<i<<" and j="<<j<<std::endl; 
+	  //std::cout<<"under/overflow bin in TH2 nonzero!!"<<std::endl;
+	  //std::cout<<"under/overflow bin content="<<inputTH2->GetBinContent(i,j)<<std::endl;
+	  continue;	}      }      
+      else {
+	reBinnedTH2->Fill( xaxis->GetBinCenter(i) , yaxis->GetBinCenter(j) ,
+			   inputTH2->GetBinContent(i,j) );            }
+      
+    }  }//end x-y loop
+  
   reBinnedTH2->SetEntries(numEntries);
+  reBinnedTH2->Print("base");  std::cout<<std::endl;
 
-  std::cout<<"rebinned TH2 base in function..."<<std::endl;
-  reBinnedTH2->Print("base");
-  std::cout<<std::endl;
-
-  //std::cout<<std::endl<<"calling divideBinWidth_TH2..."<<std::endl;
-  //divideBinWidth_TH2(reBinnedTH2);
-
-  std::cout<<"exiting reBinTH2..."<<std::endl<<std::endl;    
+  //std::cout<<" done rebinning TH2" <<std::endl<<std::endl;    
+  std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;  
   return reBinnedTH2;
 }
 
 
 
+TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int nbins_pt){
+  std::cout<<std::endl<<"in reBinPearsonTH2"<<std::endl<<std::endl;
 
-
-
-
-
-
-TH2F* reBinPearsonTH2(TMatrixD* pearson){
   bool debugPearson=false;
-  const double* the_ptBins=boundaries_pt;//ptbins
-  const int numbins=nbins_pt;//nbins
+  //const double* the_ptBins=boundaries_pt;//ptbins
+  //const int numbins=nbins_pt;//nbins
 
-  TH2F *reBinnedTH2 = new TH2F(  "pearsonCustomBins" , "pearsonMatrix custom bins"   , numbins,the_ptBins,numbins,the_ptBins);
+  TH2F *reBinnedTH2 = new TH2F(  "pearsonCustomBins" , "pearsonMatrix custom bins"   , 
+				 nbins_pt,boundaries_pt,
+				 nbins_pt,boundaries_pt);
   std::cout<<std::endl<<"in reBinPearsonTH2 function..."<<std::endl;  
   reBinnedTH2->Print("base");
   
-  for (int j=1; j<=numbins;j++) {
-    for (int i=1; i<=numbins;i++) {
+  for (int j=1;   j<=nbins_pt;j++) {
+    for (int i=1; i<=nbins_pt;i++) {
 
       double pearson_i_j=(*pearson)(i-1,j-1);
       
@@ -381,11 +399,10 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson){
     }
   }
 
-  std::cout<<std::endl<<"done rebinning pearson matrix..."<<std::endl;
+
   reBinnedTH2->Print("base");
 
-
-  std::cout<<std::endl<<"exiting reBinPearsonTH2 function..."<<std::endl;  
+  std::cout<<std::endl<<"reBinPearsonTH2 done"<<std::endl<<std::endl;
   return reBinnedTH2;
 }
 
@@ -410,7 +427,8 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson){
 // One can specify an alternative format, e.g. format ="%6.2f  " 
 int PrintMatrix( const TMatrixD& m, 
 		  const char* format, const char* name, Int_t cols_per_sheet ){
-
+  std::cout<<std::endl<<"in PrintMatrix"<<std::endl<<std::endl;
+  
   if (!m.IsValid()) {
     m.Error("PrintMatrix","%s is invalid",name);
     return -1;
@@ -457,6 +475,7 @@ int PrintMatrix( const TMatrixD& m,
     }
   }
   printf("\n");
+  std::cout<<std::endl<<"PrintMatrix done"<<std::endl<<std::endl;
   return 0;
 } // end PrintMatrix
 

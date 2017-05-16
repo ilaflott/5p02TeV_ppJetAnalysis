@@ -12,27 +12,39 @@ const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
 const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;
 
 //other settings
-const bool doToyErrs=true;
-const bool debugMode=false;
+const bool doToyErrs=false;
+const bool debugMode=true;
 const bool debugPearson=(false && debugMode) ;
-const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
+const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
 
 //  the code --------------------------------------------------
 int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir , 
 		       const std::string baseName ,    const bool doJetID=true ){
   
+  double* boundaries_pt;
+  int nbins_pt;
+  if(useSimplePtBinning){
+    std::cout<<"using simple pt bins"<<std::endl<<std::endl;
+    boundaries_pt = (double*)simpbins_pt   ;
+    nbins_pt      = (int)n_simpbins_pt ; } 
+  else{
+    std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
+    boundaries_pt = (double*)anabins_pt   ;
+    nbins_pt      = (int)n_anabins_pt ; }
+
+
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
   inFile_Data_dir=SCRATCH_BASE+inFile_Data_dir;
   inFile_MC_dir  =SCRATCH_BASE+inFile_MC_dir;
-
-
+  
   //figure out what radius/jetcollection we are looking at using the MC filename
   std::size_t radPos=inFile_MC_dir.find("_ak")+3;
   const std::string radiusInt= inFile_MC_dir.substr( radPos,1 );
   const std::string radius="R"+radiusInt;//R4
-  const std::string RandEtaRange="_"+radius+"_20_eta_20";//_R4_20_eta_20
   if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
-  
+  const std::string RandEtaRange="_"+radius+"_20_eta_20";//_R4_20_eta_20
+  if(debugMode)std::cout<<"RandEtaRange string is = "<<RandEtaRange<<std::endl;
+
   const std::string Rstring="_"+radius; //_R4
   const std::string Rstring_plotTitle=" "+radius; // R4
   const std::string RandEtaRange_plotTitle=Rstring_plotTitle+" 20eta20";// R4 20eta20
@@ -51,25 +63,25 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   std::string outFileName=unfoldDataSpectra_outdir+fullJetType+"_"+baseName;//+".root";  
   if(doJetID)outFileName+="_wjtID";//+".root";  
 
-  std::string outBayesPdfFile =  outFileName+"_Bayes";
-  std::string outSVDPdfFile   =  outFileName+"_SVD"; // see drawPDFs part for rest of string
-  std::string outRootFile     = outFileName+".root";  
+  std::string outBayesPdfFile =  outFileName+"_Bayes.pdf";
+  std::string outSVDPdfFile   =  outFileName+"_SVD.pdf"; // see drawPDFs part for rest of string
+  std::string outRootFile     =  outFileName+".root";  
   
   // set error handing, stat info, other settings  // fix me
   RooUnfold::ErrorTreatment errorTreatment;
   if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
   else errorTreatment = RooUnfold::kCovToy; 
   if(debugMode)std::cout<<"doToyErrs="<<doToyErrs<<std::endl; 
-
+  
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   gStyle->SetOptStat(0);
-
+  
   //// script performance tracking if needed
   //TStopwatch timer; 
   //timer.Start();
-
-
+  
+  
   //  ppData input histos --------------------------------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from DATA file"<<std::endl;
   if(debugMode){
@@ -80,7 +92,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   
   //TFile *fpp_Data = TFile::Open( (CMSSW_BASE+inFile_Data_dir+inFile_Data_name).c_str());
   TFile *fpp_Data = TFile::Open( (inFile_Data_dir+inFile_Data_name).c_str());
-
+  
   //intlumi efficiency/scaling
   TH1F *h_NEvents_vzCut   = (TH1F*)fpp_Data->Get("NEvents_vzCut");
   TH1F *h_NEvents         = (TH1F*)fpp_Data->Get("NEvents");
@@ -101,62 +113,33 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   else histTitle+="0wJetID_jtpt";
 
   TH1F *hrec;
-  hrec = (TH1F*)fpp_Data->Get( histTitle.c_str() );
-  std::cout<<"base of orig hist:"<<std::endl;
-  hrec->Print("base");
-  std::cout<<std::endl;
+  hrec = (TH1F*)fpp_Data->Get( histTitle.c_str() ); 
+  hrec->Print("base");  std::cout<<std::endl;
 
   TH1F *hrec_anabin;
-  hrec_anabin = (TH1F*)hrec->Clone( ("hpp_clone_"+histTitle).c_str() );
-  std::cout<<"base of clone of orig hist:"<<std::endl;
-  hrec_anabin->Print("base");
-  std::cout<<std::endl;
+  hrec_anabin = (TH1F*)hrec->Clone( (histTitle+"_clone").c_str() );
+  hrec_anabin->Scale(1/effIntgrtdLumi_vz);
+  hrec_anabin->Print("base");  std::cout<<std::endl;
 
-  if(debugMode)std::cout<<"clearing overflow/underflow bins..."<<std::endl;
   if(debugMode)std::cout<<"underflow="<<hrec_anabin->GetBinContent(0)<<std::endl;
   if(debugMode)std::cout<<"overflow="<<hrec_anabin->GetBinContent(1001)<<std::endl;  
+  if(debugMode)std::cout<<"clearing overflow/underflow bins..."<<std::endl;
   hrec_anabin->TH1::ClearUnderflowAndOverflow();
-  //std::cout<<"underflow="<<hrec_anabin->GetBinContent(0)<<std::endl;
-  //std::cout<<"overflow="<<hrec_anabin->GetBinContent(1001)<<std::endl;
+  hrec_anabin->Print("base");  std::cout<<std::endl;
   
-  //float _56to64GeVSum = 0.;
-  //for(int i=57 ; i < 65; i++) {
-  //  std::cout<<"i="<<i<<std::endl;
-  //  std::cout<<"bin center ="<< hrec_anabin->GetBinCenter(i) <<std::endl;
-  //  std::cout<<"bin content ="<< hrec_anabin->GetBinContent(i) <<std::endl;
-  //  _56to64GeVSum += hrec_anabin->GetBinContent(i);
-  //  std::cout<<"Sum now ="<< _56to64GeVSum<<std::endl;
-  //
-  //}
-  //std::cout<<"before rebinning: 56-64GeV's contents are:"<< _56to64GeVSum <<std::endl;//57 because 1 GeV bins-> 56-57 is 57'th bin because 0-1 is the first bin
-  //std::cout<<"before rebinning: first bin's width is:"    << hrec_anabin->GetBinWidth(57)<<std::endl;
+  
+  if(debugMode)std::cout<<"rebinning hrec..."<<std::endl;
+  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt, (histTitle+"_anabins").c_str() , boundaries_pt); 
+  
+  if(debugMode)std::cout<<"checking overflow/underflow bins..."<<std::endl;
+  if(debugMode)std::cout<<"underflow="<<hrec_anabin->GetBinContent(0)<<std::endl;
+  if(debugMode)std::cout<<"overflow="<<hrec_anabin->GetBinContent(1001)<<std::endl;  
+  hrec_anabin->Print("base");  std::cout<<std::endl;
+  
+  divideBinWidth(hrec_anabin); 
+  hrec_anabin->Print("base");  std::cout<<std::endl;
 
-  std::string newHistTitle="hpp_anaBin_"+histTitle;
-  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt, newHistTitle.c_str() , boundaries_pt); //first bin should now be 56-6
-  std::cout<<"base of rebin of clone hist:"<<std::endl;
-  hrec_anabin->Print("base");
-  std::cout<<std::endl;
-
-  //std::cout<<"after rebinning: first bin's center is    :"<< hrec_anabin->GetBinCenter(1)<<std::endl;
-  //std::cout<<"after rebinning: first bin's contents are :"<< hrec_anabin->GetBinContent(1)<<std::endl;
-  //std::cout<<"after rebinning: first bin's width is     :"<< hrec_anabin->GetBinWidth(1)<<std::endl;
-
-
-  divideBinWidth(hrec_anabin);
-  std::cout<<"base of rebinned hist post divideBinWidth"<<std::endl;
-  hrec_anabin->Print("base");
-  std::cout<<std::endl;
-
-  //std::cout<<"after dividing by the bin width: first bin's contents are:"<< hrec_anabin->GetBinContent(1)<<std::endl;
-  //std::cout<<"after dividing by the bin width: first bin's width is:"<< hrec_anabin->GetBinWidth(1)<<std::endl;
-
-  hrec_anabin->Scale(1/effIntgrtdLumi_vz);
-  std::cout<<"base of rebin of clone hist post lumi:"<<std::endl;
-  hrec_anabin->Print("base");
-  std::cout<<std::endl;
   //assert(false);
-
-
 
 
 
@@ -169,103 +152,83 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   TFile *fpp_MC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
   
   
-  //mat, NOT NORMALIZED?
+  // ---------- matrix, not normalized ?
   std::string TH2_title="hpp_matrix";//+RandEtaRange;
   if(doJetID)TH2_title+="_wJetID";
   TH2_title+=RandEtaRange;
   
-  TH2F *hmat; 
-  hmat = (TH2F*)fpp_MC->Get( TH2_title.c_str() );
-  std::cout<<std::endl<<"base of hmat input hist:"<<std::endl;
-  hmat->Print("base");
-  //std::cout<<std::endl;
- 
-  TH2F* hmat_anabin = (TH2F*)hmat->Clone( ("clone_"+TH2_title).c_str() );
-  std::cout<<std::endl<<"base of hmat clone hist:"<<std::endl;
-  hmat_anabin->Print("base");      
-  //std::cout<<std::endl;
+  TH2F* hmat = (TH2F*)fpp_MC->Get( TH2_title.c_str() );
+  hmat->Print("base"); std::cout<<std::endl;
   
-  std::string TH2_newTitle="hpp_anaBin_Trans_matrix_HLT"+RandEtaRange;
-  //hmat_anabin->Rebin2D(10, 10);
-  //hmat_anabin=reBinTH2(hmat, TH2_newTitle);
-  hmat_anabin=(TH2F*)reBinTH2(hmat_anabin, TH2_newTitle);
-  std::cout<<"base of hmat anabin hist:"<<std::endl;
-  hmat_anabin->Print("base");    
-  std::cout<<std::endl;
+  TH2F* hmat_anabin = (TH2F*)hmat->Clone( (TH2_title+"_clone").c_str() );
+  hmat_anabin->Print("base");      std::cout<<std::endl;
+  
+  hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, 
+			       (TH2_title+"_anabins").c_str(), 
+			       (double*) boundaries_pt, (int) nbins_pt );
+			       //			       (const double*) boundaries_pt, (const int) nbins_pt );
+  hmat_anabin->Print("base");      std::cout<<std::endl;
 
   divideBinWidth_TH2(hmat_anabin);
-  std::cout<<"base of hmat anabin hist post divideBinWidth_TH2:"<<std::endl;
-  hmat_anabin->Print("base");    
-  std::cout<<std::endl;
-
-
-  //assert(false);    
+  hmat_anabin->Print("base");      std::cout<<std::endl;
 
 
 
-  //gen
+
+  // ---------- gen
   std::string genHistTitle="hpp_gen";//+RandEtaRange;
   if(doJetID)genHistTitle+="_wJetID";
   genHistTitle+=RandEtaRange;
 
   TH1F*hgen;
   hgen= (TH1F*)fpp_MC->Get( genHistTitle.c_str() );
-  hgen->Print("base");
+  hgen->Print("base");     std::cout<<std::endl;
 
-  std::string newGenHistTitle="hpp_anaBin_gen"+RandEtaRange;//"hpp_anaBin_gen_JetComb"+RandEtaRange;
-  TH1F* hgen_anabin = (TH1F*)hgen->Clone( ("clone_"+genHistTitle).c_str() );
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt, newGenHistTitle.c_str() , boundaries_pt);
-  hgen_anabin->Print("base");    
+  TH1F* hgen_anabin = (TH1F*)hgen->Clone( (genHistTitle+"_clone").c_str() );
+  if(debugMode)std::cout<<"underflow="<<hgen_anabin->GetBinContent(0)<<std::endl;
+  if(debugMode)std::cout<<"overflow="<<hgen_anabin->GetBinContent(1001)<<std::endl;  
+  if(debugMode)std::cout<<"clearing overflow/underflow bins..."<<std::endl;
+  hgen_anabin->TH1::ClearUnderflowAndOverflow();
+
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt, (genHistTitle+"_anabins").c_str() , boundaries_pt);
+  hgen_anabin->Print("base");        std::cout<<std::endl;
 
   divideBinWidth(hgen_anabin);
-  hgen_anabin->Print("base");
+  hgen_anabin->Print("base");      std::cout<<std::endl;
 
-  //assert(false);
-  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins, ("hpp_anaBin_gen_JetComb"+RandEtaRange).c_str(), ptbins);
-  //hgen_anabin = (TH1F*)hgen_anabin->Rebin(10);
-  //hgen_anabin->Scale(1/10.);
-  //hgen_anabin->Scale(hrec_anabin->Integral()/hgen_anabin->Integral());
-
-
-
-  // output histos -------------------------
-  std::cout<<std::endl<<std::endl<<"creating new OUTPUT histos..."<<std::endl;
-
-  //gen
-  TH1F *hgen_resp, *hgen_resp_anabin;
-  hgen_resp = new TH1F( ("hpp_gen_response"+RandEtaRange).c_str(),"", 
-			hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
-  hgen_resp->Sumw2();
-  hgen_resp->Print("base");
-
-  //  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", nbins, ptbins);
-  hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", nbins_pt, boundaries_pt);
-  hgen_resp_anabin->Sumw2();
-  hgen_resp_anabin->Print("base");
+  // ---------- resp histos
+  std::cout<<std::endl<<std::endl<<"creating new response(?) histos..."<<std::endl;
   
-  //rec
-  if(debugMode)std::cout<<"opening output rec/recresponse histograms..."<<std::endl;
-  TH1F *hrec_resp, *hrec_resp_anabin; 
-  hrec_resp = new TH1F( ("hpp_rec_response"+RandEtaRange).c_str(),"", 
-		       hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
-  hrec_resp->Sumw2();
-  hrec_resp->Print("base");
-
-  hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", nbins_pt, boundaries_pt);//nbins, ptbins);
-  hrec_resp_anabin->Sumw2();
-  hrec_resp_anabin->Print("base");
+  // gen
+  TH1F* hgen_resp = new TH1F( ("hpp_gen_response"+RandEtaRange).c_str(),"", 
+			      hgen->GetNbinsX(), hgen->GetXaxis()->GetXmin(), hgen->GetXaxis()->GetXmax());
+  hgen_resp->Sumw2();  hgen_resp->Print("base");
   
-  // open output file for writing output to a root file as we go along
+  TH1F* hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", 
+				     nbins_pt, boundaries_pt);
+  hgen_resp_anabin->Sumw2();  hgen_resp_anabin->Print("base");
+  
+  // rec
+  TH1F* hrec_resp = new TH1F( ("hpp_rec_response"+RandEtaRange).c_str(),"", 
+			      hrec->GetNbinsX(), hrec->GetXaxis()->GetXmin(), hrec->GetXaxis()->GetXmax());
+  hrec_resp->Sumw2();  hrec_resp->Print("base");
+  
+  TH1F* hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", 
+				     nbins_pt, boundaries_pt);
+  hrec_resp_anabin->Sumw2();  hrec_resp_anabin->Print("base");
+
+
+  // ----------
   if(debugMode)std::cout<<"opening output file: "<<outRootFile<<std::endl;
   TFile* fout = new TFile(outRootFile.c_str(),"RECREATE"); 
-
   
   // Bayesian unfolding ------------------------- 
   if(!doBayes)  std::cout<<std::endl<<"   skipping Bayesian Unfolding..."<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<std::endl<<std::endl<<"   beginning Bayesian Unfolding..."<<std::endl;
 
     std::cout<<"calling RooUnfoldResponse "<<std::endl;
-    RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str()) ;
+    //RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str()) ;
+    RooUnfoldResponse roo_resp( 0 , 0, hmat_anabin, ("bayes_hmat_anabin_resp"+RandEtaRange).c_str(), "bayesian response matrix") ;
     //RooUnfoldResponse roo_resp( hrec_anabin, hgen_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str()) ;
 
     std::cout<<"calling RooUnfoldBayes..."<<std::endl;
@@ -305,7 +268,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
     //  drawPDFS -------------------------------------------------- 
     if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
     else{ std::cout<<std::endl<<"drawing output PDFs for Bayesian Unfolding..."<<std::endl;
-      std::string outPdfFile=outBayesPdfFile+".pdf";
+      std::string outPdfFile=outBayesPdfFile;//+".pdf";
       std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
 
       // temp canvas for printing
@@ -430,7 +393,8 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
 
 
     std::cout<<"calling RooUnfoldResponse"<<std::endl;
-    RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix_anabin"+Rstring).c_str());
+    //RooUnfoldResponse roo_resp(hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix_anabin"+Rstring).c_str());
+    RooUnfoldResponse roo_resp( 0 , 0, hmat_anabin, ("SVD_hmat_anabin_resp"+RandEtaRange).c_str(), "SVD response matrix") ;
 
     if(debugMode)std::cout<<"opening TCanvases..."<<std::endl;
     TCanvas *cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","", 1500, 1500);      cPearsonMatrixIter->Divide(3,3);	
@@ -586,7 +550,9 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       //  singular values and d_i vector ---------------------------
       //Note that these do not depend on the regularization.
       //The opposite: they tell you which regularization to use! (ian note: how?)
-      if(kr == kRegDraw){      TSVDUnfold *svdUnfold = unf_svd.Impl();
+      if(kr == kRegDraw){      
+	TSVDUnfold *svdUnfold = unf_svd.Impl();
+	//svdUnfold->SetNormalize(true);
         //if(debugMode) std::cout<<std::endl<<"    !!! kr==0 !!!"<<std::endl<<std::endl;
 
         // singular values
@@ -647,7 +613,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
     else{ std::cout<<std::endl<<"drawing PDFs for SVD Unfolding..."<<std::endl;
       
       // form filename string, open pdf file and draw the canvases we have so far
-      std::string outPdfFile=outSVDPdfFile+".pdf";
+      std::string outPdfFile=outSVDPdfFile;//+".pdf";
       std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
       cPearsonMatrixIter->Print(open_outPdfFile.c_str());
 
@@ -721,3 +687,32 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   return rStatus;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //std::cout<<"underflow="<<hrec_anabin->GetBinContent(0)<<std::endl;
+  //std::cout<<"overflow="<<hrec_anabin->GetBinContent(1001)<<std::endl;
+  //float _56to64GeVSum = 0.;
+  //for(int i=57 ; i < 65; i++) {
+  //  std::cout<<"i="<<i<<std::endl;
+  //  std::cout<<"bin center ="<< hrec_anabin->GetBinCenter(i) <<std::endl;
+  //  std::cout<<"bin content ="<< hrec_anabin->GetBinContent(i) <<std::endl;
+  //  _56to64GeVSum += hrec_anabin->GetBinContent(i);
+  //  std::cout<<"Sum now ="<< _56to64GeVSum<<std::endl;
+  //
+  //}
+  //std::cout<<"before rebinning: 56-64GeV's contents are:"<< _56to64GeVSum <<std::endl;//57 because 1 GeV bins-> 56-57 is 57'th bin because 0-1 is the first bin
+  //std::cout<<"before rebinning: first bin's width is:"    << hrec_anabin->GetBinWidth(57)<<std::endl;
+  //std::cout<<"after rebinning: first bin's center is    :"<< hrec_anabin->GetBinCenter(1)<<std::endl;
+  //std::cout<<"after rebinning: first bin's contents are :"<< hrec_anabin->GetBinContent(1)<<std::endl;
+  //std::cout<<"after rebinning: first bin's width is     :"<< hrec_anabin->GetBinWidth(1)<<std::endl;

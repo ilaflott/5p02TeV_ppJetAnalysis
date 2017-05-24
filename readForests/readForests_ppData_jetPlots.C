@@ -8,7 +8,7 @@ const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool doHLTInEffCheck=false;
 const bool fillDataJetIDHists=true, tightJetID=false;
-const bool fillDataJetSpectraRapHists=false; //other
+const bool fillDataJetSpectraRapHists=true; //other
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0,100); hLeadJetPtCut->Fill(ldJetPtCut);     
   TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0,100); hSubLeadJetPtCut->Fill(subldJetPtCut);
   TH1F *hPtAveCut        =new TH1F("hPtAveCut"      ,(std::to_string(ptAveCut)).c_str(),      100, 0,100); hPtAveCut->Fill(ptAveCut);  
- 
+  
 
   //evt count
   TH1F *h_NEvents         = new TH1F("NEvents"         , "NEvents", 1,0,2);
@@ -571,25 +571,25 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(!hNEvts_withJets_Filled){
 	h_NEvents_withJets->Fill(1);
 	hNEvts_withJets_Filled=true;      }      
-          
-	  
+      
+      
       float recpt  = pt_F[jet];
       float receta = eta_F[jet];
       float absreceta = fabs(receta);
-    
-    
+      
+      
       //if(debugMode)std::cout<<"recpt="<<recpt<<std::endl;
       recpt=L2JES->getCorrectedPt(recpt,receta);
       //if(debugMode)std::cout<<"after L2Residual, recpt="<<recpt<<std::endl;
       recpt=L3JES->getCorrectedPt(recpt);
       //if(debugMode)std::cout<<"after L3Residual, recpt="<<recpt<<std::endl;
-    
-    
+      
+      
       //// TEMP 10.12.16////
       // kmatCuts      
-      if( recpt < jtPtCut ) continue;     
-    
-    
+      if( recpt <= jtPtCut ) continue;     
+      
+      
       float rawpt  = rawpt_F[jet];
       //float recy   = y_F[jet];
       float recphi = phi_F[jet];

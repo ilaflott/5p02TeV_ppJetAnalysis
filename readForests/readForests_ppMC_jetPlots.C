@@ -9,8 +9,8 @@ const bool fillgenJetQA=true&&fillMCJetQAHists;
 
 const bool fillMCJetIDHists=true, tightJetID=false;
 
-const bool fillMCJetSpectraRapHists=false; //other
-const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
+const bool fillMCJetSpectraRapHists=true; //other
+const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
 
 
 
@@ -92,9 +92,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   
   // declare hists
   /////   EVT+JET COUNTS AND METADATA   ///// 
-  TH1F *hJetPtCut        =new TH1F("hJetPtCut"      ,(std::to_string(jtPtCut)).c_str()   ,    100, 0,100); hJetPtCut->Fill(jtPtCut);           
-  TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);	        
-  TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6  ); hJetEtaCutLo->Fill(jtEtaCutLo);	        
+  TH1F *hJetPtCut        =new TH1F("hJetPtCut"     ,(std::to_string(jtPtCut)).c_str()   ,    100, 0,100); hJetPtCut->Fill(jtPtCut);           
+  TH1F *hGenJetPtCut     =new TH1F("hGenJetPtCut"  ,(std::to_string(genJetPtCut)).c_str()   ,    100, 0,100); hGenJetPtCut->Fill(genJetPtCut);           
+  TH1F *hJetEtaCutHi     =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);	        
+  TH1F *hJetEtaCutLo     =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6  ); hJetEtaCutLo->Fill(jtEtaCutLo);	        
   TH1F *hJetQAPtCut      =new TH1F("hJetQAPtCut"    ,(std::to_string(jetQAPtCut)).c_str(),    100, 0,100); hJetQAPtCut->Fill(jetQAPtCut);     
   TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0,100); hLeadJetPtCut->Fill(ldJetPtCut);     
   TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0,100); hSubLeadJetPtCut->Fill(subldJetPtCut);  
@@ -418,8 +419,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
       //if reco jet w/o matched gen jet, skip.
       if( subid_F[jet] != 0 ) continue;
-      else if( recpt < jtPtCut   ) continue;           
-      else if( genpt < jtPtCut   ) continue;
+      else if( recpt <= jtPtCut   ) continue;           
+      else if( genpt <= genJetPtCut   ) continue;
 
       float rawpt  = rawpt_F[jet];      
       //float recy = y_F[jet];
@@ -479,12 +480,14 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 		hMCJetQA_rapBins_genpt[1][theRapBin]     ->Fill(genpt,weight_eS);
 		hMCJetQA_rapBins_geneta[1][theRapBin]    ->Fill(geneta,weight_eS);
 		hMCJetQA_rapBins_genrecpt[1][theRapBin]  ->Fill(recpt/genpt,weight_eS);
-		hMCJetQA_rapBins_genreceta[1][theRapBin] ->Fill(receta/geneta,weight_eS);  }
+		hMCJetQA_rapBins_genreceta[1][theRapBin] ->Fill(receta/geneta,weight_eS);  
+	      }
 	      
 	      hMCJetQA_rapBins_genpt[0][theRapBin]     ->Fill(genpt,weight_eS);
 	      hMCJetQA_rapBins_geneta[0][theRapBin]    ->Fill(geneta,weight_eS);
 	      hMCJetQA_rapBins_genrecpt[0][theRapBin]  ->Fill(recpt/genpt,weight_eS);
-	      hMCJetQA_rapBins_genreceta[0][theRapBin] ->Fill(receta/geneta,weight_eS);	 }	    
+	      hMCJetQA_rapBins_genreceta[0][theRapBin] ->Fill(receta/geneta,weight_eS);	 
+	    }	    
 	    break; 	  }      
       }
       

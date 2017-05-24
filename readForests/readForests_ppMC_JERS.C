@@ -87,7 +87,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   // declare hists
   /////   EVT+JET COUNTS AND METADATA   ///// 
   TH1F *hJetPtCut        =new TH1F("hJetPtCut"      ,(std::to_string(jtPtCut)).c_str()   ,    100, 0,100); hJetPtCut->Fill(jtPtCut);           
-  TH1F *hJetGenPtCut        =new TH1F("hJetGenPtCut"      ,(std::to_string(jtGenPtCut)).c_str()   ,    100, 0,100); hJetGenPtCut->Fill(jtGenPtCut);           
+  TH1F *hGenJetPtCut     =new TH1F("hGenJetPtCut"  ,(std::to_string(genJetPtCut)).c_str()   ,    100, 0,100); hGenJetPtCut->Fill(genJetPtCut);           
   TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);
   TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6  ); hJetEtaCutLo->Fill(jtEtaCutLo);	
 
@@ -468,8 +468,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       float absreceta=fabs(receta);
       
       if( subid_F[jet]!=0 ) continue;
-      else if ( genpt < jtPtCut ) continue;
-      else if ( recpt < jtPtCut    ) continue;                 
+      else if ( recpt <= jtPtCut    ) continue;                 
+      else if ( genpt <= genJetPtCut ) continue;
+
       else if (absreceta >= jtEtaCutHi)continue;
       else if (absreceta < jtEtaCutLo) continue;
       //else if ( absreceta > 4.7    ) continue;

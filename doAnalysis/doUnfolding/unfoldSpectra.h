@@ -79,11 +79,13 @@ const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
   //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.4.17_outputCondor/";
+  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.19.17_outputCondor/";
 //const std::string unfoldSpectra_outdir="output/";
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
 
+const bool doOverUnderflows=false;
+const bool normalizedMCMatrix=false;
 
 //useful strings, numbers
 const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
@@ -121,9 +123,15 @@ const std::string Datadesc2= "L_{int}=27.4 pb^{-1}";
 
 //-----------------------------------------------------------------------------------------------------------------------
 const double anabins_pt[] = {//analysis pt bins
-  //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 32., 37., 43., 49., 
-  56., 64., 74., 84., 97., 114., 133., 153., 
-  174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468., 507., 548., 592., 638., 686., 1000.};
+  //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 32., 37., 
+  //43., 
+  //  49., 
+  //56.,  
+  //64., 
+  74., 84., 97., 114., 133., 153., 174., 196., 
+  220., 245., 272., 300., 330., 362., 395., 430., 468., 
+  507., 548., 592., 638., 686., 1000.
+};
 const int n_anabins_pt = sizeof(anabins_pt)/sizeof(double)-1;
 
 const double simpbins_pt[] = {//simple 10 GeV pt bins
@@ -296,72 +304,125 @@ void divideBinWidth_TH2(TH2F *h){
     }
   }
 
-  std::cout<<"base of hist in divideBinWidth_TH2 after dividing:"<<std::endl;
-  h->Print("base");      std::cout<<std::endl;
-
   h->SetEntries(numEntries);
-
-  //std::cout<<" divideBinWidth_TH2 done"<<std::endl<<std::endl;
+  h->Print("base");      std::cout<<std::endl;
+  
   std::cout<<std::endl<<"divideBinWidth_TH2 done"<<std::endl<<std::endl;
   return;
 }
 
+//normalizes MC response TH2 to the rowSum of the gen-axis
+void normalizeMC_TH2(TH2F* inputTH2){
+  std::cout<<std::endl<<"in normalizeMC_TH2"<<std::endl<<std::endl;
+  
+  inputTH2->Sumw2();
+  inputTH2->Print("base");  std::cout<<std::endl;
+  double numEntries=inputTH2->GetEntries();
+  
+  int colStart=1;
+  TAxis *xaxis = inputTH2->GetXaxis();
+  int nbins_x= xaxis->GetNbins();
+  
+  int rowStart=1;
+  TAxis *yaxis = inputTH2->GetYaxis();
+  int nbins_y = yaxis->GetNbins(); 
+  
+  if(doOverUnderflows){
+    nbins_x++;    nbins_y++;
+    rowStart--;   colStart--; }
+  
+  const int rowSums_len=nbins_y;
+  float rowSums[rowSums_len]={};
+  
+  //calculate sums
+  std::cout<<"computing row sums..."<<std::endl;
+  for(int rowNum=rowStart;rowNum<=nbins_y;rowNum++){
+    float theSum=0.; 
+    for(int colNum=colStart;colNum<=nbins_x;colNum++){
+      theSum+=(float)inputTH2->GetBinContent(colNum,rowNum);
+    }
+    rowSums[rowNum]=theSum;
+  }
+  std::cout<<std::endl;
+
+  //scale each row down by the sum computed
+  std::cout<<"scaling rows..."<<std::endl;
+  for(int  rowNum=rowStart; rowNum<=nbins_y; rowNum++){
+    float theSum=rowSums[rowNum]; 
+    for( int colNum=colStart; colNum<=nbins_x; colNum++){
+      float theVal=inputTH2->GetBinContent(colNum,rowNum)/theSum;
+      float theErr=inputTH2->GetBinError(colNum,rowNum)/theSum;
+      inputTH2->SetBinContent(colNum,rowNum,theVal);
+      inputTH2->SetBinError(colNum,rowNum,theErr);      
+    }
+  }
+  std::cout<<std::endl;
+
+  inputTH2->SetEntries(numEntries);
+  inputTH2->Print("base");
+
+  std::cout<<std::endl<<"exiting normalizeMC_TH2"<<std::endl<<std::endl;
+  return ;
+  
+
+}
 
 
 //TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, const double* boundaries_pt, const int nbins_pt){
 TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, double* boundaries_pt, int nbins_pt){
   std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
-  //std::cout<<std::endl<<"rebinning TH2 ..."<<std::endl <<std::endl;    
-  
-  float numEntries=inputTH2->GetEntries();
+
+
+  double numEntries=inputTH2->GetEntries();
   inputTH2->Sumw2();
-  //std::cout<<"input TH2 base:"<<std::endl;
   inputTH2->Print("base");  std::cout<<std::endl;
   
-  //const double* boundaries_pt;
-  //int nbins_pt;
   
-  //if(useSimpleBinning){    
-  //  boundaries_pt=simpbins_pt;
-  //  nbins_pt=n_simpbins_pt;  }
-  //else {
-  //  boundaries_pt=anabins_pt;
-  //  nbins_pt=n_anabins_pt;  }
+  int colStart=1;
+  TAxis *xaxis = inputTH2->GetXaxis(); //reco pt axis
+  int nbins_x= xaxis->GetNbins();
 
+  int rowStart=1;
+  TAxis *yaxis = inputTH2->GetYaxis(); //gen pt axis
+  int nbins_y = yaxis->GetNbins();
 
-  
-  TAxis *xaxis = inputTH2->GetXaxis();
-  int nbins_x= xaxis->GetNbins()+1;//includes overflow bin
-  TAxis *yaxis = inputTH2->GetYaxis();
-  int nbins_y = yaxis->GetNbins()+1; //includes overflow bin
-  
+  int finalxbin=nbins_x, finalybin=nbins_y;
+  if(doOverUnderflows){
+    finalxbin=nbins_x+1;    finalybin=nbins_y+1;
+    rowStart--;   colStart--; }
+
   TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(), 
 			       nbins_pt, boundaries_pt , 
 			       nbins_pt, boundaries_pt );
   reBinnedTH2->Sumw2();
   
-  for (int i=0 ; i <= (nbins_x) ; i++ ) {
-    for (  int j=0 ; j <= (nbins_y) ; j++ ) {
+  for (  int rowNum=rowStart ; rowNum <= (finalybin) ; rowNum++ ) {
+    for (int colNum=colStart ; colNum <= (finalxbin) ; colNum++ ) {
       
       //std::cout<<"i="<<i<<" and j="<<j<<std::endl; 
       //std::cout<<"bin x center = "<<xaxis->GetBinCenter(i)<< std::endl ;
       //std::cout<<"bin y center = "<<yaxis->GetBinCenter(j)<< std::endl ;
       
-      if(j==0 || i==0 || j==nbins_y || i==nbins_x){	
-	if( inputTH2->GetBinContent(i,j) != 0 )	  {
-	  //std::cout<<"i="<<i<<" and j="<<j<<std::endl; 
-	  //std::cout<<"under/overflow bin in TH2 nonzero!!"<<std::endl;
-	  //std::cout<<"under/overflow bin content="<<inputTH2->GetBinContent(i,j)<<std::endl;
-	  continue;	}      }      
-      else {
-	reBinnedTH2->Fill( xaxis->GetBinCenter(i) , yaxis->GetBinCenter(j) ,
-			   inputTH2->GetBinContent(i,j) );            }
+      //if(j==0 || i==0 || j==nbins_y || i==nbins_x){	
+      //	if( inputTH2->GetBinContent(i,j) != 0 )	  {
+      //	  //std::cout<<"i="<<i<<" and j="<<j<<std::endl; 
+      //	  //std::cout<<"under/overflow bin in TH2 nonzero!!"<<std::endl;
+      //	  //std::cout<<"under/overflow bin content="<<inputTH2->GetBinContent(i,j)<<std::endl;
+      //	  continue;	}      }      
+      //else 
+      //if(rowNum!=0 && colNum !=0 && rowNum != (nbinsy+1) && colNum !=(ybins+1) )
+      reBinnedTH2->Fill( xaxis->GetBinCenter(colNum) , yaxis->GetBinCenter(rowNum) ,
+			 inputTH2->GetBinContent(colNum,rowNum) );            
+      //else if(doOverUnderFlows)	{
+      //
+      //reBinnedTH1->Fill
+      
       
     }  }//end x-y loop
   
   reBinnedTH2->SetEntries(numEntries);
   reBinnedTH2->Print("base");  std::cout<<std::endl;
-
+  
   //std::cout<<" done rebinning TH2" <<std::endl<<std::endl;    
   std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;  
   return reBinnedTH2;
@@ -479,4 +540,12 @@ int PrintMatrix( const TMatrixD& m,
   return 0;
 } // end PrintMatrix
 
+void clearOverUnderflows(TH1* h)
+{
+  std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
+  std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
+  std::cout<<"clearing Over/Underflow Bins...."<<std::endl;
+  h->TH1::ClearUnderflowAndOverflow();
+  return;  
+}
 

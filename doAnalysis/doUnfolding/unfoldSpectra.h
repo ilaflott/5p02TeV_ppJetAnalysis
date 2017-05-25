@@ -84,14 +84,20 @@ const std::string SCRATCH_BASE=
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
 
+//for SVD, consts that don't change much
+const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
+
+//other options
 const bool doOverUnderflows=false;
-const bool normalizedMCMatrix=false;
+const bool normalizedMCMatrix=true;
+const bool fillRespHists=false;
+const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
 
 //useful strings, numbers
 const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
 const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
 const std::string Datadesc1= "pp 2015 pmptReco, #sqrt{s}=5.02 TeV"; 
-const std::string Datadesc2= "L_{int}=27.4 pb^{-1}"; 
+const std::string Datadesc2= "L_{int}=27.4 pb^{-1} +/- 2.4%"; 
 
 
 
@@ -125,9 +131,9 @@ const std::string Datadesc2= "L_{int}=27.4 pb^{-1}";
 const double anabins_pt[] = {//analysis pt bins
   //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 32., 37., 
   //43., 
-  //  49., 
-  //56.,  
-  //64., 
+  //49., 
+  56.,  
+  64., 
   74., 84., 97., 114., 133., 153., 174., 196., 
   220., 245., 272., 300., 330., 362., 395., 430., 468., 
   507., 548., 592., 638., 686., 1000.
@@ -317,6 +323,7 @@ void normalizeMC_TH2(TH2F* inputTH2){
   
   inputTH2->Sumw2();
   inputTH2->Print("base");  std::cout<<std::endl;
+
   double numEntries=inputTH2->GetEntries();
   
   int colStart=1;
@@ -331,29 +338,46 @@ void normalizeMC_TH2(TH2F* inputTH2){
     nbins_x++;    nbins_y++;
     rowStart--;   colStart--; }
   
-  const int rowSums_len=nbins_y;
-  float rowSums[rowSums_len]={};
+  const int rowSums_len=nbins_x;
+  float rowSums[rowSums_len]={0.};
+  float rowSumErrs[rowSums_len]={0.};
   
   //calculate sums
   std::cout<<"computing row sums..."<<std::endl;
   for(int rowNum=rowStart;rowNum<=nbins_y;rowNum++){
     float theSum=0.; 
+    float theSumErr=0.; 
     for(int colNum=colStart;colNum<=nbins_x;colNum++){
-      theSum+=(float)inputTH2->GetBinContent(colNum,rowNum);
+      float theVal=inputTH2->GetBinContent(colNum,rowNum);
+      float theValErr=inputTH2->GetBinError(colNum,rowNum);
+      theSum+=theVal;
+      theSumErr+=(theValErr*theValErr);
     }
     rowSums[rowNum]=theSum;
+    rowSumErrs[rowNum]=std::sqrt(theSumErr);
   }
   std::cout<<std::endl;
 
-  //scale each row down by the sum computed
+  //scale each entry in each row down by that row's sum
   std::cout<<"scaling rows..."<<std::endl;
   for(int  rowNum=rowStart; rowNum<=nbins_y; rowNum++){
+
     float theSum=rowSums[rowNum]; 
+    float theSumErr=rowSumErrs[rowNum]; 
+
     for( int colNum=colStart; colNum<=nbins_x; colNum++){
-      float theVal=inputTH2->GetBinContent(colNum,rowNum)/theSum;
-      float theErr=inputTH2->GetBinError(colNum,rowNum)/theSum;
-      inputTH2->SetBinContent(colNum,rowNum,theVal);
-      inputTH2->SetBinError(colNum,rowNum,theErr);      
+
+      float theVal=(inputTH2->GetBinContent(colNum,rowNum));
+      float theValErr=(inputTH2->GetBinError(colNum,rowNum));
+
+      float finalVal=theVal/theSum;
+      float finalErr=(theVal/theSum)* std::sqrt( 
+						(theSumErr/theSum)*(theSumErr/theSum) + 
+						(theValErr/theVal)*(theValErr/theVal) )  ;
+
+
+      inputTH2->SetBinContent(colNum,rowNum,finalVal);
+      inputTH2->SetBinError(colNum,rowNum,finalErr);      
     }
   }
   std::cout<<std::endl;

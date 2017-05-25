@@ -7,7 +7,7 @@ const bool fillMCJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;
 const bool fillgenJetQA=true&&fillMCJetQAHists;
 
-const bool fillMCJetIDHists=true, tightJetID=false;
+const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 const bool fillMCJetSpectraRapHists=true; //other
 const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
@@ -335,9 +335,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
   
-  float jetIDCut_neSum, jetIDCut_phSum;
-  if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
-  else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
+  //float jetIDCut_neSum, jetIDCut_phSum;
+  //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
+  //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
     
     if( debugMode     &&
@@ -434,32 +434,31 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
       if(fillMCJetIDHists) 
 	{
-          if (absreceta<=2.4)
-            {
+	  if (absreceta<=2.4) 
+	    { 
 	      if( neSum_F[jet]/rawpt    < 0.99 &&
-                  phSum_F[jet]/rawpt    < 0.99 &&
-                  chSum_F[jet]/rawpt    > 0.00 &&
-                  eSum_F[jet]/rawpt     < 0.99 &&
-                  chMult > 0  &&
-                  numConst > 1          ) passesJetID=true;
-            }
-          else if ( absreceta<=2.7 && absreceta>2.4 )
-            {
-              if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&
-                  phSum_F[jet]/rawpt    < jetIDCut_phSum &&
-                  numConst > 0          ) passesJetID=true;
-            }
-          else if( absreceta<=3.0 && absreceta>2.7 )
-            {
-              if(  neSum_F[jet]/rawpt < 1.00 &&
-                   phSum_F[jet]/rawpt > 0.00 &&
-                   neuMult            > 0       ) passesJetID=true;
-            }
-          else //( absreceta>3.0)
-            {
-              if( phSum_F[jet]/rawpt < 1.00 &&
-                  numConst > 0 ) passesJetID=true;
-            }
+		  phSum_F[jet]/rawpt    < 0.99 &&
+		  numConst              > 1    &&      
+		  chSum_F[jet]/rawpt    > 0.00 && 
+		  chMult                > 0    &&
+		  eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
+	    }
+	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
+	    {	  
+	      if( neSum_F[jet]/rawpt    < 0.99 &&
+		  phSum_F[jet]/rawpt    < 0.99 &&
+		  numConst              > 1       ) passesJetID=true;	      
+	    }		  
+	  else if( absreceta<=3.0 && absreceta>2.7 ) 
+	    {                                                         // CMSSW 80X criterion
+	      if(  phSum_F[jet]/rawpt < 0.90 &&                       //else if(  phSum_F[jet]/rawpt > 0.01 &&		     
+		   neuMult            > 2       ) passesJetID=true;   //          neSum_F[jet]/rawpt < 0.98 &&		     
+	    }							      //          neuMult            > 2       ) passesJetID=true;
+	  else //( absreceta>3.0) 
+	    {
+	      if( phSum_F[jet]/rawpt < 0.90 &&                      
+	      	  neuMult            > 10      ) passesJetID=true;  
+	    }	  	  
 	} 
       
       //fill jetspectraRapHists w/ passing jetID criterion

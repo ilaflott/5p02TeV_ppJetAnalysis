@@ -7,7 +7,7 @@ const bool fillDataJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool doHLTInEffCheck=false;
-const bool fillDataJetIDHists=true, tightJetID=false;
+const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetSpectraRapHists=true; //other
 
 //// readForests_ppData_jetPlots
@@ -424,9 +424,9 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   L2ResidualJES* L2JES = new L2ResidualJES(radius, etacutForResid, "pp5");
   L3ResidualJES* L3JES = new L3ResidualJES("pp5");
 
-  float jetIDCut_neSum, jetIDCut_phSum;
-  if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
-  else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
+  //float jetIDCut_neSum, jetIDCut_phSum;
+  //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
+  //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
   
   //begin event loop
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {
@@ -588,7 +588,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       //// TEMP 10.12.16////
       // kmatCuts      
       if( recpt <= jtPtCut ) continue;     
-      
+
       
       float rawpt  = rawpt_F[jet];
       //float recy   = y_F[jet];
@@ -607,27 +607,26 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	    { 
 	      if( neSum_F[jet]/rawpt    < 0.99 &&
 		  phSum_F[jet]/rawpt    < 0.99 &&
+		  numConst              > 1    &&      
 		  chSum_F[jet]/rawpt    > 0.00 && 
-		  eSum_F[jet]/rawpt     < 0.99 &&
-		  chMult > 0  &&
-		  numConst > 1          ) passesJetID=true;	      
+		  chMult                > 0    &&
+		  eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
 	    }
 	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
 	    {	  
-	      if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&
-		  phSum_F[jet]/rawpt    < jetIDCut_phSum &&
-		  numConst > 0          ) passesJetID=true;	      
+	      if( neSum_F[jet]/rawpt    < 0.99 &&
+		  phSum_F[jet]/rawpt    < 0.99 &&
+		  numConst              > 1       ) passesJetID=true;	      
 	    }		  
 	  else if( absreceta<=3.0 && absreceta>2.7 ) 
-	    {
-	      if(  neSum_F[jet]/rawpt < 1.00 && 
-		   phSum_F[jet]/rawpt > 0.00 &&
-		   neuMult            > 0       ) passesJetID=true;
-	    }
+	    {                                                         // CMSSW 80X criterion
+	      if(  phSum_F[jet]/rawpt < 0.90 &&                       //else if(  phSum_F[jet]/rawpt > 0.01 &&		     
+		   neuMult            > 2       ) passesJetID=true;   //          neSum_F[jet]/rawpt < 0.98 &&		     
+	    }							      //          neuMult            > 2       ) passesJetID=true;
 	  else //( absreceta>3.0) 
 	    {
-	      if( phSum_F[jet]/rawpt < 1.00 &&
-		  numConst > 0 ) passesJetID=true;
+	      if( phSum_F[jet]/rawpt < 0.90 &&                      
+	      	  neuMult            > 10      ) passesJetID=true;  
 	    }	  	  
 	}
       
@@ -636,15 +635,15 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	int theRapBin=-1;
 	for(int rapbin=0;rapbin<nbins_rap;++rapbin)
 	  if( rapbins[rapbin]<=absreceta  && 		
-	      absreceta<rapbins[rapbin+1]    ) {
+	      absreceta<rapbins[rapbin+1]    	      ) {
 	    theRapBin=rapbin;
 	    hJetSpectraRap[0][theRapBin]->Fill(recpt,weight_eS);  
 	    if( passesJetID ) 
 	      hJetSpectraRap[1][theRapBin]->Fill(recpt,weight_eS);    
 	    break;
 	  } }
-          
-	  
+      
+      
       //second half of kmat cut      
       
       if( absreceta >= jtEtaCutHi ) continue;

@@ -21,7 +21,7 @@ echo ""
 #./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-19-17_jetPlots_1.5eta2.0  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-19-17_JERS_1.5eta2.0     HPtJetTrig_Py8_unfoldedData_15eta20  0
 
 
-./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-19-17_jetPlots_0.0eta0.5  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-19-17_JERS_0.0eta0.5     HPtJetTrig_Py8_unf_00eta05_noOverflow_emptyResp_kReg11_newJobs  1
+./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-19-17_jetPlots_0.0eta0.5  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-19-17_JERS_0.0eta0.5     HPtJetTrig_Py8_unf_00eta05_normMCMatrix_simpbins_respHistsEmpty  1
 #./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-19-17_jetPlots_0.5eta1.0  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-19-17_JERS_0.5eta1.0     HPtJetTrig_Py8_unf_05eta10_wOverflow  1
 #./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-19-17_jetPlots_1.0eta1.5  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-19-17_JERS_1.0eta1.5     HPtJetTrig_Py8_unfoldedData_10eta15  1
 #./unfoldDataSpectra.exe ppData_HighPtJetTrig_ak4PFJets_05-19-17_jetPlots_1.5eta2.0  ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_05-19-17_JERS_1.5eta2.0     HPtJetTrig_Py8_unfoldedData_15eta20  1

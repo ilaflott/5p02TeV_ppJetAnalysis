@@ -6,7 +6,7 @@ const bool fillMCEvtQAHists=true;
 const bool fillJERSHists=true;
 const bool fillMCUnfoldingHists=true;
 const bool fillMCEffHists=true;
-const bool fillMCJetIDHists=true, tightJetID=false;
+const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 //// readForests_ppMC_JERS
 // ---------------------------------------------------------------------------------------------------------------
@@ -404,9 +404,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 
   //MCTruthResidual* MCResidual = new MCTruthResidual( "pp5");
   int mcclosureInt=0;
-  float jetIDCut_neSum, jetIDCut_phSum;
-  if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
-  else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
+  //float jetIDCut_neSum, jetIDCut_phSum;
+  //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
+  //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
 
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
     
@@ -492,38 +492,36 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 
       // 13 TeV JetID criterion
       bool passesJetID=false; //int jtID=0;
-      if(fillMCJetIDHists) {
-	if (absreceta<=2.4)
-	  {
-	    if( neSum_F[jet]/rawpt      < 0.99 &&
-		phSum_F[jet]/rawpt      < 0.99 &&
-		chSum_F[jet]/rawpt      > 0.00 &&
-		eSum_F[jet]/rawpt       < 0.99 &&
-		chMult   > 0  &&
-		numConst > 1           ) passesJetID=true;
-	  }
-	else if ( absreceta<=2.7 && absreceta>2.4 )
-	  {
-	    if( neSum_F[jet]/rawpt    < jetIDCut_neSum &&
-		phSum_F[jet]/rawpt    < jetIDCut_phSum &&
-		numConst > 0         ) passesJetID=true;
-	  }
-	else if( absreceta<=3.0 && absreceta>2.7 )
-	  {
-	    if(  neSum_F[jet]/rawpt < 1.00 &&
-		 phSum_F[jet]/rawpt > 0.00 &&
-		 neuMult            > 0       ) passesJetID=true;
-	  }
-	else //( absreceta>3.0)
-	  {
-	    if( phSum_F[jet]/rawpt < 1.00 &&
-		numConst > 0 ) passesJetID=true;
-	  }
-	//if(passesJetID)jtID=1;
-	//else continue;      //continue because we do jtIDT, jtIDL, and jtID0 all in different job
-      }
+      if(fillMCJetIDHists) 
+	{
+	  if (absreceta<=2.4) 
+	    { 
+	      if( neSum_F[jet]/rawpt    < 0.99 &&
+		  phSum_F[jet]/rawpt    < 0.99 &&
+		  numConst              > 1    &&      
+		  chSum_F[jet]/rawpt    > 0.00 && 
+		  chMult                > 0    &&
+		  eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
+	    }
+	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
+	    {	  
+	      if( neSum_F[jet]/rawpt    < 0.99 &&
+		  phSum_F[jet]/rawpt    < 0.99 &&
+		  numConst              > 1       ) passesJetID=true;	      
+	    }		  
+	  else if( absreceta<=3.0 && absreceta>2.7 ) 
+	    {                                                         // CMSSW 80X criterion
+	      if(  phSum_F[jet]/rawpt < 0.90 &&                       //else if(  phSum_F[jet]/rawpt > 0.01 &&		     
+		   neuMult            > 2       ) passesJetID=true;   //          neSum_F[jet]/rawpt < 0.98 &&		     
+	    }							      //          neuMult            > 2       ) passesJetID=true;
+	  else //( absreceta>3.0) 
+	    {
+	      if( phSum_F[jet]/rawpt < 0.90 &&                      
+	      	  neuMult            > 10      ) passesJetID=true;  
+	    }	  	  
+	}
       
-
+      
       // jet/event counts
       h_NJets_kmatCut1->Fill(1);
       if(!hNEvts_withJets_kmatCut1_Filled){

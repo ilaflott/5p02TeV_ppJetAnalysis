@@ -79,7 +79,7 @@ const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
   //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.19.17_outputCondor/";
+  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.25.17_outputCondor/";
 //const std::string unfoldSpectra_outdir="output/";
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
@@ -89,7 +89,7 @@ const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to d
 
 //other options
 const bool doOverUnderflows=false;
-const bool normalizedMCMatrix=true;
+const bool normalizedMCMatrix=false;
 const bool fillRespHists=false;
 const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
 
@@ -127,28 +127,58 @@ const std::string Datadesc2= "L_{int}=27.4 pb^{-1} +/- 2.4%";
 //const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root";
 //const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
 
-//-----------------------------------------------------------------------------------------------------------------------
-const double anabins_pt[] = {//analysis pt bins
+
+// ------ RECO BINS ----- //
+const double anabins_pt_reco[] = {//analysis pt bins
   //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 32., 37., 
   //43., 
   //49., 
-  56.,  
-  64., 
+  56.,  64., 
   74., 84., 97., 114., 133., 153., 174., 196., 
   220., 245., 272., 300., 330., 362., 395., 430., 468., 
-  507., 548., 592., 638., 686., 1000.
+  507., 548., 592., 638., 686.
+  //, 1000.
 };
-const int n_anabins_pt = sizeof(anabins_pt)/sizeof(double)-1;
+const int n_anabins_pt_reco = sizeof(anabins_pt_reco)/sizeof(double)-1;
 
-const double simpbins_pt[] = {//simple 10 GeV pt bins
-  56.,  66., 76., 86., 96., 106., 116., 126., 136., 146., 156., 166., 176., 186., 196., 
+const double simpbins_pt_reco[] = {//simple 10 GeV pt bins
+  56.,  
+  66.,  76.,  86.,  96., 106., 116., 126., 136., 146., 156., 166., 176., 186., 196., 
   206., 216., 226., 236., 246., 256., 266., 276., 286., 296., 306., 316., 326., 336., 346., 356., 366., 376., 
   386., 396., 406., 416., 426., 436., 446., 456., 466., 476., 486., 496., 506., 516., 526., 536., 546., 556., 
-  566., 576., 586., 596., 606., 616., 626., 636., 646., 656., 666., 676., 686., 696., 706., 716., 726., 736., 
-  746., 756., 766., 776., 786., 796., 806., 816., 826., 836., 846., 856., 866., 876., 886., 896., 906., 916., 
-  926., 936., 946., 956., 966., 976., 986., 1000.
+  566., 576., 586., 596., 606., 616., 626., 636., 646., 656., 666., 676., 686.
+  //, 694., 704., 714., 724., 734., 
+  //744., 754., 764., 774., 784., 794., 804., 814., 824., 834., 844., 854., 864., 874., 884., 894., 904., 914., 
+  //924., 934., 944., 954., 964., 974., 984., 1000.
 };
-const int n_simpbins_pt = sizeof(simpbins_pt)/sizeof(double)-1;
+const int n_simpbins_pt_reco = sizeof(simpbins_pt_reco)/sizeof(double)-1;
+
+
+
+// ------ GEN BINS ----- //
+const double anabins_pt_gen[] = {//analysis pt bins
+  //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 
+  32., 37., 43.,  49., 
+  56.,  64., 
+  74., 84., 97., 114., 133., 153., 174., 196., 
+  220., 245., 272., 300., 330., 362., 395., 430., 468., 
+  507., 548., 592., 638., 686.
+  //, 1000.
+};
+const int n_anabins_pt_gen = sizeof(anabins_pt_gen)/sizeof(double)-1;
+
+const double simpbins_pt_gen[] = {//simple 10 GeV pt bins
+  36.,  46.,   
+  56.,  
+  66.,  76.,   86.,  96., 106., 116., 126., 136., 146., 156., 166., 176., 186., 196., 
+  206., 216., 226., 236., 246., 256., 266., 276., 286., 296., 306., 316., 326., 336., 346., 356., 366., 376., 
+  386., 396., 406., 416., 426., 436., 446., 456., 466., 476., 486., 496., 506., 516., 526., 536., 546., 556., 
+  566., 576., 586., 596., 606., 616., 626., 636., 646., 656., 666., 676., 686.
+  //, 694., 704., 714., 724., 734., 
+  //744., 754., 764., 774., 784., 794., 804., 814., 824., 834., 844., 854., 864., 874., 884., 894., 904., 914., 
+  //924., 934., 944., 954., 964., 974., 984., 1000.
+};
+const int n_simpbins_pt_gen = sizeof(simpbins_pt_gen)/sizeof(double)-1;
 
 //-----------------------------------------------------------------------------------------------------------------------
 // color scheme for different color
@@ -393,7 +423,10 @@ void normalizeMC_TH2(TH2F* inputTH2){
 
 
 //TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, const double* boundaries_pt, const int nbins_pt){
-TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, double* boundaries_pt, int nbins_pt){
+TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, 
+	       double* boundaries_pt_reco, int nbins_pt_reco,
+	       double* boundaries_pt_gen  , int nbins_pt_gen	       ){
+
   std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
 
 
@@ -416,8 +449,8 @@ TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, double* boundaries_pt
     rowStart--;   colStart--; }
 
   TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(), 
-			       nbins_pt, boundaries_pt , 
-			       nbins_pt, boundaries_pt );
+			       nbins_pt_reco, boundaries_pt_reco , 
+			       nbins_pt_gen, boundaries_pt_gen );
   reBinnedTH2->Sumw2();
   
   for (  int rowNum=rowStart ; rowNum <= (finalybin) ; rowNum++ ) {

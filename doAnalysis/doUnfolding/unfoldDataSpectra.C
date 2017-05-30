@@ -1,12 +1,12 @@
 #include "unfoldSpectra.h"
 
 // procedural settings
-const bool doBayes=true; 
+const bool doBayes=false; 
 const int kIter = 4; //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
 const bool doSVD=true; //!(doBayes); 
-const int kRegCenter= 5 ; // kReg val for center hist on 3x3
-const int kRegDraw  = 4 ; // standalone spectra/ratio to draw, array entries w/ arguments 0-8. 4 -> middle hist on 3x3 plot
+const int kRegCenter= 30 ; // kReg val for center hist on 3x3
+const int kRegDraw  = 2 ; // standalone spectra/ratio to draw, array entries w/ arguments 0-8. 4 -> middle hist on 3x3 plot
 
 
 const bool drawPDFs=true; 
@@ -24,16 +24,23 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   
 
   // BINNING -----------
-  double* boundaries_pt;
-  int nbins_pt;
+  double* boundaries_pt_reco ;   int nbins_pt_reco ;
+  double* boundaries_pt_gen  ;   int nbins_pt_gen  ;
+
   if(useSimplePtBinning){
     std::cout<<"using simple pt bins"<<std::endl<<std::endl;
-    boundaries_pt = (double*)simpbins_pt   ;
-    nbins_pt      = (int)n_simpbins_pt ; } 
+    boundaries_pt_reco = (double*)simpbins_pt_reco   ;
+    nbins_pt_reco      = (int)n_simpbins_pt_reco ; 
+    boundaries_pt_gen = (double*)simpbins_pt_gen  ;
+    nbins_pt_gen      = (int)n_simpbins_pt_gen ; 
+  } 
   else{
     std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
-    boundaries_pt = (double*)anabins_pt   ;
-    nbins_pt      = (int)n_anabins_pt ; }
+    boundaries_pt_reco = (double*)anabins_pt_reco   ;
+    nbins_pt_reco      = (int)n_anabins_pt_reco ; 
+    boundaries_pt_gen = (double*)anabins_pt_gen   ;
+    nbins_pt_gen      = (int)n_anabins_pt_gen ; 
+  }
 
 
   // STRINGS -----------
@@ -127,7 +134,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   hrec_anabin->Print("base");  std::cout<<std::endl;
   
   if(debugMode)std::cout<<"rebinning hrec..."<<std::endl;
-  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt, (histTitle+"_anabins").c_str() , boundaries_pt); 
+  hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt_reco, (histTitle+"_anabins").c_str() , boundaries_pt_reco); 
   hrec_anabin->Print("base");  std::cout<<std::endl;
   
   divideBinWidth(hrec_anabin); 
@@ -142,7 +149,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   if(fillRespHists) hrec_resp_anabin = (TH1F*)hrec_anabin->Clone("recanabinClone4unf");
   else{
     hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", 
-				 nbins_pt, boundaries_pt);
+				 nbins_pt_reco, boundaries_pt_reco);
     hrec_resp_anabin->Sumw2();  }
   hrec_resp_anabin->Print(" base");  
   
@@ -165,7 +172,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   hgen->Print("base");     std::cout<<std::endl;
   
   TH1F* hgen_anabin = (TH1F*)hgen->Clone( (genHistTitle+"_clone").c_str() );
-  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt, (genHistTitle+"_anabins").c_str() , boundaries_pt);
+  hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt_gen, (genHistTitle+"_anabins").c_str() , boundaries_pt_gen);
   hgen_anabin->Print("base");        std::cout<<std::endl;
   
   divideBinWidth(hgen_anabin);
@@ -180,7 +187,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   if(fillRespHists) hgen_resp_anabin = (TH1F*)hgen_anabin->Clone("genanabinClone4unf");
   else{
     hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", 
-				 nbins_pt, boundaries_pt);
+				 nbins_pt_gen, boundaries_pt_gen);
     hgen_resp_anabin->Sumw2(); }
   hgen_resp_anabin->Print("base");  
   
@@ -197,9 +204,10 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   TH2F* hmat_anabin = (TH2F*)hmat->Clone( (TH2_title+"_clone").c_str() );
   hmat_anabin->Print("base");      std::cout<<std::endl;
   
-  hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, 
-			       (TH2_title+"_anabins").c_str(), 
-			       (double*) boundaries_pt, (int) nbins_pt );
+  hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, (TH2_title+"_anabins").c_str(), 
+			       (double*)boundaries_pt_reco, nbins_pt_reco,
+			       (double*) boundaries_pt_gen, nbins_pt_gen  );
+			       //			       (double*) boundaries_pt, (int) nbins_pt );
   hmat_anabin->Print("base");      std::cout<<std::endl;
   
   divideBinWidth_TH2(hmat_anabin);
@@ -236,7 +244,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
     std::cout<<std::endl; hunf->Print("base");
 
     TH1F *hratio = (TH1F*)hunf->Clone( "ppData_BayesianUnfolding_UnfoldRatio" );
-    hratio->SetTitle( "ppData, Bayesian Unfolded/ppMC Gen" );
+    hratio->SetTitle( "BayesUnf(Reco)/Gen" );
     hratio->SetMarkerStyle(24);
     hratio->SetMarkerColor(kRed);
     hratio->Divide(hgen_anabin);
@@ -281,7 +289,8 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       
       TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv","",           1000,1000);    
       tempCanvForPdfPrint->cd();
-      //tempCanvForPdfPrint->SetLogy(0);
+      tempCanvForPdfPrint->SetLogy(0);
+      tempCanvForPdfPrint->SetLogx(1);
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
       
       if(drawPDFs_BayesInputHistos){
@@ -323,16 +332,16 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
 	tempCanvForPdfPrint_wLogy->cd();
 	//tempCanvForPdfPrint_wLogy->SetLogx(1);
 
-        hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
-        hrec_anabin->SetMarkerColor(kBlue);     
-        hrec_anabin->SetMarkerSize(0.90);     
-        hrec_anabin->SetTitle("input hists, a");
-        hrec_anabin->Draw();           
-
         hgen_anabin->SetMarkerStyle(kOpenSquare);
         hgen_anabin->SetMarkerColor(kGreen+2);
         hgen_anabin->SetMarkerSize(0.90);     
-	hgen_anabin->Draw("SAME");           
+	hgen_anabin->Draw();           
+
+        hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
+        hrec_anabin->SetMarkerColor(kBlue);     
+        hrec_anabin->SetMarkerSize(0.90);     
+        hrec_anabin->SetTitle("spectra");
+        hrec_anabin->Draw("SAME");           
 
 	hunf->SetMarkerStyle(kCircle);
         hunf->SetMarkerColor(kRed);
@@ -341,9 +350,9 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
 
 	
 	TLegend* legend = new TLegend( 0.7,0.8,0.9,0.9 );
-	legend->AddEntry(hgen_anabin, "MC gen jet", "p");
-	legend->AddEntry(hrec_anabin, "data reco jet", "p");
-	legend->AddEntry(hunf, "unfolded data", "p");
+	legend->AddEntry(hgen_anabin, "MC gen jet in", "p");
+	legend->AddEntry(hrec_anabin, "data reco jet in", "p");
+	legend->AddEntry(hunf, "unf. reco jet out", "p");
 	legend->Draw();
 
 	tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
@@ -357,18 +366,23 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       //tempCanvForPdfPrint_wLogy->cd();
       //hunf->Draw();         tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
 
-      tempCanvForPdfPrint_wLogy->cd();
-      //tempCanvForPdfPrint->SetLogx(1);
+      tempCanvForPdfPrint->cd();
       hratio->SetAxisRange(0., 2., "Y");
       hratio->Draw();       
 
-      TLine* theLine= new TLine(boundaries_pt[0],1.,1000.,1.);
+      TLine* theLine= new TLine( boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
       theLine->SetLineWidth(1);
       theLine->SetLineStyle(2);
       theLine->SetLineColor(36);
       theLine->Draw();
+
+      TLine* theLine_recoCut= new TLine( boundaries_pt_reco[0],0.,boundaries_pt_reco[0],2.);
+      theLine_recoCut->SetLineWidth(1);
+      theLine_recoCut->SetLineStyle(10);
+      theLine_recoCut->SetLineColor(46);
+      theLine_recoCut->Draw();
       
-      tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
       // draw and print response output, all of these plots draw empty though...
       //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());              //empty
@@ -437,6 +451,11 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       hunf_svd[kr]->SetLineColor(kBlue);
       hunf_svd[kr]->Print("base");
   
+//      TH1F* hgen_anabin_forDiv=(TH1F*)hgen_anabin->Clone("hgen_anabin_clone_forSVDdiv");
+//      hgen_anabin_forDiv=(TH1F*)hgen_anabin_forDiv->Rebin(nbins_pt_reco, "hgen_anabin_clone_forSVDdiv_recobins" , boundaries_pt_reco);
+//
+//      hratio_svd[kr]->Divide(hgen_anabin_forDiv);
+
       hratio_svd[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ppData_SVDUnfolding_UnfoldRatio"+kRegRandEtaRange).c_str());
       hratio_svd[kr]->Divide(hgen_anabin);
       hratio_svd[kr]->SetMarkerStyle(33);
@@ -514,7 +533,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       hrec_anabin_clone->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_anabin_clone->SetMarkerStyle(24);
       hrec_anabin_clone->SetMarkerColor(kBlack);
-      hrec_anabin_clone->SetAxisRange(boundaries_pt[0], 1000., "X");
+      hrec_anabin_clone->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
       hrec_anabin_clone->Print("base");
 
       hrec_anabin_clone->Draw();
@@ -537,21 +556,24 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
-      hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt[0], 1000., "X");
+      hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
       hrec_folded_ratio[kr]->SetAxisRange(0.1, 1.9, "Y");
       hrec_folded_ratio[kr]->Divide(hrec_anabin);
       hrec_folded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Draw();
 
       hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ppData_SVDUnfolding_UnfoldedRatio"+kRegRandEtaRange).c_str());
+      hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->SetTitle( ("Ratio, Unf. Over Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
       hrec_unfolded_ratio[kr]->SetMarkerStyle(27);
-      hrec_unfolded_ratio[kr]->SetMarkerColor(kBlue);
+      hrec_unfolded_ratio[kr]->SetMarkerColor(kBlue);      
+      hrec_unfolded_ratio[kr] = (TH1F*)hrec_unfolded_ratio[kr]->Rebin(nbins_pt_reco, ("ppData_SVDUnfolding_UnfoldedRatio_rebin4div"+kRegRandEtaRange).c_str() , boundaries_pt_reco);
+      clearOverUnderflows((TH1*)hrec_unfolded_ratio[kr]);
       hrec_unfolded_ratio[kr]->Divide(hrec_anabin);
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->Draw("same");
 
-      TLine* theLine= new TLine(boundaries_pt[0],1.,1000.,1.);
+      TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
       theLine->SetLineWidth(1);
       theLine->SetLineStyle(2);
       theLine->SetLineColor(36);
@@ -650,7 +672,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       cRatioCheck->SetLogx(1);
 
       hrec_folded_ratio[kRegDraw]->SetAxisRange(0.1, 1.9, "Y");
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt[0], 1000., "X");
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
       hrec_folded_ratio[kRegDraw]->SetTitle("(Un)Fold/Meas");
       hrec_folded_ratio[kRegDraw]->Draw();
 
@@ -666,7 +688,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
 
-      TLine* theLine= new TLine(boundaries_pt[0],1.,1000.,1.);
+      TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
       theLine->SetLineWidth(1);
       theLine->SetLineStyle(2);
       theLine->SetLineColor(36);

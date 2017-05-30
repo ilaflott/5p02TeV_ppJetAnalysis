@@ -4,7 +4,7 @@
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 const bool fillJERSHists=true;
-const bool fillMCUnfoldingHists=true;
+const bool fillMCUnfoldingHists=false;
 const bool fillMCEffHists=true;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
@@ -117,12 +117,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   
   /////   EVENT QA   ///// 
-  TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL ; //*hvzWVz=NULL, 
+  TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL, *hvzWVz=NULL; 
   TH1F *hpthat=NULL, *hWpthat=NULL;  
   if(fillMCEvtQAHists){
     hVz       = new TH1F("hVz","", 60,-15.,15.);//evtvz
     hpthatWVz = new TH1F("hpthatWeightedVz","", 60,-15.,15.);//pthat-weighted evtvz
-    //hvzWVz    = new TH1F("hvzWeightedVz","", 60,-15.,15.);//vz-weighted evtvz
+    hvzWVz    = new TH1F("hvzWeightedVz","", 60,-15.,15.);//vz-weighted evtvz
     hWVz      = new TH1F("hWeightedVz","", 60,-15.,15.);//pthat*vz-weighted evt vz
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  }
@@ -442,10 +442,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     
     //vz hists
     if(fillMCEvtQAHists){
+
       hVz->Fill(vz_F, 1.);
-      //hvzWVz->Fill(vz_F, vzWeight);
+      hvzWVz->Fill(vz_F, vzWeight);
       hpthatWVz->Fill(vz_F, evtPthatWeight);
       hWVz->Fill(vz_F, weight_eS);      
+
       hpthat->Fill(pthat_F, 1.);
       hWpthat->Fill(pthat_F, weight_eS);}
         
@@ -466,13 +468,14 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       float recpt  = pt_F[jet];
       float receta = eta_F[jet];
       float absreceta=fabs(receta);
+      float geneta = refeta_F[jet];
+      float absgeneta=fabs(geneta);
       
       if( subid_F[jet]!=0 ) continue;
       else if ( recpt <= jtPtCut    ) continue;                 
       else if ( genpt <= genJetPtCut ) continue;
-
-      else if (absreceta >= jtEtaCutHi)continue;
-      else if (absreceta < jtEtaCutLo) continue;
+      else if (absgeneta >= jtEtaCutHi)continue;
+      else if (absgeneta < jtEtaCutLo) continue;
       //else if ( absreceta > 4.7    ) continue;
 
       //bool passesEtaCut;
@@ -480,7 +483,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       //else passesEtaCut=true;
       //if(!passesEtaCut)continue; 
 
-      float geneta = refeta_F[jet];
       float genphi = refphi_F[jet];
       float gendrjt = refdrjt_F[jet];     
       float rawpt  = rawpt_F[jet];
@@ -510,14 +512,16 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 		  numConst              > 1       ) passesJetID=true;	      
 	    }		  
 	  else if( absreceta<=3.0 && absreceta>2.7 ) 
-	    {                                                         // CMSSW 80X criterion
-	      if(  phSum_F[jet]/rawpt < 0.90 &&                       //else if(  phSum_F[jet]/rawpt > 0.01 &&		     
-		   neuMult            > 2       ) passesJetID=true;   //          neSum_F[jet]/rawpt < 0.98 &&		     
-	    }							      //          neuMult            > 2       ) passesJetID=true;
+	    {                                                         // CMSSW [76,80]X criterion
+	      if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
+		   neSum_F[jet]/rawpt > 0.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+		   neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+	    }							      
 	  else //( absreceta>3.0) 
-	    {
-	      if( phSum_F[jet]/rawpt < 0.90 &&                      
-	      	  neuMult            > 10      ) passesJetID=true;  
+	    {                                                          // CMSSW 76X criterion
+	      if( (phSum_F[jet]/rawpt > 0.00 ||                         // else if( phSum_F[jet]/rawpt < 0.90 &&
+		   neSum_F[jet]/rawpt  > 0.00 ) &&                         //          neSum_F[jet]/rawpt < null &&
+	      	  neuMult             > 0       ) passesJetID=true;     //          neuMult            > 10
 	    }	  	  
 	}
       
@@ -533,10 +537,10 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	
 	// dual-diff xsec abseta bins for two spec genpt bins and all genpt bins
 	int absetabin=-1;
-	if(absreceta>absetabins[nbins_abseta]) absetabin = -1;//check end of array
+	if(absgeneta>absetabins[nbins_abseta]) absetabin = -1;//check end of array
 	else{
 	  for(int bin=0; bin < nbins_abseta; bin++)
-	    if( absreceta>=absetabins[bin] ) absetabin = bin; 				
+	    if( absgeneta>=absetabins[bin] ) absetabin = bin; 				
 	}
 	
 	if(absetabin != -1 ){
@@ -614,6 +618,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       /////   UNFOLDING   ///// 
       if(fillMCUnfoldingHists){
 	for(int jtID=0; jtID<2;jtID++){
+
 	  if(jtID==1 && !passesJetID)continue;
 	  else if (jtID==1 && !fillMCJetIDHists)continue;
 

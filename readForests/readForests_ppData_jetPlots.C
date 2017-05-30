@@ -619,14 +619,16 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 		  numConst              > 1       ) passesJetID=true;	      
 	    }		  
 	  else if( absreceta<=3.0 && absreceta>2.7 ) 
-	    {                                                         // CMSSW 80X criterion
-	      if(  phSum_F[jet]/rawpt < 0.90 &&                       //else if(  phSum_F[jet]/rawpt > 0.01 &&		     
-		   neuMult            > 2       ) passesJetID=true;   //          neSum_F[jet]/rawpt < 0.98 &&		     
-	    }							      //          neuMult            > 2       ) passesJetID=true;
+	    {                                                         // CMSSW [76,80]X criterion
+	      if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
+		   neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+		   neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+	    }							      
 	  else //( absreceta>3.0) 
-	    {
-	      if( phSum_F[jet]/rawpt < 0.90 &&                      
-	      	  neuMult            > 10      ) passesJetID=true;  
+	    {                                                          // CMSSW 76X criterion
+	      if( ( phSum_F[jet]/rawpt > 0.00 ||                         // else if( phSum_F[jet]/rawpt < 0.90 &&
+		    neSum_F[jet]/rawpt > 0.00 ) &&                         //          neSum_F[jet]/rawpt < null &&
+	      	  neuMult            > 0          ) passesJetID=true;     //          neuMult            > 10
 	    }	  	  
 	}
       
@@ -637,9 +639,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  if( rapbins[rapbin]<=absreceta  && 		
 	      absreceta<rapbins[rapbin+1]    	      ) {
 	    theRapBin=rapbin;
+
 	    hJetSpectraRap[0][theRapBin]->Fill(recpt,weight_eS);  
 	    if( passesJetID ) 
 	      hJetSpectraRap[1][theRapBin]->Fill(recpt,weight_eS);    
+
 	    break;
 	  } }
       

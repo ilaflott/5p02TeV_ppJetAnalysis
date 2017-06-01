@@ -74,12 +74,18 @@
 #include "RooUnfoldSvd.h"
 #include "RooUnfoldBinByBin.h"
 
-//-----------------------------------------------------------------------------------------------------------------------
+// custom
+#include "unfoldSpectra_bins.h"
+
+
+
+// -----------------------------------------------------------------------------------------------------------------------
 const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
   //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.25.17_outputCondor/";
+  //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.25.17_outputCondor/";
+  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/";
 //const std::string unfoldSpectra_outdir="output/";
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
@@ -90,107 +96,13 @@ const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to d
 //other options
 const bool doOverUnderflows=false;
 const bool normalizedMCMatrix=false;
-const bool fillRespHists=false;
-const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
+
 
 //useful strings, numbers
 const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
 const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
-const std::string Datadesc1= "pp 2015 pmptReco, #sqrt{s}=5.02 TeV"; 
+const std::string Datadesc1= "pp promptReco, #sqrt{s}=5.02 TeV"; 
 const std::string Datadesc2= "L_{int}=27.4 pb^{-1} +/- 2.4%"; 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//const std::string inFile_MC_dir=
-//  "readFiles/ppMC/saved_outputCondor/readFiles_ppMC_5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_2016-07-09/";
-//const std::string inFile_MC_name="QCDjetAllPtBins_ak4PF-allFiles.root";
-//const std::string inFile_MC=CMSSW_BASE+inFile_MC_dir+inFile_MC_name;
-//
-//const std::string inFile_Data_dir=
-//"readFiles/ppData/saved_outputCondor/readFiles_ppData_5p02TeV_HighPtJetTrig_2016-06-10_allFiles/";
-//const std::string inFile_Data_name="HighPtJetTrig_ak4PF-allFiles.root";
-//const std::string inFile_Data=CMSSW_BASE+inFile_Data_dir+inFile_Data_name;
-
-
-// ------ RECO BINS ----- //
-const double anabins_pt_reco[] = {//analysis pt bins
-  //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 32., 37., 
-  //43., 
-  //49., 
-  56.,  64., 
-  74., 84., 97., 114., 133., 153., 174., 196., 
-  220., 245., 272., 300., 330., 362., 395., 430., 468., 
-  507., 548., 592., 638., 686.
-  //, 1000.
-};
-const int n_anabins_pt_reco = sizeof(anabins_pt_reco)/sizeof(double)-1;
-
-const double simpbins_pt_reco[] = {//simple 10 GeV pt bins
-  56.,  
-  66.,  76.,  86.,  96., 106., 116., 126., 136., 146., 156., 166., 176., 186., 196., 
-  206., 216., 226., 236., 246., 256., 266., 276., 286., 296., 306., 316., 326., 336., 346., 356., 366., 376., 
-  386., 396., 406., 416., 426., 436., 446., 456., 466., 476., 486., 496., 506., 516., 526., 536., 546., 556., 
-  566., 576., 586., 596., 606., 616., 626., 636., 646., 656., 666., 676., 686.
-  //, 694., 704., 714., 724., 734., 
-  //744., 754., 764., 774., 784., 794., 804., 814., 824., 834., 844., 854., 864., 874., 884., 894., 904., 914., 
-  //924., 934., 944., 954., 964., 974., 984., 1000.
-};
-const int n_simpbins_pt_reco = sizeof(simpbins_pt_reco)/sizeof(double)-1;
-
-
-
-// ------ GEN BINS ----- //
-const double anabins_pt_gen[] = {//analysis pt bins
-  //3., 4., 5., 7., 9., 12., 15., 18., 21., 24., 28., 
-  32., 37., 43.,  49., 
-  56.,  64., 
-  74., 84., 97., 114., 133., 153., 174., 196., 
-  220., 245., 272., 300., 330., 362., 395., 430., 468., 
-  507., 548., 592., 638., 686.
-  //, 1000.
-};
-const int n_anabins_pt_gen = sizeof(anabins_pt_gen)/sizeof(double)-1;
-
-const double simpbins_pt_gen[] = {//simple 10 GeV pt bins
-  36.,  46.,   
-  56.,  
-  66.,  76.,   86.,  96., 106., 116., 126., 136., 146., 156., 166., 176., 186., 196., 
-  206., 216., 226., 236., 246., 256., 266., 276., 286., 296., 306., 316., 326., 336., 346., 356., 366., 376., 
-  386., 396., 406., 416., 426., 436., 446., 456., 466., 476., 486., 496., 506., 516., 526., 536., 546., 556., 
-  566., 576., 586., 596., 606., 616., 626., 636., 646., 656., 666., 676., 686.
-  //, 694., 704., 714., 724., 734., 
-  //744., 754., 764., 774., 784., 794., 804., 814., 824., 834., 844., 854., 864., 874., 884., 894., 904., 914., 
-  //924., 934., 944., 954., 964., 974., 984., 1000.
-};
-const int n_simpbins_pt_gen = sizeof(simpbins_pt_gen)/sizeof(double)-1;
-
-//-----------------------------------------------------------------------------------------------------------------------
-// color scheme for different color
-const Int_t color[13]={kViolet+2,kBlue,kAzure+6,kGreen-3,kOrange-5,kOrange-3,kOrange+4,kRed-3,kRed,kRed+2,kMagenta+1,kRed+1,kGreen+3};
-// color scheme for fill area - fcolor with lcolor as a boundary
-const Int_t fcolor[5]={kRed-10,kBlue-10,kGreen-8,kOrange-4, kRed-6};
-const Int_t lcolor[5]={kRed+1,kBlue-3,kGreen+3,kOrange+3, kRed+2};
-// marker scheme 
-const Int_t fmstyle[6] = {20,21,22,23,29,3};
-const Int_t emstyle[6] = {24,25,26,27,30,28};
-
-
 
 
 
@@ -525,7 +437,14 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
 }
 
 
-
+void clearOverUnderflows(TH1* h)
+{
+  std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
+  std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
+  std::cout<<"clearing Over/Underflow Bins...."<<std::endl;
+  h->TH1::ClearUnderflowAndOverflow();
+  return;  
+}
 
 
 
@@ -597,12 +516,5 @@ int PrintMatrix( const TMatrixD& m,
   return 0;
 } // end PrintMatrix
 
-void clearOverUnderflows(TH1* h)
-{
-  std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
-  std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
-  std::cout<<"clearing Over/Underflow Bins...."<<std::endl;
-  h->TH1::ClearUnderflowAndOverflow();
-  return;  
-}
+
 

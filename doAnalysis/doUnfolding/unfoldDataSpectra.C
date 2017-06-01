@@ -1,13 +1,15 @@
 #include "unfoldSpectra.h"
 
 // procedural settings
-const bool doBayes=false; 
+const bool doBayes=true; 
 const int kIter = 4; //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
 const bool doSVD=true; //!(doBayes); 
-const int kRegCenter= 30 ; // kReg val for center hist on 3x3
-const int kRegDraw  = 2 ; // standalone spectra/ratio to draw, array entries w/ arguments 0-8. 4 -> middle hist on 3x3 plot
+//const int kRegCenter= 20 ; // kReg val for center hist on 3x3
+const int kRegDraw  = 4 ; // standalone spectra/ratio to draw, array entries w/ arguments 0-8. 4 -> middle hist on 3x3 plot
 
+const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
+const bool fillRespHists=false;
 
 const bool drawPDFs=true; 
 const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
@@ -20,7 +22,7 @@ const bool debugPearson=(false && debugMode) ;
 
 // CODE --------------------------------------------------
 int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir , 
-		       const std::string baseName ,    const bool doJetID=true ){
+		       const std::string baseName ,    const bool doJetID=true , const int kRegCenter= n_simpbins_pt_reco/4 ){
   
 
   // BINNING -----------
@@ -72,8 +74,11 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
   const std::string inFile_Data_name="/HighPtJetTrig_"+fullJetType+"-allFiles.root";
 
   // OUTPUT FILE, NAME(S) -----------
-  std::string outFileName=unfoldDataSpectra_outdir+fullJetType+"_"+baseName;//+".root";  
+  std::string outFileName=unfoldDataSpectra_outdir+fullJetType;//+"_"+baseName;//+".root";  
   if(doJetID)outFileName+="_wjtID";//+".root";  
+  if(!useSimplePtBinning)outFileName+="_anabins";
+  outFileName+="_"+baseName;
+
   std::string outBayesPdfFile =  outFileName+"_Bayes.pdf";
   std::string outSVDPdfFile   =  outFileName+"_SVD.pdf"; // see drawPDFs part for rest of string
   std::string outRootFile     =  outFileName+".root";  
@@ -717,13 +722,17 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
   
-  if( argc!=5 ){
-    std::cout<<"do ./unfoldDataSpectra.exe "<<std::endl;
+  if( argc!=6 ){
+    std::cout<<"do ./unfoldDataSpectra.exe <targDataDir> <targMCDir> <baseOutputName> <doJetID> <kRegCenter>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
+
     return rStatus;  }
   
   rStatus=1; // runtime error
-  rStatus=unfoldDataSpectra( (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], (int)std::atoi(argv[4]) ); 
+  
+  rStatus=unfoldDataSpectra( (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], 
+			     (int)std::atoi(argv[4]) , (int)std::atoi(argv[5]) 
+			     ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

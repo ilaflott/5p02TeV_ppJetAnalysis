@@ -25,7 +25,8 @@ echo ""
 #### OFFICIAL MC for jetRECO/analysis meeting ### NOTE: NO JET ID, NO UNFOLDING HISTS, GEN/RECO JET PT > 56
 ## -------------------------------------------- #
 
-source condorSubmit_readForests.sh readForests_ppMC_JERS -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_Official_forests.txt ${R} PF 0 0.0 5.0
+source condorSubmit_readForests.sh readForests_ppMC_JERS -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 0.0 5.0
+#source condorSubmit_readForests.sh readForests_ppMC_JERS -1 30 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_Official_forests.txt ${R} PF 0 0.0 5.0
 sleep 10s									       
 
 

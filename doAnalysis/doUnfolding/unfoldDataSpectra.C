@@ -373,7 +373,8 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       
       hrec_anabin->SetTitle("jet Spectra, input/output");
       hrec_anabin->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_reco[nbins_pt_reco],"X");           
-      
+      hrec_anabin->TH1::GetXaxis()->SetTitle("jet p_{T} (GeV)");
+
       hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
       hrec_anabin->SetMarkerColor(kBlue);     
       hrec_anabin->SetMarkerSize(1.02);     
@@ -403,8 +404,10 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
 
       tempCanvForPdfPrint->cd();
       h_genratio1->SetTitle("ratio w/ Gen. Truth");
-      h_genratio1->SetAxisRange(0., 2., "Y");
-
+      h_genratio1->SetAxisRange(0.5, 1.5, "Y");
+      h_genratio1->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_reco[nbins_pt_reco],"X");           
+      h_genratio1->GetXaxis()->SetTitle("jet p_{T} (GeV)");
+      
       h_genratio1->Draw();
       h_genratio3->Draw("SAME");
       
@@ -413,7 +416,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       legend2->AddEntry(h_genratio3, NULL, "p");
       legend2->Draw();
 
-      TLine* theLine1= new TLine( boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
+      TLine* theLine1= new TLine( boundaries_pt_reco[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
       theLine1->SetLineWidth(1);
       theLine1->SetLineStyle(2);
       theLine1->SetLineColor(36);
@@ -423,7 +426,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       theLineCut->SetLineWidth(1);
       theLineCut->SetLineStyle(2);
       theLineCut->SetLineColor(36);
-      theLineCut->Draw();
+      //theLineCut->Draw();
       
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());      
@@ -431,8 +434,10 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       //---------------
       
       tempCanvForPdfPrint->cd();
-      h_recratio1->SetAxisRange(0., 2., "Y");
-      
+      h_recratio1->SetAxisRange(0.5, 1.5, "Y");
+      h_recratio1->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_reco[nbins_pt_reco],"X");           
+      h_recratio1->GetXaxis()->SetTitle("jet p_{T} (GeV)");
+
       h_recratio1->Draw();
       h_recratio2->Draw("SAME");
       
@@ -492,6 +497,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
     TCanvas *cRatio             = new TCanvas("cRatio","",             1500, 1500);      cRatio->Divide(3,3);      		
     TCanvas *cSpectra           = new TCanvas("cSpectra","",           1500, 1500);      cSpectra->Divide(3,3);	   
     TCanvas *cRatioCheck        = new TCanvas("cRatioCheck","",        1500, 1500);    
+    //TCanvas *cSpectraCheck        = new TCanvas("cSpectraCheck","",        1500, 1500);    
     TCanvas *c11                = new TCanvas("c11"," Singular Values and divectors", 1500, 1500);      c11->Divide(2);                    
 
     TLegend *leg[nKregMax],*leg1[nKregMax];      
@@ -513,8 +519,8 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       hunf_svd[kr]->SetLineStyle(33);
       hunf_svd[kr]->SetLineColor(kBlue);
       hunf_svd[kr]->Print("base");
-  
-//      TH1F* hgen_anabin_forDiv=(TH1F*)hgen_anabin->Clone("hgen_anabin_clone_forSVDdiv");
+      
+      //      TH1F* hgen_anabin_forDiv=(TH1F*)hgen_anabin->Clone("hgen_anabin_clone_forSVDdiv");
 //      hgen_anabin_forDiv=(TH1F*)hgen_anabin_forDiv->Rebin(nbins_pt_reco, "hgen_anabin_clone_forSVDdiv_recobins" , boundaries_pt_reco);
 //
 //      hratio_svd[kr]->Divide(hgen_anabin_forDiv);
@@ -760,6 +766,36 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       cRatioCheck->Print(outPdfFile.c_str());
       cRatioCheck->Print(close_outPdfFile.c_str());
 
+//      //  cSpectra Check --------------------------------------------------
+//      cSpectraCheck->cd();
+//      cSpectraCheck->SetLogx(1);
+//      
+//      //hrec_folded_ratio[kRegDraw]->SetAxisRange(0.5, 1.5, "Y");
+//      hrec_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
+//      hrec_folded_ratio[kRegDraw]->SetTitle("SVD Unf. Spectra");
+//      hrec_folded_ratio[kRegDraw]->Draw();
+//
+//      TLegend * leg2 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
+//      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unf./Meas.","pl");
+//      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Refold/Meas.","pl");
+//      //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
+//      leg2->SetTextSize(0.02);
+//      leg2->Draw();
+//      
+//      hrec_unfolded_ratio[kRegDraw]->Draw("same");
+//      drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+//      drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+//      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
+//      
+//      TLine* theLine= new TLine(boundaries_pt_reco[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
+//      theLine->SetLineWidth(1);
+//      theLine->SetLineStyle(2);
+//      theLine->SetLineColor(36);
+//      theLine->Draw();
+//
+//      cSpectraCheck->Print(outPdfFile.c_str());
+//      cSpectraCheck->Print(close_outPdfFile.c_str());
+//
       std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;
     }// end drawPDFs
   }// end SVD specific

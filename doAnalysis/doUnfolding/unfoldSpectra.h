@@ -88,7 +88,7 @@ const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/";
 //const std::string unfoldSpectra_outdir="output/";
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
-const std::string doMCClosureTests_outdir="output/doMCClosureTests/";
+const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 //for SVD, consts that don't change much
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do

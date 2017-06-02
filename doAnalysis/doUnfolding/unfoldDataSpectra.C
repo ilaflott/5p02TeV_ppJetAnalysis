@@ -248,31 +248,66 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
     hunf->SetTitle("ppData, Bayesian Unfolded Spectra");
     std::cout<<std::endl; hunf->Print("base");
 
-    TH1F *hratio = (TH1F*)hunf->Clone( "ppData_BayesianUnfolding_UnfoldRatio" );
-    hratio->SetTitle( "BayesUnf(Reco)/Gen" );
-    hratio->SetMarkerStyle(24);
-    hratio->SetMarkerColor(kRed);
-    hratio->Divide(hgen_anabin);
-    hratio->Print("base");
+    // Gen Ratio Plots --------------------
+    TH1F *h_genratio1 = (TH1F*)hunf->Clone( "ppMC_Gen_Ratio1" );
+    h_genratio1->SetTitle( "Bayes Unf./Gen. Truth" );
+    h_genratio1->SetMarkerStyle(24);
+    h_genratio1->SetMarkerColor(kRed);
+    h_genratio1->Divide(hgen_anabin);
+    h_genratio1->Print("base");
 
+    TH1F *hgen_anabin_ratiobin=(TH1F*)hgen_anabin->Clone("ppMC_Gen_Ratio3_denom");
+    hgen_anabin_ratiobin=(TH1F*)hgen_anabin_ratiobin->Rebin(nbins_pt_reco,"ppMC_Gen_Ratio3_denom_rebin",boundaries_pt_reco);
+    hgen_anabin_ratiobin->Print("base");
+
+    TH1F *h_genratio3 = (TH1F*)hrec_anabin->Clone( "ppMC_Gen_Ratio3" );
+    h_genratio3->SetTitle( "Meas./Gen. Truth" );
+    h_genratio3->SetMarkerStyle(26);
+    h_genratio3->SetMarkerColor(kGreen-2);
+    h_genratio3->Divide(hgen_anabin_ratiobin);
+    h_genratio3->Print("base");
+
+    // Rec Ratio Plots --------------------
+    TH1F *h_recratio1 = (TH1F*)hunf->Clone( "ppMC_Meas_Ratio1" );
+    h_recratio1=(TH1F*)h_recratio1->Rebin(nbins_pt_reco, "hunf_recratio1_rebin" , boundaries_pt_reco);
+    h_recratio1->SetTitle( "Bayes Unf./Meas." );
+    h_recratio1->SetMarkerStyle(24);
+    h_recratio1->SetMarkerColor(kRed);
+    h_recratio1->Divide(hrec_anabin);
+    h_recratio1->Print("base");
+    
+    TH1F *h_recratio2 = (TH1F*)hgen_anabin->Clone( "ppMC_Meas_Ratio2" );
+    h_recratio2=(TH1F*)h_recratio2->Rebin(nbins_pt_reco, "hgen_recratio2_rebin" , boundaries_pt_reco);
+    h_recratio2->SetTitle( "ppMC, Gen. Truth/Meas." );
+    h_recratio2->SetMarkerStyle(25);
+    h_recratio2->SetMarkerColor(kBlue);
+    h_recratio2->Divide(hrec_anabin);
+    h_recratio2->Print("base");
+    
+    
+    
     std::cout<<std::endl<<"writing bayesian unfolding output to file..."<<std::endl;
     fout->cd();
     
-    hunf->SetMarkerStyle(24);
-    hunf->SetMarkerColor(kRed);
     hunf->Write();
     
+    hrec->Write(); 
+    hrec_anabin->Write(); 
+
+    hmat->Write(); 
+    hmat_anabin->Write(); 
+
+    hgen->Write(); 
+    hgen_anabin->Write(); 
+
     hgen_resp_anabin->Write();
     hrec_resp_anabin->Write();
     
-    hratio->SetMarkerStyle(24);    
-    hratio->SetMarkerColor(kRed);  
-    hratio->Write();               
+    h_recratio1->Write();               
+    h_recratio2->Write();               
+    h_genratio1->Write();               
+    h_genratio3->Write();               
     
-    std::cout<<"writing input histos to output file for easy access later..."<<std::endl;
-    hrec->Write(); hrec_anabin->Write(); 
-    hmat->Write(); hmat_anabin->Write(); 
-    hgen->Write(); hgen_anabin->Write(); 
     
     //  drawPDFS -------------------------------------------------- 
     if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
@@ -298,102 +333,125 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       tempCanvForPdfPrint->SetLogx(1);
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
       
-      if(drawPDFs_BayesInputHistos){
-
-	//---------------
-
-	tempCanvForPdfPrint_wLogz->cd();
-
-	std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-	
-	//hmat_anabin->SetAxisRange(0.0000000000001,.1,"Z");
-	if(normalizedMCMatrix) {
-	  tempCanvForPdfPrint_wLogz->SetLogz(0);
-	  hmat_anabin->SetAxisRange(0. , 1,"Z");
-	  hmat_anabin->SetTitle("ppMC jet input, normalized");
-	}
-	else	{
-	  tempCanvForPdfPrint_wLogz->SetLogz(1);
-	  hmat_anabin->SetAxisRange(0.0000000000001,.00001,"Z");
-	  hmat_anabin->SetTitle("ppMC jet input. not normalized");
-	}
-
-
-        hmat_anabin->GetZaxis()->SetLabelSize(0.025);
-
-        hmat_anabin->GetYaxis()->SetLabelSize(0.02);
-        hmat_anabin->GetYaxis()->SetTitleSize(0.025);
-        hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
-
-        hmat_anabin->GetXaxis()->SetLabelSize(0.02);
-        hmat_anabin->GetXaxis()->SetTitleSize(0.025);
-        hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
-	hmat_anabin->Draw("COLZ");           
-
-	tempCanvForPdfPrint_wLogz->Print(outPdfFile.c_str());
-
-	//---------------
-
-	tempCanvForPdfPrint_wLogy->cd();
-	//tempCanvForPdfPrint_wLogy->SetLogx(1);
-
-        hgen_anabin->SetMarkerStyle(kOpenSquare);
-        hgen_anabin->SetMarkerColor(kGreen+2);
-        hgen_anabin->SetMarkerSize(0.90);     
-	hgen_anabin->Draw();           
-
-        hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
-        hrec_anabin->SetMarkerColor(kBlue);     
-        hrec_anabin->SetMarkerSize(0.90);     
-        hrec_anabin->SetTitle("spectra");
-        hrec_anabin->Draw("SAME");           
-
-	hunf->SetMarkerStyle(kCircle);
-        hunf->SetMarkerColor(kRed);
-        hunf->SetMarkerSize(0.92);     
-	hunf->Draw("SAME");           
-
-	
-	TLegend* legend = new TLegend( 0.7,0.8,0.9,0.9 );
-	legend->AddEntry(hgen_anabin, "MC gen jet in", "p");
-	legend->AddEntry(hrec_anabin, "data reco jet in", "p");
-	legend->AddEntry(hunf, "unf. reco jet out", "p");
-	legend->Draw();
-
-	tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
-
-	//---------------
-	
-
+      
+      //---------------
+      
+      tempCanvForPdfPrint_wLogz->cd();
+      
+      std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
+      
+      //hmat_anabin->SetAxisRange(0.0000000000001,.1,"Z");
+      if(normalizedMCMatrix) {
+	tempCanvForPdfPrint_wLogz->SetLogz(0);
+	hmat_anabin->SetAxisRange(0. , 1,"Z");
+	hmat_anabin->SetTitle("ppMC jet input, normalized");
+      }
+      else	{
+	tempCanvForPdfPrint_wLogz->SetLogz(1);
+	hmat_anabin->SetAxisRange(0.0000000000001,.00001,"Z");
+	hmat_anabin->SetTitle("ppMC jet input. not normalized");
       }
 
-      // draw and print unfold/ratio plots
-      //tempCanvForPdfPrint_wLogy->cd();
-      //hunf->Draw();         tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
+      
+      hmat_anabin->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat_anabin->GetYaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetYaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_anabin->GetXaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetXaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_anabin->Draw("COLZ");           
+      
+      tempCanvForPdfPrint_wLogz->Print(outPdfFile.c_str());
+      
+      //---------------
+      
+      tempCanvForPdfPrint_wLogy->cd();
+      //tempCanvForPdfPrint_wLogy->SetLogx(1);
+      
+      hrec_anabin->SetTitle("jet Spectra, input/output");
+      hrec_anabin->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_reco[nbins_pt_reco],"X");           
+      
+      hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
+      hrec_anabin->SetMarkerColor(kBlue);     
+      hrec_anabin->SetMarkerSize(1.02);     
+      
+      hunf->SetMarkerStyle(kOpenCircle);
+      hunf->SetMarkerColor(kRed);
+      hunf->SetMarkerSize(1.02);     
+      
+      hgen_anabin->SetMarkerStyle(kOpenCross);
+      hgen_anabin->SetMarkerColor(kGreen-2);
+      hgen_anabin->SetMarkerSize(1.02);     	
+      
+      hrec_anabin->Draw();           
+      hunf->Draw("SAME");           
+      hgen_anabin->Draw("SAME");           
+      
+      
+      TLegend* legend_in = new TLegend( 0.6,0.8,0.9,0.9 );
+      legend_in->AddEntry(hrec_anabin,          "Meas. data", "p");	
+      legend_in->AddEntry(hunf,                    "Unf. data", "p");
+      legend_in->AddEntry(hgen_anabin,          "Gen. Truth MC", "p");
+      legend_in->Draw();
+      
+      tempCanvForPdfPrint_wLogy->Print(outPdfFile.c_str());
+      
+      //---------------
 
       tempCanvForPdfPrint->cd();
-      hratio->SetAxisRange(0., 2., "Y");
-      hratio->Draw();       
+      h_genratio1->SetTitle("ratio w/ Gen. Truth");
+      h_genratio1->SetAxisRange(0., 2., "Y");
 
-      TLine* theLine= new TLine( boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
-      theLine->SetLineWidth(1);
-      theLine->SetLineStyle(2);
-      theLine->SetLineColor(36);
-      theLine->Draw();
+      h_genratio1->Draw();
+      h_genratio3->Draw("SAME");
+      
+      TLegend* legend2 = new TLegend( 0.6,0.8,0.9,0.9 );
+      legend2->AddEntry(h_genratio1, "Unf. Data/Gen. Truth MC", "p");
+      legend2->AddEntry(h_genratio3, NULL, "p");
+      legend2->Draw();
 
-      TLine* theLine_recoCut= new TLine( boundaries_pt_reco[0],0.,boundaries_pt_reco[0],2.);
-      theLine_recoCut->SetLineWidth(1);
-      theLine_recoCut->SetLineStyle(10);
-      theLine_recoCut->SetLineColor(46);
-      theLine_recoCut->Draw();
+      TLine* theLine1= new TLine( boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
+      theLine1->SetLineWidth(1);
+      theLine1->SetLineStyle(2);
+      theLine1->SetLineColor(36);
+      theLine1->Draw();
+
+      TLine* theLineCut= new TLine( boundaries_pt_reco[0],0.,boundaries_pt_reco[0],2.);
+      theLineCut->SetLineWidth(1);
+      theLineCut->SetLineStyle(2);
+      theLineCut->SetLineColor(36);
+      theLineCut->Draw();
+      
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());      
+      
+      //---------------
+      
+      tempCanvForPdfPrint->cd();
+      h_recratio1->SetAxisRange(0., 2., "Y");
+      
+      h_recratio1->Draw();
+      h_recratio2->Draw("SAME");
+      
+      TLegend* legend3 = new TLegend( 0.6,0.8,0.9,0.9 );
+      legend3->AddEntry(h_recratio1, NULL, "p");
+      legend3->AddEntry(h_recratio2, NULL, "p");
+      legend3->Draw();
+      
+      TLine* theLine2 = new TLine( boundaries_pt_reco[0],1.,boundaries_pt_reco[nbins_pt_reco],1.);
+      theLine2->SetLineWidth(1);
+      theLine2->SetLineStyle(2);
+      theLine2->SetLineColor(36);
+      theLine2->Draw();
+      
+      theLine2->Draw();
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-      // draw and print response output, all of these plots draw empty though...
-      //hgen_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());              //empty
-      //hgen_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty     
-      //hrec_resp->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());	      //empty
-      //hrec_resp_anabin->Draw();         tempCanvForPdfPrint->Print(outPdfFile.c_str());   //empty
+      
+      //---------------
 
       tempCanvForPdfPrint->Print(close_outPdfFile.c_str());      
     }// end draw pdfs
@@ -561,8 +619,8 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       hrec_folded_ratio[kr]->SetMarkerStyle(27);
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
-      hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
-      hrec_folded_ratio[kr]->SetAxisRange(0.1, 1.9, "Y");
+      hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
+      hrec_folded_ratio[kr]->SetAxisRange(0.5, 1.5, "Y");
       hrec_folded_ratio[kr]->Divide(hrec_anabin);
       hrec_folded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Draw();
@@ -578,7 +636,7 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       hrec_unfolded_ratio[kr]->Print("base");
       hrec_unfolded_ratio[kr]->Draw("same");
 
-      TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
+      TLine* theLine= new TLine(boundaries_pt_reco[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
       theLine->SetLineWidth(1);
       theLine->SetLineStyle(2);
       theLine->SetLineColor(36);
@@ -671,29 +729,29 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       cPearsonMatrixIter->cd() ;   cPearsonMatrixIter->Print(outPdfFile.c_str());
       c11->cd()                ;   c11->Print(outPdfFile.c_str());
 
-
+      
       //  cRatio Check --------------------------------------------------
       cRatioCheck->cd();
       cRatioCheck->SetLogx(1);
-
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(0.1, 1.9, "Y");
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
-      hrec_folded_ratio[kRegDraw]->SetTitle("(Un)Fold/Meas");
+      
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(0.5, 1.5, "Y");
+      hrec_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
+      hrec_folded_ratio[kRegDraw]->SetTitle("SVD Unfold/Meas");
       hrec_folded_ratio[kRegDraw]->Draw();
 
       TLegend * leg2 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
-      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unfolded Data/Data","pl");
-      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"reFolded Data/Data","pl");
+      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Unf./Meas.","pl");
+      leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Refold/Meas.","pl");
       //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
       leg2->SetTextSize(0.02);
       leg2->Draw();
-
+      
       hrec_unfolded_ratio[kRegDraw]->Draw("same");
       drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
       drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
       drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-
-      TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
+      
+      TLine* theLine= new TLine(boundaries_pt_reco[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
       theLine->SetLineWidth(1);
       theLine->SetLineStyle(2);
       theLine->SetLineColor(36);

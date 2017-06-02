@@ -68,46 +68,8 @@ fi
 #./unfoldDataSpectra.exe ${outCondorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${date_data}_jetPlots_1.0eta1.5  ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_1.0eta1.5     HPtJetTrig_Py8_unfData_10eta15  ${jtID}
 #./unfoldDataSpectra.exe ${outCondorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${date_data}_jetPlots_1.5eta2.0  ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_1.5eta2.0     HPtJetTrig_Py8_unfData_15eta20  ${jtID}
 
-
-
-
-#echo ""
-#echo "done running unfoldDataSpectra"
-#echo ""
-#sleep 0.5s
-#
-#
-#
-#
-#
-##### doMCClosureTests
-##echo ""
-##echo "compiling doMCClosureTests"
-##echo ""
-##rooUnfoldCompile doMCClosureTests.C
-##
-##echo ""
-##echo "done compiling doMCClosureTests"
-##echo ""
-##sleep 0.5s
-##
-###echo ""
-###echo "running doMCClosureTests"
-###echo ""
-##
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_0.0eta0.5     Py8_closureTest_00eta05_0jtID  0
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_0.5eta1.0     Py8_closureTest_05eta10_0jtID  0
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_1.0eta1.5     Py8_closureTest_10eta15_0jtID  0
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_1.5eta2.0     Py8_closureTest_15eta20_0jtID  0
-#
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_0.0eta0.5     Py8_closureTest_00eta05_wjtID  1
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_0.5eta1.0     Py8_closureTest_05eta10_wjtID  1
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_1.0eta1.5     Py8_closureTest_10eta15_wjtID  1
-###./doMCClosureTests.exe   ${outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_data}_JERS_1.5eta2.0     Py8_closureTest_15eta20_wjtID  1
-
-
 echo ""
-echo "done!"
+echo "unfoldDataSpectra done."
 echo ""
 
 return

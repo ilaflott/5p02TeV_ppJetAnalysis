@@ -125,12 +125,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   
   
   /////   EVENT QA HISTS   ///// 
-  TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL ; //*hvzWVz=NULL, 
+  TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL ,*hvzWVz=NULL;
   TH1F *hpthat=NULL, *hWpthat=NULL;  
   if(fillMCEvtQAHists){
     hVz       = new TH1F("hVz","", 60,-15.,15.);//evtvz
     hpthatWVz = new TH1F("hpthatWeightedVz","", 60,-15.,15.);//pthat-weighted evtvz
-    //hvzWVz    = new TH1F("hvzWeightedVz","", 60,-15.,15.);//vz-weighted evtvz
+    hvzWVz    = new TH1F("hvzWeightedVz","", 60,-15.,15.);//vz-weighted evtvz
     hWVz      = new TH1F("hWeightedVz","", 60,-15.,15.);//pthat*vz-weighted evt vz
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  }
@@ -185,22 +185,22 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
     }}
   
-  TH1F *hJetSpectraRap[2][nbins_rap]={};
-  TH1F *hMCJetQA_rapBins_genpt[2][nbins_rap]={};
-  TH1F *hMCJetQA_rapBins_geneta[2][nbins_rap]={};
-  TH1F *hMCJetQA_rapBins_genrecpt[2][nbins_rap]={};
-  TH1F *hMCJetQA_rapBins_genreceta[2][nbins_rap]={};
+  TH1F *hJetSpectraRap[2][nbins_abseta]={};
+  TH1F *hMCJetQA_rapBins_genpt[2][nbins_abseta]={};
+  TH1F *hMCJetQA_rapBins_geneta[2][nbins_abseta]={};
+  TH1F *hMCJetQA_rapBins_genrecpt[2][nbins_abseta]={};
+  TH1F *hMCJetQA_rapBins_genreceta[2][nbins_abseta]={};
   if(fillMCJetSpectraRapHists){
     for(int k = 0; k<2; ++k){
       if(!fillMCJetIDHists && k==1)continue;	
       //      if( fillMCJetIDHists && k==0)continue;
-      for(int j = 0; j<nbins_rap; ++j){
+      for(int j = 0; j<nbins_abseta; ++j){
 	std::string h_Title="hJetSpectraRap_";
 	if(k==1)h_Title+="wJetID_";
 	h_Title+="bin"+std::to_string(j);
 	std::stringstream stream1, stream2;	
-	stream1.precision(1); stream1 << std::fixed << rapbins[j];
-	stream2.precision(1); stream2 << std::fixed << rapbins[j+1];
+	stream1.precision(1); stream1 << std::fixed << absetabins[j];
+	stream2.precision(1); stream2 << std::fixed << absetabins[j+1];
 	std::string h_Desc="JetPt Spectra for "+stream1.str()+"<abs(y)<"+ stream2.str();	
 	hJetSpectraRap[k][j]=new TH1F(h_Title.c_str(),h_Desc.c_str(), 1000,0,1000);  
 	
@@ -382,7 +382,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     //vz
     if(fillMCEvtQAHists){
       hVz->Fill(vz_F, 1.);
-      //hvzWVz->Fill(vz_F, vzWeight);
+      hvzWVz->Fill(vz_F, vzWeight);
       hpthatWVz->Fill(vz_F, evtPthatWeight);
       hWVz->Fill(vz_F, weight_eS);
       
@@ -458,17 +458,17 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	  else //( absreceta>3.0) 
 	    {                                                                         //CMSSW 76X criterion
 	      if( (phSum_F[jet]/rawpt > 0.00 ||                                        // else if( phSum_F[jet]/rawpt < 0.90 &&
-		  neSum_F[jet]/rawpt > 0.00 )&&                                        //          neSum_F[jet]/rawpt < null &&
-	      	  neuMult            > 0       ) passesJetID=true;     //          neuMult            > 10
+		  neSum_F[jet]/rawpt  > 0.00  ) &&                                        //          neSum_F[jet]/rawpt < null &&
+	      	  neuMult             > 0       ) passesJetID=true;     //          neuMult            > 10
 	    }	  	  
 	} 
       
       //fill jetspectraRapHists w/ passing jetID criterion
       if(  fillMCJetSpectraRapHists ) { 
 	int theRapBin=-1;
-	for(int rapbin=0;rapbin<nbins_rap;++rapbin)
-	  if( rapbins[rapbin]<=absreceta  && 		
-	      absreceta<rapbins[rapbin+1]    ) {
+	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
+	  if( absetabins[rapbin]<=absreceta  && 		
+	      absreceta<absetabins[rapbin+1]    ) {
 	    
 	    theRapBin=rapbin;
 	    
@@ -503,7 +503,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	hNEvts_withJets_kmatCut_Filled=true;      }
 
       /////   JETQA   ///// 
-      if(fillMCJetQAHists){
+      if(fillMCJetQAHists	 ){
+
         int ind=0;
         //jets
         hJetQA[0][ind]->Fill(recpt, weight_eS); ind++;

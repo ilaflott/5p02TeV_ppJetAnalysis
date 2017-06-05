@@ -371,9 +371,9 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       tempCanvForPdfPrint_wLogy->cd();
       //tempCanvForPdfPrint_wLogy->SetLogx(1);
       
-      hrec_anabin->SetTitle("jet Spectra, input/output");
-      hrec_anabin->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_reco[nbins_pt_reco],"X");           
-      hrec_anabin->TH1::GetXaxis()->SetTitle("jet p_{T} (GeV)");
+      hgen_anabin->SetTitle("jet Spectra, input/output");
+      //hgen_anabin->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_reco[nbins_pt_reco],"X");           
+      hgen_anabin->TH1::GetXaxis()->SetTitle("jet p_{T} (GeV)");
 
       hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
       hrec_anabin->SetMarkerColor(kBlue);     
@@ -387,9 +387,9 @@ int unfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir ,
       hgen_anabin->SetMarkerColor(kGreen-2);
       hgen_anabin->SetMarkerSize(1.02);     	
       
-      hrec_anabin->Draw();           
+      hgen_anabin->Draw();           
+      hrec_anabin->Draw("SAME");           
       hunf->Draw("SAME");           
-      hgen_anabin->Draw("SAME");           
       
       
       TLegend* legend_in = new TLegend( 0.6,0.8,0.9,0.9 );

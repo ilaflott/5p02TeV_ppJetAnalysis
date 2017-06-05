@@ -8,7 +8,7 @@ const bool doSVD=true; //!(doBayes);
 //const int kRegCenter= 20 ; // kReg val for center hist on 3x3
 const int kRegDraw  = 0 ; // standalone spectra/ratio to draw, array entries w/ arguments 0-8. 4 -> middle hist on 3x3 plot
 
-const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
+const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
 const bool fillRespHists=false;
 
 const bool drawPDFs=true; 
@@ -411,8 +411,9 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       tempCanvForPdfPrint_wLogy->cd();
       //tempCanvForPdfPrint_wLogy->SetLogx(1);
       
-      hrec_anabin->SetTitle("ppMC Spectra, input and output");
-      hrec_anabin->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_reco[nbins_pt_reco],"X");           
+      hgen_anabin->SetTitle("ppMC Spectra, input and output");
+      hgen_anabin->TH1::GetXaxis()->SetTitle("jet p_{T} (GeV)");
+      //hrec_anabin->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_reco[nbins_pt_reco],"X");           
 
       hrec_anabin->SetMarkerStyle(kOpenTriangleUp);
       hrec_anabin->SetMarkerColor(kBlue);     
@@ -434,11 +435,11 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       hgen_anabin->SetMarkerColor(kGreen-2);
       hgen_anabin->SetMarkerSize(1.02);     	
       
-      hrec_anabin->Draw();           
+      hgen_anabin->Draw();           
+      hrec_anabin->Draw("SAME");           
       hunf->Draw("SAME");           
       hunf_sameside->Draw("SAME");           
       hrec_sameside_anabin->Draw("SAME");           
-      hgen_anabin->Draw("SAME");           
       
       
       TLegend* legend_in = new TLegend( 0.6,0.8,0.9,0.9 );

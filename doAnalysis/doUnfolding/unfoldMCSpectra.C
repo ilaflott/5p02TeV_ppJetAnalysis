@@ -1,15 +1,7 @@
 #include "unfoldSpectra.h"
 
-// procedural settings
-const bool doBayes=true; 
-const int kIter = 4; //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
-const bool doSVD=true; //!(doBayes); 
-//const int kRegCenter= 20 ; // kReg val for center hist on 3x3
-const int kRegDraw  = 0 ; // standalone spectra/ratio to draw, array entries w/ arguments 0-8. 4 -> middle hist on 3x3 plot
-
-const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
-const bool fillRespHists=false;
+const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 
 const bool drawPDFs=true; 
 //const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
@@ -26,22 +18,38 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   
 
   // BINNING -----------
-  double* boundaries_pt_reco ;   int nbins_pt_reco ;
-  double* boundaries_pt_gen  ;   int nbins_pt_gen  ;
+  double* boundaries_pt_reco ;   int nbins_pt_reco ;   // reco spectra bins
+  double* boundaries_pt_gen  ;   int nbins_pt_gen  ;   // gen spectra bins
+
+  double* boundaries_pt_reco_mat ;   int nbins_pt_reco_mat ;   // matrix bins
+  double* boundaries_pt_gen_mat  ;   int nbins_pt_gen_mat  ;   // 
 
   if(useSimplePtBinning){
     std::cout<<"using simple pt bins"<<std::endl<<std::endl;
-    boundaries_pt_reco = (double*)simpbins_pt_reco   ;
+    boundaries_pt_reco = (double*)simpbins_pt_reco   ; //spectra
     nbins_pt_reco      = (int)n_simpbins_pt_reco ; 
     boundaries_pt_gen = (double*)simpbins_pt_gen  ;
     nbins_pt_gen      = (int)n_simpbins_pt_gen ; 
+
+    boundaries_pt_reco_mat = (double*)simpbins_pt_reco_mat   ; //matrix
+    nbins_pt_reco_mat      = (int)n_simpbins_pt_reco_mat ; 
+    boundaries_pt_gen_mat = (double*)simpbins_pt_gen_mat  ;
+    nbins_pt_gen_mat      = (int)n_simpbins_pt_gen_mat  ;
+
   } 
   else{
     std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
-    boundaries_pt_reco = (double*)anabins_pt_reco   ;
+    boundaries_pt_reco = (double*)anabins_pt_reco   ; //spectra
     nbins_pt_reco      = (int)n_anabins_pt_reco ; 
     boundaries_pt_gen = (double*)anabins_pt_gen   ;
     nbins_pt_gen      = (int)n_anabins_pt_gen ; 
+
+    boundaries_pt_reco_mat = (double*)anabins_pt_reco_mat   ; //matrix
+    nbins_pt_reco_mat      = (int)n_anabins_pt_reco_mat ; 
+    boundaries_pt_gen_mat = (double*)anabins_pt_gen_mat  ;
+    nbins_pt_gen_mat      = (int)n_anabins_pt_gen_mat  ;
+    
+
   }
 
 
@@ -130,7 +138,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hrec_anabin->Print("base");  std::cout<<std::endl;
   
   if(!doOverUnderflows){
-    clearOverUnderflows((TH1*)hrec_anabin);
+    if(clearOverUnderflows)TH1clearOverUnderflows((TH1*)hrec_anabin);
     hrec_anabin->Print("base");  std::cout<<std::endl;}
 
   // response hist, for output? what is this for if it's empty?
@@ -166,7 +174,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hrec_sameside_anabin->Print("base");  std::cout<<std::endl;
   
   if(!doOverUnderflows){
-    clearOverUnderflows((TH1*)hrec_sameside_anabin);
+    if(clearOverUnderflows)TH1clearOverUnderflows((TH1*)hrec_sameside_anabin);
     hrec_sameside_anabin->Print("base");  std::cout<<std::endl;}
   
   // ---------- gen, MC truth spectra
@@ -185,7 +193,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hgen_anabin->Print("base");      std::cout<<std::endl;
   
   if(!doOverUnderflows){
-    clearOverUnderflows((TH1*)hgen_anabin);
+    if(clearOverUnderflows)TH1clearOverUnderflows((TH1*)hgen_anabin);
     hgen_anabin->Print("base");  std::cout<<std::endl;
   }
 
@@ -211,8 +219,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hmat_anabin->Print("base");      std::cout<<std::endl;
   
   hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, (TH2_title+"_anabins").c_str(), 
-			       (double*)boundaries_pt_reco, nbins_pt_reco,
-			       (double*) boundaries_pt_gen, nbins_pt_gen  );
+			       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+			       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
 			       //			       (double*) boundaries_pt, (int) nbins_pt );
   hmat_anabin->Print("base");      std::cout<<std::endl;
   
@@ -220,7 +228,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hmat_anabin->Print("base");      std::cout<<std::endl;
   
   if(!doOverUnderflows){
-    clearOverUnderflows((TH1*)hmat_anabin);
+    if(clearOverUnderflows)TH1clearOverUnderflows((TH1*)hmat_anabin);
     hmat_anabin->Print("base");      std::cout<<std::endl;
   }
   
@@ -698,7 +706,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       hrec_unfolded_ratio[kr]->SetMarkerStyle(27);
       hrec_unfolded_ratio[kr]->SetMarkerColor(kBlue);      
       hrec_unfolded_ratio[kr] = (TH1F*)hrec_unfolded_ratio[kr]->Rebin(nbins_pt_reco, ("ppMC_SVDUnf_Ratio_rebin4div"+kRegRandEtaRange).c_str() , boundaries_pt_reco);
-      clearOverUnderflows((TH1*)hrec_unfolded_ratio[kr]);
+      if(clearOverUnderflows)TH1clearOverUnderflows((TH1*)hrec_unfolded_ratio[kr]);
       hrec_unfolded_ratio[kr]->Divide(hrec_anabin);
       hrec_unfolded_ratio[kr]->Print("base");
       //hrec_unfolded_ratio[kr]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_reco[nbins_pt_reco])

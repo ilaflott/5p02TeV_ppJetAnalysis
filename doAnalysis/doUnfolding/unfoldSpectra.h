@@ -75,7 +75,8 @@
 #include "RooUnfoldBinByBin.h"
 
 // custom
-#include "unfoldSpectra_bins.h"
+#include "unfoldSpectra_simpbins.h"
+#include "unfoldSpectra_anabins.h"
 
 
 
@@ -83,19 +84,30 @@
 const std::string CMSSW_BASE=
   "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
-  //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis_archivedCondorOutput/readForests/10.18.16_outputCondor/";
-  //  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/5.25.17_outputCondor/";
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/";
 //const std::string unfoldSpectra_outdir="output/";
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
-//for SVD, consts that don't change much
+
+
+
+
+//Bayes setting that don't change too much
+const bool doBayes=true; 
+const int kIter = 4; //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
+
+//SVD setting that don't change too much
+const bool doSVD=true; //!(doBayes); 
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
 
 //other options
 const bool doOverUnderflows=false;
+const bool clearOverUnderflows=true;
+
 const bool normalizedMCMatrix=false;
+const bool fillRespHists=false;
+const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
 
 
 //useful strings, numbers
@@ -103,6 +115,17 @@ const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
 const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
 const std::string Datadesc1= "pp promptReco, #sqrt{s}=5.02 TeV"; 
 const std::string Datadesc2= "L_{int}=27.4 pb^{-1} +/- 2.4%"; 
+
+
+
+// color/styles
+const Int_t color[13]={kViolet+2,kBlue,kAzure+6,kGreen-3,kOrange-5,kOrange-3,kOrange+4,kRed-3,kRed,kRed+2,kMagenta+1,kRed+1,kGreen+3};
+// fill/fill-border color/style
+const Int_t fcolor[5]={kRed-10,kBlue-10,kGreen-8,kOrange-4, kRed-6};
+const Int_t lcolor[5]={kRed+1,kBlue-3,kGreen+3,kOrange+3, kRed+2};
+// marker color/style
+const Int_t fmstyle[6] = {20,21,22,23,29,3};
+const Int_t emstyle[6] = {24,25,26,27,30,28};
 
 
 
@@ -437,7 +460,7 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
 }
 
 
-void clearOverUnderflows(TH1* h)
+void TH1clearOverUnderflows(TH1* h)
 {
   std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
   std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;

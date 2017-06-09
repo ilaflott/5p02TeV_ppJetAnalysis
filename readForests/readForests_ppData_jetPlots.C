@@ -166,18 +166,18 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 200,0,2);         
      } }
   
-  TH1F *hJetSpectraRap[2][nbins_rap]={};
+  TH1F *hJetSpectraRap[2][nbins_abseta]={};
   if(fillDataJetSpectraRapHists)
     for(int k = 0; k<2; ++k) {
       if(!fillDataJetIDHists && k==1)continue;	
-      for(int j = 0; j<nbins_rap; ++j){
+      for(int j = 0; j<nbins_abseta; ++j){
 	std::string h_Title="hJetSpectraRap_";
 	if(k==1)h_Title+="wJetID_";
 	h_Title+="bin"+std::to_string(j);
 	std::string h_Desc;
 	std::stringstream stream1, stream2;	
-	stream1.precision(1); stream1 << std::fixed << rapbins[j];
-	stream2.precision(1); stream2 << std::fixed << rapbins[j+1];
+	stream1.precision(1); stream1 << std::fixed << absetabins[j];
+	stream2.precision(1); stream2 << std::fixed << absetabins[j+1];
 	h_Desc="JetPt Spectra for "+stream1.str()+"<abs(y)<"+ stream2.str();	
 	hJetSpectraRap[k][j]=new TH1F(h_Title.c_str(),h_Desc.c_str(), 1000,0,1000);  
       } }
@@ -421,8 +421,15 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   int etacutForResid=3;
   if(radius==3)etacutForResid=4;
 
-  L2ResidualJES* L2JES = new L2ResidualJES(radius, etacutForResid, "pp5");
-  L3ResidualJES* L3JES = new L3ResidualJES("pp5");
+  L2ResidualJES* L2JES =NULL;//= new L2ResidualJES(radius, etacutForResid, "pp5");
+  L3ResidualJES* L3JES =NULL;//= new L3ResidualJES("pp5");
+  bool doResidualCorr=false; 
+  if(radius==3 || radius==4){
+    doResidualCorr=true;
+    L2JES = new L2ResidualJES(radius, etacutForResid, "pp5");
+    L3JES = new L3ResidualJES("pp5");  }
+    
+
 
   //float jetIDCut_neSum, jetIDCut_phSum;
   //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
@@ -438,10 +445,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
     jetpp[0]->GetEntry(nEvt);
     
-
+    
     h_NEvents_read->Fill(1);
     
-
+    
     //duplicate skipping between LowerJets and Jet80
     if(filelistIsJet80)
       if( (bool)CaloJet40_I || (bool)CaloJet60_I || (bool)PFJet40_I || (bool)PFJet60_I ) {
@@ -449,39 +456,39 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
 	continue; }
     
-
+    
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0      || 
         pBeamScrapingFilter_I==0   || 
         pprimaryvertexFilter_I==0  ) continue;
-//	//	puvertexFilter_I==0  	) continue;    
-
+    //	//	puvertexFilter_I==0  	) continue;    
+    
     h_NEvents_skimCut->Fill(1);
     
-
+    
     if( fabs(vz_F)>15. )     continue;
     h_NEvents_vzCut->Fill(1);
     
-
-
+    
+    
     bool L1trgDec[N_HLTBits]   ={ (bool)jet40_l1s_I, (bool)jet60_l1s_I,  (bool)jet80_l1s_I,  (bool)jet100_l1s_I    };
     
-
+    
     //prescale/decision arrays, total prescale=L1_ps*HLT_ps
     bool PFtrgDec[N_HLTBits]   ={ (bool)PFJet40_I, (bool)PFJet60_I, (bool)PFJet80_I, (bool)PFJet100_I };
     int PFtrgPrescl[N_HLTBits] ={ PFJet40_p_I*jet40_l1s_ps_I , PFJet60_p_I*jet60_l1s_ps_I , 
 				  PFJet80_p_I*jet80_l1s_ps_I , PFJet100_p_I*jet100_l1s_ps_I };
     
-
     
-
+    
+    
     bool CalotrgDec[N_HLTBits]   ={ (bool)CaloJet40_I, (bool)CaloJet60_I, (bool)CaloJet80_I, (bool)CaloJet100_I};
     int CalotrgPrescl[N_HLTBits] ={ CaloJet40_p_I*jet40_l1s_ps_I , CaloJet60_p_I*jet60_l1s_ps_I,
 				    CaloJet80_p_I*jet80_l1s_ps_I , CaloJet100_p_I*jet100_l1s_ps_I }; 
     
-
-
-
+    
+    
+    
     bool *trgDec=NULL; int *trgPscl=NULL;
     if(trgCombType=="Calo")   { trgDec=CalotrgDec ;   trgPscl=CalotrgPrescl ; }
     else if(trgCombType=="PF"){ trgDec=PFtrgDec   ;   trgPscl=PFtrgPrescl   ; }
@@ -493,19 +500,19 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     unsigned int trgObj40_size=trgObjpt_40->size(), trgObj60_size=trgObjpt_60->size();
     unsigned int trgObj80_size=trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();
     
-
+    
     if(trgDec[3])
       for(unsigned int itt=0; itt<trgObj100_size; ++itt)
     	if(trgObjpt_100->at(itt) > maxTrgPt) { maxTrgPt = trgObjpt_100->at(itt); } //maxTrgPtIndex=itt; }
-
+    
     if(trgDec[2])
       for(unsigned int itt=0; itt<trgObj80_size; ++itt)
     	if(trgObjpt_80->at(itt) > maxTrgPt)  { maxTrgPt = trgObjpt_80->at(itt); } //maxTrgPtIndex=itt; }
-
+    
     if(trgDec[1]) 
       for(unsigned int itt=0; itt<trgObj60_size; ++itt)
 	if(trgObjpt_60->at(itt) > maxTrgPt)  { maxTrgPt = trgObjpt_60->at(itt); } //maxTrgPtIndex=itt; }
-
+    
     if(trgDec[0])  
       for(unsigned int itt=0; itt<trgObj40_size; ++itt)	
 	if(trgObjpt_40->at(itt) > maxTrgPt)  { maxTrgPt = trgObjpt_40->at(itt); } //maxTrgPtIndex=itt; }
@@ -578,17 +585,23 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       float absreceta = fabs(receta);
       
       
-      //if(debugMode)std::cout<<"recpt="<<recpt<<std::endl;
-      recpt=L2JES->getCorrectedPt(recpt,receta);
-      //if(debugMode)std::cout<<"after L2Residual, recpt="<<recpt<<std::endl;
-      recpt=L3JES->getCorrectedPt(recpt);
-      //if(debugMode)std::cout<<"after L3Residual, recpt="<<recpt<<std::endl;
+      if(doResidualCorr){
+	recpt=L2JES->getCorrectedPt(recpt,receta);      
+	recpt=L3JES->getCorrectedPt(recpt);        }
+      
       
       
       //// TEMP 10.12.16////
       // kmatCuts      
       if( recpt <= jtPtCut ) continue;     
+      else if( absreceta >= jtEtaCutHi ) continue;
+      else if( absreceta < jtEtaCutLo ) continue;
 
+      // jet/event counts
+      h_NJets_kmatCut->Fill(1);
+      if(!hNEvts_withJets_kmatCut_Filled){
+	h_NEvents_withJets_kmatCut->Fill(1);
+	hNEvts_withJets_kmatCut_Filled=true;  }      
       
       float rawpt  = rawpt_F[jet];
       //float recy   = y_F[jet];
@@ -596,71 +609,58 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
-
+      
         
 	
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
-      if(fillDataJetIDHists) 
-	{
-	  if (absreceta<=2.4) 
-	    { 
-	      if( neSum_F[jet]/rawpt    < 0.99 &&
-		  phSum_F[jet]/rawpt    < 0.99 &&
-		  numConst              > 1    &&      
-		  chSum_F[jet]/rawpt    > 0.00 && 
-		  chMult                > 0    &&
-		  eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
-	    }
-	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
-	    {	  
-	      if( neSum_F[jet]/rawpt    < 0.99 &&
-		  phSum_F[jet]/rawpt    < 0.99 &&
-		  numConst              > 1       ) passesJetID=true;	      
-	    }		  
-	  else if( absreceta<=3.0 && absreceta>2.7 ) 
-	    {                                                         // CMSSW [76,80]X criterion
-	      if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
-		   neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
-		   neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
-	    }							      
-	  else //( absreceta>3.0) 
-	    {                                                          // CMSSW 76X criterion
-	      if( ( phSum_F[jet]/rawpt > 0.00 ||                         // else if( phSum_F[jet]/rawpt < 0.90 &&
-		    neSum_F[jet]/rawpt > 0.00 ) &&                         //          neSum_F[jet]/rawpt < null &&
-	      	  neuMult            > 0          ) passesJetID=true;     //          neuMult            > 10
-	    }	  	  
-	}
+      if(fillDataJetIDHists) 	{
+	if (absreceta<=2.4) 
+	  { 
+	    if( neSum_F[jet]/rawpt    < 0.99 &&
+		phSum_F[jet]/rawpt    < 0.99 &&
+		numConst              > 1    &&      
+		chSum_F[jet]/rawpt    > 0.00 && 
+		chMult                > 0    &&
+		eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
+	  }
+	else if ( absreceta<=2.7 && absreceta>2.4 ) 
+	  {	  
+	    if( neSum_F[jet]/rawpt    < 0.99 &&
+		phSum_F[jet]/rawpt    < 0.99 &&
+		numConst              > 1       ) passesJetID=true;	      
+	  }		  
+	else if( absreceta<=3.0 && absreceta>2.7 ) 
+	  {                                                         // CMSSW [76,80]X criterion
+	    if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
+		 neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+		 neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+	  }							      
+	else //( absreceta>3.0) 
+	  {                                                          // CMSSW 76X criterion
+	    if( ( phSum_F[jet]/rawpt > 0.00 ||                         // else if( phSum_F[jet]/rawpt < 0.90 &&
+		  neSum_F[jet]/rawpt > 0.00 ) &&                         //          neSum_F[jet]/rawpt < null &&
+		neuMult            > 0          ) passesJetID=true;     //          neuMult            > 10
+	  }	  	  
+      }
       
       //fill jetspectraRapHists w/ passing jetID criterion
       if( fillDataJetSpectraRapHists ) { 
 	int theRapBin=-1;
-	for(int rapbin=0;rapbin<nbins_rap;++rapbin)
-	  if( rapbins[rapbin]<=absreceta  && 		
-	      absreceta<rapbins[rapbin+1]    	      ) {
+	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
+	  if( absetabins[rapbin]<=absreceta  && 		
+	      absreceta<absetabins[rapbin+1]    	      ) {
 	    theRapBin=rapbin;
-
+	    
 	    hJetSpectraRap[0][theRapBin]->Fill(recpt,weight_eS);  
 	    if( passesJetID ) 
 	      hJetSpectraRap[1][theRapBin]->Fill(recpt,weight_eS);    
-
+	    
 	    break;
-	  } }
+	  } 
+      }
       
       
-      //second half of kmat cut      
-      
-      if( absreceta >= jtEtaCutHi ) continue;
-      else if( absreceta < jtEtaCutLo ) continue;
-      
-
-
-      // jet/event counts
-      h_NJets_kmatCut->Fill(1);
-      if(!hNEvts_withJets_kmatCut_Filled){
-	h_NEvents_withJets_kmatCut->Fill(1);
-	hNEvts_withJets_kmatCut_Filled=true;  }      
-
       // trig plots
       //assert(false);
       if(fillDataJetTrigQAHists){
@@ -669,9 +669,9 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	if(trgDec[1])/*if(is60 )*/  hpp_TrgObj60[0]->Fill(recpt, trgPscl[1]);
 	if(trgDec[2])/*if(is80 )*/  hpp_TrgObj80[0]->Fill(recpt, trgPscl[2]);
 	if(trgDec[3])/*if(is100)*/  hpp_TrgObj100[0]->Fill(recpt, trgPscl[3]); 
-      
+	
       }	
-
+      
       // jetQA noJetID
       if(fillDataJetQAHists){
 	int ind=0;

@@ -12,7 +12,7 @@ MC_outCondorDir="${MC_date_condor}_outputCondor"
 ##CONST
 
 
-if [ $# -ne 5 ]
+if [ $# -ne 4 ]
 then
     echo "bad usage."
     echo "source run_unfoldSpectra <R> <jtID> <compile> <SVDkReg> <etaBin#>"
@@ -27,26 +27,26 @@ fi
 
 R=$1
 jtID=$2
-compile=$3
-kReg=$4
-etaBin=$5
+#compile=$3
+kReg=$3
+etaBin=$4
 
-if [ $compile -eq 1 ]
-then
-    echo ""
-    echo "compiling unfoldDataSpectra"
-    echo ""
-    rooUnfoldCompile unfoldDataSpectra.C
-
-    echo ""
-    echo "done compiling unfoldDataSpectra"
-    echo ""
-    sleep 0.5s
-else
-    echo ""
-    echo "skipping compilation..."
-    echo ""
-fi
+#if [ $compile -eq 1 ]
+#then
+#    echo ""
+#    echo "compiling unfoldDataSpectra"
+#    echo ""
+#    rooUnfoldCompile unfoldDataSpectra.C
+#
+#    echo ""
+#    echo "done compiling unfoldDataSpectra"
+#    echo ""
+#    sleep 0.5s
+#else
+#    echo ""
+#    echo "skipping compilation..."
+#    echo ""
+#fi
 
 
 

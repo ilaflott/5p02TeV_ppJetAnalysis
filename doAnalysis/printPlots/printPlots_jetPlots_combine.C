@@ -4,12 +4,12 @@
 // code/job switches ------------------------
 
 //options
-const bool debugMode=true, doEventCounts=true, doJetIDPlots=false;
+const bool debugMode=true, doEventCounts=true, doJetIDPlots=true;
 
 //draw switches
 const bool drawEvtQAPlots=true;
 const bool drawJetQAPlots=true;
-const bool drawJetConstituentPlots=true, drawDijetPlots=false;
+const bool drawJetConstituentPlots=true, drawDijetPlots=true;
 const bool drawJetTrigQAPlots=true, drawJetRapBinsPlot=true;
 
 const bool drawDataMCOverlaysInput=false; 		 //this should always be false, but needs to be cleaned up later.
@@ -622,7 +622,9 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
         
     std::cout<<" drawing jet QA Plots..."<<std::endl;
     for(int j=0;j<N_vars;j++){ std::cout<<std::endl;
-      
+
+
+
       std::cout<<std::endl<<" var ="<<var[j]<<", j="<<j<<std::endl;
       
       if(!drawJetConstituentPlots && 
@@ -637,6 +639,10 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j];      
       
       if(debugMode)std::cout<<" opening input Data "<<inHistName<<std::endl<<std::endl;      
+
+      //if(j==27)continue;//temporary; issue with muMax plot?
+      //assert(false);
+
       TH1F* theDataJetQAHist= (TH1F*)
 	( (TH1*)finData->Get(inHistName.c_str()) )
 	->TH1::Rebin(var_xAx_reBin[j]);	
@@ -869,7 +875,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	else if(var[j]=="Aj"||
 		var[j]=="xj"||
 		var[j]=="dphi"){ 
-	  continue;
+	  //continue;
 	  temp_canvJet_noLog->cd();	  
 	  jetpad_noLog1->SetBottomMargin(0);
 	  jetpad_noLog1->Draw();
@@ -918,7 +924,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  float legy1=0.74, legy2=legy1+0.09;
 
 	  TLegend* theJetQALeg=new TLegend(legx1,legy1,legx2,legy2, NULL,"brNDC");	  
-	theJetQALeg->SetFillStyle(0);
+	  theJetQALeg->SetFillStyle(0);
 	  theJetQALeg->AddEntry(theDataJetQAHist,"data","lp");
 	  theJetQALeg->AddEntry(theMCJetQAHist,  "MC"  ,"lp");
 	  theJetQALeg->Draw(); 
@@ -970,7 +976,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  temp_canvJet_noLog->Print( thePDFFileName.c_str() ); }
       
 	else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt"){ 
-	  continue;
+	  //continue;
 	  temp_canvJet->cd(0);
 	  jetpad1->Draw();
 	  jetpad1->cd();

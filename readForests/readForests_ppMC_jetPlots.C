@@ -416,15 +416,24 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       float absreceta = fabs(eta_F[jet]);
       float genpt  = refpt_F[jet];
       float geneta = refeta_F[jet];
+
+      float rawpt  = rawpt_F[jet];      
+      //float recy = y_F[jet];
+      float recphi = phi_F[jet];
+
       
       //if reco jet w/o matched gen jet, skip.
       if( subid_F[jet] != 0 ) continue;
       else if( recpt <= jtPtCut   ) continue;           
       else if( genpt <= genJetPtCut   ) continue;
-
-      float rawpt  = rawpt_F[jet];      
-      //float recy = y_F[jet];
-      float recphi = phi_F[jet];
+      else if( absreceta >= jtEtaCutHi ) continue;
+      else if( absreceta < jtEtaCutLo ) continue;
+      
+      // jet/event counts
+      h_NJets_kmatCut->Fill(1);
+      if(!hNEvts_withJets_kmatCut_Filled){
+	h_NEvents_withJets_kmatCut->Fill(1);
+	hNEvts_withJets_kmatCut_Filled=true;      }
 
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
@@ -432,36 +441,35 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
       bool passesJetID=false;
       
-      if(fillMCJetIDHists) 
-	{
-	  if (absreceta<=2.4) 
-	    { 
-	      if( neSum_F[jet]/rawpt    < 0.99 &&
-		  phSum_F[jet]/rawpt    < 0.99 &&
-		  numConst              > 1    &&      
-		  chSum_F[jet]/rawpt    > 0.00 && 
-		  chMult                > 0    &&
-		  eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
-	    }
-	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
-	    {	  
-	      if( neSum_F[jet]/rawpt    < 0.99 &&
-		  phSum_F[jet]/rawpt    < 0.99 &&
-		  numConst              > 1       ) passesJetID=true;	      
-	    }		  
-	  else if( absreceta<=3.0 && absreceta>2.7 ) 
-	    {                                                         // CMSSW [76,80]X criterion
-	      if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
-		   neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
-		   neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
-	    }							      
-	  else //( absreceta>3.0) 
-	    {                                                                         //CMSSW 76X criterion
-	      if( (phSum_F[jet]/rawpt > 0.00 ||                                        // else if( phSum_F[jet]/rawpt < 0.90 &&
-		  neSum_F[jet]/rawpt  > 0.00  ) &&                                        //          neSum_F[jet]/rawpt < null &&
-	      	  neuMult             > 0       ) passesJetID=true;     //          neuMult            > 10
-	    }	  	  
-	} 
+      if(fillMCJetIDHists) 	{
+	if (absreceta<=2.4) 
+	  { 
+	    if( neSum_F[jet]/rawpt    < 0.99 &&
+		phSum_F[jet]/rawpt    < 0.99 &&
+		numConst              > 1    &&      
+		chSum_F[jet]/rawpt    > 0.00 && 
+		chMult                > 0    &&
+		eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
+	  }
+	else if ( absreceta<=2.7 && absreceta>2.4 ) 
+	  {	  
+	    if( neSum_F[jet]/rawpt    < 0.99 &&
+		phSum_F[jet]/rawpt    < 0.99 &&
+		numConst              > 1       ) passesJetID=true;	      
+	  }		  
+	else if( absreceta<=3.0 && absreceta>2.7 ) 
+	  {                                                         // CMSSW [76,80]X criterion
+	    if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
+		 neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+		 neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+	  }							      
+	else //( absreceta>3.0) 
+	  {                                                                         //CMSSW 76X criterion
+	    if( (phSum_F[jet]/rawpt > 0.00 ||                                        // else if( phSum_F[jet]/rawpt < 0.90 &&
+		 neSum_F[jet]/rawpt  > 0.00  ) &&                                        //          neSum_F[jet]/rawpt < null &&
+		neuMult             > 0       ) passesJetID=true;     //          neuMult            > 10
+	  }	  	  
+      } 
       
       //fill jetspectraRapHists w/ passing jetID criterion
       if(  fillMCJetSpectraRapHists ) { 
@@ -489,19 +497,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	      hMCJetQA_rapBins_genrecpt[0][theRapBin]  ->Fill(recpt/genpt,weight_eS);
 	      hMCJetQA_rapBins_genreceta[0][theRapBin] ->Fill(receta/geneta,weight_eS);	 
 	    }	    
-	    break; 	  }      
+	    break; 	  
+	  }
       }
       
-      ////second half of kmat cut
-      if( absreceta >= jtEtaCutHi ) continue;
-      else if( absreceta < jtEtaCutLo ) continue;
       
-      // jet/event counts
-      h_NJets_kmatCut->Fill(1);
-      if(!hNEvts_withJets_kmatCut_Filled){
-	h_NEvents_withJets_kmatCut->Fill(1);
-	hNEvts_withJets_kmatCut_Filled=true;      }
-
+      
       /////   JETQA   ///// 
       if(fillMCJetQAHists	 ){
 

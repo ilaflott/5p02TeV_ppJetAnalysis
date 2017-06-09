@@ -57,7 +57,7 @@ const std::string CMSSW_BASE=
 const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/";
 
-const std::string inputDir=SCRATCH_BASE+"readForests/4.17.17_outputCondor/";
+const std::string inputDir=SCRATCH_BASE+"readForests/6.07.17_outputCondor/";
 //const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
 
 const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
@@ -68,18 +68,23 @@ const std::string var[]={
   //jets, 0-3=4 vars
   "jtpt"  , "rawpt" ,
   "jteta" , "jtphi" ,
+
   //jet constituents, 4-30=27 vars
   "trkN", "trkSum", "trkMax", //trk
   "trkHardN", "trkHardSum",
+
   "phN", "phSum", "phMax",    //ph
   "phHardN", "phHardSum",
+
   "chN", "chSum", "chMax",    //ch
   "chHardN", "chHardSum",
+
   "neN" ,  "neSum" , "neMax" , //ne
   "eN"  ,  "eSum"  , "eMax"  ,    //e
   "muN" ,  "muSum" , "muMax" , //mu
+
   "neuMult", "chMult", "numConst",
-  //"hcalSum", "ecalSum",       //hcal and ecal
+
   // dijets, 31-35=5 vars
   "Aj" , "xj" , "dphi",    //JERS might not like me
   "leadJetPt", "subleadJetPt"  
@@ -87,69 +92,104 @@ const std::string var[]={
 const int N_vars=sizeof(var)/sizeof(std::string);
 const int jetQA_varStart=0;
 const int jetConstits_varStart=4;
-const int dijet_varStart=22;
+const int dijet_varStart=31;
 
 // variable names, string array
 const std::string var_xAx_Titles[] = {   
   "p_{t}^{reco} (GeV)" ,  "p_{t}^{raw} (GeV)",  
   "#eta_{jet}", "#phi_{jet}", //"y_{jet}" ,
-  "trkMax/p_{t}^{raw}", "trkMax/p_{t}^{raw}", "trkHardSum/p_{t}^{raw}", 
-  "chMax/p_{t}^{raw}",  "chSum/p_{t}^{raw}",  "chHardSum/p_{t}^{raw}", 
-  "phMax/p_{t}^{raw}",  "phSum/p_{t}^{raw}",  "phHardSum/p_{t}^{raw}", 
-  "neMax/p_{t}^{raw}",  "neSum/p_{t}^{raw}", 
-  "eMax/p_{t}^{raw}",   "eSum/p_{t}^{raw}", 
-  "muMax/p_{t}^{raw}",  "muSum/p_{t}^{raw}", 
+
+  "trkN", "trkSum/p_{t}^{raw}", "trkMax/p_{t}^{raw}", 
+  "trkHardN", "trkHardSum/p_{t}^{raw}",
+
+  "chN", "chSum/p_{t}^{raw}", "chMax/p_{t}^{raw}", 
+  "chHardN", "chHardSum/p_{t}^{raw}",
+
+  "phN", "phSum/p_{t}^{raw}", "phMax/p_{t}^{raw}", 
+  "phHardN", "phHardSum/p_{t}^{raw}",
+
+  "neN", "neSum/p_{t}^{raw}",  "neMax/p_{t}^{raw}", 
+  "eN",   "eSum/p_{t}^{raw}",   "eMax/p_{t}^{raw}", 
+  "muN", "muSum/p_{t}^{raw}",  "muMax/p_{t}^{raw}",
+
   "N_{neu}^{jet}",   "N_{chg}^{jet}",   "N_{sum}^{jet}",
+
   "A_{j}",     "x_{j}" , "#Delta #phi", 
   "leadJet P_{t} (GeV)", "subleadJet P_{t} (GeV)"
 };
 //const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
 
 const int var_xAx_reBin[]={                                   
-  5, 5,     //reco/rawjtpt //500,0,500	   
-  2,  2, //2,    //jteta, phi, jty   //60 ,-3,+3  and  //100,-4,+4  
-  5, 5, 5,  //trks	   //200,0,2	   				   
-  5, 5, 5,  //ch  
-  5, 5, 5,  //ph					           
-  5, 5,     //ne		
-  5, 5,     //e					      
-  5, 5,     //mu					      
-  2, 2, 2,     // N Const.
-  2, 2,     //xj,Aj	//100,0,1				     
-  1,        //dphi	//50 ,0,+4		   				      
-  5, 5      //sub/lead recojttpt, //500,0,500				      
+  10, 10,     //reco/rawjtpt  
+  2,  2,      //jteta, phi    
+
+  1, 5, 5,    //trks	      
+  1, 5,                       
+
+  1, 5, 5,    //ph	      				           
+  1, 5,                       
+
+  1, 5, 5,    //ch  	      
+  1, 5,                       
+
+  1, 5, 5,    //ne	      	
+  1, 5, 5,    //e	      				      
+  1, 5, 5,    //mu	      				      
+
+  1, 1, 1,    // N Const.     
+
+  2, 2, 1,    //xj,Aj,dphi    
+  20, 20        //sub/lead jttpt
 };
 
 const float jetQAxmax[]={
-  (500. ), (500.),
-  (5.   ), (3.5  ), //(5.  ),
-  (2.00 ), (2.00), (2.00),
-  (2.00 ), (2.00), (2.00),
-  (2.00 ), (2.00), (2.00),
-  (2.00 ), (2.00), 
-  (2.00 ), (2.00), 
-  (2.00 ), (2.00), 
-  (30),   (30),   (30),
-  (1.   ), (1.  ), 
-  (3.2  ),
-  (500. ), (500.)
+  (1000. ), (1000.),             //reco/rawjtpt  
+  (5.   ), (3.3  ),  		 //jteta, phi    
+
+  (20 ), (2.00), (2.00), 	 //trks	      
+  (20 ), (2.00), 		                 
+
+  (20 ), (2.00), (2.00), 	 //ph	      
+  (20 ), (2.00), 		                 
+
+  (20 ), (2.00), (2.00),	 //ch  	      
+  (20 ), (2.00), 		              
+   
+  (20 ), (2.00), (2.00),	 //ne	      
+  (20 ), (2.00), (2.00),	 //e	      
+  (20 ), (2.00), (2.00),	 //mu	      
+
+  (40),   (40),   (50),   	 // N Const.     
+
+  (1.   ), (1.  ),   (3.2  ), 	 //xj,Aj,dphi    
+  (1000. ), (1000.) 		 //sub/lead jttpt
 };
 
 
 const float jetQAxmin[]={
-  30., 30.,  //  0.  ,  0.,
-  -5. , -3.5, //-5.,
-  0.  ,  0., 0.,
-  0.  ,  0., 0.,
-  0.  ,  0., 0.,
-  0.  ,  0., 
-  0.  ,  0., 
-  0.  ,  0., 
-  0.  ,  0., 0.,
-  0.  ,  0., 
-  2.0 ,
-  0. , 0.
-};
+  (50. ), (50.  ) ,           //reco/rawjtpt  
+  (-5. ), (-3.3 ) , 	      //jteta, phi    
+
+  (0.  ), (0.   ) , (0.),      //trks	      
+  (0.  ), (0.   ) , 
+
+  (0.  ), (0.   ) , (0.),      //ph	      
+  (0.  ), (0.   ) , 
+
+  (0.  ), (0.   ) , (0.),      //ch  	      
+  (0.  ), (0.   ) , 
+
+  (0.  ), (0.   ) , (0.),      //ne	      
+  (0.  ), (0.   ) , (0.),      //e	      
+  (0.  ), (0.   ) , (0.),      //mu	      
+
+  (0.  ), (0.   ) , (0.),      // N Const.     
+
+  (0.  ), (0.   ) , (0.),      //xj,Aj,dphi    
+  (50. ), (50.  )          //sub/lead jttpt
+};		
+
+
 
 //const int jetTrigQABinning=10;
 const int jetSpectraRapBinning=20;
@@ -175,14 +215,3 @@ void divideBinWidth(TH1 *h){
 
 
 
-//  "jtpt"  , "rawpt" ,  //jets, 0-3=4
-//  "jteta" , "jtphi" , //"jty",
-//  "trkMax", "trkSum", "trkHardSum", //jet constituents, 4-21=18
-//  "chMax" , "chSum" , "chHardSum",
-//  "phMax" , "phSum" , "phHardSum",
-//  "neMax" , "neSum" ,
-//  "eMax"  , "eSum"  ,
-//  "muMax" , "muSum" ,
-//  "neN", "chN", "sumN",
-//  "Aj" , "xj" , "dphi", //dijet variables, 22-26=5
-//  "leadJetPt", "subleadJetPt"

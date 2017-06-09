@@ -1,45 +1,43 @@
 #!/bin/bash
 
 echo ""
-echo "compiling readForests_ppMC_JERS.C"
+echo "compiling code(s)"
 echo ""
-
-rootcompile readForests_ppMC_JERS.C
-
-echo ""
-echo "done compiling."
-echo ""
-
-echo ""
-echo "running R=3"
-echo ""
-source run_readForests_ppMC_JERS.sh 3
-
-source askCondor.sh 12 5
+#
+#echo "...ppMC JERS..."
+#rootcompile readForests_ppMC_JERS.C
+#
+#echo "...ppMC jetPlots..."
+#rootcompile readForests_ppMC_jetPlots.C
+#
+echo "...ppData jetPlots..."
+rootcompile readForests_ppData_jetPlots.C
 
 echo ""
-echo "running R=4"
-echo ""
-source run_readForests_ppMC_JERS.sh 4
-
-source askCondor.sh 12 5
-
-echo ""
-echo "running R=5"
-echo ""
-source run_readForests_ppMC_JERS.sh 5
-
-source askCondor.sh 12 5
-
-echo ""
-echo "done submitting. Condor says..."
+echo "done compiling code(s), submitting."
 echo ""
 
-source askCondor.sh 20 30
+#source run_readForests_jetPlots.sh 3
+#source askCondor.sh 1 1
+#sleep 60s
+#
+#source run_readForests_jetPlots.sh 4
+#source askCondor.sh 1 1
+#sleep 60s
+
+source run_readForests_jetPlots.sh 5
+source askCondor.sh 1 1
+sleep 60s
+
+
+#source run_readForests_ppMC_JERS.sh 3
+#source askCondor.sh 1 1
+#sleep 60s
 
 echo ""
-echo "done!"
+echo "submission/compilation done. askingCondor."
 echo ""
 
+source askCondor.sh 24 5
 
 return

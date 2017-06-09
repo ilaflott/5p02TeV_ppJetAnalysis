@@ -494,36 +494,35 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 
       // 13 TeV JetID criterion
       bool passesJetID=false; //int jtID=0;
-      if(fillMCJetIDHists) 
-	{
-	  if (absreceta<=2.4) 
-	    { 
-	      if( neSum_F[jet]/rawpt    < 0.99 &&
-		  phSum_F[jet]/rawpt    < 0.99 &&
-		  numConst              > 1    &&      
-		  chSum_F[jet]/rawpt    > 0.00 && 
-		  chMult                > 0    &&
-		  eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
-	    }
-	  else if ( absreceta<=2.7 && absreceta>2.4 ) 
-	    {	  
-	      if( neSum_F[jet]/rawpt    < 0.99 &&
-		  phSum_F[jet]/rawpt    < 0.99 &&
-		  numConst              > 1       ) passesJetID=true;	      
-	    }		  
-	  else if( absreceta<=3.0 && absreceta>2.7 ) 
-	    {                                                         // CMSSW [76,80]X criterion
-	      if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
-		   neSum_F[jet]/rawpt > 0.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
-		   neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
-	    }							      
-	  else //( absreceta>3.0) 
-	    {                                                          // CMSSW 76X criterion
-	      if( (phSum_F[jet]/rawpt > 0.00 ||                         // else if( phSum_F[jet]/rawpt < 0.90 &&
-		   neSum_F[jet]/rawpt  > 0.00 ) &&                         //          neSum_F[jet]/rawpt < null &&
-	      	  neuMult             > 0       ) passesJetID=true;     //          neuMult            > 10
-	    }	  	  
-	}
+      if(fillMCJetIDHists) 	{
+	if (absreceta<=2.4) 
+	  { 
+	    if( neSum_F[jet]/rawpt    < 0.99 &&
+		phSum_F[jet]/rawpt    < 0.99 &&
+		numConst              > 1    &&      
+		chSum_F[jet]/rawpt    > 0.00 && 
+		chMult                > 0    &&
+		eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
+	  }
+	else if ( absreceta<=2.7 && absreceta>2.4 ) 
+	  {	  
+	    if( neSum_F[jet]/rawpt    < 0.99 &&
+		phSum_F[jet]/rawpt    < 0.99 &&
+		numConst              > 1       ) passesJetID=true;	      
+	  }		  
+	else if( absreceta<=3.0 && absreceta>2.7 ) 
+	  {                                                         // CMSSW [76,80]X criterion
+	    if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
+		 neSum_F[jet]/rawpt > 0.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+		 neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+	  }							      
+	else //( absreceta>3.0) 
+	  {                                                          // CMSSW 76X criterion
+	    if( (phSum_F[jet]/rawpt > 0.00 ||                         // else if( phSum_F[jet]/rawpt < 0.90 &&
+		 neSum_F[jet]/rawpt  > 0.00 ) &&                         //          neSum_F[jet]/rawpt < null &&
+		neuMult             > 0       ) passesJetID=true;     //          neuMult            > 10
+	  }	  	  
+      }
       
       
       // jet/event counts
@@ -544,7 +543,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	}
 	
 	if(absetabin != -1 ){
-
+	  
 	  for(int jtID=0; jtID<2;jtID++){
 	    if(jtID==1 && !passesJetID) continue;
 	    else if (jtID==1 && !fillMCJetIDHists)continue;
@@ -559,7 +558,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 		recpt <  ( (float) genptBin2High )    ) 
 	      hJER_absetabins_genptBin2[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     	
 	  }
-	  
 	}
 	
 	// hJER, genpt30-50, 150-200, across receta bins array (note, NOT abs-value receta bins)
@@ -591,12 +589,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	
 	if(ptbin != -1) {
 	  for(int jtID=0; jtID<2;jtID++){
+	    if(jtID==0)hJER_jtetaQA->Fill(receta,weight_eS);      
+	    
 	    if(jtID==1 && !passesJetID)continue;
 	    else if (jtID==1 && !fillMCJetIDHists)continue;
-	    if(jtID==0)hJER_jtetaQA->Fill(receta,weight_eS);      
 	    hJER[jtID][ptbin]->Fill( (float)(recpt/genpt), weight_eS); 
-	  }	}
-	
+	  }	}	
       }
       
       

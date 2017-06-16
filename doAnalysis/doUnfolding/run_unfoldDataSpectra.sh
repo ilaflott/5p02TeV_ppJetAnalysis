@@ -6,8 +6,8 @@ data_date="05-25-17"
 data_date_condor="5.25.17"
 data_outCondorDir="${data_date_condor}_outputCondor"
 
-MC_date="06-02-17"
-MC_date_condor="6.02.17"
+MC_date="06-05-17"
+MC_date_condor="6.05.17"
 MC_outCondorDir="${MC_date_condor}_outputCondor"
 ##CONST
 
@@ -58,10 +58,10 @@ echo ""
 
 if [ $etaBin -eq 1 ]
 then
-    ./unfoldDataSpectra.exe ${data_outCondorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_0.0eta0.5  ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.0eta0.5     HPtJetTrig_Py8_unfData_00eta05   ${jtID} ${kReg}
+    ./unfoldDataSpectra.exe ${data_outCondorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_0.0eta0.5  ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.0eta0.5_1     HPtJetTrig_Py8_unfData_00eta05   ${jtID} ${kReg}
 elif [ $etaBin -eq 2 ]
 then
-    ./unfoldDataSpectra.exe ${data_outCondorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_0.5eta1.0  ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.5eta1.0     HPtJetTrig_Py8_unfData_05eta10   ${jtID} ${kReg}
+    ./unfoldDataSpectra.exe ${data_outCondorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_0.5eta1.0  ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.5eta1.0_1     HPtJetTrig_Py8_unfData_05eta10   ${jtID} ${kReg}
 else
     echo ""
     echo "etaBin not found; exit"

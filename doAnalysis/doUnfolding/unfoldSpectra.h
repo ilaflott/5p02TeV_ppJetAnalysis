@@ -103,12 +103,11 @@ const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to d
 
 //other options
 const bool doOverUnderflows=false;
-const bool clearOverUnderflows=true;
+const bool clearOverUnderflows=false;
 
 const bool normalizedMCMatrix=false;
 const bool fillRespHists=false;
 const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
-
 
 //useful strings, numbers
 const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%

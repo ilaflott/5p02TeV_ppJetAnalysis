@@ -24,7 +24,7 @@ sleep 1s
 ## R = 4
 #source run_unfoldDataSpectra.sh 4 0 9 1
 #sleep 0.5s
-source run_unfoldDataSpectra.sh 4 1 9 1
+source run_unfoldDataSpectra.sh 4 1 10 1
 sleep 0.5s
 #source run_unfoldDataSpectra.sh 4 0 10 2
 #sleep 0.5s
@@ -34,7 +34,7 @@ sleep 0.5s
 ## R = 3
 #source run_unfoldDataSpectra.sh 3 0 9 1
 #sleep 0.5s
-source run_unfoldDataSpectra.sh 3 1 9 1
+source run_unfoldDataSpectra.sh 3 1 14 1
 sleep 0.5s
 #source run_unfoldDataSpectra.sh 3 0 10 2
 #sleep 0.5s

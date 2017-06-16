@@ -55,10 +55,10 @@ echo ""
 
 if [ $etaBin -eq 1 ]
 then
-    ./unfoldMCSpectra.exe   ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.0eta0.5   Py8_closureTest_00eta05  ${jtID}  ${kReg}
+    ./unfoldMCSpectra.exe   ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.0eta0.5_1   Py8_closureTest_00eta05  ${jtID}  ${kReg}
 elif [ $etaBin -eq 2 ]
 then
-    ./unfoldMCSpectra.exe   ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.5eta1.0   Py8_closureTest_05eta10  ${jtID}  ${kReg}
+    ./unfoldMCSpectra.exe   ${MC_outCondorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_0.5eta1.0_1   Py8_closureTest_05eta10  ${jtID}  ${kReg}
 else
     echo ""
     echo "etaBin not found; exit"

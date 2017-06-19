@@ -27,31 +27,27 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
   if(useSimplePtBinning){
     std::cout<<"using simple pt bins"<<std::endl<<std::endl;
-    boundaries_pt_reco = (double*)simpbins_pt_reco   ; //spectra
+    boundaries_pt_reco = (double*)simpbins_pt_reco ; //spectra
     nbins_pt_reco      = (int)n_simpbins_pt_reco ; 
-    boundaries_pt_gen = (double*)simpbins_pt_gen  ;
+    boundaries_pt_gen = (double*)simpbins_pt_gen ;
     nbins_pt_gen      = (int)n_simpbins_pt_gen ; 
 
-    boundaries_pt_reco_mat = (double*)simpbins_pt_reco_mat   ; //matrix
-    nbins_pt_reco_mat      = (int)n_simpbins_pt_reco_mat ; 
-    boundaries_pt_gen_mat = (double*)simpbins_pt_gen_mat  ;
-    nbins_pt_gen_mat      = (int)n_simpbins_pt_gen_mat  ;
+    boundaries_pt_reco_mat = (double*)simpbins_pt_reco ; //matrix
+    nbins_pt_reco_mat      = (int)n_simpbins_pt_reco ; 
+    boundaries_pt_gen_mat = (double*)simpbins_pt_gen ;
+    nbins_pt_gen_mat      = (int)n_simpbins_pt_gen ;                    } 
 
-  } 
   else{
     std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
-    boundaries_pt_reco = (double*)anabins_pt_reco   ; //spectra
+    boundaries_pt_reco = (double*)anabins_pt_reco ; //spectra
     nbins_pt_reco      = (int)n_anabins_pt_reco ; 
-    boundaries_pt_gen = (double*)anabins_pt_gen   ;
+    boundaries_pt_gen = (double*)anabins_pt_gen ;
     nbins_pt_gen      = (int)n_anabins_pt_gen ; 
 
-    boundaries_pt_reco_mat = (double*)anabins_pt_reco_mat   ; //matrix
-    nbins_pt_reco_mat      = (int)n_anabins_pt_reco_mat ; 
-    boundaries_pt_gen_mat = (double*)anabins_pt_gen_mat  ;
-    nbins_pt_gen_mat      = (int)n_anabins_pt_gen_mat  ;
-    
-
-  }
+    boundaries_pt_reco_mat = (double*)anabins_pt_reco ; //matrix
+    nbins_pt_reco_mat      = (int)n_anabins_pt_reco ; 
+    boundaries_pt_gen_mat = (double*)anabins_pt_gen ;
+    nbins_pt_gen_mat      = (int)n_anabins_pt_gen ;                  }
 
 
   // STRINGS -----------
@@ -89,9 +85,11 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   else outFileName+="_simpbins";
   outFileName+="_"+baseName;
 
+  std::string outRespMatPdfFile =  outFileName+"_respMat.pdf";
+  //std::string outInputSpectraPdfFile =  outFileName+"_inputSpectra.pdf";
   std::string outBayesPdfFile =  outFileName+"_Bayes.pdf";
   std::string outSVDPdfFile   =  outFileName+"_SVD.pdf"; // see drawPDFs part for rest of string
-  std::string outRootFile     =  outFileName+".root";  
+  std::string outRootFile     =  outFileName+"_File.root";  
   
   
   if(debugMode)std::cout<<"opening output file: "<<outRootFile<<std::endl;
@@ -142,6 +140,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   //if(!doOverUnderflows){
   if(clearOverUnderflows){TH1clearOverUnderflows((TH1*)hrec_anabin);
     hrec_anabin->Print("base");  std::cout<<std::endl;}
+
+  assert(false); //trying to get a handle on over/underflows....
 
   // response hist, for output? what is this for if it's empty?
   TH1F* hrec_resp_anabin;
@@ -224,6 +224,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 			       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 			       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
 			       //			       (double*) boundaries_pt, (int) nbins_pt );
+
   hmat_anabin->Print("base");      std::cout<<std::endl;
   
   divideBinWidth_TH2(hmat_anabin);
@@ -239,6 +240,160 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   }
   
   
+  std::cout<<std::endl<<"writing input hists to file..."<<std::endl;
+  
+  fout->cd();
+  
+  hgen->Write(); 
+  hrec->Write();
+  hmat->Write(); 
+  hgen_anabin->Write(); 
+  hrec_anabin->Write(); 
+  hmat_anabin->Write(); 
+  
+  hrec_sameside->Write();
+  hrec_sameside_anabin->Write(); 
+  
+  if(fillRespHists) hgen_resp_anabin->Write();
+  if(fillRespHists) hrec_resp_anabin->Write();
+  
+
+
+  if(drawPDFs){    
+    
+    bool drawRespMatrix=true;
+    //bool drawInputSpectra=true;
+    
+    if(drawRespMatrix){
+      std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;
+      
+      std::string outPdfFile=outRespMatPdfFile;
+      std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
+      
+      TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv_Logz","",1200,1200);    
+      tempCanvForPdfPrint->cd();
+      
+      tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
+      
+      if(normalizedMCMatrix) {
+	tempCanvForPdfPrint->SetLogz(0);
+
+	hmat_anabin->SetAxisRange(0. , 1,"Z");
+	hmat_anabin->SetTitle("ppMC rebinned input, normalized");
+
+	hmat->SetAxisRange(0. , 1,"Z");
+	hmat->SetTitle("ppMC input, normalized");
+      }
+      else	{
+	tempCanvForPdfPrint->SetLogz(1);
+
+	hmat_anabin->SetAxisRange(0.0000000000000001,.00001,"Z");
+	hmat_anabin->SetTitle("ppMC rebinned input. not normalized");
+
+	hmat->SetAxisRange(0.0000000000000001,.00001,"Z");
+	hmat->SetTitle("ppMC input. not normalized");
+      }
+      
+      
+      // matrix ---------------
+    
+      tempCanvForPdfPrint->cd();
+
+      tempCanvForPdfPrint->SetLogx(0);
+      tempCanvForPdfPrint->SetLogy(0);
+
+      hmat->SetAxisRange(40.,1000.,"X");
+      hmat->SetAxisRange(40.,1000.,"Y");
+
+      
+      hmat->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat->GetYaxis()->SetMoreLogLabels(true);
+      hmat->GetYaxis()->SetNoExponent(true);
+      hmat->GetYaxis()->SetLabelSize(0.02);
+      hmat->GetYaxis()->SetTitleSize(0.025);
+      hmat->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat->GetXaxis()->SetMoreLogLabels(true);
+      hmat->GetXaxis()->SetNoExponent(true);
+      hmat->GetXaxis()->SetLabelSize(0.02);
+      hmat->GetXaxis()->SetTitleSize(0.025);
+      hmat->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      
+      // matrix w/ log ---------------
+
+      tempCanvForPdfPrint->cd();
+
+      tempCanvForPdfPrint->SetLogx(1);
+      tempCanvForPdfPrint->SetLogy(1);
+
+      hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
+      hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
+
+
+      //hmat->GetZaxis()->SetLabelSize(0.025);      
+      //hmat->GetYaxis()->SetMoreLogLabels(true);
+      //hmat->GetYaxis()->SetNoExponent(true);
+      //hmat->GetYaxis()->SetLabelSize(0.02);
+      //hmat->GetYaxis()->SetTitleSize(0.025);
+      //hmat->GetYaxis()->SetTitle("gen p_{t}");
+      //
+      //hmat->GetXaxis()->SetMoreLogLabels(true);
+      //hmat->GetXaxis()->SetNoExponent(true);
+      //hmat->GetXaxis()->SetLabelSize(0.02);
+      //hmat->GetXaxis()->SetTitleSize(0.025);
+      //hmat->GetXaxis()->SetTitle("reco p_{t}   ");
+
+      hmat->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+      // matrix rebinned ---------------
+      
+      tempCanvForPdfPrint->cd();
+      
+      tempCanvForPdfPrint->SetLogx(1);
+      tempCanvForPdfPrint->SetLogy(1);
+      
+      hmat_anabin->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
+      hmat_anabin->GetYaxis()->SetNoExponent(true);
+      hmat_anabin->GetYaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetYaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_anabin->GetXaxis()->SetMoreLogLabels(true);
+      hmat_anabin->GetXaxis()->SetNoExponent(true);
+      hmat_anabin->GetXaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetXaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_anabin->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      
+
+      // close file ---------------
+
+      tempCanvForPdfPrint->Print(close_outPdfFile.c_str()); }
+  }
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
   // Bayesian unfolding ------------------------- 
   if(!doBayes)  std::cout<<std::endl<<"   skipping Bayesian Unfolding..."<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<std::endl<<std::endl<<"   beginning Bayesian Unfolding..."<<std::endl;
@@ -248,7 +403,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     std::cout<<"calling RooUnfoldResponse "<<std::endl;
     RooUnfoldResponse roo_resp( hrec_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str()) ;
 
-    //roo_resp.UseOverflow(doOverUnderflows);    
+    roo_resp.UseOverflow(doOverUnderflows);    
         
     std::cout<<"calling RooUnfoldBayes..."<<std::endl;
     RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
@@ -371,23 +526,6 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     h_recratio_ssgen->Print("base");
 
 
-    std::cout<<std::endl<<"writing input hists to file..."<<std::endl;
-
-    fout->cd();
-    
-    hgen->Write(); 
-    hrec->Write();
-    hmat->Write(); 
-    hgen_anabin->Write(); 
-    hrec_anabin->Write(); 
-    hmat_anabin->Write(); 
-
-    hrec_sameside->Write();
-    hrec_sameside_anabin->Write(); 
-
-    if(fillRespHists) hgen_resp_anabin->Write();
-    if(fillRespHists) hrec_resp_anabin->Write();
-    
     std::cout<<"writing output hists to file... "<<std::endl;
 
     hunf->Write();    
@@ -483,42 +621,6 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       theLineAtOne->SetLineStyle(2);
       theLineAtOne->SetLineColor(36);
 
-      
-      
-      // matrix ---------------
-      
-      tempCanvForPdfPrint_wLogz->cd();
-      
-      std::cout<<std::endl<<"drawing input histos to Bayesian Unfolding..."<<std::endl;
-      
-      if(normalizedMCMatrix) {
-	tempCanvForPdfPrint_wLogz->SetLogz(0);
-	hmat_anabin->SetAxisRange(0. , 1,"Z");
-	hmat_anabin->SetTitle("ppMC jet input, normalized");
-      }
-      else	{
-	tempCanvForPdfPrint_wLogz->SetLogz(1);
-	hmat_anabin->SetAxisRange(0.0000000000000001,.00001,"Z");
-	hmat_anabin->SetTitle("ppMC jet input. not normalized");
-      }
-      
-      
-      hmat_anabin->GetZaxis()->SetLabelSize(0.025);
-      
-      hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
-      hmat_anabin->GetYaxis()->SetNoExponent(true);
-      hmat_anabin->GetYaxis()->SetLabelSize(0.02);
-      hmat_anabin->GetYaxis()->SetTitleSize(0.025);
-      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat_anabin->GetXaxis()->SetMoreLogLabels(true);
-      hmat_anabin->GetXaxis()->SetNoExponent(true);
-      hmat_anabin->GetXaxis()->SetLabelSize(0.02);
-      hmat_anabin->GetXaxis()->SetTitleSize(0.025);
-      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_anabin->Draw("COLZ");           
-      
-      tempCanvForPdfPrint_wLogz->Print(outPdfFile.c_str());
       
       // gen/meas/unf spectra ---------------
       

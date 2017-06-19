@@ -9,6 +9,9 @@ echo ""
 echo "done compiling unfoldMCSpectra"
 echo ""
 sleep 1s
+#if [[ rooUnfoldCompileResult -eq ]]
+
+
 
 
 ## R = 5

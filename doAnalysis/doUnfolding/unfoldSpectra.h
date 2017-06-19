@@ -98,12 +98,12 @@ const bool doBayes=true;
 const int kIter = 4; //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
 //SVD setting that don't change too much
-const bool doSVD=true; //!(doBayes); 
+const bool doSVD=false; //!(doBayes); 
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
 
 //other options
 const bool doOverUnderflows=false;
-const bool clearOverUnderflows=false;
+const bool clearOverUnderflows=true;
 
 const bool normalizedMCMatrix=false;
 const bool fillRespHists=false;
@@ -461,7 +461,7 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
 
 void TH1clearOverUnderflows(TH1* h)
 {
-  std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
+  //std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
   std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
   std::cout<<"clearing Over/Underflow Bins...."<<std::endl;
   h->TH1::ClearUnderflowAndOverflow();

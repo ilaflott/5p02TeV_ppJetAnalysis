@@ -374,6 +374,36 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       hmat_anabin->Draw("COLZ");           
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+
+      // % error of matrix rebinned ---------------
+      
+      tempCanvForPdfPrint->cd();
+      
+      tempCanvForPdfPrint->SetLogx(1);
+      tempCanvForPdfPrint->SetLogy(1);
+      tempCanvForPdfPrint->SetLogz(0);
+      
+      TH1F* hmat_anabin_errs=(TH1F*)respMatrixError(hmat_anabin,
+						    boundaries_pt_reco_mat , nbins_pt_reco_mat,
+						    boundaries_pt_gen_mat  , nbins_pt_gen_mat);
+      
+      hmat_anabin->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
+      hmat_anabin->GetYaxis()->SetNoExponent(true);
+      hmat_anabin->GetYaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetYaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_anabin->GetXaxis()->SetMoreLogLabels(true);
+      hmat_anabin->GetXaxis()->SetNoExponent(true);
+      hmat_anabin->GetXaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetXaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_anabin->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
       
 
       // close file ---------------

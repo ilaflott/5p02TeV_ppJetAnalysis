@@ -95,7 +95,8 @@ const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 //Bayes setting that don't change too much
 const bool doBayes=true; 
-const int kIter = 4; //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
+const int kIter = 4; //recommended is 4, default is 4
+//,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
 //SVD setting that don't change too much
 const bool doSVD=false; //!(doBayes); 
@@ -204,24 +205,26 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
 
 void divideBinWidth(TH1 *h){
   std::cout<<std::endl<<"in divideBinWidth"<<std::endl<<std::endl;
+  bool funcDebug=false;
 
-  h->Sumw2();
+  //h->Sumw2();
+  if(funcDebug)h->Print("base");
   double nEntries=h->GetEntries();
   int numbins=h->GetNbinsX();
 
-  //std::cout<<"#of bins is "<<numbins<<std::endl;
-  //std::cout<<"according to consts array... "<<nbins_pt<<std::endl;
-  std::cout<<"integral before:  "<<h->Integral()<<std::endl;
-  //std::cout<<"entries before:  "<<nEntries<<std::endl;
+  //std::cout<<"#of bin should be = "<<nbins_pt<<std::endl;
+  if(funcDebug)std::cout<<"#of bins = "<<numbins<<std::endl;
+  if(funcDebug)std::cout<<"integral before = "<<h->Integral()<<std::endl;
+  if(funcDebug)std::cout<<"entries before = "<<nEntries<<std::endl;
   
   for (int i=1;i<=numbins;i++)
     {
       
-      //std::cout<<"before.. i = numbins = "<< numbins<<std::endl;
-      //std::cout<<"bin width = "<<   h->GetBinWidth(i)   << std::endl;
-      //std::cout<<"bin center = "<<  h->GetBinCenter(i)  << std::endl;
-      //std::cout<<"val = "   <<      h->GetBinContent(i) << std::endl;
-      //std::cout<<"valErr = "<<      h->GetBinError(i)   << std::endl;
+      if(funcDebug)std::cout<<std::endl<<"bin-i = "<< i <<std::endl;
+      if(funcDebug)std::cout<<"bin-i width = "<<  h->GetBinWidth(i)  << std::endl;
+      if(funcDebug)std::cout<<"bin-i pt range is "<<   h->GetBinLowEdge(i) << " to " << (h->GetBinLowEdge(i)+h->GetBinWidth(i)) << std::endl;
+      if(funcDebug)std::cout<<std::endl<<"old val = "   <<      h->GetBinContent(i) << std::endl;
+      if(funcDebug)std::cout<<"old valErr = "<<      h->GetBinError(i)   << std::endl;
       
       
       Float_t val    = h->GetBinContent(i);
@@ -232,18 +235,16 @@ void divideBinWidth(TH1 *h){
       
       h->SetBinContent(i,val);
       h->SetBinError(i,valErr);
+
+      if(funcDebug)std::cout<<"new val = "   <<      h->GetBinContent(i) << std::endl;
+      if(funcDebug)std::cout<<"new valErr = "<<      h->GetBinError(i)   << std::endl;
       
-      //std::cout<<"after... i = numbins = "<< numbins<<std::endl;
-      //std::cout<<"bin width = "<<   h->GetBinWidth(i)   << std::endl;
-      //std::cout<<"bin center = "<<  h->GetBinCenter(i)  << std::endl;
-      //std::cout<<"val = "   <<      h->GetBinContent(i) << std::endl;
-      //std::cout<<"valErr = "<<      h->GetBinError(i)   << std::endl;
     }
+  
+  if(funcDebug)std::cout<<"integral after = "<<h->Integral()<<std::endl;
+  if(funcDebug)std::cout<<"entries after = "<<h->GetEntries()<<std::endl;
 
-  std::cout<<"integral after:  "<<h->Integral()<<std::endl;
-  //std::cout<<"entries after:  "<<h->GetEntries()<<std::endl;
-
-  h->SetEntries(nEntries);
+  //h->SetEntries(nEntries);
 
   //std::cout<<"exiting function"<<std::endl;
   std::cout<<std::endl<<"divideBinWidth done"<<std::endl<<std::endl;
@@ -254,28 +255,61 @@ void divideBinWidth(TH1 *h){
 
 void divideBinWidth_TH2(TH2F *h){
   std::cout<<std::endl<<"in divideBinWidth_TH2"<<std::endl<<std::endl;
+  bool funcDebug=false;
 
-  h->Sumw2();
-  h->Print("base");      std::cout<<std::endl;
+  //h->Sumw2();
+  if(funcDebug) h->Print("base");      std::cout<<std::endl;
 
   double numEntries=h->GetEntries();
+  int nbinsx=h->GetNbinsX();
+  int nbinsy=h->GetNbinsY();
 
-  for (int i=1;i<=h->GetNbinsX();i++)    {    
-    for (int j=1;j<=h->GetNbinsY();j++)    {
+  if(funcDebug)std::cout<<"#of xbins = "<<nbinsx<<std::endl;
+  if(funcDebug)std::cout<<"#of ybins = "<<nbinsy<<std::endl;
+  if(funcDebug)std::cout<<"total #of bins = "<<nbinsy*nbinsx<<std::endl;
+  if(funcDebug)std::cout<<"integral before = "<<h->Integral()<<std::endl;
+  if(funcDebug)std::cout<<"entries before = "<<numEntries<<std::endl;
+  
+  TAxis* the_xAxis=h->GetXaxis();
+  TAxis* the_yAxis=h->GetYaxis();
+
+  for (int i=1;i<=nbinsx;i++)    {    
+    for (int j=1;j<=nbinsy;j++)    {
       
       Float_t xWidth=h->GetXaxis()->GetBinWidth(i);
       Float_t yWidth=h->GetYaxis()->GetBinWidth(j);
+      
+
+
+      if(funcDebug)std::cout<<std::endl<<"xbin-i = "<< i <<std::endl;
+      if(funcDebug)std::cout<<"xbin-i width = "<<  the_xAxis->GetBinWidth(i)  << std::endl;
+      if(funcDebug)std::cout<<"xbin-i pt range is "<<   the_xAxis->GetBinLowEdge(i) << " to " 
+			    << (the_xAxis->GetBinLowEdge(i)+the_xAxis->GetBinWidth(i)) << std::endl;
+
+      if(funcDebug)std::cout<<std::endl<<"ybin-j = "<< j <<std::endl;
+      if(funcDebug)std::cout<<"ybin-j width = "<<  the_yAxis->GetBinWidth(j)  << std::endl;
+      if(funcDebug)std::cout<<"ybin-j pt range is "<<   the_yAxis->GetBinLowEdge(j) << " to " 
+			    << (the_yAxis->GetBinLowEdge(j)+the_yAxis->GetBinWidth(j)) << std::endl;
+
+
+      if(funcDebug)std::cout<<std::endl<<"old val = "   <<      h->GetBinContent(i,j) << std::endl;
+      if(funcDebug)std::cout<<"old valErr = "<<      h->GetBinError(i,j)   << std::endl;
+
       
       Float_t val = (h->GetBinContent(i,j))/(xWidth*yWidth);
       Float_t valErr = (h->GetBinError(i,j))/(xWidth*yWidth);
       
       h->SetBinContent(i,j,val);
       h->SetBinError(i,j,valErr);
+
+      if(funcDebug)std::cout<<std::endl<<"new val = "   <<      h->GetBinContent(i,j) << std::endl;
+      if(funcDebug)std::cout<<"new valErr = "<<      h->GetBinError(i,j)   << std::endl;
+
     }
   }
 
-  h->SetEntries(numEntries);
-  h->Print("base");      std::cout<<std::endl;
+  //h->SetEntries(numEntries);
+  if(funcDebug)h->Print("base");      std::cout<<std::endl;
   
   std::cout<<std::endl<<"divideBinWidth_TH2 done"<<std::endl<<std::endl;
   return;
@@ -357,64 +391,39 @@ void normalizeMC_TH2(TH2F* inputTH2){
 
 
 //TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, const double* boundaries_pt, const int nbins_pt){
-TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, 
+TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name, 
 	       double* boundaries_pt_reco, int nbins_pt_reco,
 	       double* boundaries_pt_gen  , int nbins_pt_gen	       ){
-
   std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
+  bool funcDebug = true;
 
-
-  double numEntries=inputTH2->GetEntries();
-  inputTH2->Sumw2();
-  inputTH2->Print("base");  std::cout<<std::endl;
+  //double numEntries=inputTH2->GetEntries();
+  //inputTH2->Sumw2();
+  if(funcDebug)inputTH2->Print("base");  std::cout<<std::endl;
   
   
-  int colStart=1;
   TAxis *xaxis = inputTH2->GetXaxis(); //reco pt axis
   int nbins_x= xaxis->GetNbins();
 
-  int rowStart=1;
   TAxis *yaxis = inputTH2->GetYaxis(); //gen pt axis
   int nbins_y = yaxis->GetNbins();
 
-  int finalxbin=nbins_x, finalybin=nbins_y;
-  if(doOverUnderflows){
-    finalxbin=nbins_x+1;    finalybin=nbins_y+1;
-    rowStart--;   colStart--; }
-
-  TH2F *reBinnedTH2 = new TH2F(inputTH2_title.c_str(), inputTH2->GetTitle(), 
+  TH2F *reBinnedTH2 = new TH2F(rebinTH2_name.c_str(), inputTH2->GetTitle(), 
 			       nbins_pt_reco, boundaries_pt_reco , 
 			       nbins_pt_gen, boundaries_pt_gen );
-  reBinnedTH2->Sumw2();
+  //reBinnedTH2->Sumw2();
   
-  for (  int rowNum=rowStart ; rowNum <= (finalybin) ; rowNum++ ) {
-    for (int colNum=colStart ; colNum <= (finalxbin) ; colNum++ ) {
-      
-      //std::cout<<"i="<<i<<" and j="<<j<<std::endl; 
-      //std::cout<<"bin x center = "<<xaxis->GetBinCenter(i)<< std::endl ;
-      //std::cout<<"bin y center = "<<yaxis->GetBinCenter(j)<< std::endl ;
-      
-      //if(j==0 || i==0 || j==nbins_y || i==nbins_x){	
-      //	if( inputTH2->GetBinContent(i,j) != 0 )	  {
-      //	  //std::cout<<"i="<<i<<" and j="<<j<<std::endl; 
-      //	  //std::cout<<"under/overflow bin in TH2 nonzero!!"<<std::endl;
-      //	  //std::cout<<"under/overflow bin content="<<inputTH2->GetBinContent(i,j)<<std::endl;
-      //	  continue;	}      }      
-      //else 
-      //if(rowNum!=0 && colNum !=0 && rowNum != (nbinsy+1) && colNum !=(ybins+1) )
-      reBinnedTH2->Fill( xaxis->GetBinCenter(colNum) , yaxis->GetBinCenter(rowNum) ,
-			 inputTH2->GetBinContent(colNum,rowNum) );            
-      //else if(doOverUnderFlows)	{
-      //
-      //reBinnedTH1->Fill
-      
+  for (  int xbin=1 ; xbin <= nbins_x ; xbin++ ) {
+    for (int ybin=1 ; ybin <= nbins_y ; ybin++ ) {
+            
+      reBinnedTH2->Fill( xaxis->GetBinCenter(xbin) , yaxis->GetBinCenter(ybin) ,
+			 inputTH2->GetBinContent(xbin,ybin) );            
       
     }  }//end x-y loop
   
-  reBinnedTH2->SetEntries(numEntries);
-  reBinnedTH2->Print("base");  std::cout<<std::endl;
+  //reBinnedTH2->SetEntries(numEntries);
+  if(funcDebug) reBinnedTH2->Print("base");  std::cout<<std::endl;
   
-  //std::cout<<" done rebinning TH2" <<std::endl<<std::endl;    
   std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;  
   return reBinnedTH2;
 }
@@ -462,7 +471,7 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
 void TH1clearOverUnderflows(TH1* h)
 {
   //std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
-  std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
+  //std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
   std::cout<<"clearing Over/Underflow Bins...."<<std::endl;
   h->TH1::ClearUnderflowAndOverflow();
   return;  

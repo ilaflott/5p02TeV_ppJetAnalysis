@@ -1,6 +1,5 @@
 #include "unfoldSpectra.h"
 
-
 const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 
 const bool drawPDFs=true; 
@@ -103,9 +102,18 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   else errorTreatment = RooUnfold::kCovToy; 
 
   if(debugMode)std::cout<<"doToyErrs="<<doToyErrs<<std::endl; 
+   
+  //std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
+  //std::cout<<"setting TH2DefSumw2 to true..."<<std::endl; 
+  //TH2::SetDefaultSumw2(true);
   
+  std::cout<<"TH1 GetDefaultSumw2="<<TH1::GetDefaultSumw2()<<std::endl;
+  std::cout<<"setting TH1DefSumw2 to true..."<<std::endl; 
   TH1::SetDefaultSumw2(true);
-  TH2::SetDefaultSumw2(true);
+  
+  //std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
+  //std::cout<<"TH1 GetDefaultSumw2="<<TH1::GetDefaultSumw2()<<std::endl;
+
   gStyle->SetOptStat(0);
 
   // ppMC input histos -------------------------
@@ -123,35 +131,48 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   
   TH1F *hrec;
   hrec = (TH1F*)fpp_MC->Get( histTitle.c_str() ); 
-  hrec->Print("base");  std::cout<<std::endl;
-  
+
+  fout->cd();
+  hrec->Write("hpp_mcclosure_reco_test_forChecking");
+  hrec->Print("base");
+  //std::cout<<"GetSumw2N="<<hrec->TH1::GetSumw2N()<<std::endl<<std::endl;
+
   TH1F *hrec_anabin;
   hrec_anabin = (TH1F*)hrec->Clone( (histTitle+"_clone").c_str() );
   //hrec_anabin->Scale(1/effIntgrtdLumi_vz);
-  hrec_anabin->Print("base");  std::cout<<std::endl;
-  
+  hrec_anabin->Print("base");
+  //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;
+
   if(debugMode)std::cout<<"rebinning hrec..."<<std::endl;
   hrec_anabin = (TH1F*)hrec_anabin->Rebin(nbins_pt_reco, (histTitle+"_anabins").c_str() , boundaries_pt_reco); 
-  hrec_anabin->Print("base");  std::cout<<std::endl;
+  hrec_anabin->Write("hpp_mcclosure_reco_test_rebinned");
+  hrec_anabin->Print("base");  
+  //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;
   
   divideBinWidth(hrec_anabin); 
-  hrec_anabin->Print("base");  std::cout<<std::endl;
+  hrec_anabin->Write("hpp_mcclosure_reco_test_rebinned_divBinWidth");
+  hrec_anabin->Print("base");  
+  //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;
   
   //if(!doOverUnderflows){
-  if(clearOverUnderflows){TH1clearOverUnderflows((TH1*)hrec_anabin);
-    hrec_anabin->Print("base");  std::cout<<std::endl;}
+  if(clearOverUnderflows){
+    TH1clearOverUnderflows((TH1*)hrec_anabin);
+    hrec_anabin->Write("hpp_mcclosure_reco_test_rebinned_divBinWidth_noOverUnderFlows");
+    hrec_anabin->Print("base");  
+    //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
+  }
+    
 
-  assert(false); //trying to get a handle on over/underflows....
 
   // response hist, for output? what is this for if it's empty?
   TH1F* hrec_resp_anabin;
   if(fillRespHists) hrec_resp_anabin = (TH1F*)hrec_anabin->Clone("recanabinClone4unf");
   else{
     hrec_resp_anabin = new TH1F( ("hpp_rec_response_anabin"+RandEtaRange).c_str(),"", 
-				 nbins_pt_reco, boundaries_pt_reco);
-    hrec_resp_anabin->Sumw2();  }
+				 nbins_pt_reco, boundaries_pt_reco);}
   hrec_resp_anabin->Print(" base");  
-  
+  //std::cout<<"GetSumw2N="<<hrec_resp_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
+
   
 
   // ---------- reco, measured spectra used to create response matrix, and for "sameside" unfolding test
@@ -161,24 +182,30 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   
   TH1F *hrec_sameside;
   hrec_sameside = (TH1F*)fpp_MC->Get( histTitle2.c_str() ); 
-  hrec_sameside->Print("base");  std::cout<<std::endl;
+  hrec_sameside->Print("base");  
+  //std::cout<<"GetSumw2N="<<hrec_sameside->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
   TH1F *hrec_sameside_anabin;
   hrec_sameside_anabin = (TH1F*)hrec_sameside->Clone( (histTitle2+"_clone").c_str() );
   //hrec_sameside_anabin->Scale(1/effIntgrtdLumi_vz);
-  hrec_sameside_anabin->Print("base");  std::cout<<std::endl;
+  hrec_sameside_anabin->Print("base");
+  //std::cout<<"GetSumw2N="<<hrec_sameside_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
   if(debugMode)std::cout<<"rebinning hrec_sameside..."<<std::endl;
   hrec_sameside_anabin = (TH1F*)hrec_sameside_anabin->Rebin(nbins_pt_reco, (histTitle2+"_anabins").c_str() , boundaries_pt_reco); 
-  hrec_sameside_anabin->Print("base");  std::cout<<std::endl;
+  hrec_sameside_anabin->Print("base");
+  //std::cout<<"GetSumw2N="<<hrec_sameside_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
   divideBinWidth(hrec_sameside_anabin); 
-  hrec_sameside_anabin->Print("base");  std::cout<<std::endl;
+  hrec_sameside_anabin->Print("base");
+  //std::cout<<"GetSumw2N="<<hrec_sameside_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
   //if(!doOverUnderflows){
   if(clearOverUnderflows){
     TH1clearOverUnderflows((TH1*)hrec_sameside_anabin);
-    hrec_sameside_anabin->Print("base");  std::cout<<std::endl;}
+    hrec_sameside_anabin->Print("base");
+    //std::cout<<"GetSumw2N="<<hrec_sameside_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;   
+  }
   
   // ---------- gen, MC truth spectra
   std::string genHistTitle="hpp_mcclosure_gen";
@@ -186,26 +213,34 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   genHistTitle+=RandEtaRange;
   
   TH1F* hgen = (TH1F*)fpp_MC->Get( genHistTitle.c_str() );
-  hgen->Print("base");     std::cout<<std::endl;
+  hgen->Print("base");    
+  //std::cout<<"GetSumw2N="<<hgen->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
   TH1F* hgen_anabin = (TH1F*)hgen->Clone( (genHistTitle+"_clone").c_str() );
   hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt_gen, (genHistTitle+"_anabins").c_str() , boundaries_pt_gen);
-  hgen_anabin->Print("base");        std::cout<<std::endl;
+  hgen_anabin->Print("base"); 
+  //std::cout<<"GetSumw2N="<<hgen_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
   divideBinWidth(hgen_anabin);
-  hgen_anabin->Print("base");      std::cout<<std::endl;
+  hgen_anabin->Print("base");  
+  //std::cout<<"GetSumw2N="<<hgen_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
   //if(!doOverUnderflows){
-  if(clearOverUnderflows){TH1clearOverUnderflows((TH1*)hgen_anabin);
-    hgen_anabin->Print("base");  std::cout<<std::endl;  }
-
+  if(clearOverUnderflows){
+    TH1clearOverUnderflows((TH1*)hgen_anabin);
+    hgen_anabin->Print("base");  
+    //std::cout<<"GetSumw2N="<<hgen_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
+  }
+  
   TH1F* hgen_resp_anabin;
   if(fillRespHists) hgen_resp_anabin = (TH1F*)hgen_anabin->Clone("genanabinClone4unf");
   else{
     hgen_resp_anabin = new TH1F( ("hpp_gen_response_anabin"+RandEtaRange).c_str() ,"", 
 				 nbins_pt_gen, boundaries_pt_gen);
-    hgen_resp_anabin->Sumw2(); }
+    //  hgen_resp_anabin->Sumw2(); 
+  }
   hgen_resp_anabin->Print("base");  
+  //std::cout<<"GetSumw2N="<<hgen_resp_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
   
   
   
@@ -215,41 +250,60 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   TH2_title+=RandEtaRange;
   
   TH2F* hmat = (TH2F*)fpp_MC->Get( TH2_title.c_str() );
-  hmat->Print("base"); std::cout<<std::endl;
-  
+
+  fout->cd();
+  hmat->Write();
+  hmat->Print("base");
+  //std::cout<<"GetSumw2N="<<hmat->TH1::GetSumw2N()<<std::endl<<std::endl;      
+
+
   TH2F* hmat_anabin = (TH2F*)hmat->Clone( (TH2_title+"_clone").c_str() );
-  hmat_anabin->Print("base");      std::cout<<std::endl;
-  
+  hmat_anabin->Print("base"); 
+  //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
+
   hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, (TH2_title+"_anabins").c_str(), 
 			       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 			       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
 			       //			       (double*) boundaries_pt, (int) nbins_pt );
+  hmat_anabin->Write("hmat_rebinned");
+  hmat_anabin->Print("base"); 
+  //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
 
-  hmat_anabin->Print("base");      std::cout<<std::endl;
   
   divideBinWidth_TH2(hmat_anabin);
-  hmat_anabin->Print("base");      std::cout<<std::endl;
-  
+  hmat_anabin->Write("hmat_rebinned_binWidthDiv");
+  hmat_anabin->Print("base"); 
+
+  assert(false);
+
+  //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
+
   //if(!doOverUnderflows){
-  if(clearOverUnderflows){TH1clearOverUnderflows((TH1*)hmat_anabin);
-    hmat_anabin->Print("base");      std::cout<<std::endl;  }
+  if(clearOverUnderflows){
+    TH1clearOverUnderflows((TH1*)hmat_anabin);
+    hmat_anabin->Write("hmat_rebinned_binWidthDiv_noOverUnderFlow");
+    hmat_anabin->Print("base");
+    //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
+  }
   
   if(normalizedMCMatrix){
     normalizeMC_TH2(hmat_anabin);
-    hmat_anabin->Print("base");      std::cout<<std::endl;
+    hmat_anabin->Write("hmat_rebinned_binWidthDiv_noOverUnderFlow_normd");
+    hmat_anabin->Print("base");
+    //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
   }
   
   
   std::cout<<std::endl<<"writing input hists to file..."<<std::endl;
   
+  //fout->cd();
   fout->cd();
-  
   hgen->Write(); 
   hrec->Write();
-  hmat->Write(); 
+  //hmat->Write(); 
   hgen_anabin->Write(); 
   hrec_anabin->Write(); 
-  hmat_anabin->Write(); 
+  //hmat_anabin->Write(); 
   
   hrec_sameside->Write();
   hrec_sameside_anabin->Write(); 
@@ -270,7 +324,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       std::string outPdfFile=outRespMatPdfFile;
       std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
       
-      TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv_Logz","",1200,1200);    
+      TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv_respMat","",1200,1200);    
       tempCanvForPdfPrint->cd();
       
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
@@ -378,32 +432,32 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
       // % error of matrix rebinned ---------------
       
-      tempCanvForPdfPrint->cd();
+//      tempCanvForPdfPrint->cd();
+//      
+//      tempCanvForPdfPrint->SetLogx(1);
+//      tempCanvForPdfPrint->SetLogy(1);
+//      tempCanvForPdfPrint->SetLogz(0);
       
-      tempCanvForPdfPrint->SetLogx(1);
-      tempCanvForPdfPrint->SetLogy(1);
-      tempCanvForPdfPrint->SetLogz(0);
-      
-      TH1F* hmat_anabin_errs=(TH1F*)respMatrixError(hmat_anabin,
-						    boundaries_pt_reco_mat , nbins_pt_reco_mat,
-						    boundaries_pt_gen_mat  , nbins_pt_gen_mat);
-      
-      hmat_anabin->GetZaxis()->SetLabelSize(0.025);
-      
-      hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
-      hmat_anabin->GetYaxis()->SetNoExponent(true);
-      hmat_anabin->GetYaxis()->SetLabelSize(0.02);
-      hmat_anabin->GetYaxis()->SetTitleSize(0.025);
-      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat_anabin->GetXaxis()->SetMoreLogLabels(true);
-      hmat_anabin->GetXaxis()->SetNoExponent(true);
-      hmat_anabin->GetXaxis()->SetLabelSize(0.02);
-      hmat_anabin->GetXaxis()->SetTitleSize(0.025);
-      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_anabin->Draw("COLZ");           
-      
-      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+//TH1F* hmat_anabin_errs=(TH1F*)respMatrixError(hmat_anabin,
+//						    boundaries_pt_reco_mat , nbins_pt_reco_mat,
+//						    boundaries_pt_gen_mat  , nbins_pt_gen_mat);
+//
+//hmat_anabin->GetZaxis()->SetLabelSize(0.025);
+//
+//hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
+//hmat_anabin->GetYaxis()->SetNoExponent(true);
+//hmat_anabin->GetYaxis()->SetLabelSize(0.02);
+//hmat_anabin->GetYaxis()->SetTitleSize(0.025);
+//hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
+//
+//hmat_anabin->GetXaxis()->SetMoreLogLabels(true);
+//hmat_anabin->GetXaxis()->SetNoExponent(true);
+//hmat_anabin->GetXaxis()->SetLabelSize(0.02);
+//hmat_anabin->GetXaxis()->SetTitleSize(0.025);
+//hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+//hmat_anabin->Draw("COLZ");           
+//      
+//      tempCanvForPdfPrint->Print(outPdfFile.c_str());
       
 
       // close file ---------------
@@ -438,122 +492,211 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     std::cout<<"calling RooUnfoldBayes..."<<std::endl;
     RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
 
-    TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);
+    TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
+
     hunf->SetName("ppMC_BayesUnf_Spectra");
     hunf->SetTitle("ppMC BayesUnf Spectra");
-    std::cout<<std::endl; hunf->Print("base");
-
-    TH1F *hfold = (TH1F*)roo_resp.ApplyToTruth(hunf);
+    hunf->Print("base");
+    //std::cout<<"GetSumw2N="<<hunf->TH1::GetSumw2N()<<std::endl<<std::endl ;
+     
+    TH1F *hfold = (TH1F*)roo_resp.ApplyToTruth(hunf);    std::cout<<std::endl; 
     hfold->SetName("ppMC_BayesFold_Spectra");
     hfold->SetTitle("ppMC BayesFold Spectra");
-    std::cout<<std::endl; hfold->Print("base");
+    hfold->Print("base");
+    //std::cout<<"GetSumw2N="<<hfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
 
     RooUnfoldBayes unf_sameside_bayes( &roo_resp, hrec_sameside_anabin, kIter );
 
-    TH1F *hunf_sameside = (TH1F*)unf_sameside_bayes.Hreco(errorTreatment);
+    TH1F *hunf_sameside = (TH1F*)unf_sameside_bayes.Hreco(errorTreatment);    std::cout<<std::endl; 
     hunf_sameside->SetName("ppMC_BayesUnf_sameSideSpectra");
     hunf_sameside->SetTitle("ppMC BayesUnf sameSideSpectra");
-    std::cout<<std::endl; hunf_sameside->Print("base");
+    hunf_sameside->Print("base");
+    //std::cout<<"GetSumw2N="<<hunf_sameside->TH1::GetSumw2N()<<std::endl<<std::endl; 
 
 
-    TH1F *hfold_sameside = (TH1F*)roo_resp.ApplyToTruth(hunf_sameside);
+    TH1F *hfold_sameside = (TH1F*)roo_resp.ApplyToTruth(hunf_sameside);    std::cout<<std::endl; 
     hfold_sameside->SetName("ppMC_BayesFold_sameSide_Spectra");
     hfold_sameside->SetTitle("ppMC BayesFold sameSide Spectra");
-    std::cout<<std::endl; hfold_sameside->Print("base");
+    hfold_sameside->Print("base");
+    //std::cout<<"GetSumw2N="<<hfold_sameside->TH1::GetSumw2N()<<std::endl<<std::endl; 
 
 
     // Gen Ratio Plots --------------------
     TH1F *hgen_anabin_ratiobin=(TH1F*)hgen_anabin->Clone("ppMC_Gen_Ratio_denom");
+    hgen_anabin_ratiobin->Print("base");
+    //std::cout<<"GetSumw2N="<<hgen_anabin_ratiobin->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     hgen_anabin_ratiobin=(TH1F*)hgen_anabin_ratiobin->Rebin(nbins_pt_reco,"ppMC_Gen_Ratio_denom_rebin",boundaries_pt_reco);
     hgen_anabin_ratiobin->Print("base");
+    //std::cout<<"GetSumw2N="<<hgen_anabin_ratiobin->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_genratio_oppunf = (TH1F*)hunf->Clone( "ppMC_Gen_Ratio_OppUnf" );
+    h_genratio_oppunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_oppunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_genratio_oppunf->SetTitle( "Bayes Unf./Gen. Truth" );
     h_genratio_oppunf->SetMarkerStyle(24);
     h_genratio_oppunf->SetMarkerColor(2);
     h_genratio_oppunf->Divide(hgen_anabin);
+
     h_genratio_oppunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_oppunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_genratio_oppfold = (TH1F*)hfold->Clone( "ppMC_Gen_Ratio_OppFold" );
+    h_genratio_oppfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_oppfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_genratio_oppfold->SetTitle( "Bayes Fold/Gen. Truth" );
     h_genratio_oppfold->SetMarkerStyle(24);
     h_genratio_oppfold->SetMarkerColor(3);
     h_genratio_oppfold->Divide(hgen_anabin_ratiobin);
+
     h_genratio_oppfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_oppfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_genratio_oppmeas = (TH1F*)hrec_anabin->Clone( "ppMC_Gen_Ratio_Meas" );
+    h_genratio_oppmeas->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_oppmeas->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_genratio_oppmeas->SetTitle( "Meas./Gen. Truth" );
     h_genratio_oppmeas->SetMarkerStyle(24);
     h_genratio_oppmeas->SetMarkerColor(4);
     h_genratio_oppmeas->Divide(hgen_anabin_ratiobin);
+
     h_genratio_oppmeas->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_oppmeas->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_genratio_ssunf = (TH1F*)hunf_sameside->Clone( "ppMC_Gen_Ratio_SSUnf" );
+
+    h_genratio_ssunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_ssunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_genratio_ssunf->SetTitle( "SameSide Bayes Unf./Gen. Truth" );
     h_genratio_ssunf->SetMarkerStyle(25);
     h_genratio_ssunf->SetMarkerColor(2);
     h_genratio_ssunf->Divide(hgen_anabin);
+
     h_genratio_ssunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_ssunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_genratio_ssfold = (TH1F*)hfold_sameside->Clone( "ppMC_Gen_Ratio_SSFold" );
+    h_genratio_ssfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_ssfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_genratio_ssfold->SetTitle( "SameSide Bayes Fold/Gen. Truth" );
     h_genratio_ssfold->SetMarkerStyle(25);
     h_genratio_ssfold->SetMarkerColor(3);
     h_genratio_ssfold->Divide(hgen_anabin_ratiobin);
+
     h_genratio_ssfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_ssfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_genratio_ssmeas = (TH1F*)hrec_sameside_anabin->Clone( "ppMC_Gen_Ratio4_SSMeas" );
+    h_genratio_ssmeas->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_ssmeas->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_genratio_ssmeas->SetTitle( "Same Side Meas./Gen. Truth" );
     h_genratio_ssmeas->SetMarkerStyle(25);
     h_genratio_ssmeas->SetMarkerColor(4);
     h_genratio_ssmeas->Divide(hgen_anabin_ratiobin);
+
     h_genratio_ssmeas->Print("base");
+    //std::cout<<"GetSumw2N="<<h_genratio_ssmeas->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
 
 
     // Rec Ratio Plots -------------------
     TH1F *h_recratio_oppunf = (TH1F*)hunf->Clone( "ppMC_Meas_Ratio_OppUnf" );
+    h_recratio_oppunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_oppunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_oppunf=(TH1F*)h_recratio_oppunf->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_OppUnf_rebin" , boundaries_pt_reco);
+
+    h_recratio_oppunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_oppunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_oppunf->SetTitle( "Bayes Unf./Meas." );
     h_recratio_oppunf->SetMarkerStyle(24);
     h_recratio_oppunf->SetMarkerColor(2);
     h_recratio_oppunf->Divide(hrec_anabin);
+
     h_recratio_oppunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_oppunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_recratio_ssunf = (TH1F*)hunf_sameside->Clone( "ppMC_Meas_Ratio_SSUnf" );
+    h_recratio_ssunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_ssunf=(TH1F*)h_recratio_ssunf->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSUnf_rebin" , boundaries_pt_reco);
+    h_recratio_ssunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_ssunf->SetTitle( "SameSide Bayes Unf./Meas." );
     h_recratio_ssunf->SetMarkerStyle(25);
     h_recratio_ssunf->SetMarkerColor(2);
     h_recratio_ssunf->Divide(hrec_anabin);
-    h_recratio_ssunf->Print("base");
 
+    h_recratio_ssunf->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssunf->TH1::GetSumw2N()<<std::endl<<std::endl; 
 
 
     TH1F *h_recratio_oppfold = (TH1F*)hfold->Clone( "ppMC_Meas_Ratio_OppFold" );
+    h_recratio_oppfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_oppfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     //h_recratio_oppfold=(TH1F*)h_recratio_oppfold->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_OppFold_rebin" , boundaries_pt_reco);
+    //h_recratio_oppfold->Print("base");
+    ////std::cout<<"GetSumw2N="<<h_recratio_oppfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_oppfold->SetTitle( "Bayes Fold./Meas." );
     h_recratio_oppfold->SetMarkerStyle(24);
     h_recratio_oppfold->SetMarkerColor(3);
     h_recratio_oppfold->Divide(hrec_anabin);
+
     h_recratio_oppfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_oppfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
 
     TH1F *h_recratio_ssfold = (TH1F*)hfold_sameside->Clone( "ppMC_Meas_Ratio_SSFold" );
+    h_recratio_ssfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     //h_recratio_ssfold=(TH1F*)h_recratio_ssfold->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSFold_rebin" , boundaries_pt_reco);
+    //h_recratio_ssfold->Print("base");
+    ////std::cout<<"GetSumw2N="<<h_recratio_ssfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_ssfold->SetTitle( "SameSide Bayes Fold./Meas." );
     h_recratio_ssfold->SetMarkerStyle(25);
     h_recratio_ssfold->SetMarkerColor(3);
     h_recratio_ssfold->Divide(hrec_anabin);
+
     h_recratio_ssfold->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssfold->TH1::GetSumw2N()<<std::endl<<std::endl; 
 
 
     TH1F *h_recratio_ssgen = (TH1F*)hgen_anabin->Clone( "ppMC_Meas_Ratio_SSTruth" );
+    h_recratio_ssgen->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssgen->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_ssgen=(TH1F*)h_recratio_ssgen->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSTruth_rebin" , boundaries_pt_reco);
+    h_recratio_ssgen->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssgen->TH1::GetSumw2N()<<std::endl<<std::endl; 
+
     h_recratio_ssgen->SetTitle( "Truth/Meas." );
     h_recratio_ssgen->SetMarkerStyle(24);
     h_recratio_ssgen->SetMarkerColor(6);
     h_recratio_ssgen->Divide(hrec_anabin);
+
     h_recratio_ssgen->Print("base");
+    //std::cout<<"GetSumw2N="<<h_recratio_ssgen->TH1::GetSumw2N()<<std::endl<<std::endl; 
 
 
     std::cout<<"writing output hists to file... "<<std::endl;

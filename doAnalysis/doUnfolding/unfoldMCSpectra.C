@@ -8,7 +8,7 @@ const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;
 
 //other settings
 const bool doToyErrs=true;
-const bool debugMode=false;
+const bool debugMode=true;
 const bool debugPearson=(false && debugMode) ;
 
 // CODE --------------------------------------------------
@@ -49,6 +49,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     nbins_pt_gen_mat      = (int)n_anabins_pt_gen ;                  }
 
 
+
   // STRINGS -----------
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
   //inFile_Data_dir=SCRATCH_BASE+inFile_Data_dir;
@@ -72,6 +73,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   const std::string fullJetType="ak"+radiusInt+jetType;//"ak4PFJets"
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
   
+
 
   // INFILE NAME(S) -----------
   const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
@@ -103,18 +105,17 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
   if(debugMode)std::cout<<"doToyErrs="<<doToyErrs<<std::endl; 
    
-  //std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
-  //std::cout<<"setting TH2DefSumw2 to true..."<<std::endl; 
-  //TH2::SetDefaultSumw2(true);
+  std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
+  std::cout<<"setting TH2DefSumw2 to true..."<<std::endl; 
+  TH2::SetDefaultSumw2(true);
   
   std::cout<<"TH1 GetDefaultSumw2="<<TH1::GetDefaultSumw2()<<std::endl;
   std::cout<<"setting TH1DefSumw2 to true..."<<std::endl; 
   TH1::SetDefaultSumw2(true);
   
-  //std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
-  //std::cout<<"TH1 GetDefaultSumw2="<<TH1::GetDefaultSumw2()<<std::endl;
-
   gStyle->SetOptStat(0);
+
+
 
   // ppMC input histos -------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"<<std::endl; 
@@ -124,6 +125,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     std::cout<<std::endl<<std::endl;  }
   TFile *fpp_MC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
   
+
+
   // ---------- reco, measured spectra to unfold
   std::string histTitle="hpp_mcclosure_reco_test";
   if(doJetID)histTitle+="_wJetID";
@@ -154,16 +157,22 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hrec_anabin->Print("base");  
   //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;
   
-  //if(!doOverUnderflows){
   if(clearOverUnderflows){
     TH1clearOverUnderflows((TH1*)hrec_anabin);
     hrec_anabin->Write("hpp_mcclosure_reco_test_rebinned_divBinWidth_noOverUnderFlows");
     hrec_anabin->Print("base");  
     //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   }
-    
 
-
+  if(zeroBins){
+    TH1zeroBins((TH1*)hrec_anabin,Nbins2Clear_reco);
+    hrec_anabin->Write("hpp_mcclosure_reco_test_rebinned_divBinWidth_noOverUnderFlows_zeroBins");
+    hrec_anabin->Print("base");  
+    //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
+  }
+  
+  
+  
   // response hist, for output? what is this for if it's empty?
   TH1F* hrec_resp_anabin;
   if(fillRespHists) hrec_resp_anabin = (TH1F*)hrec_anabin->Clone("recanabinClone4unf");
@@ -200,13 +209,28 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hrec_sameside_anabin->Print("base");
   //std::cout<<"GetSumw2N="<<hrec_sameside_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
-  //if(!doOverUnderflows){
   if(clearOverUnderflows){
     TH1clearOverUnderflows((TH1*)hrec_sameside_anabin);
     hrec_sameside_anabin->Print("base");
     //std::cout<<"GetSumw2N="<<hrec_sameside_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;   
   }
+
+  if(zeroBins){
+    TH1zeroBins((TH1*)hrec_sameside_anabin,Nbins2Clear_reco);
+    hrec_sameside_anabin->Print("base");  
+    //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
+  }
+
+  if(doMCIntegralScaling){
+    std::cout<<"scaling hrec_anabin to hrec_sameside_anabin"<<std::endl;
+    float integral_rec_anabin=hrec_anabin->Integral();
+    float integral_rec_ss_anabin=hrec_sameside_anabin->Integral();
+    std::cout<<"scale factor="<<integral_rec_ss_anabin/integral_rec_anabin<<std::endl;
+    hrec_anabin->Scale(integral_rec_ss_anabin/integral_rec_anabin);
+  }
   
+
+
   // ---------- gen, MC truth spectra
   std::string genHistTitle="hpp_mcclosure_gen";
   if(doJetID)genHistTitle+="_wJetID";
@@ -225,11 +249,16 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hgen_anabin->Print("base");  
   //std::cout<<"GetSumw2N="<<hgen_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   
-  //if(!doOverUnderflows){
   if(clearOverUnderflows){
     TH1clearOverUnderflows((TH1*)hgen_anabin);
     hgen_anabin->Print("base");  
     //std::cout<<"GetSumw2N="<<hgen_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
+  }
+
+  if(zeroBins){
+    TH1zeroBins((TH1*)hgen_anabin, Nbins2Clear_gen);
+    hgen_anabin->Print("base");  
+    //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   }
   
   TH1F* hgen_resp_anabin;
@@ -242,6 +271,24 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hgen_resp_anabin->Print("base");  
   //std::cout<<"GetSumw2N="<<hgen_resp_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
   
+
+
+  std::cout<<std::endl<<"writing input hists to file..."<<std::endl;
+  
+  fout->cd();
+  hgen->Write(); 
+  hrec->Write();
+  hgen_anabin->Write(); 
+  hrec_anabin->Write(); 
+  
+  hrec_sameside->Write();
+  hrec_sameside_anabin->Write(); 
+  
+  if(fillRespHists) hgen_resp_anabin->Write();
+  if(fillRespHists) hrec_resp_anabin->Write();
+  
+
+
   
   
   // ---------- matrix, MC "response"
@@ -273,9 +320,6 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   divideBinWidth_TH2(hmat_anabin);
   hmat_anabin->Write("hmat_rebinned_binWidthDiv");
   hmat_anabin->Print("base"); 
-
-  assert(false);
-
   //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
 
   //if(!doOverUnderflows){
@@ -294,25 +338,6 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   }
   
   
-  std::cout<<std::endl<<"writing input hists to file..."<<std::endl;
-  
-  //fout->cd();
-  fout->cd();
-  hgen->Write(); 
-  hrec->Write();
-  //hmat->Write(); 
-  hgen_anabin->Write(); 
-  hrec_anabin->Write(); 
-  //hmat_anabin->Write(); 
-  
-  hrec_sameside->Write();
-  hrec_sameside_anabin->Write(); 
-  
-  if(fillRespHists) hgen_resp_anabin->Write();
-  if(fillRespHists) hrec_resp_anabin->Write();
-  
-
-
   if(drawPDFs){    
     
     bool drawRespMatrix=true;
@@ -356,20 +381,44 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       tempCanvForPdfPrint->SetLogx(0);
       tempCanvForPdfPrint->SetLogy(0);
 
-      hmat->SetAxisRange(40.,1000.,"X");
-      hmat->SetAxisRange(40.,1000.,"Y");
+      hmat->SetTitle("ppMC Resp Matrix, original");
+
+      hmat->SetAxisRange(0.,1000.,"X");
+      hmat->SetAxisRange(0.,1000.,"Y");
 
       
       hmat->GetZaxis()->SetLabelSize(0.025);
       
-      hmat->GetYaxis()->SetMoreLogLabels(true);
-      hmat->GetYaxis()->SetNoExponent(true);
       hmat->GetYaxis()->SetLabelSize(0.02);
-      hmat->GetYaxis()->SetTitleSize(0.025);
+      hmat->GetYaxis()->SetTitleSize(0.023);
       hmat->GetYaxis()->SetTitle("gen p_{t}");
       
-      hmat->GetXaxis()->SetMoreLogLabels(true);
-      hmat->GetXaxis()->SetNoExponent(true);
+      hmat->GetXaxis()->SetLabelSize(0.02);
+      hmat->GetXaxis()->SetTitleSize(0.025);
+      hmat->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+
+      // matrix w/ specific range ---------------
+    
+      tempCanvForPdfPrint->cd();
+
+      tempCanvForPdfPrint->SetLogx(0);
+      tempCanvForPdfPrint->SetLogy(0);
+
+      hmat->SetTitle("ppMC Resp Matrix, used pt range");
+
+      hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
+      hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
+      
+      hmat->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat->GetYaxis()->SetLabelSize(0.02);
+      hmat->GetYaxis()->SetTitleSize(0.023);
+      hmat->GetYaxis()->SetTitle("gen p_{t}");
+      
       hmat->GetXaxis()->SetLabelSize(0.02);
       hmat->GetXaxis()->SetTitleSize(0.025);
       hmat->GetXaxis()->SetTitle("reco p_{t}   ");
@@ -377,6 +426,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
       
+
       // matrix w/ log ---------------
 
       tempCanvForPdfPrint->cd();
@@ -384,19 +434,20 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       tempCanvForPdfPrint->SetLogx(1);
       tempCanvForPdfPrint->SetLogy(1);
 
-      hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
-      hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
+      hmat->SetTitle("ppMC Resp Matrix, used pt range w/ log");
 
+      //hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
+      //hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
 
       //hmat->GetZaxis()->SetLabelSize(0.025);      
-      //hmat->GetYaxis()->SetMoreLogLabels(true);
-      //hmat->GetYaxis()->SetNoExponent(true);
+      hmat->GetYaxis()->SetMoreLogLabels(true);
+      hmat->GetYaxis()->SetNoExponent(true);
       //hmat->GetYaxis()->SetLabelSize(0.02);
       //hmat->GetYaxis()->SetTitleSize(0.025);
       //hmat->GetYaxis()->SetTitle("gen p_{t}");
       //
-      //hmat->GetXaxis()->SetMoreLogLabels(true);
-      //hmat->GetXaxis()->SetNoExponent(true);
+      hmat->GetXaxis()->SetMoreLogLabels(true);
+      hmat->GetXaxis()->SetNoExponent(true);
       //hmat->GetXaxis()->SetLabelSize(0.02);
       //hmat->GetXaxis()->SetTitleSize(0.025);
       //hmat->GetXaxis()->SetTitle("reco p_{t}   ");
@@ -409,8 +460,35 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       tempCanvForPdfPrint->cd();
       
+      tempCanvForPdfPrint->SetLogx(0);
+      tempCanvForPdfPrint->SetLogy(0);
+
+      hmat_anabin->SetTitle("ppMC Resp Matrix, rebinned w/o log");
+      
+      hmat_anabin->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
+      hmat_anabin->GetYaxis()->SetNoExponent(true);
+      hmat_anabin->GetYaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetYaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_anabin->GetXaxis()->SetLabelSize(0.02);
+      hmat_anabin->GetXaxis()->SetTitleSize(0.025);
+      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_anabin->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+
+      // matrix rebinned ---------------
+      
+      tempCanvForPdfPrint->cd();
+      
       tempCanvForPdfPrint->SetLogx(1);
       tempCanvForPdfPrint->SetLogy(1);
+
+      hmat_anabin->SetTitle("ppMC Resp Matrix, rebinned w/ log");
       
       hmat_anabin->GetZaxis()->SetLabelSize(0.025);
       
@@ -745,7 +823,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       ///////////////
 
-      TLine* recCutLine1= new TLine( boundaries_pt_reco[0],0.,boundaries_pt_reco[0],2.);
+      TLine* recCutLine1= new TLine( boundaries_pt_reco[Nbins2Clear_reco],0.,boundaries_pt_reco[Nbins2Clear_reco],2.);
       recCutLine1->SetLineWidth(1);
       recCutLine1->SetLineStyle(2);
       recCutLine1->SetLineColor(4);
@@ -757,7 +835,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
       ///////////////
 
-      TLine* genCutLine1= new TLine( boundaries_pt_gen[0],0.,boundaries_pt_gen[0],2.);
+      TLine* genCutLine1= new TLine( boundaries_pt_gen[Nbins2Clear_gen],0.,boundaries_pt_gen[Nbins2Clear_gen],2.);
       genCutLine1->SetLineWidth(1);
       genCutLine1->SetLineStyle(2);
       genCutLine1->SetLineColor(kGreen+3);
@@ -841,11 +919,11 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       legend_in->AddEntry(hgen_anabin,          "Gen. Truth", "p");
       legend_in->Draw();
       
-      //recCutLine1->Draw();
-      //recCutLine2->Draw();
-      //genCutLine1->Draw();
-      //genCutLine2->Draw();
-      //
+      recCutLine1->Draw();
+      recCutLine2->Draw();
+      genCutLine1->Draw();
+      genCutLine2->Draw();
+      
       //recMatCutLine1->Draw();
       //recMatCutLine2->Draw();
       //genMatCutLine1->Draw();

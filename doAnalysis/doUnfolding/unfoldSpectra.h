@@ -99,16 +99,19 @@ const int kIter = 4; //recommended is 4, default is 4
 //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
 //SVD setting that don't change too much
-const bool doSVD=false; //!(doBayes); 
+const bool doSVD=true; //!(doBayes); 
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
 
 //other options
 const bool doOverUnderflows=false;
 const bool clearOverUnderflows=true;
 
+const bool zeroBins=false;
+
 const bool normalizedMCMatrix=false;
 const bool fillRespHists=false;
-const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
+const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
+const bool doMCIntegralScaling=true;//unfoldMCSpectra only
 
 //useful strings, numbers
 const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
@@ -297,10 +300,11 @@ void divideBinWidth_TH2(TH2F *h){
 
       
       Float_t val = (h->GetBinContent(i,j))/(xWidth*yWidth);
-      Float_t valErr = (h->GetBinError(i,j))/(xWidth*yWidth);
+      //Float_t valErr = (h->GetBinError(i,j))/(xWidth*yWidth);
       
       h->SetBinContent(i,j,val);
-      h->SetBinError(i,j,valErr);
+      //h->SetBinError(i,j,valErr);
+      h->SetBinError(i,j,0.0);
 
       if(funcDebug)std::cout<<std::endl<<"new val = "   <<      h->GetBinContent(i,j) << std::endl;
       if(funcDebug)std::cout<<"new valErr = "<<      h->GetBinError(i,j)   << std::endl;
@@ -390,13 +394,12 @@ void normalizeMC_TH2(TH2F* inputTH2){
 }
 
 
-//TH2F* reBinTH2(TH2F* inputTH2, std::string inputTH2_title, const double* boundaries_pt, const int nbins_pt){
 TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name, 
 	       double* boundaries_pt_reco, int nbins_pt_reco,
 	       double* boundaries_pt_gen  , int nbins_pt_gen	       ){
   std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
   bool funcDebug = true;
-
+  
   //double numEntries=inputTH2->GetEntries();
   //inputTH2->Sumw2();
   if(funcDebug)inputTH2->Print("base");  std::cout<<std::endl;
@@ -404,17 +407,26 @@ TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name,
   
   TAxis *xaxis = inputTH2->GetXaxis(); //reco pt axis
   int nbins_x= xaxis->GetNbins();
-
+  int xbinstart=1;
+  
   TAxis *yaxis = inputTH2->GetYaxis(); //gen pt axis
   int nbins_y = yaxis->GetNbins();
-
+  int ybinstart=1;
+  
   TH2F *reBinnedTH2 = new TH2F(rebinTH2_name.c_str(), inputTH2->GetTitle(), 
 			       nbins_pt_reco, boundaries_pt_reco , 
 			       nbins_pt_gen, boundaries_pt_gen );
+  
+  if(doOverUnderflows){
+    xbinstart--; 
+    ybinstart--;
+    nbins_x++; 
+    nbins_y++;    
+  }
   //reBinnedTH2->Sumw2();
   
-  for (  int xbin=1 ; xbin <= nbins_x ; xbin++ ) {
-    for (int ybin=1 ; ybin <= nbins_y ; ybin++ ) {
+  for (  int xbin=xbinstart ; xbin <= nbins_x ; xbin++ ) {
+    for (int ybin=ybinstart ; ybin <= nbins_y ; ybin++ ) {
             
       reBinnedTH2->Fill( xaxis->GetBinCenter(xbin) , yaxis->GetBinCenter(ybin) ,
 			 inputTH2->GetBinContent(xbin,ybin) );            
@@ -422,7 +434,10 @@ TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name,
     }  }//end x-y loop
   
   //reBinnedTH2->SetEntries(numEntries);
+
+  if(funcDebug) std::cout<<"getSumW2N="<<reBinnedTH2->GetSumw2N()<<std::endl;
   if(funcDebug) reBinnedTH2->Print("base");  std::cout<<std::endl;
+
   
   std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;  
   return reBinnedTH2;
@@ -466,6 +481,53 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
   std::cout<<std::endl<<"reBinPearsonTH2 done"<<std::endl<<std::endl;
   return reBinnedTH2;
 }
+
+
+void TH1zeroBins(TH1* h, int numBins2Clear){
+  std::cout<<std::endl<<"in TH1zeroBins"<<std::endl<<std::endl;
+  bool funcDebug=true;
+  bool clearLastBin=false;
+  if(funcDebug&&clearLastBin)std::cout<<"WARNING clearLastBin=true"<<std::endl;
+  //h->Sumw2();
+  if(funcDebug)h->Print("base");
+
+  //double nEntries=h->GetEntries();
+  int numbins=h->GetNbinsX();  
+  if(funcDebug)std::cout<<"numbins="<<numbins<<std::endl;
+
+
+  if(numBins2Clear>=numbins || numBins2Clear==0){
+    std::cout<<"cannot zero requested # of bins... exiting"<<std::endl<<std::endl;
+    return;
+  }
+  else{
+    if(funcDebug)std::cout<<"setting bin content(s) to zero"<<std::endl;
+
+    for(int i=1;i<=numBins2Clear;i++){
+      h->SetBinContent(i,0);
+      h->SetBinError(i,0);    }
+
+    if(clearLastBin){
+      std::cout<<"WARNING clearing last bin"<<std::endl;
+      h->SetBinContent(numbins,0);
+      h->SetBinError(numbins,0);
+    }
+  }
+
+
+
+
+  if(funcDebug)h->Print("base");
+  std::cout<<std::endl<<"TH1zeroBins done."<<std::endl<<std::endl;
+  return;
+}
+
+
+
+
+
+
+
 
 
 void TH1clearOverUnderflows(TH1* h)

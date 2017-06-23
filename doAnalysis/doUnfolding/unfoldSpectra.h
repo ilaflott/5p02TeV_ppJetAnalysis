@@ -105,16 +105,17 @@ const int kIter = 4; //recommended is 4, default is 4
 const bool doSVD=true; //!(doBayes); 
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
 
-//other options, often switched
-const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
+//other options, useful
+const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
 const bool doOverUnderflows=false;
 const bool clearOverUnderflows=true;
 const bool doMCIntegralScaling=true;//unfoldMCSpectra only
-const bool zeroBins=false;
 
-//other options, often not used nor switched
+//other options, useful...?
+const bool zeroBins=false;
 const bool normalizedMCMatrix=false;
 const bool fillRespHists=false;
+
 
 //useful strings, numbers
 const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%

@@ -1,3 +1,58 @@
+#include <cmath>
+
+TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name,
+               double* boundaries_pt_reco, int nbins_pt_reco,
+               double* boundaries_pt_gen  , int nbins_pt_gen           ){
+  std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
+  bool funcDebug = true;
+
+  //double numEntries=inputTH2->GetEntries();
+  //inputTH2->Sumw2();
+  if(funcDebug)inputTH2->Print("base");  std::cout<<std::endl;
+
+
+  TAxis *xaxis = inputTH2->GetXaxis(); //reco pt axis
+  int nbins_x= xaxis->GetNbins();
+  int xbinstart=1;
+
+  TAxis *yaxis = inputTH2->GetYaxis(); //gen pt axis
+  int nbins_y = yaxis->GetNbins();
+  int ybinstart=1;
+
+  TH2F *reBinnedTH2 = new TH2F(rebinTH2_name.c_str(), inputTH2->GetTitle(),
+                               nbins_pt_reco, boundaries_pt_reco ,
+                               nbins_pt_gen, boundaries_pt_gen );
+
+  //if(doOverUnderflows){
+  //  xbinstart--;
+  //  ybinstart--;
+  //  nbins_x++;
+  //  nbins_y++;
+  //}
+  //reBinnedTH2->Sumw2();
+
+  for (  int xbin=xbinstart ; xbin <= nbins_x ; xbin++ ) {
+    for (int ybin=ybinstart ; ybin <= nbins_y ; ybin++ ) {
+
+      reBinnedTH2->Fill( xaxis->GetBinCenter(xbin) , yaxis->GetBinCenter(ybin) ,
+                         inputTH2->GetBinContent(xbin,ybin) );
+
+    }  }//end x-y loop
+
+  //reBinnedTH2->SetEntries(numEntries);
+
+  if(funcDebug) std::cout<<"getSumW2N="<<reBinnedTH2->GetSumw2N()<<std::endl;
+  if(funcDebug) reBinnedTH2->Print("base");  std::cout<<std::endl;
+
+
+  std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;
+  return reBinnedTH2;
+}
+
+
+
+
+
 void divideBinWidth_TH2(TH2F *h){
   std::cout<<std::endl<<"in divideBinWidth_TH2"<<std::endl<<std::endl;
   bool funcDebug=false;
@@ -59,9 +114,6 @@ void divideBinWidth_TH2(TH2F *h){
   std::cout<<std::endl<<"divideBinWidth_TH2 done"<<std::endl<<std::endl;
   return;
 }
-
-
-
 
 //normalizes MC response TH2 to the rowSum of the gen-axis
 void normalizeMC_TH2(TH2F* inputTH2){
@@ -139,16 +191,17 @@ void normalizeMC_TH2(TH2F* inputTH2){
 
 
 
-TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name,
-               double* boundaries_pt_reco, int nbins_pt_reco,
-               double* boundaries_pt_gen  , int nbins_pt_gen           ){
-  std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
-  bool funcDebug = true;
+TH2F* makeRespMatrixErrors( TH2F* inputTH2,			    
+			    double* boundaries_pt_reco, int nbins_pt_reco,
+			    double* boundaries_pt_gen  , int nbins_pt_gen           ){
 
+  std::cout<<std::endl<<"in makeRespMatrixErrors"<<std::endl<<std::endl;
+  bool funcDebug = true;
+  
   //double numEntries=inputTH2->GetEntries();
   //inputTH2->Sumw2();
   if(funcDebug)inputTH2->Print("base");  std::cout<<std::endl;
-
+  
 
   TAxis *xaxis = inputTH2->GetXaxis(); //reco pt axis
   int nbins_x= xaxis->GetNbins();
@@ -158,7 +211,7 @@ TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name,
   int nbins_y = yaxis->GetNbins();
   int ybinstart=1;
 
-  TH2F *reBinnedTH2 = new TH2F(rebinTH2_name.c_str(), inputTH2->GetTitle(),
+  TH2F *errorTH2 = new TH2F("hmat_anabin_errors", "response matrix errors",
                                nbins_pt_reco, boundaries_pt_reco ,
                                nbins_pt_gen, boundaries_pt_gen );
 
@@ -170,23 +223,163 @@ TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name,
   //}
   //reBinnedTH2->Sumw2();
 
+  //fill each bin w/ sum of squares of errors from original matrix
   for (  int xbin=xbinstart ; xbin <= nbins_x ; xbin++ ) {
     for (int ybin=ybinstart ; ybin <= nbins_y ; ybin++ ) {
-
-      reBinnedTH2->Fill( xaxis->GetBinCenter(xbin) , yaxis->GetBinCenter(ybin) ,
-                         inputTH2->GetBinContent(xbin,ybin) );
-
+      
+      errorTH2->Fill( xaxis->GetBinCenter(xbin) , yaxis->GetBinCenter(ybin) ,
+		      (inputTH2->GetBinError(xbin,ybin)*inputTH2->GetBinError(xbin,ybin)) );
+      
     }  }//end x-y loop
 
-  //reBinnedTH2->SetEntries(numEntries);
+  
+  //loop over each of the new bins for hmat_anabin, take the square root
+  for (  int xbin=1 ; xbin <= nbins_pt_reco ; xbin++ ) {
+    for (int ybin=1 ; ybin <= nbins_pt_gen ; ybin++ ) {
+      
+      float theVal=errorTH2->GetBinContent(xbin,ybin);
+      theVal=std::sqrt(theVal);
+      errorTH2->SetBinContent(xbin,ybin,theVal);
+      
+    }  }//end x-y loop
+  
+  //errorTH2->SetEntries(numEntries);
 
-  if(funcDebug) std::cout<<"getSumW2N="<<reBinnedTH2->GetSumw2N()<<std::endl;
-  if(funcDebug) reBinnedTH2->Print("base");  std::cout<<std::endl;
+  if(funcDebug) std::cout<<"getSumW2N="<<errorTH2->GetSumw2N()<<std::endl;
+  if(funcDebug) errorTH2->Print("base");  std::cout<<std::endl;
 
 
-  std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;
-  return reBinnedTH2;
+  std::cout<<std::endl<<"makeRespMatrixErrors Done"<<std::endl<<std::endl;
+  return errorTH2;
 }
+
+
+
+TH2F* makeRespMatrixPercentErrs( TH2F* hmat_errors, TH2F* hmat_anabin,
+				 double* boundaries_pt_reco, int nbins_pt_reco,
+				 double* boundaries_pt_gen  , int nbins_pt_gen           ){
+
+  
+  std::cout<<std::endl<<"in makeRespMatrixPercentErrs"<<std::endl<<std::endl;
+  bool funcDebug = true;
+  
+
+  int xbinstart=1;
+  int ybinstart=1;
+  
+  TH2F *fracErrorTH2 = new TH2F("hmat_anabin_percenterrs", "response matrix %error",
+				nbins_pt_reco, boundaries_pt_reco ,
+				nbins_pt_gen, boundaries_pt_gen );
+  
+  //if(doOverUnderflows){
+  //  xbinstart--;
+  //  ybinstart--;
+  //  nbins_x++;
+  //  nbins_y++;
+  //}
+  //reBinnedTH2->Sumw2();
+  
+  //fill each bin w/ binerror/bincontent*100
+  for (  int xbin=xbinstart ; xbin <= nbins_pt_reco ; xbin++ ) {
+    for (int ybin=ybinstart ; ybin <= nbins_pt_gen ; ybin++ ) {
+
+      float theVal=hmat_anabin->GetBinContent(xbin,ybin);
+      float theErr=hmat_errors->GetBinContent(xbin,ybin);
+      if(funcDebug)std::cout<<"for xbin="<<xbin<<" ybin="<<ybin<<std::endl;
+      if(funcDebug)std::cout<<"theVal="<<theVal<<" +/- theErrn="<<theErr<<std::endl;
+
+      //check NaN
+      if( theVal!=theVal || theErr != theErr || theErr==0.) 
+	{
+	  if(funcDebug)std::cout<<"NaN or zero error!! Skipping xbin="<<xbin<<" ybin="<<ybin<<std::endl;
+	  continue;
+	}
+      else {
+	fracErrorTH2->SetBinContent( xbin ,  ybin ,
+				     theErr/theVal*100.);      }
+      
+    }  }//end x-y loop
+  
+  
+  
+  //fracErrorTH2->SetEntries(numEntries);
+
+  if(funcDebug) std::cout<<"getSumW2N="<<fracErrorTH2->GetSumw2N()<<std::endl;
+  if(funcDebug) fracErrorTH2->Print("base");  std::cout<<std::endl;
+  
+  
+  std::cout<<std::endl<<"makeRespMatrixPercentErrs done."<<std::endl<<std::endl;
+
+  return fracErrorTH2;
+}
+
+void setRespMatrixErrs( TH2F* hmat_anabin , TH2F* hmat_errors ){   
+
+  std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;
+  bool funcDebug = true;
+
+
+  if(funcDebug) hmat_errors->Print("base");
+  if(funcDebug) hmat_anabin->Print("base");
+
+  //,
+  //				 double* boundaries_pt_reco, int nbins_pt_reco,
+  //				 double* boundaries_pt_gen  , int nbins_pt_gen           ){
+  
+  TAxis *xaxis_hmat = hmat_anabin->GetXaxis(); //reco pt axis
+  int nbins_x= xaxis_hmat->GetNbins();
+  int xbinstart=1;
+
+  TAxis *yaxis_hmat = hmat_anabin->GetYaxis(); //gen pt axis
+  int nbins_y = yaxis_hmat->GetNbins();
+  int ybinstart=1;  
+
+ 
+  TAxis *xaxis_hmaterr = hmat_errors->GetXaxis(); //reco pt axis
+  int nbins_hmaterr_x= xaxis_hmaterr->GetNbins();
+
+  TAxis *yaxis_hmaterr = hmat_errors->GetYaxis(); //gen pt axis
+  int nbins_hmaterr_y = yaxis_hmaterr->GetNbins();
+
+  assert(nbins_x==nbins_hmaterr_x);
+  assert(nbins_y==nbins_hmaterr_y);
+
+
+//  TH2F *fracErrorTH2 = new TH2F("hmat_anabin_percenterrs", "response matrix %error",
+//				nbins_pt_reco, boundaries_pt_reco ,
+//				nbins_pt_gen, boundaries_pt_gen );
+  
+  //if(doOverUnderflows){
+  //  xbinstart--;
+  //  ybinstart--;
+  //  nbins_x++;
+  //  nbins_y++;
+  //}
+  //reBinnedTH2->Sumw2();
+  
+  //fill each bin w/ binerror/bincontent*100
+  for (  int xbin=xbinstart ; xbin <= nbins_x ; xbin++ ) {
+    for (int ybin=ybinstart ; ybin <= nbins_y ; ybin++ ) {
+      
+      float theErr=hmat_errors->GetBinContent(xbin,ybin);
+      hmat_anabin->SetBinError( xbin ,  ybin ,
+				theErr );
+      
+    }  }//end x-y loop
+  
+  
+  
+  //fracErrorTH2->SetEntries(numEntries);
+
+  if(funcDebug) std::cout<<"getSumW2N="<<hmat_errors->GetSumw2N()<<std::endl;
+  if(funcDebug) hmat_errors->Print("base");  std::cout<<std::endl;
+  
+  
+  std::cout<<std::endl<<"setRespMatrixErrs done."<<std::endl<<std::endl;
+
+  return;
+}
+
 
 
 
@@ -225,4 +418,31 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
 
   std::cout<<std::endl<<"reBinPearsonTH2 done"<<std::endl<<std::endl;
   return reBinnedTH2;
+}
+
+
+
+void TH2clearOverUnderflows(TH2F* h)
+{
+  //std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
+  //std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
+  std::cout<<"clearing Over/Underflow Bins for TH2...."<<std::endl;
+  
+  int nbinsx = h->GetXaxis()->GetNbins();
+  int nbinsy = h->GetYaxis()->GetNbins();
+  
+  for(int i=0;i<=(nbinsx+1);i++){
+    for(int j=0;j<=(nbinsy+1);j++){
+
+      if( i==0          || 
+	  j==0          || 
+	  i==(nbinsx+1) || 
+	  j==(nbinsy+1)    )	{
+	  h->SetBinContent(i,j,0);
+	  h->SetBinError(i,j,0);	}
+      else continue;
+    }
+  }
+  std::cout<<"done clearing Over/Underflow Bins for TH2...."<<std::endl;
+  return;
 }

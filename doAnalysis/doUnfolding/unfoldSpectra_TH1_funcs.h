@@ -50,7 +50,7 @@ void divideBinWidth(TH1 *h){
 
 
 
-void TH1zeroBins(TH1* h, int numBins2Clear){
+void TH1zeroBins(TH1* h, int numBins2Clear_lowpt, int numBins2Clear_highpt){
   std::cout<<std::endl<<"in TH1zeroBins"<<std::endl<<std::endl;
   bool funcDebug=true;
   bool clearLastBin=false;
@@ -62,7 +62,7 @@ void TH1zeroBins(TH1* h, int numBins2Clear){
   int numbins=h->GetNbinsX();
   if(funcDebug)std::cout<<"numbins="<<numbins<<std::endl;
 
-
+  int numBins2Clear= numBins2Clear_lowpt + numBins2Clear_highpt;
   if(numBins2Clear>=numbins || numBins2Clear==0){
     std::cout<<"cannot zero requested # of bins... exiting"<<std::endl<<std::endl;
     return;
@@ -70,17 +70,16 @@ void TH1zeroBins(TH1* h, int numBins2Clear){
   else{
     if(funcDebug)std::cout<<"setting bin content(s) to zero"<<std::endl;
 
-    for(int i=1;i<=numBins2Clear;i++){
+    for(int i=1;i<=numBins2Clear_lowpt;i++){
       h->SetBinContent(i,0);
       h->SetBinError(i,0);    }
 
-    if(clearLastBin){
-      std::cout<<"WARNING clearing last bin"<<std::endl;
-      h->SetBinContent(numbins,0);
-      h->SetBinError(numbins,0);
-    }
+    for(int i=numbins;(numbins-i)<numBins2Clear_highpt;i--){
+      h->SetBinContent(i,0);
+      h->SetBinError(i,0);    }
   }
-
+  
+  
   if(funcDebug)h->Print("base");
   std::cout<<std::endl<<"TH1zeroBins done."<<std::endl<<std::endl;
   return;

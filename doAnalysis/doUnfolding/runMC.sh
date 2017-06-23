@@ -27,7 +27,8 @@ sleep 1s
 ## R = 4
 #source run_unfoldMCSpectra.sh 4 0 10 1
 #sleep 0.5s
-source run_unfoldMCSpectra.sh 4 1 10 1
+## NOTE use kreg=6 for simp bins
+source run_unfoldMCSpectra.sh 4 1 20 1   
 sleep 0.5s
 #source run_unfoldMCSpectra.sh 4 0 5 2
 #sleep 0.5s

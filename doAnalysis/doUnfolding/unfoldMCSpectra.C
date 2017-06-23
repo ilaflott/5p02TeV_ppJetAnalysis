@@ -11,6 +11,7 @@ const bool doToyErrs=true;
 const bool debugMode=true;
 const bool debugPearson=(false && debugMode) ;
 
+
 // CODE --------------------------------------------------
 int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName , 
 		     const bool doJetID=true , const int kRegCenter= 8 ){
@@ -24,6 +25,14 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   double* boundaries_pt_reco_mat ;   int nbins_pt_reco_mat ;   // matrix bins
   double* boundaries_pt_gen_mat  ;   int nbins_pt_gen_mat  ;   // 
 
+  int Nbins2Clear_gen_lowpt=0;
+  //int Nbins2Clear_gen_highpt=0;
+  int Nbins2Clear_reco_lowpt=0;
+  int Nbins2Clear_reco_highpt=0;
+
+
+
+
   if(useSimplePtBinning){
     std::cout<<"using simple pt bins"<<std::endl<<std::endl;
     boundaries_pt_reco = (double*)simpbins_pt_reco ; //spectra
@@ -34,7 +43,13 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     boundaries_pt_reco_mat = (double*)simpbins_pt_reco ; //matrix
     nbins_pt_reco_mat      = (int)n_simpbins_pt_reco ; 
     boundaries_pt_gen_mat = (double*)simpbins_pt_gen ;
-    nbins_pt_gen_mat      = (int)n_simpbins_pt_gen ;                    } 
+    nbins_pt_gen_mat      = (int)n_simpbins_pt_gen ;                    
+    Nbins2Clear_gen_lowpt=0;
+    //Nbins2Clear_gen_highpt=0;
+    Nbins2Clear_reco_lowpt=0;
+    Nbins2Clear_reco_highpt=0;
+
+} 
 
   else{
     std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
@@ -46,7 +61,12 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     boundaries_pt_reco_mat = (double*)anabins_pt_reco ; //matrix
     nbins_pt_reco_mat      = (int)n_anabins_pt_reco ; 
     boundaries_pt_gen_mat = (double*)anabins_pt_gen ;
-    nbins_pt_gen_mat      = (int)n_anabins_pt_gen ;                  }
+    nbins_pt_gen_mat      = (int)n_anabins_pt_gen ;                  
+    Nbins2Clear_gen_lowpt=0;
+    //Nbins2Clear_gen_highpt=0;
+    Nbins2Clear_reco_lowpt=0;
+    Nbins2Clear_reco_highpt=0;
+  }
 
 
 
@@ -165,7 +185,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   }
 
   if(zeroBins){
-    TH1zeroBins((TH1*)hrec_anabin,Nbins2Clear_reco);
+    TH1zeroBins((TH1*)hrec_anabin,Nbins2Clear_reco_lowpt, Nbins2Clear_reco_highpt);
     hrec_anabin->Write("hpp_mcclosure_reco_test_rebinned_divBinWidth_noOverUnderFlows_zeroBins");
     hrec_anabin->Print("base");  
     //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
@@ -216,7 +236,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   }
 
   if(zeroBins){
-    TH1zeroBins((TH1*)hrec_sameside_anabin,Nbins2Clear_reco);
+    TH1zeroBins((TH1*)hrec_sameside_anabin,Nbins2Clear_reco_lowpt, Nbins2Clear_reco_highpt);
     hrec_sameside_anabin->Print("base");  
     //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
   }
@@ -255,11 +275,11 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     //std::cout<<"GetSumw2N="<<hgen_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
   }
 
-  if(zeroBins){
-    TH1zeroBins((TH1*)hgen_anabin, Nbins2Clear_gen);
-    hgen_anabin->Print("base");  
-    //std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
-  }
+  //if(zeroBins){
+  //TH1zeroBins((TH1*)hgen_anabin, Nbins2Clear_gen);
+  //hgen_anabin->Print("base");  
+  ////std::cout<<"GetSumw2N="<<hrec_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;    
+  //}
   
   TH1F* hgen_resp_anabin;
   if(fillRespHists) hgen_resp_anabin = (TH1F*)hgen_anabin->Clone("genanabinClone4unf");
@@ -325,7 +345,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
   //if(!doOverUnderflows){
   if(clearOverUnderflows){
-    TH1clearOverUnderflows((TH1*)hmat_anabin);
+    TH2clearOverUnderflows((TH2F*)hmat_anabin);
     hmat_anabin->Write("hmat_rebinned_binWidthDiv_noOverUnderFlow");
     hmat_anabin->Print("base");
     //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
@@ -337,6 +357,29 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     hmat_anabin->Print("base");
     //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
   }
+  
+  TH2F* hmat_errors=makeRespMatrixErrors( (TH2F*) hmat,
+					  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+					  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+  hmat_errors->Print("base");
+
+  divideBinWidth_TH2(hmat_errors);
+  hmat_errors->Print("base");
+  
+  if(clearOverUnderflows){
+    TH2clearOverUnderflows((TH2F*)hmat_errors);
+    hmat_errors->Print("base");
+    //std::cout<<"GetSumw2N="<<hmat_anabin->TH1::GetSumw2N()<<std::endl<<std::endl;      
+  }
+
+  setRespMatrixErrs( (TH2F*)hmat_anabin, (TH2F*) hmat_errors );
+  
+  
+  TH2F* hmat_percenterrs=makeRespMatrixPercentErrs( (TH2F*) hmat_errors, (TH2F*) hmat_anabin,
+						    (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						    (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+  hmat_percenterrs->Print("base");
+  
   
   
   if(drawPDFs){    
@@ -355,6 +398,9 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
       
+
+      // matrix ---------------
+    
       if(normalizedMCMatrix) {
 	tempCanvForPdfPrint->SetLogz(0);
 
@@ -375,8 +421,6 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       }
       
       
-      // matrix ---------------
-    
       tempCanvForPdfPrint->cd();
 
       tempCanvForPdfPrint->SetLogx(0);
@@ -408,8 +452,9 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
       tempCanvForPdfPrint->SetLogx(0);
       tempCanvForPdfPrint->SetLogy(0);
+      tempCanvForPdfPrint->SetLogz(1);
 
-      hmat->SetTitle("ppMC Resp Matrix, used pt range");
+      hmat->SetTitle("ppMC Resp Matrix, no-log axes");
 
       hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
       hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
@@ -434,8 +479,9 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
       tempCanvForPdfPrint->SetLogx(1);
       tempCanvForPdfPrint->SetLogy(1);
+      tempCanvForPdfPrint->SetLogz(1);
 
-      hmat->SetTitle("ppMC Resp Matrix, used pt range w/ log");
+      hmat->SetTitle("ppMC Resp Matrix, w/ log axes");
 
       //hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
       //hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
@@ -463,8 +509,9 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       tempCanvForPdfPrint->SetLogx(0);
       tempCanvForPdfPrint->SetLogy(0);
+      tempCanvForPdfPrint->SetLogz(1);
 
-      hmat_anabin->SetTitle("ppMC Resp Matrix, rebinned w/o log");
+      hmat_anabin->SetTitle("ppMC Resp Matrix rebin, no log axes");
       
       hmat_anabin->GetZaxis()->SetLabelSize(0.025);
       
@@ -488,8 +535,9 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       tempCanvForPdfPrint->SetLogx(1);
       tempCanvForPdfPrint->SetLogy(1);
+      tempCanvForPdfPrint->SetLogz(1);
 
-      hmat_anabin->SetTitle("ppMC Resp Matrix, rebinned w/ log");
+      hmat_anabin->SetTitle("ppMC Resp Matrix rebin, w/ log axes");
       
       hmat_anabin->GetZaxis()->SetLabelSize(0.025);
       
@@ -505,6 +553,92 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       hmat_anabin->GetXaxis()->SetTitleSize(0.025);
       hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
       hmat_anabin->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+
+      // error matrix in binning of interest ---------------
+      
+      tempCanvForPdfPrint->cd();
+      
+      tempCanvForPdfPrint->SetLogx(1);
+      tempCanvForPdfPrint->SetLogy(1);
+      tempCanvForPdfPrint->SetLogz(1);
+
+      hmat_errors->SetTitle("Resp Matrix Errors, log axes");
+
+      hmat_errors->SetAxisRange(0.0000000000000001,.00001,"Z");      
+      hmat_errors->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat_errors->GetYaxis()->SetMoreLogLabels(true);
+      hmat_errors->GetYaxis()->SetNoExponent(true);
+      hmat_errors->GetYaxis()->SetLabelSize(0.02);
+      hmat_errors->GetYaxis()->SetTitleSize(0.025);
+      hmat_errors->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_errors->GetXaxis()->SetMoreLogLabels(true);
+      hmat_errors->GetXaxis()->SetNoExponent(true);
+      hmat_errors->GetXaxis()->SetLabelSize(0.02);
+      hmat_errors->GetXaxis()->SetTitleSize(0.025);
+      hmat_errors->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_errors->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+      // percent error matrix in binning of interest , no log ---------------
+      
+      tempCanvForPdfPrint->cd();
+      
+      tempCanvForPdfPrint->SetLogx(0);
+      tempCanvForPdfPrint->SetLogy(0);
+      tempCanvForPdfPrint->SetLogz(1);
+
+      hmat_percenterrs->SetAxisRange(0.1,100.,"Z");      
+
+      hmat_percenterrs->SetTitle("Resp Matrix % Errors non-log x/y axes");
+      
+      hmat_percenterrs->GetZaxis()->SetLabelSize(0.025);
+      hmat_percenterrs->GetYaxis()->SetLabelSize(0.02);
+      hmat_percenterrs->GetYaxis()->SetTitleSize(0.025);
+
+      hmat_percenterrs->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_percenterrs->GetXaxis()->SetLabelSize(0.02);
+      hmat_percenterrs->GetXaxis()->SetTitleSize(0.025);
+
+      hmat_percenterrs->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_percenterrs->Draw("COLZ");           
+      
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+
+
+
+      // percent error matrix in binning of interest , no log ---------------
+      
+      tempCanvForPdfPrint->cd();
+      
+      tempCanvForPdfPrint->SetLogx(1);
+      tempCanvForPdfPrint->SetLogy(1);
+      tempCanvForPdfPrint->SetLogz(1);
+
+      hmat_percenterrs->SetAxisRange(0.1,100.,"Z");      
+
+      hmat_percenterrs->SetTitle("Resp Matrix % Errors w/ log-axes");
+      
+      hmat_percenterrs->GetZaxis()->SetLabelSize(0.025);
+      
+      hmat_percenterrs->GetYaxis()->SetMoreLogLabels(true);
+      hmat_percenterrs->GetYaxis()->SetNoExponent(true);
+      hmat_percenterrs->GetYaxis()->SetLabelSize(0.02);
+      hmat_percenterrs->GetYaxis()->SetTitleSize(0.025);
+      hmat_percenterrs->GetYaxis()->SetTitle("gen p_{t}");
+      
+      hmat_percenterrs->GetXaxis()->SetMoreLogLabels(true);
+      hmat_percenterrs->GetXaxis()->SetNoExponent(true);
+      hmat_percenterrs->GetXaxis()->SetLabelSize(0.02);
+      hmat_percenterrs->GetXaxis()->SetTitleSize(0.025);
+      hmat_percenterrs->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_percenterrs->Draw("COLZ");           
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
@@ -824,19 +958,20 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       ///////////////
 
-      TLine* recCutLine1= new TLine( boundaries_pt_reco[Nbins2Clear_reco],0.,boundaries_pt_reco[Nbins2Clear_reco],2.);
+      TLine* recCutLine1= new TLine( boundaries_pt_reco[Nbins2Clear_reco_lowpt],0.,
+				     boundaries_pt_reco[Nbins2Clear_reco_lowpt],2.);
       recCutLine1->SetLineWidth(1);
       recCutLine1->SetLineStyle(2);
       recCutLine1->SetLineColor(4);
 
-      TLine* recCutLine2= new TLine( boundaries_pt_reco[nbins_pt_reco],0.,boundaries_pt_reco[nbins_pt_reco],2.);
+      TLine* recCutLine2= new TLine( boundaries_pt_reco[nbins_pt_reco-Nbins2Clear_reco_highpt],0.,boundaries_pt_reco[nbins_pt_reco-Nbins2Clear_reco_highpt],2.);
       recCutLine2->SetLineWidth(1);
       recCutLine2->SetLineStyle(2);
       recCutLine2->SetLineColor(4);
 
       ///////////////
 
-      TLine* genCutLine1= new TLine( boundaries_pt_gen[Nbins2Clear_gen],0.,boundaries_pt_gen[Nbins2Clear_gen],2.);
+      TLine* genCutLine1= new TLine( boundaries_pt_gen[Nbins2Clear_gen_lowpt],0.,boundaries_pt_gen[Nbins2Clear_gen_lowpt],2.);
       genCutLine1->SetLineWidth(1);
       genCutLine1->SetLineStyle(2);
       genCutLine1->SetLineColor(kGreen+3);
@@ -1147,7 +1282,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       if(debugMode)std::cout<<"applying roo_resp to \"truth\" histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
       hFoldedSVDPriorMeas[kr] = roo_resp.ApplyToTruth(hunf_svd[kr]);
       hFoldedSVDPriorMeas[kr]->SetName( ("hFoldedSVDPriorMeas"+kRegRandEtaRange).c_str() );
-      hFoldedSVDPriorMeas[kr]->SetLineStyle(33);
+      //hFoldedSVDPriorMeas[kr]->SetLineStyle(33);
       hFoldedSVDPriorMeas[kr]->SetLineColor(kRed);
       
 
@@ -1156,6 +1291,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cSpectra canvas..."<<std::endl<<std::endl;
       cSpectra->cd(kr+1);
       cSpectra->cd(kr+1)->SetLogy();
+      cSpectra->cd(kr+1)->SetLogx();
 
       // what's happening here exactly?
       //std::cout <<"CHECK: kr="<<kr<<"  and kReg[kr]="<<kReg[kr]<<std::endl<<std::endl;
@@ -1169,7 +1305,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
       hrec_anabin_clone->Draw();
       hunf_svd[kr]->Draw("same");
-      hFoldedSVDPriorMeas[kr]->Draw("same");
+      hFoldedSVDPriorMeas[kr]->Draw("SAME");
+
 
       leg[kr] = new TLegend(0.57, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option
       leg[kr]->AddEntry(hrec_anabin_clone,"Measured","pl");
@@ -1181,6 +1318,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       // draw on cRatio canvas
       if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio canvas..."<<std::endl;
       cRatio->cd(kr+1);
+      cRatio->cd(kr+1)->SetLogx();
 
       hrec_folded_ratio[kr] = (TH1F*)hFoldedSVDPriorMeas[kr]->Clone( ("ppMC_SVDUnf_reFold_Ratio"+kRegRandEtaRange).c_str() );
       hrec_folded_ratio[kr]->SetTitle( ("Ratios w/ Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
@@ -1188,9 +1326,9 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       hrec_folded_ratio[kr]->SetMarkerColor(kRed);
       hrec_folded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
       hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
-      hrec_folded_ratio[kr]->SetAxisRange(0.1, 1.9, "Y");
+      hrec_folded_ratio[kr]->SetAxisRange(0.0, 2.0, "Y");
       hrec_folded_ratio[kr]->Divide(hrec_anabin);
-      hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_reco[nbins_pt_reco]);
+      //hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_reco[nbins_pt_reco]);
       //hrec_folded_ratio[kr]->Print("base");
       hrec_folded_ratio[kr]->Draw();
 
@@ -1210,7 +1348,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       theLine->SetLineWidth(1);
       theLine->SetLineStyle(2);
       theLine->SetLineColor(36);
-      theLine->Draw();
+      //theLine->Draw();
 
 
       leg1[kr] = new TLegend(0.57, 0.75, 0.9, 0.9, NULL,"BRNDC");

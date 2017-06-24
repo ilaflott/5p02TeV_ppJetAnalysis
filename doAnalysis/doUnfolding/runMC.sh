@@ -13,38 +13,34 @@ sleep 1s
 
 
 
+#### anabin
 
-## R = 5
-#source run_unfoldMCSpectra.sh 5 0 11 1
-#sleep 0.5s
-#source run_unfoldMCSpectra.sh 5 1 11 1
-#sleep 0.5s
-#source run_unfoldMCSpectra.sh 4 0 5 2
-#sleep 0.5s
-#source run_unfoldMCSpectra.sh 4 1 5 2
-#sleep 0.5s
+##### R = 3
+##source run_unfoldMCSpectra.sh 3 1 27 1
+##sleep 0.5s
+##
+#### R = 4
+##source run_unfoldMCSpectra.sh 4 1 25 1   
+##sleep 0.5s
+##
+##### R = 5
+##source run_unfoldMCSpectra.sh 5 1 30 1
+##sleep 0.5s
 
-## R = 4
-#source run_unfoldMCSpectra.sh 4 0 10 1
-#sleep 0.5s
-## NOTE use kreg=6 for simp bins
-source run_unfoldMCSpectra.sh 4 1 20 1   
-sleep 0.5s
-#source run_unfoldMCSpectra.sh 4 0 5 2
-#sleep 0.5s
-#source run_unfoldMCSpectra.sh 4 1 5 2
-#sleep 0.5s
+
+### simpbin
 
 ## R = 3
-#source run_unfoldMCSpectra.sh 3 0 10 1
-#sleep 0.5s
-#source run_unfoldMCSpectra.sh 3 1 10 1
-#sleep 0.5s
-#source run_unfoldMCSpectra.sh 3 0 5 2
-#sleep 0.5s
-#source run_unfoldMCSpectra.sh 3 1 5 2
-#sleep 0.5s
+source run_unfoldMCSpectra.sh 3 1 21 1
+sleep 0.5s
 
+## R = 4
+source run_unfoldMCSpectra.sh 4 1 20 1   
+sleep 0.5s
+
+## R = 5
+source run_unfoldMCSpectra.sh 5 1 20 1
+sleep 0.5s
 
 
 echo ""

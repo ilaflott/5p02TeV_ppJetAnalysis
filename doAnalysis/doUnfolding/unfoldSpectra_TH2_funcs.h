@@ -1,10 +1,10 @@
 #include <cmath>
 
-TH2F* reBinTH2(TH2F* inputTH2, std::string rebinTH2_name,
-               double* boundaries_pt_reco, int nbins_pt_reco,
+TH2F* reBinTH2( TH2F* inputTH2, std::string rebinTH2_name,
+		double* boundaries_pt_reco, int nbins_pt_reco,
                double* boundaries_pt_gen  , int nbins_pt_gen           ){
   std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
-  bool funcDebug = true;
+  bool funcDebug = false;
 
   //double numEntries=inputTH2->GetEntries();
   //inputTH2->Sumw2();
@@ -115,54 +115,65 @@ void divideBinWidth_TH2(TH2F *h){
   return;
 }
 
-//normalizes MC response TH2 to the rowSum of the gen-axis
-void normalizeMC_TH2(TH2F* inputTH2){
-  std::cout<<std::endl<<"in normalizeMC_TH2"<<std::endl<<std::endl;
+//normalizes MC response TH2 columns to the sum of each columen, w/ error appropriately calculated.
 
-  inputTH2->Sumw2();
-  inputTH2->Print("base");  std::cout<<std::endl;
-
-  double numEntries=inputTH2->GetEntries();
-
-  int colStart=1;
+TH2F* normalizeCol_RespMatrix( TH2F* inputTH2,
+			       double* boundaries_pt_reco_mat, int nbins_pt_reco_mat,
+			       double* boundaries_pt_gen_mat, int nbins_pt_gen_mat  ){
+  
+  std::cout<<std::endl<<"in normalizeCol_RespMatix"<<std::endl<<std::endl;
+  bool funcDebug=false;
+  
+  //inputTH2->Sumw2();
+  inputTH2->Print("base");  
+  std::cout<<std::endl;
+  TH2F* colnormd_TH2 = new TH2F( "hmat_anabin_colnorm","RespMatrix, columns normalized to column sum",
+				 nbins_pt_reco_mat, boundaries_pt_reco_mat ,
+				 nbins_pt_gen_mat, boundaries_pt_gen_mat );
+  
+  
+  //double numEntries=inputTH2->GetEntries();
+  
+  int xstart=1;
   TAxis *xaxis = inputTH2->GetXaxis();
   int nbins_x= xaxis->GetNbins();
-
-  int rowStart=1;
+  
+  int ystart=1;
   TAxis *yaxis = inputTH2->GetYaxis();
   int nbins_y = yaxis->GetNbins();
-
-  //if(doOverUnderflows){
-  //  nbins_x++;    nbins_y++;
-  //  rowStart--;   colStart--; }
-
-  const int rowSums_len=nbins_x;
-  float rowSums[rowSums_len]={0.};
-  float rowSumErrs[rowSums_len]={0.};
+  
+  const int colSums_len=nbins_x;
+  float colSums[colSums_len]={0.};
+  float colSumErrs[colSums_len]={0.};
 
   //calculate sums
-  std::cout<<"computing row sums..."<<std::endl;
-  for(int rowNum=rowStart;rowNum<=nbins_y;rowNum++){
+  if(funcDebug)std::cout<<"computing column sums st. each col val sums to 1"<<std::endl;
+  if(funcDebug)std::cout<<"so val in cell of a given column, gives prob. a reco jet in bin i was gen'd from a jet from bin j"<<std::endl;
+
+  for(int colNum=xstart;colNum<=nbins_x;colNum++){
     float theSum=0.;
     float theSumErr=0.;
-    for(int colNum=colStart;colNum<=nbins_x;colNum++){
+
+    for(int rowNum=ystart;rowNum<=nbins_y;rowNum++){
       float theVal=inputTH2->GetBinContent(colNum,rowNum);
       float theValErr=inputTH2->GetBinError(colNum,rowNum);
       theSum+=theVal;
       theSumErr+=(theValErr*theValErr);
     }
-    rowSums[rowNum]=theSum;
-    rowSumErrs[rowNum]=std::sqrt(theSumErr);
+
+    colSums[colNum]=theSum;
+    colSumErrs[colNum]=std::sqrt(theSumErr);
   }
   std::cout<<std::endl;
+
   //scale each entry in each row down by that row's sum
-  std::cout<<"scaling rows..."<<std::endl;
-  for(int  rowNum=rowStart; rowNum<=nbins_y; rowNum++){
+  if(funcDebug) std::cout<<"scaling entries in each bin according to respective column sum..."<<std::endl;
+  for(int  colNum=xstart; colNum<=nbins_x; colNum++){
 
-    float theSum=rowSums[rowNum];
-    float theSumErr=rowSumErrs[rowNum];
+    float theSum=colSums[colNum];
+    float theSumErr=colSumErrs[colNum];
 
-    for( int colNum=colStart; colNum<=nbins_x; colNum++){
+    for( int rowNum=ystart; rowNum<=nbins_y; rowNum++){
 
       float theVal=(inputTH2->GetBinContent(colNum,rowNum));
       float theValErr=(inputTH2->GetBinError(colNum,rowNum));
@@ -171,21 +182,105 @@ void normalizeMC_TH2(TH2F* inputTH2){
       float finalErr=(theVal/theSum)* std::sqrt(
                                                 (theSumErr/theSum)*(theSumErr/theSum) +
                                                 (theValErr/theVal)*(theValErr/theVal) )  ;
-
-
-      inputTH2->SetBinContent(colNum,rowNum,finalVal);
-      inputTH2->SetBinError(colNum,rowNum,finalErr);
+      colnormd_TH2->SetBinContent(colNum,rowNum,finalVal);
+      colnormd_TH2->SetBinError(colNum,rowNum,finalErr);
     }
   }
+
   std::cout<<std::endl;
-
-  inputTH2->SetEntries(numEntries);
-  inputTH2->Print("base");
-
+  
+  if(funcDebug) inputTH2->Print("base");
+  
   std::cout<<std::endl<<"exiting normalizeMC_TH2"<<std::endl<<std::endl;
-  return ;
+  std::cout<<std::endl<<"exiting normalizeCol_RespMatrix"<<std::endl<<std::endl;
+  return colnormd_TH2;
+  
+  
+}
 
 
+
+
+//normalizes MC response TH2 columns to the sum of each columen, w/ error appropriately calculated.
+
+TH2F* normalizeRow_RespMatrix( TH2F* inputTH2,
+			       double* boundaries_pt_reco_mat, int nbins_pt_reco_mat,
+			       double* boundaries_pt_gen_mat, int nbins_pt_gen_mat  ){
+
+  std::cout<<std::endl<<"in normalizeRow_RespMatrix"<<std::endl<<std::endl;
+  bool funcDebug=false;
+  
+  //inputTH2->Sumw2();
+  inputTH2->Print("base");  std::cout<<std::endl;
+  
+  TH2F* rownormd_TH2 = new TH2F( "hmat_anabin_rownorm","RespMatrix, rows normalized to row sum",
+				 nbins_pt_reco_mat, boundaries_pt_reco_mat ,
+				 nbins_pt_gen_mat, boundaries_pt_gen_mat );
+  
+
+  //double numEntries=inputTH2->GetEntries();
+
+  int xstart=1;
+  TAxis *xaxis = inputTH2->GetXaxis();
+  int nbins_x= xaxis->GetNbins();
+
+  int ystart=1;
+  TAxis *yaxis = inputTH2->GetYaxis();
+  int nbins_y = yaxis->GetNbins();
+  
+  const int rowSums_len=nbins_y;
+  float rowSums[rowSums_len]={0.};
+  float rowSumErrs[rowSums_len]={0.};
+
+  //calculate sums
+  if(funcDebug)std::cout<<"computing row sums st. each row sums to 1"<<std::endl;
+  if(funcDebug)std::cout<<"so val in cell of a given row, gives prob. a gen jet in bin i get's reco'd in bin j"<<std::endl;
+
+  for(int rowNum=ystart;rowNum<=nbins_y;rowNum++){
+    float theSum=0.;
+    float theSumErr=0.;
+    for(int colNum=xstart;colNum<=nbins_x;colNum++){
+      
+      float theVal=inputTH2->GetBinContent(colNum,rowNum);
+      float theValErr=inputTH2->GetBinError(colNum,rowNum);
+      theSum+=theVal;
+      theSumErr+=(theValErr*theValErr);
+    }
+    
+    rowSums[rowNum]=theSum;
+    rowSumErrs[rowNum]=std::sqrt(theSumErr);
+  }
+  std::cout<<std::endl;
+  
+  //scale each entry in each row down by that row's sum
+  if(funcDebug) std::cout<<"scaling entries in each bin according to respective row sum..."<<std::endl;
+  for( int rowNum=ystart; rowNum<=nbins_y; rowNum++){
+    
+    float theSum=rowSums[rowNum];
+    float theSumErr=rowSumErrs[rowNum];
+    
+    for(int  colNum=xstart; colNum<=nbins_x; colNum++){
+      
+      float theVal=(inputTH2->GetBinContent(colNum,rowNum));
+      float theValErr=(inputTH2->GetBinError(colNum,rowNum));
+      
+      float finalVal=theVal/theSum;
+      float finalErr=(theVal/theSum)* std::sqrt(
+                                                (theSumErr/theSum)*(theSumErr/theSum) +
+                                                (theValErr/theVal)*(theValErr/theVal) )  ;
+      rownormd_TH2->SetBinContent(colNum,rowNum,finalVal);
+      rownormd_TH2->SetBinError(colNum,rowNum,finalErr);
+    }
+  }
+  
+  std::cout<<std::endl;
+  
+  if(funcDebug) inputTH2->Print("base");
+  
+  
+  std::cout<<std::endl<<"exiting normalizeRow_RespMatrix"<<std::endl<<std::endl;
+  return rownormd_TH2;
+  
 }
 
 
@@ -196,7 +291,7 @@ TH2F* makeRespMatrixErrors( TH2F* inputTH2,
 			    double* boundaries_pt_gen  , int nbins_pt_gen           ){
 
   std::cout<<std::endl<<"in makeRespMatrixErrors"<<std::endl<<std::endl;
-  bool funcDebug = true;
+  bool funcDebug = false;
   
   //double numEntries=inputTH2->GetEntries();
   //inputTH2->Sumw2();
@@ -261,7 +356,7 @@ TH2F* makeRespMatrixPercentErrs( TH2F* hmat_errors, TH2F* hmat_anabin,
 
   
   std::cout<<std::endl<<"in makeRespMatrixPercentErrs"<<std::endl<<std::endl;
-  bool funcDebug = true;
+  bool funcDebug = false;
   
 
   int xbinstart=1;
@@ -316,7 +411,7 @@ TH2F* makeRespMatrixPercentErrs( TH2F* hmat_errors, TH2F* hmat_anabin,
 void setRespMatrixErrs( TH2F* hmat_anabin , TH2F* hmat_errors ){   
 
   std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;
-  bool funcDebug = true;
+  bool funcDebug = false;
 
 
   if(funcDebug) hmat_errors->Print("base");

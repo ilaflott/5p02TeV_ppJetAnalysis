@@ -1,10 +1,7 @@
 #include "unfoldSpectra.h"
 
 const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
-
 const bool drawPDFs=true; 
-//const bool drawPDFs_BayesInputHistos= doBayes && drawPDFs;
-const bool drawPDFs_SVDInputHistos  = doSVD   && drawPDFs;
 
 //other settings
 const bool doToyErrs=true;
@@ -16,12 +13,12 @@ const bool debugPearson=(false && debugMode) ;
 int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName , 
 		     const bool doJetID=true , const int kRegCenter= 8 ){
   
-
-
+  
+  
   // BINNING -----------
   double* boundaries_pt_reco ;   int nbins_pt_reco ;   // reco spectra bins
   double* boundaries_pt_gen  ;   int nbins_pt_gen  ;   // gen spectra bins
-
+  
   double* boundaries_pt_reco_mat ;   int nbins_pt_reco_mat ;   // matrix bins
   double* boundaries_pt_gen_mat  ;   int nbins_pt_gen_mat  ;   // 
 
@@ -33,26 +30,25 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
 
 
-  if(useSimplePtBinning){
-    std::cout<<"using simple pt bins"<<std::endl<<std::endl;
+  if(useSimplePtBinning){    std::cout<<"using simple pt bins"<<std::endl<<std::endl;
+
     boundaries_pt_reco = (double*)simpbins_pt_reco ; //spectra
     nbins_pt_reco      = (int)n_simpbins_pt_reco ; 
     boundaries_pt_gen = (double*)simpbins_pt_gen ;
     nbins_pt_gen      = (int)n_simpbins_pt_gen ; 
-
+    
     boundaries_pt_reco_mat = (double*)simpbins_pt_reco ; //matrix
     nbins_pt_reco_mat      = (int)n_simpbins_pt_reco ; 
     boundaries_pt_gen_mat = (double*)simpbins_pt_gen ;
     nbins_pt_gen_mat      = (int)n_simpbins_pt_gen ;                    
+
     Nbins2Clear_gen_lowpt=0;
     //Nbins2Clear_gen_highpt=0;
     Nbins2Clear_reco_lowpt=0;
-    Nbins2Clear_reco_highpt=0;
+    Nbins2Clear_reco_highpt=0;          } 
 
-} 
+    else{   std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
 
-  else{
-    std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
     boundaries_pt_reco = (double*)anabins_pt_reco ; //spectra
     nbins_pt_reco      = (int)n_anabins_pt_reco ; 
     boundaries_pt_gen = (double*)anabins_pt_gen ;
@@ -62,11 +58,11 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     nbins_pt_reco_mat      = (int)n_anabins_pt_reco ; 
     boundaries_pt_gen_mat = (double*)anabins_pt_gen ;
     nbins_pt_gen_mat      = (int)n_anabins_pt_gen ;                  
+
     Nbins2Clear_gen_lowpt=0;
     //Nbins2Clear_gen_highpt=0;
     Nbins2Clear_reco_lowpt=0;
-    Nbins2Clear_reco_highpt=0;
-  }
+    Nbins2Clear_reco_highpt=0;      }
 
 
 

@@ -105,12 +105,12 @@ const int kIter = 4; //recommended is 4, default is 4
 const bool doSVD=true; //!(doBayes); 
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
 
-//other options, useful
+//other options, useful or interesting to change
 const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
 const bool clearOverUnderflows=true;
 const bool doMCIntegralScaling=true;//unfoldMCSpectra only
 
-//other options, useful...?
+//other options, questionable usefulness, thing before changing...
 const bool zeroBins=false;
 //const bool normalizedMCMatrix=false;   //do not change for now; 6.24.17
 const bool doOverUnderflows=false;    // do not change to true + use with normalizedMCMatrix; method not over/underflow ready
@@ -119,8 +119,8 @@ const bool fillRespHists=false;
 
 //useful strings, numbers
 const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
-const std::string MCdesc= "QCD PY8 Tune CUETP8M1"; 
-//const std:: string MCdesc= "QCD Dijets, PY8 Tune CUETP8M1"; 
+const std::string CMSPRELIM= "CMS PRELIMINARY"; 
+const std::string MCdesc= "Py8 Tune CUETP8M1 QCD"; 
 const std::string Datadesc1= "pp promptReco, #sqrt{s}=5.02 TeV"; 
 const std::string Datadesc2= "L_{int}=27.4 pb^{-1} +/- 2.4%"; 
 

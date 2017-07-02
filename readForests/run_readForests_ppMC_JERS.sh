@@ -14,10 +14,12 @@ echo ""
 echo "submitting Py8 ppMC JERS job(s)"
 echo ""
 
-source condorSubmit_readForests.sh readForests_ppMC_JERS 1 15 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  0.0  2.0
+source condorSubmit_readForests.sh readForests_ppMC_JERS -1 15 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  0.0  0.5
 
 echo ""
 echo "done submitting JERS job(s)"
 echo ""
+
+sleep 0.5s
 
 return

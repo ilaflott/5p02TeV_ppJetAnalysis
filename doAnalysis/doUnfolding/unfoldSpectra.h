@@ -93,20 +93,17 @@ const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 
-
-
-
 //Bayes setting that don't change too much
-const bool doBayes=false; 
+//const bool doBayes=true; 
 const int kIter = 4; //recommended is 4, default is 4
 //,kIterRange=4, kIterDraw = 3, kIterCenter=21;
 
 //SVD setting that don't change too much
-const bool doSVD=true; //!(doBayes); 
+//const bool doSVD=false; //!(doBayes); 
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
 
 //other options, useful or interesting to change
-const bool useSimplePtBinning=true;//bin by ten everywhere instead of custom binning
+//const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
 const bool clearOverUnderflows=true;
 const bool doMCIntegralScaling=true;//unfoldMCSpectra only
 

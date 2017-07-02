@@ -47,7 +47,7 @@ const float genJetPtCut=30.;
 
 const float jtPtCut=30.;
 //const float jetQAPtCut=jtPtCut;
-const float jetQAPtCut=50.;
+const float jetQAPtCut=30.;
 
 const float ldJetPtCut=80., subldJetPtCut=56., ptAveCut=68., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 

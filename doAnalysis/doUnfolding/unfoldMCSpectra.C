@@ -11,7 +11,8 @@ const bool debugMode=false;
 
 // CODE --------------------------------------------------
 int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName , 
-		     const bool doJetID=true , const int kRegCenter= 8 ){
+		     const bool doJetID=true , const int kRegCenter= 5 ,
+		     const bool doBayes=true, const bool doSVD=false, const bool useSimplePtBinning=false){
   
   
   
@@ -364,310 +365,191 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv_respMat","",1200,1200);    
       tempCanvForPdfPrint->cd();
-      
+
+      if(useSimplePtBinning){
+	tempCanvForPdfPrint->SetLogx(0);
+	tempCanvForPdfPrint->SetLogy(0);       
+	tempCanvForPdfPrint->SetLogz(1);          }
+      else {
+	tempCanvForPdfPrint->SetLogx(1);
+	tempCanvForPdfPrint->SetLogy(1);       
+	tempCanvForPdfPrint->SetLogz(1);         } 
+
+  
       tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
 
-      
-      // input resp matrix w/ full range ---------------
 
+      // general for drawRespMatrix ---------------
+      tempCanvForPdfPrint->cd();
+
+      if(!useSimplePtBinning){
+      	hmat->GetYaxis()->SetMoreLogLabels(true);
+	hmat->GetYaxis()->SetNoExponent(true);	
+	hmat->GetXaxis()->SetMoreLogLabels(true);
+	hmat->GetXaxis()->SetNoExponent(true);      }
+      
+      hmat->GetZaxis()->SetLabelSize(0.025);      
+      hmat->GetYaxis()->SetLabelSize(0.02);
+      hmat->GetYaxis()->SetTitleSize(0.023);
+      hmat->GetYaxis()->SetTitle("gen p_{t}");      
+      hmat->GetXaxis()->SetLabelSize(0.02);
+      hmat->GetXaxis()->SetTitleSize(0.025);
+      hmat->GetXaxis()->SetTitle("reco p_{t}");
+
+      // input resp matrix w/ full range ---------------
       tempCanvForPdfPrint->cd();
       
-      tempCanvForPdfPrint->SetLogx(0);
-      tempCanvForPdfPrint->SetLogy(0);
-      tempCanvForPdfPrint->SetLogz(1);
-      
-      hmat->SetTitle("ppMC Resp Matrix, original non-normalized");
+      hmat->SetTitle("ppMC Resp Matrix, original");
       
       hmat->SetAxisRange(0.,1000.,"X");
       hmat->SetAxisRange(0.,1000.,"Y");
-      hmat->SetAxisRange(0.0000000000000001,.00001,"Z");
- 
+      hmat->SetAxisRange(0.000000000000000001,.001,"Z");
       
-      hmat->GetZaxis()->SetLabelSize(0.025);
-      
-      hmat->GetYaxis()->SetLabelSize(0.02);
-      hmat->GetYaxis()->SetTitleSize(0.023);
-      hmat->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat->GetXaxis()->SetLabelSize(0.02);
-      hmat->GetXaxis()->SetTitleSize(0.025);
-      hmat->GetXaxis()->SetTitle("reco p_{t}   ");
       hmat->Draw("COLZ");           
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-      // matrix w/ specific range ---------------
-    
-      tempCanvForPdfPrint->cd();
-
-      tempCanvForPdfPrint->SetLogx(0);
-      tempCanvForPdfPrint->SetLogy(0);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      hmat->SetTitle("ppMC Resp Matrix, original non-normalized");
       
+      // matrix w/ specific range ---------------
+      
+      tempCanvForPdfPrint->cd();
+      
+      hmat->SetTitle("ppMC Resp Matrix, used pt range");
       hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
       hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
       
-      //hmat->GetZaxis()->SetLabelSize(0.025);
-      //
-      //hmat->GetYaxis()->SetLabelSize(0.02);
-      //hmat->GetYaxis()->SetTitleSize(0.023);
-      //hmat->GetYaxis()->SetTitle("gen p_{t}");
-      //
-      //hmat->GetXaxis()->SetLabelSize(0.02);
-      //hmat->GetXaxis()->SetTitleSize(0.025);
-      //hmat->GetXaxis()->SetTitle("reco p_{t}   ");
-      
       hmat->Draw("COLZ");           
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
       
-
-      // matrix w/ log ---------------
-
-      tempCanvForPdfPrint->cd();
-      
-      tempCanvForPdfPrint->SetLogx(1);
-      tempCanvForPdfPrint->SetLogy(1);
-      tempCanvForPdfPrint->SetLogz(1);
-      
-      hmat->SetTitle("ppMC Resp Matrix, w/ log axes");
-
-      //hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
-      //hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");
-
-      //hmat->GetZaxis()->SetLabelSize(0.025);      
-      hmat->GetYaxis()->SetMoreLogLabels(true);
-      hmat->GetYaxis()->SetNoExponent(true);
-      //hmat->GetYaxis()->SetLabelSize(0.02);
-      //hmat->GetYaxis()->SetTitleSize(0.025);
-      //hmat->GetYaxis()->SetTitle("gen p_{t}");
-      //
-      hmat->GetXaxis()->SetMoreLogLabels(true);
-      hmat->GetXaxis()->SetNoExponent(true);
-      //hmat->GetXaxis()->SetLabelSize(0.02);
-      //hmat->GetXaxis()->SetTitleSize(0.025);
-      //hmat->GetXaxis()->SetTitle("reco p_{t}   ");
-
-      hmat->Draw("COLZ");           
-      
-      tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
 
       // matrix rebinned ---------------
       
       tempCanvForPdfPrint->cd();
+      if(!useSimplePtBinning){
+      	hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
+	hmat_anabin->GetYaxis()->SetNoExponent(true);	
+	hmat_anabin->GetXaxis()->SetMoreLogLabels(true);
+	hmat_anabin->GetXaxis()->SetNoExponent(true);      
+      }      
       
-      tempCanvForPdfPrint->SetLogx(0);
-      tempCanvForPdfPrint->SetLogy(0);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      hmat_anabin->SetAxisRange(0.0000000000000001,.00001,"Z");
-      
-      hmat_anabin->SetTitle("ppMC Resp Matrix rebin, no log axes");
-      
-      hmat_anabin->GetZaxis()->SetLabelSize(0.025);
-      
-      //hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
-      //hmat_anabin->GetYaxis()->SetNoExponent(true);
+      hmat_anabin->GetZaxis()->SetLabelSize(0.025);      
       hmat_anabin->GetYaxis()->SetLabelSize(0.02);
-      hmat_anabin->GetYaxis()->SetTitleSize(0.025);
-      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
-      
+      hmat_anabin->GetYaxis()->SetTitleSize(0.023);
+      hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");      
       hmat_anabin->GetXaxis()->SetLabelSize(0.02);
       hmat_anabin->GetXaxis()->SetTitleSize(0.025);
-      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
+      hmat_anabin->GetXaxis()->SetTitle("reco p_{t}");
+      hmat_anabin->SetAxisRange(0.000000000000000001,.001,"Z");
+      hmat_anabin->SetTitle("ppMC Resp Matrix rebinned");
+      
       hmat_anabin->Draw("COLZ");           
       
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-
-
-      // matrix rebinned log axes---------------
-      
-      tempCanvForPdfPrint->cd();
-      
-      tempCanvForPdfPrint->SetLogx(1);
-      tempCanvForPdfPrint->SetLogy(1);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      hmat_anabin->SetTitle("ppMC Resp Matrix rebin, w/ log axes");
-      
-      //hmat_anabin->GetZaxis()->SetLabelSize(0.025);
-      
-      hmat_anabin->GetYaxis()->SetMoreLogLabels(true);
-      hmat_anabin->GetYaxis()->SetNoExponent(true);
-      //hmat_anabin->GetYaxis()->SetLabelSize(0.02);
-      //hmat_anabin->GetYaxis()->SetTitleSize(0.025);
-      //hmat_anabin->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat_anabin->GetXaxis()->SetMoreLogLabels(true);
-      hmat_anabin->GetXaxis()->SetNoExponent(true);
-      //hmat_anabin->GetXaxis()->SetLabelSize(0.02);
-      //hmat_anabin->GetXaxis()->SetTitleSize(0.025);
-      //hmat_anabin->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_anabin->Draw("COLZ");           
-      
-      tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-
 
       // error matrix in binning of interest ---------------
       
       tempCanvForPdfPrint->cd();
       
-      tempCanvForPdfPrint->SetLogx(1);
-      tempCanvForPdfPrint->SetLogy(1);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      hmat_errors->SetTitle("Resp Matrix Errors, log axes");
-
-      hmat_errors->SetAxisRange(0.0000000000000001,.00001,"Z");      
-      hmat_errors->GetZaxis()->SetLabelSize(0.025);
+      if(!useSimplePtBinning){
+      	hmat_errors->GetYaxis()->SetMoreLogLabels(true);
+	hmat_errors->GetYaxis()->SetNoExponent(true);	
+	hmat_errors->GetXaxis()->SetMoreLogLabels(true);
+	hmat_errors->GetXaxis()->SetNoExponent(true);      
+      }      
       
-      hmat_errors->GetYaxis()->SetMoreLogLabels(true);
-      hmat_errors->GetYaxis()->SetNoExponent(true);
+      hmat_errors->GetZaxis()->SetLabelSize(0.025);      
       hmat_errors->GetYaxis()->SetLabelSize(0.02);
-      hmat_errors->GetYaxis()->SetTitleSize(0.025);
-      hmat_errors->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat_errors->GetXaxis()->SetMoreLogLabels(true);
-      hmat_errors->GetXaxis()->SetNoExponent(true);
+      hmat_errors->GetYaxis()->SetTitleSize(0.023);
+      hmat_errors->GetYaxis()->SetTitle("gen p_{t}");      
       hmat_errors->GetXaxis()->SetLabelSize(0.02);
       hmat_errors->GetXaxis()->SetTitleSize(0.025);
-      hmat_errors->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_errors->Draw("COLZ");           
-      
-      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      hmat_errors->GetXaxis()->SetTitle("reco p_{t}");
 
-      // percent error matrix in binning of interest , no log ---------------
+      
+      hmat_errors->SetAxisRange(0.000000000000000001,.001,"Z");      
+      hmat_errors->SetTitle("ppMC Resp Matrix Errors");
+      
+      hmat_errors->Draw("COLZ");           
+
+      tempCanvForPdfPrint->Print(outPdfFile.c_str());
+      
+      // percent error matrix in binning of interest ---------------
       
       tempCanvForPdfPrint->cd();
+      if(!useSimplePtBinning){
+      	hmat_percenterrs->GetYaxis()->SetMoreLogLabels(true);
+	hmat_percenterrs->GetYaxis()->SetNoExponent(true);	
+	hmat_percenterrs->GetXaxis()->SetMoreLogLabels(true);
+	hmat_percenterrs->GetXaxis()->SetNoExponent(true);      
+      }      
       
-      tempCanvForPdfPrint->SetLogx(0);
-      tempCanvForPdfPrint->SetLogy(0);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      hmat_percenterrs->SetAxisRange(0.1,100.,"Z");      
-
-      hmat_percenterrs->SetTitle("Resp Matrix % Errors non-log x/y axes");
-      
-      hmat_percenterrs->GetZaxis()->SetLabelSize(0.025);
+      hmat_percenterrs->GetZaxis()->SetLabelSize(0.025);      
       hmat_percenterrs->GetYaxis()->SetLabelSize(0.02);
-      hmat_percenterrs->GetYaxis()->SetTitleSize(0.025);
-
-      hmat_percenterrs->GetYaxis()->SetTitle("gen p_{t}");
-      
+      hmat_percenterrs->GetYaxis()->SetTitleSize(0.023);
+      hmat_percenterrs->GetYaxis()->SetTitle("gen p_{t}");      
       hmat_percenterrs->GetXaxis()->SetLabelSize(0.02);
       hmat_percenterrs->GetXaxis()->SetTitleSize(0.025);
-
-      hmat_percenterrs->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_percenterrs->Draw("COLZ");           
+      hmat_percenterrs->GetXaxis()->SetTitle("reco p_{t}");
       
+      hmat_percenterrs->SetAxisRange(0.001,200.,"Z");      
+      hmat_percenterrs->SetTitle("Resp Matrix % Errors");
+      hmat_percenterrs->Draw("COLZ");                 
+
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 
-
-      // percent error matrix in binning of interest , with log ---------------
-      
-      tempCanvForPdfPrint->cd();
-      
-      tempCanvForPdfPrint->SetLogx(1);
-      tempCanvForPdfPrint->SetLogy(1);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      //      hmat_percenterrs->SetAxisRange(0.1,100.,"Z");      
-
-      hmat_percenterrs->SetTitle("Resp Matrix % Errors w/ log-axes");
-      
-      //      hmat_percenterrs->GetZaxis()->SetLabelSize(0.025);
-      
-      hmat_percenterrs->GetYaxis()->SetMoreLogLabels(true);
-      hmat_percenterrs->GetYaxis()->SetNoExponent(true);
-//      hmat_percenterrs->GetYaxis()->SetLabelSize(0.02);
-//      hmat_percenterrs->GetYaxis()->SetTitleSize(0.025);
-//      hmat_percenterrs->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat_percenterrs->GetXaxis()->SetMoreLogLabels(true);
-      hmat_percenterrs->GetXaxis()->SetNoExponent(true);
-//      hmat_percenterrs->GetXaxis()->SetLabelSize(0.02);
-//      hmat_percenterrs->GetXaxis()->SetTitleSize(0.025);
-//      hmat_percenterrs->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_percenterrs->Draw("COLZ");           
-      
-      tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-
-
-
-
-
-      // col normd matrix in binning of interest , with log x/y ---------------
+      // col normd matrix in binning of interest  ---------------
   
       tempCanvForPdfPrint->cd();
       
-      tempCanvForPdfPrint->SetLogx(1);
-      tempCanvForPdfPrint->SetLogy(1);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      hmat_anabin_colnormd->SetAxisRange(0.001,1.5,"Z");      
+      if(!useSimplePtBinning){
+      	hmat_anabin_colnormd->GetYaxis()->SetMoreLogLabels(true);
+	hmat_anabin_colnormd->GetYaxis()->SetNoExponent(true);	
+	hmat_anabin_colnormd->GetXaxis()->SetMoreLogLabels(true);
+	hmat_anabin_colnormd->GetXaxis()->SetNoExponent(true);      
+      }      
       
-      hmat_anabin_colnormd->SetTitle("Resp Matrix w/ normalized columns, log-axes");
-      
-      hmat_anabin_colnormd->GetZaxis()->SetLabelSize(0.025);
-      
-      hmat_anabin_colnormd->GetYaxis()->SetMoreLogLabels(true);
-      hmat_anabin_colnormd->GetYaxis()->SetNoExponent(true);
+      hmat_anabin_colnormd->GetZaxis()->SetLabelSize(0.025);      
       hmat_anabin_colnormd->GetYaxis()->SetLabelSize(0.02);
-      hmat_anabin_colnormd->GetYaxis()->SetTitleSize(0.025);
-      hmat_anabin_colnormd->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat_anabin_colnormd->GetXaxis()->SetMoreLogLabels(true);
-      hmat_anabin_colnormd->GetXaxis()->SetNoExponent(true);
+      hmat_anabin_colnormd->GetYaxis()->SetTitleSize(0.023);
+      hmat_anabin_colnormd->GetYaxis()->SetTitle("gen p_{t}");      
       hmat_anabin_colnormd->GetXaxis()->SetLabelSize(0.02);
       hmat_anabin_colnormd->GetXaxis()->SetTitleSize(0.025);
-      hmat_anabin_colnormd->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_anabin_colnormd->Draw("COLZ");           
-      
+      hmat_anabin_colnormd->GetXaxis()->SetTitle("reco p_{t}");
+
+
+      hmat_anabin_colnormd->SetAxisRange(0.00001,10,"Z");            
+      hmat_anabin_colnormd->SetTitle("Resp Matrix, Columns Normallized");
+      hmat_anabin_colnormd->Draw("COLZ");                 
+
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
 
 
-
-      // row normd matrix in binning of interest , with log x/y ---------------
+      // row normd matrix in binning of interest  ---------------
   
       tempCanvForPdfPrint->cd();
       
-      tempCanvForPdfPrint->SetLogx(1);
-      tempCanvForPdfPrint->SetLogy(1);
-      tempCanvForPdfPrint->SetLogz(1);
-
-      hmat_anabin_rownormd->SetAxisRange(0.00001,1.5,"Z");      
+      if(!useSimplePtBinning){
+      	hmat_anabin_rownormd->GetYaxis()->SetMoreLogLabels(true);
+	hmat_anabin_rownormd->GetYaxis()->SetNoExponent(true);	
+	hmat_anabin_rownormd->GetXaxis()->SetMoreLogLabels(true);
+	hmat_anabin_rownormd->GetXaxis()->SetNoExponent(true);      
+      }      
       
-      hmat_anabin_rownormd->SetTitle("Resp Matrix w/ normalized rows, log-axes");
-      
-      hmat_anabin_rownormd->GetZaxis()->SetLabelSize(0.025);
-      
-      hmat_anabin_rownormd->GetYaxis()->SetMoreLogLabels(true);
-      hmat_anabin_rownormd->GetYaxis()->SetNoExponent(true);
+      hmat_anabin_rownormd->GetZaxis()->SetLabelSize(0.025);      
       hmat_anabin_rownormd->GetYaxis()->SetLabelSize(0.02);
-      hmat_anabin_rownormd->GetYaxis()->SetTitleSize(0.025);
-      hmat_anabin_rownormd->GetYaxis()->SetTitle("gen p_{t}");
-      
-      hmat_anabin_rownormd->GetXaxis()->SetMoreLogLabels(true);
-      hmat_anabin_rownormd->GetXaxis()->SetNoExponent(true);
+      hmat_anabin_rownormd->GetYaxis()->SetTitleSize(0.023);
+      hmat_anabin_rownormd->GetYaxis()->SetTitle("gen p_{t}");      
       hmat_anabin_rownormd->GetXaxis()->SetLabelSize(0.02);
       hmat_anabin_rownormd->GetXaxis()->SetTitleSize(0.025);
-      hmat_anabin_rownormd->GetXaxis()->SetTitle("reco p_{t}   ");
-      hmat_anabin_rownormd->Draw("COLZ");           
-      
+      hmat_anabin_rownormd->GetXaxis()->SetTitle("reco p_{t}");
+
+
+      hmat_anabin_rownormd->SetAxisRange(0.00001,10,"Z");            
+      hmat_anabin_rownormd->SetTitle("Resp Matrix, Rows Normallized");
+      hmat_anabin_rownormd->Draw("COLZ");                 
+
       tempCanvForPdfPrint->Print(outPdfFile.c_str());
-
-
-
-
-
-
 
       // close file ---------------
 
@@ -1125,7 +1007,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       std::cout<<"creating TH2 for pearson matrix..."<<std::endl;
       hPearsonSVD[kr] = new TH2D (*pearson);
-
+      hPearsonSVD[kr]->SetName(("pearson_oppside_"+kRegRandEtaRange).c_str());
+      hPearsonSVD[kr]->Print("base");
       //std::cout<<"creating \"rebinned\" pearson matrix..."<<std::endl;
       //hPearsonSVD[kr] = reBinPearsonTH2( pearson );
       
@@ -1257,6 +1140,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
       std::cout<<"creating TH2 for pearson matrix..."<<std::endl;
       hPearsonSVD_SS[kr] = new TH2D (*pearson_ss);
+      hPearsonSVD_SS[kr]->SetName(("pearson_sameside_"+kRegRandEtaRange).c_str());
+      hPearsonSVD_SS[kr]->Print("base");
       if(debugMode)std::cout<<std::endl;
       //sameside covariance/pearson matrices???
       /////////////////////////////////////////////
@@ -1538,7 +1423,7 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 	
 	hrec_folded_ratio[kRegDraw]->SetAxisRange(0.5, 1.5, "Y");
 	hrec_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
-	hrec_folded_ratio[kRegDraw]->SetTitle("SVD Unf. Ratios w/ Meas.");
+	hrec_folded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ Meas.");
 	
 	hrec_folded_ratio[kRegDraw]->Draw();
 	hrec_unfolded_ratio[kRegDraw]->Draw("same");
@@ -1575,14 +1460,14 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 	
 	hgen_folded_ratio[kRegDraw]->SetAxisRange(0.5, 1.5, "Y");
 	hgen_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
-	hgen_folded_ratio[kRegDraw]->SetTitle("SVD Unf. Ratios w/ Gen Truth");
+	hgen_folded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ Gen Truth");
 	
 	hgen_folded_ratio[kRegDraw]->Draw();
 	hgen_unfolded_ratio[kRegDraw]->Draw("same");
 	
 	TLegend * leg3 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
-	leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"Unf./Meas.","pl");
-	leg3->AddEntry(hgen_folded_ratio[kRegDraw],"Refold/Meas.","pl");
+	leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"Unf./Gen.","pl");
+	leg3->AddEntry(hgen_folded_ratio[kRegDraw],"Refold/Gen.","pl");
 	//leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
 	leg3->SetTextSize(0.02);
 	leg3->Draw();
@@ -1665,8 +1550,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 	hgen_ss_unfolded_ratio[kRegDraw]->Draw("same");
 	
 	TLegend * leg_ss3 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
-	leg_ss3->AddEntry(hgen_ss_unfolded_ratio[kRegDraw],"Unf./Meas.","pl");
-	leg_ss3->AddEntry(hgen_ss_folded_ratio[kRegDraw],"Refold/Meas.","pl");
+	leg_ss3->AddEntry(hgen_ss_unfolded_ratio[kRegDraw],"Unf./Gen.","pl");
+	leg_ss3->AddEntry(hgen_ss_folded_ratio[kRegDraw],"Refold/Gen.","pl");
 	leg_ss3->SetTextSize(0.02);
 	leg_ss3->Draw();
 	
@@ -1705,8 +1590,8 @@ int unfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
   
-  if( argc!=5 ){
-    std::cout<<"do ./unfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <kRegCenter>"<<std::endl;
+  if( argc!=8 ){
+    std::cout<<"do ./unfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <kRegCenter> <doBayes> <doSVD> <useSimpleBins>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
 
     return rStatus;  }
@@ -1714,7 +1599,9 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   rStatus=1; // runtime error
   
   rStatus=unfoldMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], 
-			    (int)std::atoi(argv[3]) , (int)std::atoi(argv[4]) 
+			    (int)std::atoi(argv[3]) , (int)std::atoi(argv[4]) , 
+			    (int)std::atoi(argv[5]) , (int)std::atoi(argv[6]) , (int)std::atoi(argv[7]) 
+			    
 			    ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;

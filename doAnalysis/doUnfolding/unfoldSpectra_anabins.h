@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 //// ------ GEN SPECTRA BINS ------
 //const double anabins_pt_gen[] = {//analysis pt bins
 //  //  0, 
@@ -39,7 +34,8 @@
 
 
 
-//same as old binning... shifted up by 2 to respect the cuts at readforests-level
+// for readForests jobs w/ 30/30 rec/gen pt cuts
+// same as old binning... shifted up by 2 to respect the cuts at readforests-level
 // ------ GEN SPECTRA BINS ------
 const double anabins_pt_gen[] = {//analysis pt bins
 //  24, 
@@ -69,4 +65,43 @@ const double anabins_pt_reco[] = {//analysis pt bins
   //802,     1000
 };
 const int n_anabins_pt_reco = sizeof(anabins_pt_reco)/sizeof(double)-1;
+
+
+
+
+
+
+//// for readForests jobs w/ 40/40 rec/gen pt cuts
+//// same as old binning... shifted up by 2 to respect the cuts at readforests-level
+//// ------ GEN SPECTRA BINS ------
+//const double anabins_pt_gen[] = {//analysis pt bins
+//  //  24, 
+//  //30,  34,  
+//  40,   46, 
+//  52, 59, 67, 77, 87, 
+//  100, 117, 136, 156, 
+//  177, 199, 223, 248, 
+//  275, 303, 333, 365, 
+//  398, 433, 471, 510, 
+//  551, 595, 641, 689 , 
+//  739, 811, 900
+//  //802,     1000
+//};
+//const int n_anabins_pt_gen = sizeof(anabins_pt_gen)/sizeof(double)-1;
+//
+//// ------ RECO SPECTRA BINS ------
+//const double anabins_pt_reco[] = {//analysis pt bins
+//  //  24, 
+//  //30,  34,  
+//  40,   46, 
+//  52, 59, 67, 77, 87, 
+//  100, 117, 136, 156, 
+//  177, 199, 223, 248, 
+//  275, 303, 333, 365, 
+//  398, 433, 471, 510, 
+//  551, 595, 641, 689 , 
+//  739, 811, 900
+//  //802,     1000
+//};
+//const int n_anabins_pt_reco = sizeof(anabins_pt_reco)/sizeof(double)-1;
 

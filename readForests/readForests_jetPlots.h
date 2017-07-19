@@ -12,13 +12,13 @@ const int minArgs=1;
 
 //// readForests_ppData
 //const std::string defDataInFilelist="filelists/test_readForests_ppData_Jet80_local.txt";
-const std::string defDataInFilelist="filelists/test_readForests_ppData_LowerJets_local.txt";
-//const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
+//const std::string defDataInFilelist="filelists/test_readForests_ppData_LowerJets_local.txt";
+const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
 //const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
-const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
-//const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
-const int defStartFile=0;
-const int defEndFile=1;
+//const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
+const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
+const int defStartFile=5;
+const int defEndFile=6;
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true;//, fastDebugMode = true;
@@ -27,7 +27,7 @@ const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 const float defEtaCutLo=0.0, defEtaCutHi=4.7;//really absetacut
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				 int startfile=0, int endfile=1,
+				 int startfile=100, int endfile=109,
 				 int radius=defRadius, std::string jetType=defJetType, 
 				 bool debugMode=defDebugMode,
 				 std::string outfile=defDataOutputName, 
@@ -43,11 +43,11 @@ int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
 const int readForestsArgCount=9+minArgs;
 
 // extended eta range for jetID Eff, or more QA in diff region... etc.
-const float genJetPtCut=30.;
-
-const float jtPtCut=30.;
-//const float jetQAPtCut=jtPtCut;
-const float jetQAPtCut=30.;
+const float jtPtCut=43.;
+const float genJetPtCut=jtPtCut;
+const float jetQAPtCut=jtPtCut;
+//const float genJetPtCut=30.;
+//const float jetQAPtCut=30.;//sometimes a bit higher than jtptCut
 
 const float ldJetPtCut=80., subldJetPtCut=56., ptAveCut=68., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 

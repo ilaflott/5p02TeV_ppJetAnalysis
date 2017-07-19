@@ -5,11 +5,9 @@
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;
-const bool fillgenJetQA=true&&fillMCJetQAHists;
-
-const bool fillMCJetIDHists=true;//, tightJetID=false;
-
-const bool fillMCJetSpectraRapHists=true; //other
+const bool fillgenJetQA=false&&fillMCJetQAHists;
+const bool fillMCJetIDHists=false;//, tightJetID=false;
+const bool fillMCJetSpectraRapHists=false; //other
 const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
 
 
@@ -128,10 +126,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL ,*hvzWVz=NULL;
   TH1F *hpthat=NULL, *hWpthat=NULL;  
   if(fillMCEvtQAHists){
-    hVz       = new TH1F("hVz","", 60,-15.,15.);//evtvz
-    hpthatWVz = new TH1F("hpthatWeightedVz","", 60,-15.,15.);//pthat-weighted evtvz
-    hvzWVz    = new TH1F("hvzWeightedVz","", 60,-15.,15.);//vz-weighted evtvz
-    hWVz      = new TH1F("hWeightedVz","", 60,-15.,15.);//pthat*vz-weighted evt vz
+    hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
+    hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
+    hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
+    hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  }
   
@@ -330,15 +328,15 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   UInt_t NEvents_allFiles=NEvents_jetAnalyzr;   // preskim event count from files
   for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
   
-  UInt_t NEvents_read=0;
-  NEvents_read = NEvents_allFiles;
+  UInt_t NEvents_toRead=0;
+  NEvents_toRead = NEvents_allFiles;
   
-  std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
+  std::cout<<"reading "<<NEvents_toRead<<" events"<<std::endl;   
   
   //float jetIDCut_neSum, jetIDCut_phSum;
   //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
   //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
-  for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
+  for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {//event loop   
     
     if( debugMode     &&
         nEvt%1000==0     )std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
@@ -355,10 +353,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	//puvertexFilter_I==0  	) continue;    
     h_NEvents_skimCut->Fill(1);
     
-    if( fabs(vz_F)>15.              ) continue;
+    if( fabs(vz_F)>25.              ) continue;
     h_NEvents_vzCut->Fill(1);
     
-    // compute weights, this way only works because of the previous vz>15. cut
+    // grab vzweight
     float vzWeight=1.;
     float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
     if(doVzWeights){

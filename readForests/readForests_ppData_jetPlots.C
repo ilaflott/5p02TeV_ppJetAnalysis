@@ -7,8 +7,8 @@ const bool fillDataJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool doHLTInEffCheck=false;
-const bool fillDataJetIDHists=true;//, tightJetID=false;
-const bool fillDataJetSpectraRapHists=true; //other
+const bool fillDataJetIDHists=false;//, tightJetID=false;
+const bool fillDataJetSpectraRapHists=false; //other
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -104,6 +104,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   //evt count
   TH1F *h_NEvents         = new TH1F("NEvents"         , "NEvents", 1,0,2);
   TH1F *h_NEvents_read    = new TH1F("NEvents_read"    , "NEvents read", 1,0,2);
+  TH1F *h_NEvents_skipped    = new TH1F("NEvents_skipped"    , "NEvents skipped", 1,0,2);
   TH1F *h_NEvents_skimCut = new TH1F("NEvents_skimCut" , "NEvents read post skimCut", 1,0,2);
   TH1F *h_NEvents_vzCut   = new TH1F("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 1,0,2);
 
@@ -128,8 +129,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   //vz
   TH1F *hVz=NULL, *hWVz=NULL;
   if(fillDataEvtQAHists){
-    hVz = new TH1F("hVz","",  60,-15.,15.); 
-    hWVz = new TH1F("hWeightedVz","",  60,-15.,15.);    }
+    hVz = new TH1F("hVz","",  100,-25.,25.); 
+    hWVz = new TH1F("hWeightedVz","",  100,-25.,25.);    }
   
   
   //jet QA
@@ -412,11 +413,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   UInt_t NEvents_allFiles=NEvents_jetAnalyzr;   // preskim event count from files
   for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
   
-  UInt_t NEvents_read=0;
-  NEvents_read = NEvents_allFiles;
+  UInt_t NEvents_toRead=0;
+  NEvents_toRead = NEvents_allFiles;
   
   UInt_t NEvents_40=0, NEvents_60=0, NEvents_80=0, NEvents_100=0;  //trigger event counts
-  std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;  
+  std::cout<<"reading "<<NEvents_toRead<<" events"<<std::endl;  
   
   int etacutForResid=3;
   if(radius==3)etacutForResid=4;
@@ -436,27 +437,25 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
   
   //begin event loop
-  for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {
+  for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
 
     //grab an entry
     if( debugMode && (nEvt%1000==0) ) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     else if (nEvt%10000==0) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     
 
-    jetpp[0]->GetEntry(nEvt);
-    
-    
-    h_NEvents_read->Fill(1);
-    
-    
     //duplicate skipping between LowerJets and Jet80
     if(filelistIsJet80)
       if( (bool)CaloJet40_I || (bool)CaloJet60_I || (bool)PFJet40_I || (bool)PFJet60_I ) {
 	if(debugMode)std::cout<<"this event is in Jet80 AND LowerJets dataset.!"<<std::endl;
 	if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
+	h_NEvents_skipped->Fill(1);
 	continue; }
     
+    jetpp[0]->GetEntry(nEvt);
+    h_NEvents_read->Fill(1);
     
+       
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0      || 
         pBeamScrapingFilter_I==0   || 
@@ -466,7 +465,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     h_NEvents_skimCut->Fill(1);
     
     
-    if( fabs(vz_F)>15. )     continue;
+    if( fabs(vz_F)>25. )     continue;
     h_NEvents_vzCut->Fill(1);
     
     
@@ -929,6 +928,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
   std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetEntries()<<std::endl;
   
   if(!debugMode){
     std::cout<<"Total Num of Events read passing skimCuts                              = " <<

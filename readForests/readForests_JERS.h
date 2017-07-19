@@ -24,8 +24,9 @@ int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile
 			   float jtEtaCutLo=0., float jtEtaCutHi=5.0      );
 
 //const int readForestsArgCount=7+minArgs;
-const float jtPtCut     = 30.  ;
-const float genJetPtCut = 30. ;
+const float jtPtCut     = 43.  ;
+const float genJetPtCut = jtPtCut ;
+//const float genJetPtCut = 30. ;
 
 const int genptBin1Low = 50 , genptBin1High = 80 ;	 
 const int genptBin2Low = 80 , genptBin2High  = 120 ;

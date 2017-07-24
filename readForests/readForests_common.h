@@ -273,6 +273,9 @@ const bool doVzWeights=false;
 //columns are, in order...
 //semiofficial MC/{HLTAK4CaloJets,HLTAK4PFJets}, official MC/HLTak4CaloJets
 const float vzWeights[]={           
+  //  1.0,
+  //  1.0,
+  1.0, //vz=-24cm
   1.0,
   1.0,
   1.0,
@@ -290,10 +293,7 @@ const float vzWeights[]={
   1.0,
   1.0,
   1.0,
-  1.0,
-  1.0,
-  1.0,
-  0.381083, /*  0.35749,   //for i=1 ,   1.8995   ,   	 */
+  0.381083, /*  0.35749,   //for i=1 ,   1.8995   ,   	 vz=-15cm */
   0.420849, /*  0.400545,  //for i=2 ,   1.89802  ,   	 */
   0.457166, /*  0.433741,  //for i=3 ,   1.75632  ,   	 */
   0.489082, /*  0.469437,  //for i=4 ,   1.72277  ,   	 */
@@ -352,7 +352,7 @@ const float vzWeights[]={
   0.628832, /*  0.597895,  //for i=57,   1.28173  ,   	 */
   0.580118, /*  0.555087,  //for i=58,   1.16107  ,   	 */
   0.550339, /*  0.523324,  //for i=59,   1.07179  ,   	 */
-  0.479087,  /*  0.448861   //for i=60,   1.28413      	 */
+  0.479087,  /*  0.448861   //for i=60,   1.28413      	 vz=15cm */
   1.0,
   1.0,
   1.0,
@@ -370,12 +370,12 @@ const float vzWeights[]={
   1.0,
   1.0,
   1.0,
-  1.0,
-  1.0,
-  1.0
+  1.0//, vz=25cm
+  //  1.0,
+  //  1.0
 };
 const int nbins_vzWeights=sizeof(vzWeights)/sizeof(float);//should be 60
-const float minbinValue_vzWeights=-25., maxbinValue_vzWeights=25.;
+const float minbinValue_vzWeights=-24., maxbinValue_vzWeights=24.;
 const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
 
 

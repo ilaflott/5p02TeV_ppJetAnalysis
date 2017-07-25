@@ -124,13 +124,17 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 					  "NEvents read post evt cuts, w/ jets post kmatCut AND JetID Cut", 1,0,2);
   
   //EvtQA
-  TH1F *hVz=NULL, *hWVz=NULL;
+  TH1F *hVz=NULL, *hWVz=NULL, *hTrgVz_noW=NULL;
   TH1F* hNref=NULL, *hWNref=NULL;
   if(fillDataEvtQAHists){
     hNref = new TH1F("hNref","numJets each evt",20,0,20);
     hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);
-    hVz = new TH1F("hVz","",  100,-25.,25.); 
-    hWVz = new TH1F("hWeightedVz","",  100,-25.,25.);    }
+
+    hVz = new TH1F("hVz","vz, no trig, no weights",  100,-25.,25.); 
+    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  100,-25.,25.);    
+    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);    
+
+  }
   
   
 
@@ -209,10 +213,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
   if(fillDataJetTrigQAHists){
 
-    hpp_HLT40trgPt  = new TH1F( "isHLT40_inEff"  , "isHLT40  inEff Check", 1000, 0,1000 ); 
-    hpp_HLT60trgPt  = new TH1F( "isHLT60_inEff"  , "isHLT60  inEff Check", 1000, 0,1000 ); 
-    hpp_HLT80trgPt  = new TH1F( "isHLT80_inEff"  , "isHLT80  inEff Check", 1000, 0,1000 ); 
-    hpp_HLT100trgPt = new TH1F( "isHLT100_inEff" , "isHLT100 inEff Check", 1000, 0,1000 );       
+    hpp_HLT40trgPt  = new TH1F( "isHLT40_trgPt"  , "trgPt for HLT40   ", 1000, 0, 1000 ); 
+    hpp_HLT60trgPt  = new TH1F( "isHLT60_trgPt"  , "trgPt for HLT60   ", 1000, 0, 1000 ); 
+    hpp_HLT80trgPt  = new TH1F( "isHLT80_trgPt"  , "trgPt for HLT80   ", 1000, 0, 1000 ); 
+    hpp_HLT100trgPt = new TH1F( "isHLT100_trgPt" , "trgPt for HLT100  ", 1000, 0, 1000 );       
+    hpp_HLT100trgPt = new TH1F( "HLTComb_trgPt"  , "trgPt for HLTComb ", 1000, 0, 1000 );       
 
     hpp_HLT40InEff  = new TH1F( "isHLT40_inEff"  , "isHLT40  inEff Check", 1000, 0,1000 ); 
     hpp_HLT60InEff  = new TH1F( "isHLT60_inEff"  , "isHLT60  inEff Check", 1000, 0,1000 ); 
@@ -460,6 +465,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     //grab an entry
     if( debugMode && (nEvt%1000==0) ) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     else if (nEvt%10000==0) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
+    jetpp[0]->GetEntry(nEvt);
     
 
     //duplicate skipping between LowerJets and Jet80
@@ -470,7 +476,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	h_NEvents_skipped->Fill(1);
 	continue; }
     
-    jetpp[0]->GetEntry(nEvt);
     h_NEvents_read->Fill(1);
     
     
@@ -553,8 +558,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       else if(is40  && !L1trgDec[0])   hpp_HLT40InEff->Fill((float)trgPt,weight_eS);    
     }
 
-    if(weight_eS!=0.) h_NEvents_trigd->Fill(1);
-    else continue;
+    if(weight_eS!=0.) h_NEvents_trigd->Fill(1); //this will be # of triggered events w/o weights pre vz/skim cuts
+    //    else continue;
 
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0      || 
@@ -569,11 +574,14 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     // fill evt vz histo
     if(fillDataEvtQAHists){
-      hVz->Fill(vz_F, 1.0);    
-      hWVz->Fill(vz_F, weight_eS);    
-      hNref->Fill(nref_I,1.0);
-      hWNref->Fill(nref_I,weight_eS);    }
+      hVz->Fill(vz_F, 1.0);   //this will be # of events post cuts, no trigger, no weights, post skim/vz Cut 
+      hWVz->Fill(vz_F, weight_eS);    //this will be # of trigger events w/ weights, post skim/vz Cut
+      if(weight_eS!=0.)hTrgVz_noW->Fill(vz_F,1.0); //this will be # of trigger events w/o weights post-skim/vz Cut
+      hNref->Fill(nref_I,1.0);   //# of jets per event, no trigger, no weights, post cuts
+      hWNref->Fill(nref_I,weight_eS); //# of jets per event, triggered, weighted, post cuts
+    }
     
+    if(weight_eS==0.)continue;
 
     // JET LOOP 
     // for Aj/xj computation

@@ -374,7 +374,7 @@ const float vzWeights[]={
   //  1.0,
   //  1.0
 };
-const int nbins_vzWeights=sizeof(vzWeights)/sizeof(float);//should be 60
+const int nbins_vzWeights=sizeof(vzWeights)/sizeof(float);//should be 96
 const float minbinValue_vzWeights=-24., maxbinValue_vzWeights=24.;
 const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbins_vzWeights;//should be 0.5
 

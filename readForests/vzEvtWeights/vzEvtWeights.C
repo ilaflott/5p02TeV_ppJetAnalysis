@@ -107,7 +107,7 @@ int main (int argc, char *argv[]){
   theMCEvtQAHist->Scale( 1/theMCEvtQAHist->GetBinWidth(0) );
   theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );
   
-  TH1F *theRatio=theDataEvtQAHist;
+  TH1F *theRatio=(TH1F*)theDataEvtQAHist->Clone("theDataHistClone");
   theRatio->Divide(theMCEvtQAHist);
   //theRatio->Draw();  
   //theRatio->SetLineColor( altRatioLineColor1 );
@@ -124,7 +124,9 @@ int main (int argc, char *argv[]){
   std::cout<<"now grabbing vzWeights for "<<NvzWeightBins<<" bins for ( "<<xLow<<"< vz <"<<xHigh<<" )"<<std::endl;
   for (int i=0;i<NvzWeightBins;++i){//binsX loop
 
-    Float_t vzWeight = theRatio->TH1::GetBinContent(i+1);    //TH1 bin counting starts at i=1?! why?!
+    Float_t vzWeight = theRatio->TH1::GetBinContent(i+3);    //TH1 bin counting starts at i=1?! why?!
+    if(theDataEvtQAHist->GetBinContent(i+3)<=0.)
+      std::cout<<"warning! bin content in data hist zero (numerator)"<<std::endl;
     if(i%5==0)
       
       std::cout<<"i=="<<i<<", vzWeight="<<vzWeight <<" , vzLow="<<xLow<<std::endl;

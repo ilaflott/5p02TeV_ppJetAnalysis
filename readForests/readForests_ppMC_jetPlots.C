@@ -5,10 +5,10 @@
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;
-const bool fillMCJetIDHists=false;//, tightJetID=false;
+const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 const bool fillgenJetQA=false&&fillMCJetQAHists;
-const bool fillMCJetSpectraRapHists=false; //other
+const bool fillMCJetSpectraRapHists=true; //other
 const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
 
 //// readForests_ppMC_jetPlots
@@ -125,10 +125,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1F *hpthat=NULL, *hWpthat=NULL;  
   TH1F* hNref=NULL, *hWNref=NULL;
   if(fillMCEvtQAHists){
-    hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
-    hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
-    hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
-    hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz
+    hVz       = new TH1F("hVz","", 96,-24.,24.);//evtvz
+    hpthatWVz = new TH1F("hpthatWeightedVz","", 96,-24.,24.);//pthat-weighted evtvz
+    hvzWVz    = new TH1F("hvzWeightedVz","", 96,-24.,24.);//vz-weighted evtvz
+    hWVz      = new TH1F("hWeightedVz","", 96,-24.,24.);//pthat*vz-weighted evt vz
 
     hNref = new TH1F("hNref","numJets each evt",20,0,20);
     hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);

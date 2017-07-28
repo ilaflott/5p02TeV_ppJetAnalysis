@@ -354,14 +354,14 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       // title+axes
       std::string h_Title     ="EvtQA";
       std::string h_XAx_Title ="v_{z}^{evt} (cm)";
-      std::string h_YAx_Title =crossSectionYAxis;
+      std::string h_YAx_Title ="A.U.";//crossSectionYAxis;
       theDataEvtQAHist->SetTitle (    h_Title.c_str() );
       theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
       //theDataEvtQAHist->SetAxisRange(0.0,2.0, "Y");  
       
-      theDataEvtQAHist->Draw();
-      theMCEvtQAHist->Draw("same");	
+      theDataEvtQAHist->Draw("E");
+      theMCEvtQAHist->Draw("E same");	
           
       
       // legend
@@ -442,7 +442,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theRatio->SetXTitle( h_XAx_Title.c_str() );
       theRatio->SetYTitle("Data/MC");
       theRatio->Divide(theMCEvtQAHist);
-      theRatio->Draw("h");
+      theRatio->Draw("E");
       
 	
       // print to PDF file

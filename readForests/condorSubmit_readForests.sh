@@ -169,14 +169,14 @@ Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
 transfer_input_files = ${filelist},${readForestsExe},JECDataDriven.tar.gz
 when_to_transfer_output = ON_EXIT
+match_list_length = 5
 Queue
 EOF
     
     ## submit the job defined in the above submit file
     echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-#    sleep 1.0s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
-    sleep 0.5s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 1.0s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

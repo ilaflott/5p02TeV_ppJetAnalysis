@@ -4,11 +4,12 @@
 // ppData switches
 const bool fillDataEvtQAHists=true;
 const bool fillDataJetQAHists=true;
-const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots
-const bool fillDataJetIDHists=false;//, tightJetID=false;
+const bool fillDataDijetHists=false;
+//const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots
+const bool fillDataJetIDHists=true;//, tightJetID=false;
 
 const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetSpectraRapHists=false; //other
+const bool fillDataJetSpectraRapHists=true; //other
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -130,10 +131,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   if(fillDataEvtQAHists){
     hNref = new TH1F("hNref","numJets each evt",20,0,20);
     hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);
-
-    hVz = new TH1F("hVz","vz, no trig, no weights",  100,-25.,25.); 
-    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  100,-25.,25.);    
-    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);    
+    
+    hVz = new TH1F("hVz","vz, no trig, no weights",  96,-24.,24.); 
+    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  96,-24.,24.);    
+    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  96,-24.,24.);    
 
   }
   
@@ -170,9 +171,9 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 100,0,100);         
 
 	//dijets
-	else if(var[j]=="dphi") 
+	else if(var[j]=="dphi"&&fillDataDijetHists) 
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 50,0,+4);
-	else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt") 
+	else if((var[j]=="leadJetPt"||var[j]=="subleadJetPt")&&fillDataDijetHists)
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 1000,0,1000);
 
 	//consituent + xj and Aj binnings
@@ -624,14 +625,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       //// TEMP 10.12.16////
       // kmatCuts      
       if( recpt <= jtPtCut ) continue;     
-      else if( absreceta >= jtEtaCutHi ) continue;
-      else if( absreceta < jtEtaCutLo ) continue;
-
-      // jet/event counts
-      h_NJets_kmatCut->Fill(1);
-      if(!hNEvts_withJets_kmatCut_Filled){
-	h_NEvents_withJets_kmatCut->Fill(1);
-	hNEvts_withJets_kmatCut_Filled=true;  }      
       
       float rawpt  = rawpt_F[jet];
       //float recy   = y_F[jet];
@@ -662,15 +655,15 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  }		  
 	else if( absreceta<=3.0 && absreceta>2.7 ) 
 	  {                                                         // CMSSW [76,80]X criterion
-	    if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
-		 neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
-		 neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+	    if(  true && //phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
+		 true && //neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+		 numConst            > 0       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
 	  }							      
 	else //( absreceta>3.0) 
 	  {                                                          // CMSSW 76X criterion
-	    if( ( phSum_F[jet]/rawpt > 0.00 ||                         // else if( phSum_F[jet]/rawpt < 0.90 &&
-		  neSum_F[jet]/rawpt > 0.00 ) &&                         //          neSum_F[jet]/rawpt < null &&
-		neuMult            > 0          ) passesJetID=true;     //          neuMult            > 10
+	    if( true && //( phSum_F[jet]/rawpt > 0.                      // else if( phSum_F[jet]/rawpt < 0.90 &&
+		true && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
+		numConst            > 0          ) passesJetID=true;     //          neuMult            > 10
 	  }	  	  
       }
       
@@ -680,8 +673,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
 	  if( absetabins[rapbin]<=absreceta  && 		
 	      absreceta<absetabins[rapbin+1]    	      ) {
+
 	    theRapBin=rapbin;
-	    
 	    hJetSpectraRap[0][theRapBin]->Fill(recpt,weight_eS);  
 	    if( passesJetID ) 
 	      hJetSpectraRap[1][theRapBin]->Fill(recpt,weight_eS);    
@@ -690,6 +683,17 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  } 
       }
       
+
+
+      if( absreceta >= jtEtaCutHi ) continue;
+      else if( absreceta < jtEtaCutLo ) continue;
+      
+      // jet/event counts
+      h_NJets_kmatCut->Fill(1);
+      if(!hNEvts_withJets_kmatCut_Filled){
+	h_NEvents_withJets_kmatCut->Fill(1);
+	hNEvts_withJets_kmatCut_Filled=true;  }      
+
       
       // trig plots
       //assert(false);
@@ -758,7 +762,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	}
 	
 	//looking for the first two good jets that meet the criteria specified
-	if(!fillBasicJetPlotsOnly){
+	if(fillDataDijetHists){
 	  if ( !firstGoodJetFound ){
 	    if(recpt>ldJetPtCut) { firstGoodJetFound=true;
 	      firstGoodJetPt =recpt; 
@@ -866,7 +870,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  }
 	  
 	  //looking for the first two good jets that meet the criteria specified
-	  if(!fillBasicJetPlotsOnly){
+	  if(fillDataDijetHists){
 	    if ( !firstGoodJetFound_wJetID ){
 	      if(recpt>ldJetPtCut) { firstGoodJetFound_wJetID=true;
 		firstGoodJetPt_wJetID =recpt; 

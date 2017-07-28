@@ -4,7 +4,8 @@
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
-const bool fillBasicJetPlotsOnly=false;
+//const bool fillBasicJetPlotsOnly=false;
+const bool fillMCDijetHists=false;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 const bool fillgenJetQA=false&&fillMCJetQAHists;
@@ -176,9 +177,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
           hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 100,0,100);
 
         //dijets
-        else if(var[j]=="dphi")
+        else if(var[j]=="dphi"&&fillMCDijetHists)
           hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 50,0,+4);
-        else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt")
+        else if((var[j]=="leadJetPt"||var[j]=="subleadJetPt")&&fillMCDijetHists)
           hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 1000,0,1000);
 
         //consituent + xj and Aj binnings
@@ -582,7 +583,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	}
 	
 	//looking for the first two good jets that meet the criteria specified
-	if(!fillBasicJetPlotsOnly){
+	if(fillMCDijetHists){
 
 	  if ( !firstGoodJetFound ){
 	    if(recpt>ldJetPtCut) { firstGoodJetFound=true;
@@ -689,7 +690,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	  
 	  
 	  //looking for the first two good jets that meet the criteria specified
-	  if(!fillBasicJetPlotsOnly){
+	  if(!fillMCDijetHists){
 	    if ( !firstGoodJetFound_wJetID ){
 	    if(recpt>ldJetPtCut) { firstGoodJetFound_wJetID=true;
 	      firstGoodJetPt_wJetID =recpt; 

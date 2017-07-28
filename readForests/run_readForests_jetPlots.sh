@@ -13,11 +13,11 @@ echo ""
 echo "submitting jet80/lowerJets ppData job(s)"
 echo ""
 
-source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0  0.0  0.5
-source askCondor.sh 2 10
-sleep 60s
-#source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 5 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0  0.0  0.5
-#source askCondor.sh 2 10
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 7 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0  0.0  0.5
+source askCondor.sh 3 60
+#sleep 60s
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 5 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0  0.0  0.5
+source askCondor.sh 3 60
 #sleep 60s													                      
 
 ###### semiOfficial Py8

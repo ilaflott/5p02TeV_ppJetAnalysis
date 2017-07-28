@@ -40,8 +40,9 @@ const int theTrigOverlayMarker[]     ={ 20, 20, 20, 20, 20, 32 };
 
 
 // misc ------------------------
-const std::string crossSectionYAxis="#sigma (#mub)";
-
+const std::string crossSectionAxTitle="#sigma (#mub)";
+const std::string AUAxTitle="A.U.";
+const std::string ratioTitle="MC/Data";
 
 // the macro ------------------------
 int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::string input_ppMC_condorDir , 
@@ -336,7 +337,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(1) );
       theDataEvtQAHist->Scale( 1./theLumi );
       theDataEvtQAHist->SetMarkerStyle(kCircle);
-      theDataEvtQAHist->SetMarkerSize(0.99);
+      theDataEvtQAHist->SetMarkerSize(0.90);
       theDataEvtQAHist->SetMarkerColor( theDataOverlayMarkerColor );
       theDataEvtQAHist->SetLineColor( theDataOverlayLineColor );
       
@@ -347,14 +348,14 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(1) );
       theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );	
       theMCEvtQAHist->SetMarkerStyle(kMultiply);
-      theMCEvtQAHist->SetMarkerSize(0.99);
+      theMCEvtQAHist->SetMarkerSize(0.90);
       theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
       theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
       
       // title+axes
       std::string h_Title     ="EvtQA";
       std::string h_XAx_Title ="v_{z}^{evt} (cm)";
-      std::string h_YAx_Title ="A.U.";//crossSectionYAxis;
+      std::string h_YAx_Title ="A.U.";//crossSectionAxTitle;
       theDataEvtQAHist->SetTitle (    h_Title.c_str() );
       theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
@@ -423,7 +424,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       evtpad2->cd();
       //hist for ratio; use clone
       
-      TH1F *theRatio=(TH1F*)theDataEvtQAHist->Clone("DataVzClone4Ratio");
+      //TH1F *theRatio=(TH1F*)theDataEvtQAHist->Clone("DataVzClone4Ratio");
+      TH1F *theRatio=(TH1F*)theMCEvtQAHist->Clone("MCVzClone4Ratio");
       evtpad2->SetTopMargin(0);
       evtpad2->SetBottomMargin(0.3);
       
@@ -440,8 +442,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       
       theRatio->SetTitle("");
       theRatio->SetXTitle( h_XAx_Title.c_str() );
-      theRatio->SetYTitle("Data/MC");
-      theRatio->Divide(theMCEvtQAHist);
+      theRatio->SetYTitle( ratioTitle.c_str() );
+      theRatio->Divide(theDataEvtQAHist);
       theRatio->Draw("E");
       
 	
@@ -474,7 +476,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(1) );
       theDataEvtQAHist->Scale( 1./theLumi );
       theDataEvtQAHist->SetMarkerStyle(kCircle);
-      theDataEvtQAHist->SetMarkerSize(0.99);
+      theDataEvtQAHist->SetMarkerSize(0.90);
       theDataEvtQAHist->SetMarkerColor( theDataOverlayMarkerColor );
       theDataEvtQAHist->SetLineColor( theDataOverlayLineColor );
       
@@ -492,21 +494,21 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(1) );
       theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );	
       theMCEvtQAHist->SetMarkerStyle(kMultiply);
-      theMCEvtQAHist->SetMarkerSize(0.99);
+      theMCEvtQAHist->SetMarkerSize(0.90);
       theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
       theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
       
       // title+axes
       std::string h_Title     ="EvtQA";
       std::string h_XAx_Title ="v_{z}^{evt} (cm)";
-      std::string h_YAx_Title =crossSectionYAxis;
+      std::string h_YAx_Title ="A.U.";//crossSectionAxTitle;
       theDataEvtQAHist->SetTitle (    h_Title.c_str() );
       theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
       //theDataEvtQAHist->SetAxisRange(0.0,2.0, "Y");  
       
-      theDataEvtQAHist->Draw();	
-      theMCEvtQAHist->Draw("same");
+      theDataEvtQAHist->Draw("E");	
+      theMCEvtQAHist->Draw("E same");
       
       
       // legend
@@ -587,7 +589,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theRatio->SetXTitle( h_XAx_Title.c_str() );
       theRatio->SetYTitle("Data/MC");
       theRatio->Divide(theMCEvtQAHist);
-      theRatio->Draw("h");
+      theRatio->Draw("E");
       
     	
       // print to PDF file
@@ -617,7 +619,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(1) );
       theDataEvtQAHist->Scale( 1./theLumi );
       theDataEvtQAHist->SetMarkerStyle(kCircle);
-      theDataEvtQAHist->SetMarkerSize(0.99);
+      theDataEvtQAHist->SetMarkerSize(0.90);
       theDataEvtQAHist->SetMarkerColor( theDataOverlayMarkerColor );
       theDataEvtQAHist->SetLineColor( theDataOverlayLineColor );
       
@@ -635,21 +637,21 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(1) );
       theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );	
       theMCEvtQAHist->SetMarkerStyle(kMultiply);
-      theMCEvtQAHist->SetMarkerSize(0.99);
+      theMCEvtQAHist->SetMarkerSize(0.90);
       theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
       theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
       
       // title+axes
       std::string h_Title     ="EvtQA";
       std::string h_XAx_Title ="v_{z}^{evt} (cm)";
-      std::string h_YAx_Title =crossSectionYAxis;
+      std::string h_YAx_Title =AUAxTitle;
       theDataEvtQAHist->SetTitle (    h_Title.c_str() );
       theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
       //theDataEvtQAHist->SetAxisRange(0.0,2.0, "Y");  
       
-      theDataEvtQAHist->Draw();	
-      theMCEvtQAHist->Draw("same");
+      theDataEvtQAHist->Draw("E");	
+      theMCEvtQAHist->Draw("E same");
       
       
       // legend
@@ -730,7 +732,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theRatio->SetXTitle( h_XAx_Title.c_str() );
       theRatio->SetYTitle("Data/MC");
       theRatio->Divide(theMCEvtQAHist);
-      theRatio->Draw("h");
+      theRatio->Draw("E");
       
     	
       // print to PDF file
@@ -764,7 +766,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       //theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(1) );
       theDataEvtQAHist->Scale( 1./theLumi );
       theDataEvtQAHist->SetMarkerStyle(kCircle);
-      theDataEvtQAHist->SetMarkerSize(0.99);
+      theDataEvtQAHist->SetMarkerSize(0.90);
       theDataEvtQAHist->SetMarkerColor( theDataOverlayMarkerColor );
       theDataEvtQAHist->SetLineColor( theDataOverlayLineColor );
       
@@ -782,21 +784,21 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       //theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(1) );
       theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );	
       theMCEvtQAHist->SetMarkerStyle(kMultiply);
-      theMCEvtQAHist->SetMarkerSize(0.99);
+      theMCEvtQAHist->SetMarkerSize(0.90);
       theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
       theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
       
       // title+axes
       std::string h_Title     ="EvtQA";
       std::string h_XAx_Title ="N_{jets}/{evt}";
-      std::string h_YAx_Title =crossSectionYAxis;
+      std::string h_YAx_Title =AUAxTitle;
       theDataEvtQAHist->SetTitle (    h_Title.c_str() );
       theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
       //theDataEvtQAHist->SetAxisRange(0.0,2.0, "Y");  
       
-      theDataEvtQAHist->Draw();	
-      theMCEvtQAHist->Draw("same");
+      theDataEvtQAHist->Draw("E");	
+      theMCEvtQAHist->Draw("E same");
       
       
       // legend
@@ -875,7 +877,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theRatio->SetYTitle("Data/MC");
       theRatio->Divide(theMCEvtQAHist);
       theRatio->SetAxisRange(0.0, 2.0, "Y");
-      theRatio->Draw("h");
+      theRatio->Draw("E");
       
     	
       // print to PDF file
@@ -910,7 +912,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       //theDataEvtQAHist->Scale( 1./theDataEvtQAHist->GetBinWidth(1) );
       theDataEvtQAHist->Scale( 1./theLumi );
       theDataEvtQAHist->SetMarkerStyle(kCircle);
-      theDataEvtQAHist->SetMarkerSize(0.99);
+      theDataEvtQAHist->SetMarkerSize(0.90);
       theDataEvtQAHist->SetMarkerColor( theDataOverlayMarkerColor );
       theDataEvtQAHist->SetLineColor( theDataOverlayLineColor );
       
@@ -928,21 +930,21 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       //theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(1) );
       theMCEvtQAHist->Scale( theDataEvtQAHist->Integral()/theMCEvtQAHist->Integral() );	
       theMCEvtQAHist->SetMarkerStyle(kMultiply);
-      theMCEvtQAHist->SetMarkerSize(0.99);
+      theMCEvtQAHist->SetMarkerSize(0.90);
       theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
       theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
       
       // title+axes
       std::string h_Title     ="EvtQA";
       std::string h_XAx_Title ="N_{jets}/{evt}";
-      std::string h_YAx_Title =crossSectionYAxis;
+      std::string h_YAx_Title =AUAxTitle;
       theDataEvtQAHist->SetTitle (    h_Title.c_str() );
       theDataEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theDataEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
       //theDataEvtQAHist->SetAxisRange(0.0,2.0, "Y");  
       
-      theDataEvtQAHist->Draw();	
-      theMCEvtQAHist->Draw("same");
+      theDataEvtQAHist->Draw("E");	
+      theMCEvtQAHist->Draw("E same");
       
       
       // legend
@@ -1024,7 +1026,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theRatio->SetYTitle("Data/MC");
       theRatio->Divide(theMCEvtQAHist);
       theRatio->SetAxisRange(0.0, 2.0, "Y");
-      theRatio->Draw("h");
+      theRatio->Draw("E");
       
     	
       // print to PDF file
@@ -1056,7 +1058,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theMCEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
       
-      theMCEvtQAHist->Draw();
+      theMCEvtQAHist->Draw("E");
       
       // test
       float t1x=.65,t1y=.81;
@@ -1090,21 +1092,21 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       
       theMCEvtQAHist->Scale( 1./theMCEvtQAHist->GetBinWidth(1) );
       theMCEvtQAHist->SetMarkerStyle(kDot);
-      theMCEvtQAHist->SetMarkerSize(0.99);
+      theMCEvtQAHist->SetMarkerSize(0.95);
       theMCEvtQAHist->SetMarkerColor( theMCOverlayMarkerColor );
       theMCEvtQAHist->SetLineColor( theMCOverlayLineColor );
       
       // title+axzes
       std::string h_Title    ="MC EvtQA" ;
       std::string h_XAx_Title="MC evt #hat{p}_{t} (GeV)"                ;
-      std::string h_YAx_Title=crossSectionYAxis;//"#sigma (#mub/bin)"             ;
+      std::string h_YAx_Title=AUAxTitle;//"#sigma (#mub/bin)"             ;
       
       theMCEvtQAHist->SetTitle (    h_Title.c_str() );
       theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
       theMCEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
       //theMCEvtQAHist->SetYTitle( "#frac{d\sigma}{dp_t} (\{mu}b/bin)" );
 	
-      theMCEvtQAHist->Draw();
+      theMCEvtQAHist->Draw("E");
       
       // text
       float t1x=.65,t1y=.81;
@@ -1287,7 +1289,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       theMCJetQAHist->SetLineColor( theMCOverlayLineColor );
       
       
-      std::string h_XAx_Title=var_xAx_Titles[j], h_YAx_Title=crossSectionYAxis;//"#sigma (#mub/bin)";
+      std::string h_XAx_Title=var_xAx_Titles[j], h_YAx_Title=crossSectionAxTitle;//"#sigma (#mub/bin)";
       if(debugMode)std::cout<<" x-axis title= "<<h_XAx_Title<<std::endl<<std::endl;
       
       std::string h_Title="JetQA";//, "+var[j];
@@ -1319,8 +1321,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	jetpad1->Draw();
 	jetpad1->cd();
 
-	theMCJetQAHist->Draw(); 
-	theDataJetQAHist->Draw("same");  
+	theMCJetQAHist->Draw("E"); 
+	theDataJetQAHist->Draw("E same");  
 	
 	//float t1Loc1=0.73, t1Loc2=0.68; 	    
 	float t1Loc1=0.54, t1Loc2=0.82;
@@ -1357,7 +1359,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	TH1F* theRatio=(TH1F*)theDataJetQAHist->Clone("dataJetHistClone4Ratio");
 	
 	//theRatio->SetMarkerStyle( kFullCross );
-	theRatio->SetMarkerSize(0.90 );
+	theRatio->SetMarkerSize(0.99 );
 	theRatio->SetMarkerColor( kRed );
 	theRatio->SetLineColor( theRatioLineColor );
 	
@@ -1406,8 +1408,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  jetpad1->Draw();
 	  jetpad1->cd();
 
-	  theDataJetQAHist->Draw(); 
-	  theMCJetQAHist->Draw("SAME"); 
+	  theDataJetQAHist->Draw("E"); 
+	  theMCJetQAHist->Draw("E SAME"); 
 
 	  float t1Loc1=0.54, t1Loc2=0.82;
 	  //float t1Loc1=0.50, t1Loc2=0.72; 	    
@@ -1462,7 +1464,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  theRatio->SetXTitle( h_XAx_Title.c_str() );
 	  theRatio->SetYTitle("Data/MC");
 	  theRatio->Divide(theMCJetQAHist);
-	  theRatio->Draw("h");
+	  theRatio->Draw("E");
 	  
 	  TLine* lineAtOne          = new TLine(jetQAxmin[j],1.0,jetQAxmax[j],1.0); 
 	  lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
@@ -1486,8 +1488,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  jetpad_noLog1->SetBottomMargin(0);
 	  jetpad_noLog1->Draw();
 	  jetpad_noLog1->cd();
-	  theDataJetQAHist->Draw(); 
-	  theMCJetQAHist->Draw("SAME"); 
+	  theDataJetQAHist->Draw("E"); 
+	  theMCJetQAHist->Draw("E SAME"); 
 	  
 	  float t1Loc1=0.15, t1Loc2=0.7; 	    	  
 	  if(var[j]=="Aj") t1Loc1=.7;
@@ -1566,7 +1568,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  theRatio->SetXTitle( h_XAx_Title.c_str() );
 	  theRatio->SetYTitle("Data/MC");
 	  theRatio->Divide(theMCJetQAHist);
-	  theRatio->Draw();
+	  theRatio->Draw("E");
 	  
 	  TLine* lineAtOne          = new TLine(jetQAxmin[j],1.0,jetQAxmax[j],1.0); 
 	  lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
@@ -1586,8 +1588,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  temp_canvJet->cd(0);
 	  jetpad1->Draw();
 	  jetpad1->cd();
-	  theDataJetQAHist->Draw(); 
-	  theMCJetQAHist->Draw("SAME"); 
+	  theDataJetQAHist->Draw("E"); 
+	  theMCJetQAHist->Draw("E SAME"); 
 
 	  float t1Loc1=0.7, t1Loc2=0.72; 	    	  
 	  TLatex *t1=new TLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());
@@ -1658,7 +1660,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  theRatio->SetYTitle( "Data/MC" );
 	  
 	  theRatio->Divide(theMCJetQAHist);
-	  theRatio->Draw("h");
+	  theRatio->Draw("E");
 	  
 	  TLine* lineAtOne          = new TLine(jetQAxmin[j],1.0,jetQAxmax[j],1.0); 
 	  lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
@@ -1829,7 +1831,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	theJetSpectraRapHist->Scale( power );
 	
 	theJetSpectraRapHist->SetMarkerStyle( kCircle ) ;//theRapOverlayMarker[j]);
-	theJetSpectraRapHist->SetMarkerSize(0.99);
+	theJetSpectraRapHist->SetMarkerSize(0.90);
 	theJetSpectraRapHist->SetMarkerColor( theRapOverlayMarkerColor[rapbin] );
 	theJetSpectraRapHist->SetLineColor( kBlack );//theRapOverlayLineColor[j]   );
 	theJetSpectraRapHist->SetAxisRange(0.,800.,"X");
@@ -1844,7 +1846,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	//theMCJetSpectraRapHist->Scale( theJetSpectraRapHist->Integral()/theMCJetSpectraRapHist->Integral() );
 	//
 	//theMCJetSpectraRapHist->SetMarkerStyle( 27 ) ;//theRapOverlayMarker[j]);
-	//theMCJetSpectraRapHist->SetMarkerSize(0.99);
+	//theMCJetSpectraRapHist->SetMarkerSize(0.90);
 	//theMCJetSpectraRapHist->SetMarkerColor( theRapOverlayMarkerColor[rapbin] );
 	//theMCJetSpectraRapHist->SetLineColor( -1 );//theRapOverlayLineColor[j]   );
 	////theJetSpectraRapHist->SetAxisRange(0.,800.,"X");	 
@@ -1862,16 +1864,16 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  if(doJetIDPlots) h_Title+=", w/ JetIDCut";
 	  theJetSpectraRapHist->SetTitle (    h_Title.c_str() );
 
-	  std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title=crossSectionYAxis;
+	  std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title=crossSectionAxTitle;
 	  theJetSpectraRapHist->SetXTitle( h_XAx_Title.c_str() );
 	  theJetSpectraRapHist->SetYTitle( h_YAx_Title.c_str() );
 	  theJetSpectraRapHist->SetAxisRange(std::pow(10.,-9.3),std::pow(10.,5.),"Y");
 	  theJetSpectraRapHist->SetAxisRange(10.,800.,"X");
 
-	  theJetSpectraRapHist->Draw();     	  
+	  theJetSpectraRapHist->Draw("E");     	  
 	  theJetRapHistLeg->Draw(); }
 	else { 
-	  theJetSpectraRapHist->Draw("SAME");}
+	  theJetSpectraRapHist->Draw("E SAME");}
 	power/=10.;	
       }//end rapbin hist loop
     
@@ -1955,7 +1957,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	theJetTrigQAHist->Scale( 1./4.);//eta bin width
 
 	theJetTrigQAHist->SetMarkerStyle(theTrigOverlayMarker[j]);
-	theJetTrigQAHist->SetMarkerSize(0.99);
+	theJetTrigQAHist->SetMarkerSize(0.90);
 	theJetTrigQAHist->SetMarkerColor( theTrigOverlayMarkerColor[j] );
 	theJetTrigQAHist->SetLineColor(   theTrigOverlayLineColor[j]   );
 	
@@ -1967,14 +1969,14 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  //else h_Title+=", no JetIDCut";
 	  theJetTrigQAHist->SetTitle (    h_Title.c_str() );
 
-	  std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title=crossSectionYAxis;
+	  std::string h_XAx_Title="reco JetPt (GeV)", h_YAx_Title=crossSectionAxTitle;
 	  theJetTrigQAHist->SetAxisRange(0.,1000.,"X");
 	  theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
 	  theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
 
-	  theJetTrigQAHist->Draw(); 	    	}
+	  theJetTrigQAHist->Draw("E"); 	    	}
 	else 
-	  theJetTrigQAHist->Draw("SAME");   	    
+	  theJetTrigQAHist->Draw("E SAME");   	    
 	
       }//end loop over trigs
       JetTrigLegend->Draw();
@@ -2004,7 +2006,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  ->TH1::Rebin(jetTrigQABinning/2);
 	
 	theRatio->SetMarkerStyle(theTrigOverlayMarker[j]);
-	theRatio->SetMarkerSize(0.99);
+	theRatio->SetMarkerSize(0.90);
 	theRatio->SetMarkerColor( theTrigOverlayMarkerColor[j] );
 	theRatio->SetLineColor( theTrigOverlayLineColor[j] );	
 
@@ -2023,9 +2025,9 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	  theRatio->SetAxisRange(0.,2.,"Y");
 	  theRatio->SetXTitle( h_XAx_Title.c_str() );
 	  theRatio->SetYTitle( h_YAx_Title.c_str() );
-	  theRatio->Draw(); }	
+	  theRatio->Draw("E"); }	
 	else 
-	  theRatio->Draw("SAME");
+	  theRatio->Draw("E SAME");
       }      
 
       JetTrigRatioLegend->Draw();

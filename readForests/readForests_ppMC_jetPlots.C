@@ -5,7 +5,7 @@
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
 const bool fillBasicJetPlotsOnly=false;
-const bool fillMCJetIDHists=true;//, tightJetID=false;
+const bool fillMCJetIDHists=false;//, tightJetID=false;
 
 const bool fillgenJetQA=false&&fillMCJetQAHists;
 const bool fillMCJetSpectraRapHists=false; //other
@@ -129,8 +129,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
     hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
     hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz
+
     hNref = new TH1F("hNref","numJets each evt",20,0,20);
     hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);
+
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  }
   
@@ -361,10 +363,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     if( pHBHENoiseFilter_I==0     || 
         pBeamScrapingFilter_I==0  || 
         pprimaryvertexFilter_I==0 )continue;
-	//||
-	//puvertexFilter_I==0  	) continue;    
+    //||
+    //puvertexFilter_I==0  	) continue;    
+
     h_NEvents_skimCut->Fill(1);
     
+
     if( fabs(vz_F)>24.              ) continue;
     h_NEvents_vzCut->Fill(1);
     

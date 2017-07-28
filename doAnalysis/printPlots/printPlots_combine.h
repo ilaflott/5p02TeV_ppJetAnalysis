@@ -57,10 +57,9 @@ const std::string CMSSW_BASE=
 const std::string SCRATCH_BASE=
   "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/";
 
-const std::string inputDir=SCRATCH_BASE+"readForests/7.21.17_outputCondor/";
-//const std::string inputDir=SCRATCH_BASE+"readForests/6.07.17_outputCondor/";
 //const std::string inputDir=CMSSW_BASE+"readForests/outputCondor/";
-
+//const std::string inputDir=SCRATCH_BASE+"readForests/6.07.17_outputCondor/";
+const std::string inputDir=SCRATCH_BASE+"readForests/7.25.17_outputCondor/";
 const std::string outputDir=CMSSW_BASE+"doAnalysis/printPlots/output/";
 
 

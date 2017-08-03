@@ -3,14 +3,14 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true;
-const bool fillMCJetQAHists=true;
+const bool fillMCJetQAHists=false;
 //const bool fillBasicJetPlotsOnly=false;
 const bool fillMCDijetHists=false;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 const bool fillgenJetQA=false&&fillMCJetQAHists;
 const bool fillMCJetSpectraRapHists=true; //other
-const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
+const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
 
 //// readForests_ppMC_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -126,10 +126,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1F *hpthat=NULL, *hWpthat=NULL;  
   TH1F* hNref=NULL, *hWNref=NULL;
   if(fillMCEvtQAHists){
-    hVz       = new TH1F("hVz","", 96,-24.,24.);//evtvz
-    hpthatWVz = new TH1F("hpthatWeightedVz","", 96,-24.,24.);//pthat-weighted evtvz
-    hvzWVz    = new TH1F("hvzWeightedVz","", 96,-24.,24.);//vz-weighted evtvz
-    hWVz      = new TH1F("hWeightedVz","", 96,-24.,24.);//pthat*vz-weighted evt vz
+    hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
+    hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
+    hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
+    hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz
 
     hNref = new TH1F("hNref","numJets each evt",20,0,20);
     hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);
@@ -478,17 +478,17 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	  }		  
 	else if( absreceta<=3.0 && absreceta>2.7 ) 
 	  {                                                         // CMSSW [76,80]X criterion
-	    if(  phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
-		 neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
-		 neuMult            > 1       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+	    if(  true && //phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
+		 true && //neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+		 numConst            > 0       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
 	  }							      
 	else //( absreceta>3.0) 
-	  {                                                                         //CMSSW 76X criterion
-	    if( (phSum_F[jet]/rawpt > 0.00 ||                                        // else if( phSum_F[jet]/rawpt < 0.90 &&
-		 neSum_F[jet]/rawpt  > 0.00  ) &&                                        //          neSum_F[jet]/rawpt < null &&
-		neuMult             > 0       ) passesJetID=true;     //          neuMult            > 10
+	  {                                                          // CMSSW 76X criterion
+	    if( true && //( phSum_F[jet]/rawpt > 0.                      // else if( phSum_F[jet]/rawpt < 0.90 &&
+		true && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
+		numConst            > 0          ) passesJetID=true;     //          neuMult            > 10
 	  }	  	  
-      } 
+      }
       
       //fill jetspectraRapHists w/ passing jetID criterion
       if(  fillMCJetSpectraRapHists ) { 

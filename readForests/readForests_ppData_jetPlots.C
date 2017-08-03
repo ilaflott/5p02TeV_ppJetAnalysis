@@ -3,7 +3,7 @@
 
 // ppData switches
 const bool fillDataEvtQAHists=true;
-const bool fillDataJetQAHists=true;
+const bool fillDataJetQAHists=false;
 const bool fillDataDijetHists=false;
 //const bool fillBasicJetPlotsOnly=false;//i.e. no dijet plots
 const bool fillDataJetIDHists=true;//, tightJetID=false;
@@ -132,9 +132,9 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hNref = new TH1F("hNref","numJets each evt",20,0,20);
     hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);
     
-    hVz = new TH1F("hVz","vz, no trig, no weights",  96,-24.,24.); 
-    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  96,-24.,24.);    
-    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  96,-24.,24.);    
+    hVz = new TH1F("hVz","vz, no trig, no weights",  100,-25.,25.); 
+    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  100,-25.,25.);    
+    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);    
 
   }
   
@@ -477,9 +477,19 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
 	h_NEvents_skipped->Fill(1);
 	continue; }
-    
     h_NEvents_read->Fill(1);
     
+    
+    // skim/HiEvtAnalysis criteria
+    if( pHBHENoiseFilter_I==0      || 
+        pBeamScrapingFilter_I==0   || 
+        pprimaryvertexFilter_I==0  ) continue;
+    //	//	puvertexFilter_I==0  	) continue;    
+    h_NEvents_skimCut->Fill(1);
+    
+    
+    if( fabs(vz_F)>24. )     continue;
+    h_NEvents_vzCut->Fill(1);
     
     bool L1trgDec[N_HLTBits]   ={ (bool)jet40_l1s_I, (bool)jet60_l1s_I,  (bool)jet80_l1s_I,  (bool)jet100_l1s_I    };
     
@@ -561,19 +571,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     }
 
     if(weight_eS!=0.) h_NEvents_trigd->Fill(1); //this will be # of triggered events w/o weights pre vz/skim cuts
-    //    else continue;
+    else continue;
 
-    // skim/HiEvtAnalysis criteria
-    if( pHBHENoiseFilter_I==0      || 
-        pBeamScrapingFilter_I==0   || 
-        pprimaryvertexFilter_I==0  ) continue;
-    //	//	puvertexFilter_I==0  	) continue;    
-    h_NEvents_skimCut->Fill(1);
-    
-    
-    if( fabs(vz_F)>24. )     continue;
-    h_NEvents_vzCut->Fill(1);
-    
     // fill evt vz histo
     if(fillDataEvtQAHists){
       hVz->Fill(vz_F, 1.0);   //this will be # of events post cuts, no trigger, no weights, post skim/vz Cut 
@@ -583,8 +582,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       hWNref->Fill(nref_I,weight_eS); //# of jets per event, triggered, weighted, post cuts
     }
     
-    if(weight_eS==0.)continue;
-
     // JET LOOP 
     // for Aj/xj computation
     bool firstGoodJetFound=false, secondGoodJetFound=false; 
@@ -625,6 +622,17 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       //// TEMP 10.12.16////
       // kmatCuts      
       if( recpt <= jtPtCut ) continue;     
+
+      if( absreceta >= jtEtaCutHi ) continue;
+      else if( absreceta < jtEtaCutLo ) continue;
+      
+      // jet/event counts
+      h_NJets_kmatCut->Fill(1);
+      if(!hNEvts_withJets_kmatCut_Filled){
+	h_NEvents_withJets_kmatCut->Fill(1);
+	hNEvts_withJets_kmatCut_Filled=true;  }      
+      
+      
       
       float rawpt  = rawpt_F[jet];
       //float recy   = y_F[jet];
@@ -633,8 +641,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
       
-        
-	
+      
+      
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
       if(fillDataJetIDHists) 	{
@@ -682,18 +690,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	    break;
 	  } 
       }
-      
-
-
-      if( absreceta >= jtEtaCutHi ) continue;
-      else if( absreceta < jtEtaCutLo ) continue;
-      
-      // jet/event counts
-      h_NJets_kmatCut->Fill(1);
-      if(!hNEvts_withJets_kmatCut_Filled){
-	h_NEvents_withJets_kmatCut->Fill(1);
-	hNEvts_withJets_kmatCut_Filled=true;  }      
-
       
       // trig plots
       //assert(false);

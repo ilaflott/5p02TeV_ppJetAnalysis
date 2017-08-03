@@ -13,6 +13,7 @@ rootcompile readForests_ppMC_jetPlots.C
 echo "...ppData jetPlots..."
 rootcompile readForests_ppData_jetPlots.C
 
+
 echo ""
 echo "done compiling code(s), submitting."
 echo ""
@@ -21,10 +22,25 @@ echo ""
 ## ppData and ppMC jetPlots
 source run_readForests_jetPlots.sh 4
 
-source askCondor.sh 1 1
-sleep 30s
 
-source askCondor.sh 11 60
+echo ""
+echo "done running code(s)."
+echo ""
+
+return
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### ppMC JERS
 #source run_readForests_ppMC_JERS.sh 4

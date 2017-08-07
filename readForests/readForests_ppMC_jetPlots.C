@@ -4,11 +4,11 @@
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=false;
-//const bool fillBasicJetPlotsOnly=false;
+const bool fillgenJetQA=true&fillMCJetQAHists;
 const bool fillMCDijetHists=false;
+
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
-const bool fillgenJetQA=false&&fillMCJetQAHists;
 const bool fillMCJetSpectraRapHists=true; //other
 const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
 
@@ -125,6 +125,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL ,*hvzWVz=NULL;
   TH1F *hpthat=NULL, *hWpthat=NULL;  
   TH1F* hNref=NULL, *hWNref=NULL;
+  TH1F* hjetsPEvt=NULL,* hWjetsPEvt=NULL;
+  TH1F* hjetsPEvt_wJetID=NULL,* hWjetsPEvt_wJetID=NULL;
   if(fillMCEvtQAHists){
     hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
     hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
@@ -133,6 +135,11 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
     hNref = new TH1F("hNref","numJets each evt",20,0,20);
     hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);
+    hjetsPEvt  = new TH1F("hjetsPEvt","numJets each evt",30,0,30);
+    hWjetsPEvt = new TH1F("hWjetsPEvt","weighted numJets each evt",30,0,30);
+    if(fillMCJetIDHists){
+      hjetsPEvt_wJetID = new TH1F("hjetsPEvt_wJetID","num JetID Jets each evt",30,0,30);
+      hWjetsPEvt_wJetID = new TH1F("hWjetsPEvt_wJetID","weighted num JetID Jets each evt",30,0,30);}
 
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  }
@@ -421,7 +428,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     // for event counting + avoiding duplicate fills in dijet hists
     bool dijetHistsFilled=false, dijetHistsFilled_wJetID=false;
     bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
-    
+    int jetsPerEvent=nref_I, jetsPerEventJetID=nref_I;
     for(int jet = 0; jet<nref_I; ++jet)      {
       
       // event+jet counting
@@ -442,11 +449,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
       
       //if reco jet w/o matched gen jet, skip.
-      if( subid_F[jet] != 0 ) continue;
-      else if( recpt <= jtPtCut   ) continue;           
-      else if( genpt <= genJetPtCut   ) continue;
-      else if( absreceta >= jtEtaCutHi ) continue;
-      else if( absreceta < jtEtaCutLo ) continue;
+      
+      if( subid_F[jet] != 0 )            { jetsPerEvent--; jetsPerEventJetID--; continue; }
+      else if( recpt <= jtPtCut   )      { jetsPerEvent--; jetsPerEventJetID--; continue; }           
+      else if( genpt <= genJetPtCut   )  { jetsPerEvent--; jetsPerEventJetID--; continue; }
+      else if( absreceta >= jtEtaCutHi ) { jetsPerEvent--; jetsPerEventJetID--; continue; }
+      else if( absreceta < jtEtaCutLo )  { jetsPerEvent--; jetsPerEventJetID--; continue; }
       
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
@@ -626,7 +634,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
       if(fillMCJetIDHists){
 
-	if(!passesJetID) continue;
+	if(!passesJetID) {
+	  jetsPerEventJetID--;
+	  continue;}
 	
 	/////   JETQA   /////
 	if(fillMCJetQAHists){
@@ -736,6 +746,14 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       }//end doJetIDHists
       
     }//end jet loop
+
+    if(fillMCEvtQAHists){
+      if(fillMCJetIDHists){
+	hjetsPEvt_wJetID ->Fill(jetsPerEventJetID,1.0);   
+	hWjetsPEvt_wJetID->Fill(jetsPerEventJetID,weight_eS); }    
+      hjetsPEvt ->Fill(jetsPerEvent,1.0);   
+      hWjetsPEvt->Fill(jetsPerEvent,weight_eS); }
+
   }//end event loop
 
   std::cout<<std::endl;

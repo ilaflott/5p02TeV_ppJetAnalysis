@@ -18,10 +18,8 @@ echo ""
 echo "done compiling code(s), submitting."
 echo ""
 
-
 ## ppData and ppMC jetPlots
 source run_readForests_jetPlots.sh 4
-
 
 echo ""
 echo "done running code(s)."
@@ -35,19 +33,3 @@ return
 
 
 
-
-
-
-
-
-
-
-### ppMC JERS
-#source run_readForests_ppMC_JERS.sh 4
-#source askCondor.sh 1 1
-#sleep 0.5s
-#
-#source askCondor.sh 11 60
-
-
-return

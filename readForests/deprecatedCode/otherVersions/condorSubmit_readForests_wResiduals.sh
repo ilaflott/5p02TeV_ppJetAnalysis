@@ -1,0 +1,241 @@
+#!/bin/bash
+
+echo ""
+
+## error conditions + I/O
+if [[ $# -ne 8 ]] # not enough arguments
+then
+    echo "Usage is... "
+    echo "source condorSubmit_readForests.sh <readForestsCode> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug>"
+    echo "to run over all files with <NFilesPerJob>, set <NJobs> to -1"
+    return 1
+fi
+
+## input arguments to submit script
+readForestsCode=$1 
+NJobs=$2
+NFilesPerJob=$3
+filelistIn=$5  
+startFilePos=$4
+radius=$6
+jetType=$7
+debug=$8
+
+
+## NJobs=-1 case
+nFiles=`wc -l < $filelistIn`
+if [[ $NJobs -eq -1 ]]
+then    
+    NJobs=$(( $nFiles / $NFilesPerJob ))
+    if [[ $(( $nFiles % $NFilesPerJob ))  -gt 0 ]]
+    then
+	NJobs=$(( $NJobs + 1 ))
+    fi
+    startFilePos=0
+fi
+
+
+## some debug info, just in case
+NFilesRequested=$(( $NJobs * $NFilesPerJob ))
+echo "running ${readForestsCode}"
+echo "requesting ${NFilesRequested} files for ${NJobs} jobs" #, starting at ${startFilePos}"
+echo ""
+echo "number of files in ${filelistIn}..."
+echo "=${nFiles}"
+echo ""
+
+
+## grab strings from filelistIn, readForestsCode input
+filelist=${filelistIn##*/} #gets rid of "filelists/ on the left of filelistIn"
+
+filelistTitle=${filelist%_*} #get rid of stuff to the right of the filelist title _forests.txt
+energy=${filelistTitle%%_*} #get rid of everything to right of 5p02Tev
+trig=${filelistTitle#*_} #get rid of everything to left of trigName
+
+dataTypeAndVer=${readForestsCode#*_} #get rid of stuff to left, basically readForests_ 
+dataType=${dataTypeAndVer%%_*} # get rid of _ver from ppDataMC_ver
+
+readForestsVer=${dataTypeAndVer#*_} # get rid of ppDataMC_ from ppDataMC_ver
+if [[ "$dataType" == "$readForestsVer" ]]
+then
+    readForestsVer=""
+else
+    readForestsVer="__${readForestsVer}"
+fi
+
+
+## make strings from input 
+outName="${dataType}_${trig}_ak${radius}${jetType}Jets" #echo "outName is ${outName}" #debug
+dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}"
+logFileDir="${PWD}/outputCondor/${dirName}"
+
+
+## create output directory for condor job
+AltCounter=0
+while [[ -d "${logFileDir}"  ]]
+  do
+  AltCounter=$(( $AltCounter + 1 ))
+  echo "dir exists!"
+  dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}_${AltCounter}"
+  logFileDir="${PWD}/outputCondor/${dirName}"    
+done
+echo "output in outputCondor/${dirName}"
+mkdir $logFileDir
+
+
+## cmsenv for condor
+echo "cmsenv'ing on CVMFS..."
+cd ${CVMFS_758}
+cmsenv
+cd -
+
+
+## copy over code used for job running/submitting for archival purposes
+cp ${readForestsCode}.* "${logFileDir}"
+cp readForests.h "${logFileDir}"
+cp condorRun_readForests.sh "${logFileDir}"
+cp ${filelistIn} "${logFileDir}"
+cd ${logFileDir}
+
+
+### CREATE NAMES AND FILES, THEN SUBMIT ###
+readForestsExe="${readForestsCode}.exe"
+lastFilePos=$(( $nFiles-1 ))
+NthJob=0
+startfile=0
+endfile=0
+while [ $NthJob -lt $NJobs ]
+do 
+    JobNum=$(( $NthJob + 1 ))
+    echo ""
+    echo "SPLITTING FILES FOR JOB # ${JobNum} of ${NJobs}"
+
+    ## start/end file 
+    if [[ $NthJob -le 0 ]]
+    then
+	startfile=$startFilePos
+	endfile=$(( $startfile + $NFilesPerJob ))
+	endfile=$(( $endfile - 1 ))
+    else 
+	startfile=$(( $endfile + 1 ))
+	endfile=$(( $startfile + $NFilesPerJob ))
+	endfile=$(( $endfile - 1 ))
+    fi
+    #echo "startfile is ${startfile}" 
+
+    ## check; end of filelist
+    if [[ $endfile -ge $lastFilePos ]] 
+    then 
+	echo "end of filelist!"
+	let endfile=$lastFilePos
+	let NthJob=$(( $NJobs - 1 )) 
+    fi
+    #echo "endfile is ${endfile}"     
+
+    
+    ## for next job
+    NthJob=$(($NthJob + 1))
+
+    ## define output names for job submission
+    fileRange="${startfile}to${endfile}"
+    Error="${outName}-${fileRange}.err"
+    Output="${outName}-${fileRange}.out"
+    Log="${outName}-${fileRange}.log"
+    outfile="${outName}-${fileRange}.root"
+    
+    ## create the condor submit file
+    cat > ${logFileDir}/subfile <<EOF
+
+Universe       = vanilla
+Environment = "HOSTNAME=$HOSTNAME"
+Executable     = condorRun_readForests.sh
++AccountingGroup = "group_cmshi.ilaflott"
+Arguments      = $readForestsExe $startfile $endfile $filelist $outfile $radius $jetType $debug
+Input          = /dev/null
+Error          = ${logFileDir}/$Error
+Output         = ${logFileDir}/$Output
+Log            = ${logFileDir}/$Log
+# get the environment (path, etc.)
+GetEnv         = True
+# prefer to run on fast, 64 bit computers
+Rank           = kflops
+Requirements   = Arch == "X86_64"
+should_transfer_files   = YES
+transfer_input_files = ${filelist},${readForestsExe}
+when_to_transfer_output = ON_EXIT
+Queue
+EOF
+    
+    ## submit the job defined in the above submit file
+    echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
+    condor_submit ${logFileDir}/subfile    
+    sleep 0.5s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+done
+
+cd -
+echo "done."
+return
+
+
+
+
+
+
+
+
+
+
+
+
+#if [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input against text reg ex.
+
+
+### simple error cases for startFilePos
+#if [[ $startFilePos -ge $nFiles ]]
+#then
+#    echo "<startFilePos> larger than filelist, exit"
+#    return 1
+#fi
+#elif [[ $startFilePos -lt 0 ]]
+#then
+#    echo "bad <startFilePos>"
+#    echo "setting it to 0..."
+#    startFilePos=0
+#fi
+
+
+#### compile code executable, same as rootcompile in my .bashrc
+##echo "compiling..."
+##rootcompile "${readForestsScript}.C"
+#
+### grab strings from filelistIn, readForestsCode input
+#filelist=${filelistIn##*/} #gets rid of "filelists/ on the left of filelistIn"
+##echo "filelist is ${filelist}" #debug
+##echo ""
+#
+#filelistTitle=${filelist%_*} #get rid of stuff to the right of the filelist title _forests.txt
+##echo "filelistTitle is ${filelistTitle}" #debug
+##echo ""
+#
+#energy=${filelistTitle%%_*} #get rid of everything to right of 5p02Tev
+##echo "energy is ${energy}" #debug
+##echo ""
+#
+#trig=${filelistTitle#*_} #get rid of everything to left of trigName
+##echo "trig is ${trig}" #debug
+##echo ""
+##echo ""
+#
+#
+#dataTypeAndVer=${readForestsCode#*_} #get rid of stuff to left, basically readForests_ 
+##echo "dataTypeAndVer is ${dataTypeAndVer}" #debug
+##echo ""
+#
+#dataType=${dataTypeAndVer%_*} # get rid of _ver from ppDataMC_ver
+##echo "dataType is ${dataType}" #debug
+##echo ""
+#
+#readForestsVer=${dataTypeAndVer#*_} # get rid of ppDataMC_ from ppDataMC_ver
+#echo "readForestsVer is ${readForestsVer}" #debug
+##echo ""
+##echo ""

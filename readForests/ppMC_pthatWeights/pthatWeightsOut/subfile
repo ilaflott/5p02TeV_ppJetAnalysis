@@ -1,0 +1,19 @@
+
+Universe       = vanilla
+Environment = "HOSTNAME=hidsk0001.cmsaf.mit.edu"
+Executable     = condorRun_ppMC_pthatWeights.sh
++AccountingGroup = "group_cmshi.ilaflott"
+Arguments      = 1
+Input          = /dev/null
+Error          = /net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/ppMC_pthatWeights/pthatWeightsOut/QCDjet1_pthatWeight.err
+Output         = /net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/ppMC_pthatWeights/pthatWeightsOut/QCDjet1_pthatWeight.out
+Log            = /net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/ppMC_pthatWeights/pthatWeightsOut/QCDjet1_pthatWeight.log
+# get the environment (path, etc.)
+GetEnv         = True
+# prefer to run on fast, 64 bit computers
+Rank           = kflops
+Requirements   = Arch == "X86_64"
+should_transfer_files   = YES
+transfer_input_files = /net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/ppMC_pthatWeights/filelists.tar.gz,ppMC_pthatWeights.exe
+when_to_transfer_output = ON_EXIT
+Queue

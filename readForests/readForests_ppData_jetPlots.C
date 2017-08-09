@@ -10,6 +10,7 @@ const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataJetSpectraRapHists=false; //other
 
+const bool useHLT100=false;
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int endfile , 
@@ -569,7 +570,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     unsigned int trgObj80_size=trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();
     
     
-    if(trgDec[3])
+    if(trgDec[3]&&useHLT100)
       for(unsigned int itt=0; itt<trgObj100_size; ++itt)
     	if(trgObjpt_100->at(itt) > maxTrgPt) { maxTrgPt = trgObjpt_100->at(itt); } //maxTrgPtIndex=itt; }
     
@@ -593,14 +594,27 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     //float weight_eS = trigComb(trgDec, trgPscl, trgPt); // trig comb function replicates the procedure below
 
     bool is40  = false, is60  = false, is80  = false, is100 = false;
-    if(      trgDec[3] && trgPt>=100.               ) 
-      { is100 = true;  weight_eS=trgPscl[3]; }
-    else if( trgDec[2] && trgPt>=80.  && trgPt<100. ) 
-      { is80  = true;  weight_eS=trgPscl[2]; }
-    else if( trgDec[1] && trgPt>=60.  && trgPt<80.  ) 
-      { is60  = true;  weight_eS=trgPscl[1]; }
-    else if( trgDec[0] && trgPt>=40.  && trgPt<60.  ) 
-      { is40  = true;  weight_eS=trgPscl[0]; }
+    if(useHLT100){
+      if(      trgDec[3] && trgPt>=100.               ) 
+	{ is100 = true;  weight_eS=trgPscl[3]; }
+      else if( trgDec[2] && trgPt>=80.  && trgPt<100. ) 
+	{ is80  = true;  weight_eS=trgPscl[2]; }
+      else if( trgDec[1] && trgPt>=60.  && trgPt<80.  ) 
+	{ is60  = true;  weight_eS=trgPscl[1]; }
+      else if( trgDec[0] && trgPt>=40.  && trgPt<60.  ) 
+	{ is40  = true;  weight_eS=trgPscl[0]; }            
+    }
+    else {
+      //if(      trgDec[3] && trgPt>=100.               ) 
+      //{ is100 = true;  weight_eS=trgPscl[3]; }
+      if( trgDec[2] && trgPt>=80. ) 
+	{ is80  = true;  weight_eS=trgPscl[2]; }
+      else if( trgDec[1] && trgPt>=60.  && trgPt<80.  ) 
+	{ is60  = true;  weight_eS=trgPscl[1]; }
+      else if( trgDec[0] && trgPt>=40.  && trgPt<60.  ) 
+	{ is40  = true;  weight_eS=trgPscl[0]; }            
+    }
+      
     
     if     ( is100 )  { NEvents_100++ ; h_NEvents_jet100->Fill(1)  ; }
     else if( is80  )  { NEvents_80++  ;  h_NEvents_jet80->Fill(1)  ; }

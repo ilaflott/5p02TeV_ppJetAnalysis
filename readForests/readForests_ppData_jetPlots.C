@@ -11,6 +11,7 @@ const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataJetSpectraRapHists=false; //other
 
 const bool useHLT100=false;
+
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int endfile , 
@@ -747,10 +748,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 		 numConst            > 0       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
 	  }							      
 	else //( absreceta>3.0) 
-	  {                                                          // CMSSW 76X criterion
-	    if( true && //( phSum_F[jet]/rawpt > 0.                      // else if( phSum_F[jet]/rawpt < 0.90 &&
-		true && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
-		numConst            > 0          ) passesJetID=true;     //          neuMult            > 10
+	  {                                                                                        // CMSSW 76X criterion
+	    if( phSum_F[jet] < 0.4 &&         //( phSum_F[jet]/rawpt > 0.                      // else if( phSum_F[jet]/rawpt < 0.90 &&
+		trkSum_F[jet] < 0.4 && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
+		true       ) passesJetID=true;     //          neuMult            > 10
 	  }	  	  
       }
       

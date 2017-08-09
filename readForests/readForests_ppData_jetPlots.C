@@ -3,12 +3,12 @@
 
 // ppData switches
 const bool fillDataEvtQAHists=true;
-const bool fillDataJetQAHists=false;
+const bool fillDataJetQAHists=true;
 const bool fillDataDijetHists=false;
 const bool fillDataJetIDHists=true;//, tightJetID=false;
 
 const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetSpectraRapHists=true; //other
+const bool fillDataJetSpectraRapHists=false; //other
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------

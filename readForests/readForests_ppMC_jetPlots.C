@@ -3,14 +3,14 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true;
-const bool fillMCJetQAHists=false;
+const bool fillMCJetQAHists=true;
 const bool fillgenJetQA=true&fillMCJetQAHists;
 const bool fillMCDijetHists=false;
 
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
-const bool fillMCJetSpectraRapHists=true; //other
-const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
+const bool fillMCJetSpectraRapHists=false; //other
+const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
 
 //// readForests_ppMC_jetPlots
 // ---------------------------------------------------------------------------------------------------------------

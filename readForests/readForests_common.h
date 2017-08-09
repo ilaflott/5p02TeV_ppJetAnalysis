@@ -50,7 +50,9 @@ float trigComb(bool *trgDec, int *treePrescl, double triggerPt){
   if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS=treePrescl[0];
   if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS=treePrescl[1];
   if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS=treePrescl[2];
+
   if(trgDec[3] && triggerPt>=100. )                  weight_eS=treePrescl[3];
+
   return weight_eS;
 }
 
@@ -103,6 +105,7 @@ const std::string L1BitStrings[]={//this array is a good idea
   "L1_SingleJet28_BptxAND",
   "L1_SingleJet40_BptxAND",
   "L1_SingleJet48_BptxAND",
+
   "L1_SingleJet52_BptxAND"
 };
 //const int N_L1Bits=N_HLTBits;
@@ -114,6 +117,7 @@ const std::string Calo_HLTBitStrings[]={
   "HLT_AK4CaloJet40_Eta5p1",
   "HLT_AK4CaloJet60_Eta5p1",
   "HLT_AK4CaloJet80_Eta5p1",
+
   "HLT_AK4CaloJet100_Eta5p1" 
 };
 const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
@@ -122,6 +126,7 @@ const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
   "HLT_AK4PFJet60_Eta5p1",
   "HLT_AK4PFJet80_Eta5p1",
+
   "HLT_AK4PFJet100_Eta5p1" 
 };
 
@@ -133,6 +138,7 @@ const std::string dataTreeNames[]={
   "hltobject/"+Calo_HLTBitStrings[0]+"_v" ,
   "hltobject/"+Calo_HLTBitStrings[1]+"_v" ,
   "hltobject/"+Calo_HLTBitStrings[2]+"_v" ,
+
   "hltobject/"+Calo_HLTBitStrings[3]+"_v" 
 };
 const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);

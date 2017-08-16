@@ -86,12 +86,23 @@ done
 echo "output in outputCondor/${dirName}"
 mkdir $logFileDir
 
+if [[ -d "${logFileDir}"  ]]
+then
+    echo "logFileDir created."
+else
+    echo "logFileDir not created. exit."
+    return
+fi
 
-## cmsenv for condor
-echo "cmsenv'ing on CVMFS..."
-cd ${CVMFS_758}
-cmsenv
-cd -
+
+
+
+#uncomment me to work on T2 US MIT
+### cmsenv for condor
+#echo "cmsenv'ing on CVMFS..."
+#cd ${CVMFS_758}
+#cmsenv
+#cd -
 
 
 ## copy over code used for job running/submitting for archival purposes
@@ -151,11 +162,8 @@ do
     
     ## create the condor submit file
     cat > ${logFileDir}/subfile <<EOF
-
 Universe       = vanilla
-Environment = "HOSTNAME=$HOSTNAME"
 Executable     = condorRun_readForests.sh
-+AccountingGroup = "group_cmshi.ilaflott"
 Arguments      = $readForestsExe $startfile $endfile $filelist $outfile $radius $jetType $debug $etaCutLo $etaCutHi
 Input          = /dev/null
 Error          = ${logFileDir}/$Error
@@ -169,18 +177,19 @@ Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
 transfer_input_files = ${filelist},${readForestsExe},JECDataDriven.tar.gz
 when_to_transfer_output = ON_EXIT
-match_list_length = 5
+Notification  =  never
 Queue
 EOF
     
     ## submit the job defined in the above submit file
     echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 2.5s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    #sleep 1s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -
 echo "done."
+condor_q ilaflott
 return
 
 
@@ -194,27 +203,47 @@ return
 
 
 
-#if [[ ! $3 =~ ^-?[0-9]+$ ]] # check integer input against text reg ex.
 
 
-### simple error cases for startFilePos
-#if [[ $startFilePos -ge $nFiles ]]
-#then
-#    echo "<startFilePos> larger than filelist, exit"
-#    return 1
-#fi
-#elif [[ $startFilePos -lt 0 ]]
-#then
-#    echo "bad <startFilePos>"
-#    echo "setting it to 0..."
-#    startFilePos=0
-#fi
 
 
-#### compile code executable, same as rootcompile in my .bashrc
-##echo "compiling..."
-##rootcompile "${readForestsScript}.C"
-#
+#### MIT T2 SUBMIT FILE
+
+
+#### Universe       = vanilla
+#### Environment = "HOSTNAME=$HOSTNAME"
+#### Executable     = condorRun_readForests.sh
+#### +AccountingGroup = "group_cmshi.ilaflott"
+#### Arguments      = $readForestsExe $startfile $endfile $filelist $outfile $radius $jetType $debug $etaCutLo $etaCutHi
+#### Input          = /dev/null
+#### Error          = ${logFileDir}/$Error
+#### Output         = ${logFileDir}/$Output
+#### Log            = ${logFileDir}/$Log
+#### # get the environment (path, etc.)
+#### GetEnv         = True
+#### # prefer to run on fast, 64 bit computers
+#### Rank           = kflops
+#### Requirements   = Arch == "X86_64"
+#### should_transfer_files   = YES
+#### transfer_input_files = ${filelist},${readForestsExe},JECDataDriven.tar.gz
+#### when_to_transfer_output = ON_EXIT
+#### match_list_length = 5
+#### Queue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### grab strings from filelistIn, readForestsCode input
 #filelist=${filelistIn##*/} #gets rid of "filelists/ on the left of filelistIn"
 ##echo "filelist is ${filelist}" #debug

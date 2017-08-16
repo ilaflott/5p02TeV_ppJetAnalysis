@@ -1,1 +1,9 @@
-/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/HiForestAOD_ppData_Jet80_1.root
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_109.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_108.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_107.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_106.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_105.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_104.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_103.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_102.root  
+/cms/se/store/user/ilaflott/jobOutput2/2015pp_HighPtJet80/HiForestAOD_101.root

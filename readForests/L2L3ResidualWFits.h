@@ -108,6 +108,7 @@ class L2ResidualJES
      if(mode == "Pbp5") fitInitial = new TF1("fitInitial","9.87174e-01+(-5.45335e-03)*x+(1.31839e-02)*x*x",-3,3);
    
      cout << "neta = "<< neta <<  Form(" JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d.root",algoCorr.Data(),etacut,dopPb) << endl;
+
      for(int ieta = 0;ieta<neta;ieta++){
        fits[ieta] = (TF1*)correctionFile->Get(Form("fit%d",ieta));
      } 

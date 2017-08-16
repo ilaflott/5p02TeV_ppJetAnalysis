@@ -21,3 +21,5 @@ doAnalysis/doUnfolding_backUp
 doAnalysis/doUnfolding_backUp/*
 RooUnfold-svnTrunk
 RooUnfold-svnTrunk/*
+readForests/deprecatedCode
+readForests/deprecatedCode/*

@@ -5,10 +5,9 @@
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
 const bool fillgenJetQA=true&fillMCJetQAHists;
+
 const bool fillMCDijetHists=false;
-
 const bool fillMCJetIDHists=true;//, tightJetID=false;
-
 const bool fillMCJetSpectraRapHists=false; //other
 const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
 
@@ -122,52 +121,58 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 					   "NEvents read post evt cuts, w/ jets post kmatCut AND JetID Cut", 1,0,2);
   
   /////   EVENT QA HISTS   ///// 
-  TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL ,*hvzWVz=NULL;
+  TH1F *hVr=NULL, *hWVr=NULL;
+  TH1F *hVx=NULL, *hWVx=NULL;
+  TH1F *hVy=NULL, *hWVy=NULL;
 
-  TH1F *hVy=NULL, *hWVy=NULL;//, *hTrgVy_noW=NULL;
-  TH1F *hVx=NULL, *hWVx=NULL;//, *hTrgVx_noW=NULL;
+  TH1F *hVz=NULL, *hWVz=NULL , *hvzWVz=NULL,*hpthatWVz=NULL;
   
   TH1F *hpthat=NULL, *hWpthat=NULL;  
+
   TH1F* hNref=NULL, *hWNref=NULL;
   TH1F* hjetsPEvt=NULL,* hWjetsPEvt=NULL;
   TH1F* hjetsPEvt_wJetID=NULL,* hWjetsPEvt_wJetID=NULL;
   TH1F* hLeadJetPt=NULL;//,* hLeadJetPt_wJetID=NULL;
 
   if(fillMCEvtQAHists){
-    hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
-    hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
-    hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
-    hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz
-
-    hNref = new TH1F("hNref","numJets each evt",20,0,20);
-    hWNref = new TH1F("hWNref","weighted numJets each evt",20,0,20);
-    hjetsPEvt  = new TH1F("hjetsPEvt","numJets each evt",30,0,30);
-    hWjetsPEvt = new TH1F("hWjetsPEvt","weighted numJets each evt",30,0,30);
-
-    hVx = new TH1F("hVx","vx, no trig, no weights",  100,-25.,25.); 
-    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  100,-25.,25.);    
-    //  hTrgVx_noW = new TH1F("hTriggerVx_noWeights","vx, trigd, no weights",  100,-25.,25.);    
-
-    hVy = new TH1F("hVy","vy, no trig, no weights",  100,-25.,25.); 
-    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  100,-25.,25.);    
-    //    hTrgVy_noW = new TH1F("hTriggerVy_noWeights","vy, trigd, no weights",  100,-25.,25.);    
-
-    if(fillMCJetIDHists){
-      hjetsPEvt_wJetID = new TH1F("hjetsPEvt_wJetID","num JetID Jets each evt",30,0,30);
-      hWjetsPEvt_wJetID = new TH1F("hWjetsPEvt_wJetID","weighted num JetID Jets each evt",30,0,30);}
-
-    hLeadJetPt      = new TH1F("hLeadJetPt","lead jet pt for each evt",1000,0,1000);  
-
-    //if(fillMCJetIDHists)
-    //  hLeadJetPt_wJetID      = new TH1F("hLeadJetPt_wJetId","lead jet pt w Jet ID for each evt",1000,0,1000);
 
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  
-
+    
+    hVr = new TH1F("hVr","vr, no trig, no weights",  100,0.,0.25); 
+    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  100,0.,0.25);    
+    //  hTrgVr_noW = new TH1F("hTriggerVr_noWeights","vr, trigd, no weights",  100,0.,0.25);    
+    
+    hVx = new TH1F("hVx","vx, no trig, no weights",  100,0.,0.25); 
+    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  100,0.,0.25);    
+    //  hTrgVx_noW = new TH1F("hTriggerVx_noWeights","vx, trigd, no weights",  100,0.,0.25);    
+    
+    hVy = new TH1F("hVy","vy, no trig, no weights",  100,0.,0.25); 
+    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  100,0.,0.25);    
+    //    hTrgVy_noW = new TH1F("hTriggerVy_noWeights","vy, trigd, no weights",  100,0.,0.25);    
+    
+    hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
+    hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz
+    hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
+    hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
+    
+    hNref = new TH1F("hNref","numJets each evt",30,0,30);
+    hWNref = new TH1F("hWNref","weighted numJets each evt",30,0,30);
+    hjetsPEvt  = new TH1F("hjetsPEvt","numJets each evt",30,0,30);
+    hWjetsPEvt = new TH1F("hWjetsPEvt","weighted numJets each evt",30,0,30);
+    
+    if(fillMCJetIDHists){
+      hjetsPEvt_wJetID = new TH1F("hjetsPEvt_wJetID","num JetID Jets each evt",30,0,30);
+      hWjetsPEvt_wJetID = new TH1F("hWjetsPEvt_wJetID","weighted num JetID Jets each evt",30,0,30);}
+    
+    hLeadJetPt      = new TH1F("hLeadJetPt","lead jet pt for each evt",1000,0,1000);  
+    //if(fillMCJetIDHists)
+    //  hLeadJetPt_wJetID      = new TH1F("hLeadJetPt_wJetId","lead jet pt w Jet ID for each evt",1000,0,1000);
+    
   }
   
   
-
+  
   //jet counts
   TH1F *h_NJets          = new TH1F("NJets","NJets read", 1,0,2);
   TH1F *h_NJets_kmatCut  = new TH1F("NJets_kmatCut ","NJets read post kmatCut ", 1,0,2);
@@ -394,10 +399,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   //float jetIDCut_neSum, jetIDCut_phSum;
   //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
   //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
-
+  
   //begin event loop
   for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
-
+    
     if( debugMode     &&
         nEvt%1000==0     )std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     else if(nEvt%10000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
@@ -411,10 +416,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
         pprimaryvertexFilter_I==0 )continue;
     //||
     //puvertexFilter_I==0  	) continue;    
-
+    
     h_NEvents_skimCut->Fill(1);
     
-
+    
     if( fabs(vz_F)>24.              ) continue;
     h_NEvents_vzCut->Fill(1);
     
@@ -441,23 +446,28 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     
     //vz
     if(fillMCEvtQAHists){
-      hVz->Fill(vz_F, 1.);
-      hvzWVz->Fill(vz_F, vzWeight);
-      hpthatWVz->Fill(vz_F, evtPthatWeight);
-      hWVz->Fill(vz_F, weight_eS);
-      
+
       hpthat->Fill(pthat_F, 1.);
       hWpthat->Fill(pthat_F, weight_eS);
       
-      hVy->Fill(vy_F, 1.0);   
-      hWVy->Fill(vy_F, weight_eS);
-      //if(weight_eS!=0.)hTrgVy_noW->Fill(vy_F,1.0);
+      float vr_F=std::sqrt(vx_F*vx_F + vy_F*vy_F);
+      hVr->Fill(vr_F, 1.0);   
+      hWVr->Fill(vr_F, weight_eS);  
+      //if(weight_eS!=0.)hTrgVr_noW->Fill(vr_F,1.0);
 
       hVx->Fill(vx_F, 1.0);   
       hWVx->Fill(vx_F, weight_eS);  
       //if(weight_eS!=0.)hTrgVx_noW->Fill(vx_F,1.0);
 
+      hVy->Fill(vy_F, 1.0);   
+      hWVy->Fill(vy_F, weight_eS);
+      //if(weight_eS!=0.)hTrgVy_noW->Fill(vy_F,1.0);
 
+      hVz->Fill(vz_F, 1.);
+      hvzWVz->Fill(vz_F, vzWeight);
+      hpthatWVz->Fill(vz_F, evtPthatWeight);
+      hWVz->Fill(vz_F, weight_eS);
+      
       hNref->Fill(nref_I, 1.);
       hWNref->Fill(nref_I, weight_eS);
     }
@@ -494,23 +504,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       float genpt  = refpt_F[jet];
       float geneta = refeta_F[jet];
 
-      float rawpt  = rawpt_F[jet];      
-      //float recy = y_F[jet];
-      float recphi = phi_F[jet];
-
-      
       //if reco jet w/o matched gen jet, skip.
-
       if( subid_F[jet] != 0 )            { jetsPerEvent--; jetsPerEventJetID--; continue; }
-      else if( recpt <= jtPtCut   )      { jetsPerEvent--; jetsPerEventJetID--; continue; }           
       else if( genpt <= genJetPtCut   )  { jetsPerEvent--; jetsPerEventJetID--; continue; }
-
-      // largest jet pt in each event
-      if(recpt>evt_leadJetPt )
-	evt_leadJetPt=recpt;
-      //if(recpt>evt_leadJetPt_wJetID && fillDataJetIDHists && passesJetID)
-      //evt_leadJetPt_wJetID=recpt;
-
+      else if( recpt <= jtPtCut   )      { jetsPerEvent--; jetsPerEventJetID--; continue; }           
+      
+      
       if( absreceta >= jtEtaCutHi ) { 
 	//jetsPerEvent--; jetsPerEventJetID--;
 	continue; }
@@ -519,22 +518,28 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	continue; }
       
 
-
-
-
+      // largest jet pt in each event
+      if(recpt>evt_leadJetPt )
+	evt_leadJetPt=recpt;
+      //if(recpt>evt_leadJetPt_wJetID && fillDataJetIDHists && passesJetID)
+      //evt_leadJetPt_wJetID=recpt;
+      
       // jet/event counts
       h_NJets_kmatCut->Fill(1);
       h_WNJets_kmatCut->Fill(1,weight_eS);
       if(!hNEvts_withJets_kmatCut_Filled){
 	h_NEvents_withJets_kmatCut->Fill(1);
 	hNEvts_withJets_kmatCut_Filled=true;  }           
-
+      
+      float rawpt  = rawpt_F[jet];      
+      float recphi = phi_F[jet];
+      
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
-
-      bool passesJetID=false;
       
+      // 13 TeV JetID criterion, loose or tight
+      bool passesJetID=false;
       if(fillMCJetIDHists) 	{
 	if (absreceta<=2.4) 
 	  { 

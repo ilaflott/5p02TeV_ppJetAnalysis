@@ -8,7 +8,7 @@ const bool fillDataDijetHists=false;
 const bool fillDataJetIDHists=true;//, tightJetID=false;
 
 const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetSpectraRapHists=true; //other
+const bool fillDataJetSpectraRapHists=false; //other
 
 const bool useHLT100=false;
 
@@ -128,18 +128,20 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   
   //EvtQA, i.e. hists filled once per event
   TH1F *hVr=NULL, *hWVr=NULL, *hTrgVr_noW=NULL;
-  TH1F *hVz=NULL, *hWVz=NULL, *hTrgVz_noW=NULL;
-  TH1F *hVy=NULL, *hWVy=NULL, *hTrgVy_noW=NULL;
   TH1F *hVx=NULL, *hWVx=NULL, *hTrgVx_noW=NULL;
+  TH1F *hVy=NULL, *hWVy=NULL, *hTrgVy_noW=NULL;
+  TH1F *hVz=NULL, *hWVz=NULL, *hTrgVz_noW=NULL;
+  
   TH1F* hNref=NULL, *hWNref=NULL;
   TH1F* hjetsPEvt=NULL,* hWjetsPEvt=NULL;
   TH1F* hjetsPEvt_wJetID=NULL,* hWjetsPEvt_wJetID=NULL;
   TH1F* hLeadJetPt=NULL;//,* hLeadJetPt_wJetID=NULL;
 
   if(fillDataEvtQAHists){
-    hVz = new TH1F("hVz","vz, no trig, no weights",  100,-25.,25.); //bin size of .5
-    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  100,-25.,25.);    
-    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);  
+
+    hVr = new TH1F("hVr","vr, no trig, no weights",  100,0.,0.25); 
+    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  100,0.,0.25);    
+    hTrgVr_noW = new TH1F("hTriggerVr_noWeights","vr, trigd, no weights",  100,0.,0.25);    
 
     hVx = new TH1F("hVx","vx, no trig, no weights",  100,0.,0.25); //bin size of .0025
     hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  100,0.,0.25);    
@@ -149,15 +151,15 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  100,0.,0.25);    
     hTrgVy_noW = new TH1F("hTriggerVy_noWeights","vy, trigd, no weights",  100,0.,0.25);    
 
-    hVr = new TH1F("hVr","vr, no trig, no weights",  100,0.,0.25); 
-    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  100,0.,0.25);    
-    hTrgVr_noW = new TH1F("hTriggerVr_noWeights","vr, trigd, no weights",  100,0.,0.25);    
-
+    hVz = new TH1F("hVz","vz, no trig, no weights",  100,-25.,25.); //bin size of .5
+    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  100,-25.,25.);    
+    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);  
 
     hNref      = new TH1F("hNref","nref each evt",30,0,30);
     hWNref     = new TH1F("hWNref","weighted nref each evt",30,0,30);
     hjetsPEvt  = new TH1F("hjetsPEvt","numJets each evt",30,0,30);
     hWjetsPEvt = new TH1F("hWjetsPEvt","weighted numJets each evt",30,0,30);
+
     if(fillDataJetIDHists){
       hjetsPEvt_wJetID = new TH1F("hjetsPEvt_wJetID","num JetID Jets each evt",30,0,30);
       hWjetsPEvt_wJetID = new TH1F("hWjetsPEvt_wJetID","weighted num JetID Jets each evt",30,0,30);}
@@ -672,10 +674,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       else if(is60  )  hpp_HLT60trgPt->Fill(    (float)trgPt , weight_eS );
       else if(is40  )  hpp_HLT40trgPt->Fill(    (float)trgPt , weight_eS );
       
-      if(     is100 && !L1trgDec[3])  hpp_HLT100InEff->Fill((float)trgPt,weight_eS);   
-      else if(is80  && !L1trgDec[2])   hpp_HLT80InEff->Fill((float)trgPt,weight_eS);
-      else if(is60  && !L1trgDec[1])   hpp_HLT60InEff->Fill((float)trgPt,weight_eS);
-      else if(is40  && !L1trgDec[0])   hpp_HLT40InEff->Fill((float)trgPt,weight_eS);    
+      if(      trgDec[3] && !L1trgDec[3])  hpp_HLT100InEff->Fill((float)trgPt,weight_eS);   
+      else if( trgDec[2] && !L1trgDec[2])   hpp_HLT80InEff->Fill((float)trgPt,weight_eS);
+      else if( trgDec[1] && !L1trgDec[1])   hpp_HLT60InEff->Fill((float)trgPt,weight_eS);
+      else if( trgDec[0] && !L1trgDec[0])   hpp_HLT40InEff->Fill((float)trgPt,weight_eS);    
     }
 
 
@@ -684,22 +686,23 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
     // fill evt vz histo
     if(fillDataEvtQAHists){
-      hVz->Fill(vz_F, 1.0);   //this will be # of events post cuts, no trigger, no weights, post skim/vz Cut 
-      hWVz->Fill(vz_F, weight_eS);    //this will be # of trigger events w/ weights, post skim/vz Cut
-      if(weight_eS!=0.)hTrgVz_noW->Fill(vz_F,1.0); //this will be # of trigger events w/o weights post-skim/vz Cut
+
+      float vr_F=std::sqrt(vx_F*vx_F + vy_F*vy_F);
+      hVr->Fill(vr_F, 1.0);   
+      hWVr->Fill(vr_F, weight_eS);  
+      if(weight_eS!=0.)hTrgVr_noW->Fill(vr_F,1.0);
+      
+      hVx->Fill(vx_F, 1.0);   
+      hWVx->Fill(vx_F, weight_eS);  
+      if(weight_eS!=0.)hTrgVx_noW->Fill(vx_F,1.0);
 
       hVy->Fill(vy_F, 1.0);   
       hWVy->Fill(vy_F, weight_eS);
       if(weight_eS!=0.)hTrgVy_noW->Fill(vy_F,1.0);
 
-      hVx->Fill(vx_F, 1.0);   
-      hWVx->Fill(vx_F, weight_eS);  
-      if(weight_eS!=0.)hTrgVx_noW->Fill(vx_F,1.0);
-
-      float vr_F=std::sqrt(vx_F*vx_F + vy_F*vy_F);
-      hVr->Fill(vr_F, 1.0);   
-      hWVr->Fill(vr_F, weight_eS);  
-      if(weight_eS!=0.)hTrgVr_noW->Fill(vx_F,1.0);
+      hVz->Fill(vz_F, 1.0);   //this will be # of events post cuts, no trigger, no weights, post skim/vz Cut 
+      hWVz->Fill(vz_F, weight_eS);    //this will be # of trigger events w/ weights, post skim/vz Cut
+      if(weight_eS!=0.)hTrgVz_noW->Fill(vz_F,1.0); //this will be # of trigger events w/o weights post-skim/vz Cut
 
       hNref->Fill(nref_I,1.0);   //# of jets per event, no trigger, no weights, post cuts
       hWNref->Fill(nref_I,weight_eS); //# of jets per event, triggered, weighted, post cuts
@@ -847,8 +850,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	else if(is100)  hpp_ExcTrgObj100[0]->Fill( recpt , weight_eS); 
 	
 	//assert(false);
-
-
       }	
       
       

@@ -13,10 +13,11 @@ const int minArgs=1;
 //// readForests_ppData
 const std::string defDataJ80InFilelist="filelists/test_readForests_ppData_Jet80_local.txt";
 const std::string defDataLOJInFilelist="filelists/test_readForests_ppData_LowerJets_local.txt";
+const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
+
 //const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
-//const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
-//const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_RUT3_forests.txt";
-const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_RUT3_forests_local.txt";
+//const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
+const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
 const int defStartFile=5;
 const int defEndFile=6;
 const int defRadius=4;
@@ -26,15 +27,15 @@ const std::string defDataOutputName="readForests_ppData_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 const float defEtaCutLo=0.0, defEtaCutHi=4.7;//really absetacut
 
-int readForests_ppData_jetPlots( std::string inFilelist=defDataJ80InFilelist, 
-				 int startfile=0, int endfile=1,
+int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
+				 int startfile=0, int endfile=9,
 				 int radius=defRadius, std::string jetType=defJetType, 
 				 bool debugMode=defDebugMode,
 				 std::string outfile=defDataOutputName, 
 				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-			       int startfile=0, int endfile=9, 
+			       int startfile=0, int endfile=4, 
 			       int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=defDebugMode,			
 			       std::string outfile=(defMCOutputName+"_jetPlots.root"),
@@ -44,7 +45,7 @@ const int readForestsArgCount=9+minArgs;
 
 // extended eta range for jetID Eff, or more QA in diff region... etc.
 const float jtPtCut=56; // 49 or 56 or 64 or 74...
-const float genJetPtCut=32; // two bins lower
+const float genJetPtCut=37; // two bins lower
 const float jetQAPtCut=jtPtCut;
 //const float genJetPtCut=30.;
 //const float jetQAPtCut=30.;//sometimes a bit higher than jtptCut

@@ -14,22 +14,21 @@ const int minArgs=1+7;//jtetalo/hi optional, default is 0to4.7
 
 //const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
 //const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
-const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
-const std::string defMCOutputName="readForests_ppMC_JERS.root";
-
+//const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
+const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
+const std::string defMCOutputName="readForests_ppMC_JERS_defOut.root";
 int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile=0, int endfile=20,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,
-			   float jtEtaCutLo=0., float jtEtaCutHi=5.0      );
+			   float jtEtaCutLo=0., float jtEtaCutHi=4.7      );
 
 //const int readForestsArgCount=7+minArgs;
-const float jtPtCut     = 43.  ;
-const float genJetPtCut = jtPtCut ;
-//const float genJetPtCut = 30. ;
+const float jtPtCut     = 56.  ;
+const float genJetPtCut = 32. ;
 
-const int genptBin1Low = 50 , genptBin1High = 80 ;	 
-const int genptBin2Low = 80 , genptBin2High  = 120 ;
+const int genptBin1Low = 56 , genptBin1High = 64 ;	 
+const int genptBin2Low = 64 , genptBin2High  = 74 ;
 
 
 // Apr 29th 2016

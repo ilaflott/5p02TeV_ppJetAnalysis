@@ -55,15 +55,15 @@ const int Nbins_pthat=sizeof(pthat)/sizeof(double);
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 
 // Error in <TAxis::TAxis::Set>: bins must be in increasing order
 const Double_t ptbins_debug[]={
-    5.,
-    15., 18., 21., 24., 28.,
-  32., 37., 43., 49., 56.,
-  64., 74., 84., 97., 114.,
-  133., 153., 174., 196.,
-  220., 245., 272., 300., 
-  330., 362., 395., 430.,
-  468., 507., 548., 592.,
-  638., 686., 1000.
+  //5.,
+  //15., 18., 21., 24., 28.,
+  //32., 37., 43., 
+  //49., 
+  56, 
+  64, 
+  74, 
+  84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468,
+  507, 548, 592, 638, 686, 737, 790, 846, 905, 967
 }; // raghavs suggestions+my tweak
 
 //  7., 9., 12., /*3., 4., 5., */

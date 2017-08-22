@@ -46,18 +46,25 @@ const double pthatWeights[]={//from ppMC_Py8_CUETP8M1_QCDjetAllPtBins_Official
 };
 
 // binning arrays
-
 const int ptbins[]={
-  5,
-  15, 18, 21, 24, 28,
-  32, 37, 43, 49, 56,
-  64, 74, 84, 97, 114,
-  133, 153, 174, 196,
-  220, 245, 272, 300, 
-  330, 362, 395, 430,
-  468, 507, 548, 592,
-  638, 686, 1000//, 1500
-}; //my tweaked version
+  56, 
+  64, 
+  74, 
+  84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468,
+  507, 548, 592, 638, 686, 737, 790, 846, 905, 967
+}; 
+//my tweaked version
+//  5,
+//  15, 18, 21, 24, 28,
+//  32, 37, 43, 49, 56,
+//  64, 74, 84, 97, 114,
+//  133, 153, 174, 196,
+//  220, 245, 272, 300, 
+//  330, 362, 395, 430,
+//  468, 507, 548, 592,
+//  638, 686, 1000//, 1500
+
+//raghavs original suggested genpt binning for JER
 //  7, 9, 12, /*3, 4, 5, */
 //  15, 18, 21, 24, 28,
 //  32, 37, 43, 49, 56,
@@ -67,7 +74,6 @@ const int ptbins[]={
 //  330, 362, 395, 430,
 //  468, 507, 548, 592,
 //  638, 686, 1000//, 1500
-//}; //raghavs original suggested genpt binning for JER
 const int nbins_pt = sizeof(ptbins)/sizeof(int)-1;//above values define edges of bins, not centers, so subtract one
 
 const double JEC_ptbins[] = {

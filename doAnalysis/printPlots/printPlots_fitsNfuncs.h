@@ -303,7 +303,7 @@ void MakeHistMean(TH1F *&h1,float ymax,float ymin){
   //h1->GetXaxis()->SetTitleSize(0.03);
   //h1->GetXaxis()->SetTitleOffset(1.0);
   h1->GetXaxis()->SetLabelFont(42);
-  h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelSize(0.03);
   //h1->GetXaxis()->SetLabelOffset(0.005);
 
   //h1->GetXaxis()->SetNdivisions(507);
@@ -313,10 +313,10 @@ void MakeHistMean(TH1F *&h1,float ymax,float ymin){
   //h1->GetYaxis()->CenterTitle(true);
   //title/label
   h1->GetYaxis()->SetTitleFont(42);
-  h1->GetYaxis()->SetTitleSize(0.04);
+  //h1->GetYaxis()->SetTitleSize(0.04);
   //h1->GetYaxis()->SetTitleOffset(1.00);
   h1->GetYaxis()->SetLabelFont(42);
-  h1->GetYaxis()->SetLabelSize(0.03);
+  //h1->GetYaxis()->SetLabelSize(0.03);
 
   //h1->GetYaxis()->SetNdivisions(507);
   h1->GetYaxis()->SetDecimals(true);
@@ -334,16 +334,17 @@ void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
 
   // x axis
   //h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
+  //h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
+  h1->GetXaxis()->SetTitle("reco p_{T} (GeV/c)");
   //h1->GetXaxis()->CenterTitle(true);
   //h1->GetXaxis()->SetMoreLogLabels();
   //h1->GetXaxis()->SetNoExponent();
   //title/label
   h1->GetXaxis()->SetTitleFont(42);
-  h1->GetXaxis()->SetTitleSize(0.04);
+  //h1->GetXaxis()->SetTitleSize(0.04);
   //h1->GetXaxis()->SetTitleOffset(1.0);
   h1->GetXaxis()->SetLabelFont(42);
-  h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelSize(0.03);
   //h1->GetXaxis()->SetLabelOffset(0.01);
   
   //h1->GetXaxis()->SetNdivisions(507);
@@ -353,10 +354,10 @@ void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
   //h1->GetYaxis()->CenterTitle(true);
   //title/label
   h1->GetYaxis()->SetTitleFont(42);
-  h1->GetYaxis()->SetTitleSize(0.04);
+  //h1->GetYaxis()->SetTitleSize(0.04);
   //h1->GetYaxis()->SetTitleOffset(1.0);
   h1->GetYaxis()->SetLabelFont(42);
-  h1->GetYaxis()->SetLabelSize(0.02);
+  //h1->GetYaxis()->SetLabelSize(0.02);
   //h1->GetYaxis()->SetLabelOffset(0.01);
 
   //h1->GetYaxis()->SetNdivisions(507);

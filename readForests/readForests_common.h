@@ -100,12 +100,18 @@ const int N_vars=sizeof(var)/sizeof(std::string);
 //"leadJetPt", "subleadJetPt"
 const int jtInd=0, jtConInd=4, dijtInd=31;
 
+const float HLTthresh[]={
+  //  40., 60., 80., 100.
+  //  40., 60., 80., 135.
+  55., 75., 105., 135.
+};
+
+
 //L1
 const std::string L1BitStrings[]={//this array is a good idea
   "L1_SingleJet28_BptxAND",
   "L1_SingleJet40_BptxAND",
   "L1_SingleJet48_BptxAND",
-
   "L1_SingleJet52_BptxAND"
 };
 //const int N_L1Bits=N_HLTBits;
@@ -117,7 +123,6 @@ const std::string Calo_HLTBitStrings[]={
   "HLT_AK4CaloJet40_Eta5p1",
   "HLT_AK4CaloJet60_Eta5p1",
   "HLT_AK4CaloJet80_Eta5p1",
-
   "HLT_AK4CaloJet100_Eta5p1" 
 };
 const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
@@ -126,7 +131,6 @@ const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
   "HLT_AK4PFJet60_Eta5p1",
   "HLT_AK4PFJet80_Eta5p1",
-
   "HLT_AK4PFJet100_Eta5p1" 
 };
 
@@ -138,7 +142,6 @@ const std::string dataTreeNames[]={
   "hltobject/"+Calo_HLTBitStrings[0]+"_v" ,
   "hltobject/"+Calo_HLTBitStrings[1]+"_v" ,
   "hltobject/"+Calo_HLTBitStrings[2]+"_v" ,
-
   "hltobject/"+Calo_HLTBitStrings[3]+"_v" 
 };
 const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);
@@ -163,6 +166,7 @@ const int N_MCTrees=sizeof(MCTreeNames)/sizeof(std::string);
 
 // for 5 tev pp jets 2k17
 const float absetabins[]={
+  //  0.0, 0.5, 1.0, 1.5, 2.0, 2.4, 2.5, 2.7, 3.0, 3.2, 3.7, 4.2, 4.7, 5.1
   0.0, 0.5,
   1.0, 1.5,
   2.0, 2.5,
@@ -173,7 +177,7 @@ const int nbins_abseta=sizeof(absetabins)/sizeof(float)-1;
 
 
 const float etabins[]={
-  -5.0 ,
+  -5.1 ,
   -4.7 , -4.4 , -4.1 , -3.8 , -3.5 ,
   -3.2 , -3.0 , -2.7 , -2.4 , -2.1 ,
   -1.8 , -1.5 , -1.2 ,
@@ -183,7 +187,7 @@ const float etabins[]={
   1.2 ,  1.5 ,  1.8 ,
   2.1 ,  2.4 ,  2.7 ,  3.0 ,  3.2 ,
   3.5 ,  3.8 ,  4.1 ,  4.4 ,  4.7 ,
-  5.0
+  5.1
 };
 const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
@@ -191,8 +195,8 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 const float ptbins[]={
   //1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 
   //28,   32,   37, 
-  43, 
-  49, 
+  // 43, 
+  // 49, 
   56, 
   64, 
   74, 

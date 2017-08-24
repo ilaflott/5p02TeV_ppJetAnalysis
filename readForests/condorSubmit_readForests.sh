@@ -184,7 +184,7 @@ EOF
     ## submit the job defined in the above submit file
     echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    sleep 0.2s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 0.1s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -

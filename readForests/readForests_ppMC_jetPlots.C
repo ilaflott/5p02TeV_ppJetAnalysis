@@ -139,17 +139,14 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  
     
-    hVr = new TH1F("hVr","vr, no trig, no weights",  100,0.,0.25); 
-    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  100,0.,0.25);    
-    //  hTrgVr_noW = new TH1F("hTriggerVr_noWeights","vr, trigd, no weights",  100,0.,0.25);    
+    hVr = new TH1F("hVr","vr, no trig, no weights",  400,-0.25,0.25); 
+    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  400,-0.25,0.25);    
     
-    hVx = new TH1F("hVx","vx, no trig, no weights",  100,0.,0.25); 
-    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  100,0.,0.25);    
-    //  hTrgVx_noW = new TH1F("hTriggerVx_noWeights","vx, trigd, no weights",  100,0.,0.25);    
-    
-    hVy = new TH1F("hVy","vy, no trig, no weights",  100,0.,0.25); 
-    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  100,0.,0.25);    
-    //    hTrgVy_noW = new TH1F("hTriggerVy_noWeights","vy, trigd, no weights",  100,0.,0.25);    
+    hVx = new TH1F("hVx","vx, no trig, no weights",  400,-0.25,0.25); 
+    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  400,-0.25,0.25);    
+
+    hVy = new TH1F("hVy","vy, no trig, no weights",  400,-0.25,0.25); 
+    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  400,-0.25,0.25);    
     
     hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
     hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz

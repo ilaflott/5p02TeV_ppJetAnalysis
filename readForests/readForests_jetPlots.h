@@ -45,10 +45,10 @@ const int readForestsArgCount=9+minArgs;
 
 // extended eta range for jetID Eff, or more QA in diff region... etc.
 const float jtPtCut=56; // 49 or 56 or 64 or 74...
-const float genJetPtCut=37; // two bins lower
 const float jetQAPtCut=jtPtCut;
+
+const float genJetPtCut=49; 
 //const float genJetPtCut=30.;
-//const float jetQAPtCut=30.;//sometimes a bit higher than jtptCut
 
 const float ldJetPtCut=74., subldJetPtCut=56., ptAveCut=64., dPhiCut=2./3.*TMath::Pi();//dijet cuts
 

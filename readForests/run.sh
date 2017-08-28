@@ -11,27 +11,36 @@ echo ""
 echo "...ppMC jetPlots..."
 rootcompile readForests_ppMC_jetPlots.C
 
-#echo "...ppData jetPlots..."
-#rootcompile readForests_ppData_jetPlots.C
+echo "...ppData jetPlots..."
+rootcompile readForests_ppData_jetPlots.C
 
 echo ""
 echo "done compiling code(s), submitting."
 echo ""
 
-source run_readForests_jetPlots.sh 4 "0.0" "0.5"
+### INCL. JET SPECTRA, BARREL |y|
+source run_readForests_jetPlots.sh 4 "0.0" "2.0"
 sleep 60s
-source run_readForests_jetPlots.sh 4 "0.5" "1.0"
-sleep 60s
-source run_readForests_jetPlots.sh 4 "1.0" "1.5"
-sleep 60s
-source run_readForests_jetPlots.sh 4 "1.5" "2.0"
-sleep 60s
-source run_readForests_jetPlots.sh 4 "2.0" "2.5"
-sleep 60s
-source run_readForests_jetPlots.sh 4 "2.5" "3.0"
-sleep 60s
-source run_readForests_jetPlots.sh 4 "3.2" "4.7"
-sleep 60s
+
+### INCL. JET SPECTRA, ENTIRE |y| RANGE
+#source run_readForests_jetPlots.sh 4 "0.0" "4.7"
+#sleep 60s
+
+#### INCL. JET SPECTRA |y| bins
+#source run_readForests_jetPlots.sh 4 "0.0" "0.5"
+#sleep 60s
+#source run_readForests_jetPlots.sh 4 "0.5" "1.0"
+#sleep 60s
+#source run_readForests_jetPlots.sh 4 "1.0" "1.5"
+#sleep 60s
+#source run_readForests_jetPlots.sh 4 "1.5" "2.0"
+#sleep 60s
+#source run_readForests_jetPlots.sh 4 "2.0" "2.5"
+#sleep 60s
+#source run_readForests_jetPlots.sh 4 "2.5" "3.0"
+#sleep 60s
+#source run_readForests_jetPlots.sh 4 "3.2" "4.7"
+#sleep 60s
 
 
 #echo ""

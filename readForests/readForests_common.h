@@ -148,8 +148,6 @@ const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);
 
 
 
-const std::string trgCombType="Calo";
-
 // MC tree name array (NOT FINISHED, WILL ERROR IN CURRENT FORM)
 const std::string MCTreeNames[]={
   "GARBAGE ENTRY",

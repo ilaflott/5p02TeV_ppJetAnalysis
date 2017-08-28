@@ -12,6 +12,9 @@ const bool fillDataJetSpectraRapHists=false; //other
 
 const bool useHLT100=false;
 
+const std::string trgCombType="PF";//="Calo";
+
+
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int endfile , 
@@ -749,7 +752,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if( recpt <= jtPtCut ){ 
 	jetsPerEvent--;	jetsPerEventJetID--;
 	continue;}
-
+      
       if( absreceta >= jtEtaCutHi ) {
 	//jetsPerEvent--;	jetsPerEventJetID--;
 	continue;}
@@ -757,9 +760,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	//jetsPerEvent--;	jetsPerEventJetID--;
 	continue;}
 
+      if(absreceta >= 4.7 ) jetsPerEvent--; 
 
       // largest jet pt in each event
-      if(recpt>evt_leadJetPt )
+      if(recpt>evt_leadJetPt && absreceta<4.7)
 	evt_leadJetPt=recpt;
       //if(recpt>evt_leadJetPt_wJetID && fillDataJetIDHists && passesJetID)
       //evt_leadJetPt_wJetID=recpt;
@@ -1091,7 +1095,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	//hLeadJetPt_wJetID->Fill(evt_leadJetPt_wJetID ,weight_eS);
 	hjetsPEvt_wJetID ->Fill(jetsPerEventJetID,1.0);   
 	hWjetsPEvt_wJetID->Fill(jetsPerEventJetID,weight_eS); }   
-      hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
+      if(evt_leadJetPt>0.) hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
       hjetsPEvt ->Fill(jetsPerEvent,1.0);   
       hWjetsPEvt->Fill(jetsPerEvent,weight_eS); 
     }

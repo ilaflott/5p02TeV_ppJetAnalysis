@@ -515,8 +515,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	continue; }
       
 
+      if(absreceta>=4.7) jetsPerEvent--;
+
       // largest jet pt in each event
-      if(recpt>evt_leadJetPt )
+      if(recpt>evt_leadJetPt && absreceta<4.7)
 	evt_leadJetPt=recpt;
       //if(recpt>evt_leadJetPt_wJetID && fillDataJetIDHists && passesJetID)
       //evt_leadJetPt_wJetID=recpt;
@@ -824,7 +826,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	//hLeadJetPt_wJetID->Fill(evt_leadJetPt_wJetID ,weight_eS);
 	hjetsPEvt_wJetID ->Fill(jetsPerEventJetID,1.0);   
 	hWjetsPEvt_wJetID->Fill(jetsPerEventJetID,weight_eS); }    
-      hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
+      if(evt_leadJetPt>0.)hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
       hjetsPEvt ->Fill(jetsPerEvent,1.0);   
       hWjetsPEvt->Fill(jetsPerEvent,weight_eS); }
 

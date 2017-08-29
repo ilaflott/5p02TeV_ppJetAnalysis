@@ -18,13 +18,15 @@ echo ""
 echo "done compiling code(s), submitting."
 echo ""
 
-### INCL. JET SPECTRA, BARREL |y|
-source run_readForests_jetPlots.sh 4 "0.0" "2.0"
-sleep 60s
-
 ### INCL. JET SPECTRA, ENTIRE |y| RANGE
 #source run_readForests_jetPlots.sh 4 "0.0" "4.7"
 #sleep 60s
+
+### INCL. JET SPECTRA, LARGER |y| REGIONS
+source run_readForests_jetPlots.sh 4 "0.0" "2.0"
+source run_readForests_jetPlots.sh 4 "2.0" "3.0"
+source run_readForests_jetPlots.sh 4 "3.2" "4.7"
+sleep 60s
 
 #### INCL. JET SPECTRA |y| bins
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5"

@@ -11,8 +11,6 @@
 *.tar.gz
 *~
 *#
-setupenv.sh
-setupgrid.sh
 */filelists
 */filelists/*
 misc

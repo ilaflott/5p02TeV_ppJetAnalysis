@@ -60,7 +60,16 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   // initialize tree name array
   std::string trees[N_dataTrees];
   trees[0]=jetTreeName;
-  for(int i=1;i<N_dataTrees;++i)trees[i]=dataTreeNames[i];
+  for(int i=1;i<N_dataTrees;++i){
+    if(i<4)trees[i]=dataTreeNames[i];
+    else{
+      if(trgCombType=="PF")
+	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-4]+"_v";
+      else if(trgCombType=="Calo")
+	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-4]+"_v";
+      else assert(false);
+    }
+  }
   if(debugMode&&false)for(int i=0;i<N_dataTrees;++i)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
 
   // declare TChains for each tree + friend them
@@ -262,14 +271,17 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   
   TH1F *hpp_HLTCombtrgPt=NULL, *hpp_HLTCombtrgEta=NULL;
   
-  TH1F *hpp_HLT40InEff =NULL;
-  TH1F *hpp_HLT60InEff =NULL;
-  TH1F *hpp_HLT80InEff =NULL;
-  TH1F *hpp_HLT100InEff=NULL;
-  TH1F *hpp_HLTAllInEff=NULL;
-  
+  //TH2F *hpp_pscl_HLTPFvCalo=NULL;
+  //TH2F *hpp_totpscl_HLTPFvCalo=NULL;
+  //TH2F *hpp_pscl_HLTvL1=NULL;
+
   if(fillDataJetTrigQAHists){
-    
+
+    ////trigger prescale TH2s
+    //if(false)hpp_totpscl_HLTPFvCalo = new TH2F ( "totpsclTH2_HLTPFvCalo" , "pscls for PForCalo trigd evts"    , 101, -1,100, 101, -1,100);
+    //if(false)hpp_pscl_HLTPFvCalo    = new TH2F ( "psclTH2_HLTPFvCalo"    , "totpscls for PForCalo trigd evts" , 101, -1,100, 101, -1,100);
+    //if(false)hpp_pscl_HLTvL1        = new TH2F ( "psclTH2_HLTvL1"        , "pscls for HLTorL1 trigd evts"     , 101, -1,100, 101, -1,100);
+
     //no exclusion trigger pt
     hpp_IncHLT40trgPt   = new TH1F( "IncHLT40_trgPt"  , "inc trgPt for HLT40   ", 1000, 0, 1000 ); 
     hpp_IncHLT60trgPt   = new TH1F( "IncHLT60_trgPt"  , "inc trgPt for HLT60   ", 1000, 0, 1000 ); 
@@ -298,17 +310,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
     hpp_HLTCombtrgEta = new TH1F( "HLTComb_trgEta"  , "trgEta for HLTComb ", 100, -5., 5. );       
 
-
-
-    //ineff
-    hpp_HLT40InEff  = new TH1F( "isHLT40_inEff"  , "isHLT40  inEff Check", 1000, 0,1000 ); 
-    hpp_HLT60InEff  = new TH1F( "isHLT60_inEff"  , "isHLT60  inEff Check", 1000, 0,1000 ); 
-    hpp_HLT80InEff  = new TH1F( "isHLT80_inEff"  , "isHLT80  inEff Check", 1000, 0,1000 ); 
-    hpp_HLT100InEff = new TH1F( "isHLT100_inEff" , "isHLT100 inEff Check", 1000, 0,1000 );       
-
-    hpp_HLTAllInEff = new TH1F( "isHLTAll_inEff" , "isHLTAll inEff Check", 1000, 0,1000 );           
-    
-    
     std::string hJetTrigQATitleArray[]={ "hpp_HLT40", "hpp_HLT60",  "hpp_HLT80", "hpp_HLT100", "hpp_HLTComb"};//,"hpp_TrgCombTest" };
     std::string hJetTrigQADescArray[]={ "HLT40Jet","HLT60Jet",  "HLT80Jet", "HLT100Jet", "HLTCombo"};//,"HLTAltComb" };
     const int nJetTrigQATitles=sizeof(hJetTrigQATitleArray)/sizeof(std::string);
@@ -608,7 +609,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     h_NEvents_vzCut->Fill(1);
 
     
-    bool L1trgDec[N_HLTBits]   ={ (bool)jet40_l1s_I, (bool)jet60_l1s_I,  (bool)jet80_l1s_I,  (bool)jet100_l1s_I    };
+
     
     //prescale/decision arrays, total prescale=L1_ps*HLT_ps
     bool PFtrgDec[N_HLTBits]   ={ (bool)PFJet40_I, (bool)PFJet60_I, (bool)PFJet80_I, (bool)PFJet100_I };
@@ -701,10 +702,16 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
     if(fillDataJetTrigQAHists){
       
+      //make these trigger plots an array?
       if(trgDec[0])   hpp_IncHLT40trgPt->Fill(  (float)trgPt, trgPscl[0] );
       if(trgDec[1])   hpp_IncHLT60trgPt->Fill(  (float)trgPt, trgPscl[1] );
       if(trgDec[2])   hpp_IncHLT80trgPt->Fill(  (float)trgPt, trgPscl[2] );
       if(trgDec[3])   hpp_IncHLT100trgPt->Fill( (float)trgPt, trgPscl[3] );
+      
+      if(trgDec[0])   hpp_IncHLT40trgEta->Fill(  (float)trgEta, trgPscl[0] );
+      if(trgDec[1])   hpp_IncHLT60trgEta->Fill(  (float)trgEta, trgPscl[1] );
+      if(trgDec[2])   hpp_IncHLT80trgEta->Fill(  (float)trgEta, trgPscl[2] );
+      if(trgDec[3])   hpp_IncHLT100trgEta->Fill( (float)trgEta, trgPscl[3] );
       
       if(     is100 )  hpp_HLT100trgPt->Fill(   (float)trgPt , weight_eS );   
       else if(is80  )  hpp_HLT80trgPt->Fill(    (float)trgPt , weight_eS );
@@ -713,23 +720,15 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
       if(true)         hpp_HLTCombtrgPt->Fill(  (float)trgPt , weight_eS );   
       
-      if(trgDec[0])   hpp_IncHLT40trgEta->Fill(  (float)trgEta, trgPscl[0] );
-      if(trgDec[1])   hpp_IncHLT60trgEta->Fill(  (float)trgEta, trgPscl[1] );
-      if(trgDec[2])   hpp_IncHLT80trgEta->Fill(  (float)trgEta, trgPscl[2] );
-      if(trgDec[3])   hpp_IncHLT100trgEta->Fill( (float)trgEta, trgPscl[3] );
-      
       if(     is100 )  hpp_HLT100trgEta->Fill(   (float)trgEta , weight_eS );   
       else if(is80  )  hpp_HLT80trgEta->Fill(    (float)trgEta , weight_eS );
       else if(is60  )  hpp_HLT60trgEta->Fill(    (float)trgEta , weight_eS );
       else if(is40  )  hpp_HLT40trgEta->Fill(    (float)trgEta , weight_eS );
       
-      if(true)         hpp_HLTCombtrgEta->Fill(  (float)trgEta , weight_eS );   
+      if(true)         hpp_HLTCombtrgEta->Fill(  (float)trgEta , weight_eS );         
       
-
-      if(      trgDec[3] && !L1trgDec[3])  hpp_HLT100InEff->Fill((float)trgPt,weight_eS);   
-      else if( trgDec[2] && !L1trgDec[2])   hpp_HLT80InEff->Fill((float)trgPt,weight_eS);
-      else if( trgDec[1] && !L1trgDec[1])   hpp_HLT60InEff->Fill((float)trgPt,weight_eS);
-      else if( trgDec[0] && !L1trgDec[0])   hpp_HLT40InEff->Fill((float)trgPt,weight_eS);    
+      
+      
     }
 
 
@@ -1152,15 +1151,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
   std::cout<<std::endl;
   
-  if(fillDataJetTrigQAHists){
-    
-    hpp_HLTAllInEff->Add(hpp_HLT40InEff );
-    hpp_HLTAllInEff->Add(hpp_HLT60InEff );
-    hpp_HLTAllInEff->Add(hpp_HLT80InEff );
-    hpp_HLTAllInEff->Add(hpp_HLT100InEff);       
-    
-  }
-  
   std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
   std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetEntries()<<std::endl;
@@ -1251,3 +1241,42 @@ int main(int argc, char *argv[]){
   return rStatus;
 }
 
+
+
+
+
+
+
+
+
+
+//TH1F *hpp_HLT40InEff =NULL;
+//TH1F *hpp_HLT60InEff =NULL;
+//TH1F *hpp_HLT80InEff =NULL;
+//TH1F *hpp_HLT100InEff=NULL;
+//TH1F *hpp_HLTAllInEff=NULL;      
+
+////ineff
+//hpp_HLT40InEff  = new TH1F( "isHLT40_inEff"  , "isHLT40  inEff Check", 1000, 0,1000 ); 
+//hpp_HLT60InEff  = new TH1F( "isHLT60_inEff"  , "isHLT60  inEff Check", 1000, 0,1000 ); 
+//hpp_HLT80InEff  = new TH1F( "isHLT80_inEff"  , "isHLT80  inEff Check", 1000, 0,1000 ); 
+//hpp_HLT100InEff = new TH1F( "isHLT100_inEff" , "isHLT100 inEff Check", 1000, 0,1000 );       
+//
+//hpp_HLTAllInEff = new TH1F( "isHLTAll_inEff" , "isHLTAll inEff Check", 1000, 0,1000 );                 
+
+//bool L1trgDec[N_HLTBits]   ={ (bool)jet40_l1s_I, (bool)jet60_l1s_I,  (bool)jet80_l1s_I,  (bool)jet100_l1s_I    };
+
+//if(      trgDec[3] && !L1trgDec[3])  hpp_HLT100InEff->Fill((float)trgPt,weight_eS);   
+//else if( trgDec[2] && !L1trgDec[2])   hpp_HLT80InEff->Fill((float)trgPt,weight_eS);
+//else if( trgDec[1] && !L1trgDec[1])   hpp_HLT60InEff->Fill((float)trgPt,weight_eS);
+//else if( trgDec[0] && !L1trgDec[0])   hpp_HLT40InEff->Fill((float)trgPt,weight_eS);    
+
+//if(fillDataJetTrigQAHists){
+//  
+//  hpp_HLTAllInEff->Add(hpp_HLT40InEff );
+//  hpp_HLTAllInEff->Add(hpp_HLT60InEff );
+//  hpp_HLTAllInEff->Add(hpp_HLT80InEff );
+//  hpp_HLTAllInEff->Add(hpp_HLT100InEff);       
+//  
+//}
+  

@@ -139,10 +139,10 @@ const std::string PF_HLTBitStrings[]={
 const std::string dataTreeNames[]={
   "GARBAGE ENTRY",
   "hiEvtAnalyzer/HiTree", "skimanalysis/HltTree", "hltanalysis/HltTree",
-  "hltobject/"+Calo_HLTBitStrings[0]+"_v" ,
-  "hltobject/"+Calo_HLTBitStrings[1]+"_v" ,
-  "hltobject/"+Calo_HLTBitStrings[2]+"_v" ,
-  "hltobject/"+Calo_HLTBitStrings[3]+"_v" 
+  "hltobject/", //+Calo_HLTBitStrings[0]+"_v" ,
+  "hltobject/", //+Calo_HLTBitStrings[1]+"_v" ,
+  "hltobject/", //+Calo_HLTBitStrings[2]+"_v" ,
+  "hltobject/"  //+Calo_HLTBitStrings[3]+"_v" 
 };
 const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);
 

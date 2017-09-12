@@ -889,10 +889,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	hpp_TrgObjComb[0]->Fill(recpt, weight_eS); //kurts method
 	
 	//no exclusion between triggers
-	if(trgDec[0]&&trgPt>=HLTThresh[0])  hpp_TrgObj40[0]->Fill(recpt, trgPscl[0]);
-	if(trgDec[1]&&trgPt>=HLTThresh[1])  hpp_TrgObj60[0]->Fill(recpt, trgPscl[1]);
-	if(trgDec[2]&&trgPt>=HLTThresh[2])  hpp_TrgObj80[0]->Fill(recpt, trgPscl[2]);
-	if(trgDec[3]&&trgPt>=HLTThresh[3])  hpp_TrgObj100[0]->Fill(recpt, trgPscl[3]);  
+	if(trgDec[0]&&trgPt>=HLTthresh[0])  hpp_TrgObj40[0]->Fill(recpt, trgPscl[0]);
+	if(trgDec[1]&&trgPt>=HLTthresh[1])  hpp_TrgObj60[0]->Fill(recpt, trgPscl[1]);
+	if(trgDec[2]&&trgPt>=HLTthresh[2])  hpp_TrgObj80[0]->Fill(recpt, trgPscl[2]);
+	if(trgDec[3]&&trgPt>=HLTthresh[3])  hpp_TrgObj100[0]->Fill(recpt, trgPscl[3]);  
 	
 	//with exclusion
 	if(is40 )       hpp_ExcTrgObj40[0]->Fill( recpt , weight_eS);
@@ -1018,10 +1018,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  hpp_TrgObjComb[1]->Fill(recpt, weight_eS); //kurts method
 	  
 	  //no exclusion between triggers
-	  if(trgDec[0]&&trgPt>=HLTThresh[0])   hpp_TrgObj40[1]->Fill(recpt, trgPscl[0]);
-	  if(trgDec[1]&&trgPt>=HLTThresh[1])   hpp_TrgObj60[1]->Fill(recpt, trgPscl[1]);
-	  if(trgDec[2]&&trgPt>=HLTThresh[2])   hpp_TrgObj80[1]->Fill(recpt, trgPscl[2]);
-	  if(trgDec[3]&&trgPt>=HLTThresh[3])  hpp_TrgObj100[1]->Fill(recpt, trgPscl[3]);  
+	  if(trgDec[0]&&trgPt>=HLTthresh[0])   hpp_TrgObj40[1]->Fill(recpt, trgPscl[0]);
+	  if(trgDec[1]&&trgPt>=HLTthresh[1])   hpp_TrgObj60[1]->Fill(recpt, trgPscl[1]);
+	  if(trgDec[2]&&trgPt>=HLTthresh[2])   hpp_TrgObj80[1]->Fill(recpt, trgPscl[2]);
+	  if(trgDec[3]&&trgPt>=HLTthresh[3])  hpp_TrgObj100[1]->Fill(recpt, trgPscl[3]);  
 	  
 	  //with exclusion
 	  if(is40 )        hpp_ExcTrgObj40[1]->Fill( recpt , weight_eS);

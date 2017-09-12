@@ -3,8 +3,11 @@
 const bool debugMode=true;
 
 const bool draw_hJER=true;
-const bool draw_MCEff=true;
 
+
+
+//other options
+const bool draw_MCEff=true;
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
 const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 
@@ -39,8 +42,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   std::string didJetID=inFile_MC_dir.substr( inFile_MC_dir.find("MCJEC_jtID")+strlen("MCJEC_jtID"), 1 );
   //if(debugMode)std::cout<<"doJetID="<<doJetID<<std::endl;
   
-  std::string doJetID="0";
-  didJetID="0";
+  std::string doJetID="1";
+  didJetID="1";
   //if(didJetID=="0") doJetID=didJetID;
   //else doJetID="1";
   
@@ -49,7 +52,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 
   std::string outFileName=outputDir+fullJetType+jobType+"_"+outputTag+".root";
   std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
-  //TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
+  TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
   
   // input file
   const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
@@ -73,7 +76,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   
   else{ //draw h_JER
 
-    TH1F *hrsp[Nrad][nbins_pt]={};  
+    TH1F *hrsp[Nrad][nbins_pt_debug]={};  
     //double array_mean[Nrad][nbins_pt]={};
     //double array_sig[Nrad][nbins_pt]={};
 
@@ -116,7 +119,10 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       for(int ip=0; ip<nbins_pt_debug; ip++){    
 	
 	// input hist title string    
-	if(debugMode)std::cout<<"for pt range "<<ptbins[ip]<<" to "<<ptbins[ip+1]<<std::endl;    
+	int ptbin_ip=(int)ptbins_debug[ip];
+	int ptbin_ip1=(int)ptbins_debug[ip+1];
+	//if(debugMode)std::cout<<"for pt range "<<ptbins[ip]<<" to "<<ptbins[ip+1]<<std::endl;    
+	if(debugMode)std::cout<<"for pt range "<<ptbin_ip<<" to "<<ptbin_ip1<<std::endl;    
 	std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
 	//+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);
 	//"hJER_"+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);     
@@ -202,6 +208,11 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
       std::cout<<"opening output pdf file "<< thePDFFileName<<std::endl<<std::endl;    
       
+      std::string theRootFileName=outputDir+fullJetType+jobType+"_"+outputTag+".root";
+      //TFile* rootfout_= new TFile(theRootFileName.c_str(), "NEW");
+      //TFile* rootfout_= new TFile(theRootFileName.c_str(), "RECREATE");
+      rootfout->cd();
+
       TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 600);    
       pdfoutCanv->Print( open_thePDFFileName.c_str() );    
       pdfoutCanv->cd();    
@@ -224,22 +235,27 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       for(int i=0;i<Nrad;++i){    
 	
 	hMean[i] ->Draw("HIST E1"); //pdfoutCanv->Print(thePDFFileName.c_str());    
-	TLine* meanLine=new TLine(ptbins[0],1.,ptbins[nbins_pt_debug],1.);    
+	hMean[i]->Write();
+	TLine* meanLine=new TLine(ptbins_debug[0],1.,ptbins_debug[nbins_pt_debug],1.);    
 	meanLine->SetLineStyle(2);       meanLine->SetLineColor(kBlue);    
 	meanLine->Draw();    
 	
 	p2->cd();    
 	
 	hSigma[i]->Draw("HIST E1");               
+	hSigma[i]->Write();               
 	//TLine* sigmaLine=new TLine(15,0.1,500,0.1);    
 	//sigmaLine->SetLineStyle(2);       sigmaLine->SetLineColor(kBlue);    
 	//sigmaLine->Draw();    
 	
 	pdfoutCanv_muSigma->Print(thePDFFileName.c_str());        
+	pdfoutCanv_muSigma->Write();
 	
 	pdfoutCanv_wLogy->cd();    
 	for(int j=0;j<nbins_pt_debug;++j){    
-	  std::string hrspTitle=std::to_string(ptbins[j])+" GeV < reco jet p_{T} < "+std::to_string(ptbins[j+1])+" GeV";    
+	  int ptbin_j=(int)ptbins_debug[j];
+	  int ptbin_j1=(int)ptbins_debug[j+1];
+	  std::string hrspTitle=std::to_string(ptbin_j)+" GeV < reco jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
 	  hrsp[i][j]->SetTitle(hrspTitle.c_str());    
 	  hrsp[i][j]->SetTitleSize(0.02);    
 	  hrsp[i][j]->SetMarkerStyle(8);    
@@ -247,6 +263,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	  hrsp[i][j]->GetXaxis()->SetTitle("recpt/genpt");    
 	  //hrsp[i][j]->SetAxisRange(0.,0.130,"Y");    
 	  hrsp[i][j]->Draw("E1");    
+	  hrsp[i][j]->Write();    
 	  
 	  //float textx=0.5,texty=0.25;    
 	  //TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean[i][j])).c_str() );    
@@ -261,6 +278,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	  //histMeanLine->Draw("same");    
 	  
 	  pdfoutCanv_wLogy->Print(thePDFFileName.c_str());    
+	  pdfoutCanv_wLogy->Write();
 	}    
       }
       std::cout<<"closing output pdf file "<<thePDFFileName<<std::endl<<std::endl;    
@@ -268,6 +286,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       pdfoutCanv->Close();
       pdfoutCanv_muSigma->Close();
       pdfoutCanv_wLogy->Close();
+      rootfout->Close();
     }              
     
     //// save output root file. //    
@@ -1520,192 +1539,186 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
     
   }
   
-
-
+  
+  
   if(!draw_MCEff)  std::cout<<std::endl<<std::endl<<"skipping MCEff gen30-50 hists"<<std::endl<<std::endl;
   else{
     
     //gStyle->SetOptStat(0);
     //gROOT->ForceStyle();
-  { 
-    std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
-    
-    //std::string thePDFFileName=outputDir+fullJetType+jobType+"_MCEff_"+outputTag+".pdf";
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_MCEff.pdf";
-    std::string open_thePDFFileName=thePDFFileName+"[";
-    std::string close_thePDFFileName=thePDFFileName+"]";
-    std::cout<<std::endl<<"creating temporary canvas for printing MCEff plots..."<<std::endl;
-    
-    TCanvas *temp_canvMCEff = new TCanvas("tempMCEff", "tempMCEff", 1200, 600);
-    temp_canvMCEff->Print(open_thePDFFileName.c_str());
-    temp_canvMCEff->cd();
-    
-    //if(drawProfiles){     
-    for(int j=0; j<(N_genVars); j++){     
-      if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;
+    { 
+      std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
+      
+      //std::string thePDFFileName=outputDir+fullJetType+jobType+"_MCEff_"+outputTag+".pdf";
+      std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_MCEff.pdf";
+      std::string open_thePDFFileName=thePDFFileName+"[";
+      std::string close_thePDFFileName=thePDFFileName+"]";
+      std::cout<<std::endl<<"creating temporary canvas for printing MCEff plots..."<<std::endl;
+      
+      TCanvas *temp_canvMCEff = new TCanvas("tempMCEff", "tempMCEff", 1200, 600);
+      temp_canvMCEff->Print(open_thePDFFileName.c_str());
+      temp_canvMCEff->cd();
       
       
-      std::string inHistName="hpp_mceff_"+genVars[j];
-      if(doJetID=="1")inHistName+="_wJetID";
-      inHistName+="_"+radius+etaWidth;
-      
-      std::cout<<"opening TH2F "<<inHistName << std::endl;
-      TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-      if(!the2DMCEffQAHist) {std::cout<<"no MCEff plot, continuing..."<<std::endl; continue;}
-      the2DMCEffQAHist->Print("base");
-      
-      std::string h_Title   ="MC Eff. QA, TH2 profile";
-      if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-      
-      //std::string h_ZAx_Title="Entries"; 
-      std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
-      std::string h_YAx_Title="avg "+stringRatio+"/bin";
-      
-      std::string h_XAx_Title="";    
-      if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
-      if(j==1)h_XAx_Title="gen Jet Eta"       ;
-      if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
-      
-      std::cout<<"taking the profile of "<<inHistName << std::endl;
-      TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX("MCEffProfile",1,-1, "o");
-      
-      theMCEffQAHist->SetTitle (    h_Title.c_str() );
-      theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-      theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
-      
-      theMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-      if(j==0)theMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
-      if(j==1)theMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
-      if(j==2)theMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
-      
-      theMCEffQAHist->Draw("E HIST"); 
-      
-      temp_canvMCEff->Print(thePDFFileName.c_str());   
-    }// gen genvar loop
-    
-    for(int j=0; j<(N_genVars_ptrat); j++){     
-      if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;      
-      
-      std::string inHistName="hpp_mceff_ptrat_"+genVars_ptrat[j];
-      if(doJetID=="1")inHistName+="_wJetID";
-      inHistName+="_"+radius+etaWidth;
-      
-      TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-      
-      std::string h_Title   ="MC Eff. QA, TH2 profile";
-      if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-      
-      std::string h_YAx_Title="avg (recpt)/(genpt)/bin";    
-      std::string h_XAx_Title="";    
-      if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
-      if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
-      if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
-      
-      TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX("MCEffProfile",1,-1, "o");
-      
-      theMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-      if(j==0)theMCEffQAHist->SetAxisRange( -3.0, 3.0, "X");
-      if(j==1)theMCEffQAHist->SetAxisRange( -4.0, 4.0, "X");
-      if(j==2)theMCEffQAHist->SetAxisRange(   0., 0.5, "X");
-      
-      theMCEffQAHist->SetTitle (    h_Title.c_str() );
-      theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-      theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
-      
-      theMCEffQAHist->Draw("HIST E"); 
-      
-      temp_canvMCEff->Print(thePDFFileName.c_str());   
-    }//end genvar ptrat loops      
-    //}//end drawProfles
-    
-    
-    
-    //if(drawTH2s){     
-    for(int j=0; j<(N_genVars); j++){     
-      if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;
-      
-      
-      std::string inHistName="hpp_mceff_"+genVars[j];
-      if(doJetID=="1")inHistName+="_wJetID";
-      inHistName+="_"+radius+etaWidth;
-      
-      std::cout<<"opening TH2F "<<inHistName << std::endl;
-      TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-      if(!the2DMCEffQAHist) {std::cout<<"no MCEff plot, continuing..."<<std::endl; continue;}
-      
-      std::string h_Title   ="MC Eff. QA, TH2";
-      if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-      
-      //std::string h_ZAx_Title="Entries"; 
-      std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
-      std::string h_YAx_Title=stringRatio;
-      
-      std::string h_XAx_Title="";    
-      if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
-      if(j==1)h_XAx_Title="gen Jet Eta"       ;
-      if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
+      bool drawProfiles=false;
+      if(drawProfiles){     
+	for(int j=0; j<(N_genVars); j++){     
+	  if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;
+	  
+	  
+	  std::string inHistName="hpp_mceff_"+genVars[j];
+	  if(doJetID=="1")inHistName+="_wJetID";
+	  inHistName+="_"+radius+etaWidth;
+	  
+	  std::cout<<"opening TH2F "<<inHistName << std::endl;
+	  TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
+	  if(!the2DMCEffQAHist) {std::cout<<"no MCEff plot, continuing..."<<std::endl; continue;}
+	  the2DMCEffQAHist->Print("base");
+	  
+	  std::string h_Title   ="MC Eff. QA, TH2 profile";
+	  if(doJetID=="1")h_Title+=", w/ JetIDCut";      
+	  
+	  //std::string h_ZAx_Title="Entries"; 
+	  std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
+	  std::string h_YAx_Title="avg "+stringRatio+"/bin";
+	  
+	  std::string h_XAx_Title="";    
+	  if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
+	  if(j==1)h_XAx_Title="gen Jet Eta"       ;
+	  if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
+	  
+	  std::cout<<"taking the profile of "<<inHistName << std::endl;
+	  TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX("MCEffProfile",1,-1, "o");
+	  
+	  theMCEffQAHist->SetTitle (    h_Title.c_str() );
+	  theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
+	  theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
+	  
+	  theMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
+	  if(j==0)theMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
+	  if(j==1)theMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
+	  if(j==2)theMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
+	  
+	  theMCEffQAHist->Draw("E HIST COLZ"); 
+	  
+	  temp_canvMCEff->Print(thePDFFileName.c_str());   
+	}// gen genvar loop
+	
+	
+	for(int j=0; j<(N_genVars_ptrat); j++){     
+	  if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;      
+	  
+	  std::string inHistName="hpp_mceff_ptrat_"+genVars_ptrat[j];
+	  if(doJetID=="1")inHistName+="_wJetID";
+	  inHistName+="_"+radius+etaWidth;
+	  
+	  TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
+	  
+	  std::string h_Title   ="MC Eff. QA, TH2 profile";
+	  if(doJetID=="1")h_Title+=", w/ JetIDCut";      
+	  
+	  std::string h_YAx_Title="avg (recpt)/(genpt)/bin";    
+	  std::string h_XAx_Title="";    
+	  if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
+	  if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
+	  if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
+	
+	  TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX("MCEffProfile",1,-1, "o");
+	  
+	  theMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
+	  if(j==0)theMCEffQAHist->SetAxisRange( -3.0, 3.0, "X");
+	  if(j==1)theMCEffQAHist->SetAxisRange( -4.0, 4.0, "X");
+	  if(j==2)theMCEffQAHist->SetAxisRange(   0., 0.5, "X");
+	  
+	  theMCEffQAHist->SetTitle (    h_Title.c_str() );
+	  theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
+	  theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
+	  
+	  theMCEffQAHist->Draw("HIST E COLZ"); 
+	  
+	  temp_canvMCEff->Print(thePDFFileName.c_str());   
+	}//end genvar ptrat loops      
+      }//end drawProfles
       
       
-      the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
-      the2DMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-      the2DMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
       
-      the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-      if(j==0)the2DMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
-      if(j==1)the2DMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
-      if(j==2)the2DMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
+      //if(drawTH2s){     
+      for(int j=0; j<(N_genVars); j++){     
+	if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;
+	
+	
+	std::string inHistName="hpp_mceff_"+genVars[j];
+	if(doJetID=="1")inHistName+="_wJetID";
+	inHistName+="_"+radius+etaWidth;
+	
+	std::cout<<"opening TH2F "<<inHistName << std::endl;
+	TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
+	if(!the2DMCEffQAHist) {std::cout<<"no MCEff plot, continuing..."<<std::endl; continue;}
+	
+	std::string h_Title   ="MC Eff. QA, TH2";
+	if(doJetID=="1")h_Title+=", w/ JetIDCut";      
+	
+	//std::string h_ZAx_Title="Entries"; 
+	//std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
+	//std::string h_YAx_Title=stringRatio;
+	
+	//std::string h_XAx_Title="";    
+	//if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
+	//if(j==1)h_XAx_Title="gen Jet Eta"       ;
+	//if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
+	
+	
+	the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
+	//the2DMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
+	//the2DMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
+	
+	//the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
+	//if(j==0)the2DMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
+	//if(j==1)the2DMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
+	//if(j==2)the2DMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
+	
+	the2DMCEffQAHist->Draw("COLZ"); 
+	
+	temp_canvMCEff->Print(thePDFFileName.c_str());   
+      }// gen genvar loop
       
-      the2DMCEffQAHist->Draw("COLZ"); 
-      
-      temp_canvMCEff->Print(thePDFFileName.c_str());   
-    }// gen genvar loop
-    
-    for(int j=0; j<(N_genVars_ptrat); j++){     
-      if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;      
-      
-      std::string inHistName="hpp_mceff_ptrat_"+genVars_ptrat[j];
-      if(doJetID=="1")inHistName+="_wJetID";
-      inHistName+="_"+radius+etaWidth;
-      
-      TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-      
-      std::string h_Title   ="MC Eff. QA TH2";
-      if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-      
-      std::string h_YAx_Title="(recpt)/(genpt)";    
-      std::string h_XAx_Title="";    
-      if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
-      if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
-      if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
-      
-      the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-      if(j==0)the2DMCEffQAHist->SetAxisRange( -3.0, 3.0, "X");
-      if(j==1)the2DMCEffQAHist->SetAxisRange( -4.0, 4.0, "X");
-      if(j==2)the2DMCEffQAHist->SetAxisRange(   0., 0.5, "X");
-      
-      the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
-      the2DMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-      the2DMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
-      
-      the2DMCEffQAHist->Draw("COLZ"); 
-      
-      temp_canvMCEff->Print(thePDFFileName.c_str());   
-    }//end genvar ptrat loops      
-    //}//end draw TH2s
-    temp_canvMCEff->Print(close_thePDFFileName.c_str());   
-    temp_canvMCEff->Close();
-  }//end  MCEff Plots else
+      for(int j=0; j<(N_genVars_ptrat); j++){     
+	if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;      
+	
+	std::string inHistName="hpp_mceff_ptrat_"+genVars_ptrat[j];
+	if(doJetID=="1")inHistName+="_wJetID";
+	inHistName+="_"+radius+etaWidth;
+	
+	TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
+	
+	std::string h_Title   ="MC Eff. QA TH2";
+	if(doJetID=="1")h_Title+=", w/ JetIDCut";      
+	
+	//std::string h_YAx_Title="(recpt)/(genpt)";    
+	//std::string h_XAx_Title="";    
+	//if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
+	//if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
+	//if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
+	
+	//the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
+	//if(j==0)the2DMCEffQAHist->SetAxisRange( -3.0, 3.0, "X");
+	//if(j==1)the2DMCEffQAHist->SetAxisRange( -4.0, 4.0, "X");
+	//if(j==2)the2DMCEffQAHist->SetAxisRange(   0., 0.5, "X");
+	
+	the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
+	//the2DMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
+	//the2DMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
+	
+	the2DMCEffQAHist->Draw("COLZ"); 
+	
+	temp_canvMCEff->Print(thePDFFileName.c_str());   
+      }//end genvar ptrat loops      
+      //}//end draw TH2s
+      temp_canvMCEff->Print(close_thePDFFileName.c_str());   
+      temp_canvMCEff->Close();
+    }//end  MCEff Plots else
   }
   
-  
-  
-  
-  
-  
-  
-  
-  
-
   //std::cout<<"closing output root file"<<std::endl<<std::endl;
   //rootfout->Close();
   return 0;

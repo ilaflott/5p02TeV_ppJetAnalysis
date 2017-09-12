@@ -4,7 +4,7 @@
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 const bool fillJERSHists=true;
-const bool fillMCUnfoldingHists=true;
+const bool fillMCUnfoldingHists=false;
 const bool fillMCEffHists=true;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
@@ -199,18 +199,18 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if(debugMode)std::cout<<"k="<<k<<std::endl;
 	if(debugMode)std::cout<<"hMCEffTitleArray="<<hMCEffTitleArray[k]<<std::endl;
 	
-	if(hMCEffTitleArray[k]=="pt")	
-	  hpp_mceff_pt[jtID] =  new TH2F( hTitle.c_str(), "refpt v recopt/refpt"          , 100, 0.,5., 1000, 0.,1000. );
-	else if(hMCEffTitleArray[k]=="eta")						          
-	  hpp_mceff_eta[jtID] = new TH2F( hTitle.c_str(), "refeta v recoeta"       , 100, -5.,5., 100, -5.,5.    );
-	else if(hMCEffTitleArray[k]=="phi")						          
-	  hpp_mceff_phi[jtID] = new TH2F( hTitle.c_str(), "refphi v recophi"       , 100, -5.,5., 100, -4.,4.    );
-	else if(hMCEffTitleArray[k]=="ptrat_drjt")					          
-	  hpp_mceff_ptrat_drjt[jtID] = new TH2F( hTitle.c_str(), "refdrjt v recopt/refpt" , 100, 0.,5., 30, 0. ,0.6    );   
-	else if(hMCEffTitleArray[k]=="ptrat_eta")						          
-	  hpp_mceff_ptrat_eta[jtID]  = new TH2F( hTitle.c_str(), "refeta v recopt/refpt"  , 100, 0.,5., 40, -5.,5.    );
-	else if(hMCEffTitleArray[k]=="ptrat_phi")						          
-	  hpp_mceff_ptrat_phi[jtID]  = new TH2F( hTitle.c_str(), "refphi v recopt/refpt"  , 100, 0.,5., 40, -4.,4.    );     
+	if(hMCEffTitleArray[k]=="pt")	                                                    //x stuff,, //ystuff,,
+	  hpp_mceff_pt[jtID] =  new TH2F( hTitle.c_str(), "recopt v recopt/refpt"          , 1000, 0.,1000. , 500,   0.,5. );
+	else if(hMCEffTitleArray[k]=="eta")						   		             	
+	  hpp_mceff_eta[jtID] = new TH2F( hTitle.c_str(), "recoeta v recoeta-refeta"       , 1000, -5.,5.   , 200, -1.,1.  );
+	else if(hMCEffTitleArray[k]=="phi")						   		              	
+	  hpp_mceff_phi[jtID] = new TH2F( hTitle.c_str(), "recophi v recophi-refphi"       , 800, -4.,4.    , 200, -1.,1. );
+	else if(hMCEffTitleArray[k]=="ptrat_drjt")					   		             	
+	  hpp_mceff_ptrat_drjt[jtID] = new TH2F( hTitle.c_str(), "refdrjt v recopt/refpt"  , 500, 0. , 0.5  , 500,   0. , 5. );   
+	else if(hMCEffTitleArray[k]=="ptrat_eta")					   		       	        
+	  hpp_mceff_ptrat_eta[jtID]  = new TH2F( hTitle.c_str(), "refeta  v recopt/refpt"  , 100, -5.,5.    , 500,   0.,5. );
+	else if(hMCEffTitleArray[k]=="ptrat_phi")					   		       	        
+	  hpp_mceff_ptrat_phi[jtID]  = new TH2F( hTitle.c_str(), "refphi  v recopt/refpt"  , 80, -4.,4.     , 500,   0.,5.);     
       }}  
   }
   
@@ -582,10 +582,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	
 	//JER in genptbins array, according to input absetacuts
 	int ptbin = -1; 
-	if( recpt >= ptbins[nbins_pt] ) ptbin=-1;//check end of binning array    //else if (!passesEtaCut) ptbin=-1;
+	//if( recpt >= ptbins[nbins_pt] ) ptbin=-1;//check end of binning array    //else if (!passesEtaCut) ptbin=-1;
+	if( genpt >= ptbins[nbins_pt] ) ptbin=-1;//check end of binning array    //else if (!passesEtaCut) ptbin=-1;
 	else {
 	  for(int bin = 0; bin<nbins_pt; ++bin)      
-	    if(recpt >= ptbins[bin]) ptbin = bin;  	}
+	    //if(recpt >= ptbins[bin]) ptbin = bin;  	}
+	    if(genpt >= ptbins[bin]) ptbin = bin;  	}
 	
 	if(ptbin != -1) {
 	  for(int jtID=0; jtID<2;jtID++){
@@ -605,12 +607,13 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  //if(recpt<=jtPtCut || genpt<=genJetPtCut)continue;
 	  if(jtID==1 && !passesJetID)continue;
 	  else if (jtID==1 && !fillMCJetIDHists)continue;
-	  hpp_mceff_pt[jtID]->Fill(         recpt/genpt   , genpt   ,  weight_eS);
-	  hpp_mceff_eta[jtID]->Fill(        receta-geneta , geneta  ,  weight_eS);
-	  hpp_mceff_phi[jtID]->Fill(        recphi , genphi  ,  weight_eS);	
-	  hpp_mceff_ptrat_drjt[jtID]->Fill( recpt/genpt   , gendrjt ,  weight_eS);	
-	  hpp_mceff_ptrat_eta[jtID]->Fill(  recpt/genpt   , geneta  ,  weight_eS);
-	  hpp_mceff_ptrat_phi[jtID]->Fill(  recpt/genpt   , genphi  ,  weight_eS);       
+                                        	  // x val, y val, weight
+	  hpp_mceff_pt[jtID]->Fill(         genpt   , recpt/genpt   ,   weight_eS);
+	  hpp_mceff_eta[jtID]->Fill(        receta  , receta-geneta ,   weight_eS);
+	  hpp_mceff_phi[jtID]->Fill(        recphi  , recphi-genphi ,   weight_eS);	
+	  hpp_mceff_ptrat_drjt[jtID]->Fill( gendrjt , recpt/genpt   ,   weight_eS);	
+	  hpp_mceff_ptrat_eta[jtID]->Fill(  geneta  , recpt/genpt   ,   weight_eS);
+	  hpp_mceff_ptrat_phi[jtID]->Fill(  genphi  , recpt/genpt   ,   weight_eS);       
 	}
       }
       

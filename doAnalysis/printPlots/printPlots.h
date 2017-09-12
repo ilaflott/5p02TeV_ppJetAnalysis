@@ -60,7 +60,7 @@ const std::string HOME_BASE=
   "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/";
   //  "/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/";
 
-const std::string inputDir=SCRATCH_BASE+"8.16.17_outputCondor/";
+const std::string inputDir=SCRATCH_BASE;//+"8.16.17_outputCondor/";
 //const std::string inputDir=HOME_BASE+"outputCondor/8.16.17_outputCondor/";
 
 const std::string outputDir=HOME_BASE+"output/";

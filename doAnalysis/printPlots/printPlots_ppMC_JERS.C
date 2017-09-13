@@ -7,7 +7,7 @@ const bool draw_hJER=true;
 
 
 //other options
-const bool draw_MCEff=true;
+const bool draw_MCEff=false;
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
 const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 
@@ -77,8 +77,17 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   else{ //draw h_JER
 
     TH1F *hrsp[Nrad][nbins_pt_debug]={};  
+    TF1 *hSigmaFit=new TF1("hSigmaFit","[0]+[1]*pow(x,[2])", 
+			   ptbins_debug[0],
+			   ptbins_debug[nbins_pt_debug]);
+    hSigmaFit->SetParameter(0,1.0);
+    hSigmaFit->SetParameter(1,300. );
+    hSigmaFit->SetParameter(2,-1.5);
     //double array_mean[Nrad][nbins_pt]={};
     //double array_sig[Nrad][nbins_pt]={};
+
+    
+
 
     // output hists
     TH1F *hMean[Nrad]={}, *hSigma[Nrad]={};
@@ -194,6 +203,56 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	//array_sig[nj][ip]=sig  ;      
 	//array_esig[nj][ip]=esig ;           
       }// end fit-loop over ptbins    
+
+      float fitParam_0    =hSigmaFit->GetParameter(0);
+      float fitParam_0_err=hSigmaFit->GetParError(0);
+      float fitParam_1    =hSigmaFit->GetParameter(1);
+      float fitParam_1_err=hSigmaFit->GetParError(1);
+      float fitParam_2    =hSigmaFit->GetParameter(2);
+      float fitParam_2_err=hSigmaFit->GetParError(2); 
+
+      std::cout << "fitParam_0     = " << fitParam_0    << std::endl;
+      std::cout << "fitParam_0_err = " << fitParam_0_err<< std::endl;
+      std::cout << "%err fitParam0 = " << (fitParam_0_err/fitParam_0)*100.    << std::endl;
+      std::cout << "fitParam_1     = " << fitParam_1    << std::endl;
+      std::cout << "fitParam_1_err = " << fitParam_1_err<< std::endl;
+      std::cout << "%err fitParam1 = " << (fitParam_1_err/fitParam_1)*100.    << std::endl;
+      std::cout << "fitParam_2     = " << fitParam_2    << std::endl;
+      std::cout << "fitParam_2_err =   " << fitParam_2_err<< std::endl;
+      std::cout << "%err fitParam2 = " << (fitParam_2_err/fitParam_2)*100.    << std::endl;
+
+
+      bool sigmaFitStatus= true;
+      std::cout<<std::endl<<"fitting JER width v. pt... init. sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
+      //sigmaFitStatus=hSigma[nj]->Fit(hSigmaFit,"MEVR");
+      sigmaFitStatus=hSigma[nj]->Fit(hSigmaFit,"R");
+
+      fitParam_0    =hSigmaFit->GetParameter(0);
+      fitParam_0_err=hSigmaFit->GetParError(0);
+      fitParam_1    =hSigmaFit->GetParameter(1);
+      fitParam_1_err=hSigmaFit->GetParError(1);
+      fitParam_2    =hSigmaFit->GetParameter(2);
+      fitParam_2_err=hSigmaFit->GetParError(2); 
+
+      if(!sigmaFitStatus){	
+      	std::cout<<std::endl<<"fit success!, sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
+	std::cout << "fitParam_0     = " << fitParam_0    << std::endl;
+	std::cout << "fitParam_0_err = " << fitParam_0_err<< std::endl;
+	std::cout << "%err fitParam0 = " << (fitParam_0_err/fitParam_0)*100.    << std::endl;
+	std::cout << "fitParam_1     = " << fitParam_1    << std::endl;
+	std::cout << "fitParam_1_err = " << fitParam_1_err<< std::endl;
+	std::cout << "%err fitParam1 = " << (fitParam_1_err/fitParam_1)*100.    << std::endl;
+	std::cout << "fitParam_2     = " << fitParam_2    << std::endl;
+	std::cout << "fitParam_2_err =   " << fitParam_2_err<< std::endl;
+	std::cout << "%err fitParam2 = " << (fitParam_2_err/fitParam_2)*100.    << std::endl;
+	//	assert(false);
+      }
+      else {
+	std::cout<<std::endl<<"fit failed, sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
+	//	assert(false);
+      }
+      
+     
     }// end loop over available jet radii    
     
     
@@ -244,6 +303,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	
 	hSigma[i]->Draw("HIST E1");               
 	hSigma[i]->Write();               
+	hSigmaFit->Write();
 	//TLine* sigmaLine=new TLine(15,0.1,500,0.1);    
 	//sigmaLine->SetLineStyle(2);       sigmaLine->SetLineColor(kBlue);    
 	//sigmaLine->Draw();    
@@ -282,6 +342,10 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	}    
       }
       std::cout<<"closing output pdf file "<<thePDFFileName<<std::endl<<std::endl;    
+
+
+
+
       pdfoutCanv->Print( close_thePDFFileName.c_str() );    
       pdfoutCanv->Close();
       pdfoutCanv_muSigma->Close();

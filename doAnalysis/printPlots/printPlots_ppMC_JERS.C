@@ -7,7 +7,7 @@ const bool draw_hJER=true;
 
 
 //other options
-const bool draw_MCEff=false;
+const bool draw_MCEff=true;
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
 const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 
@@ -16,201 +16,256 @@ const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   
   // root style settings.
-  std::cout<<std::endl<<"loading style..." <<std::endl;
-  //LoadStyle();  
-  //gStyle->SetOptStat(0);
-  //  gStyle->SetOptStat(1);
-  //gStyle->SetOptFit(1);  
-  // gStyle->SetOptFit(1110);  
-  //gStyle->SetTitleBorderSize(0);
-  //gROOT->ForceStyle();
-  
-  
+  LoadStyle();  
+    
   //figure out what radius/jetcollection we are looking at using the ppData filename
   std::size_t radPos=inFile_MC_dir.find("_ak")+strlen("_ak");
   const std::string radiusInt= inFile_MC_dir.substr( radPos,1 );
   const std::string radius="R"+radiusInt+"_";
   if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
-  std::size_t jetTypePos=radPos+1;
-  std::size_t jetsPos=inFile_MC_dir.find("Jets");;
-  
+
+
+
   //make final jetType strings
+  std::size_t jetTypePos=radPos+1;
+  std::size_t jetsPos=inFile_MC_dir.find("Jets");;  
   const std::string jetType=inFile_MC_dir.substr( jetTypePos,(jetsPos-jetTypePos) );
   if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
+  
   const std::string fullJetType="ak"+radiusInt+jetType;//"ak3PFJets";//find in dir name
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
-  std::string didJetID=inFile_MC_dir.substr( inFile_MC_dir.find("MCJEC_jtID")+strlen("MCJEC_jtID"), 1 );
-  //if(debugMode)std::cout<<"doJetID="<<doJetID<<std::endl;
   
+  std::string didJetID="1";
   std::string doJetID="1";
-  didJetID="1";
-  //if(didJetID=="0") doJetID=didJetID;
-  //else doJetID="1";
   
-  std::string jobType="_MCJEC";
-  if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
-
-  std::string outFileName=outputDir+fullJetType+jobType+"_"+outputTag+".root";
-  std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
-  TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
+  
   
   // input file
-  const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
+  const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";  
   std::cout<<std::endl<<"input file dir "<< inputDir+inFile_MC_dir <<std::endl;
   std::cout<<"input file name in dir "<< inFile_MC_name <<std::endl;
   TFile *finPP=new TFile( (inputDir+inFile_MC_dir+inFile_MC_name).c_str() );
-  //TFile *finPP=new TFile( (inputDir+inFile_MC_name).c_str() );
   
+
+  // output file
+  std::string outFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+".root";
+  std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
+  TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE");   
+  rootfout->cd();    
+
+
   // fit + fit settings
   std::cout<<"setting up fitters..."<< std::endl;
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04); 
   TF1 *fgaus=NULL;   
   
-  ////////////////////////////////////////////////////////////
-  //////////////////////// JER GENJET ETA BINS 
-  ////////////////////////////////////////////////////////////
-
   // input hists
-  if(!draw_hJER)std::cout<<std::endl<<std::endl<<"skipping hJER hists"<<std::endl<<std::endl;
-  
-  else{ //draw h_JER
+  if(draw_hJER){
 
-    TH1F *hrsp[Nrad][nbins_pt_debug]={};  
-    TF1 *hSigmaFit=new TF1("hSigmaFit","[0]+[1]*pow(x,[2])", 
-			   ptbins_debug[0],
-			   ptbins_debug[nbins_pt_debug]);
-    hSigmaFit->SetParameter(0,1.0);
-    hSigmaFit->SetParameter(1,300. );
-    hSigmaFit->SetParameter(2,-1.5);
-    //double array_mean[Nrad][nbins_pt]={};
-    //double array_sig[Nrad][nbins_pt]={};
-
+    // array of pointers for input/output hists
+    TH1F *hrsp[Nrad][nbins_pt_debug]={};  //input
+    TH1F *hMean[Nrad]={}, *hSigma[Nrad]={}; //output    
     
-
-
-    // output hists
-    TH1F *hMean[Nrad]={}, *hSigma[Nrad]={};
-    
-    
-    // first loop, pp loop over available radii
+    // loop over available radii (one radii for now)
     for(int nj=0; nj<Nrad; nj++){
       
       const std::string algname=algo+srad[nj]+jetType; 
       std::cout<<"making hists for algorithm "<< algname<<"..."<<std::endl;
+
       // initialize mean hist    
       hMean[nj] = new TH1F(Form( "hMean%d", nj),    
 			   Form( "Mean %s %s", algname.c_str(), ccent[nj]),    
 			   nbins_pt_debug, ptbins_debug); //nbins_pt, ptbins_bound);    
-      hMean[nj]->SetMarkerColor(1);    
-      hMean[nj]->SetMarkerStyle(20);    
-      hMean[nj]->SetLineColor(1);    
-      hMean[nj]->SetMarkerSize(1.0);    
-      MakeHistMean(hMean[nj],1.082,0.858);     
-      hMean[nj]->SetAxisRange(0.9,1.3, "Y");    
-      //hMean[nj]->SetAxisRange(10,500, "X");    
+
+      MakeHistMean( (TH1F*)hMean[nj],ptbins_debug[0],ptbins_debug[nbins_pt_debug]);     
       
       // initialize RMS/Sigma hist    
       hSigma[nj] = new TH1F(Form( "hSigma%d", nj),    
 			    Form( "Sigma %s %s", algname.c_str(), ccent[nj]),    
 			    nbins_pt_debug, ptbins_debug); //nbins_pt, ptbins_bound);    
-      hSigma[nj]->SetMarkerColor(1);    
-      hSigma[nj]->SetMarkerStyle(20);    
-      hSigma[nj]->SetLineColor(1);    
-      hSigma[nj]->SetMarkerSize(1.0);    
-      MakeHistRMS(hSigma[nj],0.563,0.001);     
-      hSigma[nj]->SetAxisRange(0.0,0.3, "Y");    
-      //hSigma[nj]->SetAxisRange(10,500, "X");    
-      
+      MakeHistRMS( (TH1F*) hSigma[nj], ptbins_debug[0],ptbins_debug[nbins_pt_debug]);     
       
       // pt bin hJER-fit loop    
-      std::cout<<"looping over nbins_pt="<<nbins_pt_debug<<std::endl;    
+      if(debugMode)std::cout<<"nbins_pt="<<nbins_pt_debug<<std::endl;    
       for(int ip=0; ip<nbins_pt_debug; ip++){    
 	
-	// input hist title string    
-	int ptbin_ip=(int)ptbins_debug[ip];
-	int ptbin_ip1=(int)ptbins_debug[ip+1];
-	//if(debugMode)std::cout<<"for pt range "<<ptbins[ip]<<" to "<<ptbins[ip+1]<<std::endl;    
-	if(debugMode)std::cout<<"for pt range "<<ptbin_ip<<" to "<<ptbin_ip1<<std::endl;    
-	std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
-	//+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);
-	//"hJER_"+std::to_string(ptbins[ip])+"_pt_"+std::to_string(ptbins[ip+1]);     
-	//if (ptbins[ip]<6.)continue;    
+	int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
+	if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
+	
 	// open the input hist    
+	std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
 	hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
-	if(!hrsp[nj][ip]){std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;assert(false);}          
-	if(hrsp[nj][ip]->GetEntries()<3)continue;
-	// print the details...    
-	std::cout<<std::endl;  hrsp[nj][ip]->Print("base");    
+	if(!hrsp[nj][ip]){ 
+	  std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;
+	  assert(false);}          
+	else if(hrsp[nj][ip]->GetEntries()<3)
+	  continue;
+	
+	if(debugMode)std::cout<<std::endl;  
+	if(debugMode)hrsp[nj][ip]->Print("base");    
+
 	hrsp[nj][ip]->Scale( 1./ hrsp[nj][ip]->Integral() );    
-	//hrsp[nj][ip]->Rebin( 4 );    
 	
 	// get some quick stats    
-	double norm  = hrsp[nj][ip]->GetMaximumStored();    
-	double err   = hrsp[nj][ip]->GetStdDevError();    
-	double mean  = hrsp[nj][ip]->GetMean();    
-	double emean = hrsp[nj][ip]->GetMeanError();    
-	double sig   = hrsp[nj][ip]->GetStdDev()/mean;    
-	double esig  = pow(1/mean,2)*pow(err,2) + pow( -sig/pow(mean,2), 2)*pow(emean, 2);    
-	int fitstatus = 0;    
+	//float norm  = hrsp[nj][ip]->GetMaximumStored();    
+	float mean  = hrsp[nj][ip]->GetMean();    
+	float emean = hrsp[nj][ip]->GetMeanError();    
+	float sig   = hrsp[nj][ip]->GetStdDev()/mean;    
+	float esig  = sig* 
+	  sqrt (  pow( emean/mean,2) + pow( hrsp[nj][ip]->GetStdDevError()/hrsp[nj][ip]->GetStdDev(),2) ) ; 
 	
-	//fgaus = new TF1("fgaus","gaus", mean - 2.15*hrsp[nj][ip]->GetRMS(), mean + 2.15*hrsp[nj][ip]->GetRMS());    
-	//fgaus = new TF1("fgaus","gaus", 0.80, 1.20);    
 	fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
-	fgaus->SetParameters(norm, 0.9999, 0.15);    
-	//fgaus->SetParameters(norm, 1.00, 0.6);    
-	//fgaus->SetParameters(norm, 0.9999, 0.5);    
+	//fgaus->SetParameters(norm, 1.0, 0.1);    
 	//fgaus->SetParLimits(1,0.60,1.30);    
-	//fgaus->SetParLimits(2,0.20,0.80);    
-	//fgaus->SetParLimits(1,0.92,1.05);    
-	//fgaus->SetParLimits(2,0.20,0.80);    
 	
-	std::cout<<"for inputHist "<<inputHistName<<", we have.."<<std::endl;    
-	std::cout<< "Mean= "<< hrsp[nj][ip]->GetMean()<<" +/- " <<hrsp[nj][ip]->GetMeanError()<< std::endl;    
+	
+	std::cout<<"inputHist "<<inputHistName<<std::endl;    
+	if(debugMode)std::cout<< "Mean= "<< hrsp[nj][ip]->GetMean()<<" +/- " <<hrsp[nj][ip]->GetMeanError()<< std::endl;    
 	
 	std::cout<<"fitting..."<<std::endl;    
-	fitstatus = hrsp[nj][ip]->Fit(fgaus,"RQ");    
-	std::cout<< "Fit Status: "<< fitstatus<< ", Fit Error: "<< fgaus->GetParError(1)<< std::endl;    
 	
-	std::cout<<"grabbing metrics (whatever this means)...."<<std::endl;    
-	mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()     : fgaus->GetParameter(1);    
-	emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError(): fgaus->GetParError(1) ; // hrsp[nj][ip]->GetMeanError(); //debug    
-	sig   = (fitstatus!=0) ? hrsp[nj][ip]->GetStdDev()/mean : fgaus->GetParameter(2)/fgaus->GetParameter(1);    
-	esig  = (fitstatus!=0)     
-	  ? sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) +     
-		  (pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) )     
-	  : sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) +     
-		  (pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) );     
+	int fitstatus = 1;    	
+	//fitstatus = hrsp[nj][ip]->Fit(fgaus,"RQ");    
+	fitstatus = hrsp[nj][ip]->Fit(fgaus,"R");    
+	std::cout<< "Fit Status: "<< fitstatus<< std::endl;    
+	
+	mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()        : fgaus->GetParameter(1);    
+	emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError()   : fgaus->GetParError(1) ; // hrsp[nj][ip]->GetMeanError(); //debug    
+	sig   = (fitstatus!=0) ? hrsp[nj][ip]->GetStdDev()/mean : fgaus->GetParameter(2)/mean;    
+	esig  = (fitstatus!=0) 
+	  ? sig * sqrt( pow( (emean/mean),2) + 
+			pow( ( hrsp[nj][ip]->GetStdDevError()/hrsp[nj][ip]->GetStdDev() ),2) 
+			) 
+	  : sig * sqrt( pow( (emean/mean), 2) + 
+			pow( ( fgaus->GetParError(2)/fgaus->GetParameter(2) ), 2) 
+			)   ;
+	//? sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) +     
+	//	  (pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) )     
+	//: sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) +     
+	//	  (pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) );     
 	
 	// set contents+errors in specific bin    
-	if(debugMode)std::cout<<"setting bin content for hMean[nj][ip]=["<< nj<<"]["<< ip<<"] "<<std::endl;    
+	std::cout<<"setting bin content for hMean[nj][ip]=["<< nj<<"]["<< ip<<"] "<<std::endl;    
 	if(debugMode)std::cout<<"mean ="<< mean<<std::endl;    
 	if(debugMode)std::cout<<"emean ="<< emean<<std::endl;    
-	hMean[nj]->SetBinContent (ip+1, mean);    
-	hMean[nj]->SetBinError   (ip+1, emean);    
-	// hMean[nj]->SetBinContent (ip+1, roundoff(mean));    
-	// hMean[nj]->SetBinError   (ip+1, roundoff(emean));    
-	
 	if(debugMode)std::cout<<"sig ="<< sig<<std::endl;    
 	if(debugMode)std::cout<<"esig ="<< esig<<std::endl;    
 	
+	hMean[nj]->SetBinContent (ip+1, mean);    
+	hMean[nj]->SetBinError   (ip+1, emean);    
 	hSigma[nj]->SetBinContent (ip+1, sig);    
 	hSigma[nj]->SetBinError   (ip+1, esig);    
 	
-	
-	//array_mean[nj][ip]=mean ; //for a striaght line for plots later.    
-	//array_emean[nj][ip]=emean;    
-	//array_sig[nj][ip]=sig  ;      
-	//array_esig[nj][ip]=esig ;           
       }// end fit-loop over ptbins    
+     
+    }// end loop over available jet radii    
+    
+    
+    //if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;    
+    //gPad->Close();    
+    
+    
+    
+    // DRAW THOSE PDFS //    
+    std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+".pdf";    
+    std::string open_thePDFFileName=thePDFFileName+"[";    
+    std::string close_thePDFFileName=thePDFFileName+"]";    
+    
+    std::cout<<"opening output pdf file "<< thePDFFileName<<std::endl<<std::endl;    
+    
+    TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 800);    
+    pdfoutCanv->cd();    
+    pdfoutCanv->Print( open_thePDFFileName.c_str() );    
+    
+    TCanvas* pdfoutCanv_wLogy=new TCanvas("outputPdfwLogx","output Pdf wLogx", 800, 800);    
+    pdfoutCanv_wLogy->SetLogy(1);    
+    pdfoutCanv_wLogy->cd();        
 
+    
+    
+    // draw and print pdfs. //    
+    std::cout<<std::endl<<"printing hists to pdf file..."<<std::endl;    
+    for(int i=0;i<Nrad;++i){    
+            
+      pdfoutCanv_wLogy->cd();    
+      for(int j=0;j<nbins_pt_debug;++j){    
+	int ptbin_j=(int)ptbins_debug[j];
+	int ptbin_j1=(int)ptbins_debug[j+1];
+	std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
+	hrsp[i][j]->SetTitle(hrspTitle.c_str());    
+	hrsp[i][j]->SetTitleSize(0.02);    
+	hrsp[i][j]->SetMarkerStyle(8);    
+	hrsp[i][j]->SetMarkerSize(1.0);    
+	hrsp[i][j]->GetXaxis()->SetTitle("recpt/genpt");    
+	hrsp[i][j]->GetYaxis()->SetTitle("A.U.");    
+
+	hrsp[i][j]->Draw("E1");    
+	hrsp[i][j]->Write();    
+	
+	//float textx=0.5,texty=0.25;    
+	//TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean[i][j])).c_str() );    
+	//meanText->SetNDC();    
+	//meanText->Draw();    
+	//TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig[i][j])).c_str() );    
+	//sigmaText->SetNDC();    
+	//sigmaText->Draw();    
+	//TLine* histMeanLine=new TLine( array_mean[i][j], 0., // x1,y1     
+	//array_mean[i][j], 0.130 );// x2,y2    
+	//array_mean[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2    
+	//histMeanLine->Draw("same");    
+	
+	pdfoutCanv_wLogy->Print(thePDFFileName.c_str());    
+	pdfoutCanv_wLogy->Write();
+	
+	
+	
+      }    
+      
+      TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", 800, 800);    
+      pdfoutCanv_muSigma->Divide(1,2);
+      pdfoutCanv_muSigma->cd();
+      
+      TPad* p1=(TPad*)pdfoutCanv_muSigma->cd(1);        
+      p1->SetLogx(1);    
+      p1->cd();
+      
+      hMean[i]->Draw("HIST E1"); 
+      //hMean[i]->Write();
+      
+      TLine* meanLine=new TLine(ptbins_debug[0],1.,ptbins_debug[nbins_pt_debug],1.);    
+      meanLine->SetLineStyle(2);  
+      meanLine->SetLineColor(kBlue);    
+      meanLine->Draw();    
+      
+      
+      
+      
+      TPad* p2=(TPad*)pdfoutCanv_muSigma->cd(2);        
+      p2->SetLogx(1);    	
+      p2->cd();    
+      
+      hSigma[i]->Draw("HIST E1");               
+
+      //TVirtualFitter::SetDefaultFitter("TFitter");
+      //std::string fitFunc_str="[0]+[1]*pow((x-"+std::to_string( ((int)ptbins_debug[0]) )+".),[2])";
+      //std::cout<<"fitFunc_str="<<fitFunc_str<<std::endl;
+      //TF1 *hSigmaFit=new TF1("hSigmaFit", fitFunc_str.c_str() ,
+
+      TF1 *hSigmaFit=new TF1("hSigmaFit","[0]+[1]*pow(x,[2])", 
+			     ptbins_debug[0],
+			     ptbins_debug[nbins_pt_debug]);
+      //hSigmaFit->SetParameter(0,1.0);
+      //hSigmaFit->SetParameter(1,300. );
+      //hSigmaFit->SetParameter(2,-1.5);
+      
       float fitParam_0    =hSigmaFit->GetParameter(0);
       float fitParam_0_err=hSigmaFit->GetParError(0);
       float fitParam_1    =hSigmaFit->GetParameter(1);
       float fitParam_1_err=hSigmaFit->GetParError(1);
       float fitParam_2    =hSigmaFit->GetParameter(2);
       float fitParam_2_err=hSigmaFit->GetParError(2); 
-
+      
       std::cout << "fitParam_0     = " << fitParam_0    << std::endl;
       std::cout << "fitParam_0_err = " << fitParam_0_err<< std::endl;
       std::cout << "%err fitParam0 = " << (fitParam_0_err/fitParam_0)*100.    << std::endl;
@@ -220,22 +275,22 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       std::cout << "fitParam_2     = " << fitParam_2    << std::endl;
       std::cout << "fitParam_2_err =   " << fitParam_2_err<< std::endl;
       std::cout << "%err fitParam2 = " << (fitParam_2_err/fitParam_2)*100.    << std::endl;
-
-
+      
+      
       bool sigmaFitStatus= true;
       std::cout<<std::endl<<"fitting JER width v. pt... init. sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
-      //sigmaFitStatus=hSigma[nj]->Fit(hSigmaFit,"MEVR");
-      sigmaFitStatus=hSigma[nj]->Fit(hSigmaFit,"R");
-
+      //sigmaFitStatus=hSigma[i]->Fit(hSigmaFit,"MEVR");
+      //sigmaFitStatus=hSigma[i]->Fit(hSigmaFit,"MR");
+      sigmaFitStatus=hSigma[i]->Fit(hSigmaFit,"R");	
       fitParam_0    =hSigmaFit->GetParameter(0);
       fitParam_0_err=hSigmaFit->GetParError(0);
       fitParam_1    =hSigmaFit->GetParameter(1);
       fitParam_1_err=hSigmaFit->GetParError(1);
       fitParam_2    =hSigmaFit->GetParameter(2);
       fitParam_2_err=hSigmaFit->GetParError(2); 
-
+      
       if(!sigmaFitStatus){	
-      	std::cout<<std::endl<<"fit success!, sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
+	std::cout<<std::endl<<"fit success!, sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
 	std::cout << "fitParam_0     = " << fitParam_0    << std::endl;
 	std::cout << "fitParam_0_err = " << fitParam_0_err<< std::endl;
 	std::cout << "%err fitParam0 = " << (fitParam_0_err/fitParam_0)*100.    << std::endl;
@@ -252,132 +307,48 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	//	assert(false);
       }
       
-     
-    }// end loop over available jet radii    
-    
-    
-    if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;    
-    gPad->Close();    
-    
-    {         
-      // DRAW THOSE PDFS //    
-      std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+".pdf";    
-      std::string open_thePDFFileName=thePDFFileName+"[";    
-      std::string close_thePDFFileName=thePDFFileName+"]";    
       
-      std::cout<<"opening output pdf file "<< thePDFFileName<<std::endl<<std::endl;    
+      hSigmaFit->Draw("SAME");
+      pdfoutCanv_muSigma->Print(thePDFFileName.c_str());        
       
-      std::string theRootFileName=outputDir+fullJetType+jobType+"_"+outputTag+".root";
-      //TFile* rootfout_= new TFile(theRootFileName.c_str(), "NEW");
-      //TFile* rootfout_= new TFile(theRootFileName.c_str(), "RECREATE");
-      rootfout->cd();
 
-      TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 600);    
-      pdfoutCanv->Print( open_thePDFFileName.c_str() );    
-      pdfoutCanv->cd();    
+      hSigma[i]->Write();               
+      hSigmaFit->Write();
+
+      pdfoutCanv_muSigma->Write();
       
-      TCanvas* pdfoutCanv_wLogy=new TCanvas("outputPdfwLogx","output Pdf wLogx", 800, 800);    
-      //pdfoutCanv_wLogx->Print( open_thePDFFileName.c_str() );    
-      pdfoutCanv_wLogy->cd();    
-      pdfoutCanv_wLogy->SetLogy(1);    
       
-      TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", 800, 800);    
-      //pdfoutCanv_muSigma->cd();    
-      pdfoutCanv_muSigma->Divide(1,2);
-      TPad* p2=(TPad*)pdfoutCanv_muSigma->cd(2);        
-      p2->SetLogx(1);    
-      TPad* p1=(TPad*)pdfoutCanv_muSigma->cd(1);        
-      p1->SetLogx(1);    
       
-      // draw and print pdfs. //    
-      std::cout<<std::endl<<"printing hists to pdf file..."<<std::endl;    
-      for(int i=0;i<Nrad;++i){    
-	
-	hMean[i] ->Draw("HIST E1"); //pdfoutCanv->Print(thePDFFileName.c_str());    
-	hMean[i]->Write();
-	TLine* meanLine=new TLine(ptbins_debug[0],1.,ptbins_debug[nbins_pt_debug],1.);    
-	meanLine->SetLineStyle(2);       meanLine->SetLineColor(kBlue);    
-	meanLine->Draw();    
-	
-	p2->cd();    
-	
-	hSigma[i]->Draw("HIST E1");               
-	hSigma[i]->Write();               
-	hSigmaFit->Write();
-	//TLine* sigmaLine=new TLine(15,0.1,500,0.1);    
-	//sigmaLine->SetLineStyle(2);       sigmaLine->SetLineColor(kBlue);    
-	//sigmaLine->Draw();    
-	
-	pdfoutCanv_muSigma->Print(thePDFFileName.c_str());        
-	pdfoutCanv_muSigma->Write();
-	
-	pdfoutCanv_wLogy->cd();    
-	for(int j=0;j<nbins_pt_debug;++j){    
-	  int ptbin_j=(int)ptbins_debug[j];
-	  int ptbin_j1=(int)ptbins_debug[j+1];
-	  std::string hrspTitle=std::to_string(ptbin_j)+" GeV < reco jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
-	  hrsp[i][j]->SetTitle(hrspTitle.c_str());    
-	  hrsp[i][j]->SetTitleSize(0.02);    
-	  hrsp[i][j]->SetMarkerStyle(8);    
-	  hrsp[i][j]->SetMarkerSize(1.0);    
-	  hrsp[i][j]->GetXaxis()->SetTitle("recpt/genpt");    
-	  //hrsp[i][j]->SetAxisRange(0.,0.130,"Y");    
-	  hrsp[i][j]->Draw("E1");    
-	  hrsp[i][j]->Write();    
-	  
-	  //float textx=0.5,texty=0.25;    
-	  //TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean[i][j])).c_str() );    
-	  //meanText->SetNDC();    
-	  //meanText->Draw();    
-	  //TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig[i][j])).c_str() );    
-	  //sigmaText->SetNDC();    
-	  //sigmaText->Draw();    
-	  //TLine* histMeanLine=new TLine( array_mean[i][j], 0., // x1,y1     
-	  //array_mean[i][j], 0.130 );// x2,y2    
-	  //array_mean[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2    
-	  //histMeanLine->Draw("same");    
-	  
-	  pdfoutCanv_wLogy->Print(thePDFFileName.c_str());    
-	  pdfoutCanv_wLogy->Write();
-	}    
-      }
-      std::cout<<"closing output pdf file "<<thePDFFileName<<std::endl<<std::endl;    
-
-
-
-
+      
+      
+      
+      
+      
+      std::cout<<"closing output pdf file "<<thePDFFileName<<std::endl<<std::endl;                
+      
       pdfoutCanv->Print( close_thePDFFileName.c_str() );    
+      
       pdfoutCanv->Close();
       pdfoutCanv_muSigma->Close();
       pdfoutCanv_wLogy->Close();
-      rootfout->Close();
+      
+
     }              
     
-    //// save output root file. //    
-    //{    
-    //  rootfout->cd();      
-    //  std::cout<<"writing output to root file..."<<std::endl;    
-    //  for(int i=0;i<Nrad;++i){    
-    //	for(int j=0;j<nbins_pt;++j) hrsp[i][j]->Write();    
-    //	hMean[i]->Write();    
-    //	hSigma[i]->Write();              
-    //  }    
-    //  //std::cout<<"closing output root file"<<std::endl<<std::endl;    
-    //  //rootfout->Close();    
-    //}    
-    
-  }                       
-
-
-
-
-
-
-
-
-
-
-
+  }
+  else std::cout<<std::endl<<std::endl<<"skipping hJER hists"<<std::endl<<std::endl;
+                       
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   //////////////////////////////////////////////////
   ////////////// DUAL DIFF ETA BINS ////////////////
@@ -509,7 +480,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
   {         
     // DRAW THOSE PDFS //    
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_RapBins.pdf";    
+    std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_RapBins.pdf";    
     std::string open_thePDFFileName=thePDFFileName+"[";    
     std::string close_thePDFFileName=thePDFFileName+"]";    
         
@@ -871,7 +842,7 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       
   {         
     // DRAW THOSE PDFS //    
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_RapBins_genBin1.pdf";    
+    std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_RapBins_genBin1.pdf";    
     std::string open_thePDFFileName=thePDFFileName+"[";    
     std::string close_thePDFFileName=thePDFFileName+"]";    
         
@@ -945,7 +916,7 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 
 
 
-    thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_RapBins_genBin2.pdf";    
+    thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_RapBins_genBin2.pdf";    
     open_thePDFFileName=thePDFFileName+"[";    
     close_thePDFFileName=thePDFFileName+"]";    
     pdfoutCanv->Print( open_thePDFFileName.c_str() );
@@ -1288,7 +1259,7 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
   //std::string jobType="_MCJEC_JetID"+doJetID;
   //if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
   { 
-    std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_gen150to200.pdf";
+    std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_gen150to200.pdf";
     std::string open_thePDFFileName=thePDFFileName+"[";
     std::string close_thePDFFileName=thePDFFileName+"]";
 
@@ -1518,7 +1489,7 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
     //std::string jobType="_MCJEC_JetID"+doJetID;
     //if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
     { 
-      std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_gen30to50.pdf";
+      std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_gen30to50.pdf";
       std::string open_thePDFFileName=thePDFFileName+"[";
       std::string close_thePDFFileName=thePDFFileName+"]";
       
@@ -1614,13 +1585,14 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
       
       //std::string thePDFFileName=outputDir+fullJetType+jobType+"_MCEff_"+outputTag+".pdf";
-      std::string thePDFFileName=outputDir+fullJetType+jobType+"_"+outputTag+"_MCEff.pdf";
+      std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_MCEff.pdf";
       std::string open_thePDFFileName=thePDFFileName+"[";
       std::string close_thePDFFileName=thePDFFileName+"]";
       std::cout<<std::endl<<"creating temporary canvas for printing MCEff plots..."<<std::endl;
       
       TCanvas *temp_canvMCEff = new TCanvas("tempMCEff", "tempMCEff", 1200, 600);
       temp_canvMCEff->Print(open_thePDFFileName.c_str());
+      temp_canvMCEff->SetLogz(1);
       temp_canvMCEff->cd();
       
       
@@ -1758,11 +1730,11 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 	std::string h_Title   ="MC Eff. QA TH2";
 	if(doJetID=="1")h_Title+=", w/ JetIDCut";      
 	
-	//std::string h_YAx_Title="(recpt)/(genpt)";    
-	//std::string h_XAx_Title="";    
-	//if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
-	//if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
-	//if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
+	std::string h_YAx_Title="(recpt)/(genpt)";    
+	std::string h_XAx_Title="";    
+	if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
+	if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
+	if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
 	
 	//the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
 	//if(j==0)the2DMCEffQAHist->SetAxisRange( -3.0, 3.0, "X");
@@ -1770,8 +1742,8 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 	//if(j==2)the2DMCEffQAHist->SetAxisRange(   0., 0.5, "X");
 	
 	the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
-	//the2DMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-	//the2DMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
+	the2DMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
+	the2DMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
 	
 	the2DMCEffQAHist->Draw("COLZ"); 
 	
@@ -1783,8 +1755,8 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
     }//end  MCEff Plots else
   }
   
-  //std::cout<<"closing output root file"<<std::endl<<std::endl;
-  //rootfout->Close();
+  if(debugMode)std::cout<<"closing output root file"<<std::endl<<std::endl;
+  rootfout->Close();
   return 0;
 }
 
@@ -1806,18 +1778,3 @@ int main(int argc, char*argv[]){
 }
 
 
-//// ALT METRICS
-// mean  = (fitstatus!=0) ? hrsp_gen30[nj][ip]->GetMean()     :  0.5*(fgaus_gen30->GetParameter(1) + hrsp_gen30[nj][ip]->GetMean());
-// mean  = (fitstatus!=0) ? hrsp_gen30[nj][ip]->GetMean()     : fgaus_gen30->GetParameter(1);
-// emean = (fitstatus!=0) ? hrsp_gen30[nj][ip]->GetMeanError(): hrsp_gen30[nj][ip]->GetMeanError(1);
-// emean = (fitstatus!=0) ? hrsp_gen30[nj][ip]->GetMeanError(): sqrt(pow(fgaus_gen30->GetParError(1),2) + pow(hrsp_gen30[nj][ip]->GetMeanError(),2));      
-// sig   = (fitstatus!=0) ? hrsp_gen30[nj][ip]->GetRMS()/mean : fgaus_gen30->GetParameter(2)/fgaus_gen30->GetParameter(1);
-// esig  = (fitstatus!=0) 
-// ? sqrt((pow(1/mean,2)*pow(hrsp_gen30[nj][ip]->GetRMSError(),2))+(pow(-hrsp_gen30[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))) 
-// : sqrt((pow(1/mean,2)*pow(hrsp_gen30[nj][ip]->GetRMSError(),2))+(pow(-hrsp_gen30[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))); 
-// esig  = (fitstatus!=0) 
-// ? sqrt((pow(1/mean,2)*pow(hrsp_gen30[nj][ip]->GetRMSError(),2))+(pow(-hrsp_gen30[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))) 
-// : sqrt((pow(1/mean,2)*pow(hrsp_gen30[nj][ip]->GetRMSError(),2))+(pow(-hrsp_gen30[nj][ip]->GetRMS()/pow(mean,2),2)*pow(emean,2))); 
-//       
-      
-//hrsp_gen30[nj][ip]->Write();

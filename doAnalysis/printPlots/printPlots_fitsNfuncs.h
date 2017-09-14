@@ -164,9 +164,9 @@ void makeMultiPanelCanvas(TCanvas*& , const Int_t , const Int_t , // canv, colum
 
 void MakeHist(TH1F *&, int,//hist,istat 
 	      const char*, const char*);//xname,yname
-void MakeHistRMS(TH1F *&  , // hRMS 
+void MakeHistRMS(TH1F *  , // hRMS 
 		 float , float);// max, min 
-void MakeHistMean(TH1F *& , // mean 
+void MakeHistMean(TH1F * , // mean 
 		 float , float);// max, min 
 void MakeHistRMSEta(TH1F *&  , // hRMS 
 		 float , float);// max, min 
@@ -184,23 +184,40 @@ TLegend* getLegend(double , double ,//x1,y1
 
 // the methods
 void LoadStyle(){
-  gStyle->SetPadTickY(1);
-  gStyle->SetPadTickX(1);
-  gStyle->SetErrorX(0);
-  gStyle->SetCanvasColor(10);
-  gStyle->SetFillColor(10);
-  gStyle->SetFrameFillColor(10);
-  gStyle->SetPadColor(10);
-  gStyle->SetStatColor(10);
-  gStyle->SetTitleFillColor(10);
-  gStyle->SetPadBorderSize(0);
-  gStyle->SetLegendBorderSize(1);
-  gStyle->SetTitleBorderSize(1);
+
+  std::cout<<std::endl<<"loading style..." <<std::endl;
+
+  //gStyle->SetOptStat(1);
+  gStyle->SetOptStat("emrs");
+  //gStyle->SetOptFit(1);
+  //gStyle->SetOptFit(1);
+  gStyle->SetOptFit(1);
+  
+  //color
   gStyle->SetPalette(1);
-  gStyle->SetPadBottomMargin(0.1);
-  gStyle->SetPadLeftMargin(0.1);
-  gStyle->SetOptStat(0);
-  gStyle->SetOptFit(0);
+  //gStyle->SetCanvasColor(10);
+  //gStyle->SetFillColor(10);
+  //gStyle->SetFrameFillColor(10);
+  //gStyle->SetPadColor(10);
+  //gStyle->SetStatColor(10);
+  //gStyle->SetTitleFillColor(10);
+  
+  //pad
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);  
+  
+  //gStyle->SetPadBorderSize(0);
+  //gStyle->SetPadBottomMargin(0.1);
+  //gStyle->SetPadLeftMargin(0.1);
+
+  //other
+  //gStyle->SetLegendBorderSize(1);
+  //gStyle->SetTitleBorderSize(1);
+  //gStyle->SetErrorX(0);
+
+  gROOT->ForceStyle();
+
+  return;
 }
 
 
@@ -282,86 +299,77 @@ void MakeHist(TH1F *&histo,int istat,const char *xname, const char *yname){
 }
 
 
-void MakeHistMean(TH1F *&h1,float ymax,float ymin){
+void MakeHistMean(TH1F * h1, float xmin, float xmax){
+  //gStyle->SetOptStat(0);
+
+  h1->SetLineColor(kBlue);
+  h1->SetMarkerColor(kBlack);
+  h1->SetMarkerStyle(20);    
+  h1->SetMarkerSize(1.0);    
+  
+  // y axis
+  h1->GetYaxis()->SetTitle("#mu");
+  //h1->GetYaxis()->CenterTitle(true);
+  //h1->GetYaxis()->SetTitleFont(42);
+  //h1->GetYaxis()->SetTitleSize(0.04);
+  //h1->GetYaxis()->SetTitleOffset(1.00);
+  
+  //h1->GetYaxis()->SetLabelFont(42);
+  //h1->GetYaxis()->SetLabelSize(0.03);
+  //h1->GetYaxis()->SetNdivisions(507);
+  h1->GetYaxis()->SetDecimals(true);
+  h1->SetAxisRange(0.95,1.05, "Y");    
+
+  // x axis
+  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
+  //h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
+  //h1->GetXaxis()->CenterTitle(true);
+  //h1->GetXaxis()->SetMoreLogLabels();
+  //h1->GetXaxis()->SetNoExponent();
+  
+  //title/label
+  //h1->GetXaxis()->SetTitleFont(42);
+  //h1->GetXaxis()->SetTitleSize(0.03);
+  //h1->GetXaxis()->SetTitleOffset(1.0);
+  //h1->GetXaxis()->SetLabelFont(42);
+  //h1->GetXaxis()->SetLabelSize(0.03);
+  //h1->GetXaxis()->SetLabelOffset(0.005);
+
+  //h1->GetXaxis()->SetNdivisions(507);
+  h1->SetAxisRange(xmin,xmax, "X");    
+
   // hist
   //h1->SetMaximum(ymax);
   //h1->SetMinimum(ymin);
   //h1->SetTitle("");
 
-  h1->SetLineColor(kBlue);
-  h1->SetMarkerColor(kBlack);
-  h1->SetMarkerSize(.8);
-
-  // x axis
-  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  //h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
-  //h1->GetXaxis()->CenterTitle(true);
-  //h1->GetXaxis()->SetMoreLogLabels();
-  //h1->GetXaxis()->SetNoExponent();
-  //title/label
-  //h1->GetXaxis()->SetTitleFont(42);
-  //h1->GetXaxis()->SetTitleSize(0.03);
-  //h1->GetXaxis()->SetTitleOffset(1.0);
-  h1->GetXaxis()->SetLabelFont(42);
-  //h1->GetXaxis()->SetLabelSize(0.03);
-  //h1->GetXaxis()->SetLabelOffset(0.005);
-
-  //h1->GetXaxis()->SetNdivisions(507);
-
-  // y axis
-  h1->GetYaxis()->SetTitle("#mu");
-  //h1->GetYaxis()->CenterTitle(true);
-  //title/label
-  h1->GetYaxis()->SetTitleFont(42);
-  //h1->GetYaxis()->SetTitleSize(0.04);
-  //h1->GetYaxis()->SetTitleOffset(1.00);
-  h1->GetYaxis()->SetLabelFont(42);
-  //h1->GetYaxis()->SetLabelSize(0.03);
-
-  //h1->GetYaxis()->SetNdivisions(507);
-  h1->GetYaxis()->SetDecimals(true);
+  return;
 }
 
-void MakeHistRMS(TH1F *&h1,float ymax,float ymin){
-  // hist
+void MakeHistRMS(TH1F * h1,float xmin,float xmax){
+  //gStyle->SetOptStat(0);
+
+  
   h1->SetTitle("");
-  //h1->SetMaximum(ymax);
-  //h1->SetMinimum(ymin);
 
   h1->SetLineColor(kBlue);
   h1->SetMarkerColor(kBlack);
-  h1->SetMarkerSize(.8);
-
-  // x axis
-  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  //h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
-  h1->GetXaxis()->SetTitle("reco p_{T} (GeV/c)");
-  //h1->GetXaxis()->CenterTitle(true);
-  //h1->GetXaxis()->SetMoreLogLabels();
-  //h1->GetXaxis()->SetNoExponent();
-  //title/label
-  h1->GetXaxis()->SetTitleFont(42);
-  //h1->GetXaxis()->SetTitleSize(0.04);
-  //h1->GetXaxis()->SetTitleOffset(1.0);
-  h1->GetXaxis()->SetLabelFont(42);
-  //h1->GetXaxis()->SetLabelSize(0.03);
-  //h1->GetXaxis()->SetLabelOffset(0.01);
+  h1->SetMarkerStyle(20);    
+  h1->SetMarkerSize(1.0);    
   
-  //h1->GetXaxis()->SetNdivisions(507);
-
   // y axis
   h1->GetYaxis()->SetTitle("#sigma / #mu");
-  //h1->GetYaxis()->CenterTitle(true);
-  //title/label
-  h1->GetYaxis()->SetTitleFont(42);
-  //h1->GetYaxis()->SetTitleSize(0.04);
-  //h1->GetYaxis()->SetTitleOffset(1.0);
-  h1->GetYaxis()->SetLabelFont(42);
-  //h1->GetYaxis()->SetLabelSize(0.02);
-  //h1->GetYaxis()->SetLabelOffset(0.01);
-
-  //h1->GetYaxis()->SetNdivisions(507);
+  //h1->GetYaxis()->SetTitleFont(42);
+  //h1->GetYaxis()->SetLabelFont(42);
   h1->GetYaxis()->SetDecimals(true);
+  h1->SetAxisRange(0.0,0.20, "Y");    
+  
+  // x axis
+  h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
+  //h1->GetXaxis()->SetTitleFont(42);
+  //h1->GetXaxis()->SetLabelFont(42);  
+  h1->SetAxisRange(xmin,xmax, "X");    
+  return;
 }
 
 void MakeHistMeanEta(TH1F *&h1,float ymax,float ymin){

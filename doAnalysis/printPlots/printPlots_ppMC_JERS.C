@@ -1592,7 +1592,7 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       
       TCanvas *temp_canvMCEff = new TCanvas("tempMCEff", "tempMCEff", 1200, 600);
       temp_canvMCEff->Print(open_thePDFFileName.c_str());
-      temp_canvMCEff->SetLogz(1);
+      //temp_canvMCEff->SetLogz(1);
       temp_canvMCEff->cd();
       
       

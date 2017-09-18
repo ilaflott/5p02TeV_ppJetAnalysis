@@ -1,6 +1,6 @@
-ian w laflotte, started on 6/15/2016, last updated on 7/21/16
+ian w laflotte, started on 6/15/2016, last updated on 9/15/17
 
-RooUnfold is a tad tricky to implement at cgate/MIT. So i've noted down the entire process here. I tested it in CMSSW_7_5_8/ROOT6 on hidsk
+RooUnfold is a tad tricky to implement at hexfarm. So i've noted down the entire process here. 
 
 **********
 // GENERAL ROOUNFOLD IMPLEMENTATION --------------------------------------------------------
@@ -10,11 +10,12 @@ RooUnfold is a tad tricky to implement at cgate/MIT. So i've noted down the enti
 
 setupenv and download trunk
 
-In a SCRAM-based CMSSW-area's src folder; download the RooUnfold svn trunk with
+On hexfarm a SCRAM-based CMSSW-area's src folder; download the RooUnfold svn trunk with
 
-     source /osg/app/cmssoft/cms/cmsset_default.sh
+     export SCRAM_ARCH=slc6_amd64_gcc491  
+     source /osg/osg3.2/osg-client/setup.sh
      cmsenv
-     voms-proxy-init -voms cms
+     voms-proxy-init voms cms
      svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk  #downloads the directory "trunk"
      mv trunk RooUnfold-svnTrunk  #rename for convenience
 
@@ -30,7 +31,7 @@ self-explanatory; do
 
 *** Step 3. export environment variables 
 
-bash won't know where to look for relevant RooUnfold binaries at run-time when code is run unless we alter LD_LIBRARY_PATH manually. its also useful to tell bash exactly where RooUnfold-svnTrunk is for compiling code later; do
+bash won't know where to look for relevant RooUnfold binaries at run-time when code is run unless we alter LD_LIBRARY_PATH manually. its also useful to tell bash exactly where RooUnfold-svnTrunk is for compiling code later; in setupenv.sh, at the end of the script do
 
      export ROOUNFOLD_PATH=<your RooUnfold directory in a SCRAM-based CMSSW are>
      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:ROOUNFOLD_PATH

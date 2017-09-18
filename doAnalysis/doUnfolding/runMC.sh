@@ -20,6 +20,10 @@ useSimpleBinning=0
 ### R = 3
 source run_unfoldMCSpectra.sh 3 1 20 1 ${doBayes} ${doSVD} ${useSimpleBinning}
 sleep 0.5s
+
+return
+
+
 ### R = 4
 source run_unfoldMCSpectra.sh 4 1 20 1 ${doBayes} ${doSVD} ${useSimpleBinning}
 sleep 0.5s

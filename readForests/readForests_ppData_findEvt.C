@@ -652,9 +652,6 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     
     if(targetEvtFound ) {// std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
       std::cout<<std::endl;
-      std::cout<<"trigComboType="<< trgCombType<<std::endl;
-
-      std::cout<<std::endl;
       std::cout<<"HLT PF 40/60/80     == "<<PFJet40_I << "/"<<PFJet60_I << "/"<<PFJet80_I  <<std::endl;
       std::cout<<"HLT PF 40/60/80 PSCL== "<< (PFJet40_p_I*jet40_l1s_ps_I) << "/"<< (PFJet60_p_I*jet60_l1s_ps_I)<< "/"<< (PFJet80_p_I*jet80_l1s_ps_I)  <<std::endl;
       std::cout<<std::endl;
@@ -742,9 +739,11 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     
      if(targetEvtFound ) {// std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
       std::cout<<std::endl;
-      std::cout<<"is 40/60/80     == "<<is40 << "/"<<is60 << "/"<<is80  <<std::endl;
+      std::cout<<"trigComboType="<< trgCombType<<std::endl;
       std::cout<<"HLT 40/60/80 thresholds== "<< HLTthresh[0] << "/"<< HLTthresh[1]<< "/"<< HLTthresh[2]  <<std::endl;
       std::cout<<"TrgObj 40/60/80 pt/eta == "<< trgPt << "/"<< trgEta<< std::endl;
+      std::cout<<std::endl;
+      std::cout<<"is 40/60/80     == "<<is40 << "/"<<is60 << "/"<<is80  <<std::endl;
       std::cout<<std::endl;
     }
     
@@ -871,6 +870,7 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , rawpt = "<<rawpt<<std::endl;	
 	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , recpt = "<<recpt<<std::endl;	
       }
+      std::cout<<std::endl;
       
       
       // kmatCuts      

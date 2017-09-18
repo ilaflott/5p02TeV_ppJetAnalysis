@@ -8,7 +8,8 @@ source runMC.sh
 
 echo ""
 echo "done w/ MC."
-echo ""
+
+return
 
 echo ""
 echo " ------------------------------------------------------------------"

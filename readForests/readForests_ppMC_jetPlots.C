@@ -8,8 +8,8 @@ const bool fillgenJetQA=true&fillMCJetQAHists;
 
 const bool fillMCDijetHists=false;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
-const bool fillMCJetSpectraRapHists=false; //other
-const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
+const bool fillMCJetSpectraRapHists=true; //other
+const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
 
 //// readForests_ppMC_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -138,18 +138,19 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  
-    
-    hVr = new TH1F("hVr","vr, no trig, no weights",  400,-0.25,0.25); 
-    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  400,-0.25,0.25);    
-    
-    hVx = new TH1F("hVx","vx, no trig, no weights",  400,-0.25,0.25); 
-    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  400,-0.25,0.25);    
 
-    hVy = new TH1F("hVy","vy, no trig, no weights",  400,-0.25,0.25); 
-    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  400,-0.25,0.25);    
+    hVr = new TH1F("hVr","vr, no trig, no weights",         1000,0.,0.30); 
+    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",1000,0.,0.30); 
     
-    hVz       = new TH1F("hVz","", 100,-25.,25.);//evtvz
-    hWVz      = new TH1F("hWeightedVz","", 100,-25.,25.);//pthat*vz-weighted evt vz
+    hVx = new TH1F("hVx","vx, no trig, no weights",  1000, -0.15,0.15);
+    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights", 1000, -0.15,0.15); 
+
+    hVy = new TH1F("hVy","vy, no trig, no weights",   1000, -0.15,0.15); 
+    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",   1000,-0.15,0.15);
+    
+    hVz       = new TH1F("hVz","", 1000,-25.,25.);//evtvz
+    hWVz      = new TH1F("hWeightedVz","", 1000,-25.,25.);//pthat*vz-weighted evt vz
+
     hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
     hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
     
@@ -374,6 +375,30 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
   
+
+  // ppTrack/trackTree
+  int nVtx_I;
+  int nTrkVtx_I[1000];
+  float xVtx_F[1000];
+  float yVtx_F[1000];
+  float zVtx_F[1000];
+
+  //int nTrk_I[1000];
+  //float trkPt_F[10000];
+  //float trkEta_F[10000];
+  //float trkPhi_F[10000];
+
+  jetpp[3]->SetBranchAddress("nVtx",&nVtx_I);
+  jetpp[3]->SetBranchAddress("nTrkVtx",&nTrkVtx_I);
+  jetpp[3]->SetBranchAddress("xVtx",&xVtx_F);
+  jetpp[3]->SetBranchAddress("yVtx",&yVtx_F);
+  jetpp[3]->SetBranchAddress("zVtx",&zVtx_F);  
+
+
+
+
+
+
   // event count from files
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
   UInt_t NEvents_skimAnalyzr=jetpp[2]->GetEntries();   // preskim event count from files

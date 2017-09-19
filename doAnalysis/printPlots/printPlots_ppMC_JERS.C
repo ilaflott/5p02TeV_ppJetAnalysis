@@ -3,11 +3,9 @@
 const bool debugMode=true;
 
 const bool draw_hJER=true;
-
-
-
 //other options
 const bool draw_MCEff=true;
+
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
 const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 
@@ -65,6 +63,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 
     // array of pointers for input/output hists
     TH1F *hrsp[Nrad][nbins_pt_debug]={};  //input
+    TH1F *hrawrsp[Nrad][nbins_pt_debug]={};  //input
+    TH1F *hcorr[Nrad][nbins_pt_debug]={};  //input
     TH1F *hMean[Nrad]={}, *hSigma[Nrad]={}; //output    
     
     // loop over available radii (one radii for now)
@@ -92,7 +92,32 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	
 	int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
 	if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
+
+
+	// open + grab raw/gen hists
+	std::string inputHistNameRaw="hJER_raw_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
+	hrawrsp[nj][ip] = (TH1F*)finPP->Get( inputHistNameRaw.c_str() );        
+	if(!hrawrsp[nj][ip])
+	  std::cout<<"WARNING, no input hist named " <<  inputHistNameRaw<< ", moving on..."<<std::endl;	
+	if(debugMode)std::cout<<std::endl;  
+	if(debugMode)hrawrsp[nj][ip]->Print("base");    	
+	hrawrsp[nj][ip]->Scale( 1./ hrawrsp[nj][ip]->Integral() );    
 	
+	
+	// open + grab reco/raw 
+	std::string inputHistNameJES="hJES_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
+	hcorr[nj][ip] = (TH1F*)finPP->Get( inputHistNameJES.c_str() );        
+	if(!hcorr[nj][ip])
+	  std::cout<<"WARNING, no input hist named " <<  inputHistNameJES<< ", moving on..."<<std::endl;
+	if(debugMode)std::cout<<std::endl;  
+	if(debugMode)hcorr[nj][ip]->Print("base");    	
+	hcorr[nj][ip]->Scale( 1./ hcorr[nj][ip]->Integral() );    
+	
+	
+	
+	
+	
+	//// reco/gen pt in gen pt bins for fits
 	// open the input hist    
 	std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
 	hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
@@ -100,11 +125,9 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	  std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;
 	  assert(false);}          
 	else if(hrsp[nj][ip]->GetEntries()<3)
-	  continue;
-	
+	  continue;	
 	if(debugMode)std::cout<<std::endl;  
 	if(debugMode)hrsp[nj][ip]->Print("base");    
-
 	hrsp[nj][ip]->Scale( 1./ hrsp[nj][ip]->Integral() );    
 	
 	// get some quick stats    
@@ -172,62 +195,32 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     std::string open_thePDFFileName=thePDFFileName+"[";    
     std::string close_thePDFFileName=thePDFFileName+"]";    
     
-    std::cout<<"opening output pdf file "<< thePDFFileName<<std::endl<<std::endl;    
-    
+    // for mu v. gen pt and sigma/mu v. genpt hists_fit
     TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 800);    
-    pdfoutCanv->cd();    
+    pdfoutCanv->cd();        
+    std::cout<<"opening output pdf file "<< thePDFFileName<<std::endl<<std::endl;    
     pdfoutCanv->Print( open_thePDFFileName.c_str() );    
     
-    TCanvas* pdfoutCanv_wLogy=new TCanvas("outputPdfwLogx","output Pdf wLogx", 800, 800);    
-    pdfoutCanv_wLogy->SetLogy(1);    
-    pdfoutCanv_wLogy->cd();        
 
+    
+    
+    TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", 800, 800);    
+    pdfoutCanv_muSigma->Divide(1,2);
+    pdfoutCanv_muSigma->cd();
+    
+    TPad* p1=(TPad*)pdfoutCanv_muSigma->cd(1);        
+    p1->SetLogx(1);    
+    p1->cd();
+    
+    TPad* p2=(TPad*)pdfoutCanv_muSigma->cd(2);        
+    p2->SetLogx(1);    	
+    p2->cd();    
     
     
     // draw and print pdfs. //    
-    std::cout<<std::endl<<"printing hists to pdf file..."<<std::endl;    
+    std::cout<<std::endl<<"printing and fitting mu/sigma hists ..."<<std::endl;    
     for(int i=0;i<Nrad;++i){    
-            
-      pdfoutCanv_wLogy->cd();    
-      for(int j=0;j<nbins_pt_debug;++j){    
-	int ptbin_j=(int)ptbins_debug[j];
-	int ptbin_j1=(int)ptbins_debug[j+1];
-	std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
-	hrsp[i][j]->SetTitle(hrspTitle.c_str());    
-	hrsp[i][j]->SetTitleSize(0.02);    
-	hrsp[i][j]->SetMarkerStyle(8);    
-	hrsp[i][j]->SetMarkerSize(1.0);    
-	hrsp[i][j]->GetXaxis()->SetTitle("recpt/genpt");    
-	hrsp[i][j]->GetYaxis()->SetTitle("A.U.");    
-
-	hrsp[i][j]->Draw("E1");    
-	hrsp[i][j]->Write();    
-	
-	//float textx=0.5,texty=0.25;    
-	//TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean[i][j])).c_str() );    
-	//meanText->SetNDC();    
-	//meanText->Draw();    
-	//TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig[i][j])).c_str() );    
-	//sigmaText->SetNDC();    
-	//sigmaText->Draw();    
-	//TLine* histMeanLine=new TLine( array_mean[i][j], 0., // x1,y1     
-	//array_mean[i][j], 0.130 );// x2,y2    
-	//array_mean[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2    
-	//histMeanLine->Draw("same");    
-	
-	pdfoutCanv_wLogy->Print(thePDFFileName.c_str());    
-	pdfoutCanv_wLogy->Write();
-	
-	
-	
-      }    
       
-      TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", 800, 800);    
-      pdfoutCanv_muSigma->Divide(1,2);
-      pdfoutCanv_muSigma->cd();
-      
-      TPad* p1=(TPad*)pdfoutCanv_muSigma->cd(1);        
-      p1->SetLogx(1);    
       p1->cd();
       
       hMean[i]->Draw("HIST E1"); 
@@ -240,21 +233,17 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
       
       
-      
-      TPad* p2=(TPad*)pdfoutCanv_muSigma->cd(2);        
-      p2->SetLogx(1);    	
-      p2->cd();    
-      
-      hSigma[i]->Draw("HIST E1");               
+      p2->cd();
 
+      //hSigma[i]->Draw("HIST E1");               
       //TVirtualFitter::SetDefaultFitter("TFitter");
       //std::string fitFunc_str="[0]+[1]*pow((x-"+std::to_string( ((int)ptbins_debug[0]) )+".),[2])";
       //std::cout<<"fitFunc_str="<<fitFunc_str<<std::endl;
       //TF1 *hSigmaFit=new TF1("hSigmaFit", fitFunc_str.c_str() ,
 
       TF1 *hSigmaFit=new TF1("hSigmaFit","[0]+[1]*pow(x,[2])", 
-			     ptbins_debug[0],
-			     ptbins_debug[nbins_pt_debug]);
+			     ptbins_debug[4],                     // I want this fit to start at 56 GeV or so
+			     ptbins_debug[nbins_pt_debug]);       // I want this fit to end at 967 GeV (for entire range)
       //hSigmaFit->SetParameter(0,1.0);
       //hSigmaFit->SetParameter(1,300. );
       //hSigmaFit->SetParameter(2,-1.5);
@@ -282,6 +271,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       //sigmaFitStatus=hSigma[i]->Fit(hSigmaFit,"MEVR");
       //sigmaFitStatus=hSigma[i]->Fit(hSigmaFit,"MR");
       sigmaFitStatus=hSigma[i]->Fit(hSigmaFit,"R");	
+
       fitParam_0    =hSigmaFit->GetParameter(0);
       fitParam_0_err=hSigmaFit->GetParError(0);
       fitParam_1    =hSigmaFit->GetParameter(1);
@@ -307,15 +297,85 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	//	assert(false);
       }
       
+      hSigma[i]->Draw("HIST E1");
+      //hSigmaFit->Draw("SAME");
       
-      hSigmaFit->Draw("SAME");
       pdfoutCanv_muSigma->Print(thePDFFileName.c_str());        
       
+      //hMean[i]->Write();               
+      //hSigma[i]->Write();               
+      //hSigmaFit->Write();
+      
+      //pdfoutCanv_muSigma->Write();
 
-      hSigma[i]->Write();               
-      hSigmaFit->Write();
 
-      pdfoutCanv_muSigma->Write();
+
+      
+      
+      
+      //for the JER/JES hists
+      TCanvas* pdfoutCanv_wLogy=new TCanvas("outputPdfwLogx","output Pdf wLogx", 800, 800);    
+      pdfoutCanv_wLogy->SetLogy(1);    
+      pdfoutCanv_wLogy->cd();            
+      
+
+
+
+
+  
+      
+      std::cout<<"printing JER reco/gen hists"<<std::endl;
+
+      
+      for(int j=0;j<nbins_pt_debug;++j){    
+	
+	int ptbin_j=(int)ptbins_debug[j];
+	int ptbin_j1=(int)ptbins_debug[j+1];
+	std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
+	std::string hrsp_XAxTitle="reco p_{T}/gen p_{T}";
+
+	makeJERSHists(  ( TCanvas*    ) pdfoutCanv_wLogy ,  
+		        ( std::string ) thePDFFileName	 ,  
+		        ( TH1F*       ) hrsp[i][j]      , 
+ 		        ( std::string ) hrspTitle        ,
+	 	        ( std::string ) hrsp_XAxTitle      );
+	
+      }    
+      
+      
+      std::cout<<"printing JER raw/gen hists"<<std::endl;
+      for(int j=0;j<nbins_pt_debug;++j){    
+	
+	int ptbin_j=(int)ptbins_debug[j];
+	int ptbin_j1=(int)ptbins_debug[j+1];
+	std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
+	std::string hrsp_XAxTitle="raw p_{T}/gen p_{T}";	
+	makeJERSHists(  ( TCanvas*    ) pdfoutCanv_wLogy ,  
+		        ( std::string ) thePDFFileName	 ,  
+		        ( TH1F*       ) hrawrsp[i][j]    , 
+ 		        ( std::string ) hrspTitle        ,
+	 	        ( std::string ) hrsp_XAxTitle      );
+	
+      }    
+      
+      std::cout<<"printing JES reco/gen hists"<<std::endl;
+      for(int j=0;j<nbins_pt_debug;++j){    
+	
+	int ptbin_j=(int)ptbins_debug[j];
+	int ptbin_j1=(int)ptbins_debug[j+1];
+	std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
+	std::string hrsp_XAxTitle="reco p_{T}/raw p_{T}";
+	makeJERSHists(  ( TCanvas*    ) pdfoutCanv_wLogy ,  
+		        ( std::string ) thePDFFileName	 ,  
+		        ( TH1F*       ) hcorr[i][j]      , 
+ 		        ( std::string ) hrspTitle        ,
+	 	        ( std::string ) hrsp_XAxTitle      );
+	
+      }    
+      
+
+
+      
       
       
       

@@ -3,12 +3,12 @@
 
 // ppData switches
 const bool fillDataEvtQAHists=true;
+//const bool fillDataVtxTrkQAHists=true; //in the works
 const bool fillDataJetQAHists=true;
 const bool fillDataDijetHists=false;
 const bool fillDataJetIDHists=true;//, tightJetID=false;
-
 const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetSpectraRapHists=false; //other
+const bool fillDataJetSpectraRapHists=true; //other
 
 const bool useHLT100=false;
 
@@ -61,12 +61,12 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   std::string trees[N_dataTrees];
   trees[0]=jetTreeName;
   for(int i=1;i<N_dataTrees;++i){
-    if(i<4)trees[i]=dataTreeNames[i];
+    if(i<5)trees[i]=dataTreeNames[i];
     else{
       if(trgCombType=="PF")
-	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-4]+"_v";
+	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-5]+"_v";
       else if(trgCombType=="Calo")
-	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-4]+"_v";
+	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-5]+"_v";
       else assert(false);
     }
   }
@@ -152,20 +152,20 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
   if(fillDataEvtQAHists){
 
-    hVr = new TH1F("hVr","vr, no trig, no weights",  400,-0.25,0.25); 
-    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  400,-0.25,0.25);    
-    hTrgVr_noW = new TH1F("hTriggerVr_noWeights","vr, trigd, no weights",  400,-0.25,0.25);    
+    hVr = new TH1F("hVr","vr, no trig, no weights",  1000,0.,0.30); 
+    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  1000,0.,0.30); 
+    hTrgVr_noW = new TH1F("hTriggerVr_noWeights","vr, trigd, no weights",1000,0.,0.30); 
 
-    hVx = new TH1F("hVx","vx, no trig, no weights",  400,-0.25,0.25); //bin size of .0025
-    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  400,-0.25,0.25);    
-    hTrgVx_noW = new TH1F("hTriggerVx_noWeights","vx, trigd, no weights",  400,-0.25,0.25);    
+    hVx = new TH1F("hVx","vx, no trig, no weights",  1000,-0.15,0.15); //bin size of .0025
+    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights",  1000,-0.15,0.15);    
+    hTrgVx_noW = new TH1F("hTriggerVx_noWeights","vx, trigd, no weights",  1000,-0.15,0.15);    
 
-    hVy = new TH1F("hVy","vy, no trig, no weights",  400,-0.25,0.25); 
-    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  400,-0.25,0.25);    
-    hTrgVy_noW = new TH1F("hTriggerVy_noWeights","vy, trigd, no weights",  400,-0.25,0.25);    
+    hVy = new TH1F("hVy","vy, no trig, no weights",  1000,-0.15,0.15); 
+    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  1000,-0.15,0.15);    
+    hTrgVy_noW = new TH1F("hTriggerVy_noWeights","vy, trigd, no weights",  1000,-0.15,0.15);    
 
-    hVz = new TH1F("hVz","vz, no trig, no weights",  100,-25.,25.); //bin size of .5
-    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  100,-25.,25.);    
+    hVz = new TH1F("hVz","vz, no trig, no weights",  1000,-25.,25.); //bin size of .5
+    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  1000,-25.,25.);    
     hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);  
 
     hNref      = new TH1F("hNref","nref each evt",30,0,30);
@@ -467,6 +467,35 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
 
 
+  // ppTrack/trackTree
+
+  //vtxs
+  int nVtx_I;
+  int nTrkVtx_I[1000];
+  float xVtx_F[1000];
+  float yVtx_F[1000];
+  float zVtx_F[1000];
+
+  jetpp[3]->SetBranchAddress("nVtx",&nVtx_I);
+  jetpp[3]->SetBranchAddress("nTrkVtx",&nTrkVtx_I);
+  jetpp[3]->SetBranchAddress("xVtx",&xVtx_F);
+  jetpp[3]->SetBranchAddress("yVtx",&yVtx_F);
+  jetpp[3]->SetBranchAddress("zVtx",&zVtx_F);  
+  
+  //trks
+  int     nTrk_I[1000];
+  float  trkPt_F[10000];
+  float trkEta_F[10000];
+  float trkPhi_F[10000];
+
+  jetpp[3]->SetBranchAddress("nTrk"   ,   &nTrk_I  );
+  jetpp[3]->SetBranchAddress("trkPt"   ,   &trkPt_F  );
+  jetpp[3]->SetBranchAddress("trkEta"   ,   &trkEta_F  );
+  jetpp[3]->SetBranchAddress("trkPhi"   ,   &trkPhi_F  );
+  //jetpp[3]->SetBranchAddress(""   ,   &  );  
+
+
+
   // hltanalysis
   assert(N_HLTBits==N_L1Bits);
 
@@ -498,49 +527,49 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   int CaloJet40_I, CaloJet60_I, CaloJet80_I, CaloJet100_I;   //Calo HLT
   int CaloJet40_p_I, CaloJet60_p_I, CaloJet80_p_I, CaloJet100_p_I;
 
-  jetpp[3]->SetBranchAddress( L1Branches[0].c_str()  , &jet40_l1s_I);
-  jetpp[3]->SetBranchAddress( L1Branches[1].c_str()  , &jet60_l1s_I);
-  jetpp[3]->SetBranchAddress( L1Branches[2].c_str()  , &jet80_l1s_I);
-  jetpp[3]->SetBranchAddress( L1Branches[3].c_str()  , &jet100_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[0].c_str()  , &jet40_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[1].c_str()  , &jet60_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[2].c_str()  , &jet80_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[3].c_str()  , &jet100_l1s_I);
 
-  jetpp[3]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1s_ps_I);
-  jetpp[3]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
-  jetpp[3]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
-  jetpp[3]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1s_ps_I);
 
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[0].c_str() , &PFJet40_I);
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[1].c_str() , &PFJet60_I);
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[2].c_str() , &PFJet80_I);
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[3].c_str() , &PFJet100_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[0].c_str() , &PFJet40_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[1].c_str() , &PFJet60_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[2].c_str() , &PFJet80_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[3].c_str() , &PFJet100_I);
 
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[0].c_str() , &PFJet40_p_I);
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[1].c_str() , &PFJet60_p_I);
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[2].c_str() , &PFJet80_p_I);
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[3].c_str() , &PFJet100_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[0].c_str() , &PFJet40_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[1].c_str() , &PFJet60_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[2].c_str() , &PFJet80_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[3].c_str() , &PFJet100_p_I);
 
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &CaloJet40_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &CaloJet60_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[2].c_str() , &CaloJet80_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[3].c_str() , &CaloJet100_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &CaloJet40_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &CaloJet60_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[2].c_str() , &CaloJet80_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[3].c_str() , &CaloJet100_I);
 
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[0].c_str() , &CaloJet40_p_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &CaloJet60_p_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &CaloJet80_p_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &CaloJet100_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[0].c_str() , &CaloJet40_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &CaloJet60_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &CaloJet80_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &CaloJet100_p_I);
   
   //ONE HLT path ONE tree ONE trig obj pt branch
   //e.g. trgObjpt_40 is filled with jet pt from the specific jet40 HLT tree/branch 
   std::vector<double>  *trgObjpt_40, *trgObjpt_60, *trgObjpt_80, *trgObjpt_100;
-  jetpp[4]->SetBranchAddress("pt",&trgObjpt_40);
-  jetpp[5]->SetBranchAddress("pt",&trgObjpt_60);  
-  jetpp[6]->SetBranchAddress("pt",&trgObjpt_80);  
-  jetpp[7]->SetBranchAddress("pt",&trgObjpt_100);
+  jetpp[5]->SetBranchAddress("pt",&trgObjpt_40);
+  jetpp[6]->SetBranchAddress("pt",&trgObjpt_60);  
+  jetpp[7]->SetBranchAddress("pt",&trgObjpt_80);  
+  jetpp[8]->SetBranchAddress("pt",&trgObjpt_100);
 
   std::vector<double>  *trgObjeta_40, *trgObjeta_60, *trgObjeta_80, *trgObjeta_100;
-  jetpp[4]->SetBranchAddress("eta",&trgObjeta_40);
-  jetpp[5]->SetBranchAddress("eta",&trgObjeta_60);  
-  jetpp[6]->SetBranchAddress("eta",&trgObjeta_80);  
-  jetpp[7]->SetBranchAddress("eta",&trgObjeta_100);
+  jetpp[5]->SetBranchAddress("eta",&trgObjeta_40);
+  jetpp[6]->SetBranchAddress("eta",&trgObjeta_60);  
+  jetpp[7]->SetBranchAddress("eta",&trgObjeta_80);  
+  jetpp[8]->SetBranchAddress("eta",&trgObjeta_100);
 
   //evtcounts check
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files

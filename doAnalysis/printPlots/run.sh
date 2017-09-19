@@ -29,10 +29,21 @@ echo ""
 #source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt43_genpt32_ptbins32" "09-13-17" "0.0eta0.5" "00eta05_9.13.17_recgenpt_43_32_ptbins32"
 #source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt56_genpt49_ptbins49" "09-13-17" "0.0eta0.5" "00eta05_9.13.17_recgenpt_56_49_ptbins49"
 
-source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "0.0eta0.5" "00eta05_9.13.17_recgenpt_20_20_ptbins32"
-source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "0.5eta1.0" "05eta10_9.13.17_recgenpt_20_20_ptbins32"
-source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "1.0eta1.5" "10eta15_9.13.17_recgenpt_20_20_ptbins32"
-source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "1.5eta2.0" "15eta20_9.13.17_recgenpt_20_20_ptbins32"
+#source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "0.0eta0.5" "00eta05_9.13.17_recgenpt_20_20_ptbins32"
+#source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "0.5eta1.0" "05eta10_9.13.17_recgenpt_20_20_ptbins32"
+#source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "1.0eta1.5" "10eta15_9.13.17_recgenpt_20_20_ptbins32"
+#source run_printPlots_ppMC_JERS.sh "4" "09.13.17_outputCondor/recpt20_genpt20_ptbins32" "09-13-17" "1.5eta2.0" "15eta20_9.13.17_recgenpt_20_20_ptbins32"
+ 
+
+#source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p1" "09-18-17" "0.0eta0.5" "00eta05_9.18.17_gendrjt0p1"
+#source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p1" "09-18-17" "0.5eta1.0" "05eta10_9.18.17_gendrjt0p1"
+#source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p1" "09-18-17" "1.0eta1.5" "10eta15_9.18.17_gendrjt0p1"
+#source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p1" "09-18-17" "1.5eta2.0" "15eta20_9.18.17_gendrjt0p1"
+
+source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p2" "09-18-17" "0.0eta0.5" "00eta05_9.18.17_gendrjt0p2"
+#source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p2" "09-18-17" "0.5eta1.0" "05eta10_9.18.17_gendrjt0p2"
+#source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p2" "09-18-17" "1.0eta1.5" "10eta15_9.18.17_gendrjt0p2"
+#source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p2" "09-18-17" "1.5eta2.0" "15eta20_9.18.17_gendrjt0p2"
 
 
 

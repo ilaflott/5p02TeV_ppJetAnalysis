@@ -117,15 +117,33 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   
   /////   EVENT QA   ///// 
-  TH1F *hVz=NULL, *hpthatWVz=NULL, *hWVz=NULL, *hvzWVz=NULL; 
+  TH1F *hVr=NULL, *hWVr=NULL;
+  TH1F *hVx=NULL, *hWVx=NULL;
+  TH1F *hVy=NULL, *hWVy=NULL;
+  TH1F *hVz=NULL, *hWVz=NULL, *hpthatWVz=NULL, *hvzWVz=NULL; 
+
   TH1F *hpthat=NULL, *hWpthat=NULL;  
   if(fillMCEvtQAHists){
-    hVz       = new TH1F("hVz","", 60,-15.,15.);//evtvz
-    hpthatWVz = new TH1F("hpthatWeightedVz","", 60,-15.,15.);//pthat-weighted evtvz
-    hvzWVz    = new TH1F("hvzWeightedVz","", 60,-15.,15.);//vz-weighted evtvz
-    hWVz      = new TH1F("hWeightedVz","", 60,-15.,15.);//pthat*vz-weighted evt vz
+
+    hpthatWVz = new TH1F("hpthatWeightedVz","", 500,-25.,25.);//pthat-weighted evtvz
+    hvzWVz    = new TH1F("hvzWeightedVz","", 500,-25.,25.);//vz-weighted evtvz
+
+    hVr = new TH1F("hVr","vr, no trig, no weights",         1000,0.,0.30); 
+    hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",1000,0.,0.30); 
+    
+    hVx = new TH1F("hVx","vx, no trig, no weights",  1000, -0.15,0.15);
+    hWVx = new TH1F("hWeightedVx","vx, trigd, with weights", 1000, -0.15,0.15); 
+
+    hVy = new TH1F("hVy","vy, no trig, no weights",   1000, -0.15,0.15); 
+    hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",   1000,-0.15,0.15);
+    
+    hVz       = new TH1F("hVz","", 1000,-25.,25.);//evtvz
+    hWVz      = new TH1F("hWeightedVz","", 1000,-25.,25.);//pthat*vz-weighted evt vz
+
     hpthat    = new TH1F("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
-    hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  }
+    hWpthat   = new TH1F("hWeightedpthat","",1000,0,1000);  
+    
+  }
   
   
   /////  UNFOLDING   /////
@@ -175,12 +193,22 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   
   /////   GEN/RECO MATCHING   ///// 
-  TH2F *hpp_mceff_pt[2]={}, *hpp_mceff_eta[2]={}, *hpp_mceff_phi[2]={};//, *hpp_mceff_drjt[2]={};
+  TH2F *hpp_mceff_pt[2]={}; 
+  TH2F *hpp_mceff_pt2[2]={}; 
+  TH2F *hpp_mceff_pt3[2]={}; 
+  TH2F *hpp_mceff_eta[2]={};
+  TH2F *hpp_mceff_eta2[2]={};
+  TH2F *hpp_mceff_phi[2]={};
+  TH2F *hpp_mceff_phi2[2]={};
+
+//, *hpp_mceff_drjt[2]={};
   TH2F *hpp_mceff_ptrat_drjt[2]={}, *hpp_mceff_ptrat_eta[2]={}, *hpp_mceff_ptrat_phi[2]={};// all v. genpt/recpt  
 
   if(fillMCEffHists){
 
-    std::string hMCEffTitleArray[]={ "pt", "eta", "phi", "ptrat_drjt", "ptrat_eta", "ptrat_phi" };
+    std::string hMCEffTitleArray[]={ "pt", "pt2", "pt3", 
+				     "eta","eta2", 
+				     "phi", "phi2", "ptrat_drjt", "ptrat_eta", "ptrat_phi" };
     const int nMCEffTitles=sizeof(hMCEffTitleArray)/sizeof(std::string);    
    
     for(int jtID=0;jtID<2;jtID++){
@@ -196,13 +224,25 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if(debugMode)std::cout<<"hMCEffTitleArray="<<hMCEffTitleArray[k]<<std::endl;
 	
 	if(hMCEffTitleArray[k]=="pt")	                                                    //x stuff,, //ystuff,,
-	  hpp_mceff_pt[jtID] =  new TH2F( hTitle.c_str(), "recopt v recopt/refpt"          , 1000, 0.,1000. , 500,   0.,5. );
+	  hpp_mceff_pt[jtID] =  new TH2F( hTitle.c_str(), "refpt v recopt/refpt"          , 1000, 0.,1000. , 500,   0.,5. );
+	else if(hMCEffTitleArray[k]=="pt2")	                                                    //x stuff,, //ystuff,,
+	  hpp_mceff_pt2[jtID] =  new TH2F( hTitle.c_str(), "refpt v rawpt/refpt"          , 1000, 0.,1000. , 500,   0.,5. );
+	else if(hMCEffTitleArray[k]=="pt3")	                                                    //x stuff,, //ystuff,,
+	  hpp_mceff_pt3[jtID] =  new TH2F( hTitle.c_str(), "rawpt v recopt/rawpt"          , 1000, 0.,1000. , 500,   0.,5. );
+
 	else if(hMCEffTitleArray[k]=="eta")						   		             	
 	  hpp_mceff_eta[jtID] = new TH2F( hTitle.c_str(), "recoeta v recoeta-refeta"       , 1000, -5.,5.   , 200, -1.,1.  );
+	else if(hMCEffTitleArray[k]=="eta2")						   		             	
+	  hpp_mceff_eta2[jtID] = new TH2F( hTitle.c_str(), "recoeta v refeta"       , 1000, -5.,5.   , 1000, -5.,5.   );
+
 	else if(hMCEffTitleArray[k]=="phi")						   		              	
 	  hpp_mceff_phi[jtID] = new TH2F( hTitle.c_str(), "recophi v recophi-refphi"       , 800, -4.,4.    , 200, -1.,1. );
+	else if(hMCEffTitleArray[k]=="phi2")						   		              	
+	  hpp_mceff_phi2[jtID] = new TH2F( hTitle.c_str(), "recophi v refphi"       , 800, -4.,4.     , 800, -4., 4.    );
+
 	else if(hMCEffTitleArray[k]=="ptrat_drjt")					   		             	
 	  hpp_mceff_ptrat_drjt[jtID] = new TH2F( hTitle.c_str(), "refdrjt v recopt/refpt"  , 500, 0. , 0.5  , 500,   0. , 5. );   
+
 	else if(hMCEffTitleArray[k]=="ptrat_eta")					   		       	        
 	  hpp_mceff_ptrat_eta[jtID]  = new TH2F( hTitle.c_str(), "refeta  v recopt/refpt"  , 100, -5.,5.    , 500,   0.,5. );
 	else if(hMCEffTitleArray[k]=="ptrat_phi")					   		       	        
@@ -221,7 +261,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   TH1F * hJER_jtetaQA;
 
   //all eta in bins of genpt
-  TH1F * hJER[2][nbins_pt]={};  
+  TH1F * hJER[2][nbins_pt]={};       // rec/gen , bins of gen pt
+  TH1F * hJES[2][nbins_pt]={};       // rec/raw , bins of raw pt
+  TH1F * hJER_raw[2][nbins_pt]={};   // raw/gen , bins of gen pt
 
   ////two specific genpt ranges across eta bins
   //TH1F * hJER_eta_30pt50[2][nbins_eta]={};
@@ -270,7 +312,8 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       //	  JEC_ptbins[x],JEC_ptbins[x+1], etabins[y],etabins[y+1]),
       //	  100,0.,3.);           }*/ 
       //}    
-      
+
+      //TH1F * hJER[2][nbins_pt]={};       // rec/gen , bins of raw pt
       for(int bin = 0; bin<nbins_pt; ++bin) {      
 	std::string hTitleJER="hJER_"+std::to_string(jtID)+"wJetID_ptbin"+std::to_string(bin);
 	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );
@@ -278,6 +321,26 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	std::string hDescJER="rec/gen pt, "+ptbins_i+"<genpt<"+ptbins_ip1;
 	std::cout<<"hDescJER="<<hDescJER<<std::endl;
 	hJER[jtID][bin] = new TH1F(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
+      } 
+
+      //TH1F * hJES[2][nbins_pt]={};       // rec/raw , bins of raw pt
+      for(int bin = 0; bin<nbins_pt; ++bin) {      
+	std::string hTitleJES="hJES_"+std::to_string(jtID)+"wJetID_ptbin"+std::to_string(bin);
+	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );
+	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
+	std::string hDescJES="rec/raw pt, "+ptbins_i+"<genpt<"+ptbins_ip1;
+	std::cout<<"hDescJES="<<hDescJES<<std::endl;
+	hJES[jtID][bin] = new TH1F(hTitleJES.c_str(),hDescJES.c_str(), 200,0.,2.); 
+       }
+
+      //TH1F * hJER_raw[2][nbins_pt]={};   // raw/gen , bins of gen pt
+      for(int bin = 0; bin<nbins_pt; ++bin) {      
+	std::string hTitleJER_raw="hJER_raw_"+std::to_string(jtID)+"wJetID_ptbin"+std::to_string(bin);
+	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );
+	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
+	std::string hDescJER_raw="raw/gen pt, "+ptbins_i+"<genpt<"+ptbins_ip1;
+	std::cout<<"hDescJER_raw="<<hDescJER_raw<<std::endl;
+	hJER_raw[jtID][bin] = new TH1F(hTitleJER_raw.c_str(),hDescJER_raw.c_str(), 200,0.,2.); 
       } 
       
       //for(int bin = 0; bin<nbins_abseta; ++bin) {      
@@ -372,11 +435,14 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   jetpp[0]->SetBranchAddress( "refdrjt"	, &refdrjt_F   );  
   
   // HiEvtAnalyzer
-  ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I; float vz_F;
+  ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I; 
+  float vz_F,vx_F,vy_F;
   jetpp[1]->SetBranchAddress("evt",&evt_I);
   jetpp[1]->SetBranchAddress("run",&run_I);
   jetpp[1]->SetBranchAddress("lumi",&lumi_I);
   jetpp[1]->SetBranchAddress("vz",&vz_F);
+  jetpp[1]->SetBranchAddress("vx",&vx_F);
+  jetpp[1]->SetBranchAddress("vy",&vy_F);
   
   // skimanalysis
   int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I, puvertexFilter_I;
@@ -441,14 +507,21 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }     
     float trigWeight=1.;
     float weight_eS=evtPthatWeight*trigWeight*vzWeight;              
-    
+    float vr_F=std::sqrt( vx_F*vx_F + vy_F*vy_F);
     //vz hists
     if(fillMCEvtQAHists){
 
+      hVr->Fill( vr_F, 1.);
+      hWVr->Fill(vr_F, weight_eS);      
+      hVx->Fill( vx_F, 1.);
+      hWVx->Fill(vx_F, weight_eS);      
+      hVy->Fill( vy_F, 1.);
+      hWVy->Fill(vy_F, weight_eS);      
+
       hVz->Fill(vz_F, 1.);
+      hWVz->Fill(vz_F, weight_eS);      
       hvzWVz->Fill(vz_F, vzWeight);
       hpthatWVz->Fill(vz_F, evtPthatWeight);
-      hWVz->Fill(vz_F, weight_eS);      
 
       hpthat->Fill(pthat_F, 1.);
       hWpthat->Fill(pthat_F, weight_eS); }
@@ -472,13 +545,19 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       float absreceta=fabs(receta);
       float geneta = refeta_F[jet];
       //float absgeneta=fabs(geneta);
+      float gendrjt = refdrjt_F[jet];     
+      float rawpt  = rawpt_F[jet];
+      float genphi = refphi_F[jet];
+      float recphi = phi_F[jet];
+      
       
       if( subid_F[jet]!=0 ) continue;
       else if ( recpt <= jtPtCut    ) continue;                 
       else if ( genpt <= genJetPtCut ) continue;
       else if (absreceta >= jtEtaCutHi)continue;
       else if (absreceta < jtEtaCutLo) continue;
-      //else if ( absreceta > 4.7    ) continue;
+      else if ( gendrjt > 0.1 ) continue;
+      
 
       // jet/event counts
       h_NJets_kmatCut1->Fill(1);
@@ -491,11 +570,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       //else passesEtaCut=true;
       //if(!passesEtaCut)continue; 
 
-      float genphi = refphi_F[jet];
-      float gendrjt = refdrjt_F[jet];     
-      float rawpt  = rawpt_F[jet];
-      float recphi = phi_F[jet];
-      
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
@@ -602,7 +676,11 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	
 	if(ptbin != -1) {	  
 	  hJER_jtetaQA->Fill(receta,weight_eS);      
-	  hJER[jetID][ptbin]->Fill( (float)(recpt/genpt), weight_eS); 	}		
+	  hJER[jetID][ptbin]->Fill( (float)(recpt/genpt), weight_eS); 	
+	  hJES[jetID][ptbin]->Fill( (float)(recpt/rawpt), weight_eS); 	
+	  hJER_raw[jetID][ptbin]->Fill( (float)(rawpt/genpt), weight_eS); 	
+
+	}		
       }
 
       
@@ -613,8 +691,15 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       if(fillMCEffHists){	
 	// x val, y val, weight
 	hpp_mceff_pt[jetID]->Fill(         genpt   , recpt/genpt   ,   weight_eS);
-	hpp_mceff_eta[jetID]->Fill(        receta  , receta-geneta ,   weight_eS);
-	hpp_mceff_phi[jetID]->Fill(        recphi  , recphi-genphi ,   weight_eS);	
+	hpp_mceff_pt2[jetID]->Fill(         genpt   , rawpt/genpt   ,   weight_eS);
+	hpp_mceff_pt3[jetID]->Fill(         rawpt   , recpt/rawpt   ,   weight_eS);
+
+	hpp_mceff_eta[jetID]->Fill(        receta  ,  receta-geneta ,   weight_eS);
+	hpp_mceff_eta2[jetID]->Fill(       receta  ,  geneta ,   weight_eS);
+
+	hpp_mceff_phi[jetID]->Fill(         recphi  , recphi-genphi ,   weight_eS);	
+	hpp_mceff_phi2[jetID]->Fill(        recphi  , genphi ,   weight_eS);	
+
 	hpp_mceff_ptrat_drjt[jetID]->Fill( gendrjt , recpt/genpt   ,   weight_eS);	
 	hpp_mceff_ptrat_eta[jetID]->Fill(  geneta  , recpt/genpt   ,   weight_eS);
 	hpp_mceff_ptrat_phi[jetID]->Fill(  genphi  , recpt/genpt   ,   weight_eS);       

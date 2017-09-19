@@ -17,7 +17,7 @@ echo ""
 echo "done compiling code(s), submitting."
 echo ""
 
-#source run_readForests_JERS.sh 4 "0.0" "0.5"
+source run_readForests_JERS.sh 4 "0.0" "0.5"
 #sleep 60s
 source run_readForests_JERS.sh 4 "0.5" "1.0"
 #sleep 60s

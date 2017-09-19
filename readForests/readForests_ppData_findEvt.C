@@ -14,8 +14,21 @@ const bool useHLT100=false;
 
 //const std::string trgCombType="Calo";
 const std::string trgCombType="PF";
-const int targetEvt=113080452;
-const int targetRun=262252;
+
+//// LowerJets
+//const int targetEvt=113080452;
+//const int targetRun=262252;
+//const int targetEvt=112211851;
+//const int targetRun=262252;
+//const int targetEvt=6608245;
+//const int targetRun=262163;
+//const int targetEvt=197246756;
+//const int targetRun=262271;
+const int targetEvt=1000276728;
+const int targetRun=262274;
+
+
+//Run:262252, event: 112211851,
 //const int targetLumi=;
 
 //// readForests_ppData_findEvt
@@ -63,12 +76,12 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   std::string trees[N_dataTrees];
   trees[0]=jetTreeName;
   for(int i=1;i<N_dataTrees;++i){
-    if(i<4)trees[i]=dataTreeNames[i];
+    if(i<5)trees[i]=dataTreeNames[i];
     else{
       if(trgCombType=="PF")
-	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-4]+"_v";
+	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-5]+"_v";
       else if(trgCombType=="Calo")
-	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-4]+"_v";
+	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-5]+"_v";
       else assert(false);
     }
   }
@@ -376,7 +389,7 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   int nref_I;  
   float pt_F[1000];  float rawpt_F[1000];
   float eta_F[1000];   float phi_F[1000];  
-  //float y_F[1000]; //float jtpu_F[1000]; 
+  float y_F[1000]; //float jtpu_F[1000]; 
   
   //tracks
   int trkN_I[1000], trkHardN_I[1000]; 
@@ -408,7 +421,7 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   jetpp[0]->SetBranchAddress("rawpt",&rawpt_F);
   jetpp[0]->SetBranchAddress("jteta",&eta_F);
   jetpp[0]->SetBranchAddress("jtphi",&phi_F);
-  //jetpp[0]->SetBranchAddress("jty",&y_F);
+  jetpp[0]->SetBranchAddress("jty",&y_F);
 
   //tracks
   jetpp[0]->SetBranchAddress("trackN",&trkN_I);  
@@ -469,6 +482,28 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
 
 
+  // ppTrack/trackTree
+  int nVtx_I;
+  int nTrkVtx_I[1000];
+  float xVtx_F[1000];
+  float yVtx_F[1000];
+  float zVtx_F[1000];
+
+  //int nTrk_I[1000];
+  //float trkPt_F[10000];
+  //float trkEta_F[10000];
+  //float trkPhi_F[10000];
+
+  jetpp[3]->SetBranchAddress("nVtx",&nVtx_I);
+  jetpp[3]->SetBranchAddress("nTrkVtx",&nTrkVtx_I);
+  jetpp[3]->SetBranchAddress("xVtx",&xVtx_F);
+  jetpp[3]->SetBranchAddress("yVtx",&yVtx_F);
+  jetpp[3]->SetBranchAddress("zVtx",&zVtx_F);  
+
+  //jetpp[8]->SetBranchAddress("trkEta",&trkEta_F);
+  //jetpp[8]->SetBranchAddress("nTrk",&nTrk_I);
+
+
   // hltanalysis
   assert(N_HLTBits==N_L1Bits);
 
@@ -500,49 +535,54 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   int CaloJet40_I, CaloJet60_I, CaloJet80_I, CaloJet100_I;   //Calo HLT
   int CaloJet40_p_I, CaloJet60_p_I, CaloJet80_p_I, CaloJet100_p_I;
 
-  jetpp[3]->SetBranchAddress( L1Branches[0].c_str()  , &jet40_l1s_I);
-  jetpp[3]->SetBranchAddress( L1Branches[1].c_str()  , &jet60_l1s_I);
-  jetpp[3]->SetBranchAddress( L1Branches[2].c_str()  , &jet80_l1s_I);
-  jetpp[3]->SetBranchAddress( L1Branches[3].c_str()  , &jet100_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[0].c_str()  , &jet40_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[1].c_str()  , &jet60_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[2].c_str()  , &jet80_l1s_I);
+  jetpp[4]->SetBranchAddress( L1Branches[3].c_str()  , &jet100_l1s_I);
 
-  jetpp[3]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1s_ps_I);
-  jetpp[3]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
-  jetpp[3]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
-  jetpp[3]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
+  jetpp[4]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1s_ps_I);
 
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[0].c_str() , &PFJet40_I);
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[1].c_str() , &PFJet60_I);
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[2].c_str() , &PFJet80_I);
-  jetpp[3]->SetBranchAddress( PF_HLTBranches[3].c_str() , &PFJet100_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[0].c_str() , &PFJet40_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[1].c_str() , &PFJet60_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[2].c_str() , &PFJet80_I);
+  jetpp[4]->SetBranchAddress( PF_HLTBranches[3].c_str() , &PFJet100_I);
 
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[0].c_str() , &PFJet40_p_I);
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[1].c_str() , &PFJet60_p_I);
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[2].c_str() , &PFJet80_p_I);
-  jetpp[3]->SetBranchAddress( PF_HLTPresclBranches[3].c_str() , &PFJet100_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[0].c_str() , &PFJet40_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[1].c_str() , &PFJet60_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[2].c_str() , &PFJet80_p_I);
+  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[3].c_str() , &PFJet100_p_I);
 
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &CaloJet40_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &CaloJet60_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[2].c_str() , &CaloJet80_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTBranches[3].c_str() , &CaloJet100_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &CaloJet40_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &CaloJet60_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[2].c_str() , &CaloJet80_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTBranches[3].c_str() , &CaloJet100_I);
 
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[0].c_str() , &CaloJet40_p_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &CaloJet60_p_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &CaloJet80_p_I);
-  jetpp[3]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &CaloJet100_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[0].c_str() , &CaloJet40_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &CaloJet60_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &CaloJet80_p_I);
+  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &CaloJet100_p_I);
   
+
+
+
+
+
   //ONE HLT path ONE tree ONE trig obj pt branch
   //e.g. trgObjpt_40 is filled with jet pt from the specific jet40 HLT tree/branch 
   std::vector<double>  *trgObjpt_40, *trgObjpt_60, *trgObjpt_80, *trgObjpt_100;
-  jetpp[4]->SetBranchAddress("pt",&trgObjpt_40);
-  jetpp[5]->SetBranchAddress("pt",&trgObjpt_60);  
-  jetpp[6]->SetBranchAddress("pt",&trgObjpt_80);  
-  jetpp[7]->SetBranchAddress("pt",&trgObjpt_100);
+  jetpp[5]->SetBranchAddress("pt",&trgObjpt_40);
+  jetpp[6]->SetBranchAddress("pt",&trgObjpt_60);  
+  jetpp[7]->SetBranchAddress("pt",&trgObjpt_80);  
+  jetpp[8]->SetBranchAddress("pt",&trgObjpt_100);
 
   std::vector<double>  *trgObjeta_40, *trgObjeta_60, *trgObjeta_80, *trgObjeta_100;
-  jetpp[4]->SetBranchAddress("eta",&trgObjeta_40);
-  jetpp[5]->SetBranchAddress("eta",&trgObjeta_60);  
-  jetpp[6]->SetBranchAddress("eta",&trgObjeta_80);  
-  jetpp[7]->SetBranchAddress("eta",&trgObjeta_100);
+  jetpp[5]->SetBranchAddress("eta",&trgObjeta_40);
+  jetpp[6]->SetBranchAddress("eta",&trgObjeta_60);  
+  jetpp[7]->SetBranchAddress("eta",&trgObjeta_80);  
+  jetpp[8]->SetBranchAddress("eta",&trgObjeta_100);
 
   //evtcounts check
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
@@ -584,7 +624,8 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   //begin event loop
   bool targetEvtFound=false;
   for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
-    if(targetEvtFound)break;
+    //if(targetEvtFound)break;
+    if(targetEvtFound&&nEvt%100==0)continue;
     
     //grab an entry
     if( debugMode && (nEvt%1000==0) ) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
@@ -609,22 +650,28 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 
     //if(true) { std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
     //    if(evt_I==targetEvt && run_I==targetRun && lumi_I==targetLumi) std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
-    if(evt_I==targetEvt && run_I==targetRun ) { std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
+    if((evt_I==targetEvt && run_I==targetRun) || targetEvtFound) { 
+
+      std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
       std::cout<<"evt=="<<evt_I<<std::endl;
       std::cout<<"run=="<<run_I<<std::endl;
       std::cout<<"lumi=="<<lumi_I<<std::endl;
 
+      std::cout<<std::endl<<"HiEvtAnalyzer/EvtFilers:"<<std::endl;
       std::cout<<"pHBHENoiseFilter_I     =="<< pHBHENoiseFilter_I     <<std::endl;
       std::cout<<"pBeamScrapingFilter_I  =="<< pBeamScrapingFilter_I  <<std::endl;
       std::cout<<"pprimaryvertexFilter_I =="<< pprimaryvertexFilter_I <<std::endl;
-
       std::cout<<"vx_F =="<< vx_F <<std::endl;
       std::cout<<"vy_F =="<< vy_F <<std::endl;
       std::cout<<"vz_F =="<< vz_F <<std::endl;
       
-      //std::cout<<"nvtxs="<<nvtx_I << std::endl;
-      //if(lumi_I==84) continue;
-      //else targetEvtFound=true;
+      std::cout<<std::endl<<"trackTree vtx info:"<<std::endl;
+      std::cout<<"nVtx="<<nVtx_I << std::endl;
+      std::cout<<"nTrkVtx="<<nTrkVtx_I[0] << std::endl;
+      std::cout<<"xVtx="<<xVtx_F[0] << std::endl;
+      std::cout<<"yVtx="<<yVtx_F[0] << std::endl;
+      std::cout<<"zVtx="<<zVtx_F[0] << std::endl;
+
       targetEvtFound=true;
     }
     else{ 
@@ -634,7 +681,7 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 	std::cout<<"lumi=="<<lumi_I<<std::endl;
 	//std::cout<<"nvtxs="<<nvtx_I << std::endl;
       }
-      targetEvtFound=false;      
+      //targetEvtFound=false;      
       continue;}
 
 
@@ -654,13 +701,10 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
       std::cout<<std::endl;
       std::cout<<"HLT PF 40/60/80     == "<<PFJet40_I << "/"<<PFJet60_I << "/"<<PFJet80_I  <<std::endl;
       std::cout<<"HLT PF 40/60/80 PSCL== "<< (PFJet40_p_I*jet40_l1s_ps_I) << "/"<< (PFJet60_p_I*jet60_l1s_ps_I)<< "/"<< (PFJet80_p_I*jet80_l1s_ps_I)  <<std::endl;
-      std::cout<<std::endl;
 
       std::cout<<std::endl;
       std::cout<<"HLT Calo 40/60/80     == "<<CaloJet40_I << "/"<<CaloJet60_I << "/"<<CaloJet80_I  <<std::endl;
       std::cout<<"HLT Calo 40/60/80 PSCL== "<< (CaloJet40_p_I*jet40_l1s_ps_I) << "/"<< (CaloJet60_p_I*jet60_l1s_ps_I)<< "/"<< (CaloJet80_p_I*jet80_l1s_ps_I)  <<std::endl;
-      std::cout<<std::endl;
-
     }
     
     bool *trgDec=NULL; int *trgPscl=NULL;
@@ -742,7 +786,6 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
       std::cout<<"trigComboType="<< trgCombType<<std::endl;
       std::cout<<"HLT 40/60/80 thresholds== "<< HLTthresh[0] << "/"<< HLTthresh[1]<< "/"<< HLTthresh[2]  <<std::endl;
       std::cout<<"TrgObj 40/60/80 pt/eta == "<< trgPt << "/"<< trgEta<< std::endl;
-      std::cout<<std::endl;
       std::cout<<"is 40/60/80     == "<<is40 << "/"<<is60 << "/"<<is80  <<std::endl;
       std::cout<<std::endl;
     }
@@ -850,18 +893,22 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
       float receta = eta_F[jet];
       float absreceta = fabs(receta);
       float rawpt  = rawpt_F[jet];
-      //float recy   = y_F[jet];
+      float recy   = y_F[jet];
       float recphi = phi_F[jet];
 
       
       //if(run_I==262252 && evt_I==113080452) std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
 
       if(doResidualCorr){
-	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , y = "<<receta<<" , phi = "<<recphi<<std::endl;	
+	
+	if(targetEvtFound)std::cout<<"jet #"<<jet<<" , eta = "<<receta<<" , y = "<<recy<<std::endl;
+	if(targetEvtFound)std::cout<<"jet #"<<jet<<" , phi = "<<recphi<<std::endl;	
 	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , rawpt = "<<rawpt<<std::endl;	
 	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , recpt = "<<recpt<<std::endl;	
+
       	recpt=L2JES->getCorrectedPt(recpt,receta);  
 	if(targetEvtFound) std::cout<<"jet #"<<jet<<" : recptL2 = "<<recpt<<std::endl;
+
 	recpt=L3JES->getCorrectedPt(recpt);        
 	if(targetEvtFound) std::cout<<"jet #"<<jet<<" : recptL3 = "<<recpt<<std::endl;
       }

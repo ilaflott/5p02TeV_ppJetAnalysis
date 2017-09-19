@@ -9,8 +9,9 @@ function hadd_ppMC_allInDir(){
         echo "hadd_ppMC_allInDir <radiusInt> "
         return
     fi
+    echo "in dir $PWD"
     R=$1
-    hadd Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PF-allFiles.root *.root
+    hadd Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PF-allFiles.root ./*.root
     return
 }
 
@@ -21,6 +22,8 @@ function hadd_ppData_allInDir(){
         echo "hadd_ppData_allInDir <radiusInt> "
         return
     fi
+    R=$1
+    echo "in dir $PWD"
     hadd HighPtJetTrig_ak${R}PF-allFiles.root ./ppData*/*.root
     return
 }
@@ -58,12 +61,14 @@ date_scratch=$3
 etabin=$4
 type=$5
 
-workingDir=$PWD
+
 
 #theSCRATCHdir=${SCRATCH}/5p02TeV_ppJetAnalysis/readForests/${date_scratch}_outputCondor/
 #theSCRATCHdir=/cms/heavyion/ilaflott/T2_US_MIT_SCRATCH/5p02TeV_ppJetAnalysis/readForests/${date_scratch}_outputCondor/
 #theSCRATCHdir=/cms/heavyion/ilaflott/T2_US_MIT_SCRATCH/5p02TeV_ppJetAnalysis/readForests/${date_scratch}_outputCondor/ppData_CaloHLT
 theSCRATCHdir=/cms/heavyion/ilaflott/T2_US_MIT_SCRATCH/5p02TeV_ppJetAnalysis/readForests/${date_scratch}_outputCondor
+workingDir=$PWD
+
 
 if [[ -d "${theSCRATCHdir}"  ]]
 then
@@ -72,6 +77,7 @@ else
     echo "creating directory  in ${SCRATCH}/5p02TeV_ppJetAnalysis/readForests/"
     mkdir ${theSCRATCHdir}
 fi
+
 
 
 
@@ -97,10 +103,11 @@ then
     echo ""
     echo "done hadding ppMC"
     echo ""
+
     cd ${workingDir}
     sleep 1s
         
-    cp --parents ppMC*/*allFiles*.root 4scp/
+    cp --parents $ppMCjetPlotsDir/*allFiles*.root 4scp/
     
     echo ""
     echo "moving ppMC to ${theSCRATCHdir}"
@@ -152,7 +159,8 @@ then
     cd ${workingDir}
     sleep 1s
     
-    cp --parents ppData*/*allFiles*.root 4scp/
+    cp --parents $ppDataHPtDir/*allFiles*.root 4scp/
+    
     
     echo ""
     echo "moving to SCRATCH space"

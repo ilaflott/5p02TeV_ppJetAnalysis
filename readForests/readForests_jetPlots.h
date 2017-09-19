@@ -28,14 +28,14 @@ const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 const float defEtaCutLo=0.0, defEtaCutHi=4.7;//really absetacut
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				 int startfile=0, int endfile=9,
+				 int startfile=0, int endfile=1,
 				 int radius=defRadius, std::string jetType=defJetType, 
 				 bool debugMode=defDebugMode,
 				 std::string outfile=defDataOutputName, 
 				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-			       int startfile=0, int endfile=4, 
+			       int startfile=0, int endfile=1, 
 			       int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=defDebugMode,			
 			       std::string outfile=(defMCOutputName+"_jetPlots.root"),
@@ -50,7 +50,7 @@ const float jetQAPtCut=jtPtCut;
 const float genJetPtCut=49; 
 //const float genJetPtCut=30.;
 
-const float ldJetPtCut=74., subldJetPtCut=56., ptAveCut=64., dPhiCut=2./3.*TMath::Pi();//dijet cuts
+const float ldJetPtCut=74., subldJetPtCut=56., ptAveCut=subldJetPtCut, dPhiCut=2./3.*TMath::Pi();//dijet cuts
 
 
 

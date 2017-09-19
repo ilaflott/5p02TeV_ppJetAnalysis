@@ -322,3 +322,31 @@ float getIntegralErrJetSpectra(TH1* h){
   
   return integralErr;
 }
+
+
+
+
+void makeJERSHists(TCanvas* pdfOutCanv, std::string thePDFFileName, 
+		   TH1F* hrsp, std::string hrspTitle, std::string hrsp_XAxTitle		   ){
+  
+  pdfOutCanv->cd();
+  
+  hrsp->SetTitle(hrspTitle.c_str());    
+  //hrsp->SetTitleSize(0.02);    
+  
+  hrsp->SetMarkerStyle(8);    
+  hrsp->SetMarkerSize(1.0);    
+  
+  hrsp->GetXaxis()->SetTitle( hrsp_XAxTitle.c_str() );    
+  hrsp->GetYaxis()->SetTitle("A.U.");    
+  
+  hrsp->Draw("E1");    
+
+  pdfOutCanv->Print(thePDFFileName.c_str());
+
+  //pdfoutCanv->Write();
+  //hrsp->Write();    
+  
+
+  return;
+}

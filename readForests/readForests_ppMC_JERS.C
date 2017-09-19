@@ -556,7 +556,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       else if ( genpt <= genJetPtCut ) continue;
       else if (absreceta >= jtEtaCutHi)continue;
       else if (absreceta < jtEtaCutLo) continue;
-      else if ( gendrjt > 0.1 ) continue;
+      else if ( gendrjt > 0.2 ) continue;
       
 
       // jet/event counts

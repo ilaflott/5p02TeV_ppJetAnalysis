@@ -6,9 +6,34 @@
 
 // gen variable names for Th2 profiles//MCEff Ploits
 const std::string genVars[] = {   
-  "pt","eta","phi" //,"drjt"
+  "pt","pt2","pt3",
+  "eta",  "eta2",
+  "phi" , "phi2" ,
+  "ptrat_drjt",
+  "ptrat_eta",
+  "ptrat_phi"
+  //,"drjt"
 };
 const int N_genVars = sizeof(genVars)/sizeof(std::string);
+
+const std::string genVars_xAx[] = {   
+  "refpt","refpt","rawpt",
+  "recoeta",  "recoeta",
+  "recophi" , "recophi" ,
+  "refdrjt",
+  "refeta",
+  "refphi"
+
+};
+const std::string genVars_yAx[] = {   
+  "recopt/refpt",   "rawpt/refpt",   "recopt/rawpt",
+  "recoeta-refeta",  "refeta",
+  "recophi-refphi" , "refphi" ,
+  "recopt/refpt",
+  "recopt/refpt",
+  "recopt/refpt"
+};
+
 
 const std::string genVars_ptrat[] = {   
   "eta","phi" ,"drjt"

@@ -1,13 +1,14 @@
 #include "printPlots.h"
 
-const bool debugMode=false;
+const bool debugMode=true;
 const bool draw_hJER=true;
 const bool draw_MCEff=true;
+const bool drawProfiles = true;
+const bool rebinJER=false;
 
 //other options
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
 const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
-const bool rebinJER=false;
 //const std::string defOutFilename="printPlots_MCJEC_ppMC_defOut";
 
 int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
@@ -60,7 +61,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   
   // input hists
   if(draw_hJER){
-
+    
     // array of pointers for input/output hists
     TH1F *hrsp[Nrad][nbins_pt_debug]={};  //input
     //TH1F *hrawrsp[Nrad][nbins_pt_debug]={};  //input
@@ -145,8 +146,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	  sqrt (  pow( emean/mean,2) + pow( hrsp[nj][ip]->GetStdDevError()/hrsp[nj][ip]->GetStdDev(),2) ) ; 
 	float chi2NDF = -1.;
 	
-	fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
 
+	fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
 	//fgaus->SetParLimits(0,0.98,1.02);    //normalization
 	//fgaus->SetParLimits(1,0.95,1.05);   // mean
 	//fgaus->SetParLimits(2,0.0,0.5);     // width
@@ -155,16 +156,14 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	std::cout<<"inputHist "<<inputHistName<<std::endl;    
 	if(debugMode)std::cout<< "Mean= "<< hrsp[nj][ip]->GetMean()<<" +/- " <<hrsp[nj][ip]->GetMeanError()<< std::endl;    	
 		
-	int fitstatus = 1;    	
-
+	int fitstatus = 1;    	//fit status=0 if fit successful... annoying
 	//fitstatus = hrsp[nj][ip]->Fit(fgaus,"RQ");    
 	fitstatus = hrsp[nj][ip]->Fit(fgaus,"R");    
 	//fitstatus = hrsp[nj][ip]->Fit(fgaus);    
-
 	std::cout<< "Fit Status: "<< fitstatus<< std::endl;    
 	
-	mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()        : fgaus->GetParameter(1);    
-	emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError()   : fgaus->GetParError(1) ; // hrsp[nj][ip]->GetMeanError(); //debug    
+	mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()        : fgaus->GetParameter(1); // z = if(condition) then(?) <do this> else(:) <do this>   
+	emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError()   : fgaus->GetParError(1) ; 
 	sig   = (fitstatus!=0) ? hrsp[nj][ip]->GetStdDev()/mean : fgaus->GetParameter(2)/mean;    
 	esig  = (fitstatus!=0) 
 	  ? sig * sqrt( pow( (emean/mean),2) + 
@@ -175,11 +174,6 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 			)   ;
 	chi2NDF = (fitstatus!=0) ? -1. : fgaus->GetChisquare()/((float)fgaus->GetNDF());
 
-	//? sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) +     
-	//	  (pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) )     
-	//: sqrt( (pow(1/mean,2) * pow(hrsp[nj][ip]->GetStdDevError(),2)) +     
-	//	  (pow(-hrsp[nj][ip]->GetStdDev()/pow(mean,2), 2) * pow(emean,2)) );     
-	
 	// set contents+errors in specific bin    
 	std::cout<<"setting bin content for hMean[nj][ip]=["<< nj<<"]["<< ip<<"] "<<std::endl;    
 	if(debugMode)std::cout<<"mean ="<< mean<<std::endl;    
@@ -190,10 +184,13 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	
 	hMean[nj]->SetBinContent (ip+1, mean);    
 	hMean[nj]->SetBinError   (ip+1, emean);    
+
 	hSigma[nj]->SetBinContent (ip+1, sig);    
 	hSigma[nj]->SetBinError   (ip+1, esig);    
+
 	hChi2NDF[nj]->SetBinContent (ip+1, chi2NDF );
 	hChi2NDF[nj]->SetBinError (ip+1, 0. );
+	
       }// end fit-loop over ptbins    
      
     }// end loop over available jet radii    
@@ -216,12 +213,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     pdfoutCanv->Print( open_thePDFFileName.c_str() );    
     
 
-    //gStyle->SetOptStat(0);
-    //gStyle->SetOptFit(1);    
-    //gROOT->ForceStyle();
-    
     TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", 900, 700);    
-    //pdfoutCanv_muSigma->UseCurrentStyle();
     pdfoutCanv_muSigma->Divide(1,3);
     pdfoutCanv_muSigma->cd();
     
@@ -336,13 +328,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 
 
 
-      ////for the JER/JES hists
-      //gStyle->SetOptStat(1);
-      //gStyle->SetOptFit(1);    
-      //gROOT->ForceStyle();
-      
       TCanvas* pdfoutCanv_wLogy=new TCanvas("outputPdfwLogx","output Pdf wLogx", 800, 800);    
-      //pdfoutCanv_wLogy->UseCurrentStyle();
       pdfoutCanv_wLogy->SetLogy(1);
       pdfoutCanv_wLogy->cd();            
       
@@ -370,6 +356,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	
       }    
       
+
       /*
       std::cout<<"printing JER raw/gen hists"<<std::endl;
       for(int j=0;j<nbins_pt_debug;++j){    
@@ -397,17 +384,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 		        ( TH1F*       ) hcorr[i][j]      , 
  		        ( std::string ) hrspTitle        ,
 	 	        ( std::string ) hrsp_XAxTitle      );      }    
-      */
-
-
-      
-      
-      
-      
-      
-      
-      
-      
+      */      
       
       std::cout<<"closing output pdf file "<<thePDFFileName<<std::endl<<std::endl;                
       
@@ -424,17 +401,170 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   else std::cout<<std::endl<<std::endl<<"skipping hJER hists"<<std::endl<<std::endl;
                        
   
+
+
+  /////////////////////////////////////////////  /////////////////////////////////////////////  /////////////////////////////////////////////  /////////////////////////////////////////////
+  /////////////////////////////////////////////  /////////////////////////////////////////////  /////////////////////////////////////////////  /////////////////////////////////////////////
+  /////////////////////////////////////////////  /////////////////////////////////////////////  /////////////////////////////////////////////  /////////////////////////////////////////////
+
   
   
+  if(!draw_MCEff)  std::cout<<std::endl<<std::endl<<"skipping MCEff hists"<<std::endl<<std::endl;
+  else{
+    
+    { 
+      
+      std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
+      
+      //std::string thePDFFileName=outputDir+fullJetType+jobType+"_MCEff_"+outputTag+".pdf";
+      std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_MCEff.pdf";
+      std::string open_thePDFFileName=thePDFFileName+"[";
+      std::string close_thePDFFileName=thePDFFileName+"]";
+      std::cout<<std::endl<<"creating temporary canvas for printing MCEff plots..."<<std::endl;
+      
+      TCanvas *temp_canvMCEff = new TCanvas("tempMCEff", "tempMCEff", 1200, 600);
+      temp_canvMCEff->Print(open_thePDFFileName.c_str());
+      temp_canvMCEff->SetLogz(1);
+      temp_canvMCEff->SetLogx(1);
+      temp_canvMCEff->cd();
+      
+      
+      for(int j=0; j<(N_genVars); j++){     
+	if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;	
+	
+	
+	std::string inHistName="hpp_mceff_"+genVars[j];
+	if(doJetID=="1")inHistName+="_wJetID";
+	inHistName+="_"+radius+etaWidth;
+	
+	std::cout<<"opening TH2F "<<inHistName << std::endl;
+	TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
+	if(!the2DMCEffQAHist) {std::cout<<"no MCEff plot, continuing..."<<std::endl; continue;}
+
+	if(j>2){ 
+	  temp_canvMCEff->SetLogx(0);
+	  temp_canvMCEff->cd();	}
+	else {
+	  temp_canvMCEff->SetLogx(1);
+	  temp_canvMCEff->cd();
+	  the2DMCEffQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");	
+	  if(genVars_xAx[j]=="rawpt")	  the2DMCEffQAHist->SetAxisRange(0.5 , 1.5,"Y");	
+	}
+	the2DMCEffQAHist->SetAxisRange(1.*pow(10.,-13.), 1.*pow(10.,-4.),"Z");	
+	
+	std::string h_Title   ="MC QA, TH2,"+genVars[j];
+	if(doJetID=="1")h_Title+=", w/ JetIDCut";      
+	
+	//std::string h_ZAx_Title="Entries"; 
+	//std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
+	//std::string h_YAx_Title=stringRatio;
+	
+	//std::string h_XAx_Title="";    
+	//if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
+	//if(j==1)h_XAx_Title="gen Jet Eta"       ;
+	//if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
+	
+	
+	the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
+	the2DMCEffQAHist->SetXTitle( genVars_xAx[j].c_str() );
+	the2DMCEffQAHist->SetYTitle( genVars_yAx[j].c_str() );
+	
+	//the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
+	//if(j==0)the2DMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
+	//if(j==1)the2DMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
+	//if(j==2)the2DMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
+	
+	the2DMCEffQAHist->Draw("COLZ"); 
+	
+	temp_canvMCEff->Print(thePDFFileName.c_str());   
+
+	if(drawProfiles){     
+	  
+	  //std::string h_ZAx_Title="Entries"; 
+	  //std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
+	  //std::string h_YAx_Title="avg "+stringRatio+"/bin";
+	  
+	  //std::string h_XAx_Title="";    
+	  //if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
+	  //if(j==1)h_XAx_Title="gen Jet Eta"       ;
+	  //if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
+	  
+	  std::cout<<"taking the profile of "<<inHistName << std::endl;
+	  inHistName+="_TH2Prof";
+	  TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX( inHistName.c_str(), 1, -1, "o");
+	  if(  genVars[j]=="pt" ||
+	       genVars[j]=="pt2" ||
+	       genVars[j]=="pt3" )  {
+	    theMCEffQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");	
+	    theMCEffQAHist->SetAxisRange( 0.90, 1.10,"Y");	 }
+	  else if (genVars[j]=="ptrat_phi" || 
+		   genVars[j]=="ptrat_eta" 	
+		   ) {
+	    theMCEffQAHist->SetAxisRange( 0.90, 1.10,"Y");	 }
+	  
+	  std::cout<<std::endl<<"rebinning TH2 Profile"<<std::endl;
+
+	  //inHistName+="_rebin2";
+	  //theMCEffQAHist=(TH1F*)theMCEffQAHist->Rebin(2,  inHistName.c_str());
+	  //theMCEffQAHist->Scale(0.5);
+
+	  h_Title+=" TH2Profile";
+	  theMCEffQAHist->SetTitle (    h_Title.c_str() );
+	  theMCEffQAHist->SetXTitle( genVars_xAx[j].c_str() );
+	  theMCEffQAHist->SetYTitle( ("bin-avg of "+genVars_yAx[j]).c_str() );
+
+	  //theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
+	  //theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
+	  
+	  //theMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
+	  //if(j==0)theMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
+	  //if(j==1)theMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
+	  //if(j==2)theMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
+
+	  
+	  theMCEffQAHist->Draw("HIST E"); 
+	  
+	  temp_canvMCEff->Print(thePDFFileName.c_str());   
+	}
+	
+	
+      }// gen genvar loop
+	
+      temp_canvMCEff->Print(close_thePDFFileName.c_str());   
+      temp_canvMCEff->Close();
+    } // end  MCEff Plots
+  }
   
+  if(debugMode)std::cout<<"closing output root file"<<std::endl<<std::endl;
+  rootfout->Close();
+  return 0;
+}
+
+
+
+
+
+int main(int argc, char*argv[]){
+  int rStatus=-1;
+  if(argc!=3){
+    std::cout<<"no defaults. Do...."<<std::endl;
+    std::cout<<"./printPlots_ppMC_JERS.exe "<<
+      "<target_ppMC_dir> <output tag>"<<std::endl<<std::endl;
+    return rStatus;  }
   
-  
-  
-  
-  
-  
-  
-  
+  rStatus=1;
+  rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] );
+  return rStatus;
+}
+
+
+
+
+
+
+
+
+/*
   //////////////////////////////////////////////////
   ////////////// DUAL DIFF ETA BINS ////////////////
   //////////////////////////////////////////////////
@@ -617,17 +747,6 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	//hrsp[i][j]->SetAxisRange(0.,0.130,"Y");    
 	hrsp[i][j]->Draw("E1");    
 	
-	//float textx=0.5,texty=0.25;    
-	//TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean[i][j])).c_str() );    
-	//meanText->SetNDC();    
-	//meanText->Draw();    
-	//TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig[i][j])).c_str() );    
-	//sigmaText->SetNDC();    
-	//////////sigmaText->Draw();    
-	////////////TLine* histMeanLine=new TLine( array_mean[i][j], 0., // x1,y1     
-	////////////array_mean[i][j], 0.130 );// x2,y2    
-	//array_mean[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2    
-	//histMeanLine->Draw("same");    
 	
 	pdfoutCanv_wLogy->Print(thePDFFileName.c_str());    
       }    
@@ -640,22 +759,9 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     
   }              
       
-//  // save output root file. //    
-//  rootfout->cd();      
-//  std::cout<<"writing output to root file..."<<std::endl;    
-//  for(int i=0;i<Nrad;++i){    
-//    for(int j=0;j<nbins_abseta;++j) hrsp[i][j]->Write();    
-//    hMean[i]->Write();    
-//    hSigma[i]->Write();              
-//  }    
-//  //std::cout<<"closing output root file"<<std::endl<<std::endl;    
-//  //rootfout->Close();    
+
   
   }                       
-
-
-
-
 
 
 
@@ -738,16 +844,10 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       double esig  = pow(1/mean,2)*pow(err,2) + pow( -sig/pow(mean,2), 2)*pow(emean, 2);    
       int fitstatus = 0;    
           
-      //fgaus = new TF1("fgaus","gaus", mean - 2.15*hrsp_genBin1[nj][ip]->GetRMS(), mean + 2.15*hrsp_genBin1[nj][ip]->GetRMS());    
-      //fgaus = new TF1("fgaus","gaus", 0.80, 1.20);    
+
       fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
       fgaus->SetParameters(norm, 0.9999, 0.5);    
-      //fgaus->SetParameters(norm, 1.00, 0.6);    
-      //fgaus->SetParameters(norm, 0.9999, 0.5);    
-      //fgaus->SetParLimits(1,0.60,1.30);    
-      //fgaus->SetParLimits(2,0.20,0.80);    
-      //fgaus->SetParLimits(1,0.92,1.05);    
-      //fgaus->SetParLimits(2,0.20,0.80);    
+
           
       std::cout<<"for inputHist "<<inputHistName<<", we have.."<<std::endl;    
       std::cout<< "Mean= "<< hrsp_genBin1[nj][ip]->GetMean()<<" +/- " <<hrsp_genBin1[nj][ip]->GetMeanError()<< std::endl;    
@@ -772,26 +872,18 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       if(debugMode)std::cout<<"emean ="<< emean<<std::endl;    
       hMean_genBin1[nj]->SetBinContent (ip+1, mean);    
       hMean_genBin1[nj]->SetBinError   (ip+1, emean);    
-      // hMean_genBin1[nj]->SetBinContent (ip+1, roundoff(mean));    
-      // hMean_genBin1[nj]->SetBinError   (ip+1, roundoff(emean));    
       
       if(debugMode)std::cout<<"sig ="<< sig<<std::endl;    
       if(debugMode)std::cout<<"esig ="<< esig<<std::endl;    
       hSigma_genBin1[nj]->SetBinContent (ip+1, sig);    
       hSigma_genBin1[nj]->SetBinError   (ip+1, esig);    
-      
-      
-      //array_mean_genBin1[nj][ip]=mean ; //for a striaght line for plots later.    
-      //array_emean_genBin1[nj][ip]=emean;    
-      //array_sig_genBin1[nj][ip]=sig  ;      
-      //array_esig_genBin1[nj][ip]=esig ;           
+            
+
     }// end fit-loop over absetabins    
   }// end loop over available jet radii          
   
   // initialize mean hist    
   TH1F *hrsp_genBin2[Nrad][nbins_abseta]={};      
-  //double array_mean_genBin2[Nrad][nbins_abseta]={};    
-  //double array_sig_genBin2[Nrad][nbins_abseta]={};    
   
   // output hists    
   TH1F *hMean_genBin2[Nrad]={}, *hSigma_genBin2[Nrad]={};       
@@ -842,13 +934,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       // open the input hist    
       hrsp_genBin2[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
       if(!hrsp_genBin2[nj][ip]){std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;assert(false);}          
-      //if(hrsp_genBin2[nj][ip]->GetEntries()<100){std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;assert(false);}          
-      
-      // print the details...    
-      //std::cout<<std::endl;  hrsp_genBin2[nj][ip]->Print("base");    
-      //float binSize=1.0;
-      //if(absetabins[ip]==3.0) binSize=0.2*2.;//3.0-3.2
-      //else if(absetabins[ip]==3.2) binSize=1.5*2.;//3.2-4.7
+
       hrsp_genBin2[nj][ip]->Scale( 1./ ( hrsp_genBin2[nj][ip]->Integral()) );    
       
       // get some quick stats    
@@ -860,17 +946,9 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       double esig  = pow(1/mean,2)*pow(err,2) + pow( -sig/pow(mean,2), 2)*pow(emean, 2);    
       int fitstatus = 0;    
           
-      //fgaus = new TF1("fgaus","gaus", mean - 2.15*hrsp_genBin2[nj][ip]->GetRMS(), mean + 2.15*hrsp_genBin2[nj][ip]->GetRMS());    
-      //fgaus = new TF1("fgaus","gaus", 0.80, 1.20);    
-      //if(ip==0)fgaus->Clear();
+
       fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
-      //fgaus->SetParameters(norm, 1.05, 0.05);    
-      //fgaus->SetParameters(norm, 1.00, 0.6);    
-      //fgaus->SetParameters(norm, 0.9999, 0.5);    
-      //fgaus->SetParLimits(1,0.60,1.30);    
-      //fgaus->SetParLimits(2,0.20,0.80);    
-      //fgaus->SetParLimits(1,0.92,1.05);    
-      //fgaus->SetParLimits(2,0.20,0.80);    
+
           
       std::cout<<"for inputHist "<<inputHistName<<", we have.."<<std::endl;    
       std::cout<< "Mean= "<< hrsp_genBin2[nj][ip]->GetMean()<<" +/- " <<hrsp_genBin2[nj][ip]->GetMeanError()<< std::endl;    
@@ -898,8 +976,6 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       if(debugMode)std::cout<<"emean ="<< emean<<std::endl;    
       hMean_genBin2[nj]->SetBinContent (ip+1, mean);    
       hMean_genBin2[nj]->SetBinError   (ip+1, emean);    
-      // hMean_genBin2[nj]->SetBinContent (ip+1, roundoff(mean));    
-      // hMean_genBin2[nj]->SetBinError   (ip+1, roundoff(emean));    
       
       if(debugMode)std::cout<<"sig ="<< sig<<std::endl;    
       if(debugMode)std::cout<<"esig ="<< esig<<std::endl;    
@@ -907,10 +983,6 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       hSigma_genBin2[nj]->SetBinError   (ip+1, esig);    
       
       
-      //array_mean_genBin2[nj][ip]=mean ; //for a striaght line for plots later.    
-      //array_emean_genBin2[nj][ip]=emean;    
-      //array_sig_genBin2[nj][ip]=sig  ;      
-      //array_esig_genBin2[nj][ip]=esig ;           
     }// end fit-loop over absetabins    
   }// end loop over available jet radii    
       
@@ -922,15 +994,18 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 
 
 
-if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;    
+
+
+
+  if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;    
   gPad->Close();    
-      
+  
   {         
     // DRAW THOSE PDFS //    
     std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_RapBins_genBin1.pdf";    
     std::string open_thePDFFileName=thePDFFileName+"[";    
     std::string close_thePDFFileName=thePDFFileName+"]";    
-        
+    
     std::cout<<"opening output pdf file "<< thePDFFileName<<std::endl<<std::endl;    
     TCanvas* pdfoutCanv=new TCanvas("outputPdf","outputPdf", 800, 600);    
     pdfoutCanv->Print( open_thePDFFileName.c_str() );    
@@ -962,9 +1037,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       p2->cd();
       hSigma_genBin1[i]->Draw("HIST E1");     
           
-      //TLine* sigmaLine=new TLine(15,0.1,500,0.1);    
-      //sigmaLine->SetLineStyle(2);       sigmaLine->SetLineColor(kBlue);    
-      //sigmaLine->Draw();    
           
       pdfoutCanv_muSigma->Print(thePDFFileName.c_str());        
       
@@ -978,17 +1050,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 	//hrsp_genBin1[i][j]->SetAxisRange(0.,0.130,"Y");    
 	hrsp_genBin1[i][j]->Draw("E1");    
 	
-	//float textx=0.5,texty=0.25;    
-	//TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean_genBin1[i][j])).c_str() );    
-	//meanText->SetNDC();    
-	//meanText->Draw();    
-	//TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig_genBin1[i][j])).c_str() );    
-	//sigmaText->SetNDC();    
-	//sigmaText->Draw();    
-	//TLine* histMeanLine=new TLine( array_mean[i][j], 0., // x1,y1     
-	//array_mean[i][j], 0.130 );// x2,y2    
-	//array_mean[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2    
-	//histMeanLine->Draw("same");    
 	
 	pdfoutCanv_wLogy->Print(thePDFFileName.c_str());    
       }    
@@ -1021,9 +1082,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       p2->cd();
       hSigma_genBin2[i]->Draw("HIST E1");     
           
-      //TLine* sigmaLine=new TLine(15,0.1,500,0.1);    
-      //sigmaLine->SetLineStyle(2);       sigmaLine->SetLineColor(kBlue);    
-      //sigmaLine->Draw();    
           
       pdfoutCanv_muSigma->Print(thePDFFileName.c_str());        
       
@@ -1034,20 +1092,8 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 	hrsp_genBin2[i][j]->SetMarkerStyle(8);    
 	hrsp_genBin2[i][j]->SetMarkerSize(1.0);    
 	hrsp_genBin2[i][j]->GetXaxis()->SetTitle("recpt/genpt");    
-	//hrsp_genBin2[i][j]->SetAxisRange(0.,0.130,"Y");    
+
 	hrsp_genBin2[i][j]->Draw("E1");    
-	
-	//float textx=0.5,texty=0.25;    
-	//TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean_genBin2[i][j])).c_str() );    
-	//meanText->SetNDC();    
-	//meanText->Draw();    
-	//TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig_genBin2[i][j])).c_str() );    
-	//sigmaText->SetNDC();    
-	//sigmaText->Draw();    
-	//TLine* histMeanLine=new TLine( array_mean[i][j], 0., // x1,y1     
-	//array_mean[i][j], 0.130 );// x2,y2    
-	//array_mean[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2    
-	//histMeanLine->Draw("same");    
 	
 	pdfoutCanv_wLogy->Print(thePDFFileName.c_str());    
       }    
@@ -1062,18 +1108,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
     pdfoutCanv_wLogy->Close();
   }              
   
-//  // save output root file. //    
-//  
-//  rootfout->cd();      
-//  std::cout<<"writing output to root file..."<<std::endl;    
-//  for(int i=0;i<Nrad;++i){    
-//    for(int j=0;j<nbins_abseta;++j) hrsp_genBin2[i][j]->Write();    
-//    hMean_genBin2[i]->Write();    
-//    hSigma_genBin2[i]->Write();              
-//  }    
-//  
-//  //std::cout<<"closing output root file"<<std::endl<<std::endl;    
-//  //rootfout->Close();    
   
   }                       
   
@@ -1083,128 +1117,10 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-  ////     JER/JES PLOTS, 150 < GENPT < 200        ////
-  
-  
-  if(!draw_JERgen150to200)std::cout<<std::endl<<std::endl<<"skipping JER gen150-200 hists"<<std::endl<<std::endl;
-  else{
     
   // input hists
   TH1F *hrsp_gen150[Nrad][nbins_eta]={};  
-  //double array_mean_gen150[Nrad][nbins_eta]={};
-  //double array_sig_gen150[Nrad][nbins_eta]={};
+
   
   // output hists
   TH1F *hMean_gen150[Nrad]={}, *hSigma_gen150[Nrad]={};   
@@ -1216,9 +1132,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
   TF1 *fgaus_gen150=NULL;   
 
 
-  // FOR JER 30to50 and 150to200 HISTS ACROSS ALL GENETA BINS
-  // SUBJECT TO RECO CUTS: 
-  // ABS(RECOETA)<2, RECOPT>15, REFID!=0, JET ID OPTIONAL
 
   // first loop, pp loop over available radii
   for(int nj=0; nj<Nrad; nj++){
@@ -1257,11 +1170,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
     std::cout<<"for pt range 150 to 200"<<std::endl;
     for(int ip=0; ip<nbins_eta; ip++){
 
-      //geneta cut for these hists
-      //if( abs(etabins[ip])>2.1 )continue;
-
-      // input hist title string
-      //std::string inputHistName="hJER_"+doJetID+"wJetID_etabin"+std::to_string(etabins[ip])+"_150_pt_200";
       std::string inputHistName="hJER_"+doJetID+"wJetID_etabin"+std::to_string(ip)+"_150_pt_200";
 
       // open the input hist
@@ -1288,16 +1196,8 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       double esig  = pow(1/mean,2)*pow(err,2) + pow( -sig/pow(mean,2), 2)*pow(emean, 2);
       int fitstatus = 0;
       
-      //fgaus_gen150 = new TF1("fgaus_gen150","gaus", mean - 2.15*hrsp_gen150[nj][ip]->GetRMS(), mean + 2.15*hrsp_gen150[nj][ip]->GetRMS());
-      //fgaus_gen150 = new TF1("fgaus_gen150","gaus", 0.80, 1.20);
       fgaus_gen150 = new TF1("fgaus_gen150","gaus", 0.80,1.20);
       fgaus_gen150->SetParameters(norm, 0.9999, 0.5);
-      //fgaus_gen150->SetParameters(norm, 1.00, 0.6);
-      //fgaus_gen150->SetParameters(norm, 0.9999, 0.5);
-      //fgaus_gen150->SetParLimits(1,0.60,1.30);
-      //fgaus_gen150->SetParLimits(2,0.20,0.80);
-      //fgaus_gen150->SetParLimits(1,0.92,1.05);
-      //fgaus_gen150->SetParLimits(2,0.20,0.80);
       
       std::cout<<"for inputHist "<<inputHistName<<", we have.."<<std::endl;
       std::cout<< "Mean= "<< hrsp_gen150[nj][ip]->GetMean()<<" +/- " <<hrsp_gen150[nj][ip]->GetMeanError()<< std::endl;
@@ -1305,7 +1205,7 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       std::cout<<"fitting..."<<std::endl;
       fitstatus = hrsp_gen150[nj][ip]->Fit(fgaus_gen150,"RQ");
       std::cout<< "Fit Status: "<< fitstatus<< ", Fit Error: "<< fgaus_gen150->GetParError(1)<< std::endl;
-
+      
       std::cout<<"grabbing metrics (whatever this means)...."<<std::endl;
       mean  = (fitstatus!=0) ? hrsp_gen150[nj][ip]->GetMean()     : fgaus_gen150->GetParameter(1);
       emean = (fitstatus!=0) ? hrsp_gen150[nj][ip]->GetMeanError(): fgaus_gen150->GetParError(1) ; // hrsp_gen150[nj][ip]->GetMeanError(); //debug
@@ -1322,8 +1222,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       if(debugMode)std::cout<<"emean ="<< emean<<std::endl;
       hMean_gen150[nj]->SetBinContent (ip+1, mean);
       hMean_gen150[nj]->SetBinError   (ip+1, emean);
-      // hMean_gen150[nj]->SetBinContent (ip+1, roundoff(mean));
-      // hMean_gen150[nj]->SetBinError   (ip+1, roundoff(emean));
 
       if(debugMode)std::cout<<"sig ="<< sig<<std::endl;
       if(debugMode)std::cout<<"esig ="<< esig<<std::endl;
@@ -1331,18 +1229,13 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       hSigma_gen150[nj]->SetBinError   (ip+1, esig);
 
 
-      //array_mean_gen150[nj][ip]=mean ; //for a striaght line for plots later.
-      //array_emean[nj][ip]=emean;
-      //array_sig_gen150[nj][ip]=sig  ;  
-      //array_esig[nj][ip]=esig ;       
+
     }// end fit-loop over ptbins
   }// end loop over available jet radii
   if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
   gPad->Close();
 
-  // DRAW PDFS. //
-  //std::string jobType="_MCJEC_JetID"+doJetID;
-  //if(debugMode)std::cout<<"jobType="<<jobType<<std::endl;
+
   { 
     std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_gen150to200.pdf";
     std::string open_thePDFFileName=thePDFFileName+"[";
@@ -1362,73 +1255,43 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
     // draw and print pdfs. //
     std::cout<<std::endl<<"printing hists to pdf file..."<<std::endl;
     for(int i=0;i<Nrad;++i){
-      pdfoutCanv->cd(1);
-      hMean_gen150[i] ->Draw("HIST E1"); //pdfoutCanv->Print(thePDFFileName.c_str());
-      TLine* meanLine=new TLine(etabins[0],1., etabins[nbins_eta],1.);
-      meanLine->SetLineStyle(2); meanLine->SetLineColor(kBlue);
-      meanLine->Draw();
-
-      pdfoutCanv->cd(2);
-      hSigma_gen150[i]->Draw("HIST E1"); 
-      //TLine* sigmaLine=new TLine(-5.3,0.1,5.3,0.1);
-      //sigmaLine->Draw();
-      pdfoutCanv->Print(thePDFFileName.c_str());    
-      
-      pdfoutCanv_wLog->cd();
-      for(int j=0;j<nbins_eta;++j){
-	if( !(hrsp_gen150[i][j]) )continue;
-	std::string hrsp_gen150Title="JER, 150<genpt<200, "+std::to_string(etabins[j])+"<geneta<"+std::to_string(etabins[j+1]);
-	hrsp_gen150[i][j]->SetTitle(hrsp_gen150Title.c_str());
-	hrsp_gen150[i][j]->SetMarkerStyle(8);
-	hrsp_gen150[i][j]->SetMarkerSize(1.0);
-	hrsp_gen150[i][j]->GetXaxis()->SetTitle("recpt/genpt");
-	//hrsp_gen150[i][j]->SetAxisRange(0.,0.130,"Y");
-	hrsp_gen150[i][j]->Draw("E1");
-	
-	//float textx=0.5,texty=0.25;
-	//TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean_gen150[i][j])).c_str() );
-	//meanText->SetNDC();
-	//meanText->Draw();
-	//TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig_gen150[i][j])).c_str() );
-	//sigmaText->SetNDC();
-	//sigmaText->Draw();
-	//TLine* histMeanLine=new TLine( array_mean_gen150[i][j], 0., // x1,y1 
-	//array_mean_gen150[i][j], 0.130 );// x2,y2
-	//array_mean_gen150[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2
-	//histMeanLine->Draw("same");
-	
-	pdfoutCanv_wLog->Print(thePDFFileName.c_str());
-      }
+    pdfoutCanv->cd(1);
+    
+    hMean_gen150[i] ->Draw("HIST E1"); //pdfoutCanv->Print(thePDFFileName.c_str());
+    TLine* meanLine=new TLine(etabins[0],1., etabins[nbins_eta],1.);
+    
+    meanLine->SetLineStyle(2); meanLine->SetLineColor(kBlue);
+    meanLine->Draw();
+    
+    pdfoutCanv->cd(2);
+    hSigma_gen150[i]->Draw("HIST E1"); 
+    //TLine* sigmaLine=new TLine(-5.3,0.1,5.3,0.1);
+    //sigmaLine->Draw();
+    pdfoutCanv->Print(thePDFFileName.c_str());    
+    
+    pdfoutCanv_wLog->cd();
+    for(int j=0;j<nbins_eta;++j){
+    if( !(hrsp_gen150[i][j]) )continue;
+    std::string hrsp_gen150Title="JER, 150<genpt<200, "+std::to_string(etabins[j])+"<geneta<"+std::to_string(etabins[j+1]);
+    hrsp_gen150[i][j]->SetTitle(hrsp_gen150Title.c_str());
+    hrsp_gen150[i][j]->SetMarkerStyle(8);
+    hrsp_gen150[i][j]->SetMarkerSize(1.0);
+    hrsp_gen150[i][j]->GetXaxis()->SetTitle("recpt/genpt");
+    //hrsp_gen150[i][j]->SetAxisRange(0.,0.130,"Y");
+    hrsp_gen150[i][j]->Draw("E1");
+    
+    pdfoutCanv_wLog->Print(thePDFFileName.c_str());
+    }
     }
     std::cout<<"closing output pdf file "<<thePDFFileName<<std::endl<<std::endl;
     pdfoutCanv->Print( close_thePDFFileName.c_str() );
     pdfoutCanv->Close();
     pdfoutCanv_wLog->Close();
-    //pdfoutCanv_wLogx->Close();
-  }
-
-//  // save output root file. //
-//
-//  {
-//
-//    //std::string outFileName=outputDir+fullJetType+jobType+"_150to200_"+outputTag+".root";
-//    //std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
-//    //TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
-//    rootfout->cd();  
-//    std::cout<<"writing output to root file..."<<std::endl;
-//    for(int i=0;i<Nrad;++i){
-//      hMean_gen150[i]->Write();
-//      hSigma_gen150[i]->Write();    
-//      for(int j=0;j<nbins_eta;++j) {
-//	if( !(hrsp_gen150[i][j]) ) continue;
-//	else hrsp_gen150[i][j]->Write();
-//      }
-//    }
-//    
-//  }
+    }
+  
   
   }
-
+  
  
   ////     JER/JES PLOTS, 30 < GENPT < 50        ////
   if(!draw_JERgen30to50)std::cout<<std::endl<<std::endl<<"skipping JER gen30-50 hists"<<std::endl<<std::endl;
@@ -1518,16 +1381,11 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 	double esig  = pow(1/mean,2)*pow(err,2) + pow( -sig/pow(mean,2), 2)*pow(emean, 2);
 	int fitstatus = 0;
 	
-	//fgaus_gen30 = new TF1("fgaus_gen30","gaus", mean - 2.15*hrsp_gen30[nj][ip]->GetRMS(), mean + 2.15*hrsp_gen30[nj][ip]->GetRMS());
-	//fgaus_gen30 = new TF1("fgaus_gen30","gaus", 0.80, 1.20);
+
 	fgaus_gen30 = new TF1("fgaus_gen30","gaus", 0.80,1.20);
 	fgaus_gen30->SetParameters(norm, 0.9999, 0.5);
-	//fgaus_gen30->SetParameters(norm, 1.00, 0.6);
-	//fgaus_gen30->SetParameters(norm, 0.9999, 0.5);
-	//fgaus_gen30->SetParLimits(1,0.60,1.30);
-	//fgaus_gen30->SetParLimits(2,0.20,0.80);
-	//fgaus_gen30->SetParLimits(1,0.92,1.05);
-	//fgaus_gen30->SetParLimits(2,0.20,0.80);
+
+
 	
 	std::cout<<"for inputHist "<<inputHistName<<", we have.."<<std::endl;
 	std::cout<< "Mean= "<< hrsp_gen30[nj][ip]->GetMean()<<" +/- " <<hrsp_gen30[nj][ip]->GetMeanError()<< std::endl;
@@ -1552,19 +1410,13 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 	if(debugMode)std::cout<<"emean ="<< emean<<std::endl;
 	hMean_gen30[nj]->SetBinContent (ip+1, mean);
 	hMean_gen30[nj]->SetBinError   (ip+1, emean);
-	// hMean_gen30[nj]->SetBinContent (ip+1, roundoff(mean));
-	// hMean_gen30[nj]->SetBinError   (ip+1, roundoff(emean));
+
 	
 	if(debugMode)std::cout<<"sig ="<< sig<<std::endl;
 	if(debugMode)std::cout<<"esig ="<< esig<<std::endl;
 	hSigma_gen30[nj]->SetBinContent (ip+1, sig);
 	hSigma_gen30[nj]->SetBinError   (ip+1, esig);
-	
-	
-	//array_mean_gen30[nj][ip]=mean ; //for a striaght line for plots later.
-	//array_emean[nj][ip]=emean;
-	//array_sig_gen30[nj][ip]=sig  ;  
-	//array_esig[nj][ip]=esig ;       
+
       }// end fit-loop over ptbins
     }// end loop over available jet radii
     if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
@@ -1616,18 +1468,6 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
 	  //hrsp_gen30[i][j]->SetAxisRange(0.,0.130,"Y");
 	  hrsp_gen30[i][j]->Draw("E1");
 	  
-	  //float textx=0.5,texty=0.25;
-	  //TLatex* meanText=new TLatex(textx,texty, ("mean="+std::to_string(array_mean_gen30[i][j])).c_str() );
-	  //meanText->SetNDC();
-	  //meanText->Draw();
-	  //TLatex* sigmaText=new TLatex(textx,texty-.05, ("sigma="+std::to_string(array_sig_gen30[i][j])).c_str() );
-	  //sigmaText->SetNDC();
-	  //sigmaText->Draw();
-	  //TLine* histMeanLine=new TLine( array_mean_gen30[i][j], 0., // x1,y1 
-	  //array_mean_gen30[i][j], 0.130 );// x2,y2
-	  //array_mean_gen30[i][j], pdfoutCanv->GetFrame()->GetY2() );// x2,y2
-	  //histMeanLine->Draw("same");
-	  
 	  pdfoutCanv_wLog->Print(thePDFFileName.c_str());
 	}
       }
@@ -1635,244 +1475,10 @@ if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;
       pdfoutCanv->Print( close_thePDFFileName.c_str() );
       pdfoutCanv->Close();
       pdfoutCanv_wLog->Close();
-      //pdfoutCanv_wLogx->Close();
-    }
-    
-//  // save output root file. //
-//    
-//    {
-//      
-//      //std::string outFileName=outputDir+fullJetType+jobType+"_30to50_"+outputTag+".root";
-//      //std::cout<<std::endl<<"opening output root file "<< outFileName<<std::endl;
-//      //TFile *rootfout = new TFile(outFileName.c_str(),"RECREATE"); 
-//      rootfout->cd();  
-//      std::cout<<"writing output to root file..."<<std::endl;
-//      for(int i=0;i<Nrad;++i){
-//	hMean_gen30[i]->Write();
-//	hSigma_gen30[i]->Write();    
-//	for(int j=0;j<nbins_eta;++j) {
-//	  if( !(hrsp_gen30[i][j]) ) continue;
-//	  else hrsp_gen30[i][j]->Write();
-//	}
-//      }
-//    }
-    
+    }    
   }
   
-  
-  
-  if(!draw_MCEff)  std::cout<<std::endl<<std::endl<<"skipping MCEff gen30-50 hists"<<std::endl<<std::endl;
-  else{
-    
-    { 
-      
-      std::cout<<" drawing MC Eff. QA Plots..."<<std::endl;
-      
-      //std::string thePDFFileName=outputDir+fullJetType+jobType+"_MCEff_"+outputTag+".pdf";
-      std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+"_MCEff.pdf";
-      std::string open_thePDFFileName=thePDFFileName+"[";
-      std::string close_thePDFFileName=thePDFFileName+"]";
-      std::cout<<std::endl<<"creating temporary canvas for printing MCEff plots..."<<std::endl;
-      
-      TCanvas *temp_canvMCEff = new TCanvas("tempMCEff", "tempMCEff", 1200, 600);
-      temp_canvMCEff->Print(open_thePDFFileName.c_str());
-      temp_canvMCEff->SetLogz(1);
-      temp_canvMCEff->SetLogx(1);
-      temp_canvMCEff->cd();
-      
-      
-      bool drawProfiles=false;
-      if(drawProfiles){     
-	for(int j=0; j<(N_genVars); j++){     
-	  if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;
-
-	  
-	  std::string inHistName="hpp_mceff_"+genVars[j];
-	  if(doJetID=="1")inHistName+="_wJetID";
-	  inHistName+="_"+radius+etaWidth;
-	  
-	  std::cout<<"opening TH2F "<<inHistName << std::endl;
-	  TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-	  if(!the2DMCEffQAHist) {std::cout<<"no MCEff plot, continuing..."<<std::endl; continue;}
-	  the2DMCEffQAHist->Print("base");
-	  
-	  std::string h_Title   ="MC Eff. QA, TH2 profile";
-	  if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-	  
-	  //std::string h_ZAx_Title="Entries"; 
-	  std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
-	  std::string h_YAx_Title="avg "+stringRatio+"/bin";
-	  
-	  std::string h_XAx_Title="";    
-	  if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
-	  if(j==1)h_XAx_Title="gen Jet Eta"       ;
-	  if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
-	  
-	  std::cout<<"taking the profile of "<<inHistName << std::endl;
-	  TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX("MCEffProfile",1,-1, "o");
-	  
-	  theMCEffQAHist->SetTitle (    h_Title.c_str() );
-	  theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-	  theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
-	  
-	  theMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-	  if(j==0)theMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
-	  if(j==1)theMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
-	  if(j==2)theMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
-	  
-	  theMCEffQAHist->Draw("E HIST COLZ"); 
-	  
-	  temp_canvMCEff->Print(thePDFFileName.c_str());   
-	}// gen genvar loop
-	
-	
-	for(int j=0; j<(N_genVars_ptrat); j++){     
-	  if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;      
-	  
-	  std::string inHistName="hpp_mceff_ptrat_"+genVars_ptrat[j];
-	  if(doJetID=="1")inHistName+="_wJetID";
-	  inHistName+="_"+radius+etaWidth;
-	  
-	  TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-	  
-	  std::string h_Title   ="MC Eff. QA, TH2 profile";
-	  if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-	  
-	  std::string h_YAx_Title="avg (recpt)/(genpt)/bin";    
-	  std::string h_XAx_Title="";    
-	  if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
-	  if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
-	  if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
-	
-	  TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX("MCEffProfile",1,-1, "o");
-	  
-	  theMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-	  if(j==0)theMCEffQAHist->SetAxisRange( -3.0, 3.0, "X");
-	  if(j==1)theMCEffQAHist->SetAxisRange( -4.0, 4.0, "X");
-	  if(j==2)theMCEffQAHist->SetAxisRange(   0., 0.5, "X");
-	  
-	  theMCEffQAHist->SetTitle (    h_Title.c_str() );
-	  theMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-	  theMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
-	  
-	  theMCEffQAHist->Draw("HIST E COLZ"); 
-	  
-	  temp_canvMCEff->Print(thePDFFileName.c_str());   
-	}//end genvar ptrat loops      
-      }//end drawProfles
-      
-      
-      
-      //if(drawTH2s){     
-      for(int j=0; j<(N_genVars); j++){     
-	if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;	
-	
-	
-	std::string inHistName="hpp_mceff_"+genVars[j];
-	if(doJetID=="1")inHistName+="_wJetID";
-	inHistName+="_"+radius+etaWidth;
-	
-	std::cout<<"opening TH2F "<<inHistName << std::endl;
-	TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-	if(!the2DMCEffQAHist) {std::cout<<"no MCEff plot, continuing..."<<std::endl; continue;}
-
-	if(j>2){ 
-	  temp_canvMCEff->SetLogx(0);
-	  temp_canvMCEff->cd();	}
-	else {
-	  temp_canvMCEff->SetLogx(1);
-	  temp_canvMCEff->cd();
-	  the2DMCEffQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");	
-	  if(genVars_xAx[j]=="rawpt")	  the2DMCEffQAHist->SetAxisRange(0.5 , 1.5,"Y");	
-	}
-	the2DMCEffQAHist->SetAxisRange(1.*pow(10.,-13.), 1.*pow(10.,-4.),"Z");	
-	
-	std::string h_Title   ="MC QA, TH2,"+genVars[j];
-	if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-	
-	//std::string h_ZAx_Title="Entries"; 
-	//std::string stringRatio="(rec"+genVars[j]+"/gen"+genVars[j]+")";
-	//std::string h_YAx_Title=stringRatio;
-	
-	//std::string h_XAx_Title="";    
-	//if(j==0)h_XAx_Title="gen Jet Pt (GeV)"  ;
-	//if(j==1)h_XAx_Title="gen Jet Eta"       ;
-	//if(j==2)h_XAx_Title="gen Jet Phi (rad)" ;
-	
-	
-	the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
-	the2DMCEffQAHist->SetXTitle( genVars_xAx[j].c_str() );
-	the2DMCEffQAHist->SetYTitle( genVars_yAx[j].c_str() );
-	
-	//the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-	//if(j==0)the2DMCEffQAHist->SetAxisRange(  0., 200., "X");//genpt
-	//if(j==1)the2DMCEffQAHist->SetAxisRange(-3.0, 3.0 , "X");//eta
-	//if(j==2)the2DMCEffQAHist->SetAxisRange(-4.0, 4.0 , "X");//phi
-	
-	the2DMCEffQAHist->Draw("COLZ"); 
-	
-	temp_canvMCEff->Print(thePDFFileName.c_str());   
-      }// gen genvar loop
-      
-
-      //for(int j=0; j<(N_genVars_ptrat); j++){     
-      //	if(debugMode)std::cout<<std::endl<<"j= "<<j<<std::endl;      
-      //	
-      //	std::string inHistName="hpp_mceff_ptrat_"+genVars_ptrat[j];
-      //	if(doJetID=="1")inHistName+="_wJetID";
-      //	inHistName+="_"+radius+etaWidth;
-      //	
-      //	TH2F* the2DMCEffQAHist= (TH2F*)finPP->Get( inHistName.c_str() );
-      //	
-      //	std::string h_Title   ="MC Eff. QA TH2";
-      //	if(doJetID=="1")h_Title+=", w/ JetIDCut";      
-      //	
-      //	std::string h_YAx_Title="(recpt)/(genpt)";    
-      //	std::string h_XAx_Title="";    
-      //	if(j==0)h_XAx_Title="gen Jet Eta (GeV)"  ;
-      //	if(j==1)h_XAx_Title="gen Jet Phi (rad)"  ;
-      //	if(j==2)h_XAx_Title="gen Jet dRJet"      ; 
-      //	
-      //	//the2DMCEffQAHist->SetAxisRange(0.5,2.0,"Y");
-      //	//if(j==0)the2DMCEffQAHist->SetAxisRange( -3.0, 3.0, "X");
-      //	//if(j==1)the2DMCEffQAHist->SetAxisRange( -4.0, 4.0, "X");
-      //	//if(j==2)the2DMCEffQAHist->SetAxisRange(   0., 0.5, "X");
-      //	
-      //	the2DMCEffQAHist->SetTitle (    h_Title.c_str() );
-      //	the2DMCEffQAHist->SetXTitle( h_XAx_Title.c_str() );
-      //	the2DMCEffQAHist->SetYTitle( h_YAx_Title.c_str() );
-      //	
-      //	the2DMCEffQAHist->Draw("COLZ"); 
-      //	
-      //	temp_canvMCEff->Print(thePDFFileName.c_str());   
-      //}//end genvar ptrat loops      
-
-      //}//end draw TH2s
-      temp_canvMCEff->Print(close_thePDFFileName.c_str());   
-      temp_canvMCEff->Close();
-    }//end  MCEff Plots else
-  }
-  
-  if(debugMode)std::cout<<"closing output root file"<<std::endl<<std::endl;
-  rootfout->Close();
-  return 0;
-}
 
 
 
-
-
-int main(int argc, char*argv[]){
-  int rStatus=-1;
-  if(argc!=3){
-    std::cout<<"no defaults. Do...."<<std::endl;
-    std::cout<<"./printPlots_ppMC_JERS.exe "<<
-      "<target_ppMC_dir> <output tag>"<<std::endl<<std::endl;
-    return rStatus;  }
-  
-  rStatus=1;
-  rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] );
-  return rStatus;
-}
-
-
+ */

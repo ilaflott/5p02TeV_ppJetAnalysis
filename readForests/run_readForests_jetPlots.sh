@@ -21,13 +21,13 @@ echo ""
 echo "submitting jet80/lowerJets ppData job(s)"
 echo ""
 
-source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 15 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 15 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
 
 echo ""
 echo "done submitting ppData jetPlots Jet80 job(s)"
 echo ""
 
-source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 15 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 15 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
 
 echo ""
 echo "done submitting ppData jetPlots LowerJets job(s)"
@@ -36,14 +36,14 @@ echo ""
 
 
 ###### semiOfficial Py8
-#echo ""
-#echo "submitting Py8 ppMC job(s)"
-#echo ""
+echo ""
+echo "submitting Py8 ppMC job(s)"
+echo ""
 #
-#source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 300 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 300 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
 #
-#echo ""
-#echo "done submitting ppMC jetPlots job(s)"
-#echo ""
+echo ""
+echo "done submitting ppMC jetPlots job(s)"
+echo ""
 
 return

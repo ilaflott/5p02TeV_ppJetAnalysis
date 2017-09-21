@@ -101,9 +101,10 @@ const int N_vars=sizeof(var)/sizeof(std::string);
 const int jtInd=0, jtConInd=4, dijtInd=31;
 
 const float HLTthresh[]={
-  //  40., 60., 80., 100.
-  //  40., 60., 80., 135.
-  55., 75., 105., 135.
+  //  40., 60., 80., 100. //original, defaults
+  //  55., 75., 105., 135. //current best thresholds for PF triggers, seems to work for Calo too
+  //45., 65., 95., 110.   // last ones tried for Calo specifically
+  45., 65., 90., 110.   // thought HLT80 threshold was too strict for Calo, now looser
 };
 
 
@@ -216,6 +217,42 @@ const float ptbins[]={
   //4037, 4252, 4477, 4713, 4961, 5220, 5492, 5777, 6076, 6389, 6717, 7000
 };
 const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+
+//binning used by john for multiplicity stuff
+const float ptbins2[]={
+  56,80,
+  100,150,200,300,400,
+  500,800,1000
+};
+const int nbins_pt2=sizeof(ptbins2)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //// for jet RECO meeting 2k17

@@ -6,11 +6,11 @@ const bool fillDataEvtQAHists=true;
 //const bool fillDataVtxTrkQAHists=true; //in the works
 const bool fillDataJetQAHists=true;
 
-const bool fillDataDijetHists=false;
+const bool fillDataDijetHists=true;
 
 const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetSpectraRapHists=true; //other
+const bool fillDataJetSpectraRapHists=false; //other
 
 const bool useHLT100=false;
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 echo ""
 echo "running MC."
 echo ""
@@ -8,8 +10,21 @@ source runMC.sh
 
 echo ""
 echo "done w/ MC."
+echo ""
 
 return
+
+
+
+
+
+
+
+
+
+
+
+
 
 echo ""
 echo " ------------------------------------------------------------------"

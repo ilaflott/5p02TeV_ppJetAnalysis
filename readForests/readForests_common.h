@@ -46,11 +46,11 @@ void divideBinWidth(TH1 *h){
 
 
 float trigComb(bool *trgDec, int *treePrescl, double triggerPt){
+
   float weight_eS=0.;
   if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS=treePrescl[0];
   if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS=treePrescl[1];
   if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS=treePrescl[2];
-
   if(trgDec[3] && triggerPt>=100. )                  weight_eS=treePrescl[3];
 
   return weight_eS;
@@ -104,7 +104,7 @@ const float HLTthresh[]={
   //  40., 60., 80., 100. //original, defaults
   //  55., 75., 105., 135. //current best thresholds for PF triggers, seems to work for Calo too
   //45., 65., 95., 110.   // last ones tried for Calo specifically
-  45., 65., 90., 110.   // thought HLT80 threshold was too strict for Calo, now looser
+  45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
 };
 
 
@@ -198,26 +198,32 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 //raghavs suggested genpt binning for JER
 const float ptbins[]={
-  //1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 
-  //28,   
-  32,   
-  37, 
-  43, 
-  49, 
-  56, 
-  64, 
-  74, 
-  84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468,
-  507, 548, 592, 638, 
-  686, 737, 790, 
-  846, 905, 967
-  //,
-  //1032, 1101, 1172, 1248, 1327, 1410, 1497, 1588, 1684, 1784, 1890, 2000,
-  //2116, 2238, 2366, 2500, 2640, 2787, 2941, 3103, 3273, 3450, 3637, 3832, 
-  //4037, 4252, 4477, 4713, 4961, 5220, 5492, 5777, 6076, 6389, 6717, 7000
+  32.,   
+  37., 
+  43., //junk bins above
+  49., 
+  56., 
+  64., 
+  74., 
+  84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
+  507., 548., 592., 638., 
+  686., 1000., //junk bin after this
+  1500. 
 };
 const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
-
+// // my preferred SMP binning?
+//  32.,   
+//  37., 
+//  43., 
+//  49., 
+//  56., 
+//  64., 
+//  74., 
+//  84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
+//  507., 548., 592., 638., 
+//  686., 737., 790., 
+//  846., 905., 967., //def junk bins after this or so
+//  1000., 1050. 
 
 //binning used by john for multiplicity stuff
 const float ptbins2[]={

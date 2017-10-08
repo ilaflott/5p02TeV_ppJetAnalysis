@@ -362,7 +362,7 @@ void MakeHistMean(TH1F * h1, float xmin, float xmax){
   // y axis
   h1->GetYaxis()->SetTitle("#mu");
   h1->GetYaxis()->SetDecimals(true);
-  h1->SetAxisRange(0.95,1.05, "Y");    
+  h1->SetAxisRange(0.90,1.10, "Y");    
   //h1->GetYaxis()->CenterTitle(true);
   //h1->GetYaxis()->SetTitleFont(42);
   //h1->GetYaxis()->SetTitleSize(0.04);

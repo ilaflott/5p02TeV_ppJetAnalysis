@@ -28,14 +28,14 @@ const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
 const float defEtaCutLo=0.0, defEtaCutHi=4.7;//really absetacut
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				 int startfile=0, int endfile=1,
+				 int startfile=0, int endfile=0,
 				 int radius=defRadius, std::string jetType=defJetType, 
 				 bool debugMode=defDebugMode,
 				 std::string outfile=defDataOutputName, 
 				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-			       int startfile=0, int endfile=1, 
+			       int startfile=0, int endfile=0, 
 			       int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=defDebugMode,			
 			       std::string outfile=(defMCOutputName+"_jetPlots.root"),
@@ -45,10 +45,14 @@ const int readForestsArgCount=9+minArgs;
 
 // extended eta range for jetID Eff, or more QA in diff region... etc.
 
+
 const float jtPtCut=56; // 49 or 56 or 64 or 74...
+const float jtPtCut_Hi=1000; // 49 or 56 or 64 or 74...
 const float jetQAPtCut=jtPtCut;
 
-const float genJetPtCut=49; 
+//const float genJetPtCut=49; 
+const float genJetPtCut=43; 
+const float genJetPtCut_Hi=1500; 
 //const float genJetPtCut=30.;
 
 const float ldJetPtCut=76., subldJetPtCut=56., ptAveCut=subldJetPtCut, dPhiCut=2./3.*TMath::Pi();//dijet cuts

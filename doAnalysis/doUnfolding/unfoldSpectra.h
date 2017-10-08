@@ -85,33 +85,32 @@
 
 // -----------------------------------------------------------------------------------------------------------------------
 const std::string CMSSW_BASE=
-  "/net/hisrv0001/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
+  "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/readForests/outputCondor/";
 const std::string SCRATCH_BASE=
-  "/export/d00/scratch/ilaflott/5p02TeV_ppJetAnalysis/readForests/";
+  "/cms/heavyion/ilaflott/T2_US_MIT_SCRATCH/5p02TeV_ppJetAnalysis/readForests/";
 //const std::string unfoldSpectra_outdir="output/";
 const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 
-//Bayes setting that don't change too much
-//const bool doBayes=true; 
-const int kIter = 4; //recommended is 4, default is 4
-//,kIterRange=4, kIterDraw = 3, kIterCenter=21;
+//Bayes settings
+const int kIter = 4; // recommended is 4, default is 4
 
-//SVD setting that don't change too much
-//const bool doSVD=false; //!(doBayes); 
-const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;//max num of diff kregs to do
+
+//SVD settings 
+//    max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
+const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;      
 
 //other options, useful or interesting to change
-//const bool useSimplePtBinning=false;//bin by ten everywhere instead of custom binning
-const bool clearOverUnderflows=true;
+const bool doToyErrs=true;
+const bool clearOverUnderflows=false;
 const bool doMCIntegralScaling=true;//unfoldMCSpectra only
+const bool fillRespHists=true;
+const bool doOverUnderflows=false;    // if normalizedMCMatrix=true; this should be false... why?
+const bool zeroBins=false;
+//const bool normalizedMCMatrix=false;   // do not change for now; 6.24.17
 
 //other options, questionable usefulness, thing before changing...
-const bool zeroBins=false;
-//const bool normalizedMCMatrix=false;   //do not change for now; 6.24.17
-const bool doOverUnderflows=false;    // do not change to true + use with normalizedMCMatrix; method not over/underflow ready
-const bool fillRespHists=false;
 
 
 //useful strings, numbers
@@ -146,5 +145,180 @@ void drawText(const char *text, float xp, float yp, int size){
   tex->Draw();
 
   std::cout<<std::endl<<"drawText done"<<std::endl<<std::endl;
+  return;
+}
+
+
+
+
+
+
+
+
+void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
+  
+  
+  // general for drawRespMatrix ---------------
+  //canv->cd();
+  
+  if(!useSimpBins){
+    mat->GetYaxis()->SetMoreLogLabels(true);
+    mat->GetYaxis()->SetNoExponent(true);	
+    mat->GetXaxis()->SetMoreLogLabels(true);
+    mat->GetXaxis()->SetNoExponent(true);      }
+  
+  mat->GetZaxis()->SetLabelSize(0.025);      
+  mat->GetYaxis()->SetLabelSize(0.02);
+  mat->GetYaxis()->SetTitleSize(0.023);
+  mat->GetYaxis()->SetTitle("gen p_{t}");      
+  mat->GetXaxis()->SetLabelSize(0.02);
+  mat->GetXaxis()->SetTitleSize(0.025);
+  mat->GetXaxis()->SetTitle("reco p_{t}");
+  
+  // input resp matrix w/ full range ---------------
+  
+  mat->SetTitle(hTitle.c_str());
+
+
+  if( hTitle.find("%errs") != std::string::npos )
+    mat->SetAxisRange(0.1,1000.,"Z");
+  else if (hTitle.find("errors") != std::string::npos )
+    mat->SetAxisRange(0.000000000000000001,.0001,"Z");
+  else if (hTitle.find("Column")  != std::string::npos)
+    mat->SetAxisRange(0.000001,1.,"Z");
+  else if (hTitle.find("Row")  != std::string::npos)
+    mat->SetAxisRange(0.000001,1.,"Z");
+  else
+    mat->SetAxisRange(0.000000000000000001,.001,"Z");
+  
+//  if(useSimpBins){
+//    if( hTitle.find("%errs") != std::string::npos )
+//      mat->SetAxisRange(0.1,1000.,"Z");
+//    else if (hTitle.find("errors") != std::string::npos )
+//      mat->SetAxisRange(0.000000000000000001,.0001,"Z");
+//    else if (hTitle.find("Column")  != std::string::npos)
+//      mat->SetAxisRange(0.000001,1.,"Z");
+//    else if (hTitle.find("Row")  != std::string::npos)
+//      mat->SetAxisRange(0.000001,1.,"Z");
+//    else
+//      mat->SetAxisRange(0.000000000000000001,.001,"Z");}
+//  else{
+//    if( hTitle.find("%errs") != std::string::npos )
+//      mat->SetAxisRange(0.1,1000.,"Z");
+//    else if (hTitle.find("errors") != std::string::npos )
+//      mat->SetAxisRange(0.000000000000000001,.0001,"Z");
+//    else if (hTitle.find("Column")  != std::string::npos)
+//      mat->SetAxisRange(0.000001,1.,"Z");
+//    else if (hTitle.find("Row")  != std::string::npos)
+//      mat->SetAxisRange(0.000001,1.,"Z");
+//    else
+//      mat->SetAxisRange(0.000000000000000001,.001,"Z");}
+  
+  canv->cd();
+  
+  mat->Draw("COLZ");           
+  
+  canv->Print(outPdfFile.c_str());
+  
+  
+  return;
+}
+
+double* setBinning ( bool useSimpBins, std::string type){
+  double* binarray=NULL;
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in setBinning"<<std::endl<<std::endl;
+  
+  if(useSimpBins){           
+    if(type=="reco"){
+      binarray   = (double*)simpbins_pt_reco ; }
+    else if(type=="gen"){
+      binarray   = (double*)simpbins_pt_gen ;}
+    else{
+      std::cout<<"type not found; bins not set!"<<std::endl;
+      std::cout<<"SHUT"<<std::endl;
+      std::cout<<"DOWN"<<std::endl;
+      std::cout<<"EVERYTHING"<<std::endl;     
+      assert(false);    }
+  }  
+  else{   
+    if(type=="reco"){
+      binarray   = (double*)anabins_pt_reco ; }
+    else if(type=="gen"){
+      binarray   = (double*)anabins_pt_gen ;}
+    else{
+      std::cout<<"type not found; bins not set!"<<std::endl;
+      std::cout<<"SHUT"<<std::endl;
+      std::cout<<"DOWN"<<std::endl;
+      std::cout<<"EVERYTHING"<<std::endl;     
+      assert(false);}        
+  }
+  
+  if(funcDebug)std::cout<<std::endl<<"setBinning done, exiting setBinning."<<std::endl<<std::endl;
+
+  return binarray;
+  
+}
+
+
+
+
+int setNBins ( bool useSimpBins, std::string type){
+  int nbins=-1;
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in set/nBins"<<std::endl<<std::endl;
+  
+  if(useSimpBins){           
+    if(type=="reco"){
+      nbins   = n_simpbins_pt_reco ; }
+    else if(type=="gen"){
+      nbins   = n_simpbins_pt_gen ; }
+    else{
+      std::cout<<"type not found; bins not set!"<<std::endl;
+      std::cout<<"SHUT"<<std::endl;
+      std::cout<<"DOWN"<<std::endl;
+      std::cout<<"EVERYTHING"<<std::endl;     
+      assert(false);    }
+  }  
+  else{   
+    if(type=="reco"){
+      nbins   = n_anabins_pt_reco ; }
+    else if(type=="gen"){
+      nbins   = n_anabins_pt_gen ; }
+    else{
+      std::cout<<"type not found; bins not set!"<<std::endl;
+      std::cout<<"SHUT"<<std::endl;
+      std::cout<<"DOWN"<<std::endl;
+      std::cout<<"EVERYTHING"<<std::endl;     
+      assert(false);}        
+  }
+  
+  if(funcDebug)std::cout<<std::endl<<"setBinning done, exiting setBinning."<<std::endl<<std::endl;
+
+  return nbins;
+  
+}
+
+
+void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
+  
+  h->SetAxisRange(0.2, 1.8, "Y");
+  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
+  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
+  h->SetAxisRange(boundaries[0], boundaries[nbins],"X");           
+  
+  return;
+}
+
+
+
+void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
+  
+  //h->SetAxisRange(0.2, 1.8, "Y");
+  h->GetXaxis()->SetTitle("jet p_{T} (GeV)");
+  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
+  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
+  h->SetAxisRange(boundaries[0], boundaries[nbins],"X");           
+  
   return;
 }

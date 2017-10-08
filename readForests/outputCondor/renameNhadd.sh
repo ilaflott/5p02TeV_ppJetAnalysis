@@ -92,8 +92,9 @@ then
     echo ""
     sleep 1s
     
+    ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_${etabin}/
     #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
-    ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_JERS_${etabin}
+    #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_JERS_${etabin}
     sleep 1s
     
     

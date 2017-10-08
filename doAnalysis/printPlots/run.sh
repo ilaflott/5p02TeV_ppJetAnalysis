@@ -1,8 +1,8 @@
-#!/bin/bash
-
-echo ""
-echo "compiling printPlots_ppMC_JERS.C"
-echo ""
+ #!/bin/bash
+ 
+ echo ""
+ echo "compiling printPlots_ppMC_JERS.C"
+ echo ""
 
 rootcompile printPlots_ppMC_JERS.C
 
@@ -44,12 +44,22 @@ echo ""
 #source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p1" "09-18-17" "1.0eta1.5" "10eta15_9.18.17_gendrjt0p1"
 #source run_printPlots_ppMC_JERS.sh "4" "09.18.17_outputCondor/ppMC_JERS_gendrjt0p1" "09-18-17" "1.5eta2.0" "15eta20_9.18.17_gendrjt0p1"
 
-source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "0.0eta0.5" "00eta05_9.19.17"
-return
-source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "0.5eta1.0" "05eta10_9.19.17"
-source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "1.0eta1.5" "10eta15_9.19.17"
-source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "1.5eta2.0" "15eta20_9.19.17"
 
+#source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "0.0eta2.0" "00eta20_9.19.17"
+
+#source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "0.0eta0.5" "00eta05_9.19.17"
+#source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "0.5eta1.0" "05eta10_9.19.17"
+#source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "1.0eta1.5" "10eta15_9.19.17"
+#source run_printPlots_ppMC_JERS.sh "4" "09.19.17_outputCondor" "09-19-17" "1.5eta2.0" "15eta20_9.19.17"
+
+#source run_printPlots_ppMC_JERS.sh "4" "10.02.17_outputCondor" "10-02-17" "0.0eta2.0" "00eta20_10.2.17"
+
+#source run_printPlots_ppMC_JERS.sh "4" "10.02.17_outputCondor" "10-02-17" "0.0eta0.5" "00eta05_10.2.17_badTF1"
+#source run_printPlots_ppMC_JERS.sh "4" "10.02.17_outputCondor" "10-02-17" "0.5eta1.0" "05eta10_10.2.17_badTF1"
+#source run_printPlots_ppMC_JERS.sh "4" "10.02.17_outputCondor" "10-02-17" "1.0eta1.5" "10eta15_10.2.17_badTF1"
+#source run_printPlots_ppMC_JERS.sh "4" "10.02.17_outputCondor" "10-02-17" "1.5eta2.0" "15eta20_10.2.17_badTF1"
+
+source run_printPlots_ppMC_JERS.sh "4" "10.03.17_outputCondor" "10-03-17" "0.0eta2.0" "00eta20_10.3.17"
 
 echo ""
 echo "done running ppMC JERS!"
@@ -58,6 +68,59 @@ echo ""
 ##############################################
 return
 ##############################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

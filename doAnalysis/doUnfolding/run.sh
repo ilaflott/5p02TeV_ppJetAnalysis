@@ -16,16 +16,6 @@ return
 
 
 
-
-
-
-
-
-
-
-
-
-
 echo ""
 echo " ------------------------------------------------------------------"
 echo " ------------------------------------------------------------------"
@@ -34,15 +24,15 @@ echo ""
 
 sleep 1s
 
-#echo ""
-#echo "running Data."
-#echo ""
-#
-#source runData.sh
-#
-#echo ""
-#echo "done w/ Data."
-#echo ""
+echo ""
+echo "running Data."
+echo ""
+
+source runData.sh
+
+echo ""
+echo "done w/ Data."
+echo ""
 
 
 return 

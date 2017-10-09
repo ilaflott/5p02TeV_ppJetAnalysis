@@ -3,7 +3,7 @@
 
 ##CONST
 jtID=1
-doSVD=1
+doSVD=0
 doBayes=1
 ##CONST
 

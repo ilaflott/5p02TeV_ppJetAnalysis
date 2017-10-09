@@ -102,10 +102,11 @@ const int kIter = 4; // recommended is 4, default is 4
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;      
 
 //other options, useful or interesting to change
-const bool doToyErrs=true;
+const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+const bool doToyErrs=false;
 const bool clearOverUnderflows=false;
-const bool doMCIntegralScaling=true;//unfoldMCSpectra only
-const bool fillRespHists=true;
+const bool doMCIntegralScaling=false;//unfoldMCSpectra only
+const bool fillRespHists=false;
 const bool doOverUnderflows=false;    // if normalizedMCMatrix=true; this should be false... why?
 const bool zeroBins=false;
 //const bool normalizedMCMatrix=false;   // do not change for now; 6.24.17
@@ -322,3 +323,5 @@ void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
   
   return;
 }
+
+

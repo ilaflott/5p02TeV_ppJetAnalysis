@@ -14,8 +14,8 @@ const bool fillDataJetSpectraRapHists=false; //other
 
 const bool useHLT100=false;
 
-const std::string trgCombType="Calo";
-//const std::string trgCombType="PF";
+//const std::string trgCombType="Calo";
+const std::string trgCombType="PF";
 
 
 //// readForests_ppData_jetPlots

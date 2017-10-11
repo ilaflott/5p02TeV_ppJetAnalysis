@@ -47,12 +47,12 @@ const int readForestsArgCount=9+minArgs;
 
 
 const float jtPtCut=56; // 49 or 56 or 64 or 74...
-const float jtPtCut_Hi=1000; // 49 or 56 or 64 or 74...
+const float jtPtCut_Hi=1248; 
 const float jetQAPtCut=jtPtCut;
 
 //const float genJetPtCut=49; 
 const float genJetPtCut=43; 
-const float genJetPtCut_Hi=1500; 
+const float genJetPtCut_Hi=1890; 
 //const float genJetPtCut=30.;
 
 const float ldJetPtCut=76., subldJetPtCut=56., ptAveCut=subldJetPtCut, dPhiCut=2./3.*TMath::Pi();//dijet cuts

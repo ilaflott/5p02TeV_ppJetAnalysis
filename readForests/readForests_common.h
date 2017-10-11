@@ -102,9 +102,10 @@ const int jtInd=0, jtConInd=4, dijtInd=31;
 
 const float HLTthresh[]={
   //  40., 60., 80., 100. //original, defaults
-  //  55., 75., 105., 135. //current best thresholds for PF triggers, seems to work for Calo too
+    55., 75., 105., 135. //current best thresholds for PF triggers, seems to work for Calo too
   //45., 65., 95., 110.   // last ones tried for Calo specifically
-  45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
+  //45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
+  //45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
 };
 
 

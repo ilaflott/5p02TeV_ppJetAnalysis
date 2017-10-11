@@ -102,7 +102,7 @@ const int kIter = 4; // recommended is 4, default is 4
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;      
 
 //other options, useful or interesting to change
-const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 const bool doToyErrs=false;
 const bool clearOverUnderflows=false;
 const bool doMCIntegralScaling=false;//unfoldMCSpectra only
@@ -115,7 +115,8 @@ const bool zeroBins=false;
 
 
 //useful strings, numbers
-const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
+//const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
+const float integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
 const std::string CMSPRELIM= "CMS PRELIMINARY"; 
 const std::string MCdesc= "Py8 Tune CUETP8M1 QCD"; 
 const std::string Datadesc1= "pp promptReco, #sqrt{s}=5.02 TeV"; 
@@ -131,6 +132,25 @@ const Int_t lcolor[5]={kRed+1,kBlue-3,kGreen+3,kOrange+3, kRed+2};
 // marker color/style
 const Int_t fmstyle[6] = {20,21,22,23,29,3};
 const Int_t emstyle[6] = {24,25,26,27,30,28};
+
+
+float computeEffLumi(TFile* finData){
+  
+  float effIntgrtdLumi_vz=1., LumiEff_vz=1.;// eff-> effective, Eff->efficiency
+  
+  std::cout<<std::endl<<"dataset integrated Luminosity (microbarns) ="<<integratedLuminosity<<std::endl;
+  TH1F *h_NEvents_vzCut   = (TH1F*)finData->Get("NEvents_vzCut");
+  TH1F *h_NEvents_read    = (TH1F*)finData->Get("NEvents_read");
+  
+  LumiEff_vz = (float) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries();
+  effIntgrtdLumi_vz=integratedLuminosity*LumiEff_vz;
+  
+  std::cout<<std::endl<<"lumi efficiency, vz cuts="<<LumiEff_vz<<std::endl;
+  std::cout<<"effective ingrtdLumi for dataset+cuts="<<effIntgrtdLumi_vz<<std::endl;
+  //LumiEff_vz=0.999;//temp
+  return (effIntgrtdLumi_vz);
+}
+
 
 
 void drawText(const char *text, float xp, float yp, int size){
@@ -181,9 +201,9 @@ void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string out
   mat->SetTitle(hTitle.c_str());
 
 
-  if( hTitle.find("%errs") != std::string::npos )
+  if( hTitle.find("% Errors") != std::string::npos )
     mat->SetAxisRange(0.1,1000.,"Z");
-  else if (hTitle.find("errors") != std::string::npos )
+  else if (hTitle.find("Errors") != std::string::npos )
     mat->SetAxisRange(0.000000000000000001,.0001,"Z");
   else if (hTitle.find("Column")  != std::string::npos)
     mat->SetAxisRange(0.000001,1.,"Z");
@@ -304,9 +324,14 @@ int setNBins ( bool useSimpBins, std::string type){
 void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
   
   h->SetAxisRange(0.2, 1.8, "Y");
-  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
-  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
-  h->SetAxisRange(boundaries[0], boundaries[nbins],"X");           
+  h->GetXaxis()->SetMoreLogLabels(true);
+  h->GetXaxis()->SetNoExponent(true);
+  //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
+  //if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
+  h->SetAxisRange( boundaries[0] ,  
+		   boundaries[nbins] + 
+		   ( boundaries[nbins]-boundaries[nbins-1] ),
+		   "X");           
   
   return;
 }
@@ -315,11 +340,19 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
 
 void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
   
-  //h->SetAxisRange(0.2, 1.8, "Y");
   h->GetXaxis()->SetTitle("jet p_{T} (GeV)");
-  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
-  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
-  h->SetAxisRange(boundaries[0], boundaries[nbins],"X");           
+  //  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
+  //  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
+  h->GetXaxis()->SetMoreLogLabels(true);
+  h->GetXaxis()->SetNoExponent(true);
+  h->SetAxisRange( boundaries[0] ,  
+		   boundaries[nbins] + 
+		   ( boundaries[nbins]-boundaries[nbins-1] ),
+		   "X");           
+//h->SetAxisRange( boundaries[0] - 
+//		   (boundaries[1] - boundaries[0]), 
+//		   boundaries[nbins] + 
+//		   (boundaries[nbins]-boundaries[nbins-1]),"X");           
   
   return;
 }

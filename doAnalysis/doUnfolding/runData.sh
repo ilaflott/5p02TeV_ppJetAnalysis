@@ -1,53 +1,58 @@
 #!/bin/bash
 
+
+
+### ----------------------------------------------------------------------------------
+
 echo ""
-echo "compiling unfoldDataSpectra"
+echo "compiling SVDUnfoldDataSpectra"
 echo ""
-rooUnfoldCompile unfoldDataSpectra.C
+rooUnfoldCompile SVDUnfoldDataSpectra.C
 
 echo ""
 echo "done compiling unfoldDataSpectra"
 echo ""
-sleep 1s
+#sleep 1s
 
-
-## R = 5
-#source run_unfoldDataSpectra.sh 5 0 9 1
-#sleep 0.5s
-#source run_unfoldDataSpectra.sh 5 1 9 1
-#sleep 0.5s
-#source run_unfoldDataSpectra.sh 4 0 10 2
-#sleep 0.5s
-#source run_unfoldDataSpectra.sh 4 1 10 2
-#sleep 0.5s
-
-## R = 4
-#source run_unfoldDataSpectra.sh 4 0 9 1
-#sleep 0.5s
-source run_unfoldDataSpectra.sh 4 1 10 1
-sleep 0.5s
-#source run_unfoldDataSpectra.sh 4 0 10 2
-#sleep 0.5s
-#source run_unfoldDataSpectra.sh 4 1 10 2
-#sleep 0.5s
-
-## R = 3
-#source run_unfoldDataSpectra.sh 3 0 9 1
-#sleep 0.5s
-source run_unfoldDataSpectra.sh 3 1 14 1
-sleep 0.5s
-#source run_unfoldDataSpectra.sh 3 0 10 2
-#sleep 0.5s
-#source run_unfoldDataSpectra.sh 3 1 10 2
-#sleep 0.5s
-
-
-
-
+source run_SVDUnfoldDataSpectra.sh "4" "10.03.17_outputCondor" "10-03-17" "10.03.17_outputCondor" "10-03-17" "0.0eta2.0" "00eta20_10.9.17_alt"  0 5 
+source run_SVDUnfoldDataSpectra.sh "4" "10.03.17_outputCondor" "10-03-17" "10.03.17_outputCondor" "10-03-17" "0.0eta2.0" "00eta20_10.9.17_alt"  1 15
 
 echo ""
-echo "done."
+echo "done unfolding Data w/ SVD."
 echo ""
 
+#return
 
-return 
+
+
+
+
+
+
+
+
+
+
+
+### ----------------------------------------------------------------------------------
+
+echo ""
+echo "compiling bayesUnfoldDataSpectra"
+echo ""
+rooUnfoldCompile bayesUnfoldDataSpectra.C
+
+echo ""
+echo "done compiling unfoldDataSpectra"
+echo ""
+#sleep 1s
+
+source run_bayesUnfoldDataSpectra.sh "4" "10.03.17_outputCondor" "10-03-17" "10.03.17_outputCondor" "10-03-17" "0.0eta2.0" "00eta20_10.9.17_alt"  0  
+source run_bayesUnfoldDataSpectra.sh "4" "10.03.17_outputCondor" "10-03-17" "10.03.17_outputCondor" "10-03-17" "0.0eta2.0" "00eta20_10.9.17_alt"  1 
+
+echo ""
+echo "done unfolding Data w/ Bayes."
+echo ""
+
+return
+
+

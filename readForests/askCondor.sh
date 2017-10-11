@@ -7,9 +7,9 @@ Ncount=0
 #secondCount=0
 while [[ $Ncount -lt $Nasks ]]
 do
-    cd outputCondor
-    ./checkProgress.sh 1 1
-    cd ..
+    #cd outputCondor
+    #./checkProgress.sh 1 1
+    #cd ..
 
     condor_q ilaflott
     sleep ${T}s

@@ -1,6 +1,7 @@
 #include "unfoldSpectra.h"
 
 //other settings
+const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 const bool drawPDFs=true; 
 const bool debugMode=false;
 
@@ -371,7 +372,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 
 
 
-  bool drawRespMatrix=true;
+  bool drawRespMatrix=false;
   if(drawPDFs && drawRespMatrix){    
     
     

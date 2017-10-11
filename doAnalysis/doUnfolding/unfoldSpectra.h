@@ -102,7 +102,7 @@ const int kIter = 4; // recommended is 4, default is 4
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;      
 
 //other options, useful or interesting to change
-const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+//const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 const bool doToyErrs=false;
 const bool clearOverUnderflows=false;
 const bool doMCIntegralScaling=false;//unfoldMCSpectra only

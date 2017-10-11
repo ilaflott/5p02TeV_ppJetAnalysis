@@ -5,10 +5,10 @@ const bool drawPDFs=true;
 const bool debugMode=false;
 
 
- 
+
 // CODE --------------------------------------------------
 int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName , 
-		     const bool doJetID=true , const int kRegCenter= 5 , const bool useSimpBins=false){
+		     const bool doJetID=true , const bool useSimpBins=false){
   
   
   
@@ -816,8 +816,8 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
   
-  if( argc!=6 ){
-    std::cout<<"do ./bayesUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <kRegCenter> <doBayes> <doSVD> <useSimpleBins>"<<std::endl;
+  if( argc!=5 ){
+    std::cout<<"do ./bayesUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
 
     return rStatus;  }
@@ -825,9 +825,7 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   rStatus=1; // runtime error
   
   rStatus=bayesUnfoldMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], 
-			    (int)std::atoi(argv[3]) , (int)std::atoi(argv[4]) , (int)std::atoi(argv[5]) 
-			    
-			    ); 
+			    (int)std::atoi(argv[3]) , (int)std::atoi(argv[4]) 			    ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

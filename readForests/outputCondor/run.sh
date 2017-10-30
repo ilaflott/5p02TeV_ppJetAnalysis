@@ -7,7 +7,7 @@ echo ""
 localDir=/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/outputCondor
 
 MM="10"
-DD="10"
+DD="27"
 YY="17"
 
 
@@ -23,14 +23,20 @@ YY="17"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec56" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec56_HLTCalo" "ppData"
 
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec64" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec64_HLTCalo" "ppData"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec64" "ppMC"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec64_HLTCalo" "ppData"
+#
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec56_HLTPF" "ppData"
+#
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec64_HLTPF" "ppData"
 
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec56_HLTPF" "ppData"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_gendr0p2_HLTCalo" "ppMC"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_gendr0p1_HLTCalo" "ppMC"
 
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec64_HLTPF" "ppData"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec56_gen32" "ppMC"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec74_gen43" "ppMC"
 
-
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0" "ppData"
 
 echo ""
 echo "done rename/hadd'ing."

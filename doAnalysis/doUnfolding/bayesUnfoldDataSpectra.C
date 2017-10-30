@@ -118,17 +118,24 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   hrec->Write();
   if(debugMode)hrec->Print("base");
   
+  histTitle+="_divBylumietabin";
+  float effIntgrtdLumi=computeEffLumi(fpp_Data);
+  hrec->Scale(1./effIntgrtdLumi); // lumi
+  hrec->Scale(1./4.); // |y| bin width
+  hrec->Write( (histTitle).c_str() );
+  if(debugMode)hrec->Print("base");
+  
   //assert(false);
   
   histTitle+="_clone";
   TH1F *hrec_anabin = (TH1F*)hrec->Clone( (histTitle).c_str() );
-  hrec_anabin->Write();
+  hrec_anabin->Write(histTitle.c_str());
   if(debugMode)hrec_anabin->Print("base");
   
   std::cout<<"rebinning hrec..."<<std::endl;
   histTitle+="_anabins";
   hrec_anabin = (TH1F*)hrec_anabin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
-  hrec_anabin->Write();   
+  hrec_anabin->Write(histTitle.c_str());   
   if(debugMode)hrec_anabin->Print("base");  
   
   histTitle+="_normbinwidth";
@@ -143,11 +150,6 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     if(debugMode)hrec_anabin->Print("base");  
   }
   
-  float effIntgrtdLumi=computeEffLumi(fpp_Data);
-  hrec_anabin->Scale(1./effIntgrtdLumi);
-  
-  
-  
   
   
   //// response hist, for output? what is this for if it's empty?
@@ -157,7 +159,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   //					nbins_pt_reco, boundaries_pt_reco); }
   //hrec_resp_anabin->Write();
   //if(debugMode)hrec_resp_anabin->Print(" base");  
-
+  
   
   
   // ppMC input histos -------------------------
@@ -175,29 +177,34 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   histTitle2+=RandEtaRange;
   
   TH1F*  hrec_sameside = (TH1F*)fpp_MC->Get( histTitle2.c_str() ); 
-  hrec_sameside->Write();
+  hrec_sameside->Write(histTitle2.c_str());
+  if(debugMode)hrec_sameside->Print("base");
+  
+  histTitle2+="_divByetabin";
+  hrec_sameside->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hrec_sameside->Write( histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
   histTitle2+="_clone";
   TH1F *hrec_sameside_anabin = (TH1F*)hrec_sameside->Clone( (histTitle2).c_str() );
-  hrec_sameside_anabin->Write();
+  hrec_sameside_anabin->Write( histTitle2.c_str() );
   if(debugMode)hrec_sameside_anabin->Print("base");
   
   std::cout<<"rebinning hrec_sameside..."<<std::endl;
   histTitle2+="_anabins";
   hrec_sameside_anabin = (TH1F*)hrec_sameside_anabin->Rebin( nbins_pt_reco, (histTitle2).c_str() , boundaries_pt_reco);
-  hrec_sameside_anabin->Write();   
+  hrec_sameside_anabin->Write( histTitle2.c_str() );   
   if(debugMode)hrec_sameside_anabin->Print("base");  
   
   histTitle2+="_normbinwidth";
   divideBinWidth(hrec_sameside_anabin); 
-  hrec_sameside_anabin->Write(histTitle2.c_str());
+  hrec_sameside_anabin->Write( histTitle2.c_str() );
   if(debugMode)hrec_sameside_anabin->Print("base");  
   
   if(clearOverUnderflows){
     histTitle2+="_noOverUnderFlows";
     TH1clearOverUnderflows((TH1*)hrec_sameside_anabin);
-    hrec_sameside_anabin->Write(histTitle2.c_str());
+    hrec_sameside_anabin->Write( histTitle2.c_str() );
     if(debugMode)hrec_sameside_anabin->Print("base");    }
   
   // response hist, for output? what is this for if it's empty?
@@ -236,17 +243,22 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   genHistTitle+=RandEtaRange;
   
   TH1F* hgen = (TH1F*)fpp_MC->Get( genHistTitle.c_str() );
-  hgen->Write();
+  hgen->Write(genHistTitle.c_str());
   if(debugMode)hgen->Print("base");    
+  
+  genHistTitle+="_divByetabin";
+  hgen->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hgen->Write( genHistTitle.c_str());
+  if(debugMode)hgen->Print("base");
   
   genHistTitle+="_clone";
   TH1F* hgen_anabin = (TH1F*)hgen->Clone( (genHistTitle).c_str() );
-  hgen_anabin->Write();
+  hgen_anabin->Write(genHistTitle.c_str());
   if(debugMode)hgen_anabin->Print("base");
   
   genHistTitle+="_anabins";
   hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt_gen, (genHistTitle).c_str() , boundaries_pt_gen);
-  hgen_anabin->Write();
+  hgen_anabin->Write(genHistTitle.c_str());
   if(debugMode)hgen_anabin->Print("base"); 
   
   genHistTitle+="_normbinwidth";
@@ -268,8 +280,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   hgen_resp_anabin->Write();
   if(debugMode)hgen_resp_anabin->Print("base");  
   
-//  TH1F* hgen_resp_anabin_empty= new TH1F( ("hpp_gen_response_anabin_empty"+RandEtaRange).c_str() ,"", 
-//					  nbins_pt_gen, boundaries_pt_gen);  
+  //  TH1F* hgen_resp_anabin_empty= new TH1F( ("hpp_gen_response_anabin_empty"+RandEtaRange).c_str() ,"", 
+  //					  nbins_pt_gen, boundaries_pt_gen);  
   
   
   //std::cout<<std::endl<<"writing input hists to file..."<<std::endl;
@@ -298,22 +310,25 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   //get the response matrix made by readforests
   TH2F* hmat = (TH2F*)fpp_MC->Get( TH2_title.c_str() );
-  hmat->Write();
+  hmat->Write(TH2_title.c_str());
   if(debugMode)hmat->Print("base");
   
-  
+  TH2_title+="_divByetabin";
+  hmat->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hmat->Write( TH2_title.c_str());
+  if(debugMode)hmat->Print("base");
   
   // rebinned matrix ---------------
   TH2_title+="_clone";
   TH2F* hmat_anabin = (TH2F*)hmat->Clone( (TH2_title).c_str() );
-  hmat_anabin->Write();
+  hmat_anabin->Write(TH2_title.c_str());
   if(debugMode)hmat_anabin->Print("base"); 
   
   TH2_title+="_anabins";
   hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, (TH2_title).c_str(), 
 			       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 			       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-  hmat_anabin->Write();
+  hmat_anabin->Write(TH2_title.c_str());
   if(debugMode)hmat_anabin->Print("base"); 
   
   TH2_title+="_normbinwidth";
@@ -712,21 +727,25 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     setupSpectraHist(hfold_clone	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupSpectraHist(hunf		  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);    
 
-    hrec_anabin->SetTitle("Py8 and Data pp Spectra, Input and Output");
+    hgen_anabin->SetTitle("Py8 and Data pp Spectra, Input and Output");
     
+    hrec_anabin->SetAxisRange(56., 1000.,"X");
+    hrec_anabin->GetYaxis()->SetTitle("A.U.");
+    hunf->SetAxisRange(       56., 1000.,"X");
+
+    //hgen_anabin->Draw("P E");                 
     hrec_anabin->Draw("P E");           
-    hgen_anabin->Draw("P E SAME");                 
-    hfold_clone->Draw("P E SAME");           
+    //hfold_clone->Draw("P E SAME");           
     hunf->Draw("P E SAME");               
-    hrec_sameside_anabin->Draw("P E SAME");           
+    //hrec_sameside_anabin->Draw("P E SAME");           
 
     TLegend* legend_in1 = new TLegend( 0.6,0.7,0.9,0.9 );
     
     legend_in1->AddEntry(hrec_anabin,          "RECO Data" , "p");	
     legend_in1->AddEntry(hunf,                 "Unf. Data" , "p");
-    legend_in1->AddEntry(hrec_sameside_anabin, "RECO Py8"  , "p");
-    legend_in1->AddEntry(hgen_anabin,          "GEN Py8"   , "p");
-    legend_in1->AddEntry(hfold_clone,          "Fold. Data", "p");    
+    //legend_in1->AddEntry(hrec_sameside_anabin, "RECO Py8"  , "p");
+    //legend_in1->AddEntry(hgen_anabin,          "GEN Py8"   , "p");
+    //legend_in1->AddEntry(hfold_clone,          "Fold. Data", "p");    
     
     legend_in1->Draw();
     

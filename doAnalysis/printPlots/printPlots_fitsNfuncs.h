@@ -191,8 +191,8 @@ void LoadStyle(){
 
   std::cout<<std::endl<<"loading style..." <<std::endl;
 
-  //gStyle->SetOptStat(1);
-  gStyle->SetOptStat("emr");
+  gStyle->SetOptStat(0);
+  //gStyle->SetOptStat("emr");
   gStyle->SetOptFit(1);
   
   

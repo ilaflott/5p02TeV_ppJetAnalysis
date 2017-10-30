@@ -1,8 +1,9 @@
+
 #include "printPlots.h"
 
 const bool debugMode=true;
 const bool draw_hJER=true;
-const bool draw_MCEff=true;
+const bool draw_MCEff=false;
 const bool drawProfiles = true;
 const bool rebinJER=false;
 
@@ -186,6 +187,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	if(debugMode)std::cout<<"esig ="<< esig<<std::endl;    
 	if(debugMode)std::cout<<"chi2NDF ="<< chi2NDF<<std::endl;    
 	
+	if((ip+1)==nbins_pt_debug)continue;
+	else if((ip+1)<=2)continue;
 	hMean[nj]->SetBinContent (ip+1, mean);    
 	hMean[nj]->SetBinError   (ip+1, emean);    
 
@@ -225,17 +228,17 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     
     TPad* p1=(TPad*)pdfoutCanv_muSigma->cd(1);        
     p1->SetLogx(1);    
-    p1->SetGridx(1);    
+    p1->SetGridx(0);    
     p1->cd();
     
     TPad* p2=(TPad*)pdfoutCanv_muSigma->cd(2);        
     p2->SetLogx(1);    	
-    p2->SetGridx(1);    
-    p2->cd();    
+    p2->SetGridx(0);    
+    p2->cd();   
 
     TPad* p3=(TPad*)pdfoutCanv_muSigma->cd(3);        
     p3->SetLogx(1);    	
-    p3->SetGridx(1);    
+    p3->SetGridx(0);    
     p3->cd();    
     
     
@@ -245,6 +248,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
       p1->cd();
       
+      //hMean[i]->SetAxisRange(56.,1000.,"X");
+      hMean[i]->SetAxisRange(0.95,1.05,"Y");
       hMean[i]->Draw("HIST E1"); 
       
       TLine* meanLine=new TLine(ptbins_debug[0],1.,ptbins_debug[nbins_pt_debug],1.);    
@@ -314,6 +319,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	//	assert(false);
       }
       
+      //hSigma[i]->SetAxisRange(56.,1000.,"X");
+      //hSigma[i]->SetAxisRange(0.95,1.05,"Y");
       hSigma[i]->Draw("HIST E1");
       hSigmaFit->Draw("SAME");
       
@@ -321,6 +328,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
       p3->cd();
 
+      //hChi2NDF[i]->SetAxisRange(56.,1000.,"X");
       hChi2NDF[i]->Draw("HIST E1");
 
       pdfoutCanv_muSigma->Print(thePDFFileName.c_str());        

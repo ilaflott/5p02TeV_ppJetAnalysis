@@ -87,7 +87,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   // declare hists
   /////   EVT+JET COUNTS AND METADATA   ///// 
   TH1F *hJetPtCut        =new TH1F("hJetPtCut"      ,(std::to_string(jtPtCut)).c_str()   ,    100, 0,100); hJetPtCut->Fill(jtPtCut);           
-  TH1F *hJetPtCut_Hi        =new TH1F("hJetPtCut_Hi"      ,(std::to_string(jtPtCut_Hi)).c_str()   ,    1000, 500,1500); hJetPtCut_Hi->Fill(jtPtCut_Hi);           
+  TH1F *hJetPtCut_Hi        =new TH1F("hJetPtCut_Hi"      ,(std::to_string(jtPtCut_Hi)).c_str()   ,    1000, 1000,2000); hJetPtCut_Hi->Fill(jtPtCut_Hi);           
   
   TH1F *hGenJetPtCut     =new TH1F("hGenJetPtCut"  ,(std::to_string(genJetPtCut)).c_str()   ,    100, 0,100); hGenJetPtCut->Fill(genJetPtCut);           
   TH1F *hGenJetPtCut_Hi     =new TH1F("hGenJetPtCut_Hi"  ,(std::to_string(genJetPtCut_Hi)).c_str()   ,    1000, 1000,2000); hGenJetPtCut_Hi->Fill(genJetPtCut_Hi);           
@@ -97,7 +97,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   //UNF CUTS
   TH1F *hJetPtCut_unf_lo        =new TH1F("hJetPtCut_unf_lo"      ,(std::to_string(jtPtCut_unf_lo)).c_str()   ,    100, 0,100); hJetPtCut_unf_lo->Fill(jtPtCut_unf_lo);  
-  TH1F *hJetPtCut_unf_hi        =new TH1F("hJetPtCut_unf_hi"      ,(std::to_string(jtPtCut_unf_hi)).c_str()   ,    1000, 500,1500); hJetPtCut_unf_hi->Fill(jtPtCut_unf_hi);    
+  TH1F *hJetPtCut_unf_hi        =new TH1F("hJetPtCut_unf_hi"      ,(std::to_string(jtPtCut_unf_hi)).c_str()   ,    1000, 1000,2000); hJetPtCut_unf_hi->Fill(jtPtCut_unf_hi);    
   
   TH1F *hGenJetPtCut_unf_lo     =new TH1F("hGenJetPtCut_unf_lo"  ,(std::to_string(genJetPtCut_unf_lo)).c_str()   ,    100, 0,100); hGenJetPtCut_unf_lo->Fill(genJetPtCut_unf_lo); 
   TH1F *hGenJetPtCut_unf_hi     =new TH1F("hGenJetPtCut_unf_hi"  ,(std::to_string(genJetPtCut_unf_hi)).c_str()   ,    1000, 1000,2000); hGenJetPtCut_unf_hi->Fill(genJetPtCut_unf_hi); 
@@ -184,19 +184,19 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	hTitle+="_R"+std::to_string(radius)+"_"+etaWidth;      
 	
 	if(hUnfTitleArray[k]=="gen")	
-	  hpp_gen[jtID]    = new TH1F( hTitle.c_str(), "refpt", 1500,0,1500);
+	  hpp_gen[jtID]    = new TH1F( hTitle.c_str(), "refpt", 2000,0,2000);
 	else if(hUnfTitleArray[k]=="reco")	
-	  hpp_reco[jtID]    = new TH1F( hTitle.c_str(), "recopt", 1500,0,1500);
+	  hpp_reco[jtID]    = new TH1F( hTitle.c_str(), "recopt", 2000,0,2000);
 	else if(hUnfTitleArray[k]=="matrix")	
-	  hpp_matrix[jtID]    = new TH2F( hTitle.c_str(), "reftpt v. recopt", 1500, 0,1500, 1500, 0,1500);
+	  hpp_matrix[jtID]    = new TH2F( hTitle.c_str(), "reftpt v. recopt", 2000, 0,2000, 2000, 0,2000);
 	else if(hUnfTitleArray[k]=="mcclosure_gen")	
-	  hpp_mcclosure_gen[jtID]    = new TH1F( hTitle.c_str(), "refpt for mcclosure truth", 1500,0,1500);
+	  hpp_mcclosure_gen[jtID]    = new TH1F( hTitle.c_str(), "refpt for mcclosure truth", 2000,0,2000);
 	else if(hUnfTitleArray[k]=="mcclosure_reco")	
-	  hpp_mcclosure_reco[jtID]    = new TH1F( hTitle.c_str(), "recopt for mcclosure truth", 1500,0,1500);
+	  hpp_mcclosure_reco[jtID]    = new TH1F( hTitle.c_str(), "recopt for mcclosure truth", 2000,0,2000);
 	else if(hUnfTitleArray[k]=="mcclosure_matrix")	
-	  hpp_mcclosure_matrix[jtID]    = new TH2F( hTitle.c_str(), "reftpt v. recopt for mcclosure truth", 1500, 0,1500, 1500, 0,1500);
+	  hpp_mcclosure_matrix[jtID]    = new TH2F( hTitle.c_str(), "reftpt v. recopt for mcclosure truth", 2000, 0,2000, 2000, 0,2000);
 	else if(hUnfTitleArray[k]=="mcclosure_reco_test")	
-	  hpp_mcclosure_reco_test[jtID]    = new TH1F( hTitle.c_str(), "recopt for mcclosure test", 1500,0,1500);
+	  hpp_mcclosure_reco_test[jtID]    = new TH1F( hTitle.c_str(), "recopt for mcclosure test", 2000,0,2000);
       }
     }  
   }
@@ -234,11 +234,11 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if(debugMode)std::cout<<"hMCEffTitleArray="<<hMCEffTitleArray[k]<<std::endl;
 	
 	if(hMCEffTitleArray[k]=="pt")	                                                    //x stuff,, //ystuff,,
-	  hpp_mceff_pt[jtID] =  new TH2F( hTitle.c_str(), "refpt v recopt/refpt"          , 1500, 0., 1500. , 500,   0.,5. );
+	  hpp_mceff_pt[jtID] =  new TH2F( hTitle.c_str(), "refpt v recopt/refpt"          , 2000, 0., 2000. , 500,   0.,5. );
 	else if(hMCEffTitleArray[k]=="pt2")	                                                    //x stuff,, //ystuff,,
-	  hpp_mceff_pt2[jtID] =  new TH2F( hTitle.c_str(), "refpt v rawpt/refpt"          , 1500, 0., 1500. , 500,   0.,5. );
+	  hpp_mceff_pt2[jtID] =  new TH2F( hTitle.c_str(), "refpt v rawpt/refpt"          , 2000, 0., 2000. , 500,   0.,5. );
 	else if(hMCEffTitleArray[k]=="pt3")	                                                    //x stuff,, //ystuff,,
-	  hpp_mceff_pt3[jtID] =  new TH2F( hTitle.c_str(), "rawpt v recopt/rawpt"          , 1500, 0., 1500. , 500,   0.,5. );
+	  hpp_mceff_pt3[jtID] =  new TH2F( hTitle.c_str(), "rawpt v recopt/rawpt"          , 2000, 0., 2000. , 500,   0.,5. );
 
 	else if(hMCEffTitleArray[k]=="eta")						   		             	
 	  hpp_mceff_eta[jtID] = new TH2F( hTitle.c_str(), "recoeta v recoeta-refeta"       , 1000, -5.,5.   , 200, -1.,1.  );
@@ -568,7 +568,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       else if ( genpt > genJetPtCut_Hi ) continue;
       else if (absreceta >= jtEtaCutHi)continue;
       else if (absreceta < jtEtaCutLo) continue;
-      else if ( gendrjt > 0.2 ) continue;
+      else if ( gendrjt > 0.1 ) continue;
       
       
       // jet/event counts

@@ -200,7 +200,8 @@ void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string out
   
   mat->SetTitle(hTitle.c_str());
 
-
+  mat->SetAxisRange(56.,1000.,"X");
+  mat->SetAxisRange(56.,1000.,"Y");
   if( hTitle.find("% Errors") != std::string::npos )
     mat->SetAxisRange(0.1,1000.,"Z");
   else if (hTitle.find("Errors") != std::string::npos )

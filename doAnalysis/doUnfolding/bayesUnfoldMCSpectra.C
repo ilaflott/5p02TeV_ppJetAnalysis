@@ -107,7 +107,12 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   histTitle+=RandEtaRange;
   
   TH1F*  hrec = (TH1F*)fpp_MC->Get( histTitle.c_str() ); 
-  hrec->Write();
+  hrec->Write(histTitle.c_str());
+  if(debugMode)hrec->Print("base");
+
+  histTitle+="_divBylumietabin";
+  hrec->Scale(1./4.); // lumi
+  hrec->Write(histTitle.c_str());
   if(debugMode)hrec->Print("base");
   
   histTitle+="_clone";
@@ -118,7 +123,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   std::cout<<"rebinning hrec..."<<std::endl;
   histTitle+="_anabins";
   hrec_anabin = (TH1F*)hrec_anabin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
-  hrec_anabin->Write();   
+  hrec_anabin->Write(histTitle.c_str());   
   if(debugMode)hrec_anabin->Print("base");  
   
   histTitle+="_normbinwidth";
@@ -154,7 +159,12 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   histTitle2+=RandEtaRange;
   
   TH1F*  hrec_sameside = (TH1F*)fpp_MC->Get( histTitle2.c_str() ); 
-  hrec_sameside->Write();
+  hrec_sameside->Write(histTitle2.c_str());
+  if(debugMode)hrec_sameside->Print("base");
+  
+  histTitle2+="_divByetabin";
+  hrec_sameside->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hrec_sameside->Write( histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
   histTitle2+="_clone";
@@ -178,13 +188,13 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
     TH1clearOverUnderflows((TH1*)hrec_sameside_anabin);
     hrec_sameside_anabin->Write(histTitle2.c_str());
     if(debugMode)hrec_sameside_anabin->Print("base");    }
-
+  
   // response hist, for output? what is this for if it's empty?
   TH1F* hrec_sameside_resp_anabin;
   //if(fillRespHists) hrec_sameside_resp_anabin = (TH1F*)hrec_sameside_anabin->Clone("recanabinsamesideClone4unf");
   if(!useSimpBins) hrec_sameside_resp_anabin = (TH1F*)hrec_sameside_anabin->Clone("recanabinsamesideClone4unf");
   else{    hrec_sameside_resp_anabin = new TH1F( ("hpp_rec_sameside_response_anabin"+RandEtaRange).c_str(),"", 
-					nbins_pt_reco, boundaries_pt_reco); }
+						 nbins_pt_reco, boundaries_pt_reco); }
   hrec_sameside_resp_anabin->Write();
   if(debugMode)hrec_sameside_resp_anabin->Print(" base");  
 
@@ -216,14 +226,20 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   hgen->Write();
   if(debugMode)hgen->Print("base");    
   
+  genHistTitle+="_divByetabin";
+  hgen->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hgen->Write( genHistTitle.c_str() );
+  if(debugMode)hgen->Print("base");
+
+
   genHistTitle+="_clone";
   TH1F* hgen_anabin = (TH1F*)hgen->Clone( (genHistTitle).c_str() );
-  hgen_anabin->Write();
+  hgen_anabin->Write(genHistTitle.c_str());
   if(debugMode)hgen_anabin->Print("base");
   
   genHistTitle+="_anabins";
   hgen_anabin = (TH1F*)hgen_anabin->Rebin(nbins_pt_gen, (genHistTitle).c_str() , boundaries_pt_gen);
-  hgen_anabin->Write();
+  hgen_anabin->Write(genHistTitle.c_str());
   if(debugMode)hgen_anabin->Print("base"); 
   
   genHistTitle+="_normbinwidth";
@@ -277,19 +293,22 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   hmat->Write();
   if(debugMode)hmat->Print("base");
   
-  
+  TH2_title+="_divByetabin";
+  hmat->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hmat->Write( TH2_title.c_str());
+  if(debugMode)hmat->Print("base");
   
   // rebinned matrix ---------------
   TH2_title+="_clone";
   TH2F* hmat_anabin = (TH2F*)hmat->Clone( (TH2_title).c_str() );
-  hmat_anabin->Write();
+  hmat_anabin->Write(TH2_title.c_str());
   if(debugMode)hmat_anabin->Print("base"); 
 
   TH2_title+="_anabins";
   hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, (TH2_title).c_str(), 
 			       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 			       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-  hmat_anabin->Write();
+  hmat_anabin->Write(TH2_title.c_str());
   if(debugMode)hmat_anabin->Print("base"); 
   
   TH2_title+="_normbinwidth";
@@ -360,7 +379,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
 
 
 
-  bool drawRespMatrix=true;
+  bool drawRespMatrix=false;
   if(drawPDFs && drawRespMatrix){    
     
     
@@ -408,7 +427,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
     
     // percent error matrix in binning of interest ---------------
     
-    matStylePrint(hmat_percenterrs, "ppMC Resp Matrix %errs", tempCanvForPdfPrint, outPdfFile, useSimpBins);
+    matStylePrint(hmat_percenterrs, "ppMC Resp Matrix % Errors", tempCanvForPdfPrint, outPdfFile, useSimpBins);
     
     // col normd matrix in binning of interest  ---------------
     
@@ -641,12 +660,15 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
       if(!useSimpBins)canvForPrint->SetLogx(1);
       canvForPrint->SetLogy(1);
       
-      TLine* theLineAtOne_gen= new TLine( boundaries_pt_gen_mat[0]
-					  ,1.
-					  ,(boundaries_pt_gen_mat[nbins_pt_gen_mat] 
-					    + (boundaries_pt_gen_mat[nbins_pt_gen_mat] 
-					       - boundaries_pt_gen_mat[nbins_pt_gen_mat-1]))
-					  ,1.);
+//      TLine* theLineAtOne_gen= new TLine( boundaries_pt_gen_mat[0]
+//					  ,1.
+//					  ,(boundaries_pt_gen_mat[nbins_pt_gen_mat] 
+//						  + (boundaries_pt_gen_mat[nbins_pt_gen_mat] 
+//						     - boundaries_pt_gen_mat[nbins_pt_gen_mat-1]))
+//					  ,1.);
+
+      TLine* theLineAtOne_gen= new TLine( 56.,   1.,
+					  1000., 1.);
       theLineAtOne_gen->SetLineWidth(1);
       theLineAtOne_gen->SetLineStyle(2);
       theLineAtOne_gen->SetLineColor(36);
@@ -745,21 +767,26 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
       h_genratio_oppunf->SetTitle( "Ratios w/ Gen. Truth" );
       setupRatioHist(h_genratio_oppunf, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
       
+      h_genratio_oppunf->SetAxisRange(56. ,1000.,"X") ;   h_genratio_oppunf->SetAxisRange(  0.7 ,1.6,"Y") ;
+      h_genratio_oppmeas->SetAxisRange(56.,1000.,"X") ;	  h_genratio_oppmeas->SetAxisRange( 0.7 ,1.6,"Y") ;
+      h_genratio_ssunf->SetAxisRange(56.  ,1000.,"X") ;	  h_genratio_ssunf->SetAxisRange(   0.7 ,1.6,"Y") ;
+      h_genratio_ssmeas->SetAxisRange(56. ,1000.,"X");	  h_genratio_ssmeas->SetAxisRange(  0.7 ,1.6,"Y");
+     
       h_genratio_oppunf->Draw();
       h_genratio_oppmeas->Draw("SAME");
-      h_genratio_oppfold->Draw("SAME");
+      //h_genratio_oppfold->Draw("SAME");
 
       h_genratio_ssunf->Draw("SAME");
       h_genratio_ssmeas->Draw("SAME");
-      h_genratio_ssfold->Draw("SAME");
+      //h_genratio_ssfold->Draw("SAME");
 
-      TLegend* legend2 = new TLegend( 0.1,0.8,0.4,0.9 );
+      TLegend* legend2 = new TLegend( 0.5,0.75,0.9,0.9 );
       legend2->AddEntry(h_genratio_oppunf, "Unf./Gen. Truth", "p");
       legend2->AddEntry(h_genratio_oppmeas, NULL, "p");
-      legend2->AddEntry(h_genratio_oppfold, NULL, "p");
+      //legend2->AddEntry(h_genratio_oppfold, NULL, "p");
       legend2->AddEntry(h_genratio_ssunf, "Same Side Unf./Gen. Truth", "p");
       legend2->AddEntry(h_genratio_ssmeas, NULL, "p");
-      legend2->AddEntry(h_genratio_ssfold, NULL, "p");
+      //legend2->AddEntry(h_genratio_ssfold, NULL, "p");
       
       legend2->Draw();
       

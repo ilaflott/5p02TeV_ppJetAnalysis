@@ -12,11 +12,15 @@ echo ""
 
 #echo "...ppMC jetPlots..."
 #rootcompile readForests_ppMC_jetPlots.C
-echo "...ppMC JERS..."
-rootcompile readForests_ppMC_JERS.C
 
-echo "...ppData jetPlots..."
-rootcompile readForests_ppData_jetPlots.C
+#echo "...ppMC JERS..."
+#rootcompile readForests_ppMC_JERS.C
+
+#echo "...ppData jetPlots..."
+#rootcompile readForests_ppData_jetPlots.C
+
+echo "...ppData jetMult..."
+rootcompile readForests_ppData_jetMult.C
 
 echo ""
 echo "done compiling code(s), submitting."
@@ -54,7 +58,8 @@ echo ""
 
 
 ### INCL. JET SPECTRA, LARGER |y| REGIONS
-source run_readForests_jetPlots.sh 4 "0.0" "2.0"
+#source run_readForests_jetPlots.sh 4 "0.0" "2.0"
+source run_readForests_jetMult.sh 4 "0.0" "2.0"
 #source run_readForests_JERS.sh 4 "0.0" "2.0"
 
 #source run_readForests_jetPlots.sh 4 "2.0" "3.0"

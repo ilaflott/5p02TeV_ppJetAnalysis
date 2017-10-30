@@ -1,7 +1,7 @@
 #include "unfoldSpectra.h"
 
 //other settings
-const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+const int kRegDraw  = 1 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 const bool drawPDFs=true; 
 const bool debugMode=false;
 
@@ -9,7 +9,10 @@ const bool debugMode=false;
 
 // CODE --------------------------------------------------
 int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName , 
-			const bool doJetID=true , const int kRegCenter= 5 , const bool useSimpBins=false){
+			const bool doJetID=true , 
+			const bool useSimpBins=false ,
+			const int kRegCenter= 5 
+			){
   
   
   
@@ -110,18 +113,23 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   histTitle+=RandEtaRange;
   
   TH1F*  hrec = (TH1F*)fpp_MC->Get( histTitle.c_str() ); 
-  hrec->Write();
+  hrec->Write(histTitle.c_str());
   if(debugMode)hrec->Print("base");
+  
+  hrec->Scale(1./4.); // |y| bin width
+  hrec->Write( (histTitle).c_str() );
+  if(debugMode)hrec->Print("base");
+  
   
   histTitle+="_clone";
   TH1F *hrec_anabin = (TH1F*)hrec->Clone( (histTitle).c_str() );
-  hrec_anabin->Write();
+  hrec_anabin->Write((histTitle).c_str());
   if(debugMode)hrec_anabin->Print("base");
   
   std::cout<<"rebinning hrec..."<<std::endl;
   histTitle+="_anabins";
   hrec_anabin = (TH1F*)hrec_anabin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
-  hrec_anabin->Write();   
+  hrec_anabin->Write((histTitle).c_str());   
   if(debugMode)hrec_anabin->Print("base");  
   
   histTitle+="_normbinwidth";
@@ -157,18 +165,24 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   histTitle2+=RandEtaRange;
   
   TH1F*  hrec_sameside = (TH1F*)fpp_MC->Get( histTitle2.c_str() ); 
-  hrec_sameside->Write();
+  hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
+  
+  histTitle2+="_divByetabin";
+  hrec_sameside->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hrec_sameside->Write( histTitle2.c_str());
+  if(debugMode)hrec_sameside->Print("base");
+  
   
   histTitle2+="_clone";
   TH1F *hrec_sameside_anabin = (TH1F*)hrec_sameside->Clone( (histTitle2).c_str() );
-  hrec_sameside_anabin->Write();
+  hrec_sameside_anabin->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside_anabin->Print("base");
   
   std::cout<<"rebinning hrec_sameside..."<<std::endl;
   histTitle2+="_anabins";
   hrec_sameside_anabin = (TH1F*)hrec_sameside_anabin->Rebin( nbins_pt_reco, (histTitle2).c_str() , boundaries_pt_reco);
-  hrec_sameside_anabin->Write();   
+  hrec_sameside_anabin->Write(histTitle2.c_str());   
   if(debugMode)hrec_sameside_anabin->Print("base");  
   
   histTitle2+="_normbinwidth";
@@ -221,12 +235,17 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   genHistTitle+=RandEtaRange;
   
   TH1F* hgen = (TH1F*)fpp_MC->Get( genHistTitle.c_str() );
-  hgen->Write();
+  hgen->Write(genHistTitle.c_str());
   if(debugMode)hgen->Print("base");    
+
+  genHistTitle+="_divByetabin";
+  hgen->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hgen->Write( genHistTitle.c_str());
+  if(debugMode)hgen->Print("base");
   
   genHistTitle+="_clone";
   TH1F* hgen_anabin = (TH1F*)hgen->Clone( (genHistTitle).c_str() );
-  hgen_anabin->Write();
+  hgen_anabin->Write(genHistTitle.c_str());
   if(debugMode)hgen_anabin->Print("base");
   
   genHistTitle+="_anabins";
@@ -252,7 +271,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   					nbins_pt_gen, boundaries_pt_gen);  }
   hgen_resp_anabin->Write();
   if(debugMode)hgen_resp_anabin->Print("base");  
-
+  
   
   TH1F* hgen_resp_anabin_empty= new TH1F( ("hpp_gen_response_anabin_empty"+RandEtaRange).c_str() ,"", 
 					  nbins_pt_gen, boundaries_pt_gen);  
@@ -286,22 +305,26 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   
   //get the response matrix made by readforests
   TH2F* hmat = (TH2F*)fpp_MC->Get( TH2_title.c_str() );
-  hmat->Write();
+  hmat->Write(TH2_title.c_str());  
   if(debugMode)hmat->Print("base");
   
+  TH2_title+="_divByetabin";
+  hmat->Scale(1./4.); // eta bin width for 0.<|y|<2.
+  hmat->Write( TH2_title.c_str());
+  if(debugMode)hmat->Print("base");
   
   
   // rebinned matrix ---------------
   TH2_title+="_clone";
   TH2F* hmat_anabin = (TH2F*)hmat->Clone( (TH2_title).c_str() );
-  hmat_anabin->Write();
+  hmat_anabin->Write(TH2_title.c_str());
   if(debugMode)hmat_anabin->Print("base"); 
 
   TH2_title+="_anabins";
   hmat_anabin=(TH2F*) reBinTH2(hmat_anabin, (TH2_title).c_str(), 
 			       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 			       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-  hmat_anabin->Write();
+  hmat_anabin->Write(TH2_title.c_str());
   if(debugMode)hmat_anabin->Print("base"); 
   
   TH2_title+="_normbinwidth";
@@ -1224,7 +1247,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
 int main(int argc, char* argv[]){  int rStatus = -1;
   
   if( argc!=6 ){
-    std::cout<<"do ./SVDUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <kRegCenter> <useSimpleBins>"<<std::endl;
+    std::cout<<"do ./SVDUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kRegCenter>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
 
     return rStatus;  }

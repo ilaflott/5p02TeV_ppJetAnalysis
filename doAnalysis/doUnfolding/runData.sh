@@ -1,12 +1,13 @@
 #!/bin/bash
 
 ### ----------------------------------------------------------------------------------
-dirTag=$1
-MM=$2
-DD=$3
-YY=$4
-runBayes=$5
-runSVD=$6
+datadirTag=$1
+MCdirTag=$2
+MM=$3
+DD=$4
+YY=$5
+runBayes=$6
+runSVD=$7
 
 condorDate="${MM}.${DD}.${YY}"
 sampleDate="${MM}-${DD}-${YY}"
@@ -16,8 +17,8 @@ sampleDate="${MM}-${DD}-${YY}"
 if [ $runBayes -eq 1 ]
 then
     
-    source run_bayesUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${dirTag}" "Bayes_00eta20_${condorDate}${dirTag}" 0
-    source run_bayesUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${dirTag}" "Bayes_00eta20_${condorDate}${dirTag}" 1
+    source run_bayesUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${MCdirTag}" "Bayes_00eta20_${condorDate}${MCdirTag}" 0
+    #source run_bayesUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${MCdirTag}" "Bayes_00eta20_${condorDate}${MCdirTag}" 1
     
     echo ""
     echo "Bayes Data Unfolding Done."
@@ -29,8 +30,8 @@ fi
 if [ $runSVD -eq 1 ]
 then
     
-    source run_SVDUnfoldDataSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${dirTag}" "SVD_00eta20_${condorDate}${dirTag}" 6 0
-    source run_SVDUnfoldDataSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${dirTag}" "SVD_00eta20_${condorDate}${dirTag}" 6 1
+    source run_SVDUnfoldDataSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${MCdirTag}" "SVD_00eta20_${condorDate}${MCdirTag}" 6 0
+    source run_SVDUnfoldDataSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${MCdirTag}" "SVD_00eta20_${condorDate}${MCdirTag}" 6 1
     
     echo ""
     echo "SVD Data Unfolding Done."

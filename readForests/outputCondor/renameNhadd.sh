@@ -130,7 +130,8 @@ then
     echo ""
     sleep 1s
     
-    ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetPlots_${etabin}/    
+    #ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetPlots_${etabin}/    
+    ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetMult_${etabin}/    
     mkdir ${ppDataHPtDir}
     sleep 1s
 
@@ -139,8 +140,10 @@ then
     echo ""
     sleep 1s
     
-    ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
-    ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
+    #ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
+    #ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
+    ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetMult_${etabin}/
+    ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetMult_${etabin}/
     mv ${ppDatajet80} ${ppDataHPtDir}
     mv ${ppDatalowJets} ${ppDataHPtDir}
     cd ${ppDataHPtDir}
@@ -173,7 +176,8 @@ fi
 
 
 echo ""
-echo "done"
+echo "done. output in"
+echo "${theSCRATCHdir}"
 echo ""
 
 return 

@@ -125,6 +125,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH1F *h_NEvents_skipped  = new TH1F("NEvents_skipped" , "NEvents skipped", 1,0,2);
   TH1F *h_NEvents_skimCut  = new TH1F("NEvents_skimCut" , "NEvents read post skimCut",  1,0,2);
   TH1F *h_NEvents_vzCut    = new TH1F("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 1,0,2);
+  TH1F *h_NEvents_trkCuts    = new TH1F("NEvents_trkCuts"   , "NEvents read post vzCut AND skimCut AND trkCuts", 1,0,2);
 
   TH1F *h_NEvents_trigd    = new TH1F("NEvents_trigd"   , "NEvents trigd",   1,0,2);
   TH1F *h_NEvents_jet40    = new TH1F("NEvents_jet40Trigd"   , "NEvents jet40Trigd",    1,0,2);
@@ -241,10 +242,23 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 
 
   //jetMultQA, i.e. hists that are supposed to help explore how yields/etc change w/ multiplicity of collision(s)
+  TH1F *Nvtxs=NULL;
+  TH1F *Ntrks=NULL, *Ntrks_vtxs=NULL, *Ntrks_passCuts=NULL;
+  
   TH1F* vtx_r=NULL, *vtx_z=NULL;
-  TH1F *Nvtxs=NULL, *Ntrks=NULL, *Nvtxtrks=NULL;//NRef/jetPevt made elsewhere
+  TH1F *Nvtxtrks=NULL;//NRef/jetPevt made elsewhere
   TH1F *Nvtxtrks_vtx0=NULL,  *Nvtxtrks_vtxgt0=NULL;
-  TH1F *trkPt=NULL, *trkEta=NULL,*trkPhi=NULL;
+  
+  TH1F *trkPt=NULL,  *trkPtError=NULL, *trkPtPercError=NULL;
+  TH1F *trkEta=NULL,*trkPhi=NULL;
+  
+  TH1F *trkDz=NULL , *trkDzError=NULL ;//,  *trkDzSig=NULL;
+  TH1F *trkDxy=NULL, *trkDxyError=NULL;//, *trkDxySig=NULL;
+  
+  TH1F *trkCharge=NULL;
+  TH1F *trkNVtx=NULL,*trkChi2=NULL,*trkNdof=NULL;
+  TH1F *trkNHit=NULL, *trkNLayer=NULL;
+  TH1F *trkHighPur=NULL,*trkTight=NULL, *trkLoose=NULL,*trkFake=NULL;  
   
   TH2F *vtx_rVz=NULL;
   TH2F *Nvtxs_v_Nref=NULL, *Ntrks_v_Nref=NULL, *Ntrks_v_Nvtxs=NULL;  
@@ -253,7 +267,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH2F *NvtxtrksVr=NULL;
   TH2F *NvtxtrksVr_vtx0=NULL,*NvtxtrksVr_vtxgt0=NULL;
   TH2F *trkPtvEta=NULL, *trkEtavPhi=NULL;
-  
+    
   //TH1F *hLeadJetPtBinsPt[nbins_pt2]={}, *hLeadJetPtBinsEta[nbins_pt2]={} ;
   //TH1F *hInclJetPtBinsPt[nbins_pt2]={}, *hInclJetPtBinsEta[nbins_pt2]={}  ;
   
@@ -271,23 +285,65 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   //TH1F *hLeadJetPtNrefBinsPt[maxNref][nbins_pt2]={}, *hLeadJetPtNrefBinsEta[maxNref][nbins_pt2]={} ;
   //TH1F *hInclJetPtNrefBinsPt[maxNref][nbins_pt2]={}, *hInclJetPtNrefBinsEta[maxNref][nbins_pt2]={}  ;
 
-
+  //trk counts
+  TH1F *h_NTrks          = new TH1F("NTrks","NTrks read", 1,0,2);
+  TH1F *h_NTrks_kmatCut  = new TH1F("NTrks_kmatCut ","NTrks read post kmatCut ", 1,0,2);
+  
   if(fillDataJetMultHists){
-
+    
     std::string jetID=std::to_string((int)fillDataJetIDHists);
+
+    // trackTree evt TH1 QA
+    Nvtxs    = new TH1F(Form("hJetMultQA_%swJetID_Nvtx"    ,jetID.c_str()), "Nvtxs", 20,0.,20.);
+    Ntrks    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks"   ,jetID.c_str()), "Ntrks", 300,0.,300.);
+    Ntrks_vtxs    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks_vtxs"   ,jetID.c_str()), "Ntrks_vtxs", 300,0.,300.);
+    Ntrks_passCuts    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks_passCuts"   ,jetID.c_str()), "Ntrks_passCuts", 300,0.,300.);
+
+    // trackTree vtx TH1 QA
     vtx_r   = new TH1F(Form("hJetMultQA_%swJetID_vtx_r"    ,jetID.c_str()), "vtx_r", 2000,0.,0.60);
     vtx_z   = new TH1F(Form("hJetMultQA_%swJetID_vtx_z"    ,jetID.c_str()), "vtx_z", 2000, -25., 25.);
     
-    Nvtxs    = new TH1F(Form("hJetMultQA_%swJetID_Nvtx"    ,jetID.c_str()), "Nvtxs", 20,0,20);
-    Ntrks    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks"   ,jetID.c_str()), "Ntrks", 300,0,300);
-    Nvtxtrks = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks",jetID.c_str()), "NVtxTrks", 300,0,300);
-
-    Nvtxtrks_vtx0 = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks_vtx0",jetID.c_str()), "NVtxTrks_vtx0", 300,0,300);
-    Nvtxtrks_vtxgt0 = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks_vtxgt0",jetID.c_str()), "NVtxTrks_vtxgt0", 300,0,300);
+    Nvtxtrks = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks",jetID.c_str()), "NVtxTrks", 300,0.,300.);    
+    Nvtxtrks_vtx0 = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks_vtx0",jetID.c_str()), "NVtxTrks_vtx0", 300,0.,300.);
+    Nvtxtrks_vtxgt0 = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks_vtxgt0",jetID.c_str()), "NVtxTrks_vtxgt0", 300,0.,300.);
     
-    trkPt    = new TH1F(Form("hJetMultQA_%swJetID_trkPt"   ,jetID.c_str()), "trkPt", 1000,0,100);
+    // trk TH1 QA
+    trkPt    = new TH1F(Form("hJetMultQA_%swJetID_trkPt"   ,jetID.c_str()), "trkPt", 1000,0.,100.);
+    trkPtError    = new TH1F(Form("hJetMultQA_%swJetID_trkPtError"   ,jetID.c_str()), "trkPtError", 1000,0.,100.);
+    trkPtPercError    = new TH1F(Form("hJetMultQA_%swJetID_trkPtPercError"   ,jetID.c_str()), "trkPtPercError", 200,0.,200.);
+    
     trkEta    = new TH1F(Form("hJetMultQA_%swJetID_trkEta"   ,jetID.c_str()), "trkEta", 100,-5.,5.);
     trkPhi    = new TH1F(Form("hJetMultQA_%swJetID_trkPhi"   ,jetID.c_str()), "trkPhi", 100,-5.,5.);
+    
+    trkDz    = new TH1F(Form("hJetMultQA_%swJetID_trkDz"   ,jetID.c_str()), "trkDz", 400,-20.,20.);
+    trkDzError    = new TH1F(Form("hJetMultQA_%swJetID_trkDzError"   ,jetID.c_str()), "trkDzError", 200,0.,20.);
+    //trkDzSig    = new TH1F(Form("hJetMultQA_%swJetID_trkDzSig"   ,jetID.c_str()), "trkDzSig", 400,20.,20.);
+    
+    trkDxy    = new TH1F(Form("hJetMultQA_%swJetID_trkDxy"   ,jetID.c_str()), "trkDxy", 400,-20.,20.);
+    trkDxyError    = new TH1F(Form("hJetMultQA_%swJetID_trkDxyError"   ,jetID.c_str()), "trkDxyError", 200,0.,20.);
+    //trkDxySig    = new TH1F(Form("hJetMultQA_%swJetID_trkDxySig"   ,jetID.c_str()), "trkDxySig", 400,20.,20.);
+    
+    //trkCharge    = new TH1F(Form("hJetMultQA_%swJetID_trkCharge"   ,jetID.c_str()), "trkCharge", 4,-2.,2.);
+    trkCharge    = new TH1F(Form("hJetMultQA_%swJetID_trkCharge"   ,jetID.c_str()), "trkCharge", 3,-1.5,1.5);
+    
+    trkNVtx    = new TH1F(Form("hJetMultQA_%swJetID_trkNVtx"   ,jetID.c_str()), "trkNVtx", 11,-1.,10.);
+    trkChi2    = new TH1F(Form("hJetMultQA_%swJetID_trkChi2"   ,jetID.c_str()), "trkChi2", 2000,0.,2000.);
+    trkNdof    = new TH1F(Form("hJetMultQA_%swJetID_trkNdof"   ,jetID.c_str()), "trkNdof", 101,-1.,100.);
+    
+    trkNHit    = new TH1F(Form("hJetMultQA_%swJetID_trkNHit"   ,jetID.c_str()), "trkNHit", 41,-1.,40.);
+    trkNLayer    = new TH1F(Form("hJetMultQA_%swJetID_trkNLayer"   ,jetID.c_str()), "trkNLayer", 41,-1.,40.);
+    
+    trkHighPur    = new TH1F(Form("hJetMultQA_%swJetID_trkHighPur"   ,jetID.c_str()), "trkHighPur", 3,-1.,2.);
+    //trkHighPur    = new TH1F(Form("hJetMultQA_%swJetID_trkHighPur"   ,jetID.c_str()), "trkHighPur", 2,0.,2.);
+    
+    trkTight    = new TH1F(Form("hJetMultQA_%swJetID_trkTight"   ,jetID.c_str()), "trkTight", 3,-1.,2.);
+    trkLoose    = new TH1F(Form("hJetMultQA_%swJetID_trkLoose"   ,jetID.c_str()), "trkLoose", 3,-1.,2.);
+    
+    trkFake    = new TH1F(Form("hJetMultQA_%swJetID_trkFake"   ,jetID.c_str()), "trkFake", 3,-1.,2.);
+    //trkFake    = new TH1F(Form("hJetMultQA_%swJetID_trkFake"   ,jetID.c_str()), "trkFake", 2,0.,2.);
+    
+    
+    
     
     trkPtvEta    = new TH2F(Form("hJetMultQA_%swJetID_trkPtvEta"   ,jetID.c_str()), "trkPtvEta", 1000,0,100, 100,-5.,5.);
     trkEtavPhi    = new TH2F(Form("hJetMultQA_%swJetID_trkEtaVPhi"   ,jetID.c_str()), "trkEtavPhi", 100,-5.,5.,100,-5.,5.);
@@ -575,31 +631,100 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 
 
   // ppTrack/trackTree
+  // data written a few different ways in this tree;
+  // 1) by-event info (i.e. # of tracks, # of vertices)
+  // 2) by-vertex info (i.e. vertex positions, # of tracks assoc to vertex)
+  // 3) by-track into (i.e. track pt, eta phi)
+  // 4) by-track-vertex combination (i.e. is-track-associated, transverse/longitudinal minimum approach, etc.)
 
-  //vtxs
+  // evt //
   int nVtx_I;
+  int nTrk_I;
+  int nTrkTimesnVtx_I;
+  
+  jetpp[3]->SetBranchAddress("nVtx",&nVtx_I);  
+  jetpp[3]->SetBranchAddress("nTrk"   ,   &nTrk_I  );
+  jetpp[3]->SetBranchAddress("nTrkTimesnVtx"   ,   &nTrkTimesnVtx_I  );
+  
+  // vtxs //
   int nTrkVtx_I[1000];
+  float normChi2Vtx_F[1000];
+  float sumPtVtx_F[1000];
+  
   float xVtx_F[1000];
   float yVtx_F[1000];
   float zVtx_F[1000];
-
-  jetpp[3]->SetBranchAddress("nVtx",&nVtx_I);
+  
   jetpp[3]->SetBranchAddress("nTrkVtx",&nTrkVtx_I);
+  jetpp[3]->SetBranchAddress("normChi2Vtx",&normChi2Vtx_F);
+  jetpp[3]->SetBranchAddress("sumPtVtx",&sumPtVtx_F);
+  
   jetpp[3]->SetBranchAddress("xVtx",&xVtx_F);
   jetpp[3]->SetBranchAddress("yVtx",&yVtx_F);
   jetpp[3]->SetBranchAddress("zVtx",&zVtx_F);  
   
-  //trks
-  int     nTrk_I[1000];
-  float  trkPt_F[10000];
+  // trks //
+  float trkPt_F[10000];
+  float trkPtError_F[10000];  
   float trkEta_F[10000];
   float trkPhi_F[10000];
+  
+  float trkDxy_F     [10000];
+  float trkDxyError_F[10000];
+  float trkDz_F      [10000];
+  float trkDzError_F [10000];
+  
+  int   trkCharge_I [10000];
 
-  jetpp[3]->SetBranchAddress("nTrk"   ,   &nTrk_I  );
+  //unsigned int   trkNVtx_I   [10000];
+  //
+  //float trkChi2_F   [10000];
+  //unsigned int   trkNdof_I   [10000];  
+  //unsigned int   trkNHit_I   [10000];
+  //unsigned int   trkNLayer_I [10000];  
+
+  UChar_t   trkNVtx_I   [10000];
+  
+  float trkChi2_F   [10000];
+  UChar_t	   trkNdof_I   [10000];  
+  UChar_t	   trkNHit_I   [10000];
+  UChar_t	   trkNLayer_I [10000];  
+
+  bool   trkHighPur_O[10000];
+  bool   trkTight_O     [10000];
+  bool   trkLoose_O     [10000];
+  bool   trkFake_O   [10000];
+  
+
   jetpp[3]->SetBranchAddress("trkPt"   ,   &trkPt_F  );
+  jetpp[3]->SetBranchAddress("trkPtError"   ,   &trkPtError_F  );
   jetpp[3]->SetBranchAddress("trkEta"   ,   &trkEta_F  );
   jetpp[3]->SetBranchAddress("trkPhi"   ,   &trkPhi_F  );
-  //jetpp[3]->SetBranchAddress(""   ,   &  );  
+  
+  jetpp[3]->SetBranchAddress("trkDxy1"          , &trkDxy_F            );  
+  jetpp[3]->SetBranchAddress("trkDxyError1"     , &trkDxyError_F       );  
+  jetpp[3]->SetBranchAddress("trkDz1"          , &trkDz_F            );  
+  jetpp[3]->SetBranchAddress("trkDzError1"     , &trkDzError_F       );  
+  
+  
+  jetpp[3]->SetBranchAddress("trkCharge"   ,   &trkCharge_I  );
+  jetpp[3]->SetBranchAddress("trkNVtx"   ,   &trkNVtx_I  );  
+  
+  jetpp[3]->SetBranchAddress("trkChi2"   ,   &trkChi2_F  );
+  jetpp[3]->SetBranchAddress("trkNdof"   ,   &trkNdof_I  );
+  jetpp[3]->SetBranchAddress("trkNHit"   ,   &trkNHit_I  );
+  jetpp[3]->SetBranchAddress("trkNlayer"   ,   &trkNLayer_I  );
+  
+  jetpp[3]->SetBranchAddress("highPurity", &trkHighPur_O );
+  jetpp[3]->SetBranchAddress("tight", &trkTight_O );
+  jetpp[3]->SetBranchAddress("loose", &trkLoose_O );
+  jetpp[3]->SetBranchAddress("trkFake"   ,   &trkFake_O  );
+
+
+
+  
+
+
   
 
   
@@ -742,10 +867,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     
     if( fabs(vz_F)>24. )     continue;
     h_NEvents_vzCut->Fill(1);
-    
-    
-    
-    
+
     //prescale/decision arrays, total prescale=L1_ps*HLT_ps
     bool PFtrgDec[N_HLTBits]   ={ (bool)PFJet40_I, (bool)PFJet60_I, (bool)PFJet80_I, (bool)PFJet100_I };
     int PFtrgPrescl[N_HLTBits] ={ PFJet40_p_I*jet40_l1s_ps_I , PFJet60_p_I*jet60_l1s_ps_I , 
@@ -893,13 +1015,126 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       hWNref->Fill(nref_I,weight_eS); //# of jets per event, triggered, weighted, post cuts
     }
     
-
-
+    
+    
     if(fillDataJetMultHists){
+      
+      
+      
+      // high Purity Fraction cut
+      bool has25PercHighPurTrks=false;
+      if(nTrk_I<=10)has25PercHighPurTrks=true;
+      else{
+	
+	int highPurCount=0;
+	for(int itrk=0;itrk<nTrk_I;itrk++)
+	  if(trkHighPur_O[itrk]) highPurCount++;	    
+	
+	float highPurFrac=((float) highPurCount)/ ((float)nTrk_I);
+	if(highPurFrac>0.25)  has25PercHighPurTrks=true;
+	else   has25PercHighPurTrks=false;
+	
+      }
+      if(!has25PercHighPurTrks) continue;
+      
+      //// vtx vz range cut
+      //bool onePVinvzRange=false;
+      //for(int ivtx=0; ivtx<nVtx_I;ivtx++){
+      //	if(fabs(zVtx_F[ivtx])<15. && 
+      //	   nTrkVtx_I[ivtx]>=2) onePVinvzRange=true;
+      //}
+      //if(!onePVinvzRange) continue;
+      
+      //// vtx vr range cut
+      //bool onePVinvrRange=false;
 
+      // trk stuff from pptrack tree
+      int nTrk_passCuts_I=0;
+      for(int itrk=0;itrk<nTrk_I;itrk++){
+	
+	if (debugMode&&nEvt%10000==0){
+	  std::cout<< " trkCharge =" << trkCharge_I[itrk]<< std::endl;
+	  std::cout<< " trkNVtx   =" << (int)trkNVtx_I[itrk]<< std::endl;
+	  std::cout<< " trkNdof   =" << (int)trkNdof_I[itrk]<< std::endl;
+	  std::cout<< " trkNHit   =" << (int)trkNHit_I[itrk]<< std::endl;
+	  std::cout<< " trkNLayer =" << (int)trkNLayer_I[itrk]<< std::endl;
+	  std::cout<< " trkHighPur=" << (int)trkHighPur_O[itrk]<< std::endl;
+	  std::cout<< " trkTight  =" << (int)trkTight_O[itrk]<< std::endl;
+	  std::cout<< " trkLoose  =" << (int)trkLoose_O[itrk]<< std::endl;
+	  std::cout<< " trkFake   =" << (int)trkFake_O[itrk]<< std::endl;	  
+	}
+	
+	h_NTrks->Fill(0);
+	
+	if(!(trkHighPur_O[itrk]))continue;
+	else if(trkPt_F[itrk]<0.4)continue;
+	//else if(trkPt_F[itrk]<0.1)continue; // not sure which one of these we will want
+	else if(fabs(trkEta_F[itrk])>2.4)continue;
+	else if ((trkPtError_F[itrk]/trkPt_F[itrk])>0.1)continue;
+	//else if(trkDxyOverDxyError_F[itrk] > 3.0) continue;
+	//else if(trkDzOverDzError_F[itrk] > 3.0) continue;
+
+	h_NTrks_kmatCut->Fill(0);
+	nTrk_passCuts_I++;
+	
+	// TH1 QA
+	trkPt->Fill( trkPt_F[itrk]  , weight_eS);
+	trkPtError->Fill( trkPtError_F[itrk]  , weight_eS);
+	trkPtPercError->Fill( (trkPtError_F[itrk]/trkPt_F[itrk])*(100.)  , weight_eS);
+	
+	trkEta->Fill(trkEta_F[itrk] , weight_eS);
+	trkPhi->Fill(trkPhi_F[itrk] , weight_eS);
+	
+	trkDxy->Fill(trkDxy_F[itrk] , weight_eS);           
+	trkDxyError->Fill(trkDxyError_F[itrk] , weight_eS); 
+	//trkDxySig->Fill( trkDxy_F[itrk]/trkDxyError_F[itrk] , weight_eS); 
+	
+	trkDz->Fill(trkDz_F[itrk] , weight_eS);		    
+	trkDzError->Fill(trkDzError_F[itrk] , weight_eS);   
+	//trkDzSig->Fill( trkDz_F[itrk]/trkDzError_F[itrk] , weight_eS); 
+	
+	trkCharge->Fill(trkCharge_I[itrk], weight_eS);	    
+	
+	trkNVtx->Fill((int)trkNVtx_I[itrk], weight_eS);	    
+	trkChi2->Fill(trkChi2_F[itrk], weight_eS);	    
+	trkNdof->Fill((int)trkNdof_I[itrk], weight_eS);	    
+							    
+	trkNHit->Fill((int)trkNHit_I[itrk], weight_eS);	    
+	trkNLayer->Fill((int)trkNLayer_I[itrk], weight_eS);	    
+	
+	trkHighPur->Fill(((int)trkHighPur_O[itrk]), weight_eS);    
+	trkTight->Fill(  ((int)trkTight_O[itrk]), weight_eS);		    
+	trkLoose->Fill(  ((int)trkLoose_O[itrk]), weight_eS);		    
+	trkFake->Fill(   ((int)trkFake_O[itrk]), weight_eS);          		
+	
+	// TH2 QA
+	trkPtvEta->Fill( trkPt_F[itrk]  , trkEta_F[itrk],weight_eS);
+	trkEtavPhi->Fill(trkEta_F[itrk], trkPhi_F[itrk],weight_eS);
+      }//end trk loop
+
+      //// multiplicity cuts go here
+      bool inTrkMultClass=false;
+      //int minTrks=34, maxTrks=44; // peripheral, ~22-43% as of 12/12/17
+      int minTrks=80, maxTrks=300; // central, ~ 0-11% as of 12/12/17
+      if (nTrk_passCuts_I < minTrks || nTrk_passCuts_I > maxTrks)
+	inTrkMultClass=false;
+      else 
+	inTrkMultClass=true;      
+      
+      if(!inTrkMultClass)continue;
+      h_NEvents_trkCuts->Fill(0);
+      
+      
+      
+      
+      
+
+      
+      
+      // vtx stuff from pptrack tree
       Nvtxs->Fill(nVtx_I,weight_eS);      
       
-      int evtNtrks=0;
+      int nTrk_vtxs_I=0;
       for(int ivtx=0; ivtx<nVtx_I;ivtx++){
 	if(nTrkVtx_I[ivtx]==0)continue;
 	
@@ -917,7 +1152,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	NvtxtrksVz->Fill(nTrkVtx_I[ivtx], zVtx_F[ivtx], weight_eS);
 	NvtxtrksVr->Fill(nTrkVtx_I[ivtx], rVtx_F      , weight_eS);
 	
-	evtNtrks+=nTrkVtx_I[ivtx];
+	//evtNtrks+=nTrkVtx_I[ivtx];
+	nTrk_vtxs_I+=nTrkVtx_I[ivtx];
 	if(ivtx==0){
 	  Nvtxtrks_vtx0->Fill(nTrkVtx_I[0],weight_eS);
 	  NvtxtrksVz_vtx0->Fill(nTrkVtx_I[0], zVtx_F[0], weight_eS);
@@ -928,26 +1164,23 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	  NvtxtrksVz_vtxgt0->Fill(nTrkVtx_I[ivtx], zVtx_F[ivtx], weight_eS);	
 	  NvtxtrksVr_vtxgt0->Fill(nTrkVtx_I[ivtx], rVtx_F      , weight_eS);	
 	}
-      }
+      }//end vtx loop
       
 
-      
-      Ntrks->Fill(evtNtrks,weight_eS);
+      Ntrks->Fill(nTrk_I,weight_eS);
+      Ntrks_vtxs->Fill(nTrk_vtxs_I, weight_eS);       //assoc w/ vertecies, not passing cuts
+      Ntrks_passCuts->Fill(nTrk_passCuts_I,weight_eS);// pass cuts, not necessarily assoc w/ vertices
+      //Ntrks->Fill(evtNtrks,weight_eS);
+
       Nvtxs_v_Nref->Fill(  nVtx_I   , nref_I , weight_eS);
-      Ntrks_v_Nref->Fill(  evtNtrks , nref_I , weight_eS);
-      Ntrks_v_Nvtxs->Fill( evtNtrks , nVtx_I , weight_eS);
+      Ntrks_v_Nref->Fill(  nTrk_passCuts_I , nref_I , weight_eS);
+      Ntrks_v_Nvtxs->Fill( nTrk_passCuts_I , nVtx_I , weight_eS);
       
-      for(int itrk=0;itrk<evtNtrks;itrk++){
-	trkPt->Fill( trkPt_F[itrk]  , weight_eS);
-	trkEta->Fill(trkEta_F[itrk] , weight_eS);
-	trkPhi->Fill(trkPhi_F[itrk] , weight_eS);	
-	trkPtvEta->Fill( trkPt_F[itrk]  , trkEta_F[itrk],weight_eS);
-	trkEtavPhi->Fill(trkEta_F[itrk], trkPhi_F[itrk],weight_eS);
-      }
-	  
+
+      
 
 
-    }
+    }//end jetMult portion
 
 
 
@@ -1210,6 +1443,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl<<std::endl;
+  std::cout<<"Total Num of Events passing skim cut = " <<h_NEvents_skimCut->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events passing vz cut = " <<h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
   
   std::cout<<"Total Num of Events passing jet40 = "  << h_NEvents_jet40->GetEntries()  << std::endl;
   std::cout<<"Total Num of Events passing jet60 = "  << h_NEvents_jet60->GetEntries()  << std::endl;
@@ -1217,15 +1452,21 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   std::cout<<"Total Num of Events passing jet100 = " << h_NEvents_jet100->GetEntries() << std::endl;
   std::cout<<"Total Num of Events passing a trigger = " << h_NEvents_trigd->GetEntries() << std::endl << std::endl;
   
-  std::cout<<"Total Num of Events passing skimCuts  = " << h_NEvents_skimCut->GetEntries()<<std::endl;
-  std::cout<<"Total Num of Events passing vzCuts    = " << h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
+  std::cout<<"Total Num of Events passing track/vtx cut = " <<h_NEvents_trkCuts->GetEntries()<<std::endl<<std::endl;  
   
+  std::cout<<std::endl<<"/// Job Track-Loop Summary ///"<<std::endl<<std::endl;
+  std::cout<<"Total Num of Tracks read from good events                          = " <<    h_NTrks->GetEntries()<<std::endl;  
+  std::cout<<"Total Num of Tracks read from good events kmatCuts              = " <<    h_NTrks_kmatCut->GetEntries()<<std::endl;
+  std::cout<<std::endl;
+  
+  
+  std::cout<<std::endl<<"/// Job Jet-Loop Summary ///"<<std::endl<<std::endl;
+
   std::cout<<"Total Num of good Events w/ jets = " << h_NEvents_withJets->GetEntries()<<std::endl; //note, approximate, some events make it through with nref=0 for some reason
   std::cout<<"Total Num of good Events, w/ jets, post kmatCuts = " << h_NEvents_withJets_kmatCut->GetEntries() << std::endl; 
   if(fillDataJetIDHists) 
     std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " << h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;        
-
-  std::cout<<std::endl<<"/// Job Jet-Loop Summary ///"<<std::endl<<std::endl;
+  
   std::cout<<"Total Num of Jets read from good events                          = " <<    h_NJets->GetEntries()<<std::endl;  
   std::cout<<"Total Num of Jets read from good events post kinCut              = " <<    h_NJets_kmatCut->GetEntries()<<std::endl;
   if(fillDataJetIDHists) 

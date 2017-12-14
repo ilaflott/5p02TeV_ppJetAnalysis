@@ -72,7 +72,8 @@ echo ""
 echo "done running code(s)."
 echo ""
 
-source askCondor.sh 100 30
+#source askCondor.sh 100 30
+source askCondor.sh 1 1
 
 return
 

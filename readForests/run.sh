@@ -32,26 +32,26 @@ echo ""
 
 #### INCL. JET SPECTRA |y| bins
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 120s
 #source run_readForests_jetPlots.sh 4 "0.5" "1.0"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 120s
 #source run_readForests_jetPlots.sh 4 "1.0" "1.5"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 120s
 #source run_readForests_jetPlots.sh 4 "1.5" "2.0"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 120s
 
 #source run_readForests_jetPlots.sh 4 "2.0" "2.5"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 60s
 #source run_readForests_jetPlots.sh 4 "2.5" "3.0"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 60s
 #source run_readForests_jetPlots.sh 4 "3.2" "4.7"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 60s
 
 
@@ -64,7 +64,7 @@ source run_readForests_jetMult.sh 4 "0.0" "2.0"
 
 #source run_readForests_jetPlots.sh 4 "2.0" "3.0"
 #source run_readForests_jetPlots.sh 4 "3.2" "4.7"
-#source askCondor.sh 1 1
+#askCondor  1 1
 #sleep 120s
 
 
@@ -72,8 +72,8 @@ echo ""
 echo "done running code(s)."
 echo ""
 
-#source askCondor.sh 100 30
-source askCondor.sh 1 1
+#askCondor  100 30
+askCondor  1 1
 
 return
 
@@ -102,7 +102,7 @@ return
 
 ##temp
 source run_readForests_JERS.sh 4 "0.0" "2.0"
-source askCondor.sh 100 60
+askCondor  100 60
 return
 ##temp
 
@@ -127,20 +127,20 @@ echo "done compiling code(s), submitting."
 echo ""
 
 source run_readForests_JERS.sh 4 "0.0" "2.0"
-source askCondor.sh 1 1
+askCondor  1 1
 sleep 60s
 
 source run_readForests_JERS.sh 4 "0.0" "0.5"
-source askCondor.sh 1 1
+askCondor  1 1
 sleep 60s
 source run_readForests_JERS.sh 4 "0.5" "1.0"
-source askCondor.sh 1 1
+askCondor  1 1
 sleep 60s
 source run_readForests_JERS.sh 4 "1.0" "1.5"
-source askCondor.sh 1 1
+askCondor  1 1
 sleep 60s
 source run_readForests_JERS.sh 4 "1.5" "2.0"
-source askCondor.sh 1 1
+askCondor  1 1
 sleep 60s
 
 #source run_readForests_JERS.sh 4 "2.0" "2.5"
@@ -155,7 +155,7 @@ echo ""
 echo "done running code(s)."
 echo ""
 
-source askCondor.sh 1 1
+askCondor  1 1
 
 
 return

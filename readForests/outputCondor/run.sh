@@ -7,7 +7,7 @@ echo ""
 localDir=/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/outputCondor
 
 MM="12"
-DD="12"
+DD="19"
 YY="17"
 
 
@@ -41,13 +41,12 @@ YY="17"
 
 
 
-## low mult
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0" "ppData"
 
-#return
+
+
 
 # high mult
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "_0.0eta2.0_1" "ppData"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0" "ppData"
 
 
 

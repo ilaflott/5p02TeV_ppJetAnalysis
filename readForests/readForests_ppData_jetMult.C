@@ -125,7 +125,9 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH1F *h_NEvents_skipped  = new TH1F("NEvents_skipped" , "NEvents skipped", 1,0,2);
   TH1F *h_NEvents_skimCut  = new TH1F("NEvents_skimCut" , "NEvents read post skimCut",  1,0,2);
   TH1F *h_NEvents_vzCut    = new TH1F("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 1,0,2);
-  TH1F *h_NEvents_trkCuts    = new TH1F("NEvents_trkCuts"   , "NEvents read post vzCut AND skimCut AND trkCuts", 1,0,2);
+  TH1F *h_NEvents_trkCuts_1    = new TH1F("NEvents_trkCuts_1"   , "NEvents read post prev cuts AND trkHiPur cut", 1,0,2);
+  TH1F *h_NEvents_trkCuts_2    = new TH1F("NEvents_trkCuts_2"   , "NEvents read post prev cuts AND Vtxs spaced out cut", 1,0,2);
+  TH1F *h_NEvents_trkCuts_3    = new TH1F("NEvents_trkCuts_3"   , "NEvents read post prev cuts AND oneVtxInRange cut", 1,0,2);
 
   TH1F *h_NEvents_trigd    = new TH1F("NEvents_trigd"   , "NEvents trigd",   1,0,2);
   TH1F *h_NEvents_jet40    = new TH1F("NEvents_jet40Trigd"   , "NEvents jet40Trigd",    1,0,2);
@@ -244,16 +246,20 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   //jetMultQA, i.e. hists that are supposed to help explore how yields/etc change w/ multiplicity of collision(s)
   TH1F *Nvtxs=NULL;
   TH1F *Ntrks=NULL, *Ntrks_vtxs=NULL, *Ntrks_passCuts=NULL;
+
+  TH1F *Ntrks_vtx0=NULL, *Ntrks_passCuts_vtx0=NULL;
   
-  TH1F* vtx_r=NULL, *vtx_z=NULL;
+  TH1F *vtx_r=NULL;
+  TH1F *vtx_z=NULL,*vtx_y=NULL,*vtx_x=NULL;
+  
   TH1F *Nvtxtrks=NULL;//NRef/jetPevt made elsewhere
   TH1F *Nvtxtrks_vtx0=NULL,  *Nvtxtrks_vtxgt0=NULL;
   
   TH1F *trkPt=NULL,  *trkPtError=NULL, *trkPtPercError=NULL;
   TH1F *trkEta=NULL,*trkPhi=NULL;
   
-  TH1F *trkDz=NULL , *trkDzError=NULL ;//,  *trkDzSig=NULL;
-  TH1F *trkDxy=NULL, *trkDxyError=NULL;//, *trkDxySig=NULL;
+  TH1F *trkDz=NULL , *trkDzError=NULL , *trkDzSig=NULL;
+  TH1F *trkDxy=NULL, *trkDxyError=NULL, *trkDxySig=NULL;
   
   TH1F *trkCharge=NULL;
   TH1F *trkNVtx=NULL,*trkChi2=NULL,*trkNdof=NULL;
@@ -295,13 +301,19 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 
     // trackTree evt TH1 QA
     Nvtxs    = new TH1F(Form("hJetMultQA_%swJetID_Nvtx"    ,jetID.c_str()), "Nvtxs", 20,0.,20.);
+
     Ntrks    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks"   ,jetID.c_str()), "Ntrks", 300,0.,300.);
     Ntrks_vtxs    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks_vtxs"   ,jetID.c_str()), "Ntrks_vtxs", 300,0.,300.);
     Ntrks_passCuts    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks_passCuts"   ,jetID.c_str()), "Ntrks_passCuts", 300,0.,300.);
+    
+    Ntrks_vtx0    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks_vtx0"   ,jetID.c_str()), "Ntrks_vtx0", 300,0.,300.);
+    Ntrks_passCuts_vtx0    = new TH1F(Form("hJetMultQA_%swJetID_Ntrks_passCuts_vtx0"   ,jetID.c_str()), "Ntrks_passCuts_vtx0", 300,0.,300.);
 
     // trackTree vtx TH1 QA
-    vtx_r   = new TH1F(Form("hJetMultQA_%swJetID_vtx_r"    ,jetID.c_str()), "vtx_r", 2000,0.,0.60);
-    vtx_z   = new TH1F(Form("hJetMultQA_%swJetID_vtx_z"    ,jetID.c_str()), "vtx_z", 2000, -25., 25.);
+    vtx_r   = new TH1F(Form("hJetMultQA_%swJetID_vtx_r"  , jetID.c_str()) , "vtx_r" , 2000 ,   0. , 0.60 );
+    vtx_z   = new TH1F(Form("hJetMultQA_%swJetID_vtx_z"  , jetID.c_str()) , "vtx_z" , 2000 , -25. , 25.  );
+    vtx_y   = new TH1F(Form("hJetMultQA_%swJetID_vtx_y"  , jetID.c_str()) , "vtx_y" , 2000 , -0.4 , 0.4  );
+    vtx_x   = new TH1F(Form("hJetMultQA_%swJetID_vtx_x"  , jetID.c_str()) , "vtx_x" , 2000 , -0.4 , 0.4  );
     
     Nvtxtrks = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks",jetID.c_str()), "NVtxTrks", 300,0.,300.);    
     Nvtxtrks_vtx0 = new TH1F(Form("hJetMultQA_%swJetID_Nvtxtrks_vtx0",jetID.c_str()), "NVtxTrks_vtx0", 300,0.,300.);
@@ -317,29 +329,28 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     
     trkDz    = new TH1F(Form("hJetMultQA_%swJetID_trkDz"   ,jetID.c_str()), "trkDz", 400,-20.,20.);
     trkDzError    = new TH1F(Form("hJetMultQA_%swJetID_trkDzError"   ,jetID.c_str()), "trkDzError", 200,0.,20.);
-    //trkDzSig    = new TH1F(Form("hJetMultQA_%swJetID_trkDzSig"   ,jetID.c_str()), "trkDzSig", 400,20.,20.);
+    trkDzSig    = new TH1F(Form("hJetMultQA_%swJetID_trkDzSig"   ,jetID.c_str()), "trkDzSig", 100, -5., 5.);
     
     trkDxy    = new TH1F(Form("hJetMultQA_%swJetID_trkDxy"   ,jetID.c_str()), "trkDxy", 400,-20.,20.);
     trkDxyError    = new TH1F(Form("hJetMultQA_%swJetID_trkDxyError"   ,jetID.c_str()), "trkDxyError", 200,0.,20.);
-    //trkDxySig    = new TH1F(Form("hJetMultQA_%swJetID_trkDxySig"   ,jetID.c_str()), "trkDxySig", 400,20.,20.);
+    trkDxySig    = new TH1F(Form("hJetMultQA_%swJetID_trkDxySig"   ,jetID.c_str()), "trkDxySig", 100, -5., 5.);
     
     //trkCharge    = new TH1F(Form("hJetMultQA_%swJetID_trkCharge"   ,jetID.c_str()), "trkCharge", 4,-2.,2.);
-    trkCharge    = new TH1F(Form("hJetMultQA_%swJetID_trkCharge"   ,jetID.c_str()), "trkCharge", 3,-1.5,1.5);
+    trkCharge    = new TH1F(Form("hJetMultQA_%swJetID_trkCharge"   ,jetID.c_str()), "trkCharge", 5,-2.5,2.5);
     
     trkNVtx    = new TH1F(Form("hJetMultQA_%swJetID_trkNVtx"   ,jetID.c_str()), "trkNVtx", 11,-1.,10.);
     trkChi2    = new TH1F(Form("hJetMultQA_%swJetID_trkChi2"   ,jetID.c_str()), "trkChi2", 2000,0.,2000.);
-    trkNdof    = new TH1F(Form("hJetMultQA_%swJetID_trkNdof"   ,jetID.c_str()), "trkNdof", 101,-1.,100.);
+    trkNdof    = new TH1F(Form("hJetMultQA_%swJetID_trkNdof"   ,jetID.c_str()), "trkNdof", 100,0.,100.);
     
-    trkNHit    = new TH1F(Form("hJetMultQA_%swJetID_trkNHit"   ,jetID.c_str()), "trkNHit", 41,-1.,40.);
-    trkNLayer    = new TH1F(Form("hJetMultQA_%swJetID_trkNLayer"   ,jetID.c_str()), "trkNLayer", 41,-1.,40.);
+    trkNHit    = new TH1F(Form("hJetMultQA_%swJetID_trkNHit"   ,jetID.c_str()), "trkNHit", 40,0.,40.);
+    trkNLayer    = new TH1F(Form("hJetMultQA_%swJetID_trkNLayer"   ,jetID.c_str()), "trkNLayer", 40,0.,40.);
     
-    trkHighPur    = new TH1F(Form("hJetMultQA_%swJetID_trkHighPur"   ,jetID.c_str()), "trkHighPur", 3,-1.,2.);
-    //trkHighPur    = new TH1F(Form("hJetMultQA_%swJetID_trkHighPur"   ,jetID.c_str()), "trkHighPur", 2,0.,2.);
+    trkHighPur    = new TH1F(Form("hJetMultQA_%swJetID_trkHighPur"   ,jetID.c_str()), "trkHighPur", 5,-2.,3.);
     
-    trkTight    = new TH1F(Form("hJetMultQA_%swJetID_trkTight"   ,jetID.c_str()), "trkTight", 3,-1.,2.);
-    trkLoose    = new TH1F(Form("hJetMultQA_%swJetID_trkLoose"   ,jetID.c_str()), "trkLoose", 3,-1.,2.);
+    trkTight    = new TH1F(Form("hJetMultQA_%swJetID_trkTight"   ,jetID.c_str()), "trkTight", 5,-2.,3.);
+    trkLoose    = new TH1F(Form("hJetMultQA_%swJetID_trkLoose"   ,jetID.c_str()), "trkLoose", 5,-2.,3.);
     
-    trkFake    = new TH1F(Form("hJetMultQA_%swJetID_trkFake"   ,jetID.c_str()), "trkFake", 3,-1.,2.);
+    trkFake    = new TH1F(Form("hJetMultQA_%swJetID_trkFake"   ,jetID.c_str()), "trkFake", 5,-2.,3.);
     //trkFake    = new TH1F(Form("hJetMultQA_%swJetID_trkFake"   ,jetID.c_str()), "trkFake", 2,0.,2.);
     
     
@@ -1021,35 +1032,89 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       
       
       
-      // high Purity Fraction cut
+      //// high Purity Fraction Event Cut
       bool has25PercHighPurTrks=false;
       if(nTrk_I<=10)has25PercHighPurTrks=true;
-      else{
-	
+      else{	
 	int highPurCount=0;
 	for(int itrk=0;itrk<nTrk_I;itrk++)
 	  if(trkHighPur_O[itrk]) highPurCount++;	    
 	
 	float highPurFrac=((float) highPurCount)/ ((float)nTrk_I);
-	if(highPurFrac>0.25)  has25PercHighPurTrks=true;
-	else   has25PercHighPurTrks=false;
+	if(highPurFrac>0.25)  
+	  has25PercHighPurTrks=true;	
+      }      
+      if(!has25PercHighPurTrks) continue;      
+      h_NEvents_trkCuts_1->Fill(0);
+      
+      //// cut on vtx_z spacings
+      bool vtxsSpacedOutEnough=true;
+      float vtx_z_1, vtx_z_2;
+      for(int ivtx=0; ivtx<(nVtx_I-1);ivtx++){
+	vtx_z_1=zVtx_F[ivtx];
+	for(int jvtx=(ivtx+1); jvtx<nVtx_I;jvtx++){
+	  vtx_z_2=zVtx_F[jvtx];
+	  float deltaZ_vtx_1_2=fabs(vtx_z_1 - vtx_z_2);
+	  if(deltaZ_vtx_1_2 > 1.) 
+	    continue;	  
+	  else{
+	    vtxsSpacedOutEnough=false; break;  }
+	}//end 2nd vtx loop	
+	if(!vtxsSpacedOutEnough)break;
+      }//end 1st vtx loop
+      if(!vtxsSpacedOutEnough)continue;
+      h_NEvents_trkCuts_2->Fill(0);
+      
+
+      //// cut on vtx positions w.r.t. beamspot/avgvtx positions
+      // avg vtx positions consistent with beamspot plots made from payloads on conddb
+      // tag: BeamSpotObjects_PCL_prompt_v0
+      // gtag pointing to this beamspot tag: 75X_dataRun2_Prompt_ppAt5TeV_v0
+      // no prescales, first vtx only,   0.0760011  / 0.0969312  / 0.285931
+      // with prescales, first vtx only, 0.0759278  / 0.0969829  / 0.287621
+      // with prescales, all vtxs,       0.07587616 / 0.09695976 / 0.2812252;
+      float avgVtx_x=0.07587616 , avgVtx_y=0.09695976, avgVtx_z= 0.2812252;            
+      bool atLeastOnePVinRange=false;
+      bool onePVinvzRange=false, onePVinvrRange=false;
+      for(int ivtx=0; ivtx<nVtx_I;ivtx++){
+	// check # of tracks, if good, check delta z
+	if(nTrkVtx_I[ivtx]<2)
+	  continue;
+
+	// check delta z, if good, check delta r
+	float vtx_deltaZ=zVtx_F[ivtx]-avgVtx_z;	
+      	if( fabs(vtx_deltaZ)<15. ) 
+	  onePVinvzRange=true;
+	else {
+	  onePVinvzRange=false;
+	  continue;	}
 	
+	// check delta r, if good, stop checking for a vtx in range
+	float vtx_deltaY=yVtx_F[ivtx]-avgVtx_y;	
+	float vtx_deltaX=xVtx_F[ivtx]-avgVtx_x;	
+	float vtx_deltaR=sqrt( vtx_deltaX*vtx_deltaX + vtx_deltaY*vtx_deltaY );
+	if(vtx_deltaR<0.15) 
+	  onePVinvrRange=true;
+	else{ 
+	  onePVinvrRange=false;
+	  onePVinvzRange=false;
+	  continue;	}
+
+	// if everything checks out and we make it here, we're good, we can exit the loop
+	if( onePVinvzRange &&
+	    onePVinvrRange ) {
+	  atLeastOnePVinRange=true; 
+	  break;	}
+
       }
-      if(!has25PercHighPurTrks) continue;
+      if(!atLeastOnePVinRange) continue;
+      h_NEvents_trkCuts_3->Fill(0);
+
       
-      //// vtx vz range cut
-      //bool onePVinvzRange=false;
-      //for(int ivtx=0; ivtx<nVtx_I;ivtx++){
-      //	if(fabs(zVtx_F[ivtx])<15. && 
-      //	   nTrkVtx_I[ivtx]>=2) onePVinvzRange=true;
-      //}
-      //if(!onePVinvzRange) continue;
-      
-      //// vtx vr range cut
-      //bool onePVinvrRange=false;
+	
 
       // trk stuff from pptrack tree
-      int nTrk_passCuts_I=0;
+      int nTrk_passCuts_I=0,nTrk_passCuts_vtx0_I=0;
       for(int itrk=0;itrk<nTrk_I;itrk++){
 	
 	if (debugMode&&nEvt%10000==0){
@@ -1064,19 +1129,48 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	  std::cout<< " trkFake   =" << (int)trkFake_O[itrk]<< std::endl;	  
 	}
 	
-	h_NTrks->Fill(0);
+	h_NTrks->Fill(0);	
 	
 	if(!(trkHighPur_O[itrk]))continue;
 	else if(trkPt_F[itrk]<0.4)continue;
-	//else if(trkPt_F[itrk]<0.1)continue; // not sure which one of these we will want
 	else if(fabs(trkEta_F[itrk])>2.4)continue;
 	else if ((trkPtError_F[itrk]/trkPt_F[itrk])>0.1)continue;
-	//else if(trkDxyOverDxyError_F[itrk] > 3.0) continue;
-	//else if(trkDzOverDzError_F[itrk] > 3.0) continue;
-
-	h_NTrks_kmatCut->Fill(0);
-	nTrk_passCuts_I++;
+	else if(fabs(trkDz_F[itrk]/trkDzError_F[itrk]) > 3.0) continue;
+	else if(fabs(trkDxy_F[itrk]/trkDxyError_F[itrk]) > 3.0) continue;
 	
+	h_NTrks_kmatCut->Fill(0);
+	
+	nTrk_passCuts_I++;	
+	if(itrk<nTrkVtx_I[0])nTrk_passCuts_vtx0_I++;
+      }
+      
+
+
+      ////// multiplicity cuts go here
+      //bool inTrkMultClass=false;
+      ////int minTrks=34, maxTrks=44; // peripheral, ~22-43% as of 12/12/17
+      //int minTrks=80, maxTrks=300; // central, ~ 0-11% as of 12/12/17
+      //if (nTrk_passCuts_I < minTrks || nTrk_passCuts_I > maxTrks)
+      //	inTrkMultClass=false;
+      //else 
+      //	inTrkMultClass=true;      
+      //
+      //if(!inTrkMultClass)continue;
+      
+      
+      
+      
+      
+      // now loop over tracks for plots (kept separate for multiplicity class reasons)
+      for(int itrk=0;itrk<nTrk_I;itrk++){
+	
+	if(!(trkHighPur_O[itrk]))continue;
+	else if(trkPt_F[itrk]<0.4)continue;
+	else if(fabs(trkEta_F[itrk])>2.4)continue;
+	else if ((trkPtError_F[itrk]/trkPt_F[itrk])>0.1)continue;
+	else if(fabs(trkDz_F[itrk]/trkDzError_F[itrk]) > 3.0) continue;
+	else if(fabs(trkDxy_F[itrk]/trkDxyError_F[itrk]) > 3.0) continue;
+
 	// TH1 QA
 	trkPt->Fill( trkPt_F[itrk]  , weight_eS);
 	trkPtError->Fill( trkPtError_F[itrk]  , weight_eS);
@@ -1087,18 +1181,18 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	
 	trkDxy->Fill(trkDxy_F[itrk] , weight_eS);           
 	trkDxyError->Fill(trkDxyError_F[itrk] , weight_eS); 
-	//trkDxySig->Fill( trkDxy_F[itrk]/trkDxyError_F[itrk] , weight_eS); 
+	trkDxySig->Fill( trkDxy_F[itrk]/trkDxyError_F[itrk] , weight_eS); 
 	
 	trkDz->Fill(trkDz_F[itrk] , weight_eS);		    
 	trkDzError->Fill(trkDzError_F[itrk] , weight_eS);   
-	//trkDzSig->Fill( trkDz_F[itrk]/trkDzError_F[itrk] , weight_eS); 
+	trkDzSig->Fill( trkDz_F[itrk]/trkDzError_F[itrk] , weight_eS); 
 	
 	trkCharge->Fill(trkCharge_I[itrk], weight_eS);	    
 	
 	trkNVtx->Fill((int)trkNVtx_I[itrk], weight_eS);	    
 	trkChi2->Fill(trkChi2_F[itrk], weight_eS);	    
 	trkNdof->Fill((int)trkNdof_I[itrk], weight_eS);	    
-							    
+	
 	trkNHit->Fill((int)trkNHit_I[itrk], weight_eS);	    
 	trkNLayer->Fill((int)trkNLayer_I[itrk], weight_eS);	    
 	
@@ -1112,23 +1206,9 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	trkEtavPhi->Fill(trkEta_F[itrk], trkPhi_F[itrk],weight_eS);
       }//end trk loop
 
-      //// multiplicity cuts go here
-      bool inTrkMultClass=false;
-      //int minTrks=34, maxTrks=44; // peripheral, ~22-43% as of 12/12/17
-      int minTrks=80, maxTrks=300; // central, ~ 0-11% as of 12/12/17
-      if (nTrk_passCuts_I < minTrks || nTrk_passCuts_I > maxTrks)
-	inTrkMultClass=false;
-      else 
-	inTrkMultClass=true;      
-      
-      if(!inTrkMultClass)continue;
-      h_NEvents_trkCuts->Fill(0);
       
       
       
-      
-      
-
       
       
       // vtx stuff from pptrack tree
@@ -1145,6 +1225,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	
 	float rVtx_F=sqrt(xVtx_F[ivtx]*xVtx_F[ivtx] + yVtx_F[ivtx]*yVtx_F[ivtx]);
 	vtx_z->Fill(   zVtx_F[ivtx]          , weight_eS);
+	vtx_y->Fill(   yVtx_F[ivtx]          , weight_eS);
+	vtx_x->Fill(   xVtx_F[ivtx]          , weight_eS);
 	vtx_r->Fill(   rVtx_F                , weight_eS);
 	vtx_rVz->Fill( rVtx_F,zVtx_F[ivtx]   , weight_eS);
 	
@@ -1170,16 +1252,14 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       Ntrks->Fill(nTrk_I,weight_eS);
       Ntrks_vtxs->Fill(nTrk_vtxs_I, weight_eS);       //assoc w/ vertecies, not passing cuts
       Ntrks_passCuts->Fill(nTrk_passCuts_I,weight_eS);// pass cuts, not necessarily assoc w/ vertices
-      //Ntrks->Fill(evtNtrks,weight_eS);
+      
+      Ntrks_vtx0->Fill(nTrkVtx_I[0],weight_eS);//this one might be redundant
+      Ntrks_passCuts_vtx0->Fill(nTrk_passCuts_vtx0_I,weight_eS);
 
       Nvtxs_v_Nref->Fill(  nVtx_I   , nref_I , weight_eS);
       Ntrks_v_Nref->Fill(  nTrk_passCuts_I , nref_I , weight_eS);
       Ntrks_v_Nvtxs->Fill( nTrk_passCuts_I , nVtx_I , weight_eS);
       
-
-      
-
-
     }//end jetMult portion
 
 
@@ -1318,6 +1398,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       
 
       if(fillDataJetQAHists){
+
 	int ind=0;
 	//jets
 	hJetQA[jetIDint][ind]->Fill(recpt, weight_eS); ind++;
@@ -1452,7 +1533,9 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   std::cout<<"Total Num of Events passing jet100 = " << h_NEvents_jet100->GetEntries() << std::endl;
   std::cout<<"Total Num of Events passing a trigger = " << h_NEvents_trigd->GetEntries() << std::endl << std::endl;
   
-  std::cout<<"Total Num of Events passing track/vtx cut = " <<h_NEvents_trkCuts->GetEntries()<<std::endl<<std::endl;  
+  std::cout<<"Total Num of Events passing 25% highpur track cut = " <<h_NEvents_trkCuts_1->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events passing spaced out vtxs cut = " <<h_NEvents_trkCuts_2->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events passing avg vtx position cut = " <<h_NEvents_trkCuts_3->GetEntries()<<std::endl;
   
   std::cout<<std::endl<<"/// Job Track-Loop Summary ///"<<std::endl<<std::endl;
   std::cout<<"Total Num of Tracks read from good events                          = " <<    h_NTrks->GetEntries()<<std::endl;  

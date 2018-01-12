@@ -6,9 +6,9 @@ echo ""
 
 localDir=/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/outputCondor
 
-MM="12"
-DD="19"
-YY="17"
+MM="01"
+DD="09"
+YY="18"
 
 
 #rm -rf 4scp/pp*

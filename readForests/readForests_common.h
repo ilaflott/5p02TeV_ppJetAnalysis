@@ -63,6 +63,23 @@ float deltaphi(float phi1, float phi2){
   return TMath::Abs(dphi);
 }
 
+const float pi=TMath::Pi();
+const float twoPi=2.*pi;
+const float piOvTwo=pi/2.;
+const float threePiOvTwo=(3.*pi/2.);
+float deltaphi_jettrk(float deltaphi){
+  //float pi=TMath::Pi();
+  
+  if(deltaphi > (threePiOvTwo) )    
+    deltaphi= deltaphi - twoPi ;
+  else if (deltaphi < (-1*piOvTwo) )
+    deltaphi = twoPi + deltaphi;
+  else 
+    deltaphi = deltaphi;
+  
+  return deltaphi;
+}
+
 
 
 //// STRINGS

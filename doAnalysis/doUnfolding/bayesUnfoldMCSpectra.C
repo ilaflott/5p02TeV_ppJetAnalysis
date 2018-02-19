@@ -379,7 +379,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
 
 
 
-  bool drawRespMatrix=false;
+  bool drawRespMatrix=true;
   if(drawPDFs && drawRespMatrix){    
     
     

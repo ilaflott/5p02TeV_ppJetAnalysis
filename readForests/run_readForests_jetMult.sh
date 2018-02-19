@@ -16,26 +16,6 @@ fi
 ##########################################################################################################################################################################
 ##########################################################################################################################################################################
 
-##### Jet80, then LowerJets
-echo ""
-echo "submitting jet80/lowerJets ppData job(s)"
-echo ""
-
-source condorSubmit_readForests.sh readForests_ppData_jetMult -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
-
-echo ""
-echo "done submitting ppData jetMult Jet80 job(s)"
-echo ""
-#sleep 5s
-
-source condorSubmit_readForests.sh readForests_ppData_jetMult -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
-
-echo ""
-echo "done submitting ppData jetMult LowerJets job(s)"
-echo ""
-#sleep 5s
-
-
 ####### semiOfficial Py8
 #echo ""
 #echo "submitting Py8 ppMC job(s)"
@@ -47,5 +27,30 @@ echo ""
 #echo "done submitting ppMC jetMult job(s)"
 #echo ""
 #sleep 5s
+#
+#askCondor 1 1
+
+##### Jet80, then LowerJets
+echo ""
+echo "submitting jet80/lowerJets ppData job(s)"
+echo ""
+
+source condorSubmit_readForests.sh readForests_ppData_jetMult -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
+
+echo ""
+echo "done submitting ppData jetMult Jet80 job(s)"
+echo ""
+
+#askCondor 1 1
+
+source condorSubmit_readForests.sh readForests_ppData_jetMult -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+
+echo ""
+echo "done submitting ppData jetMult LowerJets job(s)"
+echo ""
+#sleep 5s
+
+askCondor 1 1
+
 
 return

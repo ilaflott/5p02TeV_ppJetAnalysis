@@ -35,7 +35,7 @@ int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist,
 				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-			       int startfile=0, int endfile=0, 
+			       int startfile=0, int endfile=9, 
 			       int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=defDebugMode,			
 			       std::string outfile=(defMCOutputName+"_jetPlots.root"),
@@ -46,14 +46,14 @@ const int readForestsArgCount=9+minArgs;
 // extended eta range for jetID Eff, or more QA in diff region... etc.
 
 
-//const float jtPtCut=56; // 49 or 56 or 64 or 74...
-const float jtPtCut=30; // 49 or 56 or 64 or 74...
+const float jtPtCut=56; // 49 or 56 or 64 or 74...
+//const float jtPtCut=30; // 49 or 56 or 64 or 74...
 const float jtPtCut_Hi=1890; 
 const float jetQAPtCut=jtPtCut;
 
-//const float genJetPtCut=49; 
+const float genJetPtCut=49; 
 //const float genJetPtCut=43; 
-const float genJetPtCut=30; 
+//const float genJetPtCut=30; 
 const float genJetPtCut_Hi=1890; 
 
 

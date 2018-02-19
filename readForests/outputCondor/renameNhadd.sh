@@ -36,7 +36,8 @@ if [ $# -ne 5 ]
 then
     echo ""
     echo "Useage is..."
-    echo "source renameNhadd.sh [R=3,4...] [date_output=\"MM-DD-YY\"] [date_scratch=\"MM.DD.YY\"] [etabin=\"?.?eta?.?\"] [type=\"ppType\"]"
+    #echo "source renameNhadd.sh [R=3,4...] [date_output=\"MM-DD-YY\"] [date_scratch=\"MM.DD.YY\"] [etabin=\"?.?eta?.?\"] [type=\"ppType\"]"
+    echo "source renameNhadd.sh [R=3,4...] [date_output=\"MM-DD-YY\"] [date_scratch=\"MM.DD.YY\"] [desc=\"jobtype_?.?eta?.?\"] [type=\"ppType\"]"
     echo ""
     
     echo ""
@@ -58,7 +59,9 @@ fi
 R=$1
 date_output=$2
 date_scratch=$3
-etabin=$4
+#etabin=$4
+#desc argument *typically* of form; jetPlots_0.0eta2.0
+desc=$4
 type=$5
 
 
@@ -88,11 +91,12 @@ fi
 if [ $type == "ppMC" ]
 then
     echo ""
-    echo "hadding ppMC job outputs for etabin=${etabin} and date=${date_output}"
+    echo "hadding ppMC job outputs for desc=${desc} and date=${date_output}"
     echo ""
     sleep 1s
     
-    ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_${etabin}/
+    ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_${desc}/
+    #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_jetMult_${etabin}/
     #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
     #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_JERS_${etabin}
     sleep 1s
@@ -131,7 +135,8 @@ then
     sleep 1s
     
     #ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetPlots_${etabin}/    
-    ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetMult_${etabin}/    
+    #ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetMult_${etabin}/    
+    ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_${desc}
     mkdir ${ppDataHPtDir}
     sleep 1s
 
@@ -142,8 +147,14 @@ then
     
     #ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
     #ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
-    ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetMult_${etabin}/
-    ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetMult_${etabin}/
+
+    
+    #ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetMult_${etabin}/
+    #ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetMult_${etabin}/
+
+    ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_${desc}/
+    ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_${desc}/
+
     mv ${ppDatajet80} ${ppDataHPtDir}
     mv ${ppDatalowJets} ${ppDataHPtDir}
     cd ${ppDataHPtDir}

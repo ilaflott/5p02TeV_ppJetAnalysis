@@ -10,6 +10,7 @@ const bool fillDataDijetHists=false;
 const bool fillDataJetIDHists=true;
 const bool fillDataJetTrigQAHists=false; 
 const bool fillDataJetSpectraRapHists=false; 
+const bool fillDataJetTrackCorrHist=true;
 
 const bool useHLT100=false;
 
@@ -17,6 +18,14 @@ const int jetIDint=(int)fillDataJetIDHists;
 
 //const std::string trgCombType="PF";
 const std::string trgCombType="Calo";
+
+const bool doTrkMultClassCuts=true;
+//const int minTrks=54, maxTrks=300; // central, ~ 0-9% as of 2/12/17      
+//const int minTrks=42, maxTrks=53; // ~ 9%  - 27%
+const int minTrks=35, maxTrks=53; // ~ 9%  - 36%
+//const int minTrks=32, maxTrks=41; // ~ 27% - 52% 
+//const int minTrks=19, maxTrks=31; // ~ 52% - 87%      
+
 
 
 //// readForests_ppData_jetMult
@@ -73,7 +82,9 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       else assert(false);
     }
   }
-  if(debugMode&&false)for(int i=0;i<N_dataTrees;++i)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
+  //if(debugMode&&false)
+  //  for(int i=0;i<N_dataTrees;++i)
+  //    std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
 
   // declare TChains for each tree + friend them
   TChain* jetpp[N_dataTrees];
@@ -86,18 +97,15 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
   std::string filename_Forest;  
   std::string lastFileAdded=""; bool filesAdded=false; 
-  for(int ifile = 0; ifile<=endfile; ++ifile){
-    
+  for(int ifile = 0; ifile<=endfile; ++ifile){    
     // grab a filename, check startfile and end of filelist condition
     instr_Forest>>filename_Forest; 
     if(ifile<startfile){ lastFileAdded=filename_Forest; 
       continue; }
     if(filename_Forest==lastFileAdded){ std::cout<<"end of filelist!"<<std::endl; 
-      break; }
-    
+      break; }    
     std::cout<<"adding file #"<<ifile; 
-    if(debugMode)std::cout<<", "<<filename_Forest; 
-    
+    if(debugMode)std::cout<<", "<<filename_Forest;     
     std::cout<<", to each TChain in array"<<std::endl;
     for(int t = 0;t<N_dataTrees;++t) filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
     lastFileAdded=filename_Forest;  }//end file loop
@@ -110,13 +118,13 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   fout->cd();
 
   // declare cut hists
-  TH1F *hJetPtCut        =new TH1F("hJetPtCut"      ,(std::to_string(jtPtCut)).c_str()   ,    100, 0,100); hJetPtCut->Fill(jtPtCut);           
-  TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6.  ); hJetEtaCutHi->Fill(jtEtaCutHi); 
-  TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6.  ); hJetEtaCutLo->Fill(jtEtaCutLo);     
-  TH1F *hJetQAPtCut      =new TH1F("hJetQAPtCut"    ,(std::to_string(jetQAPtCut)).c_str(),    100, 0,100); hJetQAPtCut->Fill(jetQAPtCut);     
-  TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0,100); hLeadJetPtCut->Fill(ldJetPtCut);     
-  TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0,100); hSubLeadJetPtCut->Fill(subldJetPtCut);
-  TH1F *hPtAveCut        =new TH1F("hPtAveCut"      ,(std::to_string(ptAveCut)).c_str(),      100, 0,100); hPtAveCut->Fill(ptAveCut);  
+  TH1F *hJetPtCut        =new TH1F("hJetPtCut"      ,(std::to_string(jtPtCut)).c_str()   ,    100, 0, 100); hJetPtCut->Fill(jtPtCut);           
+  TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi" ,(std::to_string(jtEtaCutHi)).c_str(),    60,  0, 6.  ); hJetEtaCutHi->Fill(jtEtaCutHi); 
+  TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo" ,(std::to_string(jtEtaCutLo)).c_str(),    60,  0, 6.  ); hJetEtaCutLo->Fill(jtEtaCutLo);     
+  TH1F *hJetQAPtCut      =new TH1F("hJetQAPtCut"    ,(std::to_string(jetQAPtCut)).c_str(),    100, 0, 100); hJetQAPtCut->Fill(jetQAPtCut);     
+  TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0, 100); hLeadJetPtCut->Fill(ldJetPtCut);     
+  TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0, 100); hSubLeadJetPtCut->Fill(subldJetPtCut);
+  TH1F *hPtAveCut        =new TH1F("hPtAveCut"      ,(std::to_string(ptAveCut)).c_str(),      100, 0, 100); hPtAveCut->Fill(ptAveCut);  
   
 
   //evt counts
@@ -124,10 +132,11 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH1F *h_NEvents_read     = new TH1F("NEvents_read"    , "NEvents read",    1,0,2);
   TH1F *h_NEvents_skipped  = new TH1F("NEvents_skipped" , "NEvents skipped", 1,0,2);
   TH1F *h_NEvents_skimCut  = new TH1F("NEvents_skimCut" , "NEvents read post skimCut",  1,0,2);
-  TH1F *h_NEvents_vzCut    = new TH1F("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 1,0,2);
+  TH1F *h_NEvents_vzCut    = new TH1F("NEvents_vzCut"   , "NEvents read post skimCut and vzCut", 1,0,2);
   TH1F *h_NEvents_trkCuts_1    = new TH1F("NEvents_trkCuts_1"   , "NEvents read post prev cuts AND trkHiPur cut", 1,0,2);
   TH1F *h_NEvents_trkCuts_2    = new TH1F("NEvents_trkCuts_2"   , "NEvents read post prev cuts AND Vtxs spaced out cut", 1,0,2);
   TH1F *h_NEvents_trkCuts_3    = new TH1F("NEvents_trkCuts_3"   , "NEvents read post prev cuts AND oneVtxInRange cut", 1,0,2);
+  TH1F *h_NEvents_trkCuts_4    = new TH1F("NEvents_trkCuts_4"   , "NEvents read post trackCuts AND multiplicity cut", 1,0,2);
 
   TH1F *h_NEvents_trigd    = new TH1F("NEvents_trigd"   , "NEvents trigd",   1,0,2);
   TH1F *h_NEvents_jet40    = new TH1F("NEvents_jet40Trigd"   , "NEvents jet40Trigd",    1,0,2);
@@ -136,14 +145,11 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH1F *h_NEvents_jet100   = new TH1F("NEvents_jet100Trigd"  , "NEvents jet100Trigd",   1,0,2);
 
   //evt counts post all evt cuts. thrown out because no jets left in the event pre or post cuts
-  TH1F *h_NEvents_withJets           = new TH1F("NEvents_withJets" , 
-		  				"NEvents read post evt cuts, w/ jets", 1,0,2);
-  TH1F *h_NEvents_withJets_kmatCut   = new TH1F("NEvents_withJets_kmatCut" , 
-						"NEvents read post evt cuts, w/ jets post kmatCut", 1,0,2);
+  TH1F *h_NEvents_withJets           = new TH1F("NEvents_withJets" , "NEvents read post evt cuts, w/ jets", 1,0,2);
+  TH1F *h_NEvents_withJets_kmatCut   = new TH1F("NEvents_withJets_kmatCut" , "NEvents w/ jets post kmatCut", 1,0,2);
   TH1F *h_NEvents_withJets_JetIDCut = NULL;
   if(fillDataJetIDHists)
-    h_NEvents_withJets_JetIDCut= new TH1F("NEvents_withJets_JetIDCut" , 
-					  "NEvents read post evt cuts, w/ jets post kmatCut AND JetID Cut", 1,0,2);
+    h_NEvents_withJets_JetIDCut= new TH1F("NEvents_withJets_JetIDCut" , "NEvents w/ jets post kmatCut AND JetID Cut", 1,0,2);
   
   //EvtQA, i.e. hists filled once per event
   TH1F *hVr=NULL, *hWVr=NULL, *hTrgVr_noW=NULL;
@@ -202,6 +208,11 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   //jet QA, i.e. hists filled once per jet
   TH1F *hJetQA[2][N_vars]={};
   if(fillDataJetQAHists)
+
+
+
+
+
     for(int k = 0; k<2; ++k){
 
       if(!fillDataJetIDHists && k==1)continue;	
@@ -306,6 +317,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH1F *trkHighPur=NULL,*trkTight=NULL, *trkLoose=NULL,*trkFake=NULL;  
   
   TH2F *trkPtvEta=NULL, *trkEtavPhi=NULL;
+
+  TH2F *jetTrackCorr=NULL, *jetTrackCorr_noPhiMatch=NULL;
   
   //TH1F *hLeadJetPtBinsPt[nbins_pt2]={}, *hLeadJetPtBinsEta[nbins_pt2]={} ;
   //TH1F *hInclJetPtBinsPt[nbins_pt2]={}, *hInclJetPtBinsEta[nbins_pt2]={}  ;
@@ -434,7 +447,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     trkPtvEta    = new TH2F(Form("hJetMultQA_%swJetID_trkPtvEta"   ,jetID.c_str()), "trkPtvEta", 1000,0,100, 100,-5.,5.);
     trkEtavPhi    = new TH2F(Form("hJetMultQA_%swJetID_trkEtaVPhi"   ,jetID.c_str()), "trkEtavPhi", 100,-5.,5.,100,-5.,5.);
     
-
+    jetTrackCorr_noPhiMatch= new TH2F ( Form("hJetMultQA_%swJetID_jetTrackCorr_noPhiMatch"   ,jetID.c_str()), "jetTrackCorr_noPhiMatch",  126 ,-6.3,6.3, 80,-4.,4. );
+    jetTrackCorr= new TH2F ( Form("hJetMultQA_%swJetID_jetTrackCorr"   ,jetID.c_str()), "jetTrackCorr",  126 ,-6.3,6.3, 80,-4.,4. );
 
 
     
@@ -488,7 +502,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     //  
     //  
     //}//end ptbins 2 loop 
-  }
+      }
   // trigger (also jet) level
   TH1F  *hpp_TrgObj40[2]={}, *hpp_TrgObj60[2]={}, *hpp_TrgObj80[2]={}, *hpp_TrgObj100[2]={};// plots for incl spectra for each individual trigger
   TH1F  *hpp_ExcTrgObj40[2]={}, *hpp_ExcTrgObj60[2]={}, *hpp_ExcTrgObj80[2]={}, *hpp_ExcTrgObj100[2]={};// plots for trigger-exclusive inclusive jet spectra
@@ -886,10 +900,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   assert( jetEventsExist && skimEventsExist && EventCountsEqual );
   
   UInt_t NEvents_allFiles=NEvents_jetAnalyzr;   // preskim event count from files
-  for(UInt_t i=0;i < NEvents_allFiles; ++i) h_NEvents->Fill(1);
-  
-  UInt_t NEvents_toRead=0;
-  NEvents_toRead = NEvents_allFiles;
+  UInt_t NEvents_toRead= NEvents_allFiles;
   
   UInt_t NEvents_40=0, NEvents_60=0, NEvents_80=0, NEvents_100=0;  //trigger event counts
   std::cout<<"reading "<<NEvents_toRead<<" events"<<std::endl;  
@@ -909,7 +920,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   
   //begin event loop
   for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
-    
+    h_NEvents->Fill(1);
     
     //grab an entry
     if( debugMode && (nEvt%1000==0) ) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
@@ -1087,6 +1098,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     }
     
     
+    bool trkPasses[1000]={false};//for later use
     
     if(fillDataJetMultHists){
       
@@ -1105,7 +1117,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	  has25PercHighPurTrks=true;	
       }      
       if(!has25PercHighPurTrks) continue;      
-      h_NEvents_trkCuts_1->Fill(0);
+      h_NEvents_trkCuts_1->Fill(1);
       
       //// cut on vtx_z spacings
       bool vtxsSpacedOutEnough=true;
@@ -1123,7 +1135,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	if(!vtxsSpacedOutEnough)break;
       }//end 1st vtx loop
       if(!vtxsSpacedOutEnough)continue;
-      h_NEvents_trkCuts_2->Fill(0);
+      h_NEvents_trkCuts_2->Fill(1);
       
 
       //// cut on vtx positions w.r.t. beamspot/avgvtx positions
@@ -1168,7 +1180,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 
       }
       if(!atLeastOnePVinRange) continue;
-      h_NEvents_trkCuts_3->Fill(0);
+      h_NEvents_trkCuts_3->Fill(1);
 
       
 	
@@ -1199,24 +1211,25 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	else if(fabs(trkDz_F[itrk]/trkDzError_F[itrk]) > 3.0) continue;
 	else if(fabs(trkDxy_F[itrk]/trkDxyError_F[itrk]) > 3.0) continue;
 	
-	h_NTrks_kmatCut->Fill(0);
 	
+	h_NTrks_kmatCut->Fill(0);	
 	nTrk_passCuts_I++;	
-	
+	trkPasses[itrk]=true;
       }
       
-
-
+      
+      
       ////// multiplicity cuts go here
-      //bool inTrkMultClass=false;
-      ////int minTrks=34, maxTrks=44; // peripheral, ~22-43% as of 12/12/17
-      //int minTrks=80, maxTrks=300; // central, ~ 0-11% as of 12/12/17
-      //if (nTrk_passCuts_I < minTrks || nTrk_passCuts_I > maxTrks)
-      //	inTrkMultClass=false;
-      //else 
-      //	inTrkMultClass=true;      
-      //
-      //if(!inTrkMultClass)continue;
+      if(doTrkMultClassCuts){
+	bool inTrkMultClass=false;
+	if (  minTrks <= nTrkVtx_I[0] && nTrkVtx_I[0] <= maxTrks)
+	  inTrkMultClass=true;
+	else 
+	  inTrkMultClass=false;      
+	
+	if(!inTrkMultClass)continue;
+      }
+      h_NEvents_trkCuts_4->Fill(0);
       
       
       
@@ -1224,14 +1237,16 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       
       // now loop over tracks for plots (kept separate for multiplicity class reasons)
       for(int itrk=0;itrk<nTrk_I;itrk++){
+
+	if(!trkPasses[itrk])continue;
 	
-	if(!(trkHighPur_O[itrk]))continue;
-	else if(trkPt_F[itrk]<0.4)continue;
-	else if(fabs(trkEta_F[itrk])>2.4)continue;
-	else if ((trkPtError_F[itrk]/trkPt_F[itrk])>0.1)continue;
-	else if(fabs(trkDz_F[itrk]/trkDzError_F[itrk]) > 3.0) continue;
-	else if(fabs(trkDxy_F[itrk]/trkDxyError_F[itrk]) > 3.0) continue;
-	
+	//if(!(trkHighPur_O[itrk]))continue;
+	//else if(trkPt_F[itrk]<0.4)continue;
+	//else if(fabs(trkEta_F[itrk])>2.4)continue;
+	//else if ((trkPtError_F[itrk]/trkPt_F[itrk])>0.1)continue;
+	//else if(fabs(trkDz_F[itrk]/trkDzError_F[itrk]) > 3.0) continue;
+	//else if(fabs(trkDxy_F[itrk]/trkDxyError_F[itrk]) > 3.0) continue;
+
 	// TH1 QA
 	trkPt->Fill( trkPt_F[itrk]  , weight_eS);
 	trkPtError->Fill( trkPtError_F[itrk]  , weight_eS);
@@ -1398,10 +1413,11 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     // for event counting + avoiding duplicate fills in dijet hists
     bool dijetHistsFilled=false;
     bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
-
+    
     int jetsPerEvent=nref_I;
     float evt_leadJetPt=-1., evt_leadJetEta=-100.; 
-
+    
+    bool jetPasses[100]={false};
     for(int jet = 0; jet<nref_I; ++jet){
       
       // event+jet counting
@@ -1434,12 +1450,10 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	jetsPerEvent--;
 	continue;}
       
-      if(absreceta >= 4.7 ) jetsPerEvent--; 
+      if(absreceta >= 4.7 ) {
+	jetsPerEvent--; 
+	continue;      }
       
-      // largest jet pt in each event
-      if(recpt>evt_leadJetPt && absreceta<4.7){
-	evt_leadJetPt=recpt;
-	evt_leadJetEta=receta;      }
       
       h_NJets_kmatCut->Fill(1);
       h_WNJets_kmatCut->Fill(1,weight_eS);
@@ -1451,12 +1465,12 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       float rawpt  = rawpt_F[jet];
       //float recy   = y_F[jet];
       float recphi = phi_F[jet];
-
+      
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
       
-      
+    
       
       
       // 13 TeV JetID criterion, loose or tight
@@ -1489,10 +1503,19 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 		trkSum_F[jet] < 0.4 && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
 		true       ) passesJetID=true;     //          neuMult            > 10
 	  }	  	  
-	if(fillDataJetIDHists && !passesJetID)continue;
+	if(!passesJetID){
+	  jetsPerEvent--;
+	  continue;
+	}
       }
-
       
+      jetPasses[jet]=true;
+
+      // largest jet pt in each event
+      if(recpt>evt_leadJetPt && absreceta<4.7){
+	evt_leadJetPt=recpt;
+	evt_leadJetEta=receta;      }
+
       
       
       // trig plots
@@ -1614,7 +1637,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	    hJetQA[jetIDint][ind]->Fill( secondGoodJetPt , weight_eS ); ind++; }
 	}
       }
-	
+      
       
       // apply JetID
       if(fillDataJetIDHists){
@@ -1631,12 +1654,36 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     }//end jet loop
     
     if(fillDataEvtQAHists){
+      
       if(evt_leadJetPt>0.) {
 	hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
 	hLeadJetEta->Fill(evt_leadJetEta ,weight_eS);      }
+
       hjetsPEvt ->Fill(jetsPerEvent,1.0);   
       hWjetsPEvt->Fill(jetsPerEvent,weight_eS); 
-    }
+      
+      
+      //this is horrific and wasteful coding, fix me
+      for(int jet = 0; jet<nref_I; ++jet){
+	
+	if(!jetPasses[jet])continue;
+	
+	for(int itrk=0;itrk<nTrk_I;itrk++){
+	  
+	  if(!trkPasses[itrk])continue;
+	  
+	  float deltaPhi=trkPhi_F[itrk] - pt_F[jet];
+	  float deltaEta=trkEta_F[itrk] - eta_F[jet];	  
+	  jetTrackCorr_noPhiMatch->Fill(deltaPhi, deltaEta, (weight_eS/((float)jetsPerEvent)));
+	  
+	  deltaPhi=deltaphi_jettrk(deltaPhi);
+	  jetTrackCorr->Fill(deltaPhi, deltaEta, (weight_eS/((float)jetsPerEvent)));
+	  
+	}//end track loop in jet-track loop
+      }//end jet loop in jet-track loop
+      //end make jetrackc
+      
+    }//end fill data evt qa hists
   }//end event loop
 
   std::cout<<std::endl;

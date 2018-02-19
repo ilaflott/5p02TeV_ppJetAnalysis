@@ -36,16 +36,16 @@ echo ""
 #sleep 5s
 
 
-####### semiOfficial Py8
-#echo ""
-#echo "submitting Py8 ppMC job(s)"
-#echo ""
-#
-#source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 200 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
-#
-#echo ""
-#echo "done submitting ppMC jetPlots job(s)"
-#echo ""
+###### semiOfficial Py8
+echo ""
+echo "submitting Py8 ppMC job(s)"
+echo ""
+
+source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 200 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+
+echo ""
+echo "done submitting ppMC jetPlots job(s)"
+echo ""
 #sleep 5s
 
 return

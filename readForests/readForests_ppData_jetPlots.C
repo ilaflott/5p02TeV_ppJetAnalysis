@@ -10,7 +10,7 @@ const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 
 const bool fillDataDijetHists=false;
-const bool fillDataJetSpectraRapHists=true; //other
+const bool fillDataJetSpectraRapHists=false; //other
 
 const bool useHLT100=false;
 
@@ -123,23 +123,35 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   
 
   //evt counts
-  TH1F *h_NEvents          = new TH1F("NEvents"         , "NEvents",         2,0,2);
-  TH1F *h_NEvents_read     = new TH1F("NEvents_read"    , "NEvents read",    2,0,2);
-  TH1F *h_NEvents_skipped  = new TH1F("NEvents_skipped" , "NEvents skipped", 2,0,2);
-  TH1F *h_NEvents_skimCut  = new TH1F("NEvents_skimCut" , "NEvents read post skimCut",  2,0,2);
-  TH1F *h_NEvents_vzCut    = new TH1F("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 2,0,2);
-
-  TH1F *h_NEvents_trigd    = new TH1F("NEvents_trigd"   , "NEvents trigd",   2,0,2);
+  TH1F *h_NEvents          = new TH1F("NEvents"         , "NEvents",         2,0,2); //0-1 bin --> fill w/ unweighted entry, 1-2 bin --> fill w/ weighted entry
+  TH1F *h_NEvents_nopscl   = new TH1F("NEvents_nopscl"  , "NEvents triggered w/ pscl==1",   2,0,2);
+  TH1F *h_NEvents_trigd_1    = new TH1F("NEvents_trigd_1"   , "NEvents trigd",   2,0,2);  
   TH1F *h_NEvents_jet40    = new TH1F("NEvents_jet40Trigd"   , "NEvents jet40Trigd",    2,0,2);
   TH1F *h_NEvents_jet60    = new TH1F("NEvents_jet60Trigd"   , "NEvents jet60Trigd",    2,0,2);
   TH1F *h_NEvents_jet80    = new TH1F("NEvents_jet80Trigd"   , "NEvents jet80Trigd",    2,0,2);
   TH1F *h_NEvents_jet100   = new TH1F("NEvents_jet100Trigd"  , "NEvents jet100Trigd",   2,0,2);
 
+  
+
+  
+  TH1F *h_NEvents_skipped  = new TH1F("NEvents_skipped" , "NEvents skipped", 2,0,2);
+  TH1F *h_NEvents_read     = new TH1F("NEvents_read"    , "NEvents read",    2,0,2);
+  TH1F *h_NEvents_trigd_2    = new TH1F("NEvents_trigd_2"   , "NEvents trigd after duplicate skip",   2,0,2);
+  
+  TH1F *h_NEvents_skimCut  = new TH1F("NEvents_skimCut" , "NEvents read post skimCut",  2,0,2);
+  TH1F *h_NEvents_vzCut    = new TH1F("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 2,0,2);
+  
   //evt counts post all evt cuts. thrown out because no jets left in the event pre or post cuts
   TH1F *h_NEvents_withJets           = new TH1F("NEvents_withJets" , 
-		  				"NEvents read post evt cuts, w/ jets", 2,0,2);
-  TH1F *h_NEvents_withJets_kmatCut   = new TH1F("NEvents_withJets_kmatCut" , 
-						"NEvents read post evt cuts, w/ jets post kmatCut", 2,0,2);
+		  				"NEvents post evt cuts/trigger, w/ nref_I>0", 2,0,2);
+  TH1F *h_NEvents_withJets_jtptCut   = new TH1F("NEvents_withJets_jtptCut" , 
+						"NEvents w/ jets post jtptCut", 2,0,2);
+  TH1F *h_NEvents_withJets_jtetaCut1   = new TH1F("NEvents_withJets_jtetaCut1" , 
+						  "NEvents w/ jets post |jteta|<4.7", 2,0,2);
+  TH1F *h_NEvents_withJets_jtetaCut2   = new TH1F("NEvents_withJets_jtetaCut2" , 
+						  "NEvents w/ jets post jteta Hi/Lo cuts", 2,0,2);
+  //TH1F *h_NEvents_withJets_kmatCut   = new TH1F("NEvents_withJets_kmatCut" , 
+//						"NEvents read post evt cuts, w/ jets post kmatCut", 2,0,2);
   TH1F *h_NEvents_withJets_JetIDCut = NULL;
   if(fillDataJetIDHists)
     h_NEvents_withJets_JetIDCut= new TH1F("NEvents_withJets_JetIDCut" , 
@@ -153,11 +165,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   
   TH1F* hNref=NULL, *hWNref=NULL;
   TH1F* hjetsPEvt=NULL,* hWjetsPEvt=NULL;
-  TH1F* hjetsPEvt_wJetID=NULL,* hWjetsPEvt_wJetID=NULL;
-  TH1F* hLeadJetPt=NULL;//,* hLeadJetPt_wJetID=NULL;
-
+  //TH1F* hjetsPEvt_wJetID=NULL,* hWjetsPEvt_wJetID=NULL;
+  TH1F* hLeadJetPt=NULL, *hLeadJetPt_wCuts=NULL;
+  
   if(fillDataEvtQAHists){
-
+    
     hVr = new TH1F("hVr","vr, no trig, no weights",  2000,0.,0.60); 
     hWVr = new TH1F("hWeightedVr","vr, trigd, with weights",  2000,0.,0.60); 
     hTrgVr_noW = new TH1F("hTriggerVr_noWeights","vr, trigd, no weights",2000,0.,0.60); 
@@ -174,45 +186,55 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  1000,-25.,25.);    
     hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);  
     
-    hNref      = new TH1F("hNref","nref each evt",30,0,30);
+    hNref      = new TH1F("hNref","nref each evt",30,0,30);         
     hWNref     = new TH1F("hWNref","weighted nref each evt",30,0,30);
-    hjetsPEvt  = new TH1F("hjetsPEvt","numJets each evt",30,0,30);
+    
+    hjetsPEvt  = new TH1F("hjetsPEvt","numJets each evt",30,0,30);  
     hWjetsPEvt = new TH1F("hWjetsPEvt","weighted numJets each evt",30,0,30);
     
-    if(fillDataJetIDHists){
-      hjetsPEvt_wJetID = new TH1F("hjetsPEvt_wJetID","num JetID Jets each evt",30,0,30);
-      hWjetsPEvt_wJetID = new TH1F("hWjetsPEvt_wJetID","weighted num JetID Jets each evt",30,0,30);}
-    
     hLeadJetPt      = new TH1F("hLeadJetPt","lead jet pt for each evt",1000,0,1000);
-    //if(fillDataJetIDHists)
-    //  hLeadJetPt_wJetID      = new TH1F("hLeadJetPt_wJetId","lead jet pt w Jet ID for each evt",1000,0,1000);
+    hLeadJetPt_wCuts      = new TH1F("hLeadJetPt_wCuts","lead jet pt for each evt",1000,0,1000);
     
   }
   
   
-
+  
   //jet counts
+
   TH1F *h_NJets          = new TH1F("NJets","NJets read", 2,0,2);
-  TH1F *h_NJets_kmatCut  = new TH1F("NJets_kmatCut ","NJets read post kmatCut ", 2,0,2);
+  TH1F *h_NJets_jtptCut  = new TH1F("NJets_jtptCut ","NJets read post jtptCut ", 2,0,2);
+  TH1F *h_NJets_jtetaCut1  = new TH1F("NJets_jtetaCut1 ","NJets read post jtetaCut1 ", 2,0,2);
+  TH1F *h_NJets_jtetaCut2  = new TH1F("NJets_jtetaCut2 ","NJets read post jtetaCut2 ", 2,0,2);
   TH1F *h_NJets_JetIDCut=NULL;
   if(fillDataJetIDHists)
     h_NJets_JetIDCut = new TH1F("NJets_JetIDCut","NJets read post JetIDCut AND kmatCut", 2,0,2);
-
-  //weighted jet counts
-  TH1F *h_WNJets          = new TH1F("WNJets","WNJets read", 2,0,2);
-  TH1F *h_WNJets_kmatCut  = new TH1F("WNJets_kmatCut ","WNJets read post kmatCut ", 2,0,2);
-  TH1F *h_WNJets_JetIDCut=NULL;
-  if(fillDataJetIDHists)
-    h_WNJets_JetIDCut = new TH1F("WNJets_JetIDCut","WNJets read post JetIDCut AND kmatCut", 2,0,2);
+  
+//  //weighted jet counts
+//  TH1F *h_WNJets          = new TH1F("WNJets","WNJets read", 2,0,2);
+//  TH1F *h_WNJets_kmatCut  = new TH1F("WNJets_kmatCut ","WNJets read post kmatCut ", 2,0,2);
+//  TH1F *h_WNJets_JetIDCut=NULL;
+//  if(fillDataJetIDHists)
+//    h_WNJets_JetIDCut = new TH1F("WNJets_JetIDCut","WNJets read post JetIDCut AND kmatCut", 2,0,2);
   
   //jet QA, i.e. hists filled once per jet
   TH1F *hJetQA[2][N_vars]={};
+  TH1F *hJetQA_jtpt=NULL, *hJetQA_jtpt_L2Res=NULL, *hJetQA_jtpt_L3Res=NULL;
+  TH2F *hJetQA_jtpt_v_L2Res=NULL,*hJetQA_jtpt_v_L3Res=NULL,*hJetQA_jtpt_L2Res_v_L3Res=NULL;
   if(fillDataJetQAHists)
     for(int k = 0; k<2; ++k){
       if(!fillDataJetIDHists && k==1)continue;	
       if(fillDataJetIDHists && k==0)continue;	
-      for(int j = 0; j<N_vars; ++j){	
+      
+      hJetQA_jtpt = new TH1F( Form("hJetQA_%dwJetID_jtpt_forRes", k) , Form(";%s;", "jtpt_forRes") , 2000,0,2000);       
+      hJetQA_jtpt_L2Res = new TH1F( Form("hJetQA_%dwJetID_jtpt_L2Res", k) , Form(";%s;", "jtpt_L2Res") , 2000,0,2000);       
+      hJetQA_jtpt_L3Res = new TH1F( Form("hJetQA_%dwJetID_jtpt_L3Res", k) , Form(";%s;", "jtpt_L3Res") , 2000,0,2000);       
 
+      hJetQA_jtpt_v_L2Res = new TH2F( Form("hJetQA_%dwJetID_jtpt_v_L2Res", k) , Form("jtpt v. jetpt_L2Res" ) , 2000,0,2000 , 2000,0,2000);
+      hJetQA_jtpt_v_L3Res = new TH2F( Form("hJetQA_%dwJetID_jtpt_v_L3Res", k) , Form("jtpt v. jetpt_L3Res" ) , 2000,0,2000 , 2000,0,2000);
+      hJetQA_jtpt_L2Res_v_L3Res = new TH2F( Form("hJetQA_%dwJetID_jtpt_L2Res_v_L3Res", k) , Form("jtpt_L2Res v. jetpt_L3Res" ) , 2000,0,2000 , 2000,0,2000);
+      
+      for(int j = 0; j<N_vars; ++j){	
+	
 	//jets
 	if(var[j]=="jtpt"||var[j]=="rawpt")
 	  hJetQA[k][j] = new TH1F( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;", var[j].c_str()) , 2000,0,2000);       
@@ -713,39 +735,47 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     }
       
     
-    if     ( is100 )  { NEvents_100++ ; h_NEvents_jet100->Fill(0)  ;h_NEvents_jet100->Fill(1,weight_eS)  ; }
-    else if( is80  )  { NEvents_80++  ;  h_NEvents_jet80->Fill(0)  ; h_NEvents_jet80->Fill(1,weight_eS)  ; }
-    else if( is60  )  { NEvents_60++  ;  h_NEvents_jet60->Fill(0)  ; h_NEvents_jet60->Fill(1,weight_eS)  ; }
-    else if( is40  )  { NEvents_40++  ;  h_NEvents_jet40->Fill(0)  ; h_NEvents_jet40->Fill(1,weight_eS)  ; }
-
-    h_NEvents->Fill(0);         h_NEvents->Fill(1,weight_eS);    
-    
+    if     ( is100 )  { NEvents_100++ ; h_NEvents_jet100->Fill(0.)  ; h_NEvents_jet100->Fill(1.,weight_eS ) ; }
+    else if( is80  )  { NEvents_80++  ;  h_NEvents_jet80->Fill(0.)  ;  h_NEvents_jet80->Fill(1.,weight_eS ) ; }
+    else if( is60  )  { NEvents_60++  ;  h_NEvents_jet60->Fill(0.)  ;  h_NEvents_jet60->Fill(1.,weight_eS ) ; }
+    else if( is40  )  { NEvents_40++  ;  h_NEvents_jet40->Fill(0.)  ;  h_NEvents_jet40->Fill(1.,weight_eS ) ; }
 
     
+    h_NEvents->Fill(0.);   h_NEvents->Fill(1.,weight_eS);    //all events, no skips
+    if(weight_eS>0.){ //only if an event fires a trigger (non-zero weight_eS)      
+      h_NEvents_trigd_1->Fill(0.);   h_NEvents_trigd_1->Fill(1.,weight_eS );    
+      if(weight_eS==1.) {h_NEvents_nopscl->Fill(0.);   h_NEvents_nopscl->Fill(1.,weight_eS );    }
+    }
+        
     //duplicate skipping between LowerJets and Jet80
     if(filelistIsJet80)
       if( (bool)CaloJet40_I || (bool)CaloJet60_I || (bool)PFJet40_I || (bool)PFJet60_I ) {
-	if(debugMode&&nEvt%100==0)std::cout<<"this event is in Jet80 AND LowerJets dataset.!"<<std::endl;
-	if(debugMode&&nEvt%100==0)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
-	h_NEvents_skipped->Fill(0);	h_NEvents_skipped->Fill(1,weight_eS);
-	continue; }
-    h_NEvents_read->Fill(0);    h_NEvents_read->Fill(1,weight_eS);
+	if(debugMode&&nEvt%1000==0)std::cout<<"this event is in Jet80 AND LowerJets dataset.!"<<std::endl;
+	if(debugMode&&nEvt%1000==0)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
+	h_NEvents_skipped->Fill(0.);	h_NEvents_skipped->Fill(1.,weight_eS);
+	//continue;  //temp for ONE jobs
+      }
     
+    h_NEvents_read->Fill(0.);    h_NEvents_read->Fill(1.,weight_eS);
+    
+    if(weight_eS>0.) //only if an event fires a trigger (non-zero weight_eS), AND is not a duplicate
+      { h_NEvents_trigd_2->Fill(0.);   h_NEvents_trigd_2->Fill(1.,weight_eS);    }
+    else continue; //only continue if the event fired the trigger
+    
+
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0      || 
         pBeamScrapingFilter_I==0   || 
         pprimaryvertexFilter_I==0  ) continue;
     //	//	puvertexFilter_I==0  	) continue;    
-    h_NEvents_skimCut->Fill(0);    h_NEvents_skimCut->Fill(1,weight_eS);
-
+    h_NEvents_skimCut->Fill(0.);    h_NEvents_skimCut->Fill(1.,weight_eS);
+    
     
     if( fabs(vz_F)>24. )     continue;
-    h_NEvents_vzCut->Fill(0);    h_NEvents_vzCut->Fill(1,weight_eS);
-
+    h_NEvents_vzCut->Fill(0.);    h_NEvents_vzCut->Fill(1.,weight_eS);    
     
-
     
-    if(fillDataJetTrigQAHists){
+    if(fillDataJetTrigQAHists){ //only want to fill these trigger jet plots if they pass all our quality criteria
       
       //make these trigger plots an array?
       if(trgDec[0]&&trgPt>=HLTthresh[0])   hpp_IncHLT40trgPt->Fill(  (float)trgPt, trgPscl[0] );
@@ -813,59 +843,86 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     // for event counting + avoiding duplicate fills in dijet hists
     bool dijetHistsFilled=false;//, dijetHistsFilled_wJetID=false;
-    bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
-
+    
+    //bool hNEvts_withJets_Filled=false, hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
+    //bool hNEvts_withJets_kmatCut_Filled=false, hNEvts_withJets_JetIDCut_Filled=false; 
+    bool hNEvts_withJets_jtptCut_Filled=false;
+    bool hNEvts_withJets_jtetaCut1_Filled=false, hNEvts_withJets_jtetaCut2_Filled=false;
+    bool hNEvts_withJets_JetIDCut_Filled=false; 
+    
     int jetsPerEvent=nref_I;//, jetsPerEventJetID=nref_I;
-    float evt_leadJetPt=-1.;//, evt_leadJetPt_wJetID=-1.;
-
+    float evt_leadJetPt=-1., evt_leadJetPt_wCuts=-1.;//, evt_leadJetPt_wJetID=-1.;
+    
+    if(nref_I>0){ h_NEvents_withJets->Fill(0.);	h_NEvents_withJets->Fill(1.,weight_eS); }    
     for(int jet = 0; jet<nref_I; ++jet){
       
       // event+jet counting
-      h_NJets->Fill(1);
-      h_WNJets->Fill(1,weight_eS);
-      if(!hNEvts_withJets_Filled){
-	h_NEvents_withJets->Fill(0);
-	h_NEvents_withJets->Fill(1,weight_eS);
-	hNEvts_withJets_Filled=true;      }      
-      
+      h_NJets->Fill(0.);            h_NJets->Fill(1.,weight_eS);      
       
       float recpt  = pt_F[jet];
+      float jtpt  = pt_F[jet];
+      float jtpt_L2Res=-1., jtpt_L3Res=-1.;
       float receta = eta_F[jet];
       float absreceta = fabs(receta);
       
-      
       if(doResidualCorr){
+	
 	recpt=L2JES->getCorrectedPt(recpt,receta);      
-	recpt=L3JES->getCorrectedPt(recpt);        }
+	jtpt_L2Res=recpt;
+	recpt=L3JES->getCorrectedPt(recpt);        
+	jtpt_L3Res=recpt;
+	
+	hJetQA_jtpt->Fill(jtpt,weight_eS);
+	hJetQA_jtpt_L2Res->Fill(jtpt_L2Res,weight_eS);
+	hJetQA_jtpt_L3Res->Fill(jtpt_L3Res,weight_eS);
+	hJetQA_jtpt_v_L2Res->Fill(jtpt,jtpt_L2Res,weight_eS);
+	hJetQA_jtpt_v_L3Res->Fill(jtpt,jtpt_L3Res,weight_eS);
+	hJetQA_jtpt_L2Res_v_L3Res->Fill(jtpt_L2Res,jtpt_L3Res,weight_eS);
+      }      
       
+      if(recpt>evt_leadJetPt){
+	evt_leadJetPt=recpt;      }
       
       // kmatCuts      
-      if( recpt <= jtPtCut ||
+      if( recpt < jtPtCut ||
 	  recpt > jtPtCut_Hi ){ 
-	jetsPerEvent--;//	jetsPerEventJetID--;
+	jetsPerEvent--;
 	continue;}
+      if(!hNEvts_withJets_jtptCut_Filled){ 
+	h_NEvents_withJets_jtptCut->Fill(0.);  	h_NEvents_withJets_jtptCut->Fill(1.,weight_eS);  
+	hNEvts_withJets_jtptCut_Filled=true;}    
+      h_NJets_jtptCut->Fill(0.); h_NJets_jtptCut->Fill(1.,weight_eS);      
       
-      if( absreceta >= jtEtaCutHi ) {
-	//jetsPerEvent--;	jetsPerEventJetID--;
+      if(absreceta > 4.7 ) {       
+	jetsPerEvent--; 
+	continue;}      
+      if(!hNEvts_withJets_jtetaCut1_Filled){ 
+	h_NEvents_withJets_jtetaCut1->Fill(0.);  	h_NEvents_withJets_jtetaCut1->Fill(1.,weight_eS);  
+	hNEvts_withJets_jtetaCut1_Filled=true;}    
+      h_NJets_jtetaCut1->Fill(0.); h_NJets_jtetaCut1->Fill(1.,weight_eS);      
+      
+      if( absreceta > jtEtaCutHi || 
+	  absreceta < jtEtaCutLo ) {
+	jetsPerEvent--;
 	continue;}
-      else if( absreceta < jtEtaCutLo ){ 
-	//jetsPerEvent--;	jetsPerEventJetID--;
-	continue;}
-
-      if(absreceta >= 4.7 ) jetsPerEvent--; 
-
+      if(!hNEvts_withJets_jtetaCut2_Filled){ 
+	h_NEvents_withJets_jtetaCut2->Fill(0.);  	h_NEvents_withJets_jtetaCut2->Fill(1.,weight_eS);  
+	hNEvts_withJets_jtetaCut2_Filled=true;}    
+      h_NJets_jtetaCut2->Fill(0.); h_NJets_jtetaCut2->Fill(1.,weight_eS);      
+      
       // largest jet pt in each event
-      if(recpt>evt_leadJetPt && absreceta<4.7)
-	evt_leadJetPt=recpt;
+      if(recpt>evt_leadJetPt_wCuts){
+	evt_leadJetPt_wCuts=recpt;      }
+      
       //if(recpt>evt_leadJetPt_wJetID && fillDataJetIDHists && passesJetID)
       //evt_leadJetPt_wJetID=recpt;
       
-      h_NJets_kmatCut->Fill(1);
-      h_WNJets_kmatCut->Fill(1,weight_eS);
-      if(!hNEvts_withJets_kmatCut_Filled){
-	h_NEvents_withJets_kmatCut->Fill(0);
-	h_NEvents_withJets_kmatCut->Fill(1,weight_eS);
-	hNEvts_withJets_kmatCut_Filled=true;  }           
+//      h_NJets_kmatCut->Fill(0.);
+//      h_WNJets_kmatCut->Fill(1.,weight_eS);
+//      if(!hNEvts_withJets_kmatCut_Filled){
+//	h_NEvents_withJets_kmatCut->Fill(0.);
+//	h_NEvents_withJets_kmatCut->Fill(1.,weight_eS);
+//	hNEvts_withJets_kmatCut_Filled=true;  }           
       
       
       float rawpt  = rawpt_F[jet];
@@ -876,13 +933,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
       
-      
-      
-      
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
       if(fillDataJetIDHists) 	{
-	if (absreceta<=2.4) 
+	if (absreceta<2.4) 
 	  { 
 	    if( neSum_F[jet]/rawpt    < 0.99 &&
 		phSum_F[jet]/rawpt    < 0.99 &&
@@ -891,13 +945,13 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 		chMult                > 0    &&
 		eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
 	  }
-	else if ( absreceta<=2.7 && absreceta>2.4 ) 
+	else if ( absreceta<2.7 && absreceta>2.4 ) 
 	  {	  
 	    if( neSum_F[jet]/rawpt    < 0.99 &&
 		phSum_F[jet]/rawpt    < 0.99 &&
 		numConst              > 1       ) passesJetID=true;	      
 	  }		  
-	else if( absreceta<=3.0 && absreceta>2.7 ) 
+	else if( absreceta<3.0 && absreceta>2.7 ) 
 	  {                                                         // CMSSW [76,80]X criterion
 	    if(  true && //phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
 		 true && //neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
@@ -909,25 +963,28 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 		true && //trkSum_F[jet] < 0.4 && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
 		true       ) passesJetID=true;     //          neuMult            > 10
 	  }	  	  
+	
+	if(!passesJetID) {
+	  jetsPerEvent--;
+	  continue; }
+	if(!hNEvts_withJets_JetIDCut_Filled){ 
+	  h_NEvents_withJets_JetIDCut->Fill(0.);  	h_NEvents_withJets_JetIDCut->Fill(1.,weight_eS);  
+	  hNEvts_withJets_JetIDCut_Filled=true;}    			
+	h_NJets_JetIDCut->Fill(0.);	h_NJets_JetIDCut->Fill(1.,weight_eS);
       }
-      
-      if(fillDataJetIDHists && !passesJetID)continue;
       
       //fill jetspectraRapHists w/ passing jetID criterion
       if( fillDataJetSpectraRapHists ) { 
 	int theRapBin=-1;
 	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
 	  if( absetabins[rapbin]<=absreceta  && 		
-	      absreceta<absetabins[rapbin+1]    	      ) {
-	    
+	      absreceta<absetabins[rapbin+1]    	      ) {	    
 	    theRapBin=rapbin;
-	    hJetSpectraRap[jetIDint][theRapBin]->Fill(recpt,weight_eS);  
-	    
-	    break;
-	  } 
+	    hJetSpectraRap[jetIDint][theRapBin]->Fill(recpt,weight_eS);  	    
+	    break;	  }       
       }
       
-
+      
       // trig plots
       if(fillDataJetTrigQAHists){
 	
@@ -1046,60 +1103,93 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	}
       }
       
-      if(fillDataJetIDHists){
-	// jet/event counts
-	h_NJets_JetIDCut->Fill(1);
-	h_WNJets_JetIDCut->Fill(1,weight_eS);
-	if(!hNEvts_withJets_JetIDCut_Filled){
-	  h_NEvents_withJets_JetIDCut->Fill(0);
-	  h_NEvents_withJets_JetIDCut->Fill(1,weight_eS);
-	  hNEvts_withJets_JetIDCut_Filled=true;   }      
-      }//end fillDataAJetIDhists
-
+      //if(fillDataJetIDHists){
+      //	// jet/event counts
+      //	h_NJets_JetIDCut->Fill(0.);	h_NJets_JetIDCut->Fill(1.,weight_eS);
+      //	if(!hNEvts_withJets_JetIDCut_Filled){
+      //	  h_NEvents_withJets_JetIDCut->Fill(0.);
+      //	  h_NEvents_withJets_JetIDCut->Fill(1.,weight_eS);
+      //	  hNEvts_withJets_JetIDCut_Filled=true;   }      
+      //}//end fillDataAJetIDhists      
+      
     }//end jet loop
-
+    
     if(fillDataEvtQAHists){
-      if(fillDataJetIDHists){
-	//hLeadJetPt_wJetID->Fill(evt_leadJetPt_wJetID ,weight_eS);
-	hjetsPEvt_wJetID ->Fill(jetsPerEvent,1.0);   
-	hWjetsPEvt_wJetID->Fill(jetsPerEvent,weight_eS); }   
-      else {
-	hjetsPEvt ->Fill(jetsPerEvent,1.0);   
-	hWjetsPEvt->Fill(jetsPerEvent,weight_eS); }
-      if(evt_leadJetPt>0.) hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
-
+      hjetsPEvt ->Fill(jetsPerEvent,1.0); 
+      hWjetsPEvt->Fill(jetsPerEvent,weight_eS);     
+      if(evt_leadJetPt>0.) 	  hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
+      if(evt_leadJetPt_wCuts>0.)  hLeadJetPt_wCuts->Fill(evt_leadJetPt_wCuts ,weight_eS);
     }
+        
   }//end event loop
 
-  std::cout<<std::endl;
+  std::cout<<std::endl;  
+  std::cout<<"//////////////////////////////"<<std::endl;
+  std::cout<<"/// Event Loop Summary ///"<<std::endl;
+  std::cout<<"//////////////////////////////"<<std::endl;
+
+  std::cout<<"# of Events (criteria/description) = count / pscl weighted count" <<std::endl<<std::endl;
+  std::cout<<"# of Events in file(s) opened = "    <<h_NEvents->GetBinContent(1)        << " / "<< h_NEvents->GetBinContent(2)<<std::endl; 
+  std::cout<<"# of Events trigd in those files = "    <<h_NEvents_trigd_1->GetBinContent(1) << " / "<< h_NEvents_trigd_1->GetBinContent(2)<<std::endl;
+  std::cout<<"# of Events w/ pscl==1 = " << h_NEvents_nopscl->GetBinContent(1) << " / " << h_NEvents_nopscl->GetBinContent(2) <<std::endl << std::endl;
+  std::cout<<"# of Events passing is40  = " << h_NEvents_jet40->GetBinContent(1)  << " / " << h_NEvents_jet40->GetBinContent(2)  <<std::endl;
+  std::cout<<"# of Events passing is60  = " << h_NEvents_jet60->GetBinContent(1)  << " / " << h_NEvents_jet60->GetBinContent(2)  <<std::endl;
+  std::cout<<"# of Events passing is80  = " << h_NEvents_jet80->GetBinContent(1)  << " / " << h_NEvents_jet80->GetBinContent(2)  <<std::endl;
+  std::cout<<"# of Events passing is100 = " << h_NEvents_jet100->GetBinContent(1) << " / " << h_NEvents_jet100->GetBinContent(2) <<std::endl<<std::endl;  
+ 
+  std::cout<<"# of Events in file(s) opened = "    <<h_NEvents->GetBinContent(1)        << " / "<< h_NEvents->GetBinContent(2)<<std::endl; 
+  std::cout<<"# of Events read from those file(s)     = " << h_NEvents_read->GetBinContent(1)    << " / " << h_NEvents_read->GetBinContent(2)<<std::endl;
+  std::cout<<"# of Events skipped from those file(s)  = " << h_NEvents_skipped->GetBinContent(1) << " / " << h_NEvents_skipped->GetBinContent(2)<<std::endl;
+  std::cout<<"# of Events passing a trigger post-skip = " << h_NEvents_trigd_2->GetBinContent(1) << " / " << h_NEvents_trigd_2->GetBinContent(2) <<std::endl << std::endl;
+
+  std::cout<<"# of Events passing skimCuts  = " << h_NEvents_skimCut->GetBinContent(1) << " / " << h_NEvents_skimCut->GetBinContent(2) << std::endl;
+  std::cout<<"# of Events passing vzCuts    = " << h_NEvents_vzCut->GetBinContent(1)   << " / " << h_NEvents_vzCut->GetBinContent(2)   << std::endl<<std::endl;
+
+//  std::cout<<"# of ''Good'' Events passing trig  = " << (hpp_HLT40trgEta->GetEntries()+hpp_HLT60trgEta->GetEntries()+  
+//								 hpp_HLT80trgEta->GetEntries()+hpp_HLT100trgEta->GetEntries())  << " / " 
+//	   << (hpp_HLT40trgEta->Integral()+hpp_HLT60trgEta->Integral()+  
+//	       hpp_HLT80trgEta->Integral()+hpp_HLT100trgEta->Integral()) << std::endl; 
+ 
+  std::cout<<"# of Events passing trig  = " << hpp_HLTCombtrgPt ->GetEntries() << " / " <<  hpp_HLTCombtrgPt->Integral()<<std::endl;
+  std::cout<<"# of Events passing is40  = " << hpp_HLT40trgEta ->GetEntries()  << " / " <<  hpp_HLT40trgEta->Integral()<<std::endl;
+  std::cout<<"# of Events passing is60  = " << hpp_HLT60trgEta ->GetEntries()  << " / " <<  hpp_HLT60trgEta->Integral()<<std::endl;
+  std::cout<<"# of Events passing is80  = " << hpp_HLT80trgEta ->GetEntries()  << " / " <<  hpp_HLT80trgEta->Integral()<<std::endl;
+  std::cout<<"# of Events passing is100 = " << hpp_HLT100trgEta->GetEntries()  << " / " <<  hpp_HLT100trgEta->Integral()<<std::endl<<std::endl;  
   
-  std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
-  std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetBinContent(1)<<std::endl;
-  std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetBinContent(1)<<std::endl;
-  std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetBinContent(1)<<std::endl<<std::endl;
   
-  std::cout<<"Total Num of Events passing jet40 = "  << h_NEvents_jet40->GetBinContent(1)  << std::endl;
-  std::cout<<"Total Num of Events passing jet60 = "  << h_NEvents_jet60->GetBinContent(1)  << std::endl;
-  std::cout<<"Total Num of Events passing jet80 = "  << h_NEvents_jet80->GetBinContent(1)  << std::endl;
-  std::cout<<"Total Num of Events passing jet100 = " << h_NEvents_jet100->GetBinContent(1) << std::endl;
-  std::cout<<"Total Num of Events passing a trigger = " << h_NEvents_trigd->GetBinContent(1) << std::endl << std::endl;
+  std::cout<<"# of Events passing HLT40  = " << hpp_IncHLT40trgEta ->GetEntries()  << " / " <<  hpp_IncHLT40trgEta ->Integral()<<std::endl;
+  std::cout<<"# of Events passing HLT60  = " << hpp_IncHLT60trgEta ->GetEntries()  << " / " <<  hpp_IncHLT60trgEta ->Integral()<<std::endl;
+  std::cout<<"# of Events passing HLT80  = " << hpp_IncHLT80trgEta ->GetEntries()  << " / " <<  hpp_IncHLT80trgEta ->Integral()<<std::endl;
+  std::cout<<"# of Events passing HLT100 = " << hpp_IncHLT100trgEta->GetEntries()  << " / " <<  hpp_IncHLT100trgEta->Integral()<<std::endl<<std::endl;  
   
-  std::cout<<"Total Num of Events passing skimCuts  = " << h_NEvents_skimCut->GetBinContent(1)<<std::endl;
-  std::cout<<"Total Num of Events passing vzCuts    = " << h_NEvents_vzCut->GetBinContent(1)<<std::endl<<std::endl;
   
-  std::cout<<"Total Num of good Events w/ jets = " << h_NEvents_withJets->GetBinContent(1)<<std::endl; //note, approximate, some events make it through with nref=0 for some reason
-  std::cout<<"Total Num of good Events, w/ jets, post kmatCuts = " << h_NEvents_withJets_kmatCut->GetBinContent(1) << std::endl; 
+  std::cout<<"//////////////////////////////"<<std::endl;
+  std::cout<<"/// Jet-Event Loop Summary ///"<<std::endl;
+  std::cout<<"//////////////////////////////"<<std::endl;
+
+  std::cout<<"# of Evts w/ min. 1 jet                   = " << h_NEvents_withJets->GetBinContent(1) << " / " << h_NEvents_withJets->GetBinContent(2) <<std::endl; 
+  std::cout<<"# of Evts w/ min. 1 jet w/ jtpt > jtPtCut = " << h_NEvents_withJets_jtptCut->GetBinContent(1) << " / " << h_NEvents_withJets_jtptCut->GetBinContent(2) << std::endl;
+  std::cout<<"# of Evts w/ min. 1 jet w/ |jteta| < 4.7  = "                 << h_NEvents_withJets_jtetaCut1->GetBinContent(1) << " / " << h_NEvents_withJets_jtetaCut1->GetBinContent(2) << std::endl; 
+  std::cout<<"# of Evts w/ min. 1 jet w/ jtEtaCut(s)    = " << h_NEvents_withJets_jtetaCut2->GetBinContent(1) << " / " << h_NEvents_withJets_jtetaCut2->GetBinContent(2) << std::endl;  
   if(fillDataJetIDHists) 
-    std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " << h_NEvents_withJets_JetIDCut->GetBinContent(1)<<std::endl;        
+    std::cout<<"# of Evts w/ min. 1 jet w/ JetIDCut       = " << h_NEvents_withJets_JetIDCut->GetBinContent(1) << " / " << h_NEvents_withJets_JetIDCut->GetBinContent(2) << std::endl;        
+
+  std::cout<<std::endl;  
   
-  //std::cout<<std::endl<<"/// Job Jet-Loop Summary ///"<<std::endl<<std::endl;
-  //std::cout<<"Total Num of Jets read from good events                          = " <<    h_NJets->GetBinContent(1)<<std::endl;  
-  //std::cout<<"Total Num of Jets read from good events post kinCut              = " <<    h_NJets_kmatCut->GetBinContent(1)<<std::endl;
+  std::cout<<"# of Jets read                   = " << h_NJets->GetBinContent(1) << " / " << h_NJets->GetBinContent(2) <<std::endl; 
+  std::cout<<"# of Jets w/ jtpt > jtptCut      = " << h_NJets_jtptCut->GetBinContent(1) << " / " << h_NJets_jtptCut->GetBinContent(2) <<std::endl;   
+  std::cout<<"# of Jets w/ |jteta|<4.7         = " << h_NJets_jtetaCut1->GetBinContent(1) << " / " << h_NJets_jtetaCut1->GetBinContent(2) <<std::endl; 
+  std::cout<<"# of Jets w/ passing jtEtaCut(s) = " << h_NJets_jtetaCut2->GetBinContent(1) << " / " << h_NJets_jtetaCut2->GetBinContent(2) <<std::endl; 
+  if(fillDataJetIDHists)
+    std::cout<<"# of Jets w/ jetIDCut            = " << h_NJets_JetIDCut->GetBinContent(1) << " / " << h_NJets_JetIDCut->GetBinContent(2) <<std::endl; 
+  
+  //std::cout<<"Num of Jets read from good events                          = " <<    h_NJets->GetBinContent(1)<<std::endl;  
+  //std::cout<<"Num of Jets read from good events post kinCut              = " <<    h_NJets_kmatCut->GetBinContent(1)<<std::endl;
   //if(fillDataJetIDHists) 
-  //  std::cout<<"Total Num of Jets read from good events post kinCut AND JetIDCut = " << h_NJets_JetIDCut->GetBinContent(1)<<std::endl;
+  //  std::cout<<"Num of Jets read from good events post kinCut AND JetIDCut = " << h_NJets_JetIDCut->GetBinContent(1)<<std::endl;
   //std::cout<<std::endl;
   
-  std::cout<<"writing output file... ";
+  std::cout<<std::endl<<"writing output file... "<<std::endl;
   fout->Write(); 
   
   trgObjpt_40->clear();
@@ -1112,7 +1202,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   trgObjeta_80->clear();
   trgObjeta_100->clear();
   
-  std::cout<<std::endl<<"readForests_ppData_jetPlots finished."<<std::endl;  timer.Stop();
+  std::cout<<"readForests_ppData_jetPlots finished."<<std::endl;  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real tyime (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   std::cout<<"output file written is  "<<outfile<<std::endl<<std::endl;

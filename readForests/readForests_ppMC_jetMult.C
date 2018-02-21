@@ -826,6 +826,7 @@ int readForests_ppMC_jetMult(std::string inFilelist , int startfile , int endfil
         h_NTrks->Fill(0);
 
         if(!(trkHighPur_O[itrk]))continue;
+
 	else if(trkFake_O[itrk])continue; //tracks not matched to PF particles are pinged as fake
 	else if(matchedGenID_I[itrk][0] == 0)continue;//tracks matched to PF particles, but not subsequently matche to GEN particles have a matchedGenID of 0
         else if(trkPt_F[itrk]<0.4)continue;
@@ -859,6 +860,7 @@ int readForests_ppMC_jetMult(std::string inFilelist , int startfile , int endfil
       for(int itrk=0;itrk<nTrk_I;itrk++){
 	
         if(!(trkHighPur_O[itrk]))continue;
+
 	else if(trkFake_O[itrk])continue; //tracks not matched to PF particles are pinged as fake
 	else if(matchedGenID_I[itrk][0] == 0)continue;//tracks matched to PF particles, but not subsequently matche to GEN particles have a matchedGenID of 0
         else if(trkPt_F[itrk]<0.4)continue;

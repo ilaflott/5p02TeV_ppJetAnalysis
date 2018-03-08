@@ -46,7 +46,6 @@ void divideBinWidth(TH1 *h){
 
 
 float trigComb(bool *trgDec, int *treePrescl, double triggerPt){
-
   float weight_eS=0.;
   if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS=treePrescl[0];
   if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS=treePrescl[1];
@@ -105,26 +104,12 @@ const std::string var[]={
   "eN"  ,  "eSum"  , "eMax"  ,    //e
   "muN" ,  "muSum" , "muMax" , //mu
   "neuMult", "chMult", "numConst",
-  //"hcalSum", "ecalSum",       //hcal and ecal
   // dijets, 31-35=5 vars
   "Aj" , "xj" , "dphi",    //JERS might not like me
   "leadJetPt", "subleadJetPt"
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
-//"hcalSum", "ecalSum",       //hcal and ecal
-// dijets, 31-35=5 vars
-//"Aj" , "xj" , "dphi",
-//"leadJetPt", "subleadJetPt"
 const int jtInd=0, jtConInd=4, dijtInd=31;
-
-const float HLTthresh[]={
-  //  40., 60., 80., 100. //original, defaults
-  //55., 75., 105., 135. //current best thresholds for PF triggers, seems to work for Calo too
-  //45., 65., 95., 110.   // last ones tried for Calo specifically
-  45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
-  //45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
-};
-
 
 //L1
 const std::string L1BitStrings[]={//this array is a good idea
@@ -136,8 +121,10 @@ const std::string L1BitStrings[]={//this array is a good idea
 //const int N_L1Bits=N_HLTBits;
 const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
 
-
 // HLT, both Calo and PF available
+const float HLTCalothresh[]={
+  45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
+};
 const std::string Calo_HLTBitStrings[]={
   "HLT_AK4CaloJet40_Eta5p1",
   "HLT_AK4CaloJet60_Eta5p1",
@@ -146,6 +133,9 @@ const std::string Calo_HLTBitStrings[]={
 };
 const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
 
+const float HLTPFthresh[]={
+  55., 75., 95., 135.   // thought HLT80 threshold was too strict for Calo, now looser
+};
 const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
   "HLT_AK4PFJet60_Eta5p1",
@@ -161,10 +151,10 @@ const std::string dataTreeNames[]={
   "skimanalysis/HltTree",   
   "ppTrack/trackTree",
   "hltanalysis/HltTree",
-  "hltobject/", //+Calo_HLTBitStrings[0]+"_v" ,
-  "hltobject/", //+Calo_HLTBitStrings[1]+"_v" ,
-  "hltobject/", //+Calo_HLTBitStrings[2]+"_v" ,
-  "hltobject/"  //+Calo_HLTBitStrings[3]+"_v" 
+  "hltobject/", 
+  "hltobject/", 
+  "hltobject/", 
+  "hltobject/"  
 };
 const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);
 

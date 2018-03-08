@@ -26,6 +26,8 @@
 #include <TH1F.h>
 #include <TH2F.h>
 //// custom
+//#include "joelsCode/StMyAnalysisMaker.h"
+#include "joelsCode/StEventPoolManager.h"
 //#include "L2L3ResidualWFits.h"
 //#include "MCTruthResidual.h"
 

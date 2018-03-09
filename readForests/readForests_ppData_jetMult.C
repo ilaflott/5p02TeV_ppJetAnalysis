@@ -31,8 +31,38 @@ const int minTrks=35, maxTrks=53; // ~ 9%  - 36%
 //// readForests_ppData_jetMult
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData_jetMult( std::string inFilelist , int startfile , int endfile , 
-				 int radius , std::string jetType , bool debugMode ,
-				 std::string outfile, float jtEtaCutLo, float jtEtaCutHi){
+				int radius , std::string jetType , bool debugMode ,
+				std::string outfile, float jtEtaCutLo, float jtEtaCutHi){
+  
+  Double_t centralityBin[]={
+    0., 1., 2., 3., 4.
+  };
+  //  0.,    1.,    2.,    3.,    4.,
+  //  5.,    6.,    7.,    8.,    9.,
+  //  10.,    11.,    12.,    13.,    14.,
+  //  15.
+  //};
+  const int nCentBins=sizeof(centralityBin)/sizeof(Double_t);
+  std::cout<<"nCentBins="<<nCentBins<<std::endl;
+  
+  Double_t vzbin[]={
+    -24., -12., 0., 12., 24.
+  };
+  //    (4.)*(-10.) ,    (4.)*(-9. ) ,    (4.)*(-8. ) ,    (4.)*(-7. ) ,    (4.)*(-6. ) ,
+  //    (4.)*(-5. ) ,    (4.)*(-4. ) ,    (4.)*(-3. ) ,    (4.)*(-2. ) ,    (4.)*(-1. ) ,
+  //    (4.)*(0.)   ,    (4.)*(1.)   ,    (4.)*(2.)   ,    (4.)*(3.)   ,    (4.)*(4.)   ,
+  //    (4.)*(5.)   ,    (4.)*(6.)   ,    (4.)*(7.)   ,    (4.)*(8.)   ,    (4.)*(9.)   ,
+  //    (4.)*(10.)
+  //};
+  const int nZvBins=sizeof(vzbin)/sizeof(Double_t);
+  std::cout<<"nZvBins="<<nZvBins<<std::endl;
+  
+  std::cout<<"creating fPoolMgr"<<std::endl;  
+  Int_t fMixingTracks=50000, poolsize=1000, trackDepth=fMixingTracks;
+  StEventPoolManager *fPoolMgr=new StEventPoolManager(poolsize, trackDepth, nCentBins, (Double_t*)centralityBin, nZvBins, (Double_t*)vzbin);
+
+  
+  
   
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
@@ -126,7 +156,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0, 100); hSubLeadJetPtCut->Fill(subldJetPtCut);
   TH1F *hPtAveCut        =new TH1F("hPtAveCut"      ,(std::to_string(ptAveCut)).c_str(),      100, 0, 100); hPtAveCut->Fill(ptAveCut);  
   
-
+  TH1F *hTrigComb=new TH1F("TrigComb", (trgCombType).c_str(), 1,0,1);
+  
   //evt counts
   TH1F *h_NEvents          = new TH1F("NEvents"         , "NEvents",         1,0,2);
   TH1F *h_NEvents_read     = new TH1F("NEvents_read"    , "NEvents read",    1,0,2);
@@ -807,72 +838,138 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 
 
 
-  
-
-
-  
-
-  
   // hltanalysis
-  assert(N_HLTBits==N_L1Bits);
-
-  //string array formation for HLT branches
+  // L1 Trigger Branches
   std::string L1Branches[N_L1Bits], L1PresclBranches[N_L1Bits];
-  std::string PF_HLTBranches[N_HLTBits],PF_HLTPresclBranches[N_HLTBits];
-  std::string Calo_HLTBranches[N_HLTBits], Calo_HLTPresclBranches[N_HLTBits];
-
-  for(int i=0; i<N_HLTBits; ++i) {
+  for(int i=0; i<N_L1Bits; ++i) {
     L1Branches[i] = L1BitStrings[i];
     L1PresclBranches[i] = L1BitStrings[i] + "_Prescl";  
-    PF_HLTBranches[i] = PF_HLTBitStrings[i] + "_v1"; 
-    PF_HLTPresclBranches[i] = PF_HLTBitStrings[i] + "_v1_Prescl";   
-    Calo_HLTBranches[i] = Calo_HLTBitStrings[i] + "_v1"; 
-    Calo_HLTPresclBranches[i] = Calo_HLTBitStrings[i] + "_v1_Prescl"; 
-    
-    if(debugMode&&false){std::cout<<std::endl;
+    if(debugMode){std::cout<<std::endl;
       std::cout<<"L1Branches      [i="<<i<<"]= "<<L1Branches[i]<<std::endl;
-      std::cout<<"L1PresclBranches      [i="<<i<<"]= "<<L1PresclBranches[i]<<std::endl;
-      std::cout<<"PF_HLTBranches        [i="<<i<<"]= "<<PF_HLTBranches[i]<<std::endl;
-      std::cout<<"PF_HLTPresclBranches  [i="<<i<<"]= "<<PF_HLTPresclBranches[i]<<std::endl;
-      std::cout<<"Calo_HLTBranches      [i="<<i<<"]= "<<Calo_HLTBranches[i]<<std::endl;
-      std::cout<<"Calo_HLTPresclBranches[i="<<i<<"]= "<<Calo_HLTPresclBranches[i]<<std::endl<<std::endl; }  }
+      std::cout<<"L1PresclBranches      [i="<<i<<"]= "<<L1PresclBranches[i]<<std::endl;    }    }
   
   int jet40_l1s_I, jet60_l1s_I,  jet80_l1s_I,  jet100_l1s_I;   //L1 
-  int jet40_l1s_ps_I, jet60_l1s_ps_I,  jet80_l1s_ps_I,  jet100_l1s_ps_I;   
-  int PFJet40_I, PFJet60_I, PFJet80_I, PFJet100_I;   //PF HLT
-  int PFJet40_p_I, PFJet60_p_I, PFJet80_p_I, PFJet100_p_I;
-  int CaloJet40_I, CaloJet60_I, CaloJet80_I, CaloJet100_I;   //Calo HLT
-  int CaloJet40_p_I, CaloJet60_p_I, CaloJet80_p_I, CaloJet100_p_I;
-
+  int jet40_l1s_ps_I, jet60_l1s_ps_I,  jet80_l1s_ps_I,  jet100_l1s_ps_I;     
   jetpp[4]->SetBranchAddress( L1Branches[0].c_str()  , &jet40_l1s_I);
   jetpp[4]->SetBranchAddress( L1Branches[1].c_str()  , &jet60_l1s_I);
   jetpp[4]->SetBranchAddress( L1Branches[2].c_str()  , &jet80_l1s_I);
   jetpp[4]->SetBranchAddress( L1Branches[3].c_str()  , &jet100_l1s_I);
-
+  
   jetpp[4]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1s_ps_I);
   jetpp[4]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
   jetpp[4]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
   jetpp[4]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1s_ps_I);
 
-  jetpp[4]->SetBranchAddress( PF_HLTBranches[0].c_str() , &PFJet40_I);
-  jetpp[4]->SetBranchAddress( PF_HLTBranches[1].c_str() , &PFJet60_I);
-  jetpp[4]->SetBranchAddress( PF_HLTBranches[2].c_str() , &PFJet80_I);
-  jetpp[4]->SetBranchAddress( PF_HLTBranches[3].c_str() , &PFJet100_I);
-
-  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[0].c_str() , &PFJet40_p_I);
-  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[1].c_str() , &PFJet60_p_I);
-  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[2].c_str() , &PFJet80_p_I);
-  jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[3].c_str() , &PFJet100_p_I);
-
-  jetpp[4]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &CaloJet40_I);
-  jetpp[4]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &CaloJet60_I);
-  jetpp[4]->SetBranchAddress( Calo_HLTBranches[2].c_str() , &CaloJet80_I);
-  jetpp[4]->SetBranchAddress( Calo_HLTBranches[3].c_str() , &CaloJet100_I);
-
-  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[0].c_str() , &CaloJet40_p_I);
-  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &CaloJet60_p_I);
-  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &CaloJet80_p_I);
-  jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &CaloJet100_p_I);
+  // make sure # of L1/HLT bits is correct
+  assert(N_HLTBits==N_L1Bits);  
+  
+  std::string PF_HLTBranches[N_HLTBits],PF_HLTPresclBranches[N_HLTBits];
+  std::string Calo_HLTBranches[N_HLTBits], Calo_HLTPresclBranches[N_HLTBits];
+  float HLTthresh[N_HLTBits]={-1.};
+  for(int i=0; i<N_HLTBits; ++i) {
+    PF_HLTBranches[i] = PF_HLTBitStrings[i] + "_v1"; 
+    PF_HLTPresclBranches[i] = PF_HLTBitStrings[i] + "_v1_Prescl";   
+    Calo_HLTBranches[i] = Calo_HLTBitStrings[i] + "_v1"; 
+    Calo_HLTPresclBranches[i] = Calo_HLTBitStrings[i] + "_v1_Prescl";     
+    if(trgCombType=="PF") HLTthresh[i]=HLTPFthresh[i];	
+    else if (trgCombType=="Calo")HLTthresh[i]=HLTCalothresh[i];
+    else assert(false);
+    if(debugMode){std::cout<<std::endl;
+      std::cout<<"PF_HLTBranches        [i="<<i<<"]= "<<PF_HLTBranches[i]<<std::endl;
+      std::cout<<"PF_HLTPresclBranches  [i="<<i<<"]= "<<PF_HLTPresclBranches[i]<<std::endl;
+      std::cout<<"Calo_HLTBranches      [i="<<i<<"]= "<<Calo_HLTBranches[i]<<std::endl;
+      std::cout<<"Calo_HLTPresclBranches[i="<<i<<"]= "<<Calo_HLTPresclBranches[i]<<std::endl<<std::endl; }    }
+  
+  int Jet40_I, Jet60_I, Jet80_I, Jet100_I;   //primary HLT bits, either Calo or PF
+  int Jet40_p_I, Jet60_p_I, Jet80_p_I, Jet100_p_I;    //prescales
+  int Jet40_2_I, Jet60_2_I; //the other 40/60 bits from whichever one wasn't picked (for duplicate skip)
+  if(trgCombType=="PF"){
+    jetpp[4]->SetBranchAddress( PF_HLTBranches[0].c_str() , &Jet40_I);
+    jetpp[4]->SetBranchAddress( PF_HLTBranches[1].c_str() , &Jet60_I);
+    jetpp[4]->SetBranchAddress( PF_HLTBranches[2].c_str() , &Jet80_I);
+    jetpp[4]->SetBranchAddress( PF_HLTBranches[3].c_str() , &Jet100_I);    
+    jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[0].c_str() , &Jet40_p_I);
+    jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[1].c_str() , &Jet60_p_I);
+    jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[2].c_str() , &Jet80_p_I);
+    jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[3].c_str() , &Jet100_p_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &Jet40_2_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &Jet60_2_I);  }
+  else if(trgCombType=="Calo"){
+    jetpp[4]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &Jet40_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &Jet60_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTBranches[2].c_str() , &Jet80_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTBranches[3].c_str() , &Jet100_I);    
+    jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[0].c_str() , &Jet40_p_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &Jet60_p_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &Jet80_p_I);
+    jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &Jet100_p_I);
+    jetpp[4]->SetBranchAddress( PF_HLTBranches[0].c_str() , &Jet40_2_I);
+    jetpp[4]->SetBranchAddress( PF_HLTBranches[1].c_str() , &Jet60_2_I);}
+  else assert(false);
+  
+  
+  
+  
+  //// hltanalysis
+  //assert(N_HLTBits==N_L1Bits);
+  //
+  ////string array formation for HLT branches
+  //std::string L1Branches[N_L1Bits], L1PresclBranches[N_L1Bits];
+  //std::string PF_HLTBranches[N_HLTBits],PF_HLTPresclBranches[N_HLTBits];
+  //std::string Calo_HLTBranches[N_HLTBits], Calo_HLTPresclBranches[N_HLTBits];
+  //
+  //for(int i=0; i<N_HLTBits; ++i) {
+  //  L1Branches[i] = L1BitStrings[i];
+  //  L1PresclBranches[i] = L1BitStrings[i] + "_Prescl";  
+  //  PF_HLTBranches[i] = PF_HLTBitStrings[i] + "_v1"; 
+  //  PF_HLTPresclBranches[i] = PF_HLTBitStrings[i] + "_v1_Prescl";   
+  //  Calo_HLTBranches[i] = Calo_HLTBitStrings[i] + "_v1"; 
+  //  Calo_HLTPresclBranches[i] = Calo_HLTBitStrings[i] + "_v1_Prescl"; 
+  //  
+  //  if(debugMode&&false){std::cout<<std::endl;
+  //    std::cout<<"L1Branches      [i="<<i<<"]= "<<L1Branches[i]<<std::endl;
+  //    std::cout<<"L1PresclBranches      [i="<<i<<"]= "<<L1PresclBranches[i]<<std::endl;
+  //    std::cout<<"PF_HLTBranches        [i="<<i<<"]= "<<PF_HLTBranches[i]<<std::endl;
+  //    std::cout<<"PF_HLTPresclBranches  [i="<<i<<"]= "<<PF_HLTPresclBranches[i]<<std::endl;
+  //    std::cout<<"Calo_HLTBranches      [i="<<i<<"]= "<<Calo_HLTBranches[i]<<std::endl;
+  //    std::cout<<"Calo_HLTPresclBranches[i="<<i<<"]= "<<Calo_HLTPresclBranches[i]<<std::endl<<std::endl; }  }
+  //
+  //int jet40_l1s_I, jet60_l1s_I,  jet80_l1s_I,  jet100_l1s_I;   //L1 
+  //int jet40_l1s_ps_I, jet60_l1s_ps_I,  jet80_l1s_ps_I,  jet100_l1s_ps_I;   
+  //int PFJet40_I, PFJet60_I, PFJet80_I, PFJet100_I;   //PF HLT
+  //int PFJet40_p_I, PFJet60_p_I, PFJet80_p_I, PFJet100_p_I;
+  //int CaloJet40_I, CaloJet60_I, CaloJet80_I, CaloJet100_I;   //Calo HLT
+  //int CaloJet40_p_I, CaloJet60_p_I, CaloJet80_p_I, CaloJet100_p_I;
+  //
+  //jetpp[4]->SetBranchAddress( L1Branches[0].c_str()  , &jet40_l1s_I);
+  //jetpp[4]->SetBranchAddress( L1Branches[1].c_str()  , &jet60_l1s_I);
+  //jetpp[4]->SetBranchAddress( L1Branches[2].c_str()  , &jet80_l1s_I);
+  //jetpp[4]->SetBranchAddress( L1Branches[3].c_str()  , &jet100_l1s_I);
+  //
+  //jetpp[4]->SetBranchAddress( L1PresclBranches[0].c_str()  , &jet40_l1s_ps_I);
+  //jetpp[4]->SetBranchAddress( L1PresclBranches[1].c_str()  , &jet60_l1s_ps_I);
+  //jetpp[4]->SetBranchAddress( L1PresclBranches[2].c_str()  , &jet80_l1s_ps_I);
+  //jetpp[4]->SetBranchAddress( L1PresclBranches[3].c_str()  , &jet100_l1s_ps_I);
+  //
+  //jetpp[4]->SetBranchAddress( PF_HLTBranches[0].c_str() , &PFJet40_I);
+  //jetpp[4]->SetBranchAddress( PF_HLTBranches[1].c_str() , &PFJet60_I);
+  //jetpp[4]->SetBranchAddress( PF_HLTBranches[2].c_str() , &PFJet80_I);
+  //jetpp[4]->SetBranchAddress( PF_HLTBranches[3].c_str() , &PFJet100_I);
+  //
+  //jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[0].c_str() , &PFJet40_p_I);
+  //jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[1].c_str() , &PFJet60_p_I);
+  //jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[2].c_str() , &PFJet80_p_I);
+  //jetpp[4]->SetBranchAddress( PF_HLTPresclBranches[3].c_str() , &PFJet100_p_I);
+  //
+  //jetpp[4]->SetBranchAddress( Calo_HLTBranches[0].c_str() , &CaloJet40_I);
+  //jetpp[4]->SetBranchAddress( Calo_HLTBranches[1].c_str() , &CaloJet60_I);
+  //jetpp[4]->SetBranchAddress( Calo_HLTBranches[2].c_str() , &CaloJet80_I);
+  //jetpp[4]->SetBranchAddress( Calo_HLTBranches[3].c_str() , &CaloJet100_I);
+  //
+  //jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[0].c_str() , &CaloJet40_p_I);
+  //jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &CaloJet60_p_I);
+  //jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &CaloJet80_p_I);
+  //jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &CaloJet100_p_I);
   
   //ONE HLT path ONE tree ONE trig obj pt branch
   //e.g. trgObjpt_40 is filled with jet pt from the specific jet40 HLT tree/branch 
@@ -927,16 +1024,21 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     else if (nEvt%10000==0) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     jetpp[0]->GetEntry(nEvt);
     
-
+    
     
     //duplicate skipping between LowerJets and Jet80
+    //only evts that actually fire one of the triggers can be skipped as duplicates
     if(filelistIsJet80)
-      if( (bool)CaloJet40_I || (bool)CaloJet60_I || (bool)PFJet40_I || (bool)PFJet60_I ) {
-	if(debugMode&&nEvt%100==0)std::cout<<"this event is in Jet80 AND LowerJets dataset.!"<<std::endl;
-	if(debugMode&&nEvt%100==0)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
-	h_NEvents_skipped->Fill(1);
-	continue; }
-    h_NEvents_read->Fill(1);
+      if( (bool)Jet40_I || (bool)Jet60_I || (bool)Jet40_2_I || (bool)Jet60_2_I ) {
+	if(debugMode&&nEvt%1000==0)std::cout<<"this event is in Jet80 AND LowerJets dataset.!"<<std::endl;
+	if(debugMode&&nEvt%1000==0)std::cout<<"Skipping event, will read it in LowerJets instead"<<std::endl;	
+	h_NEvents_skipped->Fill(0.);	
+	//if(firedTrigger)
+	//h_NEvents_skipped->Fill(1.,weight_eS);  
+	//else //!firedTrigger
+	//h_NEvents_skipped->Fill(1., 1.);  
+	continue;      }        
+    h_NEvents_read->Fill(1);    
 
     
     // skim/HiEvtAnalysis criteria
@@ -951,22 +1053,27 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     h_NEvents_vzCut->Fill(1);
 
     //prescale/decision arrays, total prescale=L1_ps*HLT_ps
-    bool PFtrgDec[N_HLTBits]   ={ (bool)PFJet40_I, (bool)PFJet60_I, (bool)PFJet80_I, (bool)PFJet100_I };
-    int PFtrgPrescl[N_HLTBits] ={ PFJet40_p_I*jet40_l1s_ps_I , PFJet60_p_I*jet60_l1s_ps_I , 
-				  PFJet80_p_I*jet80_l1s_ps_I , PFJet100_p_I*jet100_l1s_ps_I };
+    int trgPscl[N_HLTBits]={ Jet40_p_I * jet40_l1s_ps_I ,  Jet60_p_I *  jet60_l1s_ps_I ,   
+                             Jet80_p_I * jet80_l1s_ps_I , Jet100_p_I * jet100_l1s_ps_I };    
+    bool trgDec[N_HLTBits]={ (bool) Jet40_I , (bool)  Jet60_I ,
+			     (bool) Jet80_I , (bool) Jet100_I };    
     
-    bool CalotrgDec[N_HLTBits]   ={ (bool)CaloJet40_I, (bool)CaloJet60_I, (bool)CaloJet80_I, (bool)CaloJet100_I};
-    int CalotrgPrescl[N_HLTBits] ={ CaloJet40_p_I*jet40_l1s_ps_I , CaloJet60_p_I*jet60_l1s_ps_I,
-				    CaloJet80_p_I*jet80_l1s_ps_I , CaloJet100_p_I*jet100_l1s_ps_I }; 
+    //bool PFtrgDec[N_HLTBits]   ={ (bool)PFJet40_I, (bool)PFJet60_I, (bool)PFJet80_I, (bool)PFJet100_I };
+    //int PFtrgPrescl[N_HLTBits] ={ PFJet40_p_I*jet40_l1s_ps_I , PFJet60_p_I*jet60_l1s_ps_I , 
+    //				  PFJet80_p_I*jet80_l1s_ps_I , PFJet100_p_I*jet100_l1s_ps_I };
+    //
+    //bool CalotrgDec[N_HLTBits]   ={ (bool)CaloJet40_I, (bool)CaloJet60_I, (bool)CaloJet80_I, (bool)CaloJet100_I};
+    //int CalotrgPrescl[N_HLTBits] ={ CaloJet40_p_I*jet40_l1s_ps_I , CaloJet60_p_I*jet60_l1s_ps_I,				    
+    //				    CaloJet80_p_I*jet80_l1s_ps_I , CaloJet100_p_I*jet100_l1s_ps_I }; 
     
-    bool *trgDec=NULL; int *trgPscl=NULL;
-    if(trgCombType=="Calo")   { 
-      trgDec =CalotrgDec     ;   
-      trgPscl=CalotrgPrescl ;     }
-    else if(trgCombType=="PF"){ 
-      trgDec=PFtrgDec   ;   
-      trgPscl=PFtrgPrescl   ;     }
-    else assert(false);//should never fire if this is working right
+    //bool *trgDec=NULL; int *trgPscl=NULL;
+    //if(trgCombType=="Calo")   { 
+    //  trgDec =CalotrgDec     ;   
+    //  trgPscl=CalotrgPrescl ;     }
+    //else if(trgCombType=="PF"){ 
+    //  trgDec=PFtrgDec   ;   
+    //  trgPscl=PFtrgPrescl   ;     }
+    //else assert(false);//should never fire if this is working right
     
     
     // grab largest triggerPt among HLT paths' trigger object collectiosn
@@ -1695,6 +1802,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   std::cout<<"Total Num of Events passing skim cut = " <<h_NEvents_skimCut->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events passing vz cut = " <<h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
   
+  std::cout<<"Trigger Combination type = " << hTrigComb->GetTitle() << std::endl;
   std::cout<<"Total Num of Events passing jet40 = "  << h_NEvents_jet40->GetEntries()  << std::endl;
   std::cout<<"Total Num of Events passing jet60 = "  << h_NEvents_jet60->GetEntries()  << std::endl;
   std::cout<<"Total Num of Events passing jet80 = "  << h_NEvents_jet80->GetEntries()  << std::endl;

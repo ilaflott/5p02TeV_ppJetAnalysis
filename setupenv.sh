@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ##SCRAM_ARCH for specific CMSSW_XYZ area
 export SCRAM_ARCH=slc6_amd64_gcc491
 

@@ -26,7 +26,8 @@ const int minTrks=35, maxTrks=53; // ~ 9%  - 36%
 //const int minTrks=32, maxTrks=41; // ~ 27% - 52% 
 //const int minTrks=19, maxTrks=31; // ~ 52% - 87%      
 
-
+//StEventPoolManager *fPoolMgr=NULL;
+StEventPoolManager *fPoolMgr=0x0;
 
 //// readForests_ppData_jetMult
 // ---------------------------------------------------------------------------------------------------------------
@@ -44,6 +45,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   //};
   const int nCentBins=sizeof(centralityBin)/sizeof(Double_t);
   std::cout<<"nCentBins="<<nCentBins<<std::endl;
+  Double_t* nuCentralityBin=centralityBin;
   
   Double_t vzbin[]={
     -24., -12., 0., 12., 24.
@@ -56,13 +58,25 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   //};
   const int nZvBins=sizeof(vzbin)/sizeof(Double_t);
   std::cout<<"nZvBins="<<nZvBins<<std::endl;
+  Double_t* nuVzbin=vzbin;
   
   std::cout<<"creating fPoolMgr"<<std::endl;  
   Int_t fMixingTracks=50000, poolsize=1000, trackDepth=fMixingTracks;
-  StEventPoolManager *fPoolMgr=new StEventPoolManager(poolsize, trackDepth, nCentBins, (Double_t*)centralityBin, nZvBins, (Double_t*)vzbin);
-
-  
-  
+  //  StEventPoolManager *fPoolMgr=new StEventPoolManager((Int_t)poolsize, (Int_t)trackDepth, 
+  //						      (Int_t)nCentBins, (Double_t*)centralityBin, 
+  //						      (Int_t)nZvBins, (Double_t*)vzbin);
+//StEventPoolManager *fPoolMgr=new StEventPoolManager((Int_t)poolsize, (Int_t)trackDepth, 
+//						      (Int_t)nCentBins, (Double_t*)centralityBin, 
+//						      (Int_t)nZvBins, (Double_t*)vzbin);
+//  StEventPoolManager *fPoolMgr=new StEventPoolManager((Int_t)poolsize, (Int_t)trackDepth, 
+//						      (Int_t)nCentBins, nuCentralityBin, 
+//						      (Int_t)nZvBins, nuVzbin);
+  fPoolMgr=new StEventPoolManager((Int_t)poolsize, (Int_t)trackDepth, 
+				  (Int_t)nCentBins, nuCentralityBin, 
+				  (Int_t)nZvBins, nuVzbin);
+  //std::cout<<"the pool manager has this many pt bins: "   << fPoolMgr->GetNumberOfPtBins() <<std::endl;
+  std::cout<<"the pool manager has this many mult bins: " << fPoolMgr->GetNumberOfMultBins() <<std::endl;
+  //std::cout<<"the pool manager has this many zvtx bins: " << fPoolMgr->GetNumberOfZVtxBins() <<std::endl;
   
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();

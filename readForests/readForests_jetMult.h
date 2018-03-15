@@ -2,6 +2,7 @@
 #include "readForests_common.h"
 #include "L2L3ResidualWFits.h"
 
+#include "StEventPoolManager.h"
 
 //// FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------

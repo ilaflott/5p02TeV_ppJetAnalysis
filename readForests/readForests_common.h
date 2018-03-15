@@ -26,12 +26,9 @@
 #include <TH1F.h>
 #include <TH2F.h>
 //// custom
-#include "joelsStCode_clean/StEventPoolManager.h"
-//#include "joelsCode/StMyAnalysisMaker.h"
-//#include "joelsCode/StEventPoolManager.h"
-//#include "L2L3ResidualWFits.h"
-//#include "MCTruthResidual.h"
-//#include "joelsStCode_clean/star-jetframework-master/StEventPoolManager.h"
+#include "StEventPoolManager.h"
+#include "StVParticle.h"
+
 
 void divideBinWidth(TH1 *h){
   h->Sumw2();

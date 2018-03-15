@@ -25,9 +25,6 @@
 #include <TH3.h>
 #include <TH1F.h>
 #include <TH2F.h>
-//// custom
-#include "StEventPoolManager.h"
-#include "StVParticle.h"
 
 
 void divideBinWidth(TH1 *h){

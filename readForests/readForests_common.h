@@ -60,6 +60,41 @@ float deltaphi(float phi1, float phi2){
   return TMath::Abs(dphi);
 }
 
+float cpuVzWeight_poly(float vz_F){
+  bool funcDebug=false;
+  if(funcDebug)
+    std::cout<<"vz_F="<<vz_F<<std::endl;
+
+  float p0 = 1.159;
+  float p1 = 0.008914;
+  float p2 = -0.003057;
+  float p3 = -2.287e-05;
+  float p4 = -5.287e-06;
+  float p5 = -1.582e-09;
+  float p6 = 2.569e-08;
+  float p7 = 2.782e-11;
+  float p8 = -2.097e-11;
+  
+  float vzWeight=0;
+  vzWeight+=p0;
+  vzWeight+=p1*pow(vz_F,1);
+  vzWeight+=p2*pow(vz_F,2);
+  vzWeight+=p3*pow(vz_F,3);
+  vzWeight+=p4*pow(vz_F,4);
+  vzWeight+=p5*pow(vz_F,5);
+  vzWeight+=p6*pow(vz_F,6);
+  vzWeight+=p7*pow(vz_F,7);
+  vzWeight+=p8*pow(vz_F,8);  
+
+  if(funcDebug)
+    std::cout<<"vzWeight="<<vzWeight<<std::endl;
+
+  return vzWeight;
+}
+
+
+
+
 const float pi=TMath::Pi();
 const float twoPi=2.*pi;
 const float piOvTwo=pi/2.;
@@ -336,7 +371,7 @@ const float pthatWeights[]={
 
 
 
-const bool doVzWeights=false;
+const bool doVzWeights=true;
 // non-event triggered vz weights
 const float vzWeights[]={           
 0.0579229 ,         // vzLow=-24

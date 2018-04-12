@@ -5,7 +5,9 @@ export SCRAM_ARCH=slc6_amd64_gcc491
 
 echo "sourcing condor+OSG software"
 source /condor/HTCondor/current/condor.sh
-source /osg/osg3.2/osg-client/setup.sh
+source /osg/current/setup.sh
+###deprecated, instead do above
+##source /osg/osg3.2/osg-client/setup.sh
 
 #echo 'sourcing cms software'
 #source $VO_CMS_SW_DIR/cmsset_default.sh

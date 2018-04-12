@@ -10,14 +10,14 @@ const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 
 const bool fillDataDijetHists=false;
-const bool fillDataJetSpectraRapHists=true; //other
+const bool fillDataJetSpectraRapHists=false; //other
 
 const bool useHLT100=false;
 
 const int jetIDint=(int)fillDataJetIDHists;
 
-//const std::string trgCombType="Calo";
-const std::string trgCombType="PF";
+const std::string trgCombType="Calo";
+//const std::string trgCombType="PF";
 
 
 //// readForests_ppData_jetPlots
@@ -157,7 +157,16 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   TH1F *hVr=NULL, *hWVr=NULL, *hTrgVr_noW=NULL;
   TH1F *hVx=NULL, *hWVx=NULL, *hTrgVx_noW=NULL;
   TH1F *hVy=NULL, *hWVy=NULL, *hTrgVy_noW=NULL;
-  TH1F *hVz=NULL, *hWVz=NULL, *hTrgVz_noW=NULL;
+
+
+  TH1F *hVz=NULL, *hWVz=NULL, *hTrgVz_noW=NULL, *hTrgVz_wW=NULL;
+
+  const float pp5TeV2k15_BS=0.2876;//in cm
+  TH1F *hVz_BSshift=NULL, *hWVz_BSshift=NULL, *hTrgVz_noW_BSshift=NULL;
+
+  const float pp5TeV2k15_baryshift=-0.5160;//in cm, that of PbPb run 262922, tracker alignment record TrackerAlignment_prompt
+  TH1F *hVz_baryshift_pos=NULL, *hWVz_baryshift_pos=NULL, *hTrgVz_noW_baryshift_pos=NULL;
+  TH1F *hVz_baryshift_neg=NULL, *hWVz_baryshift_neg=NULL, *hTrgVz_noW_baryshift_neg=NULL;
   
   TH1F* hNref=NULL, *hWNref=NULL;
   TH1F* hjetsPEvt=NULL,* hWjetsPEvt=NULL;
@@ -177,9 +186,22 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",  2000,-0.30,0.30);    
     hTrgVy_noW = new TH1F("hTriggerVy_noWeights","vy, trigd, no weights",  2000,-0.30,0.30);    
     
-    hVz = new TH1F("hVz","vz, no trig, no weights",  1000,-25.,25.); //bin size of .5
-    hWVz = new TH1F("hWeightedVz","vz, trigd, with weights",  1000,-25.,25.);    
-    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  100,-25.,25.);  
+    hVz = new TH1F("hVz","vz, no trig, no weights",  1000,-25.,25.); //50/1000=5*10^-2 cm sized bins
+    hWVz = new TH1F("hWeightedVz","vz, w/ weights",  1000,-25.,25.);    
+    hTrgVz_noW = new TH1F("hTriggerVz_noWeights","vz, trigd, no weights",  1000,-25.,25.);  
+    hTrgVz_wW = new TH1F("hTriggerVz_withWeights","vz, trigd, w/ weights",  1000,-25.,25.);  
+
+           hVz_BSshift = new TH1F(                 "hVz_BSshift","vz-BS, no trig, no weights",  1000,-25.,25.); //50/1000=5*10^-2 cm sized bins
+          hWVz_BSshift = new TH1F(         "hWeightedVz_BSshift","vz-BS, trigd, with weights",  1000,-25.,25.);    
+    hTrgVz_noW_BSshift = new TH1F("hTriggerVz_noWeights_BSshift","vz-BS, trigd, no weights  ",  1000,-25.,25.);  
+
+           hVz_baryshift_pos = new TH1F(                 "hVz_baryshift_pos","vz+barycenter, no trig, no weights",  1000,-25.,25.); 
+          hWVz_baryshift_pos = new TH1F(         "hWeightedVz_baryshift_pos","vz+barycenter, trigd, with weights",  1000,-25.,25.);    
+    hTrgVz_noW_baryshift_pos = new TH1F("hTriggerVz_noWeights_baryshift_pos","vz+barycenter, trigd, no weights  ",  1000,-25.,25.);  
+
+           hVz_baryshift_neg = new TH1F(                 "hVz_baryshift_neg","vz-barycenter, no trig, no weights",  1000,-25.,25.); 
+          hWVz_baryshift_neg = new TH1F(         "hWeightedVz_baryshift_neg","vz-barycenter, trigd, with weights",  1000,-25.,25.);    
+    hTrgVz_noW_baryshift_neg = new TH1F("hTriggerVz_noWeights_baryshift_neg","vz-barycenter, trigd, no weights  ",  1000,-25.,25.);  
     
     hNref      = new TH1F("hNref","nref each evt",30,0,30);         
     hWNref     = new TH1F("hWNref","weighted nref each evt",30,0,30);
@@ -718,10 +740,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	continue;      }        
     
     h_NEvents_read->Fill(0.);    h_NEvents_read->Fill(1.,weight_eS);        
-    if( !firedTrigger ) continue;  //we didn't fire one of our triggers of interest. skip.
-    else{ //firedTrigger
-      h_NEvents_trigd_2->Fill(0.);   
-      h_NEvents_trigd_2->Fill(1.,weight_eS);    }
     
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilter_I==0    || 
@@ -732,6 +750,21 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if( fabs(vz_F)>24. )     continue;
     h_NEvents_vzCut->Fill(0.); h_NEvents_vzCut->Fill(1.,weight_eS);    
     
+    if(fillDataEvtQAHists){
+      
+      hVz->Fill(vz_F);                        //this will be # of events post cuts, no trigger, no weights, post skim/vz Cut 
+      if(weight_eS>0.)
+	hTrgVz_noW->Fill(vz_F); //         ''       trigger events w/o weights post-skim/vz Cut      
+      hWVz->Fill(vz_F, weight_eS);            //         ''       trigger events w/ weights, post skim/vz Cut
+      if(weight_eS>0.)
+	hTrgVz_wW->Fill(vz_F, weight_eS); //         ''       trigger events w/o weights post-skim/vz Cut
+    }
+
+
+    if( !firedTrigger ) continue;  //we didn't fire one of our triggers of interest. skip.
+    else{ //firedTrigger
+      h_NEvents_trigd_2->Fill(0.);   
+      h_NEvents_trigd_2->Fill(1.,weight_eS);    }
     
     if(fillDataJetTrigQAHists){ //only want to fill these trigger jet plots if they pass all our quality criteria
       
@@ -764,9 +797,21 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     // fill evt vz histo
     if(fillDataEvtQAHists){
       
-      hVz->Fill(vz_F);   //this will be # of events post cuts, no trigger, no weights, post skim/vz Cut 
-      hWVz->Fill(vz_F, weight_eS);    //this will be # of trigger events w/ weights, post skim/vz Cut
-      if(weight_eS>0.)hTrgVz_noW->Fill(vz_F); //this will be # of trigger events w/o weights post-skim/vz Cut
+//      hVz->Fill(vz_F);                        //this will be # of events post cuts, no trigger, no weights, post skim/vz Cut 
+//      hWVz->Fill(vz_F, weight_eS);            //         ''       trigger events w/ weights, post skim/vz Cut
+//      if(weight_eS>0.)hTrgVz_noW->Fill(vz_F); //         ''       trigger events w/o weights post-skim/vz Cut
+      
+      hVz_BSshift->Fill((vz_F-pp5TeV2k15_BS));                        
+      hWVz_BSshift->Fill((vz_F-pp5TeV2k15_BS), weight_eS);            
+      if(weight_eS>0.)hTrgVz_noW_BSshift->Fill((vz_F-pp5TeV2k15_BS)); 
+      
+      hVz_baryshift_pos->Fill((vz_F+pp5TeV2k15_baryshift));                        
+      hWVz_baryshift_pos->Fill((vz_F+pp5TeV2k15_baryshift), weight_eS);            
+      if(weight_eS>0.)hTrgVz_noW_baryshift_pos->Fill((vz_F+pp5TeV2k15_baryshift)); 
+      
+      hVz_baryshift_neg->Fill((vz_F-pp5TeV2k15_baryshift));                        
+      hWVz_baryshift_neg->Fill((vz_F-pp5TeV2k15_baryshift), weight_eS);            
+      if(weight_eS>0.)hTrgVz_noW_baryshift_neg->Fill((vz_F-pp5TeV2k15_baryshift)); 
 
       float vr_F=std::sqrt(vx_F*vx_F + vy_F*vy_F);
       hVr->Fill(vr_F);   

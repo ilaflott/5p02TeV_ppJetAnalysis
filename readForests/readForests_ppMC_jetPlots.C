@@ -4,12 +4,12 @@
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
-const bool fillgenJetQA=true&fillMCJetQAHists;
+const bool fillgenJetQA=false&fillMCJetQAHists;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 const bool fillMCDijetHists=false;
-const bool fillMCJetSpectraRapHists=true; //other
-const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
+const bool fillMCJetSpectraRapHists=false; //other
+const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
 
 const int jetIDint=(int)fillMCJetIDHists;
 
@@ -129,7 +129,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1F *hVx=NULL, *hWVx=NULL;
   TH1F *hVy=NULL, *hWVy=NULL;
 
-  TH1F *hVz=NULL, *hWVz=NULL , *hvzWVz=NULL,*hpthatWVz=NULL;
+  TH1F *hVz=NULL,  *hvzWVz=NULL,*hpthatWVz=NULL, *hWVz=NULL ;
   
   TH1F *hpthat=NULL, *hWpthat=NULL;  
 
@@ -152,11 +152,10 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     hVy = new TH1F("hVy","vy, no trig, no weights",   2000, -0.30,0.30); 
     hWVy = new TH1F("hWeightedVy","vy, trigd, with weights",   2000,-0.30,0.30);
     
-    hVz       = new TH1F("hVz","", 1000,-25.,25.);//evtvz
-    hWVz      = new TH1F("hWeightedVz","", 1000,-25.,25.);//pthat*vz-weighted evt vz
-
-    hvzWVz    = new TH1F("hvzWeightedVz","", 100,-25.,25.);//vz-weighted evtvz
-    hpthatWVz = new TH1F("hpthatWeightedVz","", 100,-25.,25.);//pthat-weighted evtvz
+    hVz       = new TH1F("hVz","vz, no trig, no weights", 1000,-25.,25.);//evtvz, weight=1 always
+    hvzWVz    = new TH1F("hvzWeightedVz","vz, no trig, vz weights", 1000,-25.,25.);//vz-weighted only evtvz
+    hpthatWVz = new TH1F("hpthatWeightedVz","vz, no trig, pthat weights", 1000,-25.,25.);//pthat-weighted only evtvz
+    hWVz      = new TH1F("hWeightedVz","vz, no trig, with weights", 1000,-25.,25.);//pthat*vz-weighted evt vz
     
     hNref = new TH1F("hNref","numJets each evt",30,0,30);
     hWNref = new TH1F("hWNref","weighted numJets each evt",30,0,30);
@@ -453,16 +452,22 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     
     // grab vzweight
     float vzWeight=1.;
-    float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
     if(doVzWeights){
-      for( int i=0; i<nbins_vzWeights ; i++ ) { 
-	if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
-	  vzWeight=vzWeights[i];  
-	  break; } 
-	else {
-	  vzBinLeftSide+=binsize_vzWeights;
-	  vzBinRightSide+=binsize_vzWeights; } }
+      vzWeight=cpuVzWeight_poly(vz_F);
+      //vzWeight=cpuVzWeight_gauss(vz_F);
+      //vzWeight=cpuVzWeight_bins(vz_F);
     }
+    
+//    float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
+//    if(doVzWeights){
+//      for( int i=0; i<nbins_vzWeights ; i++ ) { 
+//	if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
+//	  vzWeight=vzWeights[i];  
+//	  break; } 
+//	else {
+//	  vzBinLeftSide+=binsize_vzWeights;
+//	  vzBinRightSide+=binsize_vzWeights; } }
+//    }
 
     float evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 

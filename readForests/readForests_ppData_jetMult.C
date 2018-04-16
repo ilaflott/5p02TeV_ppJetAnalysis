@@ -3,14 +3,13 @@
 
 // ppData switches
 const bool fillDataEvtQAHists=true;
-//const bool fillDataVtxTrkQAHists=true; //in the works
+
 const bool fillDataJetQAHists=true;
 const bool fillDataJetMultHists=true;
 const bool fillDataDijetHists=false;
 const bool fillDataJetIDHists=true;
 const bool fillDataJetTrigQAHists=false; 
 const bool fillDataJetSpectraRapHists=false; 
-const bool fillDataJetTrackCorrHist=true;
 
 const bool useHLT100=false;
 
@@ -18,6 +17,13 @@ const int jetIDint=(int)fillDataJetIDHists;
 
 //const std::string trgCombType="PF";
 const std::string trgCombType="Calo";
+
+
+const bool fillDataJetTrackCorrHist=true;
+//const bool fillDataJetVtxCorrHists=true; //in the works
+//const bool fillDataTrackVtxCorrHists=true; //in the works
+
+const bool fillDataJetMixedEvtBkgHist=true;
 
 const bool doTrkMultClassCuts=true;
 //const int minTrks=54, maxTrks=300; // central, ~ 0-9% as of 2/12/17      
@@ -1781,7 +1787,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	  
 	  if(!trkPasses[itrk])continue;
 	  
-	  float deltaPhi=trkPhi_F[itrk] - pt_F[jet];
+	  //float deltaPhi=trkPhi_F[itrk] - pt_F[jet];//huge error; how long was this here for?!
+	  float deltaPhi=trkPhi_F[itrk] - phi_F[jet];
 	  float deltaEta=trkEta_F[itrk] - eta_F[jet];	  
 	  jetTrackCorr_noPhiMatch->Fill(deltaPhi, deltaEta, (weight_eS/((float)jetsPerEvent)));
 	  
@@ -1790,9 +1797,96 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 	  
 	}//end track loop in jet-track loop
       }//end jet loop in jet-track loop
-      //end make jetrackc
-      
     }//end fill data evt qa hists
+
+    
+
+    if(fillDataJetMixedEvtBkgHist)      {
+
+      if(nEvt%1000==0){
+	std::cout<<std::endl;
+	std::cout<<"fillDataJetMixedEvtBkgHist==true"<<std::endl;
+	std::cout<<std::endl;      }
+
+      int centbin=0;
+      StEventPool* pool=NULL;
+      pool=fPoolMgr->GetEventPool(centbin, vz_F);
+      
+      if(!pool){
+	std::cout<<"no pool for centbin="<<centbin<<", vz_F="<<vz_F << std::endl;	      }
+      
+      if(debugMode){
+	std::cout<<"NtracksInPool = "<<pool->NTracksInPool()<<"  CurrentNEvents = "<<pool->GetCurrentNEvents()<<std::endl;  }
+      
+      bool poolrdy=pool->IsReady();
+
+
+      if(!poolrdy){
+	std::cout<<"pool not ready. No MEbkg evt loop."<<std::endl;
+      }
+      //if( pool->IsReady() ){
+      else {
+	std::cout<<"pool is ready"<<std::endl;      	
+	TObjArray* bgTracks=NULL;
+	
+	//loop over jets for mixed event background pool
+	for(int jet = 0; jet<nref_I; ++jet){
+	  if(!jetPasses[jet])continue;	
+	  int nMix=pool->GetCurrentNEvents();
+	  
+	  //loop over mixed events in mixed event background pool	  
+	  std::cout<<"looping over nMix="<< nMix<<" evts in pool"<<std::endl;
+	  for(int mix=0;mix<nMix;mix++)	    {
+	    bgTracks= (TObjArray*)pool->GetEvent(mix);
+	    int nBGtrks=bgTracks->GetEntries();
+
+	    std::cout<<"looping over nBGtrks="<< nBGtrks<<" BGtracks in evt from ME pool"<<std::endl;	    
+	    for(int trk=0;trk<nBGtrks;trk++){
+	      //StFemtoTrack* bgtrk = static_cast<StFemtoTrack*>(bgTracks->At(trk));
+	      //StFemtoTrack* bgtrk = (StFemtoTrack*) (bgTracks->At(trk));
+	      //TObjArray* ObjArray
+	      StFemtoTrack* bgtrk = (StFemtoTrack*) (bgTracks->At(trk));
+	      
+	      std::cout<<"bgtrk pt/eta/phi/chg = "<< bgtrk->Pt() << "/"<< bgtrk->Eta()<< "/"<< bgtrk->Phi()<< "/"<< bgtrk->Charge()<< std::endl;
+	      
+	      //std::cout<<"hello world"<<std::endl;
+	      
+	    }//end bg tracks loop
+	    
+	  }//end mixed event bkg evt loop for MEBkg	    
+	}//end jet loop for MEBkg
+      }//end pool ready
+      
+      
+      if(true){ //i.e. ready to put tracks in the evt pool.
+	//TObjArray* MEtrks= new TClonesArray("StFemtoTrack");
+	//TClonesArray* MEtrks= new TClonesArray("StFemtoTrack");
+	TObjArray* MEtrks= new TObjArray(1000);
+	
+	std::cout<<"looping over tracks + updating pool"<<std::endl;
+	for(int itrk=0;itrk<nTrk_I;itrk++){	  
+	  if(!trkPasses[itrk])continue;
+	  StFemtoTrack* t= new StFemtoTrack((double)trkPt_F[itrk], 
+					    (double)trkEta_F[itrk], 
+					    (double)trkPhi_F[itrk], 
+					    (short)trkCharge_I[itrk]);
+	  if(!t)continue;
+	  if(nEvt%1000==0)std::cout<<"putting StFemtoTrack in TClonesArray"<<std::endl;
+	  (*MEtrks)[itrk] = t;
+	}
+	if(nEvt%1000==0)std::cout<<"updating pool"<<std::endl;
+	//pool->UpdatePool((TObjArray*)MEtrks);	
+	pool->UpdatePool(MEtrks);	
+      }//end update mebkg trk pool
+
+      //assert(false);
+      
+    }//end mixedEvtBkg hists
+    
+
+
+
+
   }//end event loop
 
   std::cout<<std::endl;

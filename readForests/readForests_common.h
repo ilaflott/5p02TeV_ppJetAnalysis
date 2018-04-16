@@ -19,6 +19,7 @@
 // utilities
 #include <TMath.h>
 #include <TStopwatch.h>
+//#include <TClonesArray.h>
 // histos
 #include <TH1.h>
 #include <TH2.h>
@@ -60,20 +61,22 @@ float deltaphi(float phi1, float phi2){
   return TMath::Abs(dphi);
 }
 
+
+
 float cpuVzWeight_poly(float vz_F){
   bool funcDebug=false;
   if(funcDebug)
     std::cout<<"vz_F="<<vz_F<<std::endl;
-
-  float p0 = 1.159;
-  float p1 = 0.008914;
-  float p2 = -0.003057;
-  float p3 = -2.287e-05;
-  float p4 = -5.287e-06;
-  float p5 = -1.582e-09;
-  float p6 = 2.569e-08;
-  float p7 = 2.782e-11;
-  float p8 = -2.097e-11;
+  // new set using hVz w/ weight=1 and no trig req. / pthat weighted MC // older weights
+  float p0 = 1.165;//1.159;
+  float p1 = 0.009171;//0.008914;
+  float p2 = -0.003257;//-0.003057;
+  float p3 = -2.919e-05;//-2.287e-05;
+  float p4 = -4.647e-06;//-5.287e-06;
+  float p5 = 2.13e-08;//-1.582e-09;
+  float p6 = 2.399e-08;//2.569e-08;
+  float p7 = 4.267e-12;//2.782e-11;
+  float p8 = -2.078e-11;//-2.097e-11;
   
   float vzWeight=0;
   vzWeight+=p0;

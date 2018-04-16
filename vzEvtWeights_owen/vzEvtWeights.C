@@ -68,9 +68,10 @@ const std::string input_ppMC_Filename=input_dir+ppMC_inCondorDir+"Py8_CUETP8M1_Q
 
 
 const std::string ppData_inHist=
-  //"hVz"; //weights=1 always, used to be no trigger requirement, now required
-  //"hWeightedVz"; //trigger weighted; events w/ weight=0 used to be included, but not anymore
-  "hTriggerVz_noWeights"; //triggered events but weight=1 always, equiv to hvz now
+  "hVz"; //weights=1 always, no trigger requirement as of 4/11/18 sample
+  //"hWeightedVz"; //trigger weighted; events w/ weight=0 included as of 4/11/18 sample
+  //"hTriggerVz_noWeights"; //triggered events (weight>0) but weight=1 always
+  //"hTriggerVz_withWeights"; //triggered events (weight>0) with weights
 
 const std::string ppMC_inHist=
   //"hVz"; //vz w/ weights=1 always

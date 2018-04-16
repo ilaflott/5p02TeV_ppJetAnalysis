@@ -32,8 +32,21 @@ echo ""
 ## INCL. JET SPECTRA, ENTIRE |y| RANGE
 #source run_readForests_jetPlots.sh 4 "0.0" "4.7"
 #source run_readForests_jetPlots.sh 4 "0.0" "2.0"
+
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
 #source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
+#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
+#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
+
+#source run_readForests_jetPlots.sh 3 "0.0" "0.5" "ppData"
+#source run_readForests_jetPlots.sh 3 "0.5" "1.0" "ppData"
+
+#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
+#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
+
+source run_readForests_jetPlots.sh 3 "0.0" "0.5" "ppMC"
+source run_readForests_jetPlots.sh 3 "0.5" "1.0" "ppMC"
+
 source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
 source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
 

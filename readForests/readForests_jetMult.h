@@ -1,9 +1,14 @@
 // custom
 #include "readForests_common.h"
 #include "L2L3ResidualWFits.h"
+
 #include "StEventPoolManager.h"
 #include "StEventPoolManager.cxx"
 
+#include "StFemtoTrack.h"
+#include "StFemtoTrack.cxx"
+
+#include "TClonesArray.h"
 //// FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
 // define "main" functions, their default inputs, number of input arguments in this section
@@ -26,7 +31,6 @@ const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBin
 
 const int defRadius=4;
 const std::string defJetType="PF";
-//const bool defDebugMode=true;
 const bool defDebugMode=false;
 const std::string defDataOutputName="readForests_ppData_defOut";
 const std::string defMCOutputName="readForests_ppMC_defOut";//.root";

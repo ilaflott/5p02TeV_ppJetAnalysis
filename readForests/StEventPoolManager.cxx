@@ -649,4 +649,68 @@ Double_t* StEventPoolManager::GetBinning(const char* configuration, const char* 
   delete lines;
   return 0;
 }
+
+////_________________________________________________
+//// From CF event mixing code PhiCorrelations
+////TClonesArray* StMyAnalysisMaker::CloneAndReduceTrackList()
+//TClonesArray* StEventPool::CloneAndReduceTrackList()
+//{
+//
+//  // clones a track list by using StPicoTrack which uses much less memory (used for event mixing)
+//  //  TClonesArray* tracksClone = new TClonesArray("StPicoTrack");// original way
+//  //  TClonesArray* tracksClone = new TClonesArray("StPicoTrk"); //TEST - still has issues with needing Bfield and mVertex
+//  TClonesArray* tracksClone = new TClonesArray("StFemtoTrack");
+//  //  tracksClone->SetName("tracksClone");
+//  //  tracksClone->SetOwner(kTRUE);
+//  
+//  // construct variables, get # of tracks
+//  int nMixTracks = mPicoDst->numberOfTracks();
+//  int iterTrk = 0;
+//  const double pi = 1.0*TMath::Pi();
+//  
+//  // loop over tracks
+//  for(int i = 0; i < nMixTracks; i++) { 
+//    StPicoTrack* trk = mPicoDst->track(i);
+//    if(!trk){ continue; }
+//
+//    // acceptance and kinematic quality cuts
+//    //if(!AcceptTrack(trk, Bfield, mVertex)) { continue; }
+//    
+//    // primary track switch
+//    // get momentum vector of track - global or primary track
+//    StThreeVectorF mTrkMom;
+//    if(doUsePrimTracks) {
+//      if(!(trk->isPrimary())) continue; // check if primary
+//      
+//      // get primary track vector
+//      mTrkMom = trk->pMom();
+//    } else {
+//      // get global track vector
+//      mTrkMom = trk->gMom(mVertex, Bfield);
+//    }
+//    
+//    // track variables
+//    double pt = mTrkMom.perp();
+//    double phi = mTrkMom.phi();
+//    double eta = mTrkMom.pseudoRapidity();
+//    short charge = trk->charge();
+//
+//    // create StFemtoTracks out of accepted tracks - light-weight object for mixing
+//    //  StFemtoTrack *t = new StFemtoTrack(pt, eta, phi, charge);
+//    StFemtoTrack* t = new StFemtoTrack(trk, Bfield, mVertex, doUsePrimTracks);
+//    if(!t) continue;
+//
+//    // add light-weight tracks passing cuts to TClonesArray
+//    ((*tracksClone)[iterTrk]) =  t;
+//
+//    //delete t;
+//    ++iterTrk;
+//  } // end of looping through tracks
+//
+//  return tracksClone;
+//}
+
+
+
+
 #endif

@@ -5,6 +5,7 @@
 #include <deque>
 #include <Rtypes.h>
 #include <TObjArray.h>
+#include <TClonesArray.h>
 #include "StVParticle.h"
 //#include "StMaker.h"
 
@@ -30,6 +31,7 @@ class StEventPool : public TObject
 {
   //public methods, anyone can access these from the object
  public:
+
   
   //default constructor using initializer list
  StEventPool() 
@@ -132,6 +134,7 @@ class StEventPool : public TObject
   TObject    *GetRandomTrack()             const;
   TObjArray  *GetRandomEvent()             const;
   TObjArray  *GetEvent(Int_t i)            const;
+  //TClonesArray* CloneAndReduceTrackList() const;
   Int_t       MultBinIndex()               const { return fMultBinIndex; }
   Int_t       NTracksInEvent(Int_t iEvent) const;
   Int_t       NTracksInCurrentEvent()      const { return fNTracksInEvent.back(); }

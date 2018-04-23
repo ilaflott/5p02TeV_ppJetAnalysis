@@ -853,9 +853,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       // event+jet counting
       h_NJets->Fill(0.);            h_NJets->Fill(1.,weight_eS);      
       
-      float recpt  = pt_F[jet];
-      float jtpt  = pt_F[jet];
-      float jtpt_L2Res=-1., jtpt_L3Res=-1.;
+      float recpt  = pt_F[jet]; //this will L3 pt after corrections
+      float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
+      float jtpt_L2Res=-1., jtpt_L3Res=-1.; //jtpt_L3Res==recpt if done right
+
       float receta = eta_F[jet];
       float absreceta = fabs(receta);
       
@@ -866,12 +867,12 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	recpt=L3JES->getCorrectedPt(recpt);        
 	jtpt_L3Res=recpt;
 	
-	hJetQA_jtpt->Fill(jtpt,weight_eS);
-	hJetQA_jtpt_L2Res->Fill(jtpt_L2Res,weight_eS);
-	hJetQA_jtpt_L3Res->Fill(jtpt_L3Res,weight_eS);
-	hJetQA_jtpt_v_L2Res->Fill(jtpt,jtpt_L2Res,weight_eS);
-	hJetQA_jtpt_v_L3Res->Fill(jtpt,jtpt_L3Res,weight_eS);
-	hJetQA_jtpt_L2Res_v_L3Res->Fill(jtpt_L2Res,jtpt_L3Res,weight_eS);
+	//hJetQA_jtpt->Fill(jtpt,weight_eS);
+	//hJetQA_jtpt_L2Res->Fill(jtpt_L2Res,weight_eS);
+	//hJetQA_jtpt_L3Res->Fill(jtpt_L3Res,weight_eS);
+	//hJetQA_jtpt_v_L2Res->Fill(jtpt,jtpt_L2Res,weight_eS);
+	//hJetQA_jtpt_v_L3Res->Fill(jtpt,jtpt_L3Res,weight_eS);
+	//hJetQA_jtpt_L2Res_v_L3Res->Fill(jtpt_L2Res,jtpt_L3Res,weight_eS);
       }      
       
       if(recpt>evt_leadJetPt){
@@ -882,6 +883,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  recpt > jtPtCut_Hi ){ 
 	jetsPerEvent--;
 	continue;}
+      
       if(!hNEvts_withJets_jtptCut_Filled){ 
 	h_NEvents_withJets_jtptCut->Fill(0.);  	h_NEvents_withJets_jtptCut->Fill(1.,weight_eS);  
 	hNEvts_withJets_jtptCut_Filled=true;}    
@@ -990,6 +992,14 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
       // jetQA noJetID
       if(fillDataJetQAHists){
+	
+	hJetQA_jtpt->Fill(jtpt,weight_eS);
+	hJetQA_jtpt_L2Res->Fill(jtpt_L2Res,weight_eS);
+	hJetQA_jtpt_L3Res->Fill(jtpt_L3Res,weight_eS);
+	hJetQA_jtpt_v_L2Res->Fill(jtpt,jtpt_L2Res,weight_eS);
+	hJetQA_jtpt_v_L3Res->Fill(jtpt,jtpt_L3Res,weight_eS);
+	hJetQA_jtpt_L2Res_v_L3Res->Fill(jtpt_L2Res,jtpt_L3Res,weight_eS);
+	
 	int ind=0;
 	//jets
 	hJetQA[jetIDint][ind]->Fill(recpt, weight_eS); ind++;

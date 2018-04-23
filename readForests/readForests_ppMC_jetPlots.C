@@ -453,21 +453,24 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     // grab vzweight
     float vzWeight=1.;
     if(doVzWeights){
+      //std::cout<<"vzWeight was:"<<vzWeight<<std::endl;
       vzWeight=cpuVzWeight_poly(vz_F);
+      //std::cout<<"vzWeight is now:"<<vzWeight<<std::endl<<std::endl;
+
       //vzWeight=cpuVzWeight_gauss(vz_F);
       //vzWeight=cpuVzWeight_bins(vz_F);
     }
     
-//    float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
-//    if(doVzWeights){
-//      for( int i=0; i<nbins_vzWeights ; i++ ) { 
-//	if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
-//	  vzWeight=vzWeights[i];  
-//	  break; } 
-//	else {
-//	  vzBinLeftSide+=binsize_vzWeights;
-//	  vzBinRightSide+=binsize_vzWeights; } }
-//    }
+    //    float vzStart=minbinValue_vzWeights, vzBinLeftSide=vzStart, vzBinRightSide=vzBinLeftSide+binsize_vzWeights;
+    //    if(doVzWeights){
+    //      for( int i=0; i<nbins_vzWeights ; i++ ) { 
+    //	if(vzBinLeftSide<vz_F && vz_F<=vzBinRightSide) {
+    //	  vzWeight=vzWeights[i];  
+    //	  break; } 
+    //	else {
+    //	  vzBinLeftSide+=binsize_vzWeights;
+    //	  vzBinRightSide+=binsize_vzWeights; } }
+    //    }
 
     float evtPthatWeight=0.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 
@@ -475,7 +478,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     float trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
     
-    float weight_eS=evtPthatWeight*trigWeight*vzWeight;              
+    float weight_eS=evtPthatWeight*trigWeight*vzWeight;            
+    //std::cout<<"weight_eS was:"<<evtPthatWeight*trigWeight<<std::endl;
+    //std::cout<<"weight_eS is now:"<<weight_eS<<std::endl<<std::endl;
     
     //vz
     if(fillMCEvtQAHists){

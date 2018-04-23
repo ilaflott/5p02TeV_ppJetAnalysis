@@ -7,18 +7,13 @@ echo ""
 localDir=/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/outputCondor
 
 MM="04"
-DD="11"
+DD="13"
 YY="18"
 
 
 #rm -rf 4scp/pp*
 #rm -rf backup/pp*
 #cp -r pp* backup/.
-
-
-
-
-## ppMC analysis eta bins
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec56" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0_rec56_HLTCalo" "ppData"
@@ -35,28 +30,26 @@ YY="18"
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec56_gen32" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_rec74_gen43" "ppMC"
-
-
-
-
-
-
-
-
-
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta0.5" "ppData"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.5eta1.0" "ppData"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta0.5" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.5eta1.0" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta4.7" "ppData"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetMult_0.0eta2.0" "ppData"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetMult__0.0eta2.0_1" "ppData"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetMult__0.0eta2.0_2" "ppData"
 
-
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta4.7" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots__0.0eta4.7_1" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "0.0eta2.0" "ppMC"
+
+
+
+
+source renameNhadd.sh 3 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta0.5" "ppData"
+source renameNhadd.sh 3 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.5eta1.0" "ppData"
+
+source renameNhadd.sh 3 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta0.5" "ppMC"
+source renameNhadd.sh 3 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.5eta1.0" "ppMC"
+source renameNhadd.sh 3 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots__0.0eta0.5_1" "ppMC"
+source renameNhadd.sh 3 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots__0.5eta1.0_1" "ppMC"
+
 
 
 

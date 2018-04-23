@@ -54,11 +54,11 @@ const std::string input_dir=SCRATCH_BASE;//+"4.07.16_outputCondor/readForests_HI
 
 //const std::string ppData_inCondorDir=input_dir+"10.11.17_outputCondor/ppData_HighPtJetTrig_ak4PFJets_10-11-17_jetPlots_0.0eta2.0_rec56_HLTCalo/";
 //const std::string ppData_inCondorDir="02.04.18_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-04-18_jetPlots_0.0eta4.7/";
-const std::string ppData_inCondorDir="04.11.18_outputCondor/ppData_HighPtJetTrig_ak4PFJets_04-11-18_jetPlots_0.0eta0.5/";
+const std::string ppData_inCondorDir="04.13.18_outputCondor/ppData_HighPtJetTrig_ak4PFJets_04-13-18_jetPlots_0.0eta0.5/";
 const std::string input_ppData_Filename=input_dir+ppData_inCondorDir+"HighPtJetTrig_ak4PF-allFiles.root";
 //const std::string input_ppData_Filename="HighPtJetTrig_ak4PF-allFiles.root";
 
-const std::string ppMC_inCondorDir  ="04.11.18_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-11-18_jetPlots_0.0eta0.5/";
+const std::string ppMC_inCondorDir  ="04.13.18_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_04-13-18_jetPlots_0.0eta0.5/";
 const std::string input_ppMC_Filename=input_dir+ppMC_inCondorDir+"Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
 //const std::string input_ppMC_Filename="Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
 
@@ -68,7 +68,10 @@ const std::string input_ppMC_Filename=input_dir+ppMC_inCondorDir+"Py8_CUETP8M1_Q
 
 
 const std::string ppData_inHist=
-  "hVz"; //weights=1 always, no trigger requirement as of 4/11/18 sample
+  //  "hVz"; //weights=1 always, no trigger requirement as of 4/11/18 sample
+  //"hVz_BSshift"; //weights=1 always, no trigger requirement as of 4/11/18 sample
+  //  "hVz_baryshift_pos"; //weights=1 always, no trigger requirement as of 4/11/18 sample
+"hVz_baryshift_neg"; //weights=1 always, no trigger requirement as of 4/11/18 sample
   //"hWeightedVz"; //trigger weighted; events w/ weight=0 included as of 4/11/18 sample
   //"hTriggerVz_noWeights"; //triggered events (weight>0) but weight=1 always
   //"hTriggerVz_withWeights"; //triggered events (weight>0) with weights

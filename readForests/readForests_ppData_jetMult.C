@@ -25,7 +25,7 @@ const bool fillDataJetTrackCorrHist=true;
 
 const bool fillDataJetMixedEvtBkgHist=true;
 
-const bool doTrkMultClassCuts=true;
+const bool doTrkMultClassCuts=false;
 //const int minTrks=54, maxTrks=300; // central, ~ 0-9% as of 2/12/17      
 //const int minTrks=42, maxTrks=53; // ~ 9%  - 27%
 const int minTrks=35, maxTrks=53; // ~ 9%  - 36%
@@ -39,29 +39,25 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
 				std::string outfile, float jtEtaCutLo, float jtEtaCutHi){
   
   Double_t centralityBin[]={
-    0., 1., 2., 3., 4.
+    //0., 300.//basic one-bin test case
+    //    0., 10., 30., 70., 120., 180., 250. //closer to real bins
+    //0., 30., 70., 120., 250. //1/2 the bins i think i need or want
+    0., 105., 150.
   };
-  //  0.,    1.,    2.,    3.,    4.,
-  //  5.,    6.,    7.,    8.,    9.,
-  //  10.,    11.,    12.,    13.,    14.,
-  //  15.
-  //};
+  
   const int nCentBins=sizeof(centralityBin)/sizeof(Double_t);
   std::cout<<"nCentBins="<<nCentBins<<std::endl;
   Double_t* nuCentralityBin=centralityBin;
   
   Double_t vzbin[]={
-    -24., -12., 0., 12., 24.
+    //    -24., 24.//basic one-bin test case
+    //-24., -16., -8., 0., 8.,16., 24.//closer to real bins
+    //-15., -10., -5., 0., 5., 10., 15. //1/2 the bins i think i need or want
+    -5., 5.
   };
-  //    (4.)*(-10.) ,    (4.)*(-9. ) ,    (4.)*(-8. ) ,    (4.)*(-7. ) ,    (4.)*(-6. ) ,
-  //    (4.)*(-5. ) ,    (4.)*(-4. ) ,    (4.)*(-3. ) ,    (4.)*(-2. ) ,    (4.)*(-1. ) ,
-  //    (4.)*(0.)   ,    (4.)*(1.)   ,    (4.)*(2.)   ,    (4.)*(3.)   ,    (4.)*(4.)   ,
-  //    (4.)*(5.)   ,    (4.)*(6.)   ,    (4.)*(7.)   ,    (4.)*(8.)   ,    (4.)*(9.)   ,
-  //    (4.)*(10.)
-  //};
   const int nZvBins=sizeof(vzbin)/sizeof(Double_t);
   std::cout<<"nZvBins="<<nZvBins<<std::endl;
-  Double_t* nuVzbin=vzbin;
+  Double_t* nuVzbin=vzbin;//because class constructor def'n
   
   std::cout<<"creating fPoolMgr"<<std::endl;  
   Int_t fMixingTracks=50000, poolsize=1000, trackDepth=fMixingTracks;
@@ -358,6 +354,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   TH2F *trkPtvEta=NULL, *trkEtavPhi=NULL;
 
   TH2F *jetTrackCorr=NULL, *jetTrackCorr_noPhiMatch=NULL;
+  TH2F *jetTrackCorrMEBkg=NULL, *jetTrackCorrMEBkg_noPhiMatch=NULL;
   
   if(fillDataJetMultHists){
     
@@ -471,6 +468,9 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     
     jetTrackCorr_noPhiMatch= new TH2F ( Form("hJetMultQA_%swJetID_jetTrackCorr_noPhiMatch"   ,jetID.c_str()), "jetTrackCorr_noPhiMatch",  126 ,-6.3,6.3, 80,-4.,4. );
     jetTrackCorr= new TH2F ( Form("hJetMultQA_%swJetID_jetTrackCorr"   ,jetID.c_str()), "jetTrackCorr",  126 ,-6.3,6.3, 80,-4.,4. );
+
+    jetTrackCorrMEBkg_noPhiMatch= new TH2F ( Form("hJetMultQA_%swJetID_jetTrackCorrMEBkg_noPhiMatch"   ,jetID.c_str()), "jetTrackCorrMEBkg_noPhiMatch",  126 ,-6.3,6.3, 80,-4.,4. );
+    jetTrackCorrMEBkg= new TH2F ( Form("hJetMultQA_%swJetID_jetTrackCorrMEBkg"   ,jetID.c_str()), "jetTrackCorrMEBkg",  126 ,-6.3,6.3, 80,-4.,4. );
   }
   
   // trigger (also jet) level
@@ -989,7 +989,9 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     h_NEvents_skimCut->Fill(1);
     
     
-    if( fabs(vz_F)>24. )     continue;
+    //if( fabs(vz_F)>24. )     continue;
+    //if( fabs(vz_F)>15. )     continue; //playing with # vz bins for jettrackcorr measurements. not permanent!
+    if( fabs(vz_F)>5. )     continue; //playing with # vz bins for jettrackcorr measurements. not permanent!
     h_NEvents_vzCut->Fill(1);
     
     //prescale/decision arrays, total prescale=L1_ps*HLT_ps
@@ -1148,7 +1150,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
     
   
     bool trkPasses[1000]={false};//for later use
-    
+    int nTrk_passCuts_I=0;    
     if(fillDataJetMultHists){
       
       //// high Purity Fraction Event Cut
@@ -1233,7 +1235,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       
       
       // trk counting, # of tracks passing cuts
-      int nTrk_passCuts_I=0;
+
       //int nTrk_vtxs_I=0, nTrk_vtxs_passCuts_I=0;      
       for(int itrk=0;itrk<nTrk_I;itrk++){
 	
@@ -1706,6 +1708,7 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
   
   
     
+
     if(fillDataEvtQAHists){
       
       if(evt_leadJetPt>0.) {
@@ -1716,8 +1719,8 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       hWjetsPEvt->Fill(jetsPerEvent,weight_eS); 
     }//end fill dataevtqahists
     
-
-  
+    
+    
     //at this point, still in the event loop!
     
     //fill jet-track correlation histograms
@@ -1743,115 +1746,161 @@ int readForests_ppData_jetMult( std::string inFilelist , int startfile , int end
       
       
       
-      
       if(fillDataJetMixedEvtBkgHist)      {
 	
-	if(nEvt%1000==0){
+	if(nEvt%10000==0){
 	  std::cout<<std::endl;
 	  std::cout<<"fillDataJetMixedEvtBkgHist==true"<<std::endl;
-	  std::cout<<std::endl;      }
+	  std::cout<<std::endl;      
+	}
 	
-	int centbin=0;
-
-	//StEventPool* pool=NULL;
-	//pool=fPoolMgr->GetEventPool(centbin, vz_F);
+	int centbin=-1;
+	for(int u=0; u<nCentBins;u++){	  
+	  if( nTrk_passCuts_I > ((int)centralityBin[u]) ){  centbin=u;}
+	  else break;	  
+	}	
+	//int vzbin=-1;
+	//for(int u=0; u<nZvBins;u++){	  
+	//if( vz_F > (float)vzbin[u]) ){  vzbin=u;}
+	//else break;	  
+	//}	
+	
 	
 	StEventPool* pool= (StEventPool*)fPoolMgr->GetEventPool(centbin, vz_F);   
-
+	bool poolrdy;//=pool->IsReady();      
+	
+	
 	if(!pool){
 	  std::cout<<"no pool for centbin="<<centbin<<", vz_F="<<vz_F << std::endl;	      
+	  poolrdy=false;
 	}
-
-	if(debugMode){
-	  std::cout<<"NtracksInPool = "<<pool->NTracksInPool()<<"  CurrentNEvents = "<<pool->GetCurrentNEvents()<<std::endl;  
+	else{
+	  poolrdy=pool->IsReady();
 	}
 	
-	bool poolrdy=pool->IsReady();      
+	//if(centbin!=0){
+	//  poolrdy=false;
+	//}
 	
-	//if( pool->IsReady() ){
+	//if(debugMode){
+	//std::cout<<"NtracksInPool = "<<pool->NTracksInPool()<<"  CurrentNEvents = "<<pool->GetCurrentNEvents()<<std::endl;  }
+	
+	
+	
 	if(!poolrdy){
-	  std::cout<<"pool not ready. No MEbkg evt loop."<<std::endl;
-	}
+	  if(nEvt%10000==0)
+	    std::cout<<"pool not ready. No MEbkg evt loop."<<std::endl;
+	} //end !poolrdy
 	else {
-	  std::cout<<"pool is ready"<<std::endl;      	
-	  TObjArray* bgTracks=NULL;
+	  
+	  if(nEvt%10000==0)std::cout<<"pool is ready"<<std::endl;      		
+
+	  //TObjArray* bgTracks=NULL;
 	  
 	  //loop over jets for mixed event background pool
-	  for(int jet = 0; jet<nref_I; ++jet){
-	    if(!jetPasses[jet])continue;	
-	    int nMix=pool->GetCurrentNEvents();
-	    
-	    //loop over mixed events in mixed event background pool	  
-	    std::cout<<"looping over nMix="<< nMix<<" evts in pool"<<std::endl;
-	    
-	    for(int mix=0;mix<nMix;mix++)	    {
-	      bgTracks= (TObjArray*)pool->GetEvent(mix);
-	      int nBGtrks=bgTracks->GetEntries();
+	  if(centbin==1){
+	    for(int jet = 0; jet<nref_I; ++jet){
 	      
-	      std::cout<<"looping over nBGtrks="<< nBGtrks<<" BGtracks in evt from ME pool"<<std::endl;	    
+	      if(!jetPasses[jet])continue;	
+	      
+	      //if good jet loop over mixed events in mixed event background pool	  
+	      int nMix=pool->GetCurrentNEvents();	    
+	      
+	      if(nEvt%100==0 && 
+		 jet%5==0 ) std::cout<<"looping over nMix="<< nMix<<" evts in pool"<<std::endl;
+	      
+	      for(int mix=0;mix<nMix;mix++)	    {	      
+		TObjArray* bgTracks= (TObjArray*)pool->GetEvent(mix);
+		if(!bgTracks)assert(false);
+		int nBGtrks=bgTracks->GetEntries();	      
+		//std::cout<<"looping over nBGtrks="<< nBGtrks<<" BGtracks in evt from ME pool"<<std::endl;	    
+		
+		for(int trk=0;trk<nBGtrks;trk++){
+		  
+		  StFemtoTrack* bgtrk = static_cast<StFemtoTrack*>(bgTracks->At(trk));
+		  
+		  //TObject* trkTObj=(TObject*)bgTracks->At(trk);
+		  //if(!trkTObj)assert(false);
+		  //StFemtoTrack* bgtrk = (StFemtoTrack*)(trkTObj);
+		  
+		  if(!bgtrk)assert(false);		
+		  float deltaPhi=bgtrk->Phi() - phi_F[jet];
+		  float deltaEta=bgtrk->Eta() - eta_F[jet];	  
+		  jetTrackCorrMEBkg_noPhiMatch->Fill(deltaPhi, deltaEta, (weight_eS/((float)jetsPerEvent)));
+		  
+		  deltaPhi=deltaphi_jettrk(deltaPhi);
+		  jetTrackCorrMEBkg->Fill(deltaPhi, deltaEta, (weight_eS/((float)jetsPerEvent)));		
+		  //std::cout<<"bgtrk pt/eta/phi/chg = "<< bgtrk->Pt() << "/"<< bgtrk->Eta()<< "/"<< bgtrk->Phi()<< "/"<< bgtrk->Charge()<< std::endl;
+		  
+		}//temp end bgtrk loop
+		
+	      }//temp end mixevt loop	    
+	      
+	    }//end jet loop
+	  }//end centbin check
+	}//end poolrdy check
+	
 
-	      for(int trk=0;trk<nBGtrks;trk++){
-		//StFemtoTrack* bgtrk = static_cast<StFemtoTrack*>(bgTracks->At(trk));
-		//StFemtoTrack* bgtrk = (StFemtoTrack*) (bgTracks->At(trk));
-		//TObjArray* ObjArray
-		StFemtoTrack* bgtrk = (StFemtoTrack*) (bgTracks->At(trk));
-		
-		std::cout<<"bgtrk pt/eta/phi/chg = "<< bgtrk->Pt() << "/"<< bgtrk->Eta()<< "/"<< bgtrk->Phi()<< "/"<< bgtrk->Charge()<< std::endl;
-		
-		//std::cout<<"hello world"<<std::endl;
-	      
-	      }//end bg tracks loop
-	    
-	    }//end mixed event bkg evt loop for MEBkg	    
-	  
-	  }//end jet loop for MEBkg
-	}//end pool ready check
 	
 	
-	if(true){ //i.e. ready to put tracks in the evt pool.
-	  std::cout<<"looping over tracks + updating pool"<<std::endl;
+	if(nEvt%10000==0)
+	  std::cout<<"updating bkg trk pool"<<std::endl;
+	
+	//	  //TObjArray* MEtrks= new TClonesArray("StFemtoTrack");
+	//	  //TClonesArray* MEtrks= new TClonesArray("StFemtoTrack");
+	TObjArray* MEtrks= new TObjArray(1000);      
+	int MEtrkCount=0;
+	for(int itrk=0;itrk<nTrk_I;itrk++){	  
 	  
-	  //TObjArray* MEtrks= new TClonesArray("StFemtoTrack");
-	  //TClonesArray* MEtrks= new TClonesArray("StFemtoTrack");
-	  TObjArray* MEtrks= new TObjArray(1000);      
+	  if(!trkPasses[itrk]) continue;
+	  if(itrk>=999)continue;
+	  StFemtoTrack* t= new StFemtoTrack((double)trkPt_F[itrk], 
+					    (double)trkEta_F[itrk], 
+					    (double)trkPhi_F[itrk], 
+					    (short)trkCharge_I[itrk]);
 	  
-	  for(int itrk=0;itrk<nTrk_I;itrk++){	  
-	    if(!trkPasses[itrk]) continue;
+	  //{//test femtotrack, good
+	  //  std::cout<<"t-> pt/eta/phi/chg = "<< t->Pt() << "/"<< t->Eta()<< "/"<< t->Phi()<< "/"<< t->Charge()<< std::endl;
+	  //  std::cout<<"trkPt/Eta/Phi/Charge ="<< trkPt_F[itrk]<< "/" << trkEta_F[itrk]<< "/"<< trkPhi_F[itrk]<< "/"<< trkCharge_I[itrk]<< std::endl<<std::endl;
+	  //}
+	  
+	  //(*MEtrks)[itrk] = t;	  
+	  (*MEtrks)[MEtrkCount] = t;	  
+	  //{//test TObjArray, good
+	  //  StFemtoTrack* test=(StFemtoTrack*)(MEtrks->At(MEtrkCount));
+	  //  std::cout<<"test-> pt/eta/phi/chg = "<< test->Pt() << "/"<< test->Eta()<< "/"<< test->Phi()<< "/"<< test->Charge()<< std::endl;
+	  //  std::cout<<"trkPt/Eta/Phi/Charge ="<< trkPt_F[itrk]<< "/" << trkEta_F[itrk]<< "/"<< trkPhi_F[itrk]<< "/"<< trkCharge_I[itrk]<< std::endl<<std::endl;
+	  //}
+	  MEtrkCount++;
+	  
+	} //end track loop for updating pool
+	if(nEvt%10000==0)std::cout<<"updating pool"<<std::endl;
+	pool->UpdatePool((TObjArray*)MEtrks);		  	  	  
 
-	    StFemtoTrack* t= new StFemtoTrack((double)trkPt_F[itrk], 
-					      (double)trkEta_F[itrk], 
-					      (double)trkPhi_F[itrk], 
-					      (short)trkCharge_I[itrk]);
-	    if(!t) continue;
-	    
-	    if(nEvt%1000==0)std::cout<<"putting StFemtoTrack in TClonesArray"<<std::endl;
-	    (*MEtrks)[itrk] = t;
-	    
-	  } //end track loop for updating pool
-	  
-	  if(nEvt%1000==0)std::cout<<"updating pool"<<std::endl;
-	  //pool->UpdatePool((TObjArray*)MEtrks);	
-	  pool->UpdatePool(MEtrks);	
-	  
-	}//end update mebkg trk pool
-      }//end mixedEvtBkg hists
+      }//end filldatajetmixedevtbkghist
 
-    }//end jettrackcorrhists
+    }//end filldatajettrackcorrhist
     
+    
+    
+    //	  
+    
+    //	  
+    //	}//end update mebkg trk pool
+    //      }//end mixedEvtBkg hists
+    //
+    //    }//end jettrackcorrhists
+    
+  }//end event loop
   
-      
-        
-    
-    ////end event loop
-    
-    std::cout<<std::endl;
-    
-    std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
-    std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl<<std::endl;
-    std::cout<<"Total Num of Events passing skim cut = " <<h_NEvents_skimCut->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events passing vz cut = " <<h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
+  std::cout<<std::endl;
+  
+  std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
+  std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl<<std::endl;
+  std::cout<<"Total Num of Events passing skim cut = " <<h_NEvents_skimCut->GetEntries()<<std::endl;
+  std::cout<<"Total Num of Events passing vz cut = " <<h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
     
   std::cout<<"Trigger Combination type = " << hTrigComb->GetTitle() << std::endl;
   std::cout<<"Total Num of Events passing jet40 = "  << h_NEvents_jet40->GetEntries()  << std::endl;

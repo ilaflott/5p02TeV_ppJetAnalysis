@@ -105,22 +105,23 @@ Int_t StEventPool::UpdatePool(TObjArray *trk)
   // the oldest event, and appending the newest.
   //
   // the ownership of <trk> is delegated to this class
-
+  
   if(fLockFlag)
-  {
-    Form("Tried to fill a locked StEventPool.");
-    return fEvents.size();
-  }
-
+    {
+      //Form("Tried to fill a locked StEventPool.");
+      std::cout<<"tried to fill locked StEventPool"<<std::endl;
+      return fEvents.size();
+    }
+  
   static Int_t iEvent = -1; 
   iEvent++;
-
+  
   Int_t mult = trk->GetEntries();
   Int_t nTrk = NTracksInPool();
-
+  
   if (!IsReady() && IsReady(nTrk + mult, GetCurrentNEvents() + 1))
     fNTimes++;
-
+  
   // remove 0th element before appending this event
   Bool_t removeFirstEvent = 0;
   if (nTrk>fTargetTrackDepth) {
@@ -156,10 +157,11 @@ Int_t StEventPool::UpdatePool(TObjArray *trk)
 
   fWasUpdated = true;
 
+  //if (true) {
   if (StEventPool::fDebug) {
-    cout << " Event " << fEventIndex.back();
-    cout << " PoolDepth = " << GetCurrentNEvents(); 
-    cout << " NTracksInCurrentEvent = " << NTracksInCurrentEvent();
+    cout << " Event " << fEventIndex.back()                       <<endl;
+    cout << " PoolDepth = " << GetCurrentNEvents()                <<endl; 
+    cout << " NTracksInCurrentEvent = " << NTracksInCurrentEvent()<<endl;
   }
 
   return fEvents.size();

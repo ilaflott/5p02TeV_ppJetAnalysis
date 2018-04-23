@@ -6,11 +6,11 @@
 #source /osg/current/setup.sh
 
 #echo "setting environment variables"
-#export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
-#export SCRAM_ARCH=slc6_amd64_gcc491
+export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
+export SCRAM_ARCH=slc6_amd64_gcc491
 
 #echo "sourcing cmssetup defaults"
-#source $VO_CMS_SW_DIR/cmsset_default.sh
+source $VO_CMS_SW_DIR/cmsset_default.sh
 
 ##other env variables, no need to output to screen
 #export CMSSW_GIT_REFERENCE=$VO_CMS_SW_DIR/cmssw.git

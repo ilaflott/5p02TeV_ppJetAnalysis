@@ -19,8 +19,8 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 echo 'cmsenv'
 cmsenv
 
-#setup new git version
-export PATH=/cms/base/git-2.9.5/bin:${PATH}
+##setup new git version
+#export PATH=/cms/base/git-2.9.5/bin:${PATH}
 
 ## don't setup CRAB3 unless running grid jobs.
 ## Mixins.py error pops up if using cmsRun locally with CRAB3 envsetup because crab needs python 2.6, while CMSSW uses 2.7

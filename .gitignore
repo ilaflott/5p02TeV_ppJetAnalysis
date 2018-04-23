@@ -26,6 +26,8 @@ readForests/star-jetframework-master
 readForests/star-jetframework-master/*
 readForests/outputCondor/rename.sh
 checkout.sh
+vzEvtWeights/vzEvtWeights_old
+vzEvtWeights/vzEvtWeights_old/*
 readForests/StMyAnalysisMaker.cxx
 readForests/StMyAnalysisMaker.h
 doAnalysis/doUnfolding/unfoldSpectra_obaronDiff.sh

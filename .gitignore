@@ -7,6 +7,7 @@
 *.err
 *.out
 *.pdf
+*.png
 *.tar
 *.tar.gz
 *~
@@ -21,3 +22,19 @@ RooUnfold-svnTrunk
 RooUnfold-svnTrunk/*
 readForests/deprecatedCode
 readForests/deprecatedCode/*
+readForests/star-jetframework-master
+readForests/star-jetframework-master/*
+readForests/outputCondor/rename.sh
+checkout.sh
+readForests/StMyAnalysisMaker.cxx
+readForests/StMyAnalysisMaker.h
+doAnalysis/doUnfolding/unfoldSpectra_obaronDiff.sh
+doAnalysis/doUnfolding/runData_old.sh
+doAnalysis/doUnfolding/output
+doAnalysis/doUnfolding/output/*
+doAnalysis/doUnfolding/oldCode
+doAnalysis/doUnfolding/oldCode/*
+doAnalysis/printPlots/code_snips_reference
+doAnalysis/printPlots/code_snips_reference/*
+doAnalysis/printPlots/output
+doAnalysis/printPlots/output/*

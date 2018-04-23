@@ -16,8 +16,8 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 #export CMSSW_GIT_REFERENCE=$VO_CMS_SW_DIR/cmssw.git
 #export CVMFS_758=${VO_CMS_SW_DIR}/${SCRAM_ARCH}/cms/cmssw/CMSSW_7_5_8/src/
 
-#echo 'cmsenv'
-#cmsenv
+echo 'cmsenv'
+cmsenv
 
 #setup new git version
 export PATH=/cms/base/git-2.9.5/bin:${PATH}

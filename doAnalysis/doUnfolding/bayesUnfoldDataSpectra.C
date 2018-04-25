@@ -2,7 +2,7 @@
 
 //other settings
 const bool drawPDFs=true; 
-const bool debugMode=true;
+const bool debugMode=false;
 
 
 
@@ -14,7 +14,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   // BINNING -----------
   
-  if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
+  if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
   else std::cout<<"using simple pt bins"<<std::endl<<std::endl;
   
   double* boundaries_pt_gen=setBinning(  useSimpBins , "gen"  );
@@ -95,7 +95,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   // ppData input histos -------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from Data file"<<std::endl; 
   std::cout<<"input Data dir : "<< (inFile_Data_dir)  <<std::endl; 
-  std::cout<<"Data file name : "<< (inFile_Data_name)<<std::endl;   std::cout<<std::endl<<std::endl;  
+  std::cout<<"Data file name : "<< (inFile_Data_name)<<std::endl;   std::cout<<std::endl;//<<std::endl;  
   TFile *fpp_Data = TFile::Open( (inFile_Data_dir+inFile_Data_name).c_str());
   
   

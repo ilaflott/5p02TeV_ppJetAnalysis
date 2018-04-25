@@ -11,9 +11,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
 		     const bool doJetID=true , const bool useSimpBins=false){
   
   
-  
-  // BINNING -----------
-  
+  // ------------------- //
+  // BINNING ----------- //
+  // ------------------- //
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
   else std::cout<<"using simple pt bins"<<std::endl<<std::endl;
   
@@ -30,8 +30,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
   
   
-
-  // STRINGS -----------
+  // ------------------- //
+  // STRINGS ----------- //
+  // ------------------- //
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
   //inFile_Data_dir=SCRATCH_BASE+inFile_Data_dir;
   inFile_MC_dir  =SCRATCH_BASE+inFile_MC_dir;
@@ -50,13 +51,15 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
   
   
-  
-  // INFILE NAME(S) -----------
+  // -------------------------- //
+  // INFILE NAME(S) ----------- //
+  // -------------------------- //
   const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
   //const std::string inFile_Data_name="/HighPtJetTrig_"+fullJetType+"-allFiles.root";
   
-  
-  // OUTPUT FILE, NAME(S) -----------
+  // -------------------------- //  
+  // OUTPUT FILE, NAME(S) ----- //
+  // -------------------------- //  
   std::string outFileName=unfoldMCSpectra_outdir+fullJetType;
   if(doJetID)outFileName+="_wjtID";
   if(!useSimpBins)outFileName+="_anabins";
@@ -68,8 +71,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   std::string outRootFile     =  outFileName+".root";  
   
 
-  
-  // ERROR/WEIGHTS/STATS HANDLING ------------------
+  // -------------------------------- //    
+  // ERROR/WEIGHTS/STATS HANDLING --- //
+  // -------------------------------- //    
   RooUnfold::ErrorTreatment errorTreatment;
   if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
   else errorTreatment = RooUnfold::kCovToy; 
@@ -87,8 +91,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   gROOT->ForceStyle();
 
 
-
-  // ppMC input histos -------------------------
+  // -------------------------------- //    
+  // ppMC input histos -------------- //
+  // -------------------------------- //    
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"<<std::endl; 
   std::cout<<"input MC dir : "<< (inFile_MC_dir)  <<std::endl; 
   std::cout<<"MC file name : "<< (inFile_MC_name)<<std::endl;   std::cout<<std::endl<<std::endl;  
@@ -100,8 +105,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   TFile* fout = new TFile(outRootFile.c_str(),"RECREATE");   
   fout->cd();  
   
-  
-  // ---------- reco, measured spectra to unfold
+  // ----------------------------------------------- //      
+  // ---------- reco, measured spectra to unfold --- //
+  // ----------------------------------------------- //      
   std::string histTitle="hpp_mcclosure_reco_test";
   if(doJetID)histTitle+="_wJetID";
   histTitle+=RandEtaRange;
@@ -152,8 +158,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   
   
   
-  
+  // ----------------------------------------------- //   
   // ---------- reco, measured same-side spectra used to create response matrix, and for "sameside" unfolding test
+  // ----------------------------------------------- //      
   std::string histTitle2="hpp_mcclosure_reco";
   if(doJetID)histTitle2+="_wJetID";
   histTitle2+=RandEtaRange;
@@ -189,7 +196,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
     hrec_sameside_anabin->Write(histTitle2.c_str());
     if(debugMode)hrec_sameside_anabin->Print("base");    }
   
+  // ----------------------------------------------- //      
   // response hist, for output? what is this for if it's empty?
+  // ----------------------------------------------- //      
   TH1F* hrec_sameside_resp_anabin;
   //if(fillRespHists) hrec_sameside_resp_anabin = (TH1F*)hrec_sameside_anabin->Clone("recanabinsamesideClone4unf");
   if(!useSimpBins) hrec_sameside_resp_anabin = (TH1F*)hrec_sameside_anabin->Clone("recanabinsamesideClone4unf");
@@ -217,7 +226,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   
   
   
+  // ----------------------------------------------- //      
   // ---------- gen, MC truth spectra
+  // ----------------------------------------------- //      
   std::string genHistTitle="hpp_mcclosure_gen";
   if(doJetID)genHistTitle+="_wJetID";
   genHistTitle+=RandEtaRange;
@@ -282,8 +293,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   
   
   
-  
+  // ----------------------------------------------- //        
   // ---------- open MC "response" matrix
+  // ----------------------------------------------- //      
   std::string TH2_title="hpp_mcclosure_matrix";//+RandEtaRange;
   if(doJetID)TH2_title+="_wJetID";
   TH2_title+=RandEtaRange;
@@ -298,7 +310,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   hmat->Write( TH2_title.c_str());
   if(debugMode)hmat->Print("base");
   
+  // ----------------------------------------------- //      
   // rebinned matrix ---------------
+  // ----------------------------------------------- //      
   TH2_title+="_clone";
   TH2F* hmat_anabin = (TH2F*)hmat->Clone( (TH2_title).c_str() );
   hmat_anabin->Write(TH2_title.c_str());
@@ -323,7 +337,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
     if(debugMode)hmat_anabin->Print("base");  }
   
   
+  // ----------------------------------------------- //      
   // error and %error for response matrix ---------------
+  // ----------------------------------------------- //      
   std::string errTH2_title="hmat_errors_anabins";
   TH2F* hmat_errors=makeRespMatrixErrors( (TH2F*) hmat,
 					  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
@@ -342,8 +358,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
     hmat_errors->Write(errTH2_title.c_str());
     if(debugMode)hmat_errors->Print("base");  }
   
-  
+  // ----------------------------------------------- //        
   // give response matrix the correct errors
+  // ----------------------------------------------- //      
   setRespMatrixErrs( (TH2F*)hmat_anabin, (TH2F*) hmat_errors , (bool)zeroBins);
 
   TH2_title+="_wseterrs";
@@ -453,381 +470,385 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
 
 
 
-
-  // Bayesian unfolding ------------------------- 
-
-    // RooUnfoldResponse, Bayes --------------------
-    std::cout<<"calling RooUnfoldResponse "<<std::endl;
+  // ----------------------------------------------- //        
+  // Bayesian unfolding ---------------------------- // 
+  // ----------------------------------------------- //      
+  
+  // RooUnfoldResponse, Bayes --------------------
+  std::cout<<"calling RooUnfoldResponse "<<std::endl;
+  
+  //for inversion of response matrix
+  RooUnfoldResponse roo_resp_nullresp( 0, 0, hmat_anabin, ("Response_matrix_nullresp"+RandEtaRange).c_str()) ;
+  roo_resp_nullresp.UseOverflow(doOverUnderflows);    
+  roo_resp_nullresp.Write();
+  
+  RooUnfoldResponse roo_resp( hrec_sameside_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str()) ;
+  roo_resp.UseOverflow(doOverUnderflows);    
+  roo_resp.Write();
+  
+  std::cout<<"calling RooUnfoldBayes..."<<std::endl;
+  RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
+  
+  TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
+  hunf->SetName("ppMC_BayesUnf_Spectra");
+  hunf->SetTitle("ppMC BayesUnf Spectra");
+  if(debugMode)hunf->Print("base");
+  
+  
+  std::cout<<"reFolding unfolded histogram!!"<<std::endl;
+  TH1F* hfold=(TH1F*)roo_resp_nullresp.ApplyToTruth(hunf);        
+  //TH1F* hfold=(TH1F*)roo_resp.ApplyToTruth(hunf);        
+  hfold->SetName("ppMC_BayesFold_Spectra");
+  hfold->SetTitle("ppMC BayesFold Spectra");
+  if(debugMode)hfold->Print("base");
+  
+  //if(doMCIntegralScaling)hfold->Scale(hrec_anabin->Integral()/hfold->Integral());
+  if(debugMode)hfold->Print("base");
+  
+  // RATIOS WITH OPP SIDE GEN
+  TH1F *hgen_anabin_ratiobin=(TH1F*)hgen_anabin->Clone("ppMC_Gen_Ratio_denom");
+  hgen_anabin_ratiobin=(TH1F*)hgen_anabin_ratiobin->Rebin(nbins_pt_reco,"ppMC_Gen_Ratio_denom_rebin",boundaries_pt_reco);
+  if(debugMode)hgen_anabin_ratiobin->Print("base");
+  
+  TH1F *h_genratio_oppunf = (TH1F*)hunf->Clone( "ppMC_Gen_Ratio_OppUnf" );
+  h_genratio_oppunf->SetTitle( "Bayes Unf./Gen. Truth" );
+  h_genratio_oppunf->SetMarkerStyle(24);
+  h_genratio_oppunf->SetMarkerColor(2);
+  h_genratio_oppunf->Divide(hgen_anabin);
+  if(debugMode)h_genratio_oppunf->Print("base");
+  
+  TH1F *h_genratio_oppfold = (TH1F*)hfold->Clone( "ppMC_Gen_Ratio_OppFold" );
+  h_genratio_oppfold->SetTitle( "Bayes Fold/Gen. Truth" );
+  h_genratio_oppfold->SetMarkerStyle(24);
+  h_genratio_oppfold->SetMarkerColor(3);
+  h_genratio_oppfold->Divide(hgen_anabin_ratiobin);
+  if(debugMode)h_genratio_oppfold->Print("base");
+  
+  TH1F *h_genratio_oppmeas = (TH1F*)hrec_anabin->Clone( "ppMC_Gen_Ratio_Meas" );
+  h_genratio_oppmeas->SetTitle( "Meas./Gen. Truth" );
+  h_genratio_oppmeas->SetMarkerStyle(24);
+  h_genratio_oppmeas->SetMarkerColor(4);
+  h_genratio_oppmeas->Divide(hgen_anabin_ratiobin);
+  if(debugMode)h_genratio_oppmeas->Print("base");
+  
+  
+  // RATIOS WITH OPP SIDE MEAS
+  TH1F *h_recratio_oppunf = (TH1F*)hunf->Clone( "ppMC_Meas_Ratio_OppUnf" );
+  h_recratio_oppunf=(TH1F*)h_recratio_oppunf->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_OppUnf_rebin" , boundaries_pt_reco);
+  h_recratio_oppunf->SetTitle( "Bayes Unf./Meas." );
+  h_recratio_oppunf->SetMarkerStyle(24);
+  h_recratio_oppunf->SetMarkerColor(2);
+  h_recratio_oppunf->Divide(hrec_anabin);
+  if(debugMode)h_recratio_oppunf->Print("base");
+  
+  TH1F *h_recratio_oppfold = (TH1F*)hfold->Clone( "ppMC_Meas_Ratio_OppFold" );
+  //h_recratio_oppfold=(TH1F*)h_recratio_oppfold->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_OppFold_rebin" , boundaries_pt_reco);
+  h_recratio_oppfold->SetTitle( "Bayes Fold./Meas." );
+  h_recratio_oppfold->SetMarkerStyle(24);
+  h_recratio_oppfold->SetMarkerColor(3);
+  h_recratio_oppfold->Divide(hrec_anabin);
+  if(debugMode)h_recratio_oppfold->Print("base");
+  
+  
+  
+  // ----------------------------------------------- //        
+  // SAMESIDE UNFOLDING
+  // ----------------------------------------------- //        
+  RooUnfoldResponse roo_ss_resp_nullresp( 0,0, hmat_anabin, ("ss_Response_matrix_nullresp"+RandEtaRange).c_str()) ;
+  roo_ss_resp_nullresp.UseOverflow(doOverUnderflows);    
+  roo_ss_resp_nullresp.Write();
+  
+  RooUnfoldResponse roo_ss_resp( hrec_sameside_resp_anabin, hgen_resp_anabin, hmat_anabin, ("ss_Response_matrix"+RandEtaRange).c_str()) ;
+  roo_ss_resp.UseOverflow(doOverUnderflows);    
+  roo_ss_resp.Write();
+  
+  std::cout<<"calling sameside RooUnfoldBayes..."<<std::endl;
+  RooUnfoldBayes unf_sameside_bayes( &roo_ss_resp, hrec_sameside_anabin, kIter );
+  
+  TH1F *hunf_sameside = (TH1F*)unf_sameside_bayes.Hreco(errorTreatment);    std::cout<<std::endl; 
+  hunf_sameside->SetName("ppMC_BayesUnf_sameSideSpectra");
+  hunf_sameside->SetTitle("ppMC BayesUnf sameSideSpectra");
+  if(debugMode)hunf_sameside->Print("base");
+  
+  std::cout<<"reFolding unfolded histogram!!"<<std::endl;
+  TH1F* hfold_sameside=(TH1F*)roo_ss_resp_nullresp.ApplyToTruth(hunf_sameside);    
+  //TH1F* hfold_sameside=(TH1F*)roo_ss_resp.ApplyToTruth(hunf_sameside);    
+  hfold_sameside->SetName("ppMC_BayesFold_sameSide_Spectra");
+  hfold_sameside->SetTitle("ppMC BayesFold sameSide Spectra");
+  if(debugMode)hfold_sameside->Print("base");
+  
+  //if(doMCIntegralScaling)hfold_sameside->Scale(hrec_sameside_anabin->Integral()/hfold_sameside->Integral());
+  if(debugMode)hfold_sameside->Print("base");
+  
+  
+  // ----------------------------------------------- //          
+  // SAMESIDE RATIO W/ OPPSIDE MEAS
+  // ----------------------------------------------- //        
+  TH1F *h_recratio_ssunf = (TH1F*)hunf_sameside->Clone( "ppMC_Meas_Ratio_SSUnf" );
+  h_recratio_ssunf=(TH1F*)h_recratio_ssunf->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSUnf_rebin" , boundaries_pt_reco);
+  h_recratio_ssunf->SetTitle( "SameSide Bayes Unf./Meas." );
+  h_recratio_ssunf->SetMarkerStyle(25);
+  h_recratio_ssunf->SetMarkerColor(2);
+  h_recratio_ssunf->Divide(hrec_anabin);
+  if(debugMode)h_recratio_ssunf->Print("base");
+  
+  
+  TH1F *h_recratio_ssfold = (TH1F*)hfold_sameside->Clone( "ppMC_Meas_Ratio_SSFold" );
+  //h_recratio_ssfold=(TH1F*)h_recratio_ssfold->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSFold_rebin" , boundaries_pt_reco);
+  h_recratio_ssfold->SetTitle( "SameSide Bayes Fold./Meas." );
+  h_recratio_ssfold->SetMarkerStyle(25);
+  h_recratio_ssfold->SetMarkerColor(3);
+  h_recratio_ssfold->Divide(hrec_anabin);
+  if(debugMode)h_recratio_ssfold->Print("base");
+  
+  
+  TH1F *h_recratio_ssgen = (TH1F*)hgen_anabin->Clone( "ppMC_Meas_Ratio_SSTruth" );    
+  h_recratio_ssgen=(TH1F*)h_recratio_ssgen->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSTruth_rebin" , boundaries_pt_reco);
+  h_recratio_ssgen->SetTitle( "Truth/Meas." );
+  h_recratio_ssgen->SetMarkerStyle(24);
+  h_recratio_ssgen->SetMarkerColor(6);
+  h_recratio_ssgen->Divide(hrec_anabin);
+  if(debugMode)h_recratio_ssgen->Print("base");
+  
+  
+  // SAMESIDE RATIO W/ OPPSIDE GEN
+  TH1F *h_genratio_ssunf = (TH1F*)hunf_sameside->Clone( "ppMC_Gen_Ratio_SSUnf" );
+  h_genratio_ssunf->SetTitle( "SameSide Bayes Unf./Gen. Truth" );
+  h_genratio_ssunf->SetMarkerStyle(25);
+  h_genratio_ssunf->SetMarkerColor(2);
+  h_genratio_ssunf->Divide(hgen_anabin);
+  if(debugMode)h_genratio_ssunf->Print("base");
+  
+  
+  TH1F *h_genratio_ssfold = (TH1F*)hfold_sameside->Clone( "ppMC_Gen_Ratio_SSFold" );
+  h_genratio_ssfold->SetTitle( "SameSide Bayes Fold/Gen. Truth" );
+  h_genratio_ssfold->SetMarkerStyle(25);
+  h_genratio_ssfold->SetMarkerColor(3);
+  h_genratio_ssfold->Divide(hgen_anabin_ratiobin);
+  if(debugMode)h_genratio_ssfold->Print("base");
+  
+  TH1F *h_genratio_ssmeas = (TH1F*)hrec_sameside_anabin->Clone( "ppMC_Gen_Ratio4_SSMeas" );
+  h_genratio_ssmeas->SetTitle( "Same Side Meas./Gen. Truth" );
+  h_genratio_ssmeas->SetMarkerStyle(25);
+  h_genratio_ssmeas->SetMarkerColor(4);
+  h_genratio_ssmeas->Divide(hgen_anabin_ratiobin);
+  if(debugMode)h_genratio_ssmeas->Print("base");
+  
+  
+  
+  std::cout<<"writing output hists to file... "<<std::endl;
+  
+  hunf->Write();    
+  hunf_sameside->Write();
+  
+  hfold->Write();    
+  hfold_sameside->Write();
+  
+  h_genratio_oppunf->Write();  
+  h_genratio_oppfold->Write();  
+  h_genratio_oppmeas->Write();  
+  
+  h_genratio_ssunf->Write();  
+  h_genratio_ssfold->Write();  
+  h_genratio_ssmeas->Write();  
+  
+  h_recratio_oppunf->Write();  
+  h_recratio_oppfold->Write();  
+  
+  h_recratio_ssunf->Write();  
+  h_recratio_ssfold->Write();  
+  h_recratio_ssgen->Write();  
+  
+  
+  
+  
+  
+  
+  // ----------------------------------------------- //        
+  //  drawPDFS -------------------------------------------------- 
+  // ----------------------------------------------- //        
+  if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
+  else{ std::cout<<std::endl<<"drawing output PDFs for Bayesian Unfolding..."<<std::endl;
+    std::string outPdfFile=outBayesPdfFile;
+    std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
     
-    //for inversion of response matrix
-    RooUnfoldResponse roo_resp_nullresp( 0, 0, hmat_anabin, ("Response_matrix_nullresp"+RandEtaRange).c_str()) ;
-    roo_resp_nullresp.UseOverflow(doOverUnderflows);    
-    roo_resp_nullresp.Write();
+    // canvas for printing
+    TCanvas* canvForPrint=new TCanvas("printCanvas","for printing",           1000,1000);    
+    canvForPrint->cd();
+    canvForPrint->Print(open_outPdfFile.c_str()); 
     
-    RooUnfoldResponse roo_resp( hrec_sameside_resp_anabin, hgen_resp_anabin, hmat_anabin, ("Response_matrix"+RandEtaRange).c_str()) ;
-    roo_resp.UseOverflow(doOverUnderflows);    
-    roo_resp.Write();
+    canvForPrint->cd();
+    if(!useSimpBins)canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(1);
     
-    std::cout<<"calling RooUnfoldBayes..."<<std::endl;
-    RooUnfoldBayes unf_bayes( &roo_resp, hrec_anabin, kIter );
-    
-    TH1F *hunf = (TH1F*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
-    hunf->SetName("ppMC_BayesUnf_Spectra");
-    hunf->SetTitle("ppMC BayesUnf Spectra");
-    if(debugMode)hunf->Print("base");
-    
-    
-    std::cout<<"reFolding unfolded histogram!!"<<std::endl;
-    TH1F* hfold=(TH1F*)roo_resp_nullresp.ApplyToTruth(hunf);        
-    //TH1F* hfold=(TH1F*)roo_resp.ApplyToTruth(hunf);        
-    hfold->SetName("ppMC_BayesFold_Spectra");
-    hfold->SetTitle("ppMC BayesFold Spectra");
-    if(debugMode)hfold->Print("base");
-
-    //if(doMCIntegralScaling)hfold->Scale(hrec_anabin->Integral()/hfold->Integral());
-    if(debugMode)hfold->Print("base");
-
-    // RATIOS WITH OPP SIDE GEN
-    TH1F *hgen_anabin_ratiobin=(TH1F*)hgen_anabin->Clone("ppMC_Gen_Ratio_denom");
-    hgen_anabin_ratiobin=(TH1F*)hgen_anabin_ratiobin->Rebin(nbins_pt_reco,"ppMC_Gen_Ratio_denom_rebin",boundaries_pt_reco);
-    if(debugMode)hgen_anabin_ratiobin->Print("base");
-    
-    TH1F *h_genratio_oppunf = (TH1F*)hunf->Clone( "ppMC_Gen_Ratio_OppUnf" );
-    h_genratio_oppunf->SetTitle( "Bayes Unf./Gen. Truth" );
-    h_genratio_oppunf->SetMarkerStyle(24);
-    h_genratio_oppunf->SetMarkerColor(2);
-    h_genratio_oppunf->Divide(hgen_anabin);
-    if(debugMode)h_genratio_oppunf->Print("base");
-    
-    TH1F *h_genratio_oppfold = (TH1F*)hfold->Clone( "ppMC_Gen_Ratio_OppFold" );
-    h_genratio_oppfold->SetTitle( "Bayes Fold/Gen. Truth" );
-    h_genratio_oppfold->SetMarkerStyle(24);
-    h_genratio_oppfold->SetMarkerColor(3);
-    h_genratio_oppfold->Divide(hgen_anabin_ratiobin);
-    if(debugMode)h_genratio_oppfold->Print("base");
-    
-    TH1F *h_genratio_oppmeas = (TH1F*)hrec_anabin->Clone( "ppMC_Gen_Ratio_Meas" );
-    h_genratio_oppmeas->SetTitle( "Meas./Gen. Truth" );
-    h_genratio_oppmeas->SetMarkerStyle(24);
-    h_genratio_oppmeas->SetMarkerColor(4);
-    h_genratio_oppmeas->Divide(hgen_anabin_ratiobin);
-    if(debugMode)h_genratio_oppmeas->Print("base");
-    
-    
-    // RATIOS WITH OPP SIDE MEAS
-    TH1F *h_recratio_oppunf = (TH1F*)hunf->Clone( "ppMC_Meas_Ratio_OppUnf" );
-    h_recratio_oppunf=(TH1F*)h_recratio_oppunf->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_OppUnf_rebin" , boundaries_pt_reco);
-    h_recratio_oppunf->SetTitle( "Bayes Unf./Meas." );
-    h_recratio_oppunf->SetMarkerStyle(24);
-    h_recratio_oppunf->SetMarkerColor(2);
-    h_recratio_oppunf->Divide(hrec_anabin);
-    if(debugMode)h_recratio_oppunf->Print("base");
-    
-    TH1F *h_recratio_oppfold = (TH1F*)hfold->Clone( "ppMC_Meas_Ratio_OppFold" );
-    //h_recratio_oppfold=(TH1F*)h_recratio_oppfold->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_OppFold_rebin" , boundaries_pt_reco);
-    h_recratio_oppfold->SetTitle( "Bayes Fold./Meas." );
-    h_recratio_oppfold->SetMarkerStyle(24);
-    h_recratio_oppfold->SetMarkerColor(3);
-    h_recratio_oppfold->Divide(hrec_anabin);
-    if(debugMode)h_recratio_oppfold->Print("base");
-    
-    
-
-
-    // SAMESIDE UNFOLDING
-    RooUnfoldResponse roo_ss_resp_nullresp( 0,0, hmat_anabin, ("ss_Response_matrix_nullresp"+RandEtaRange).c_str()) ;
-    roo_ss_resp_nullresp.UseOverflow(doOverUnderflows);    
-    roo_ss_resp_nullresp.Write();
-    
-    RooUnfoldResponse roo_ss_resp( hrec_sameside_resp_anabin, hgen_resp_anabin, hmat_anabin, ("ss_Response_matrix"+RandEtaRange).c_str()) ;
-    roo_ss_resp.UseOverflow(doOverUnderflows);    
-    roo_ss_resp.Write();
-    
-    std::cout<<"calling sameside RooUnfoldBayes..."<<std::endl;
-    RooUnfoldBayes unf_sameside_bayes( &roo_ss_resp, hrec_sameside_anabin, kIter );
-    
-    TH1F *hunf_sameside = (TH1F*)unf_sameside_bayes.Hreco(errorTreatment);    std::cout<<std::endl; 
-    hunf_sameside->SetName("ppMC_BayesUnf_sameSideSpectra");
-    hunf_sameside->SetTitle("ppMC BayesUnf sameSideSpectra");
-    if(debugMode)hunf_sameside->Print("base");
-    
-    std::cout<<"reFolding unfolded histogram!!"<<std::endl;
-    TH1F* hfold_sameside=(TH1F*)roo_ss_resp_nullresp.ApplyToTruth(hunf_sameside);    
-    //TH1F* hfold_sameside=(TH1F*)roo_ss_resp.ApplyToTruth(hunf_sameside);    
-    hfold_sameside->SetName("ppMC_BayesFold_sameSide_Spectra");
-    hfold_sameside->SetTitle("ppMC BayesFold sameSide Spectra");
-    if(debugMode)hfold_sameside->Print("base");
-
-    //if(doMCIntegralScaling)hfold_sameside->Scale(hrec_sameside_anabin->Integral()/hfold_sameside->Integral());
-    if(debugMode)hfold_sameside->Print("base");
-
-    
-    
-    // SAMESIDE RATIO W/ OPPSIDE MEAS
-    TH1F *h_recratio_ssunf = (TH1F*)hunf_sameside->Clone( "ppMC_Meas_Ratio_SSUnf" );
-    h_recratio_ssunf=(TH1F*)h_recratio_ssunf->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSUnf_rebin" , boundaries_pt_reco);
-    h_recratio_ssunf->SetTitle( "SameSide Bayes Unf./Meas." );
-    h_recratio_ssunf->SetMarkerStyle(25);
-    h_recratio_ssunf->SetMarkerColor(2);
-    h_recratio_ssunf->Divide(hrec_anabin);
-    if(debugMode)h_recratio_ssunf->Print("base");
-    
-    
-    TH1F *h_recratio_ssfold = (TH1F*)hfold_sameside->Clone( "ppMC_Meas_Ratio_SSFold" );
-    //h_recratio_ssfold=(TH1F*)h_recratio_ssfold->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSFold_rebin" , boundaries_pt_reco);
-    h_recratio_ssfold->SetTitle( "SameSide Bayes Fold./Meas." );
-    h_recratio_ssfold->SetMarkerStyle(25);
-    h_recratio_ssfold->SetMarkerColor(3);
-    h_recratio_ssfold->Divide(hrec_anabin);
-    if(debugMode)h_recratio_ssfold->Print("base");
-    
-    
-    TH1F *h_recratio_ssgen = (TH1F*)hgen_anabin->Clone( "ppMC_Meas_Ratio_SSTruth" );    
-    h_recratio_ssgen=(TH1F*)h_recratio_ssgen->Rebin(nbins_pt_reco, "ppMC_Meas_Ratio_SSTruth_rebin" , boundaries_pt_reco);
-    h_recratio_ssgen->SetTitle( "Truth/Meas." );
-    h_recratio_ssgen->SetMarkerStyle(24);
-    h_recratio_ssgen->SetMarkerColor(6);
-    h_recratio_ssgen->Divide(hrec_anabin);
-    if(debugMode)h_recratio_ssgen->Print("base");
-    
-    
-    // SAMESIDE RATIO W/ OPPSIDE GEN
-    TH1F *h_genratio_ssunf = (TH1F*)hunf_sameside->Clone( "ppMC_Gen_Ratio_SSUnf" );
-    h_genratio_ssunf->SetTitle( "SameSide Bayes Unf./Gen. Truth" );
-    h_genratio_ssunf->SetMarkerStyle(25);
-    h_genratio_ssunf->SetMarkerColor(2);
-    h_genratio_ssunf->Divide(hgen_anabin);
-    if(debugMode)h_genratio_ssunf->Print("base");
-    
-    
-    TH1F *h_genratio_ssfold = (TH1F*)hfold_sameside->Clone( "ppMC_Gen_Ratio_SSFold" );
-    h_genratio_ssfold->SetTitle( "SameSide Bayes Fold/Gen. Truth" );
-    h_genratio_ssfold->SetMarkerStyle(25);
-    h_genratio_ssfold->SetMarkerColor(3);
-    h_genratio_ssfold->Divide(hgen_anabin_ratiobin);
-    if(debugMode)h_genratio_ssfold->Print("base");
-    
-    TH1F *h_genratio_ssmeas = (TH1F*)hrec_sameside_anabin->Clone( "ppMC_Gen_Ratio4_SSMeas" );
-    h_genratio_ssmeas->SetTitle( "Same Side Meas./Gen. Truth" );
-    h_genratio_ssmeas->SetMarkerStyle(25);
-    h_genratio_ssmeas->SetMarkerColor(4);
-    h_genratio_ssmeas->Divide(hgen_anabin_ratiobin);
-    if(debugMode)h_genratio_ssmeas->Print("base");
-    
-    
-    
-    std::cout<<"writing output hists to file... "<<std::endl;
-    
-    hunf->Write();    
-    hunf_sameside->Write();
-
-    hfold->Write();    
-    hfold_sameside->Write();
-    
-    h_genratio_oppunf->Write();  
-    h_genratio_oppfold->Write();  
-    h_genratio_oppmeas->Write();  
-    
-    h_genratio_ssunf->Write();  
-    h_genratio_ssfold->Write();  
-    h_genratio_ssmeas->Write();  
-    
-    h_recratio_oppunf->Write();  
-    h_recratio_oppfold->Write();  
-    
-    h_recratio_ssunf->Write();  
-    h_recratio_ssfold->Write();  
-    h_recratio_ssgen->Write();  
-    
-    
-
-
-
-
-
-    //  drawPDFS -------------------------------------------------- 
-    if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
-    else{ std::cout<<std::endl<<"drawing output PDFs for Bayesian Unfolding..."<<std::endl;
-      std::string outPdfFile=outBayesPdfFile;
-      std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
-      
-      // canvas for printing
-      TCanvas* canvForPrint=new TCanvas("printCanvas","for printing",           1000,1000);    
-      canvForPrint->cd();
-      canvForPrint->Print(open_outPdfFile.c_str()); 
-      
-      canvForPrint->cd();
-      if(!useSimpBins)canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(1);
-      
 //      TLine* theLineAtOne_gen= new TLine( boundaries_pt_gen_mat[0]
 //					  ,1.
 //					  ,(boundaries_pt_gen_mat[nbins_pt_gen_mat] 
 //						  + (boundaries_pt_gen_mat[nbins_pt_gen_mat] 
 //						     - boundaries_pt_gen_mat[nbins_pt_gen_mat-1]))
 //					  ,1.);
-
-      TLine* theLineAtOne_gen= new TLine( 56.,   1.,
-					  1000., 1.);
-      theLineAtOne_gen->SetLineWidth(1);
-      theLineAtOne_gen->SetLineStyle(2);
-      theLineAtOne_gen->SetLineColor(36);
-      
-      TLine* theLineAtOne_reco= new TLine( boundaries_pt_reco_mat[0]  
-					   ,1.   
-					   ,(boundaries_pt_reco_mat[nbins_pt_reco_mat] 
-					     + (boundaries_pt_reco_mat[nbins_pt_reco_mat] 
-						- boundaries_pt_reco_mat[nbins_pt_reco_mat-1]))
-					   ,1.);
-      
-      theLineAtOne_reco->SetLineWidth(1);
-      theLineAtOne_reco->SetLineStyle(2);
-      theLineAtOne_reco->SetLineColor(36);
-      
-      // hist styles ---------------
-      
-      hrec_anabin->SetMarkerStyle(kOpenCircle);
-      hrec_anabin->SetMarkerColor(kBlue);     
-      hrec_anabin->SetMarkerSize(1.02);     
-      
-      hunf->SetMarkerStyle(kOpenCircle);
-      hunf->SetMarkerColor(kRed);
-      hunf->SetMarkerSize(1.02);     
-
-      TH1F* hfold_clone=(TH1F*)hfold->Clone("hfold_clone");
-      hfold_clone->SetMarkerStyle(kOpenCircle);
-      hfold_clone->SetMarkerColor(kGreen);
-      hfold_clone->SetMarkerSize(1.02);     
-      
-      hrec_sameside_anabin->SetMarkerStyle(kOpenSquare);
-      hrec_sameside_anabin->SetMarkerColor(kBlue-3);     
-      hrec_sameside_anabin->SetMarkerSize(1.02);     
-      
-      hunf_sameside->SetMarkerStyle(kOpenSquare);
-      hunf_sameside->SetMarkerColor(kRed-3);
-      hunf_sameside->SetMarkerSize(1.02);     
-
-      TH1F* hfold_sameside_clone=(TH1F*)hfold_sameside->Clone("hfold_sameside_clone");
-      hfold_sameside_clone->SetMarkerStyle(kOpenSquare);
-      hfold_sameside_clone->SetMarkerColor(kGreen-3);
-      hfold_sameside_clone->SetMarkerSize(1.02);     
-      
-      hgen_anabin->SetMarkerStyle(kOpenStar);
-      hgen_anabin->SetMarkerColor(kMagenta);
-      hgen_anabin->SetMarkerSize(1.02);     	
-      if(useSimpBins)hgen_anabin->SetAxisRange(1.0e-16, 3.0e-4, "Y");
-      else hgen_anabin->SetAxisRange(9.0e-15, 3.0e-4, "Y");
-      
-      
+    
+    TLine* theLineAtOne_gen= new TLine( 56.,   1.,
+					1000., 1.);
+    theLineAtOne_gen->SetLineWidth(1);
+    theLineAtOne_gen->SetLineStyle(2);
+    theLineAtOne_gen->SetLineColor(36);
+    
+    TLine* theLineAtOne_reco= new TLine( boundaries_pt_reco_mat[0]  
+					 ,1.   
+					 ,(boundaries_pt_reco_mat[nbins_pt_reco_mat] 
+					   + (boundaries_pt_reco_mat[nbins_pt_reco_mat] 
+					      - boundaries_pt_reco_mat[nbins_pt_reco_mat-1]))
+					 ,1.);
+    
+    theLineAtOne_reco->SetLineWidth(1);
+    theLineAtOne_reco->SetLineStyle(2);
+    theLineAtOne_reco->SetLineColor(36);
+  // ----------------------------------------------- //            
+    // hist styles ---------------
+  // ----------------------------------------------- //            
+    hrec_anabin->SetMarkerStyle(kOpenCircle);
+    hrec_anabin->SetMarkerColor(kBlue);     
+    hrec_anabin->SetMarkerSize(1.02);     
+    
+    hunf->SetMarkerStyle(kOpenCircle);
+    hunf->SetMarkerColor(kRed);
+    hunf->SetMarkerSize(1.02);     
+    
+    TH1F* hfold_clone=(TH1F*)hfold->Clone("hfold_clone");
+    hfold_clone->SetMarkerStyle(kOpenCircle);
+    hfold_clone->SetMarkerColor(kGreen);
+    hfold_clone->SetMarkerSize(1.02);     
+    
+    hrec_sameside_anabin->SetMarkerStyle(kOpenSquare);
+    hrec_sameside_anabin->SetMarkerColor(kBlue-3);     
+    hrec_sameside_anabin->SetMarkerSize(1.02);     
+    
+    hunf_sameside->SetMarkerStyle(kOpenSquare);
+    hunf_sameside->SetMarkerColor(kRed-3);
+    hunf_sameside->SetMarkerSize(1.02);     
+    
+    TH1F* hfold_sameside_clone=(TH1F*)hfold_sameside->Clone("hfold_sameside_clone");
+    hfold_sameside_clone->SetMarkerStyle(kOpenSquare);
+    hfold_sameside_clone->SetMarkerColor(kGreen-3);
+    hfold_sameside_clone->SetMarkerSize(1.02);     
+    
+    hgen_anabin->SetMarkerStyle(kOpenStar);
+    hgen_anabin->SetMarkerColor(kMagenta);
+    hgen_anabin->SetMarkerSize(1.02);     	
+    if(useSimpBins)hgen_anabin->SetAxisRange(1.0e-16, 3.0e-4, "Y");
+    else hgen_anabin->SetAxisRange(9.0e-15, 3.0e-4, "Y");
+    
+  // ----------------------------------------------- //            
       // gen/meas/unf spectra hists ---------------
-      
-      hgen_anabin->SetTitle("ppMC Spectra, input and output");
-      setupSpectraHist(hgen_anabin, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      
-      setupSpectraHist(hrec_anabin	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      setupSpectraHist(hfold_clone	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      setupSpectraHist(hunf		  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      
-      setupSpectraHist(hrec_sameside_anabin, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      setupSpectraHist(hfold_sameside_clone	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      setupSpectraHist(hunf_sameside	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      
-      hgen_anabin->Draw("E");           
-      
-      hrec_anabin->Draw("E SAME");           
-      hfold_clone->Draw("P E SAME");           
-      hunf->Draw("E SAME");           
-      
-      hrec_sameside_anabin->Draw("E SAME");           
-      hfold_sameside_clone->Draw("P E SAME");           
-      hunf_sameside->Draw("E SAME");           
-      
-      TLegend* legend_in = new TLegend( 0.6,0.7,0.9,0.9 );
-      
-      legend_in->AddEntry(hrec_anabin,          "OppSide Meas.", "p");	
-      legend_in->AddEntry(hunf,                    "OppSide Unf.", "p");
-      legend_in->AddEntry(hfold_clone,                    "OppSide Fold", "p");
-      
-      legend_in->AddEntry(hrec_sameside_anabin, "SameSide Meas.", "p");
-      legend_in->AddEntry(hunf_sameside,           "SameSide Unf.", "p");
-      legend_in->AddEntry(hfold_sameside_clone,           "SameSide Fold", "p");
-      
-      legend_in->AddEntry(hgen_anabin,          "SameSide Truth", "p");
-      
-      legend_in->Draw();
-      
-      canvForPrint->Print(outPdfFile.c_str());      
-      
-      //---------------
-      
-      canvForPrint->cd();
-      if(!useSimpBins)canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(0);
-      
-      h_genratio_oppunf->SetTitle( "Ratios w/ Gen. Truth" );
-      setupRatioHist(h_genratio_oppunf, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      
-      h_genratio_oppunf->SetAxisRange(56. ,1000.,"X") ;   h_genratio_oppunf->SetAxisRange(  0.7 ,1.6,"Y") ;
-      h_genratio_oppmeas->SetAxisRange(56.,1000.,"X") ;	  h_genratio_oppmeas->SetAxisRange( 0.7 ,1.6,"Y") ;
-      h_genratio_ssunf->SetAxisRange(56.  ,1000.,"X") ;	  h_genratio_ssunf->SetAxisRange(   0.7 ,1.6,"Y") ;
-      h_genratio_ssmeas->SetAxisRange(56. ,1000.,"X");	  h_genratio_ssmeas->SetAxisRange(  0.7 ,1.6,"Y");
-     
-      h_genratio_oppunf->Draw();
-      h_genratio_oppmeas->Draw("SAME");
-      //h_genratio_oppfold->Draw("SAME");
-
-      h_genratio_ssunf->Draw("SAME");
-      h_genratio_ssmeas->Draw("SAME");
-      //h_genratio_ssfold->Draw("SAME");
-
-      TLegend* legend2 = new TLegend( 0.5,0.75,0.9,0.9 );
-      legend2->AddEntry(h_genratio_oppunf, "Unf./Gen. Truth", "p");
-      legend2->AddEntry(h_genratio_oppmeas, NULL, "p");
-      //legend2->AddEntry(h_genratio_oppfold, NULL, "p");
-      legend2->AddEntry(h_genratio_ssunf, "Same Side Unf./Gen. Truth", "p");
-      legend2->AddEntry(h_genratio_ssmeas, NULL, "p");
-      //legend2->AddEntry(h_genratio_ssfold, NULL, "p");
-      
-      legend2->Draw();
-      
-      theLineAtOne_gen->Draw();
-      
-      canvForPrint->Print(outPdfFile.c_str());
-      
-      //---------------
-      
-      canvForPrint->cd();
-      if(!useSimpBins)canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(0);      
-      
-      h_recratio_oppunf->SetTitle("Ratios w/ Meas.");
-      setupRatioHist(h_recratio_oppunf, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
-      
-      h_recratio_oppunf->Draw();
-      h_recratio_oppfold->Draw("SAME");
-      h_recratio_ssunf->Draw("SAME");
-      h_recratio_ssfold->Draw("SAME");
-      h_recratio_ssgen->Draw("SAME");
-      
-      TLegend* legend3 = new TLegend( 0.1,0.8,0.4,0.9 );
-      legend3->AddEntry(h_recratio_oppunf, NULL, "p");
-      legend3->AddEntry(h_recratio_oppfold, NULL, "p");
-      legend3->AddEntry(h_recratio_ssunf, NULL, "p");
-      legend3->AddEntry(h_recratio_ssfold, NULL, "p");
-      legend3->AddEntry(h_recratio_ssgen, NULL, "p");
-      legend3->Draw();
-      
-      theLineAtOne_reco->Draw();
-      
-      canvForPrint->Print(outPdfFile.c_str());
-      
-      //---------------      
-      
-      canvForPrint->Print(close_outPdfFile.c_str());      
-      
-    }// end draw pdfs
-    std::cout<<std::endl<<"draw pdfs for Bayesian Unfolding done!"<<std::endl;
-
+  // ----------------------------------------------- //            
+    hgen_anabin->SetTitle("ppMC Spectra, input and output");
+    setupSpectraHist(hgen_anabin, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    
+    setupSpectraHist(hrec_anabin	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    setupSpectraHist(hfold_clone	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    setupSpectraHist(hunf		  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    
+    setupSpectraHist(hrec_sameside_anabin, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    setupSpectraHist(hfold_sameside_clone	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    setupSpectraHist(hunf_sameside	  , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    
+    hgen_anabin->Draw("E");           
+    
+    hrec_anabin->Draw("E SAME");           
+    hfold_clone->Draw("P E SAME");           
+    hunf->Draw("E SAME");           
+    
+    hrec_sameside_anabin->Draw("E SAME");           
+    hfold_sameside_clone->Draw("P E SAME");           
+    hunf_sameside->Draw("E SAME");           
+    
+    TLegend* legend_in = new TLegend( 0.6,0.7,0.9,0.9 );
+    
+    legend_in->AddEntry(hrec_anabin,          "OppSide Meas.", "p");	
+    legend_in->AddEntry(hunf,                    "OppSide Unf.", "p");
+    legend_in->AddEntry(hfold_clone,                    "OppSide Fold", "p");
+    
+    legend_in->AddEntry(hrec_sameside_anabin, "SameSide Meas.", "p");
+    legend_in->AddEntry(hunf_sameside,           "SameSide Unf.", "p");
+    legend_in->AddEntry(hfold_sameside_clone,           "SameSide Fold", "p");
+    
+    legend_in->AddEntry(hgen_anabin,          "SameSide Truth", "p");
+    
+    legend_in->Draw();
+    
+    canvForPrint->Print(outPdfFile.c_str());      
+    // ----------------------------------------------- //            
+    //---------------
+    // ----------------------------------------------- //        
+    canvForPrint->cd();
+    if(!useSimpBins)canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(0);
+    
+    h_genratio_oppunf->SetTitle( "Ratios w/ Gen. Truth" );
+    setupRatioHist(h_genratio_oppunf, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    
+    h_genratio_oppunf->SetAxisRange(56. ,1000.,"X") ;   h_genratio_oppunf->SetAxisRange(  0.7 ,1.6,"Y") ;
+    h_genratio_oppmeas->SetAxisRange(56.,1000.,"X") ;	  h_genratio_oppmeas->SetAxisRange( 0.7 ,1.6,"Y") ;
+    h_genratio_ssunf->SetAxisRange(56.  ,1000.,"X") ;	  h_genratio_ssunf->SetAxisRange(   0.7 ,1.6,"Y") ;
+    h_genratio_ssmeas->SetAxisRange(56. ,1000.,"X");	  h_genratio_ssmeas->SetAxisRange(  0.7 ,1.6,"Y");
+    
+    h_genratio_oppunf->Draw();
+    h_genratio_oppmeas->Draw("SAME");
+    //h_genratio_oppfold->Draw("SAME");
+    
+    h_genratio_ssunf->Draw("SAME");
+    h_genratio_ssmeas->Draw("SAME");
+    //h_genratio_ssfold->Draw("SAME");
+    
+    TLegend* legend2 = new TLegend( 0.5,0.75,0.9,0.9 );
+    legend2->AddEntry(h_genratio_oppunf, "Unf./Gen. Truth", "p");
+    legend2->AddEntry(h_genratio_oppmeas, NULL, "p");
+    //legend2->AddEntry(h_genratio_oppfold, NULL, "p");
+    legend2->AddEntry(h_genratio_ssunf, "Same Side Unf./Gen. Truth", "p");
+    legend2->AddEntry(h_genratio_ssmeas, NULL, "p");
+    //legend2->AddEntry(h_genratio_ssfold, NULL, "p");
+    
+    legend2->Draw();
+    
+    theLineAtOne_gen->Draw();
+    
+    canvForPrint->Print(outPdfFile.c_str());
+    
+    //---------------
+    
+    canvForPrint->cd();
+    if(!useSimpBins)canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(0);      
+    
+    h_recratio_oppunf->SetTitle("Ratios w/ Meas.");
+    setupRatioHist(h_recratio_oppunf, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
+    
+    h_recratio_oppunf->Draw();
+    h_recratio_oppfold->Draw("SAME");
+    h_recratio_ssunf->Draw("SAME");
+    h_recratio_ssfold->Draw("SAME");
+    h_recratio_ssgen->Draw("SAME");
+    
+    TLegend* legend3 = new TLegend( 0.1,0.8,0.4,0.9 );
+    legend3->AddEntry(h_recratio_oppunf, NULL, "p");
+    legend3->AddEntry(h_recratio_oppfold, NULL, "p");
+    legend3->AddEntry(h_recratio_ssunf, NULL, "p");
+    legend3->AddEntry(h_recratio_ssfold, NULL, "p");
+    legend3->AddEntry(h_recratio_ssgen, NULL, "p");
+    legend3->Draw();
+    
+    theLineAtOne_reco->Draw();
+    
+    canvForPrint->Print(outPdfFile.c_str());
+    
+    //---------------      
+    
+    canvForPrint->Print(close_outPdfFile.c_str());      
+    
+  }// end draw pdfs
+  std::cout<<std::endl<<"draw pdfs for Bayesian Unfolding done!"<<std::endl;
+  
   if(debugMode) std::cout<<"writing output root file..."<<std::endl;
   fout->Write();
   
@@ -835,7 +856,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   fout->Close();
   fpp_MC->Close();
   return 0;
-
+  
 } // end unfoldDataSpectra
 
 
@@ -846,13 +867,13 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   if( argc!=5 ){
     std::cout<<"do ./bayesUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
-
+    
     return rStatus;  }
   
   rStatus=1; // runtime error
   
   rStatus=bayesUnfoldMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], 
-			    (int)std::atoi(argv[3]) , (int)std::atoi(argv[4]) 			    ); 
+				 (int)std::atoi(argv[3]) , (int)std::atoi(argv[4]) 			    ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

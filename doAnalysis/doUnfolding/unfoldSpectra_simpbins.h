@@ -49,7 +49,7 @@
 
 // ------ GEN SPECTRA BINS ------
 const double simpbins_pt_gen[] = {//simple 15 GeV pt bins
-  25.,//junk
+  10., 25.,//mostly junk
   40., 55., 70., 85., 
   100., 115., 130., 145., 160., 175., 190., 
   205., 220., 235., 250., 265., 280., 295., 
@@ -79,7 +79,7 @@ const int n_simpbins_pt_gen = sizeof(simpbins_pt_gen)/sizeof(double)-1;
 
 // ------ RECO SPECTRA BINS ------
 const double simpbins_pt_reco[] = {//simple 10 GeV pt bins
-  40., //junk
+  10., 25., 40., //junk
   55., 70., 85., 
   100., 115., 130., 145., 160., 175., 190., 
   205., 220., 235., 250., 265., 280., 295., 

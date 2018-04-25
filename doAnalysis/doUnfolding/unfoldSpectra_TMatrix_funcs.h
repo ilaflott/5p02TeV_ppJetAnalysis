@@ -1,5 +1,6 @@
 TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false) {
-  std::cout<<std::endl<<"in CalculatePearsonCoefficients"<<std::endl<<std::endl;
+
+  if(debugPearson)std::cout<<std::endl<<"in CalculatePearsonCoefficients"<<std::endl<<std::endl;
 
   int startRowColInt=0, skipRowColInt=1;
   int NanCount=0, gt1Count=0, EntryCount=0;
@@ -44,7 +45,7 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
   if(debugPearson)std::cout<<"pearson>1 Entries="<<gt1Count<<std::endl;
   if(debugPearson)std::cout<<"Nan Entries="<<NanCount<<std::endl;
 
-  std::cout<<std::endl<<"calculatePearsonCoefficients done"<<std::endl<<std::endl;
+  if(debugPearson)std::cout<<std::endl<<"calculatePearsonCoefficients done"<<std::endl<<std::endl;
   return pearsonCoefs;
 }
 
@@ -58,7 +59,8 @@ TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false
 // One can specify an alternative format, e.g. format ="%6.2f  "
 int PrintMatrix( const TMatrixD& m,
 		 const char* format, const char* name, Int_t cols_per_sheet ){
-  std::cout<<std::endl<<"in PrintMatrix"<<std::endl<<std::endl;
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in PrintMatrix"<<std::endl<<std::endl;
 
   if (!m.IsValid()) {
     m.Error("PrintMatrix","%s is invalid",name);
@@ -106,6 +108,6 @@ int PrintMatrix( const TMatrixD& m,
     }
   }
   printf("\n");
-  std::cout<<std::endl<<"PrintMatrix done"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"PrintMatrix done"<<std::endl<<std::endl;
   return 0;
 } // end PrintMatrix

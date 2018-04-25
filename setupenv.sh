@@ -1,15 +1,15 @@
 #!/bin/bash
 
 
-#echo "sourcing condor+OSG software"
+echo "sourcing condor+OSG software"
 source /condor/HTCondor/current/condor.sh
 source /osg/current/setup.sh
 
-#echo "setting environment variables"
+echo "setting environment variables"
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 export SCRAM_ARCH=slc6_amd64_gcc491
 
-#echo "sourcing cmssetup defaults"
+echo "sourcing cmssetup defaults"
 source $VO_CMS_SW_DIR/cmsset_default.sh
 
 ##other env variables, no need to output to screen

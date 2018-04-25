@@ -5,17 +5,23 @@
 jtID=1
 ##CONST
 
-
-R=$1
-data_condorDir=$2
-data_date=$3
-dataetaBin=$4
-MC_condorDir=$5
-MC_date=$6
-MCetaBin=$7
-etaBinOut=$8
-kReg=$9
-useSimpleBinning=${10}
+if [ $# -eq 10 ]
+then
+    R=$1
+    data_condorDir=$2
+    data_date=$3
+    dataetaBin=$4
+    MC_condorDir=$5
+    MC_date=$6
+    MCetaBin=$7
+    etaBinOut=$8
+    kReg=$9
+    useSimpleBinning=${10}
+else
+    echo "usage:"
+    echo "source run_SVDUnfoldDataSpectra.sh [R=3,4] [dataCondorDir] [data_date] [dataEtaBin] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [useSimpleBinning]"
+    return
+fi
 
 #### unfoldDataSpectra
 echo ""

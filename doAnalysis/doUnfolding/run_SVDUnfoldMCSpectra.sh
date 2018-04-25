@@ -5,15 +5,20 @@
 jtID=1
 ##CONST
 
-R=$1
-condorDir=$2
-date_output=$3
-etaBin=$4
-etaBinOut=$5
-kReg=$6
-useSimpleBinning=$7
-
-
+if [ $# -eq 7 ]
+then
+    R=$1
+    condorDir=$2
+    date_output=$3
+    etaBin=$4
+    etaBinOut=$5
+    kReg=$6
+    useSimpleBinning=$7
+else
+    echo "usage:"
+    echo "source run_SVDUnfoldMCSpectra.sh [R=3,4] [condorDir] [date_output] [etaBin] [etaBinOut] [kReg] [useSimpleBinning]"
+    return
+fi
 
 #### unfoldMCSpectra
 echo ""

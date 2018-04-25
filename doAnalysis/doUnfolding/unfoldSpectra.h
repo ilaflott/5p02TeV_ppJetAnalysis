@@ -154,7 +154,8 @@ float computeEffLumi(TFile* finData){
 
 
 void drawText(const char *text, float xp, float yp, int size){
-  std::cout<<std::endl<<"in drawText"<<std::endl<<std::endl;
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in drawText"<<std::endl<<std::endl;
 
   TLatex *tex = new TLatex(xp,yp,text);
   tex->SetTextFont(63);
@@ -165,7 +166,7 @@ void drawText(const char *text, float xp, float yp, int size){
   tex->SetNDC();
   tex->Draw();
 
-  std::cout<<std::endl<<"drawText done"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"drawText done"<<std::endl<<std::endl;
   return;
 }
 
@@ -178,7 +179,7 @@ void drawText(const char *text, float xp, float yp, int size){
 
 void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
   
-  
+  //bool funcDebug=false;
   // general for drawRespMatrix ---------------
   //canv->cd();
   

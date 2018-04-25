@@ -10,8 +10,8 @@ echo ""
 echo "compiling code(s)"
 echo ""
 
-echo "...ppMC jetPlots..."
-rootcompile readForests_ppMC_jetPlots.C
+#echo "...ppMC jetPlots..."
+#rootcompile readForests_ppMC_jetPlots.C
 
 #echo "...ppMC JERS..."
 #rootcompile readForests_ppMC_JERS.C
@@ -43,13 +43,14 @@ echo ""
 
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
 #source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
+source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
 
-source run_readForests_jetPlots.sh 3 "0.0" "0.5" "ppMC"
-source run_readForests_jetPlots.sh 3 "0.5" "1.0" "ppMC"
+#source run_readForests_jetPlots.sh 3 "0.0" "0.5" "ppMC"
+#source run_readForests_jetPlots.sh 3 "0.5" "1.0" "ppMC"
 
-source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
-source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
-
+#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
+#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
+source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
 
 #### INCL. JET SPECTRA |y| bins
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5"
@@ -79,7 +80,7 @@ source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
 ### INCL. JET SPECTRA, LARGER |y| REGIONS
 #source run_readForests_jetPlots.sh 4 "0.0" "2.0"
 #source run_readForests_jetMult.sh 4 "0.0" "2.0"
-#source run_readForests_JERS.sh 4 "0.0" "2.0"
+source run_readForests_JERS.sh 4 "0.0" "1.0"
 
 #source run_readForests_jetPlots.sh 4 "2.0" "3.0"
 #source run_readForests_jetPlots.sh 4 "3.2" "4.7"

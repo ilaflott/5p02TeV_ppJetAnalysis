@@ -1,7 +1,6 @@
 void divideBinWidth(TH1 *h){
-  std::cout<<std::endl<<"in divideBinWidth"<<std::endl<<std::endl;
   bool funcDebug=false;
-
+  if(funcDebug)std::cout<<std::endl<<"in divideBinWidth"<<std::endl<<std::endl;
   //h->Sumw2();
   if(funcDebug)h->Print("base");
   double nEntries=h->GetEntries();
@@ -42,7 +41,7 @@ void divideBinWidth(TH1 *h){
   //h->SetEntries(nEntries);
 
   //std::cout<<"exiting function"<<std::endl;
-  std::cout<<std::endl<<"divideBinWidth done"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"divideBinWidth done"<<std::endl<<std::endl;
   return;
 }
 
@@ -51,9 +50,9 @@ void divideBinWidth(TH1 *h){
 
 
 void TH1zeroBins(TH1* h, int numBins2Clear_lowpt, int numBins2Clear_highpt){
-  std::cout<<std::endl<<"in TH1zeroBins"<<std::endl<<std::endl;
   bool funcDebug=false;
   bool clearLastBin=false;
+  if(funcDebug)std::cout<<std::endl<<"in TH1zeroBins"<<std::endl<<std::endl;
   if(funcDebug&&clearLastBin)std::cout<<"WARNING clearLastBin=true"<<std::endl;
   //h->Sumw2();
   if(funcDebug)h->Print("base");
@@ -81,7 +80,7 @@ void TH1zeroBins(TH1* h, int numBins2Clear_lowpt, int numBins2Clear_highpt){
   
   
   if(funcDebug)h->Print("base");
-  std::cout<<std::endl<<"TH1zeroBins done."<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"TH1zeroBins done."<<std::endl<<std::endl;
   return;
 }
 
@@ -93,7 +92,7 @@ void TH1clearOverUnderflows(TH1* h)
   bool funcDebug=false;
   if(funcDebug)std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
   //if(funcDebug)std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
-  std::cout<<"clearing Over/Underflow Bins...."<<std::endl;
+  if(funcDebug)std::cout<<"clearing Over/Underflow Bins...."<<std::endl;
   h->TH1::ClearUnderflowAndOverflow();
   return;
 }

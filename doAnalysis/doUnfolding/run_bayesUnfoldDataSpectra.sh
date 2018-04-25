@@ -5,16 +5,22 @@
 jtID=1
 ##CONST
 
-R=$1
-data_condorDir=$2
-data_date=$3
-dataetaBin=$4
-MC_condorDir=$5
-MC_date=$6
-MCetaBin=$7
-etaBinOut=$8
-useSimpleBinning=$9
-
+if [ $# -eq 9 ]
+then
+    R=$1
+    data_condorDir=$2
+    data_date=$3
+    dataetaBin=$4
+    MC_condorDir=$5
+    MC_date=$6
+    MCetaBin=$7
+    etaBinOut=$8
+    useSimpleBinning=$9
+else
+    echo "usage:"
+    echo "source run_bayesUnfoldDataSpectra.sh [R=3,4] [dataCondorDir] [data_date] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [useSimpleBinning]"
+    return
+fi
 
 #### unfoldDataSpectra
 echo ""

@@ -16,28 +16,25 @@ const int minArgs=1+7;//jtetalo/hi optional, default is 0to4.7
 //const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
 //const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
 const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
-const std::string defMCOutputName="readForests_ppMC_JERS_defOut.root";
+const std::string defMCOutputName="readForests_ppMC_defOut_JERS.root";
+
 int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile=0, int endfile=20,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,
-			   float jtEtaCutLo=0., float jtEtaCutHi=4.7      );
+			   float jtEtaCutLo=0., float jtEtaCutHi=1.0      );
 
 // for JER. should almost always be lower than the unfolding pt cuts
 const float jtPtCut     = 21. ;
-const float jtPtCut_Hi     = 1890. ;
+const float jtPtCut_Hi     = 2116. ;
 const float genJetPtCut = 21. ;
-const float genJetPtCut_Hi = 1890. ;
+const float genJetPtCut_Hi = 2116. ;
 
 //for unfolding pt cuts only
 const float jtPtCut_unf_lo     = 56.  ;
-const float jtPtCut_unf_hi     = 1890.  ;
-
-const float genJetPtCut_unf_lo = 32. ;
-const float genJetPtCut_unf_hi = 1890. ;
-
-
-
+const float jtPtCut_unf_hi     = 2116.  ;
+const float genJetPtCut_unf_lo = 49. ;
+const float genJetPtCut_unf_hi = 2116. ;
 
 const int genptBin1Low = 56 , genptBin1High = 64 ;	 
 const int genptBin2Low = 64 , genptBin2High  = 74 ;

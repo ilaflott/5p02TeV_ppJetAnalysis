@@ -242,17 +242,15 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 //raghavs suggested genpt binning for JER
 const float ptbins[]={
-  32.,   
-  37., 
-  43., //junk bins above
-  49., 
-  56., 
-  64., 
-  74., 
-  84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
-  507., 548., 592., 638., 
-  686., 1000., //junk bin after this
-  1500. 
+  15., 18., 21., 24., 28., 32., 37.,43., 49., //garbage bins
+  56., 64., 74., 84., 97., 114., 
+  133., 153., 174., 196., 220., 245., 272., 
+  300., 330., 362., 395., 430., 468., 507., 
+  548., 592., 638., 686., 
+  737., 790., 846.,  
+  905.,   967.,  1032., 
+  1101., 1172. , 1248., 1327.,
+  1410., 1497., 1588., 1684., 1784., 1890., 2000., 2116.
 };
 const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 // // my preferred SMP binning?

@@ -3,8 +3,8 @@
 TH2F* reBinTH2( TH2F* inputTH2, std::string rebinTH2_name,
 		double* boundaries_pt_reco, int nbins_pt_reco,
 		double* boundaries_pt_gen  , int nbins_pt_gen           ){
-  std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
-  bool funcDebug = false;
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
   
   //double numEntries=inputTH2->GetEntries();
   //inputTH2->Sumw2();
@@ -14,7 +14,7 @@ TH2F* reBinTH2( TH2F* inputTH2, std::string rebinTH2_name,
   TAxis *xaxis = inputTH2->GetXaxis(); //reco pt axis
   int nbins_x= xaxis->GetNbins();
   int xbinstart=1;
-
+  
   TAxis *yaxis = inputTH2->GetYaxis(); //gen pt axis
   int nbins_y = yaxis->GetNbins();
   int ybinstart=1;
@@ -45,7 +45,7 @@ TH2F* reBinTH2( TH2F* inputTH2, std::string rebinTH2_name,
   if(funcDebug) reBinnedTH2->Print("base");  std::cout<<std::endl;
 
 
-  std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;
   return reBinnedTH2;
 }
 
@@ -54,9 +54,9 @@ TH2F* reBinTH2( TH2F* inputTH2, std::string rebinTH2_name,
 
 
 void divideBinWidth_TH2(TH2F *h){
-  std::cout<<std::endl<<"in divideBinWidth_TH2"<<std::endl<<std::endl;
+  
   bool funcDebug=false;
-
+  if(funcDebug)std::cout<<std::endl<<"in divideBinWidth_TH2"<<std::endl<<std::endl;
   //h->Sumw2();
   if(funcDebug) h->Print("base");      std::cout<<std::endl;
 
@@ -111,7 +111,7 @@ void divideBinWidth_TH2(TH2F *h){
   //h->SetEntries(numEntries);
   if(funcDebug)h->Print("base");      std::cout<<std::endl;
 
-  std::cout<<std::endl<<"divideBinWidth_TH2 done"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"divideBinWidth_TH2 done"<<std::endl<<std::endl;
   return;
 }
 
@@ -121,12 +121,12 @@ TH2F* normalizeCol_RespMatrix( TH2F* inputTH2,
 			       double* boundaries_pt_reco_mat, int nbins_pt_reco_mat,
 			       double* boundaries_pt_gen_mat, int nbins_pt_gen_mat  ){
   
-  std::cout<<std::endl<<"in normalizeCol_RespMatix"<<std::endl<<std::endl;
   bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in normalizeCol_RespMatix"<<std::endl<<std::endl;
   
   //inputTH2->Sumw2();
   inputTH2->Print("base");  
-  std::cout<<std::endl;
+  if(funcDebug)std::cout<<std::endl;
   TH2F* colnormd_TH2 = new TH2F( "hmat_anabin_colnorm","RespMatrix, columns normalized to column sum",
 				 nbins_pt_reco_mat, boundaries_pt_reco_mat ,
 				 nbins_pt_gen_mat, boundaries_pt_gen_mat );
@@ -164,7 +164,7 @@ TH2F* normalizeCol_RespMatrix( TH2F* inputTH2,
     colSums[colNum]=theSum;
     colSumErrs[colNum]=std::sqrt(theSumErr);
   }
-  std::cout<<std::endl;
+  if(funcDebug)std::cout<<std::endl;
   
   //scale each entry in each row down by that row's sum
   if(funcDebug) std::cout<<"scaling entries in each bin according to respective column sum..."<<std::endl;
@@ -192,12 +192,12 @@ TH2F* normalizeCol_RespMatrix( TH2F* inputTH2,
     }
   }
   
-  std::cout<<std::endl;
+  if(funcDebug)std::cout<<std::endl;
   
   if(funcDebug) inputTH2->Print("base");
   
-  std::cout<<std::endl<<"exiting normalizeMC_TH2"<<std::endl<<std::endl;
-  std::cout<<std::endl<<"exiting normalizeCol_RespMatrix"<<std::endl<<std::endl;
+  //std::cout<<std::endl<<"exiting normalizeMC_TH2"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"exiting normalizeCol_RespMatrix"<<std::endl<<std::endl;
   return colnormd_TH2;
   
   
@@ -212,8 +212,8 @@ TH2F* normalizeRow_RespMatrix( TH2F* inputTH2,
 			       double* boundaries_pt_reco_mat, int nbins_pt_reco_mat,
 			       double* boundaries_pt_gen_mat, int nbins_pt_gen_mat  ){
   
-  std::cout<<std::endl<<"in normalizeRow_RespMatrix"<<std::endl<<std::endl;
   bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in normalizeRow_RespMatrix"<<std::endl<<std::endl;
   
   //inputTH2->Sumw2();
   inputTH2->Print("base");  std::cout<<std::endl;
@@ -255,7 +255,7 @@ TH2F* normalizeRow_RespMatrix( TH2F* inputTH2,
     rowSums[rowNum]=theSum;
     rowSumErrs[rowNum]=std::sqrt(theSumErr);
   }
-  std::cout<<std::endl;
+  if(funcDebug)std::cout<<std::endl;
   
   //scale each entry in each row down by that row's sum
   if(funcDebug) std::cout<<"scaling entries in each bin according to respective row sum..."<<std::endl;
@@ -283,12 +283,12 @@ TH2F* normalizeRow_RespMatrix( TH2F* inputTH2,
     }
   }
   
-  std::cout<<std::endl;
+  if(funcDebug)std::cout<<std::endl;
   
   if(funcDebug) inputTH2->Print("base");
   
   
-  std::cout<<std::endl<<"exiting normalizeRow_RespMatrix"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"exiting normalizeRow_RespMatrix"<<std::endl<<std::endl;
   return rownormd_TH2;
   
 }
@@ -300,9 +300,9 @@ TH2F* makeRespMatrixErrors( TH2F* inputTH2,
 			    double* boundaries_pt_reco, int nbins_pt_reco,
 			    double* boundaries_pt_gen  , int nbins_pt_gen           ){
 
-  std::cout<<std::endl<<"in makeRespMatrixErrors"<<std::endl<<std::endl;
-  bool funcDebug = false;
-  
+
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in makeRespMatrixErrors"<<std::endl<<std::endl;  
   //double numEntries=inputTH2->GetEntries();
   //inputTH2->Sumw2();
   if(funcDebug)inputTH2->Print("base");  std::cout<<std::endl;
@@ -354,7 +354,7 @@ TH2F* makeRespMatrixErrors( TH2F* inputTH2,
   if(funcDebug) errorTH2->Print("base");  std::cout<<std::endl;
 
 
-  std::cout<<std::endl<<"makeRespMatrixErrors Done"<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"makeRespMatrixErrors Done"<<std::endl<<std::endl;
   return errorTH2;
 }
 
@@ -365,8 +365,8 @@ TH2F* makeRespMatrixPercentErrs( TH2F* hmat_errors, TH2F* hmat_anabin,
 				 double* boundaries_pt_gen  , int nbins_pt_gen           ){
 
   
-  std::cout<<std::endl<<"in makeRespMatrixPercentErrs"<<std::endl<<std::endl;
-  bool funcDebug = false;
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in makeRespMatrixPercentErrs"<<std::endl<<std::endl;
   
 
   int xbinstart=1;
@@ -413,16 +413,16 @@ TH2F* makeRespMatrixPercentErrs( TH2F* hmat_errors, TH2F* hmat_anabin,
   if(funcDebug) fracErrorTH2->Print("base");  std::cout<<std::endl;
   
   
-  std::cout<<std::endl<<"makeRespMatrixPercentErrs done."<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"makeRespMatrixPercentErrs done."<<std::endl<<std::endl;
 
   return fracErrorTH2;
 }
 
 void setRespMatrixErrs( TH2F* hmat_anabin , TH2F* hmat_errors , bool zeroBins){   
 
-  std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;
-  bool funcDebug = true;
-  
+
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;  
   
   if(funcDebug) hmat_errors->Print("base");
   if(funcDebug) hmat_anabin->Print("base");
@@ -495,7 +495,7 @@ void setRespMatrixErrs( TH2F* hmat_anabin , TH2F* hmat_errors , bool zeroBins){
   if(funcDebug) hmat_errors->Print("base");  std::cout<<std::endl;
   
   
-  std::cout<<std::endl<<"setRespMatrixErrs done."<<std::endl<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"setRespMatrixErrs done."<<std::endl<<std::endl;
 
   return;
 }
@@ -504,16 +504,16 @@ void setRespMatrixErrs( TH2F* hmat_anabin , TH2F* hmat_errors , bool zeroBins){
 
 
 TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int nbins_pt){
-  std::cout<<std::endl<<"in reBinPearsonTH2"<<std::endl<<std::endl;
 
   bool debugPearson=false;
+  if(debugPearson)std::cout<<std::endl<<"in reBinPearsonTH2"<<std::endl<<std::endl;
   //const double* the_ptBins=boundaries_pt;//ptbins
   //const int numbins=nbins_pt;//nbins
 
   TH2F *reBinnedTH2 = new TH2F(  "pearsonCustomBins" , "pearsonMatrix custom bins"   ,
                                  nbins_pt,boundaries_pt,
                                  nbins_pt,boundaries_pt);
-  std::cout<<std::endl<<"in reBinPearsonTH2 function..."<<std::endl;
+  //std::cout<<std::endl<<"in reBinPearsonTH2 function..."<<std::endl;
   reBinnedTH2->Print("base");
 
   for (int j=1;   j<=nbins_pt;j++) {
@@ -536,7 +536,7 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
 
   reBinnedTH2->Print("base");
 
-  std::cout<<std::endl<<"reBinPearsonTH2 done"<<std::endl<<std::endl;
+  if(debugPearson)std::cout<<std::endl<<"reBinPearsonTH2 done"<<std::endl<<std::endl;
   return reBinnedTH2;
 }
 
@@ -544,9 +544,10 @@ TH2F* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int 
 
 void TH2clearOverUnderflows(TH2F* h)
 {
-  //std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
+  bool funcDebug=false;
+ //std::cout<<std::endl<<"WARNING!!!!"<<std::endl<<std::endl;
   //std::cout<<"doOverUnderflows="<<doOverUnderflows<<std::endl;
-  std::cout<<"clearing Over/Underflow Bins for TH2...."<<std::endl;
+  if(funcDebug)std::cout<<"clearing Over/Underflow Bins for TH2...."<<std::endl;
   
   int nbinsx = h->GetXaxis()->GetNbins();
   int nbinsy = h->GetYaxis()->GetNbins();
@@ -563,6 +564,6 @@ void TH2clearOverUnderflows(TH2F* h)
       else continue;
     }
   }
-  std::cout<<"done clearing Over/Underflow Bins for TH2...."<<std::endl;
+  if(funcDebug)std::cout<<"done clearing Over/Underflow Bins for TH2...."<<std::endl;
   return;
 }

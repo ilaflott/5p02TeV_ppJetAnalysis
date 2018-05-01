@@ -32,9 +32,9 @@ const float genJetPtCut_Hi = 2116. ;
 
 //for unfolding pt cuts only
 const float jtPtCut_unf_lo     = 56.  ;
-const float jtPtCut_unf_hi     = 2116.  ;
+const float jtPtCut_unf_hi     = 1588.  ;
 const float genJetPtCut_unf_lo = 49. ;
-const float genJetPtCut_unf_hi = 2116. ;
+const float genJetPtCut_unf_hi = 1588. ;
 
 const int genptBin1Low = 56 , genptBin1High = 64 ;	 
 const int genptBin2Low = 64 , genptBin2High  = 74 ;

@@ -96,3 +96,30 @@ void TH1clearOverUnderflows(TH1* h)
   h->TH1::ClearUnderflowAndOverflow();
   return;
 }
+
+
+//returns the highest bin # in histogram h that has non-zero bin content
+void TH1FindHighBin(TH1* h){
+  int nbins=h->GetNbinsX();
+  std::cout<<"nbins="<<nbins<<std::endl;
+  for(int i=0;i<=(nbins+1);i++ ){
+    
+    
+    
+    float content=h->GetBinContent(i);
+    
+    if(content!=0)
+      std::cout<<"i="<<i<<" content="<<content<<std::endl;
+    else if( i!=0 && i!=(nbins+1) )
+      std::cout<<"bin i="<<i<<" binlowedge="<<h->GetBinLowEdge(i)<<" has no content"<<std::endl;
+    else 
+      std::cout<<"bin i="<<i<< " has no content"<<std::endl;
+    
+    if(i==0 && content!=0)
+      std::cout<<"WARNING! Underflow bin has contents!"<<std::endl;
+    if(i==(nbins+1) && content!=0)
+      std::cout<<"WARNING! Overflow bin has contents!"<<std::endl;
+    
+  }
+  return;
+}

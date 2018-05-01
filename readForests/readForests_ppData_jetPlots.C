@@ -888,7 +888,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 //	jetsPerEvent--;
 //	continue;}
       if( !(recpt > jtPtCut) ){ jetsPerEvent--; continue;} //paranoia about float comparisons
-      else if( recpt > jtPtCut_Hi ){ jetsPerEvent--; continue;}
+      else if( !(recpt < jtPtCut_Hi) ){ jetsPerEvent--; continue;}
       
       if(!hNEvts_withJets_jtptCut_Filled){ 
 	h_NEvents_withJets_jtptCut->Fill(0.);  	h_NEvents_withJets_jtptCut->Fill(1.,weight_eS);  

@@ -177,11 +177,15 @@ void drawText(const char *text, float xp, float yp, int size){
 
 
 
-void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
+//void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
+void matStylePrint(TH2 * mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
   
   //bool funcDebug=false;
   // general for drawRespMatrix ---------------
   //canv->cd();
+  
+  bool isTMatrixD=( (hTitle.find("Pearson")!=std::string::npos )    ||
+		    (hTitle.find("Covariance")!=std::string::npos )    );
   
   if(!useSimpBins){
     mat->GetYaxis()->SetMoreLogLabels(true);
@@ -190,19 +194,26 @@ void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string out
     mat->GetXaxis()->SetNoExponent(true);      }
   
   mat->GetZaxis()->SetLabelSize(0.025);      
+  
   mat->GetYaxis()->SetLabelSize(0.02);
   mat->GetYaxis()->SetTitleSize(0.023);
-  mat->GetYaxis()->SetTitle("gen p_{t}");      
+  std::string yaxisTitle="gen jet p_{T}";  
+  if(isTMatrixD)yaxisTitle+=" bin #";
+  mat->GetYaxis()->SetTitle(yaxisTitle.c_str());      
+  
   mat->GetXaxis()->SetLabelSize(0.02);
   mat->GetXaxis()->SetTitleSize(0.025);
-  mat->GetXaxis()->SetTitle("reco p_{t}");
+  std::string xaxisTitle="reco jet p_{T}";  
+  if(isTMatrixD)xaxisTitle+=" bin #";
+  mat->GetXaxis()->SetTitle(xaxisTitle.c_str());      
   
   // input resp matrix w/ full range ---------------
   
   mat->SetTitle(hTitle.c_str());
 
-  mat->SetAxisRange(56.,1000.,"X");
-  mat->SetAxisRange(56.,1000.,"Y");
+  //mat->SetAxisRange(56.,1000.,"X");
+  //mat->SetAxisRange(56.,1000.,"Y");
+  
   if( hTitle.find("% Errors") != std::string::npos )
     mat->SetAxisRange(0.1,1000.,"Z");
   else if (hTitle.find("Errors") != std::string::npos )
@@ -211,31 +222,35 @@ void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string out
     mat->SetAxisRange(0.000001,1.,"Z");
   else if (hTitle.find("Row")  != std::string::npos)
     mat->SetAxisRange(0.000001,1.,"Z");
+  else if (hTitle.find("Covariance")  != std::string::npos)
+    mat->SetAxisRange(10e-40,10e-13,"Z");
+  else if (hTitle.find("Pearson")  != std::string::npos)
+    mat->SetAxisRange(-1.,1.,"Z");
   else
     mat->SetAxisRange(0.000000000000000001,.001,"Z");
   
-//  if(useSimpBins){
-//    if( hTitle.find("%errs") != std::string::npos )
-//      mat->SetAxisRange(0.1,1000.,"Z");
-//    else if (hTitle.find("errors") != std::string::npos )
-//      mat->SetAxisRange(0.000000000000000001,.0001,"Z");
-//    else if (hTitle.find("Column")  != std::string::npos)
-//      mat->SetAxisRange(0.000001,1.,"Z");
-//    else if (hTitle.find("Row")  != std::string::npos)
-//      mat->SetAxisRange(0.000001,1.,"Z");
-//    else
-//      mat->SetAxisRange(0.000000000000000001,.001,"Z");}
-//  else{
-//    if( hTitle.find("%errs") != std::string::npos )
-//      mat->SetAxisRange(0.1,1000.,"Z");
-//    else if (hTitle.find("errors") != std::string::npos )
-//      mat->SetAxisRange(0.000000000000000001,.0001,"Z");
-//    else if (hTitle.find("Column")  != std::string::npos)
-//      mat->SetAxisRange(0.000001,1.,"Z");
-//    else if (hTitle.find("Row")  != std::string::npos)
-//      mat->SetAxisRange(0.000001,1.,"Z");
-//    else
-//      mat->SetAxisRange(0.000000000000000001,.001,"Z");}
+  //  if(useSimpBins){
+  //    if( hTitle.find("%errs") != std::string::npos )
+  //      mat->SetAxisRange(0.1,1000.,"Z");
+  //    else if (hTitle.find("errors") != std::string::npos )
+  //      mat->SetAxisRange(0.000000000000000001,.0001,"Z");
+  //    else if (hTitle.find("Column")  != std::string::npos)
+  //      mat->SetAxisRange(0.000001,1.,"Z");
+  //    else if (hTitle.find("Row")  != std::string::npos)
+  //      mat->SetAxisRange(0.000001,1.,"Z");
+  //    else
+  //      mat->SetAxisRange(0.000000000000000001,.001,"Z");}
+  //  else{
+  //    if( hTitle.find("%errs") != std::string::npos )
+  //      mat->SetAxisRange(0.1,1000.,"Z");
+  //    else if (hTitle.find("errors") != std::string::npos )
+  //      mat->SetAxisRange(0.000000000000000001,.0001,"Z");
+  //    else if (hTitle.find("Column")  != std::string::npos)
+  //      mat->SetAxisRange(0.000001,1.,"Z");
+  //    else if (hTitle.find("Row")  != std::string::npos)
+  //      mat->SetAxisRange(0.000001,1.,"Z");
+  //    else
+  //      mat->SetAxisRange(0.000000000000000001,.001,"Z");}
   
   canv->cd();
   
@@ -330,10 +345,10 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
   h->GetXaxis()->SetNoExponent(true);
   //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
   //if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
-  h->SetAxisRange( boundaries[0] ,  
-		   boundaries[nbins] + 
-		   ( boundaries[nbins]-boundaries[nbins-1] ),
-		   "X");           
+//h->SetAxisRange( boundaries[0] ,  
+//		   boundaries[nbins] + 
+//		   ( boundaries[nbins]-boundaries[nbins-1] ),
+//		   "X");           
   
   return;
 }
@@ -347,10 +362,10 @@ void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
   //  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
-  h->SetAxisRange( boundaries[0] ,  
-		   boundaries[nbins] + 
-		   ( boundaries[nbins]-boundaries[nbins-1] ),
-		   "X");           
+//  h->SetAxisRange( boundaries[0] ,  
+//		   boundaries[nbins] + 
+//		   ( boundaries[nbins]-boundaries[nbins-1] ),
+//		   "X");           
 //h->SetAxisRange( boundaries[0] - 
 //		   (boundaries[1] - boundaries[0]), 
 //		   boundaries[nbins] + 

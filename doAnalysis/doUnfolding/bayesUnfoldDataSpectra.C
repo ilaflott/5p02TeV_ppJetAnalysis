@@ -431,8 +431,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     tempCanvForPdfPrint->cd();
     
     hmat->SetTitle("Py8 Resp Matrix in used p_{T} range");
-    hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
-    hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");      
+    //hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
+    //hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");      
     hmat->Draw("COLZ");           
     
     tempCanvForPdfPrint->Print(outPdfFile.c_str());      
@@ -729,9 +729,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
     hgen_anabin->SetTitle("Py8 and Data pp Spectra, Input and Output");
     
-    hrec_anabin->SetAxisRange(56., 1000.,"X");
+    //hrec_anabin->SetAxisRange(56., 1000.,"X");
     hrec_anabin->GetYaxis()->SetTitle("A.U.");
-    hunf->SetAxisRange(       56., 1000.,"X");
+    //hunf->SetAxisRange(       56., 1000.,"X");
 
     //hgen_anabin->Draw("P E");                 
     hrec_anabin->Draw("P E");           

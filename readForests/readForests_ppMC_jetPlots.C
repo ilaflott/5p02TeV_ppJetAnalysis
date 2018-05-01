@@ -551,24 +551,24 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       if( subid_F[jet] != 0 )            { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; }
       else if( !(genpt > genJetPtCut)   )  { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; } //paranoia about float comparison
       //else if( genpt <= genJetPtCut   )  { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; }
-      else if( genpt > genJetPtCut_Hi   )  { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }
+      else if( !(genpt < genJetPtCut_Hi)   )  { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }
       else if( !(recpt > jtPtCut)   )      { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; } //paranoia about float comparison
       //else if( recpt <= jtPtCut   )      { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; }           
-      else if( recpt > jtPtCut_Hi   )      { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }           
+      else if( !(recpt < jtPtCut_Hi)   )      { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }           
       
       
       //if( absreceta >= jtEtaCutHi ) { 
       if( !(absreceta < jtEtaCutHi) ) { 
 	jetsPerEvent--; //jetsPerEventJetID--;
 	continue; }
-      else if( absreceta < jtEtaCutLo )  { 
+      else if( (absreceta < jtEtaCutLo ) ) { 
 	jetsPerEvent--; //jetsPerEventJetID--; 
 	continue; }
       
-
+      
       //if(absreceta>=4.7) jetsPerEvent--;
       if(!(absreceta < 4.7)) jetsPerEvent--;
-
+      
       // largest jet pt in each event
       if(recpt>evt_leadJetPt && absreceta<4.7)
 	evt_leadJetPt=recpt;

@@ -12,7 +12,7 @@ then
     runBayes=$5
     runSVD=$6
     simpbins=$7
-
+    
 else
     echo "usage:"
     echo "source runMC.sh [dirTag] [MM] [DD] [YY] [runBayes] [runSVD] [useSimpBins]"
@@ -21,6 +21,7 @@ fi
 
 condorDate="${MM}.${DD}.${YY}"
 sampleDate="${MM}-${DD}-${YY}"
+
 
 ### ----------------------------------------------------------------------------------
 if [ $runBayes -eq 1 ]
@@ -43,15 +44,15 @@ fi
 ### ----------------------------------------------------------------------------------
 if [ $runSVD -eq 1 ]
 then
-    kReg=5
+#    kReg=5
 
-#    if [ ${simpbins} -eq 1 ]
-#    then
-#	kReg=20
-#    else
-#	kReg=6
-#    fi
-
+    if [ ${simpbins} -eq 1 ]
+    then
+	kReg=5
+    else
+	kReg=5
+    fi
+    
     echo ""
     echo "compiling SVDUnfoldMCSpectra.C"
     echo ""

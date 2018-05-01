@@ -2,10 +2,6 @@
 
 
 
-####################################################
-##################### JETPLOTS #####################
-####################################################
-
 echo ""
 echo "compiling code(s)"
 echo ""
@@ -16,8 +12,8 @@ echo ""
 #echo "...ppMC JERS..."
 #rootcompile readForests_ppMC_JERS.C
 
-#echo "...ppData jetPlots..."
-#rootcompile readForests_ppData_jetPlots.C
+echo "...ppData jetPlots..."
+rootcompile readForests_ppData_jetPlots.C
 
 #echo "...ppData jetMult..."
 #rootcompile readForests_ppData_jetMult.C
@@ -28,6 +24,40 @@ echo ""
 echo ""
 echo "done compiling code(s), submitting."
 echo ""
+
+#source run_readForests_JERS.sh 4 "0.0" "1.0"
+#source run_readForests_JERS.sh 4 "1.0" "2.0"
+source run_readForests_JERS.sh 4 "0.0" "2.0"
+
+#source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
+#source run_readForests_jetPlots.sh 4 "1.0" "2.0" "ppData"
+source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
+source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
+
+#askCondor  1 1
+#sleep 120s
+
+
+echo ""
+echo "done running code(s)."
+echo ""
+
+#askCondor  100 30
+#askCondor  1 1
+
+return
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## INCL. JET SPECTRA, ENTIRE |y| RANGE
 #source run_readForests_jetPlots.sh 4 "0.0" "4.7"
@@ -43,14 +73,14 @@ echo ""
 
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
 #source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
-source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
+#source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
 
 #source run_readForests_jetPlots.sh 3 "0.0" "0.5" "ppMC"
 #source run_readForests_jetPlots.sh 3 "0.5" "1.0" "ppMC"
 
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
 #source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
-source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
+#source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
 
 #### INCL. JET SPECTRA |y| bins
 #source run_readForests_jetPlots.sh 4 "0.0" "0.5"
@@ -79,35 +109,8 @@ source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
 
 ### INCL. JET SPECTRA, LARGER |y| REGIONS
 #source run_readForests_jetPlots.sh 4 "0.0" "2.0"
+
 #source run_readForests_jetMult.sh 4 "0.0" "2.0"
-source run_readForests_JERS.sh 4 "0.0" "1.0"
-
-#source run_readForests_jetPlots.sh 4 "2.0" "3.0"
-#source run_readForests_jetPlots.sh 4 "3.2" "4.7"
-#askCondor  1 1
-#sleep 120s
-
-
-echo ""
-echo "done running code(s)."
-echo ""
-
-#askCondor  100 30
-#askCondor  1 1
-
-return
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

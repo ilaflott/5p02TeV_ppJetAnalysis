@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##CONST
-    jtID=1
+jtID=1
 ##CONST
 if [ $# -eq 6 ]
 then

@@ -96,19 +96,52 @@ const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 //Bayes settings
 const int kIter = 4; // recommended is 4, default is 4
 
-
 //SVD settings 
 //    max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;      
 
-//other options, useful or interesting to change
-//const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
-const bool doToyErrs=false;
-const bool clearOverUnderflows=false;
-const bool doMCIntegralScaling=false;//unfoldMCSpectra only
-const bool fillRespHists=false;
-const bool doOverUnderflows=false;    // if normalizedMCMatrix=true; this should be false... why?
-const bool zeroBins=false;
+
+
+
+
+
+//doToyErrs/doMCIntegralScaling/fillRespHists/doOverUnderflowsSettings for various Bayes/SVD/binnings
+
+// --- // Bayes, simpbins
+// false/false/false/false !!!WINNER!!! seems to work fine
+
+// --- // Bayes, anabins
+// false/false/false/false has an issue at low pt + high pt SS/OS unf spectra, but for some reason the invertibility is pretty good
+// false/false/true/false !!!WINNER!!! seems to work fine but we completely lose the invertibility
+// true/false/true/false doesn't seem to improve anything on winner; makes pearson+cov matrices look worse
+// false/true/true/false doesn't seem to improve anything on winner; leaves pearson+cov matrices alone though
+
+
+// SVD // TO DO: CHECK HOW HISTOGRAMS ARE MADE + PLOTTED IN STUFF, SOMETHING NOT MAKING SENSE
+// --- // SVD, simpbins
+// false/false/false/false !!!??WINNER??!!! seems to work fine, OS unf. spectra might look TOO good
+// true/false/false/false !!!??WINNER??!!! same potential issues as all false
+// false/false/true/false somewhat more believable?! weird rise @ high pt part of spectra
+// true/false/true/false somewhat more believable?! same issues as false/false/true/false...
+// true/true/true/false
+
+// --- // SVD, anabins
+// false/false/false/false very very bad
+// false/false/true/false OS spectra has weird rise at high pt, closest i get?
+// true/false/true/false similar to false/false/true/false, pearson matrices look worse
+// true/false/false/false very very bad
+
+const bool doToyErrs          =false;
+const bool doMCIntegralScaling=false;
+const bool fillRespHists      =true;
+const bool doOverUnderflows   =false;
+
+
+
+
+// settings that don't really get used
+const bool clearOverUnderflows=false; //leave false almost always
+const bool zeroBins=false; //leave false almost always
 //const bool normalizedMCMatrix=false;   // do not change for now; 6.24.17
 
 //other options, questionable usefulness, thing before changing...

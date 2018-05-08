@@ -1,19 +1,23 @@
-TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false) {
-
+TMatrixD* CalculatePearsonCoefficients(TMatrixD* covmat, bool debugPearson=false, std::string cloneName="") {
+  
   if(debugPearson)std::cout<<std::endl<<"in CalculatePearsonCoefficients"<<std::endl<<std::endl;
-
+  
   int startRowColInt=0, skipRowColInt=1;
   int NanCount=0, gt1Count=0, EntryCount=0;
   int nrows = covmat->GetNrows(), ncols = covmat->GetNcols();
-
-  TMatrixD* pearsonCoefs= (TMatrixD*)covmat->Clone("pearsonCoefs");
-
+  
+  //std::string covmatName=(std::string)covmat->GetName();
+  //covmatName+="_pearsonCoefs";
+    TMatrixD* pearsonCoefs= (TMatrixD*)covmat->Clone(cloneName.c_str());
+    //std::cout<<"memory leak here???"<<std::endl;
+    //std::cout<<"memory leak here!!!"<<std::endl;
+  
   if(debugPearson)std::cout<<"looping over (nrows,ncols)=("<<nrows<<", "<<ncols<<")"<<std::endl;
   for(int row = startRowColInt; row<nrows; row++){ double covmatElement_rowrow = (*covmat)(row,row);
     for(int col = startRowColInt; col<ncols; col++){ double covmatElement_colcol = (*covmat)(col,col);
       double covmatElement_rowcol = (*covmat)(row,col);
       double pearson = covmatElement_rowcol/TMath::Sqrt(covmatElement_rowrow*covmatElement_colcol);
-
+      
       // NaN protection
       bool notNan=true;
       if(pearson!=pearson){     pearson=-10.;

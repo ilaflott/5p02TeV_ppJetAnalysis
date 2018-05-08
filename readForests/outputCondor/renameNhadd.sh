@@ -112,7 +112,7 @@ then
     cd ${workingDir}
     sleep 1s
         
-    cp --parents $ppMCjetPlotsDir/*allFiles*.root 4scp/
+    #cp --parents $ppMCjetPlotsDir/*allFiles*.root 4scp/
     
     echo ""
     echo "moving ppMC to ${theSCRATCHdir}"
@@ -174,7 +174,7 @@ then
     cd ${workingDir}
     sleep 1s
     
-    cp --parents $ppDataHPtDir/*allFiles*.root 4scp/
+    #cp --parents $ppDataHPtDir/*allFiles*.root 4scp/
     
     
     echo ""

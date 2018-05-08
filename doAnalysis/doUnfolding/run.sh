@@ -41,17 +41,70 @@ echo ""
 
 mv output/unfoldMCSpectra/* output/unfoldMCSpectra/temp/.
 
-#note; _HLTCalo/HLTPF added to JERS dirs for 10.10.17 sample for convenience of I/O.
-# there is no trigger emulation in the MC samples the label is superficial and does not matter.
-##prefer these two right here 01/23/18
-#source runMC.sh "_gendr0p1_HLTCalo" "10" "10" "17"  1 1
-#source runMC.sh "_gendr0p2_HLTCalo" "10" "10" "17" 1 0 1
 
-##working with these two right now
+
+
+##working with these right now
+#source runMC.sh "0.0eta2.0" "05" "01" "18" 1 1 1
+#source runMC.sh "0.0eta2.0" "05" "01" "18" 1 1 0
+
+#source runMC.sh "0.0eta2.0_ptHi1588" "05" "02" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi1588" "05" "02" "18" 1 1 0
+#source runMC.sh "0.0eta2.0_ptHi1497" "05" "02" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi1497" "05" "02" "18" 1 1 0
+#source runMC.sh "0.0eta2.0_ptHi1410" "05" "02" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi1410" "05" "02" "18" 1 1 0
+
+#source runMC.sh "0.0eta2.0_ptHi1327" "05" "02" "18" 1 0 1
+#source runMC.sh "0.0eta2.0_ptHi1327" "05" "02" "18" 1 0 0
+#source runMC.sh "0.0eta2.0_ptHi1327" "05" "02" "18" 0 1 1
+#source runMC.sh "0.0eta2.0_ptHi1327" "05" "02" "18" 0 1 0
+
+#source runMC.sh "0.0eta2.0_ptHi1248" "05" "02" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi1248" "05" "02" "18" 1 1 0
+
+
+############################################
+#### WINNER WINNER CHICKEN DINNER 49/49 ####
+############################################
+
+#### Symm gen/recpt cuts, 49/49 wins, both binnings
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec37_ptLoGen37"   "05" "04" "18" 1 1 0
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec43_ptLoGen43"   "05" "04" "18" 1 1 0
+source runMC.sh "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49"   "05" "04" "18" 0 1 0
+
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec37_ptLoGen37"   "05" "04" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec43_ptLoGen43"   "05" "04" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49"   "05" "04" "18" 1 1 1
+
+
+##### Asymm gen/recpt cuts w/ genpt cut lower than recpt cut, 56/49 wins, both binnings
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen37"   "05" "04" "18" 1 1 0
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen43"   "05" "04" "18" 1 1 0
+source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen49"   "05" "04" "18" 0 1 0
+
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen37"   "05" "04" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen43"   "05" "04" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen49"   "05" "04" "18" 1 1 1
+
+
+##### Asymm gen/pt cuts w/ recpt cut lower than genpt cut, approx tie for 43/49 + 49/56, YYY bins
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec37_ptLoGen43"   "05" "04" "18" 1 1 0
+source runMC.sh "0.0eta2.0_ptHi967_ptLoRec43_ptLoGen49"   "05" "04" "18" 0 1 0
+source runMC.sh "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen56"   "05" "04" "18" 0 1 0
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen64"   "05" "04" "18" 1 1 0
+
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec37_ptLoGen43"   "05" "04" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec43_ptLoGen49"   "05" "04" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen56"   "05" "04" "18" 1 1 1
+#source runMC.sh "0.0eta2.0_ptHi967_ptLoRec56_ptLoGen64"   "05" "04" "18" 1 1 1
+
+
+
 #source runMC.sh "0.0eta1.0" "04" "29" "18" 0 1 1
 #source runMC.sh "0.0eta1.0" "04" "29" "18" 0 1 0
-source runMC.sh "0.0eta2.0" "04" "29" "18" 1 1 1
-source runMC.sh "0.0eta2.0" "04" "29" "18" 1 1 0
+#source runMC.sh "0.0eta2.0" "04" "29" "18" 1 1 1
+#source runMC.sh "0.0eta2.0" "04" "29" "18" 1 1 0
 #source runMC.sh "1.0eta2.0" "04" "29" "18" 0 1 1
 #source runMC.sh "1.0eta2.0" "04" "29" "18" 0 1 0
 
@@ -62,6 +115,16 @@ source runMC.sh "0.0eta2.0" "04" "29" "18" 1 1 0
 ## had issue where the unf reco/genpt cuts were the same as the JER reco/genpt cuts (they go to much lower pt for a reliable resolution measurement in our low pt range, pre 100 GeV)
 #source runMC.sh "0.0eta1.0" "04" "24" "18" 1 0 1
 #source runMC.sh "0.0eta1.0" "04" "24" "18" 1 0 0
+
+#note; _HLTCalo/HLTPF added to JERS dirs for 10.10.17 sample for convenience of I/O.
+# there is no trigger emulation in the MC samples the label is superficial and does not matter.
+##prefer these two right here 01/23/18
+#source runMC.sh "_gendr0p1_HLTCalo" "10" "10" "17"  1 1
+#source runMC.sh "_gendr0p2_HLTCalo" "10" "10" "17" 1 0 1
+
+
+
+
 
 echo ""
 echo "done w/ MC."

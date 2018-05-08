@@ -116,9 +116,9 @@ void TH1FindHighBin(TH1* h){
       std::cout<<"bin i="<<i<< " has no content"<<std::endl;
     
     if(i==0 && content!=0)
-      std::cout<<"WARNING! Underflow bin has contents!"<<std::endl;
+      std::cout<<"WARNING! Underflow bin has content="<<content<<std::endl;
     if(i==(nbins+1) && content!=0)
-      std::cout<<"WARNING! Overflow bin has contents!"<<std::endl;
+      std::cout<<"WARNING! Overflow bin has contents="<<content<<std::endl;
     
   }
   return;

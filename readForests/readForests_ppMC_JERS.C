@@ -166,9 +166,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   TH1F *hpp_mcclosure_reco[2]={};         
   TH2F *hpp_mcclosure_matrix[2]={};       
   
-  TH1F *hpp_mcclosure_gen_test[2]={};   //set of MC "data" to test "truth" response matrix on 
+  //TH1F *hpp_mcclosure_gen_test[2]={};   //set of MC "data" to test "truth" response matrix on 
   TH1F *hpp_mcclosure_reco_test[2]={};   
-  TH2F *hpp_mcclosure_matrix_test[2]={};       
+  //TH2F *hpp_mcclosure_matrix_test[2]={};       
   
   if(fillMCUnfoldingHists){
     
@@ -200,12 +200,13 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  hpp_mcclosure_reco[jtID]    = new TH1F( hTitle.c_str(), "recopt for mcclosure same side", 2500,0,2500);
 	else if(hUnfTitleArray[k]=="mcclosure_matrix")	
 	  hpp_mcclosure_matrix[jtID]    = new TH2F( hTitle.c_str(), "genpt v. recopt for mcclosure same side", 2500, 0,2500, 2500, 0,2500);
-	else if(hUnfTitleArray[k]=="mcclosure_gen_test")	
-	  hpp_mcclosure_gen_test[jtID]    = new TH1F( hTitle.c_str(), "genpt for mcclosure opp side test", 2500,0,2500);
+	//	else if(hUnfTitleArray[k]=="mcclosure_gen_test")	
+	//	  hpp_mcclosure_gen_test[jtID]    = new TH1F( hTitle.c_str(), "genpt for mcclosure opp side test", 2500,0,2500);
 	else if(hUnfTitleArray[k]=="mcclosure_reco_test")	
 	  hpp_mcclosure_reco_test[jtID]    = new TH1F( hTitle.c_str(), "recopt for mcclosure opp side test", 2500,0,2500);
-	else if(hUnfTitleArray[k]=="mcclosure_matrix_test")	
-	  hpp_mcclosure_matrix_test[jtID]    = new TH2F( hTitle.c_str(), "genpt v. recopt for mcclosure opp side test", 2500, 0,2500, 2500, 0,2500);
+	//	else if(hUnfTitleArray[k]=="mcclosure_matrix_test")	
+	//	  hpp_mcclosure_matrix_test[jtID]    = new TH2F( hTitle.c_str(), "genpt v. recopt for mcclosure opp side test", 2500, 0,2500, 2500, 0,2500);
+	else continue;
       }
     }  
   }
@@ -570,9 +571,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       
       if( subid_F[jet]!=0 ) continue;
       else if ( !(recpt > jtPtCut)    ) continue;                 
-      else if ( recpt > jtPtCut_Hi    ) continue;                 
+      else if ( !(recpt < jtPtCut_Hi)    ) continue;                 
       else if ( !(genpt > genJetPtCut) ) continue;
-      else if ( genpt > genJetPtCut_Hi ) continue;
+      else if ( !(genpt < genJetPtCut_Hi) ) continue;
       else if (!(absreceta < jtEtaCutHi))continue;
       else if (absreceta < jtEtaCutLo) continue;
       else if ( gendrjt > 0.1 ) continue;
@@ -727,10 +728,10 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       /////   UNFOLDING   ///// 
       if(fillMCUnfoldingHists){
 	
-	if(!   (recpt > jtPtCut_unf_lo))continue;
-	else if( !(recpt < jtPtCut_unf_hi))continue;
-	else if (!(genpt > genJetPtCut_unf_lo))continue;
-	else if   (!(genpt < genJetPtCut_unf_hi))continue;
+	if(      !(recpt > jtPtCut_unf_lo)     )continue;
+	else if( !(recpt < jtPtCut_unf_hi)     )continue;
+	else if( !(genpt > genJetPtCut_unf_lo) )continue;
+	else if( !(genpt < genJetPtCut_unf_hi) )continue;
 	else {
 	  
 	  hpp_gen[jetID]->Fill(genpt, weight_eS);
@@ -738,9 +739,10 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  hpp_matrix[jetID]->Fill(recpt, genpt, weight_eS);
 	  
 	  if(mcclosureInt%2 == 0){
-	    hpp_mcclosure_gen_test[jetID]->Fill(genpt, weight_eS);      	  
+	    //hpp_mcclosure_gen_test[jetID]->Fill(genpt, weight_eS);      	  
 	    hpp_mcclosure_reco_test[jetID]->Fill(recpt, weight_eS);      
-	    hpp_mcclosure_matrix_test[jetID]->Fill(recpt, genpt, weight_eS);	  }
+	    //hpp_mcclosure_matrix_test[jetID]->Fill(recpt, genpt, weight_eS);	  
+	  }
 	  else {
 	    hpp_mcclosure_gen[jetID]->Fill(genpt, weight_eS);
 	    hpp_mcclosure_reco[jetID]->Fill(recpt, weight_eS); 	

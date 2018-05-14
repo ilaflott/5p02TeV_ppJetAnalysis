@@ -105,46 +105,25 @@ const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;
 
 
 
-//doToyErrs/doMCIntegralScaling/fillRespHists/doOverUnderflowsSettings for various Bayes/SVD/binnings
-
-// --- // Bayes, simpbins
-// false/false/false/false !!!WINNER!!! seems to work fine
-
-// --- // Bayes, anabins
-// false/false/false/false has an issue at low pt + high pt SS/OS unf spectra, but for some reason the invertibility is pretty good
-// false/false/true/false !!!WINNER!!! seems to work fine but we completely lose the invertibility
-// true/false/true/false doesn't seem to improve anything on winner; makes pearson+cov matrices look worse
-// false/true/true/false doesn't seem to improve anything on winner; leaves pearson+cov matrices alone though
-
-
-// SVD // TO DO: CHECK HOW HISTOGRAMS ARE MADE + PLOTTED IN STUFF, SOMETHING NOT MAKING SENSE
-// --- // SVD, simpbins
-// false/false/false/false !!!??WINNER??!!! seems to work fine, OS unf. spectra might look TOO good
-// true/false/false/false !!!??WINNER??!!! same potential issues as all false
-// false/false/true/false somewhat more believable?! weird rise @ high pt part of spectra
-// true/false/true/false somewhat more believable?! same issues as false/false/true/false...
-// true/true/true/false
-
-// --- // SVD, anabins
-// false/false/false/false very very bad
-// false/false/true/false OS spectra has weird rise at high pt, closest i get?
-// true/false/true/false similar to false/false/true/false, pearson matrices look worse
-// true/false/false/false very very bad
-
+// generally, fill the response hists
+// generally, dont use over/under flows
+// generally, cut off evts from resp matrix by rebinning. But if you do, make sure clear OverUnderflows = true 
+// generally, MCIntegral scaling doesn't seem to help
 const bool doToyErrs          =false;
 const bool doMCIntegralScaling=false;
 const bool fillRespHists      =true;
-const bool doOverUnderflows   =false;
+//const bool useTH2ProjRespHist= false;
+const bool doOverUnderflows   =false;//leave false almost always
+const bool clearOverUnderflows=true; 
 
 
 
 
 // settings that don't really get used
-const bool clearOverUnderflows=false; //leave false almost always
 const bool zeroBins=false; //leave false almost always
-//const bool normalizedMCMatrix=false;   // do not change for now; 6.24.17
+//const bool normalizedMCMatrix=false;   
 
-//other options, questionable usefulness, thing before changing...
+
 
 
 //useful strings, numbers

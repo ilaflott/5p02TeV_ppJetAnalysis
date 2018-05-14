@@ -4,6 +4,7 @@
 const bool drawPDFs=true; 
 const bool debugMode=true;
 const float etaBinWidth=4.;
+const bool drawRespMatrix=false;
 
 
 // CODE --------------------------------------------------
@@ -795,7 +796,6 @@ h_genratio_oppmeas->Divide(hgen_rebin_ratiobin);
     canvForPrint->Print(close_outPdfFile.c_str());      
     
     
-    bool drawRespMatrix=true;
     if(drawRespMatrix){    
       
       std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;    

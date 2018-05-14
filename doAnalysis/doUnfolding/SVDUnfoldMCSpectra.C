@@ -3,8 +3,10 @@
 //other settings
 const int kRegDraw  = 1 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 const int kRegDrawSS  = 1 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+
 const bool drawPDFs=true; 
 const bool debugMode=true;
+const bool drawRespMatrix=false;
 const float etaBinWidth=4.;
 
 
@@ -160,7 +162,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   
   
   
-  // ---------- reco, measured same-side spectra used to create response matrix, and for "sameside" unfolding test
+  // ---------- reco, measured same-side spectra used to create response matrix, And For "sameside" unfolding test
   std::string histTitle2="hpp_mcclosure_reco";
   if(doJetID)histTitle2+="_wJetID";
   histTitle2+=RandEtaRange;
@@ -347,7 +349,11 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   hmat_rebin->Write(TH2_title.c_str());
   if(debugMode)hmat_rebin->Print("base");
   
-  bool drawRespMatrix=true;
+
+
+
+
+  // ------ RESPONSE MATRIX DRAWING
   if(drawPDFs && drawRespMatrix){    
     
     std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;    
@@ -382,34 +388,39 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     // error matrix in binning of interest ---------------    
     matStylePrint(hmat_errors, "ppMC Resp Matrix errors", tempCanvForPdfPrint, outPdfFile, useSimpBins);
     
-
+    // percent error matrix in binning of interest ---------------    
     TH2F* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2F*) hmat_errors, (TH2F*) hmat_rebin,
 						       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 						       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
     hmat_percenterrs->Write();
     if(debugMode) hmat_percenterrs->Print("base");
     
+    matStylePrint(hmat_percenterrs, "ppMC Resp Matrix % Errors", tempCanvForPdfPrint, outPdfFile, useSimpBins);    
+    
+    // col normd matrix in binning of interest  ---------------    
     TH2F* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2F*)  hmat_rebin,
-							  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-							  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+							 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+							 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
     hmat_rebin_colnormd->Write();
     if(debugMode)  hmat_rebin_colnormd->Print("base");
+
+    matStylePrint(hmat_rebin_colnormd, "ppMC Resp Matrix, Columns Normalized", tempCanvForPdfPrint, outPdfFile, useSimpBins);
     
+
+    // row normd matrix in binning of interest  ---------------    
     TH2F*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2F*)  hmat_rebin,
-							   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-							   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+							  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+							  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
     hmat_rebin_rownormd->Write();
     if(debugMode)  hmat_rebin_rownormd->Print("base");
     
-    // percent error matrix in binning of interest ---------------    
-    matStylePrint(hmat_percenterrs, "ppMC Resp Matrix % Errors", tempCanvForPdfPrint, outPdfFile, useSimpBins);
-    
-    // col normd matrix in binning of interest  ---------------    
-    matStylePrint(hmat_rebin_colnormd, "ppMC Resp Matrix, Columns Normalized", tempCanvForPdfPrint, outPdfFile, useSimpBins);
-    
-    // row normd matrix in binning of interest  ---------------    
     matStylePrint(hmat_rebin_rownormd, "ppMC Resp Matrix, Rows Normalized", tempCanvForPdfPrint, outPdfFile, useSimpBins);
+
+
     
+
+    
+        
     // close file     
     tempCanvForPdfPrint->Print(close_outPdfFile.c_str());   }
   
@@ -493,8 +504,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   
   int kReg[nKregMax]={0};
   for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) 
-    kReg[i+kRegRange]=kRegCenter+i;
-  
+    kReg[i+kRegRange]=kRegCenter+i;  
   for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i)
     std::cout<<"kReg["<<i+kRegRange<<"]="<<kReg[i+kRegRange]<<std::endl;
   
@@ -505,12 +515,8 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   for(int i=1; i<=9; ++i) 
     std::cout<<"kRegSS["<<i<<"]="<<kRegSS[i-1]<<std::endl;
 
-//  //for 0-8 kreg
-//  for(int i=0; i<=8; ++i) 
-//    kRegSS[i]=i; 
-//  for(int i=0; i<=8; ++i) 
-//    std::cout<<"kRegSS["<<i<<"]="<<kRegSS[i]<<std::endl;
-  
+
+    
   
   TLegend *leg[nKregMax],*leg1[nKregMax], *leg2[nKregMax];      
   TLegend *leg_ss[nKregMax],*leg_ss1[nKregMax], *leg_ss2[nKregMax];      
@@ -549,19 +555,14 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
       
     if(debugMode)std::cout<<"applying roo_resp to histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
     hfold_svd[kr] = (TH1F*)roo_resp.ApplyToTruth(hunf_svd[kr]);
-    hfold_svd[kr]->Scale(hgen_rebin->Integral()/hfold_svd[kr]->Integral());
+    hfold_svd[kr]->Scale(hrec_rebin->Integral()/hfold_svd[kr]->Integral());
 
     // get covariance matrix and calculate pearson coefficients
     if(debugMode)std::cout<<"calling Ereco..."<<std::endl;
     TMatrixD covmat = unf_svd.Ereco(errorTreatment);
-    //covmat->SetName("SVD_covmat");
     
-    TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, false ,"SVD_pearson");      
-    
-    //std::cout<<"memory leak here???"<<std::endl;
-    hPearsonSVD[kr] = new TH2D (*pearson);
-    //std::cout<<"memory leak here!!!"<<std::endl;
-    
+    TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, false ,"SVD_pearson");          
+    hPearsonSVD[kr] = new TH2D (*pearson);    
     hPearsonSVD[kr]->SetName(("pearson_oppside_"+kRegRandEtaRange).c_str());
     if(debugMode)hPearsonSVD[kr]->Print("base");
     //if(debugMode)std::cout<<"creating \"rebinned\" pearson matrix..."<<std::endl;
@@ -701,7 +702,7 @@ hgen_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
     
     std::cout<<"applying roo_resp to sameside histo hunf_ss_svd[kr="<<kr<<"]..."<<std::endl;
     hfold_ss_svd[kr] = (TH1F*)roo_resp.ApplyToTruth(hunf_ss_svd[kr]);
-    hfold_ss_svd[kr]->Scale(hgen_rebin->Integral()/hfold_ss_svd[kr]->Integral());
+    hfold_ss_svd[kr]->Scale(hrec_sameside_resp_rebin->Integral()/hfold_ss_svd[kr]->Integral());
     
     //////////////////////////////////////////////
     //sameside covariance/pearson matrices??? maybe, we will see.
@@ -1084,8 +1085,8 @@ hgen_ss_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
 	//hgen_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
 	hgen_folded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ Gen Truth");
 	
-	hgen_unfolded_ratio[kRegDraw]->Draw();
-	hgen_folded_ratio[kRegDraw]->Draw("same");
+	hgen_unfolded_ratio[kRegDraw]->Draw("P E");
+	hgen_folded_ratio[kRegDraw]->Draw("P E SAME");
 	
 	TLegend * leg3 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
 	leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"O.S. Unf./S.S. Truth","pl");
@@ -1134,8 +1135,8 @@ hgen_ss_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
 	//hrec_ss_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
 	hrec_ss_folded_ratio[kRegDraw]->SetTitle("S.S. SVD Unf. Ratios w/ Meas.");
 	
-	hrec_ss_unfolded_ratio[kRegDraw]->Draw();
-	hrec_ss_folded_ratio[kRegDraw]->Draw("same");
+	hrec_ss_unfolded_ratio[kRegDraw]->Draw("P E");
+	hrec_ss_folded_ratio[kRegDraw]->Draw("P E SAME");
 	
 	TLegend * leg_ss2 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
 	leg_ss2->AddEntry(hrec_ss_unfolded_ratio[kRegDraw],"S.S. Unf./O.S. Meas.","pl");
@@ -1168,8 +1169,8 @@ hgen_ss_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
 	//hgen_ss_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
 	hgen_ss_folded_ratio[kRegDraw]->SetTitle("S.S. SVD Unf. Ratios w/ Gen Truth");
 	
-	hgen_ss_unfolded_ratio[kRegDraw]->Draw();
-	hgen_ss_folded_ratio[kRegDraw]->Draw("same");
+	hgen_ss_unfolded_ratio[kRegDraw]->Draw("P E");
+	hgen_ss_folded_ratio[kRegDraw]->Draw("P E SAME");
 	
 	TLegend * leg_ss3 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
 	leg_ss3->AddEntry(hgen_ss_unfolded_ratio[kRegDraw],"S.S. Unf./S.S. Truth","pl");

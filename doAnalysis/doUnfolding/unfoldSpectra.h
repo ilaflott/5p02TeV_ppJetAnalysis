@@ -109,7 +109,7 @@ const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;
 // generally, dont use over/under flows
 // generally, cut off evts from resp matrix by rebinning. But if you do, make sure clear OverUnderflows = true 
 // generally, MCIntegral scaling doesn't seem to help
-const bool doToyErrs          =false;
+const bool doToyErrs          =false; // error options: kCovToy, kCovariance, kErrors, kNoError
 const bool doMCIntegralScaling=false;
 const bool fillRespHists      =true;
 //const bool useTH2ProjRespHist= false;

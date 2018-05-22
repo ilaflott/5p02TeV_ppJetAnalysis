@@ -10,6 +10,11 @@
 const double intgrtdLumi=27.4*pow(10.,6.);// pb^-1 to \microbarns^-1 // new lumi
 const double intgrtdLumi_unc=2.3/100.;
 
+//// other useful things
+//const std::string HLThNames[]={"HLT40_","HLT60_","HLT80_","HLT100_","HLTComb_","TrgCombTest_"};
+//const std::string HLThTitle[]={"HLT40 ","HLT60 ","HLT80 ","HLT100 ","HLTComb ","Kurt Meth. HLTComb "};
+//const int N_HLThNames=sizeof(HLThNames)/sizeof(std::string);
+
 // string arrays
 //L1
 const std::string L1BitStrings[]={
@@ -45,16 +50,12 @@ const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
 
 // trigs
 const std::string HLTName[] = {
-  "HLTComb","HLT40","HLT60","HLT80","HLT100"
+  "HLT40","HLT60","HLT80","HLT100", /*"HLTComb",*/ "TrgCombTest"
 };
 
 // trigs
-const std::string HLTCaloName_Leg[] = {
-  "HLTak4CaloJetsCombo","HLTak4CaloJets40","HLTak4CaloJets60","HLTak4CaloJets80","HLTak4CaloJets100"
-};
-// trigs
-const std::string HLTPFName_Leg[] = {
-  "HLTPFJets Combo","HLTak4PFJets40","HLTak4PFJets60","HLTak4PFJets80","HLTak4PFJets100"
+const std::string HLTName_Leg[] = {
+  "HLTak4Calo40","HLTak4Calo60","HLTak4Calo80","HLTak4Calo100", /*"HLTSum/4",*/ "HLTComb" 
 };
 const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 
@@ -62,13 +63,3 @@ const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 const std::string etaWidth = "20_eta_20";
 
 const int jetTrigQABinning=10;
-
-
-
-
-
-//// other useful things
-//const std::string HLThNames[]={"HLT40_","HLT60_","HLT80_","HLT100_","HLTComb_","TrgCombTest_"};
-//const std::string HLThTitle[]={"HLT40 ","HLT60 ","HLT80 ","HLT100 ","HLTComb ","Kurt Meth. HLTComb "};
-//const int N_HLThNames=sizeof(HLThNames)/sizeof(std::string);
-

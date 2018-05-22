@@ -1,6 +1,6 @@
 
 
-//// ------ SMP SPECTRA BINS ------
+//// ------ SMP SPECTRA BINS ORIGINAL ------
 //// ------ DO NOT TOUCH ------
 //const double anabins_pt_SMP[] = {
 //  1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 
@@ -25,7 +25,7 @@
 
 
 
-// ------ GEN SPECTRA BINS ------
+// ------ GEN SPECTRA BINS, IN PROGRESS------
 const double anabins_pt_gen[] = {//analysis pt bins
   //1., 
   //5., 6., 8., 10., 12., 15., 
@@ -36,7 +36,6 @@ const double anabins_pt_gen[] = {//analysis pt bins
   //  32., 
   //  37., 
   //  43., //garbage bins
-
   //49., //typical gen pt cut
   //56., //typical recopt cut
   64., 
@@ -77,7 +76,7 @@ const double anabins_pt_gen[] = {//analysis pt bins
 };
 const int n_anabins_pt_gen = sizeof(anabins_pt_gen)/sizeof(double)-1;
 
-// ------ RECO SPECTRA BINS ------
+// ------ RECO SPECTRA BINS IN PROGRESS------
 const double anabins_pt_reco[] = {//analysis pt bins
   //1., 
   //5., 6., 8., 10., 12., 15., 
@@ -132,30 +131,181 @@ const int n_anabins_pt_reco = sizeof(anabins_pt_reco)/sizeof(double)-1;
 
 
 
-//// ------ GEN SPECTRA BINS ------
-//const double anabins_pt_gen[] = {//analysis pt bins
-//  37.,
-//  43., 49., 56., 64., 74., 84., 97., 114., 
-//  133., 153., 174., 196., 220., 245., 272., 
-//  300., 330., 362., 395., 430., 468., 507., 
-//  548., 592., 638., 686., 
-//  1000., 1300. //junk bin
-//  //737., 790., 846.,  
-//  //905.,   967.,  1032., 1101., 1172. , 1248., 1327.
-//};
-//const int n_anabins_pt_gen = sizeof(anabins_pt_gen)/sizeof(double)-1;
-//
-//// ------ RECO SPECTRA BINS ------
-//const double anabins_pt_reco[] = {//analysis pt bins
-//  49.,//junk bin
-//  56., 64., 74., 84., 97., 114., 
-//  133., 153., 174., 196., 220., 245., 272., 
-//  300., 330., 362., 395., 430., 468., 507., 
-//  548., 592., 638., 686., 
-//  //1000. 
-//  //1300., 1600. //junk bin
-//  //737., 790., 846.,  
-//  //905., 967.,  1032.//, 1101.
-//};
-//const int n_anabins_pt_reco = sizeof(anabins_pt_reco)/sizeof(double)-1;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+//// These analysis binnings (based on SMP binning) are excellent for Bayesian Unfolding of the following samples + settings
+source runData.sh "0.0eta2.0_ptHi967_ptLoRec49"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 1 0
+
+const bool doToyErrs          =false; // error options: kCovToy, kCovariance, kErrors, kNoError
+const bool doMCIntegralScaling=false;
+const bool fillRespHists      =true;
+//const bool useTH2ProjRespHist= false;
+const bool doOverUnderflows   =false;//leave false almost always
+const bool clearOverUnderflows=true; 
+
+// settings that don't really get used
+const bool zeroBins=false; //leave false almost always
+//const bool normalizedMCMatrix=false;   
+
+// ------ GEN SPECTRA BINS, IN PROGRESS------
+const double anabins_pt_gen[] = {//analysis pt bins
+  //1., 
+  //5., 6., 8., 10., 12., 15., 
+  //  18., 
+  //  21., 
+  //  24., 
+  //  28., 
+  //  32., 
+  //  37., 
+  //  43., //garbage bins
+  //49., //typical gen pt cut
+  //56., //typical recopt cut
+  64., 
+  74., 
+  84., 
+  97., 
+  114., 
+  133., 
+  153., 
+  174., 
+  196., 
+  220., 
+  245., 
+  272., 
+  300., 
+  330.,   
+  362., 
+  //395., 
+  430., 
+  //468., 
+  //507., 
+  //548., 
+  592., 
+  //638., 
+  //686., 
+  //737., 
+  //790., 
+  //846.,  
+  //905.,   
+  967.//,
+  //1032.//, 
+  //  1101.//, 1172. , 
+  //  
+  //  1248., 
+  //  1327.,
+  //  1410., 
+  //  1497.//, 1588. //, 1684. //, 1784., 1890., 2000., 2116.//,2238.  
+};
+const int n_anabins_pt_gen = sizeof(anabins_pt_gen)/sizeof(double)-1;
+
+// ------ RECO SPECTRA BINS IN PROGRESS------
+const double anabins_pt_reco[] = {//analysis pt bins
+  //1., 
+  //5., 6., 8., 10., 12., 15., 
+  //  18., 
+  //  21., 
+  //  24., 28.,
+  //  32., 
+  //  37., 
+  //  43., //garbage bins
+  //  49., //typical gen pt cut
+  //56., //typical recopt cut
+  64., 
+  74., 
+  84., 
+  97., 
+  114., 
+  133., 
+  153., 
+  174., 
+  196., 
+  220., 
+  245., 
+  272., 
+  300., 
+  330.,   
+  362., 
+  //395., 
+  430., 
+  //468., 
+  //507., 
+  //548., 
+  592., 
+  //638., 
+  //686., 
+  //737., 
+  //790., 
+  //846.,  
+  //905.,   
+  967.//,
+  //  1032.//, 
+  //1032.//, 
+  //1101.//, 1172. , 
+  //1248., 
+  //1327.,
+  //1410., 
+  //1497.//, 1588. //, 1684. //, 1784., 1890., 2000., 2116.//,2238.  
+};
+const int n_anabins_pt_reco = sizeof(anabins_pt_reco)/sizeof(double)-1;
+
+
+
+
+
+ */

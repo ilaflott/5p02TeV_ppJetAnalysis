@@ -46,9 +46,9 @@ if [ $runSVD -eq 1 ]
 then
     if [ ${simpbins} -eq 1 ]
     then
-	kReg=5
+	kReg=9
     else
-	kReg=5
+	kReg=7
     fi
 
     echo ""

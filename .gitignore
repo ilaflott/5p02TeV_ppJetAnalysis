@@ -36,7 +36,7 @@ doAnalysis/doUnfolding/output
 doAnalysis/doUnfolding/output/*
 doAnalysis/doUnfolding/oldCode
 doAnalysis/doUnfolding/oldCode/*
-doAnalysis/printPlots/code_snips_reference
-doAnalysis/printPlots/code_snips_reference/*
-doAnalysis/printPlots/output
-doAnalysis/printPlots/output/*
+doAnalysis/printPlots_JERS/code_snips_reference
+doAnalysis/printPlots_JERS/code_snips_reference/*
+doAnalysis/printPlots_JERS/output
+doAnalysis/printPlots_JERS/output/*

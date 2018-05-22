@@ -69,6 +69,13 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   std::string outRespMatPdfFile =  outFileName+"_respMat.pdf";
   std::string outBayesPdfFile =  outFileName+".pdf";
   std::string outRootFile     =  outFileName+".root";  
+
+  checkNRenameFiles ( (const std::string) outFileName, 
+		      &outRespMatPdfFile, 
+		      &outBayesPdfFile, 
+		      &outRootFile);
+  
+  
   
   
   // -------------------------------- //    
@@ -118,7 +125,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   if(debugMode)hrec->Print("base");
   
   histTitle+="_divByetabin";
-  hrec->Scale(1./etaBinWidth); // lumi
+  //hrec->Scale(1./etaBinWidth); // lumi
   hrec->Write(histTitle.c_str());
   if(debugMode)hrec->Print("base");
   
@@ -159,7 +166,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   if(debugMode)hrec_sameside->Print("base");
   
   histTitle2+="_divByetabin";
-  hrec_sameside->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  //hrec_sameside->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hrec_sameside->Write( histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
@@ -230,7 +237,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   if(debugMode)hgen->Print("base");    
   
   genHistTitle+="_divByetabin";
-  hgen->Scale(1./etaBinWidth);
+  //hgen->Scale(1./etaBinWidth);
   hgen->Write( genHistTitle.c_str() );
   if(debugMode)hgen->Print("base");
 
@@ -299,7 +306,7 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   if(debugMode)hmat->Print("base");
   
   TH2_title+="_divByetabin";
-  hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  //hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hmat->Write( TH2_title.c_str());
   if(debugMode)hmat->Print("base");
   
@@ -434,9 +441,9 @@ int bayesUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName
   TH2D* covmat_TH2= new TH2D(covmat);
   
   std::cout<<"calculating pearson coefficients"<<std::endl;
-  TMatrixD* pearson=CalculatePearsonCoefficients( &covmat, false,"Bayes_pearson");
+  //TMatrixD* pearson=CalculatePearsonCoefficients( &covmat, false,"Bayes_pearson");
   
-  TH2D* PearsonBayes = new TH2D(*pearson);
+  TH2D* PearsonBayes =  (TH2D*)CalculatePearsonCoefficients( &covmat, false,"Bayes_pearson");
   
   
   // ----------------------------------------------- //        
@@ -703,20 +710,20 @@ h_genratio_oppmeas->Divide(hgen_rebin_ratiobin);
     
     hgen_rebin->Draw("E");               
     hrec_rebin->Draw("E SAME");           
-    hfold_clone->Draw("P E SAME");           
+    //hfold_clone->Draw("P E SAME");           
     //hfold_gen->Draw("P E SAME");           
     hunf->Draw("E SAME");               
     hrec_sameside_rebin->Draw("E SAME");           
-    hfold_sameside_clone->Draw("P E SAME");           
+    //hfold_sameside_clone->Draw("P E SAME");           
     hunf_sameside->Draw("E SAME");           
     
     TLegend* legend_spectra = new TLegend( 0.6,0.7,0.9,0.9 );    
     legend_spectra->AddEntry(hrec_rebin,  "O.S. Meas."     , "p");	
     legend_spectra->AddEntry(hunf,        "O.S. Unf."      , "p");
-    legend_spectra->AddEntry(hfold_clone, "O.S. Fold(Unf.)", "p");    
+    //legend_spectra->AddEntry(hfold_clone, "O.S. Fold(Unf.)", "p");    
     legend_spectra->AddEntry(hrec_sameside_rebin,  "S.S. Meas."     , "p");
     legend_spectra->AddEntry(hunf_sameside,        "S.S. Unf."      , "p");
-    legend_spectra->AddEntry(hfold_sameside_clone, "S.S. Fold(Unf.)", "p");
+    //legend_spectra->AddEntry(hfold_sameside_clone, "S.S. Fold(Unf.)", "p");
     legend_spectra->AddEntry(hgen_rebin,           "S.S. Truth"     , "p");
     
     legend_spectra->Draw();
@@ -772,17 +779,17 @@ h_genratio_oppmeas->Divide(hgen_rebin_ratiobin);
     setupRatioHist(h_recratio_oppunf, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
     
     h_recratio_oppunf->Draw();
-    h_recratio_oppfold->Draw("SAME");
+    //h_recratio_oppfold->Draw("SAME");
     h_recratio_ssunf->Draw("SAME");
-    h_recratio_ssfold->Draw("SAME");
+    //h_recratio_ssfold->Draw("SAME");
     //h_recratio_ssfoldgen->Draw("SAME");
     h_recratio_ssgen->Draw("SAME");
     
     TLegend* legend_recratio = new TLegend( 0.1,0.8,0.4,0.9 );
     legend_recratio->AddEntry(h_recratio_oppunf,  "O.S. Unf./O.S. Meas.", "p");
-    legend_recratio->AddEntry(h_recratio_oppfold, NULL, "p");
+    //legend_recratio->AddEntry(h_recratio_oppfold, NULL, "p");
     legend_recratio->AddEntry(h_recratio_ssunf,   NULL, "p");
-    legend_recratio->AddEntry(h_recratio_ssfold,  NULL, "p");
+    //legend_recratio->AddEntry(h_recratio_ssfold,  NULL, "p");
     //legend_recratio->AddEntry(h_recratio_ssfoldgen,  NULL, "p");
     legend_recratio->AddEntry(h_recratio_ssgen,   NULL, "p");
     legend_recratio->Draw();

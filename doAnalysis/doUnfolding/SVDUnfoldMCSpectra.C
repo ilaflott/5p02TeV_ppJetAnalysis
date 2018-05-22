@@ -71,7 +71,15 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   std::string outSSSVDPdfFile   =  outFileName+"_SS.pdf"; 
   std::string outRootFile     =  outFileName+".root";  
   
+  //NO NEED FOR TWO VERSIONS OF THIS FUNCTION, FIX ME SOME DAY PLEASE
+  checkNRenameFilesSVD ( (const std::string) outFileName, 
+			 &outRespMatPdfFile, 
+			 &outSVDPdfFile, 
+			 &outSSSVDPdfFile, 
+			 &outRootFile);
   
+  
+
   
   
   // ERROR/WEIGHTS/STATS HANDLING ------------------
@@ -117,7 +125,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   if(debugMode)hrec->Print("base");
   
   histTitle+="_divByetabin";
-  hrec->Scale(1./etaBinWidth); // lumi
+  //hrec->Scale(1./etaBinWidth); // lumi
   hrec->Write(histTitle.c_str());
   if(debugMode)hrec->Print("base");
   
@@ -173,7 +181,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   if(debugMode)hrec_sameside->Print("base");
   
   histTitle2+="_divByetabin";
-  hrec_sameside->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  //hrec_sameside->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hrec_sameside->Write( histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
@@ -243,7 +251,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   if(debugMode)hgen->Print("base");    
 
   genHistTitle+="_divByetabin";
-  hgen->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  //hgen->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hgen->Write( genHistTitle.c_str());
   if(debugMode)hgen->Print("base");
   
@@ -292,7 +300,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
   if(debugMode)hmat->Print("base");
   
   TH2_title+="_divByetabin";
-  hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  //hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hmat->Write( TH2_title.c_str());
   if(debugMode)hmat->Print("base");
   
@@ -561,9 +569,10 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     if(debugMode)std::cout<<"calling Ereco..."<<std::endl;
     TMatrixD covmat = unf_svd.Ereco(errorTreatment);
     
-    TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, false ,"SVD_pearson");          
-    hPearsonSVD[kr] = new TH2D (*pearson);    
-    hPearsonSVD[kr]->SetName(("pearson_oppside_"+kRegRandEtaRange).c_str());
+    //TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, false ,"SVD_pearson");          
+    //hPearsonSVD[kr] = new TH2D (*pearson);    
+    hPearsonSVD[kr]=(TH2D*)CalculatePearsonCoefficients( &covmat, false,("SVD_pearson_kReg"+std::to_string(kr)).c_str());
+    //hPearsonSVD[kr]->SetName(("pearson_oppside_"+kRegRandEtaRange).c_str());
     if(debugMode)hPearsonSVD[kr]->Print("base");
     //if(debugMode)std::cout<<"creating \"rebinned\" pearson matrix..."<<std::endl;
     //hPearsonSVD[kr] = reBinPearsonTH2( pearson );
@@ -589,14 +598,14 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName ,
     if(debugMode)hfold_svd[kr]->Print("base");
     
     hunf_svd[kr]->Draw("P E");
-    hfold_svd[kr]->Draw("P E SAME");      
+    //hfold_svd[kr]->Draw("P E SAME");      
     hgen_rebin_clone->Draw("P E SAME");
     hrec_rebin_clone->Draw("P E SAME");
     
     leg[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option 
     leg[kr]->AddEntry(hrec_rebin_clone,"O.S. Meas."      ,"p");
     leg[kr]->AddEntry(hgen_rebin_clone,"S.S. Truth"      ,"p");
-    leg[kr]->AddEntry(hfold_svd[kr],   "O.S. Fold(Unf.)" ,"p");
+    //leg[kr]->AddEntry(hfold_svd[kr],   "O.S. Fold(Unf.)" ,"p");
     leg[kr]->AddEntry(hunf_svd[kr],    "O.S. Unf."       ,"p");
     
     leg[kr]->SetTextSize(0.02);
@@ -627,7 +636,7 @@ hrec_folded_ratio[kr]->Divide(hrec_rebin);
     if(debugMode)hrec_folded_ratio[kr]->Print("base");
     
     hrec_unfolded_ratio[kr]->Draw("P E");
-    hrec_folded_ratio[kr]->Draw("P E SAME");
+    //hrec_folded_ratio[kr]->Draw("P E SAME");
     
     leg1[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option 
     leg1[kr]->AddEntry(hrec_unfolded_ratio[kr], "O.S. Unf./O.S. Meas."   ,"pl");
@@ -666,7 +675,7 @@ hgen_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
     hgen_folded_ratio[kr]->SetTitle( ("SVD/Gen.,"+kRegRandEtaRange_plotTitle).c_str() );
     
     hgen_unfolded_ratio[kr]->Draw("P E");
-    hgen_folded_ratio[kr]->Draw("P E SAME");
+    //hgen_folded_ratio[kr]->Draw("P E SAME");
     
     
     leg2[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"BRNDC");
@@ -710,12 +719,13 @@ hgen_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
     //covmat_ss->SetName("SVD_covmat_ss");
     if(debugMode)std::cout<<std::endl;
     
-    TMatrixD *pearson_ss = CalculatePearsonCoefficients(&covmat_ss, false , "SVD_SS_pearson");
-    if(debugMode)std::cout<<std::endl;
+    //TMatrixD *pearson_ss = CalculatePearsonCoefficients(&covmat_ss, false , "SVD_SS_pearson");
+    //if(debugMode)std::cout<<std::endl;
     
     std::cout<<"creating TH2 for pearson matrix..."<<std::endl;
-    hPearsonSVD_SS[kr] = new TH2D (*pearson_ss);
-    hPearsonSVD_SS[kr]->SetName(("pearson_sameside_"+kRegRandEtaRangess).c_str());
+    //hPearsonSVD_SS[kr] = new TH2D (*pearson_ss);
+    hPearsonSVD_SS[kr]=(TH2D*)CalculatePearsonCoefficients( &covmat_ss, false, ("SVD_SS_pearson_kReg"+std::to_string(kr)).c_str());
+    //hPearsonSVD_SS[kr]->SetName(("pearson_sameside_"+kRegRandEtaRangess).c_str());
     if(debugMode)hPearsonSVD_SS[kr]->Print("base");
     if(debugMode)std::cout<<std::endl;
     //sameside covariance/pearson matrices???
@@ -742,13 +752,13 @@ hgen_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
     
     hunf_ss_svd[kr]->Draw("P E");
     hrec_sameside_rebin_clone->Draw("P E SAME");
-    hfold_ss_svd[kr]->Draw("P E SAME");
+    //hfold_ss_svd[kr]->Draw("P E SAME");
     
     
     leg_ss[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option
     leg_ss[kr]->AddEntry(hrec_sameside_rebin_clone,"S.S. Meas.","pl");
     leg_ss[kr]->AddEntry(hunf_ss_svd[kr],          "S.S. Unf.","pl");
-    leg_ss[kr]->AddEntry(hfold_ss_svd[kr],         "S.S. Fold(Unf.)","pl");
+    //leg_ss[kr]->AddEntry(hfold_ss_svd[kr],         "S.S. Fold(Unf.)","pl");
     leg_ss[kr]->SetTextSize(0.02);
     leg_ss[kr]->Draw();
     
@@ -785,11 +795,11 @@ hrec_ss_unfolded_ratio[kr]->Divide(hrec_rebin);
     if(debugMode)hrec_ss_unfolded_ratio[kr]->Print("base");
     
     hrec_ss_unfolded_ratio[kr]->Draw("P E");
-    hrec_ss_folded_ratio[kr]->Draw("P E SAME");
+    //hrec_ss_folded_ratio[kr]->Draw("P E SAME");
     
     leg_ss1[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"BRNDC");
     leg_ss1[kr]->AddEntry(hrec_ss_unfolded_ratio[kr],"S.S. Unf./Meas.","pl");
-    leg_ss1[kr]->AddEntry(hrec_ss_folded_ratio[kr],  "S.S. Fold(Unf.)/Meas.","pl");
+    //leg_ss1[kr]->AddEntry(hrec_ss_folded_ratio[kr],  "S.S. Fold(Unf.)/Meas.","pl");
     leg_ss1[kr]->SetTextSize(0.02); 
     leg_ss1[kr]->Draw();
     
@@ -825,11 +835,11 @@ hgen_ss_folded_ratio[kr]->Divide(hgen_rebin_ratClone);
     hgen_ss_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
     
     hgen_ss_unfolded_ratio[kr]->Draw("P E");
-    hgen_ss_folded_ratio[kr]->Draw("P E SAME");
+    //hgen_ss_folded_ratio[kr]->Draw("P E SAME");
     
     leg_ss2[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"BRNDC");
     leg_ss2[kr]->AddEntry(hgen_ss_unfolded_ratio[kr],"S.S. Unf./S.S. Truth","pl");
-    leg_ss2[kr]->AddEntry(hgen_ss_folded_ratio[kr],"S.S. Fold(Unf.)/S.S. Truth","pl");
+    //leg_ss2[kr]->AddEntry(hgen_ss_folded_ratio[kr],"S.S. Fold(Unf.)/S.S. Truth","pl");
     leg_ss2[kr]->SetTextSize(0.02); 
     leg_ss2[kr]->Draw();
     

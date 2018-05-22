@@ -19,6 +19,9 @@
 #include <algorithm>
 #include <vector>
 
+#include <sys/stat.h>
+#include <unistd.h>
+
 // ROOTSYS
 #include <TROOT.h>
 #include <TSystem.h>
@@ -109,15 +112,20 @@ const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ;
 // generally, dont use over/under flows
 // generally, cut off evts from resp matrix by rebinning. But if you do, make sure clear OverUnderflows = true 
 // generally, MCIntegral scaling doesn't seem to help
+
 const bool doToyErrs          =false; // error options: kCovToy, kCovariance, kErrors, kNoError
 const bool doMCIntegralScaling=false;
+
 const bool fillRespHists      =true;
-//const bool useTH2ProjRespHist= false;
+const bool useTH2ProjRespHist= fillRespHists&&false;
+
+//const float TH2ProjRecPtLoCut=49.;
+//const float TH2ProjRecPtHiCut=49.;
+//const float TH2ProjGenPtLoCut=937.;
+//const float TH2ProjGenPtHiCut=937.;
+
 const bool doOverUnderflows   =false;//leave false almost always
 const bool clearOverUnderflows=true; 
-
-
-
 
 // settings that don't really get used
 const bool zeroBins=false; //leave false almost always
@@ -197,7 +205,8 @@ void matStylePrint(TH2 * mat, std::string hTitle, TCanvas* canv, std::string out
   //canv->cd();
   
   bool isTMatrixD=( (hTitle.find("Pearson")!=std::string::npos )    ||
-		    (hTitle.find("Covariance")!=std::string::npos )    );
+		    (hTitle.find("Covariance")!=std::string::npos ) ||
+		    (hTitle.find("Unfolding")!=std::string::npos ) 		    );
   
   if(!useSimpBins){
     mat->GetYaxis()->SetMoreLogLabels(true);
@@ -209,14 +218,14 @@ void matStylePrint(TH2 * mat, std::string hTitle, TCanvas* canv, std::string out
   
   mat->GetYaxis()->SetLabelSize(0.02);
   mat->GetYaxis()->SetTitleSize(0.023);
-  std::string yaxisTitle="gen jet p_{T}";  
-  if(isTMatrixD)yaxisTitle+=" bin #";
+  std::string yaxisTitle="GEN Jet p_{T} (GeV)";  
+  if(isTMatrixD)yaxisTitle="GEN Jet p_{T} Bin #";  
   mat->GetYaxis()->SetTitle(yaxisTitle.c_str());      
   
   mat->GetXaxis()->SetLabelSize(0.02);
   mat->GetXaxis()->SetTitleSize(0.025);
-  std::string xaxisTitle="reco jet p_{T}";  
-  if(isTMatrixD)xaxisTitle+=" bin #";
+  std::string xaxisTitle="RECO Jet p_{T} (GeV)";  
+  if(isTMatrixD)xaxisTitle="RECO Jet p_{T} Bin #";  
   mat->GetXaxis()->SetTitle(xaxisTitle.c_str());      
   
   // input resp matrix w/ full range ---------------
@@ -238,6 +247,8 @@ void matStylePrint(TH2 * mat, std::string hTitle, TCanvas* canv, std::string out
     mat->SetAxisRange(10e-40,10e-13,"Z");
   else if (hTitle.find("Pearson")  != std::string::npos)
     mat->SetAxisRange(-1.,1.,"Z");
+  else if(hTitle.find("Unfolding")  != std::string::npos)
+    mat->SetAxisRange(10e-12,1.,"Z");
   else
     mat->SetAxisRange(0.000000000000000001,.001,"Z");
   
@@ -355,6 +366,7 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
   h->SetAxisRange(0.2, 1.8, "Y");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
+  h->GetXaxis()->SetTitle("jet p_{T} (GeV)");
   //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
   //if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
 //h->SetAxisRange( boundaries[0] ,  
@@ -387,3 +399,46 @@ void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
 }
 
 
+
+
+
+inline bool fileExists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
+void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile){
+  bool funcDebug=false;
+  int outputInd=1;
+
+  while( (bool)fileExists(*(outRootFile)) ) {
+    if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
+    (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
+    (*outPdfFile       )=outFileName+"_"+std::to_string(outputInd)+".pdf";
+    (*outRootFile      )=outFileName+"_"+std::to_string(outputInd)+".root";      
+    if(funcDebug)std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
+    outputInd++;
+  }
+  
+  
+  return;
+}
+
+
+void checkNRenameFilesSVD (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string*outPdfFileSS,std::string *outRootFile){
+  bool funcDebug=false;
+  int outputInd=1;
+  
+  while( (bool)fileExists(*(outRootFile)) ) {
+    if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
+    (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
+    (*outPdfFile       )=outFileName+"_"+std::to_string(outputInd)+".pdf";
+    (*outPdfFileSS       )=outFileName+"_SS_"+std::to_string(outputInd)+".pdf";
+    (*outRootFile      )=outFileName+"_"+std::to_string(outputInd)+".root";      
+    if(funcDebug)std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
+    outputInd++;
+  }
+  
+  
+  return;
+}

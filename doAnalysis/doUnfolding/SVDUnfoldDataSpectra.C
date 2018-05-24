@@ -69,11 +69,17 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   
   std::string outRespMatPdfFile =  outFileName+"_respMat.pdf";
   std::string outSVDPdfFile   =  outFileName+".pdf";  
-  //std::string out3x3SVDPdfFile   =  outFileName+"_3x3.pdf"; 
-  std::string outSSSVDPdfFile   =  outFileName+"_SS.pdf"; 
+  std::string out3x3SVDPdfFile   =  outFileName+"_3x3.pdf"; 
+  //std::string outSSSVDPdfFile   =  outFileName+"_SS.pdf"; 
   //std::string out3x3SSSVDPdfFile   =  outFileName+"_3x3_SS.pdf"; 
+  
   std::string outRootFile     =  outFileName+".root";  
   
+  checkNRenameFiles( outFileName, 
+		     &outRespMatPdfFile, 
+		     &outSVDPdfFile, 
+		     &out3x3SVDPdfFile, 
+		     &outRootFile );
   
   
   
@@ -134,7 +140,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   histTitle+="_divBylumietabin";
   float effIntgrtdLumi=computeEffLumi(fpp_Data);
   hrec->Scale(1./effIntgrtdLumi); // lumi
-  //hrec->Scale(1./etaBinWidth); // |y|
+  hrec->Scale(1./etaBinWidth); // |y|
   hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");
   
@@ -179,7 +185,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   if(debugMode)hrec_sameside->Print("base");
   
   histTitle2+="_divByetabin";
-  //hrec_sameside->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  hrec_sameside->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hrec_sameside->Write( histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
@@ -242,7 +248,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   if(debugMode)hgen->Print("base");    
   
   genHistTitle+="_divByetabin";
-  //hgen->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  hgen->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hgen->Write( genHistTitle.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
@@ -298,7 +304,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   if(debugMode)hmat->Print("base");
   
   TH2_title+="_divByetabin";
-  //hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   hmat->Write( TH2_title.c_str());
   if(debugMode)hmat->Print("base");
   
@@ -358,15 +364,15 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   
   if(debugMode)std::cout<<"cloning input hists..."<<std::endl;
   TH1F* hrec_rebin_clone=(TH1F*)hrec_rebin->Clone("hrec_rebin_clone");
-  setupSpectraHist(hrec_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
+  setupHistXAxis(hrec_rebin_clone, useSimpBins);
   if(debugMode)hrec_rebin_clone->Print("base");
   
   TH1F* hgen_rebin_clone=(TH1F*)hgen_rebin->Clone("hgen_rebin_clone");
-  setupSpectraHist(hgen_rebin_clone, useSimpBins, boundaries_pt_gen, nbins_pt_gen);
+  setupHistXAxis(hgen_rebin_clone, useSimpBins);
   if(debugMode)hgen_rebin_clone->Print("base");
   
   TH1F* hrec_sameside_rebin_clone=(TH1F*)hrec_sameside_rebin->Clone("hrec_sameside_rebin_clone");
-  setupSpectraHist(hrec_sameside_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
+  setupHistXAxis(hrec_sameside_rebin_clone, useSimpBins);
   if(debugMode)hrec_sameside_rebin_clone->Print("base");  
   
   // SVD spectra
@@ -382,41 +388,41 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   TH2D *hPearsonSVD[nKregMax];      
  
   
-  // MC-side SVD spectra
-  TH1F *hunf_ss_svd[nKregMax]={};        
-  TH1F *hfold_ss_svd[nKregMax]={};     
+  //  // MC-side SVD spectra
+  //  TH1F *hunf_ss_svd[nKregMax]={};        
+  //  TH1F *hfold_ss_svd[nKregMax]={};     
+  //  
+  //  // MC-side SVD ratios 
+  //  TH1F *hgen_ss_unfolded_ratio[nKregMax]={};
+  //  TH1F *hrec_ss_unfolded_ratio[nKregMax]={};
+  //  TH1F *hgen_ss_folded_ratio[nKregMax]={};  
+  //  TH1F *hrec_ss_folded_ratio[nKregMax]={};     
   
-  // MC-side SVD ratios 
-  TH1F *hgen_ss_unfolded_ratio[nKregMax]={};
-  TH1F *hrec_ss_unfolded_ratio[nKregMax]={};
-  TH1F *hgen_ss_folded_ratio[nKregMax]={};  
-  TH1F *hrec_ss_folded_ratio[nKregMax]={};     
-  
-  TH2D *hPearsonSVD_SS[nKregMax];      
+  //TH2D *hPearsonSVD_SS[nKregMax];      
   
 
 
   
   // TCanvases
   if(debugMode)std::cout<<"creating histos/arrays/canvases for SVD unfolding..."<<std::endl;
-  TCanvas *cSpectra               = new TCanvas("cSpectra","",           1500, 1500);      cSpectra->Divide(3,3);	   
-  TCanvas *cRatio_gen             = new TCanvas("cRatio_gen","",             1500, 1500);      cRatio_gen->Divide(3,3);      		
-  TCanvas *cRatio_rec             = new TCanvas("cRatio_rec","",             1500, 1500);      cRatio_rec->Divide(3,3);      		
-  TCanvas *cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","", 1500, 1500);      cPearsonMatrixIter->Divide(3,3);    
-  TCanvas *c11                = new TCanvas("c11"," Singular Values and divectors", 1500, 1500);      c11->Divide(2);                    
+  TCanvas *cSpectra               = new TCanvas("cSpectra","",                      1800, 1500);      cSpectra->Divide(3,3);	   
+  TCanvas *cRatio_gen             = new TCanvas("cRatio_gen","",                    1800, 1500);      cRatio_gen->Divide(3,3);      		
+  TCanvas *cRatio_rec             = new TCanvas("cRatio_rec","",                    1800, 1500);      cRatio_rec->Divide(3,3);      		
+  TCanvas *cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","",                1800, 1500);      cPearsonMatrixIter->Divide(3,3);    
+  TCanvas *c11                = new TCanvas("c11"," Singular Values and divectors", 1400, 1000);      c11->Divide(2);                    
   
   TLegend *leg[nKregMax],*leg1[nKregMax], *leg2[nKregMax];      
 
 
-  // MC-side TCanvases
-  if(debugMode)std::cout<<"creating histos/arrays/canvases for same-side SVD unfolding..."<<std::endl;
-  TCanvas *cSpectra_ss               = new TCanvas("cSpectra_ss","",           1500, 1500);      cSpectra_ss->Divide(3,3);	   
-  TCanvas *cRatio_gen_ss            = new TCanvas("cRatio_gen_ss","",             1500, 1500);      cRatio_gen_ss->Divide(3,3);      	    
-  TCanvas *cRatio_rec_ss             = new TCanvas("cRatio_rec_ss","",             1500, 1500);      cRatio_rec_ss->Divide(3,3);          
-  TCanvas *cPearsonMatrixIter_ss = new TCanvas("cPearsonMatrixIter_ss","", 1500, 1500);      cPearsonMatrixIter_ss->Divide(3,3);   
-  TCanvas *c11_ss                = new TCanvas("c11_ss","S.S. Singular Values and divectors", 1500, 1500);      c11_ss->Divide(2);          
-
-  TLegend *leg_ss[nKregMax],*leg_ss1[nKregMax], *leg_ss2[nKregMax];      
+//  // MC-side TCanvases
+//  if(debugMode)std::cout<<"creating histos/arrays/canvases for same-side SVD unfolding..."<<std::endl;
+//  TCanvas *cSpectra_ss               = new TCanvas("cSpectra_ss","",           1500, 1500);      cSpectra_ss->Divide(3,3);	   
+//  TCanvas *cRatio_gen_ss            = new TCanvas("cRatio_gen_ss","",             1500, 1500);      cRatio_gen_ss->Divide(3,3);      	    
+//  TCanvas *cRatio_rec_ss             = new TCanvas("cRatio_rec_ss","",             1500, 1500);      cRatio_rec_ss->Divide(3,3);          
+//  TCanvas *cPearsonMatrixIter_ss = new TCanvas("cPearsonMatrixIter_ss","", 1500, 1500);      cPearsonMatrixIter_ss->Divide(3,3);   
+//  TCanvas *c11_ss                = new TCanvas("c11_ss","S.S. Singular Values and divectors", 1500, 1500);      c11_ss->Divide(2);          
+//
+//  TLegend *leg_ss[nKregMax],*leg_ss1[nKregMax], *leg_ss2[nKregMax];      
 
     
   
@@ -426,6 +432,28 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   theGenLine->SetLineWidth(1);
   theGenLine->SetLineStyle(2);
   theGenLine->SetLineColor(36);    
+  
+
+  TLine* theLineAtp9_gen= new TLine( boundaries_pt_gen_mat[0]  
+				     ,0.9   
+				     ,(boundaries_pt_gen_mat[nbins_pt_reco_mat])
+				     ,0.9);
+  if(debugMode)std::cout<<"theLineAtp9_gen starts at "<<boundaries_pt_gen_mat[0]  <<std::endl;
+  if(debugMode)std::cout<<"theLineAtp9_gen ends at   "<<(boundaries_pt_gen_mat[nbins_pt_reco_mat])  <<std::endl;
+  theLineAtp9_gen->SetLineWidth(1);
+  theLineAtp9_gen->SetLineStyle(2);
+  theLineAtp9_gen->SetLineColor(36);
+  
+  TLine* theLineAt1p1_gen= new TLine( boundaries_pt_gen_mat[0]  
+				      ,1.1   
+				      ,(boundaries_pt_gen_mat[nbins_pt_reco_mat])
+				      ,1.1);
+  if(debugMode)std::cout<<"theLineAt1p1_gen starts at "<<boundaries_pt_gen_mat[0]  <<std::endl;
+  if(debugMode)std::cout<<"theLineAt1p1_gen ends at   "<<(boundaries_pt_gen_mat[nbins_pt_reco_mat])  <<std::endl;
+  theLineAt1p1_gen->SetLineWidth(1);
+  theLineAt1p1_gen->SetLineStyle(2);
+  theLineAt1p1_gen->SetLineColor(36);
+  
   
   TLine* theRecoLine= new TLine( boundaries_pt_reco_mat[0]                 , 1.,
 				 boundaries_pt_reco_mat[nbins_pt_reco_mat] , 1.  );
@@ -466,6 +494,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   TH1F* hfak=  (TH1F*) roo_resp.Hfakes() ;
   hfak->Print("base");
   hfak->SetMarkerColor(kGreen);
+  hfak->SetMarkerSize(1.02);
+
   
   
   
@@ -475,14 +505,30 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(debugMode&&kr==0)    std::cout<<"beginning SVD Unfolding Loop..."<<std::endl;
     std::cout<<std::endl<<std::endl<<"kr="<<kr<<" , kReg = "<<kReg[kr]<<std::endl<<std::endl;        
     
-    std::string kRegRandEtaRange_plotTitle=" kReg"+std::to_string(kReg[kr]);//+RandEtaRange_plotTitle;
-    std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr]);//+RandEtaRange;
+    std::string kRegRandEtaRange_plotTitle="kReg="+std::to_string(kReg[kr]);
+    std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr]);
     
     
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
     RooUnfoldSvd unf_svd(&roo_resp, hrec_rebin, kReg[kr]);
     unf_svd.SetVerbose(2);
     std::cout<<"RooUnfoldSvd Overflow Status: " << unf_svd.Overflow()<<std::endl;
+    
+    //std::cout<<"calling Ereco... getting Cov Mat"<<std::endl;
+    //TMatrixD covmat = unf_svd.Ereco(errorTreatment);
+    //
+    //std::cout<<"converting TMatrixD covmat to TH2D* covmat_TH2"<<std::endl;
+    //TH2D* covmat_TH2= new TH2D(covmat);  //this gives the TH2 a name of "TMatrixDBase" by default.
+    //covmat_TH2->SetName(("SVD_covarianceMatrix_TH2_kr"+std::to_string(kr)).c_str());
+    //if(debugMode)covmat_TH2->Print("base");
+    //covmat_TH2->Write();
+    //
+    //std::cout<<"getting unfolding matrix"<<std::endl;
+    //TH2D* unfmat_TH2=new TH2D(unf_svd.UnfoldingMatrix());
+    //unfmat_TH2->SetName( ("SVD_unfoldingMatrix_TH2_kr"+std::to_string(kr)).c_str());  
+    //if(debugMode)unfmat_TH2->Print("base");
+    //unfmat_TH2->Write();
+    
 
     hunf_svd[kr] = (TH1F*)unf_svd.Hreco(errorTreatment);
 
@@ -495,13 +541,13 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
       
     if(debugMode)std::cout<<"applying roo_resp to histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
     hfold_svd[kr] = (TH1F*)roo_resp.ApplyToTruth(hunf_svd[kr]);
-    hfold_svd[kr]->Scale(hrec_rebin->Integral()/hfold_svd[kr]->Integral());
+    
     
     //cosmetics
     hfold_svd[kr]->SetMarkerStyle(kOpenCircle);
     hfold_svd[kr]->SetMarkerColor(kGreen);      
     hfold_svd[kr]->SetMarkerSize(1.01);      
-    //hfold_svd[kr]->SetLineColor(kRed);      
+    
     
     if(debugMode)std::cout<<"calling Ereco... getting Cov Mat"<<std::endl;
     TMatrixD covmat = unf_svd.Ereco(errorTreatment);
@@ -509,71 +555,20 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     //if(debugMode)std::cout<<"converting TMatrixD covmat to TH2D* covmat_TH2"<<std::endl;
     //TH2D* covmat_TH2= new TH2D(covmat);
     
-    //TMatrixD *pearson = CalculatePearsonCoefficients(&covmat, false, ("SVD_pearson_"+std::to_string(kr)).c_str() );      
-    //TMatrixD pearson = CalculatePearsonCoefficients(&covmat, false, ("SVD_pearson_"+std::to_string(kr)).c_str() );      
     hPearsonSVD[kr] = (TH2D*) CalculatePearsonCoefficients(&covmat, false, ("SVD_pearson_"+std::to_string(kr)) );      
     
-    //hPearsonSVD[kr] = new TH2D (*pearson);
-    //hPearsonSVD[kr] = new TH2D (pearson);
-
-    //hPearsonSVD[kr]->SetName(("pearson_oppside_"+kRegRandEtaRange).c_str());
-    //if(debugMode)hPearsonSVD[kr]->Print("base");
     //if(debugMode)std::cout<<"creating \"rebinned\" pearson matrix..."<<std::endl;
     //hPearsonSVD[kr] = reBinPearsonTH2( pearson );
     
-    
-    
-    std::string kRegRandEtaRangess_plotTitle=" kReg"+std::to_string(kRegSS[kr]);//+RandEtaRange_plotTitle;
-    std::string kRegRandEtaRangess="_kReg"+std::to_string(kRegSS[kr]);//+RandEtaRange;
-    
-    // same-side unfolding/refolding --------------
-    std::cout<<std::endl<<"calling RooUnfoldSvd and Hreco for sameside MC test..."<<std::endl<<std::endl;
-    RooUnfoldSvd unf_ss_svd(&roo_resp, hrec_sameside_rebin, kRegSS[kr]);
-    hunf_ss_svd[kr] = (TH1F*)unf_ss_svd.Hreco(errorTreatment);
-
-    //cosmetics
-    hunf_ss_svd[kr]->SetMarkerStyle(kOpenSquare);
-    hunf_ss_svd[kr]->SetMarkerColor(kRed);     
-    hunf_ss_svd[kr]->SetMarkerSize(1.01);     
-    //hunf_ss_svd[kr]->SetLineStyle(33);      
-    //hunf_ss_svd[kr]->SetLineColor(kBlue);
-    //std::cout<<std::endl;         
-    
-    std::cout<<"applying roo_resp to sameside histo hunf_ss_svd[kr="<<kr<<"]..."<<std::endl;
-    hfold_ss_svd[kr] = (TH1F*)roo_resp.ApplyToTruth(hunf_ss_svd[kr]);      
-    hfold_ss_svd[kr]->Scale(hrec_sameside_resp_rebin->Integral()/hfold_ss_svd[kr]->Integral());
-    
-    //cosmetics
-    hfold_ss_svd[kr]->SetMarkerStyle(kOpenSquare);
-    hfold_ss_svd[kr]->SetMarkerColor(kGreen);      
-    hfold_ss_svd[kr]->SetMarkerSize(1.01);      
-    //hfold_ss_svd[kr]->SetLineColor(kRed);      
-    
-    //////////////////////////////////////////////
-    //sameside covariance/pearson matrices??? maybe, we will see.
-    TMatrixD covmat_ss = unf_ss_svd.Ereco(errorTreatment);
-    if(debugMode)std::cout<<std::endl;
-    
-    //TMatrixD *pearson_ss = CalculatePearsonCoefficients(&covmat_ss, false );
-    //TMatrixD pearson_ss = CalculatePearsonCoefficients(&covmat_ss, false );
-    hPearsonSVD_SS[kr] = (TH2D*) CalculatePearsonCoefficients(&covmat_ss, false, ("SVD_SS_pearson_"+std::to_string(kr)) );      
-    if(debugMode)std::cout<<std::endl;
-    
-    std::cout<<"creating TH2 for pearson matrix..."<<std::endl;
-    //hPearsonSVD_SS[kr] = new TH2D (*pearson_ss);
-    //hPearsonSVD_SS[kr] = new TH2D (pearson_ss);
-    //hPearsonSVD_SS[kr]->SetName(("pearson_sameside_"+kRegRandEtaRangess).c_str());
-    if(debugMode)hPearsonSVD_SS[kr]->Print("base");
-    if(debugMode)std::cout<<std::endl;
-    //sameside covariance/pearson matrices???
-
-
+   
 
 
 
 
 
     // ----------------------- 3X3 CANVAS DRAWING  ----------------------- //
+    // for data unfolding
+
     // CAN I DO THIS ELSEWHERE/DIFFERENTLY? //
 
     // 3x3 spectra canvases  ---------------------
@@ -583,14 +578,15 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(!useSimpBins)
       cSpectra->cd(kr+1)->SetLogx(1);
     
-    hunf_svd[kr]->SetTitle( ("Reco Jet spectra,"+kRegRandEtaRange_plotTitle).c_str() );
+    //hunf_svd[kr]->SetTitle( ("Reco Jet spectra,"+kRegRandEtaRange_plotTitle).c_str() );
+
     hunf_svd[kr]->SetName( ("hunf_svd"+kRegRandEtaRange).c_str() );
     if(debugMode)hunf_svd[kr]->Print("base");      
     
     hfold_svd[kr]->SetName( ("hfold_svd"+kRegRandEtaRange).c_str() );
     if(debugMode)hfold_svd[kr]->Print("base");
     
-    hrec_rebin_clone->SetTitle( ("Jet spectra,"+kRegRandEtaRange_plotTitle).c_str() );
+    hrec_rebin_clone->SetTitle( ("Jet Spectra, "+kRegRandEtaRange_plotTitle).c_str() );
     hrec_rebin_clone->GetYaxis()->SetTitle("A.U.");
     
     hrec_rebin_clone->Draw("P E");
@@ -616,7 +612,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     hrec_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("hrec_unf_ratio"+kRegRandEtaRange).c_str());
     hrec_unfolded_ratio[kr] = (TH1F*)hrec_unfolded_ratio[kr]->Rebin( nbins_pt_reco, ("hrec_unf_ratio"+kRegRandEtaRange+"_rebin").c_str() , boundaries_pt_reco);      
     hrec_unfolded_ratio[kr]->Divide(hrec_rebin);
-    hrec_unfolded_ratio[kr]->SetTitle( ("SVD/Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
+    hrec_unfolded_ratio[kr]->SetTitle( ("Data Unf./Data Meas., "+kRegRandEtaRange_plotTitle).c_str() );
     hrec_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
     hrec_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
     if(debugMode)hrec_unfolded_ratio[kr]->Print("base");
@@ -647,9 +643,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
       cRatio_gen->cd(kr+1)->SetLogx(1);
     
     hgen_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("hgen_unf_ratio"+kRegRandEtaRange).c_str());
-    hgen_unfolded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
+    //hgen_unfolded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
     hgen_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
-    hgen_unfolded_ratio[kr]->SetTitle( ("SVD/Gen.,"+kRegRandEtaRange_plotTitle).c_str() );
+    hgen_unfolded_ratio[kr]->SetTitle( ("Data Unf./MC Truth, "+kRegRandEtaRange_plotTitle).c_str() );
     hgen_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");      
     hgen_unfolded_ratio[kr]->Divide(hgen_rebin);      
     if(debugMode)hgen_unfolded_ratio[kr]->Print("base");
@@ -677,135 +673,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     
     theGenLine->Draw();
 
-
-    // ----------------------- END 3X3 CANVAS DRAWING  ----------------------- //
+    // ----------------------- END 3X3 CANVAS DRAWING for data unfolding ----------------------- //
     
 
-
-    
-    
-    
-    
-    /////////////////////////////////////////////
-    
-    // 3x3 spectra canvases  ------------------
-    if(debugMode)std::cout<<std::endl<<"drawing stuff on cSpectra canvas..."<<std::endl<<std::endl;
-    cSpectra_ss->cd(kr+1);
-    cSpectra_ss->cd(kr+1)->SetLogy();
-    if(!useSimpBins)
-      cSpectra_ss->cd(kr+1)->SetLogx(1);            
-    
-    //hrec_sameside_rebin_clone->SetTitle( ("S.S. Jet spectra,"+kRegRandEtaRange_plotTitle).c_str() );
-    
-    hunf_ss_svd[kr]->SetTitle( ("S.S. Spectra,"+kRegRandEtaRangess_plotTitle).c_str() );
-    hunf_ss_svd[kr]->SetName( ("hunf_ss_svd"+kRegRandEtaRangess).c_str() );
-    if(debugMode)hunf_ss_svd[kr]->Print("base");
-    
-    hfold_ss_svd[kr]->SetName( ("hfold_ss_svd"+kRegRandEtaRangess).c_str() );
-    //hfold_ss_svd[kr]->SetLineColor(kRed);      
-    if(debugMode)hfold_ss_svd[kr]->Print("base");
-    
-    
-    hunf_ss_svd[kr]->Draw("E");
-    // hrec_sameside_rebin_clone->Draw("E SAME");
-    // hfold_ss_svd[kr]->Draw("E SAME");
-    
-      
-    leg_ss[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option
-    leg_ss[kr]->AddEntry(hrec_sameside_rebin_clone,"MC Meas.","pl");
-    leg_ss[kr]->AddEntry(hunf_ss_svd[kr],"MC Unf.","pl");
-    //leg_ss[kr]->AddEntry(hfold_ss_svd[kr],"MC Fold(Unf.)","pl");
-    leg_ss[kr]->SetTextSize(0.02);
-    leg_ss[kr]->Draw();
-
-    
-    
-    
-    
-    // 3x3 unfORfold/meas canvases  ---------------------
-    if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio_rec canvas..."<<std::endl;
-    cRatio_rec_ss->cd(kr+1);
-    if(!useSimpBins)
-      cRatio_rec_ss->cd(kr+1)->SetLogx(1);
-    //cRatio_rec_ss->cd(kr+1)->SetLogx(1);
-    
-      
-      
-    hrec_ss_folded_ratio[kr] = (TH1F*)hfold_ss_svd[kr]->Clone( ("hrec_ss_fold_ratio"+kRegRandEtaRangess).c_str() );
-    //hrec_ss_folded_ratio[kr]->SetMarkerStyle(27);
-    //hrec_ss_folded_ratio[kr]->SetMarkerColor(kRed);
-    hrec_ss_folded_ratio[kr]->Divide(hrec_rebin);
-    if(debugMode)hrec_ss_folded_ratio[kr]->Print("base");
-      
-    
-    
-    //assert(false);
-    
-    hrec_ss_unfolded_ratio[kr] = (TH1F*)hunf_ss_svd[kr]->Clone( ("hrec_ss_unf_ratio"+kRegRandEtaRangess).c_str());
-    hrec_ss_unfolded_ratio[kr] = (TH1F*)hrec_ss_unfolded_ratio[kr]->Rebin (nbins_pt_reco, ("hrec_ss_unf_ratio"+kRegRandEtaRangess+"_rebin").c_str(), boundaries_pt_reco);
-    hrec_ss_unfolded_ratio[kr]->Divide(hrec_rebin);
-    
-    hrec_ss_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
-    hrec_ss_unfolded_ratio[kr]->SetTitle( ("S.S. SVD/Meas.,"+kRegRandEtaRangess_plotTitle).c_str() );
-    hrec_ss_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");      
-    //hrec_ss_unfolded_ratio[kr]->SetMarkerStyle(27);
-    //hrec_ss_unfolded_ratio[kr]->SetMarkerColor(kBlue);      
-    if(debugMode)hrec_ss_unfolded_ratio[kr]->Print("base");
-    
-    hrec_ss_unfolded_ratio[kr]->Draw("E");
-    //hrec_ss_folded_ratio[kr]->Draw("E SAME");
-    
-    leg_ss1[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"BRNDC");
-    leg_ss1[kr]->AddEntry(hrec_ss_unfolded_ratio[kr],"MC Unf./MC Meas.","pl");
-    //leg_ss1[kr]->AddEntry(hrec_ss_folded_ratio[kr],"MC Fold(Unf.)/MC Meas.","pl");
-    leg_ss1[kr]->SetTextSize(0.02); 
-    leg_ss1[kr]->Draw();
-    
-    theRecoLine->Draw();
-      
-    
-    
-    // draw on cRatio_gen canvas
-    if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio_gen_ss canvas..."<<std::endl;
-    cRatio_gen_ss->cd(kr+1);
-    if(!useSimpBins)
-      cRatio_gen_ss->cd(kr+1)->SetLogx(1);
-    
-    hgen_ss_unfolded_ratio[kr] = (TH1F*)hunf_ss_svd[kr]->Clone( ("hgen_ss_unf_ratio"+kRegRandEtaRangess).c_str());
-    hgen_ss_unfolded_ratio[kr]->Divide(hgen_rebin);      
-    //hgen_ss_unfolded_ratio[kr]->SetMarkerStyle(33);
-    //hgen_ss_unfolded_ratio[kr]->SetMarkerColor(kRed);
-    if(debugMode)hgen_ss_unfolded_ratio[kr]->Print("base");
-    
-    hgen_ss_unfolded_ratio[kr]->SetTitle( ("S.S. SVD/Gen.,"+kRegRandEtaRangess_plotTitle).c_str() );
-    //hgen_unfolded_ratio[kr]->SetMarkerStyle(27);
-    //hgen_unfolded_ratio[kr]->SetMarkerColor(kBlue);      
-    
-    
-    hgen_ss_folded_ratio[kr] = (TH1F*)hfold_ss_svd[kr]->Clone( ("hgen_ss_fold_ratio"+kRegRandEtaRangess).c_str());
-    hgen_ss_folded_ratio[kr]->Divide(hgen_rebin_ratClone);      
-    //hgen_ss_folded_ratio[kr]->SetMarkerStyle(24);
-    //hgen_ss_folded_ratio[kr]->SetMarkerColor(kBlue);
-    if(debugMode)      hgen_ss_folded_ratio[kr]->Print("base");
-    
-    hgen_ss_unfolded_ratio[kr]->SetTitle( ("S.S. SVD/Gen.,"+kRegRandEtaRangess_plotTitle).c_str() );
-    hgen_ss_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
-    hgen_ss_unfolded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
-    hgen_ss_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
-    
-    hgen_ss_unfolded_ratio[kr]->Draw("P E");
-    //hgen_ss_folded_ratio[kr]->Draw("P E SAME");
-    
-    leg_ss2[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"BRNDC");
-    leg_ss2[kr]->AddEntry(hgen_ss_unfolded_ratio[kr],"MC Unf./MC Truth","pl");
-    //leg_ss2[kr]->AddEntry(hgen_ss_folded_ratio[kr],"MC Fold(Unf.)/MC Truth","pl");
-    leg_ss2[kr]->SetTextSize(0.02); 
-    leg_ss2[kr]->Draw();
-    
-    theGenLine->Draw();
-      
-    
-      
     //  singular values and d_i vector ---------------------------
     //Note that these do not depend on the regularization.
     //The opposite: they tell you which regularization to use! (ian note: how?)
@@ -848,59 +718,15 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
       drawText( "2015 Prompt Reco",0.358173, 0.8159761, 19);
       drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
       drawText( ("Current Best kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);	
-      if(debugMode)std::cout<<std::endl<<"done with kr=="<< kRegDraw<<" specifics"<<std::endl<<std::endl;      
-      
-    }
-    
-    if(kr == kRegDrawSS){      
-      std::cout << "  getting divectors and singular values for sameSide ... " << std::endl;
-      TSVDUnfold *svdUnfold_ss = unf_ss_svd.Impl();
-      //svdUnfold->SetNormalize(true);
-      
-      // singular values
-      if(debugMode)std::cout << "  getting singular values... " << std::endl;
-      TH1 *hSVal_ss = (TH1*)svdUnfold_ss->GetSV();
-      if(debugMode)
-	for(int bin=1; bin<=hSVal_ss->GetNbinsX(); bin++) 
-	  std::cout<<"bin: "<<bin<<",  SV: "<<hSVal_ss->GetBinContent(bin)<< std::endl;
-      
-      if(debugMode)std::cout<<std::endl<<"drawing singular values on c11 canvas.."<<std::endl<<std::endl;
-      c11_ss->cd(1);
-      c11_ss->cd(1)->SetLogy();    
-      
-      //hSVal_ss->SetTitle(" s.s. singular values ");
-      hSVal_ss->SetXTitle(" s.s singular values ");        
-      hSVal_ss->DrawCopy("HIST E");
-      
-      // di vector values
-      std::cout << "  getting di vector values... " <<  std::endl;
-      TH1D *hdi_ss = (TH1D*)svdUnfold_ss->GetD();
-      if(debugMode)
-	for(int bin=1; bin<=hdi_ss->GetNbinsX(); bin++)
-	  std::cout<<"i: "<<bin<<",  di: "<<hdi_ss->GetBinContent(bin)<<std::endl;
-      
-      c11_ss->cd(2);
-      c11_ss->cd(2)->SetLogy();    
-      
-      //hdi_ss->SetTitle(" s.s. di vectors ");
-      hdi_ss->SetXTitle(" |d_{i}^{kreg}| ");
-      hdi_ss->DrawCopy("HIST E"); 
-      
-      drawText( "5.02 TeV ak4PFJets",0.358173, 0.8459761, 19);
-      //drawText( "ppData, Prompt Reco HighPtJets",0.358173, 0.8159761, 19);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      //drawText( ("Best kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);	
-      if(debugMode)std::cout<<std::endl<<"done with kr=="<< kRegDrawSS<<" specifics"<<std::endl<<std::endl;      	
-    }//end drawing singular/divector values
-    
-    
-    
+      if(debugMode)std::cout<<std::endl<<"done with kr=="<< kRegDraw<<" specifics"<<std::endl<<std::endl;          }
+
+
     // Pearson Drawing
     if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter canvas..."<<std::endl;
     cPearsonMatrixIter->cd(kr+1);
     
     hPearsonSVD[kr]->SetName( ("hPearsonSVD"+kRegRandEtaRange).c_str() );      
-    hPearsonSVD[kr]->SetTitle( ("SVD Pearson Matrix "+kRegRandEtaRange_plotTitle).c_str()  );
+    hPearsonSVD[kr]->SetTitle( ("SVD Pearson Matrix, "+kRegRandEtaRange_plotTitle).c_str()  );
     hPearsonSVD[kr]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
     hPearsonSVD[kr]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
 
@@ -908,19 +734,221 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     hPearsonSVD[kr]->SetAxisRange(-1., 1., "Z");    
     hPearsonSVD[kr]->Draw("COLZ");
     
-    
-    // Pearson Drawing
-    if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter_SS canvas..."<<std::endl;
-    cPearsonMatrixIter_ss->cd(kr+1);
-    
-    hPearsonSVD_SS[kr]->SetName( ("hPearsonSVDSS"+kRegRandEtaRange).c_str() );      
-    hPearsonSVD_SS[kr]->SetTitle( ("pearsonMatrix SVD SS"+kRegRandEtaRange_plotTitle).c_str()  );
-    hPearsonSVD_SS[kr]->GetXaxis()->SetTitle("reco bin num");
-    hPearsonSVD_SS[kr]->GetYaxis()->SetTitle("gen bin num");
 
-    hPearsonSVD_SS[kr]->GetZaxis()->SetLabelSize(0.035);
-    hPearsonSVD_SS[kr]->SetAxisRange(-1., 1., "Z");    
-    hPearsonSVD_SS[kr]->Draw("COLZ");
+
+    //// SS MC unfolding aka sanity check ---------------------------------
+    //std::string kRegRandEtaRangess_plotTitle=" kReg"+std::to_string(kRegSS[kr]);//+RandEtaRange_plotTitle;
+    //std::string kRegRandEtaRangess="_kReg"+std::to_string(kRegSS[kr]);//+RandEtaRange;
+    //
+    //// same-side unfolding/refolding --------------
+    //std::cout<<std::endl<<"calling RooUnfoldSvd and Hreco for sameside MC test..."<<std::endl<<std::endl;
+    ////RooUnfoldSvd unf_ss_svd(&roo_resp, hrec_sameside_rebin, kRegSS[kr]);
+    //hunf_ss_svd[kr] = (TH1F*)unf_ss_svd.Hreco(errorTreatment);
+    //
+    ////cosmetics
+    //hunf_ss_svd[kr]->SetMarkerStyle(kOpenSquare);
+    //hunf_ss_svd[kr]->SetMarkerColor(kRed);     
+    //hunf_ss_svd[kr]->SetMarkerSize(1.01);     
+    ////std::cout<<std::endl;         
+    //
+    //std::cout<<"applying roo_resp to sameside histo hunf_ss_svd[kr="<<kr<<"]..."<<std::endl;
+    //hfold_ss_svd[kr] = (TH1F*)roo_resp.ApplyToTruth(hunf_ss_svd[kr]);      
+    ////hfold_ss_svd[kr]->Scale(hrec_sameside_resp_rebin->Integral()/hfold_ss_svd[kr]->Integral());
+    //
+    ////cosmetics
+    //hfold_ss_svd[kr]->SetMarkerStyle(kOpenSquare);
+    //hfold_ss_svd[kr]->SetMarkerColor(kGreen);      
+    //hfold_ss_svd[kr]->SetMarkerSize(1.01);      
+    //
+    //////////////////////////////////////////////
+    //sameside covariance/pearson matrices??? maybe, we will see.
+    //TMatrixD covmat_ss = unf_ss_svd.Ereco(errorTreatment);
+    //if(debugMode)std::cout<<std::endl;
+    
+    //TMatrixD *pearson_ss = CalculatePearsonCoefficients(&covmat_ss, false );
+    //TMatrixD pearson_ss = CalculatePearsonCoefficients(&covmat_ss, false );
+    //hPearsonSVD_SS[kr] = (TH2D*) CalculatePearsonCoefficients(&covmat_ss, false, ("SVD_SS_pearson_"+std::to_string(kr)) );      
+    //if(debugMode)std::cout<<std::endl;
+    
+    //std::cout<<"creating TH2 for pearson matrix..."<<std::endl;
+    //hPearsonSVD_SS[kr] = new TH2D (*pearson_ss);
+    //hPearsonSVD_SS[kr] = new TH2D (pearson_ss);
+    //hPearsonSVD_SS[kr]->SetName(("pearson_sameside_"+kRegRandEtaRangess).c_str());
+    //if(debugMode)hPearsonSVD_SS[kr]->Print("base");
+    //if(debugMode)std::cout<<std::endl;
+    //sameside covariance/pearson matrices???
+
+    
+    
+    
+    
+    
+    // ----------------------- 3X3 CANVAS DRAWING  ----------------------- //
+    // for MC sanity-check unfolding
+    
+    // 3x3 spectra canvases  ------------------
+    //    if(debugMode)std::cout<<std::endl<<"drawing stuff on cSpectra canvas..."<<std::endl<<std::endl;
+    //    cSpectra_ss->cd(kr+1);
+    //    cSpectra_ss->cd(kr+1)->SetLogy();
+    //    if(!useSimpBins)
+    //      cSpectra_ss->cd(kr+1)->SetLogx(1);            
+    
+    //hrec_sameside_rebin_clone->SetTitle( ("S.S. Jet spectra,"+kRegRandEtaRange_plotTitle).c_str() );
+    
+    //hunf_ss_svd[kr]->SetTitle( ("S.S. Unf. Spectra,"+kRegRandEtaRangess_plotTitle).c_str() );
+    //hunf_ss_svd[kr]->SetName( ("hunf_ss_svd"+kRegRandEtaRangess).c_str() );
+    //if(debugMode)hunf_ss_svd[kr]->Print("base");
+    //
+    //hfold_ss_svd[kr]->SetTitle( ("S.S. Fold(Unf.) Spectra,"+kRegRandEtaRangess_plotTitle).c_str() );
+    //hfold_ss_svd[kr]->SetName( ("hfold_ss_svd"+kRegRandEtaRangess).c_str() );
+    //if(debugMode)hfold_ss_svd[kr]->Print("base");
+    
+    
+    //hunf_ss_svd[kr]->Draw("E");
+    // hrec_sameside_rebin_clone->Draw("E SAME");
+    //hfold_ss_svd[kr]->Draw("E SAME");
+    
+      
+    //leg_ss[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option
+    //leg_ss[kr]->AddEntry(hrec_sameside_rebin_clone,"MC Meas.","pl");
+    //leg_ss[kr]->AddEntry(hunf_ss_svd[kr],"MC Unf.","pl");
+    ////leg_ss[kr]->AddEntry(hfold_ss_svd[kr],"MC Fold(Unf.)","pl");
+    //leg_ss[kr]->SetTextSize(0.02);
+    //leg_ss[kr]->Draw();
+
+    
+    
+    
+    
+    //if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio_rec canvas..."<<std::endl;
+    //cRatio_rec_ss->cd(kr+1);
+    //if(!useSimpBins)
+    //cRatio_rec_ss->cd(kr+1)->SetLogx(1);
+    
+    
+    
+      
+    //hrec_ss_folded_ratio[kr] = (TH1F*)hfold_ss_svd[kr]->Clone( ("hrec_ss_fold_ratio"+kRegRandEtaRangess).c_str() );
+    //hrec_ss_folded_ratio[kr]->Divide(hrec_sameside_rebin);
+    //if(debugMode)hrec_ss_folded_ratio[kr]->Print("base");
+    //
+    //
+    //hrec_ss_unfolded_ratio[kr] = (TH1F*)hunf_ss_svd[kr]->Clone( ("hrec_ss_unf_ratio"+kRegRandEtaRangess).c_str());
+    //hrec_ss_unfolded_ratio[kr] = (TH1F*)hrec_ss_unfolded_ratio[kr]->Rebin (nbins_pt_reco, ("hrec_ss_unf_ratio"+kRegRandEtaRangess+"_rebin").c_str(), boundaries_pt_reco);
+    //hrec_ss_unfolded_ratio[kr]->Divide(hrec_sameside_rebin);
+    //
+    ////hrec_ss_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
+    //hrec_ss_unfolded_ratio[kr]->SetTitle( ("S.S. Unf./Meas.,"+kRegRandEtaRangess_plotTitle).c_str() );
+    //hrec_ss_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");      
+    ////hrec_ss_unfolded_ratio[kr]->SetMarkerStyle(27);
+    ////hrec_ss_unfolded_ratio[kr]->SetMarkerColor(kBlue);      
+    //if(debugMode)hrec_ss_unfolded_ratio[kr]->Print("base");
+    
+    //hrec_ss_unfolded_ratio[kr]->Draw("E");
+    //hrec_ss_folded_ratio[kr]->Draw("E SAME");
+    
+    //leg_ss1[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"BRNDC");
+    //leg_ss1[kr]->AddEntry(hrec_ss_unfolded_ratio[kr],"MC Unf./MC Meas.","pl");
+    //leg_ss1[kr]->AddEntry(hrec_ss_folded_ratio[kr],"MC Fold(Unf.)/MC Meas.","pl");
+    //leg_ss1[kr]->SetTextSize(0.02); 
+    //leg_ss1[kr]->Draw();
+    
+    //theRecoLine->Draw();
+      
+    
+    
+    //// draw on cRatio_gen canvas
+    //if(debugMode)std::cout<<std::endl<<"drawing stuff on cRatio_gen_ss canvas..."<<std::endl;
+    //cRatio_gen_ss->cd(kr+1);
+    //if(!useSimpBins)
+    //  cRatio_gen_ss->cd(kr+1)->SetLogx(1);
+    
+    //hgen_ss_unfolded_ratio[kr] = (TH1F*)hunf_ss_svd[kr]->Clone( ("hgen_ss_unf_ratio"+kRegRandEtaRangess).c_str());
+    //hgen_ss_unfolded_ratio[kr]->Divide(hgen_rebin);      
+    //if(debugMode)hgen_ss_unfolded_ratio[kr]->Print("base");
+    //hgen_ss_unfolded_ratio[kr]->SetTitle( ("S.S. Fold(Unf.)/Gen.,"+kRegRandEtaRangess_plotTitle).c_str() );
+    //
+    //
+    //hgen_ss_folded_ratio[kr] = (TH1F*)hfold_ss_svd[kr]->Clone( ("hgen_ss_fold_ratio"+kRegRandEtaRangess).c_str());
+    //hgen_ss_folded_ratio[kr]->Divide(hgen_rebin_ratClone);          
+    //if(debugMode)      hgen_ss_folded_ratio[kr]->Print("base");
+    //hgen_ss_unfolded_ratio[kr]->SetTitle( ("S.S. SVD/Gen.,"+kRegRandEtaRangess_plotTitle).c_str() );
+    //
+    //hgen_ss_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
+    ////hgen_ss_unfolded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
+    //hgen_ss_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
+    
+    //hgen_ss_unfolded_ratio[kr]->Draw("P E");
+    //hgen_ss_folded_ratio[kr]->Draw("P E SAME");
+    
+    //leg_ss2[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"BRNDC");
+    //leg_ss2[kr]->AddEntry(hgen_ss_unfolded_ratio[kr],"MC Unf./MC Truth","pl");
+    ////leg_ss2[kr]->AddEntry(hgen_ss_folded_ratio[kr],"MC Fold(Unf.)/MC Truth","pl");
+    //leg_ss2[kr]->SetTextSize(0.02); 
+    //leg_ss2[kr]->Draw();
+    //
+    //theGenLine->Draw();
+    // ----------------------- END 3X3 CANVAS DRAWING FOR MC SANITY CHECK UNFOLDING  ----------------------- //
+
+      
+    
+    //if(kr == kRegDrawSS){      
+    //  std::cout << "  getting divectors and singular values for sameSide ... " << std::endl;
+    //  TSVDUnfold *svdUnfold_ss = unf_ss_svd.Impl();
+    //  //svdUnfold->SetNormalize(true);
+    //  
+    //  // singular values
+    //  if(debugMode)std::cout << "  getting singular values... " << std::endl;
+    //  TH1 *hSVal_ss = (TH1*)svdUnfold_ss->GetSV();
+    //  if(debugMode)
+    //	for(int bin=1; bin<=hSVal_ss->GetNbinsX(); bin++) 
+    //	  std::cout<<"bin: "<<bin<<",  SV: "<<hSVal_ss->GetBinContent(bin)<< std::endl;
+    //  
+    //  if(debugMode)std::cout<<std::endl<<"drawing singular values on c11 canvas.."<<std::endl<<std::endl;
+    //  c11_ss->cd(1);
+    //  c11_ss->cd(1)->SetLogy();    
+    //  
+    //  //hSVal_ss->SetTitle(" s.s. singular values ");
+    //  hSVal_ss->SetXTitle(" s.s singular values ");        
+    //  hSVal_ss->DrawCopy("HIST E");
+    //  
+    //  // di vector values
+    //  std::cout << "  getting di vector values... " <<  std::endl;
+    //  TH1D *hdi_ss = (TH1D*)svdUnfold_ss->GetD();
+    //  if(debugMode)
+    //	for(int bin=1; bin<=hdi_ss->GetNbinsX(); bin++)
+    //	  std::cout<<"i: "<<bin<<",  di: "<<hdi_ss->GetBinContent(bin)<<std::endl;
+    //  
+    //  c11_ss->cd(2);
+    //  c11_ss->cd(2)->SetLogy();    
+    //  
+    //  //hdi_ss->SetTitle(" s.s. di vectors ");
+    //  hdi_ss->SetXTitle(" |d_{i}^{kreg}| ");
+    //  hdi_ss->DrawCopy("HIST E"); 
+    //  
+    //  drawText( "5.02 TeV ak4PFJets",0.358173, 0.8459761, 19);
+    //  //drawText( "ppData, Prompt Reco HighPtJets",0.358173, 0.8159761, 19);
+    //  drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    //  //drawText( ("Best kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);	
+    //  if(debugMode)std::cout<<std::endl<<"done with kr=="<< kRegDrawSS<<" specifics"<<std::endl<<std::endl;      	
+    //}//end drawing singular/divector values
+    
+    
+    
+    
+    
+    //// Pearson Drawing
+    //if(debugMode)std::cout<<std::endl<<"drawing stuff on cPearsonMatrixIter_SS canvas..."<<std::endl;
+    //cPearsonMatrixIter_ss->cd(kr+1);
+    //
+    //hPearsonSVD_SS[kr]->SetName( ("hPearsonSVDSS"+kRegRandEtaRange).c_str() );      
+    //hPearsonSVD_SS[kr]->SetTitle( ("pearsonMatrix SVD SS"+kRegRandEtaRange_plotTitle).c_str()  );
+    //hPearsonSVD_SS[kr]->GetXaxis()->SetTitle("reco bin num");
+    //hPearsonSVD_SS[kr]->GetYaxis()->SetTitle("gen bin num");
+    //
+    //hPearsonSVD_SS[kr]->GetZaxis()->SetLabelSize(0.035);
+    //hPearsonSVD_SS[kr]->SetAxisRange(-1., 1., "Z");    
+    //hPearsonSVD_SS[kr]->Draw("COLZ");
     
   }// kReg loop ends
   
@@ -934,369 +962,250 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     hrec_unfolded_ratio[kr]->Write();          
     hrec_folded_ratio[kr]->Write();          
     hgen_unfolded_ratio[kr]->Write();          
-    hgen_folded_ratio[kr]->Write();          
-    
+    hgen_folded_ratio[kr]->Write();              
     hPearsonSVD[kr]->Write();
     
     
-    
-    hunf_ss_svd[kr]->Write();            
-    hfold_ss_svd[kr]->Write();           
-    
-    hrec_ss_unfolded_ratio[kr]->Write();          
-    hrec_ss_folded_ratio[kr]->Write();          
-    hgen_ss_unfolded_ratio[kr]->Write();          
-    hgen_ss_folded_ratio[kr]->Write();          
-    
-    hPearsonSVD_SS[kr]->Write();
+    //hunf_ss_svd[kr]->Write();            
+    //hfold_ss_svd[kr]->Write();               
+    //hrec_ss_unfolded_ratio[kr]->Write();          
+    //hrec_ss_folded_ratio[kr]->Write();          
+    //hgen_ss_unfolded_ratio[kr]->Write();          
+    //hgen_ss_folded_ratio[kr]->Write();              
+    //hPearsonSVD_SS[kr]->Write();
+
   }
   
-  if(!drawPDFs){ if(debugMode)std::cout<<std::endl<<"NOT drawing PDFs for SVD Unfolding"<<std::endl<<std::endl; }
-  else{ std::cout<<std::endl<<"drawing PDFs for SVD Unfolding..."<<std::endl;
-    {
-      // form filename string, open pdf file and draw the canvases we have so far
-      std::string outPdfFile=outSVDPdfFile;
-      std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
-      
-      //  already-drawn oppSide canvases --------------------------------------------------
-      c11->Print(open_outPdfFile.c_str());
-      c11->cd()                ;   c11->Print(outPdfFile.c_str());
-      
-      
-      //  cSpectra 3X3 and Check for meas --------------------------------------------------
-      cPearsonMatrixIter->cd() ; cPearsonMatrixIter->Print(outPdfFile.c_str());  //cPearsonMatrixIter->Print(out3x3PdfFile.c_str());
-      
-      TCanvas *cPearsonMatCheck        = new TCanvas("cPearsonMatCheck","",        1500, 1500);    
-      
-      cPearsonMatCheck->cd();
-      
-      hPearsonSVD[kRegDraw]->Draw("COLZ");
-      
-      cPearsonMatCheck->Print(outPdfFile.c_str());
-      
-      //  cSpectra 3X3 and Check for meas --------------------------------------------------
-      cSpectra->cd()           ;   cSpectra->Print(outPdfFile.c_str()); //cSpectra->Print(out3x3PdfFile.c_str());
-      
-      TCanvas *cSpectraCheck_rec        = new TCanvas("cSpectraCheck_rec","",        1500, 1500);    
-      cSpectraCheck_rec->cd();
-      cSpectraCheck_rec->SetLogy(1);
-      if(!useSimpBins)cSpectraCheck_rec->SetLogx(1);
-      
-      hrec_rebin_clone->SetTitle("SVD Spectra, Meas./Unf./Truth");
-      
-      hrec_rebin_clone->Draw("P E");
-      hunf_svd[kRegDraw]->Draw("P E SAME");
-      hgen_rebin_clone->Draw("P E SAME");	
-      //hfold_svd[kRegDraw]->Draw("P E SAME");
-      
-      
-      TLegend * leg1 = new TLegend(0.60, 0.79, 0.90, 0.87, NULL,"NBNDC");
-      leg1->AddEntry(hrec_rebin_clone,   "Data Meas","p");
-      leg1->AddEntry(hunf_svd[kRegDraw], "Data Unf.","p");
-      leg1->AddEntry(hgen_rebin_clone,   "MC Truth","p");	
-      //leg1->AddEntry(hfold_svd[kRegDraw],"Data Fold","p");
-      leg1->SetTextSize(0.02);
-      leg1->Draw();
-      
-      drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
-      drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-      
-      cSpectraCheck_rec->Print(outPdfFile.c_str());
+  if(drawPDFs){
+    
+    std::cout<<std::endl<<"drawing PDFs for SVD Unfolding..."<<std::endl;
+    
+    
+    // form filename string, open pdf file and draw the canvases we have so far
+    std::string out3x3PdfFile=out3x3SVDPdfFile;
+    std::string open_out3x3PdfFile=out3x3PdfFile+"[";      std::string close_out3x3PdfFile=out3x3PdfFile+"]";
+    
+    //open 3x3 pdf file
+    cSpectra->Print(open_out3x3PdfFile.c_str());
+    
+    //  cSpectra 3X3 --------------------------------------------------
+    cSpectra->cd()           ;   
+    cSpectra->Print(out3x3PdfFile.c_str()); 
+    
+    //  cRatio 3X3 Check for gen --------------------------------------------------
+    cRatio_gen->cd()         ;   
+    cRatio_gen->Print(out3x3PdfFile.c_str());    
+    
+    //  cRatio 3X3 Check for meas --------------------------------------------------
+    cRatio_rec->cd()         ;   
+    cRatio_rec->Print(out3x3PdfFile.c_str());    
+    
+    //  already drawn data-side 3x3 pearson matrix --------------------------------------------------            
+    cPearsonMatrixIter->cd() ; 
+    cPearsonMatrixIter->Print(out3x3PdfFile.c_str());     
+    
+    
+    //close 3x3 pdf file
+    cPearsonMatrixIter->Print(close_out3x3PdfFile.c_str());    
+    
+    
+    
+    
+    // form filename string, open pdf file and draw the canvases we have so far
+    std::string outPdfFile=outSVDPdfFile;
+    std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
+    
+    //   --------------------------------------------------
+    // now the specific kr=kRegDraw plots
+    TCanvas *cCheck        = new TCanvas("cCheck","",        1400, 1000);          
+    cCheck->Print(open_outPdfFile.c_str());
 
-      //  cSpectra Check fakes --------------------------------------------------
-      //cSpectra->cd()           ;   cSpectra->Print(outPdfFile.c_str()); 
-      //cSpectra->Print(out3x3PdfFile.c_str());
-      //TCanvas *cSpectraCheck_rec        = new TCanvas("cSpectraCheck_rec","",        1500, 1500);    
+    //   --------------------------------------------------
+    // spectra for best kreg choice
+    cCheck->cd();
+    cCheck->SetLogy(1);
+    if(!useSimpBins)	
+      cCheck->SetLogx(1);
+    
+    hrec_rebin_clone->SetTitle("SVD MC and Data Spectra");
+    setupHistXAxis(hrec_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
+    
+    hrec_rebin_clone->Draw("P E");
+    hunf_svd[kRegDraw]->Draw("P E SAME");
+    hgen_rebin_clone->Draw("P E SAME");	
+    //hfold_svd[kRegDraw]->Draw("P E SAME");
+    
+    
+    TLegend * leg1 = new TLegend(0.7, 0.7, 0.9, 0.9, NULL,"NBNDC");
+    leg1->AddEntry(hrec_rebin_clone,   "Data Meas","p");
+    leg1->AddEntry(hunf_svd[kRegDraw], "Data Unf.","p");
+    leg1->AddEntry(hgen_rebin_clone,   "MC Truth","p");	
+    //leg1->AddEntry(hfold_svd[kRegDraw],"Data Fold","p");
+    //leg1->SetTextSize(0.02);
+    leg1->Draw();
+    
+    //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+    //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+    //drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
+    
+    cCheck->Print(outPdfFile.c_str());
+    
+    
+    //   --------------------------------------------------
+    //  MC response matrix fakes
+    cCheck->cd();
+    cCheck->SetLogy(1);
+    if(!useSimpBins)
+      cCheck->SetLogx(1);
+    
+    hrec_sameside_rebin->SetTitle("MC Only, Response Spectra and Fakes");
+    setupHistXAxis(hrec_sameside_rebin, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
+    hrec_sameside_rebin->GetYaxis()->SetTitle("A.U.");
+    
+    hrec_sameside_rebin->Draw("P E");
+    hgen_resp_rebin->Draw("P E SAME");
+    hfak->Draw("P E SAME");
+    
+    TLegend * legfake = new TLegend(0.6, 0.7, 0.9, 0.9, NULL,"NBNDC");
+    legfake->AddEntry(hfak,"MC Response Matrix Fakes","lp");
+    legfake->AddEntry(hgen_resp_rebin,"MC Truth Response" ,"lp");
+    legfake->AddEntry(hrec_sameside_rebin,"MC Meas. Response" ,"lp");
+    //legfake->SetTextSize(0.02);
+    legfake->Draw();
+    
+//    drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+//    drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+//    drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
+    
+    cCheck->Print(outPdfFile.c_str());
+    
+    
+    
+    
+    //  ratios w/ MC truth --------------------------------------------------
+    cCheck->cd();
+    cCheck->SetLogy(0);
+    if(!useSimpBins)
+      cCheck->SetLogx(1);
+    
+    hgen_unfolded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
+    hgen_unfolded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ MC Truth Spectra");            
+    hgen_unfolded_ratio[kRegDraw]->GetYaxis()->SetTitle("Ratio w/ MC Truth");
 
-      cSpectraCheck_rec->cd();
-      //cSpectraCheck_rec->SetLogy(1);
-      //if(!useSimpBins)cSpectraCheck_rec->SetLogx(1);
-      
-      hfak->SetTitle("MC Response Matrix Fakes Spectra");
-      
-      hrec_sameside_rebin->Draw("P E");
-      hfak->Draw("P E SAME");
-      
-      TLegend * legfake = new TLegend(0.60, 0.79, 0.90, 0.87, NULL,"NBNDC");
-      legfake->AddEntry(hfak,"MC Response Matrix Fakes","p");
-      legfake->AddEntry(hrec_sameside_rebin,"MC Meas.","p");
-      legfake->SetTextSize(0.02);
-      legfake->Draw();
-      
-      drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
-      drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-      
-      cSpectraCheck_rec->Print(outPdfFile.c_str());
-      
-      
-      //  cRatio 3X3 and Check for meas --------------------------------------------------
-      cRatio_rec->cd()         ;   cRatio_rec->Print(outPdfFile.c_str());
-      
-      TCanvas *cRatioCheck_rec        = new TCanvas("cRatioCheck_rec","",        1500, 1500);    
-      cRatioCheck_rec->cd();
-      if(!useSimpBins)cRatioCheck_rec->SetLogx(1);
-      //cRatioCheck_rec->SetLogx(1);
-      
-      hrec_folded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
-      //	hrec_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
-      hrec_folded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ Meas.");
-      
-      hrec_unfolded_ratio[kRegDraw]->Draw("P E");
-      //hrec_folded_ratio[kRegDraw]->Draw("P E SAME");
-	
-      TLegend * leg2 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
-      leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Data Unf./Data Meas.","pl");
-      //leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Data Fold(Unf.)/Data Meas.","pl");
-      //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
-      leg2->SetTextSize(0.02);
-      leg2->Draw();
-      
-      //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
-      //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-      
-      //TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
-      //theLine->SetLineWidth(1);
-      //theLine->SetLineStyle(2);
-      //theLine->SetLineColor(36);
-      
-      theRecoLine->Draw();
-      
-      cRatioCheck_rec->Print(outPdfFile.c_str());
-      
-      
-      
-      
-      //  cRatio 3X3 Check for gen --------------------------------------------------
-      cRatio_gen->cd()         ;   cRatio_gen->Print(outPdfFile.c_str());    //  cRatio_gen->Print(out3x3PdfFile.c_str());      
-	
-      TCanvas *cRatioCheck_gen        = new TCanvas("cRatioCheck_gen","",        1500, 1500);     
-      cRatioCheck_gen->cd();
-      if(!useSimpBins)cRatioCheck_gen->SetLogx(1);
-      //cRatioCheck_gen->SetLogx(1);
-      
-      hgen_folded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
-      //hgen_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
-      hgen_folded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ Gen Truth");
-      
-      hgen_unfolded_ratio[kRegDraw]->Draw("P E");
-      //hgen_folded_ratio[kRegDraw]->Draw("P E SAME");
-      
-      TLegend * leg3 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
-      leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"MC Unf./MC Truth","pl");
-      //leg3->AddEntry(hgen_folded_ratio[kRegDraw],"MC Fold(Unf.)/MC Truth","pl");
-      //leg->AddEntry(hSVD_prior,"Prior, normalized to data","pl");
-      leg3->SetTextSize(0.02);
-      leg3->Draw();
-      
-      //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
-      //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-      
-      //TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
-      //theLine->SetLineWidth(1);
-      //theLine->SetLineStyle(2);
-      //theLine->SetLineColor(36);
-      theGenLine->Draw();
-      
-      cRatioCheck_gen->Print(outPdfFile.c_str());
-      cRatioCheck_gen->Print(close_outPdfFile.c_str());
-      //cRatioCheck_gen->Print(close_out3x3PdfFile.c_str());
-    }	
+    setupHistXAxis(hgen_unfolded_ratio[kRegDraw], useSimpBins);
     
     
-    {
-      // form filename string, open pdf file and draw the canvases we have so far
-      std::string outPdfFile=outSSSVDPdfFile;
-      std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
-      
-      //std::string out3x3PdfFile=out3x3SSSVDPdfFile;
-      //	std::string open_out3x3PdfFile=out3x3SSSVDPdfFile+"[";      std::string close_out3x3PdfFile=out3x3SSSVDPdfFile+"]";
-      
-      //  already-drawn sameside canvases --------------------------------------------------
-      c11->Print(open_outPdfFile.c_str());
-      c11_ss->cd()                ;   c11_ss->Print(outPdfFile.c_str());
-      cPearsonMatrixIter_ss->cd() ;   cPearsonMatrixIter_ss->Print(outPdfFile.c_str());
-      cSpectra_ss->cd()           ;   cSpectra_ss->Print(outPdfFile.c_str());
-      
-      
-      //  cRatio Check for meas --------------------------------------------------
-      cRatio_rec_ss->cd()         ;   cRatio_rec_ss->Print(outPdfFile.c_str());   //   cRatio_rec_ss->Print(out3x3PdfFile.c_str());      
-      
-      TCanvas *cRatioCheck_rec_ss        = new TCanvas("cRatioCheck_rec_ss","",        1500, 1500);    
-      cRatioCheck_rec_ss->cd();
-      if(!useSimpBins)cRatioCheck_rec_ss->SetLogx(1);
-      //cRatioCheck_rec_ss->SetLogx(1);
-      
-      hrec_ss_folded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
-      //hrec_ss_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
-      hrec_ss_folded_ratio[kRegDraw]->SetTitle("S.S. SVD Unf. Ratios w/ Meas.");
-      
-      hrec_ss_unfolded_ratio[kRegDraw]->Draw("P E");
-      //hrec_ss_folded_ratio[kRegDraw]->Draw("P E SAME");
-      
-      TLegend * leg_ss2 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
-      leg_ss2->AddEntry(hrec_ss_unfolded_ratio[kRegDraw],"Data Unf./Data Meas.","pl");
-      //leg_ss2->AddEntry(hrec_ss_folded_ratio[kRegDraw],"Data Fold(Unf.)/Data Meas.","pl");
-      leg_ss2->SetTextSize(0.02);
-      leg_ss2->Draw();
-      
-      //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
-      //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-      
-      //TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
-      //theLine->SetLineWidth(1);
-      //theLine->SetLineStyle(2);
-      //theLine->SetLineColor(36);
-      theRecoLine->Draw();
-      
-      cRatioCheck_rec_ss->Print(outPdfFile.c_str());
-      
-      
-      //  cRatio Check for gen --------------------------------------------------
-      cRatio_gen_ss->cd()         ;   cRatio_gen_ss->Print(outPdfFile.c_str());	//  cRatio_gen_ss->Print(out3x3PdfFile.c_str());	
-      TCanvas *cRatioCheck_gen_ss        = new TCanvas("cRatioCheck_gen_ss","",        1500, 1500);    
-      cRatioCheck_gen_ss->cd();
-      if(!useSimpBins)cRatioCheck_gen_ss->SetLogx(1);
-      //cRatioCheck_gen_ss->SetLogx(1);
-      
-      hgen_ss_folded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");//SetAxisRange(0.5, 1.5, "Y");
-	//hgen_ss_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
-      hgen_ss_folded_ratio[kRegDraw]->SetTitle("S.S. SVD Unf. Ratios w/ Gen Truth");
-      
-      hgen_ss_unfolded_ratio[kRegDraw]->Draw("P E");
-      //hgen_ss_folded_ratio[kRegDraw]->Draw("P E SAME");
-      
-      TLegend * leg_ss3 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
-      leg_ss3->AddEntry(hgen_ss_unfolded_ratio[kRegDraw],"MC Unf./MC Truth","pl");
-      //leg_ss3->AddEntry(hgen_ss_folded_ratio[kRegDraw],"MC Fold(Unf.)/MC Truth","pl");
-      leg_ss3->SetTextSize(0.02);
-      leg_ss3->Draw();
-      
-      //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
-      //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-      
-      //TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
-      //theLine->SetLineWidth(1);
-      //theLine->SetLineStyle(2);
-      //theLine->SetLineColor(36);
-      theGenLine->Draw();
-      
-      cRatioCheck_gen_ss->Print(outPdfFile.c_str());
-      
-      cRatioCheck_gen_ss->Print(close_outPdfFile.c_str());
-      //cRatioCheck_gen_ss->Print(close_out3x3PdfFile.c_str());
-    }
-    std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;
+    hgen_unfolded_ratio[kRegDraw]->Draw("P E");
+    //hgen_folded_ratio[kRegDraw]->Draw("P E SAME");
     
-    // ------ RESPONSE MATRIX DRAWING
+    TLegend * leg3 = new TLegend(0.1, 0.8, 0.2, 0.9, NULL,"NBNDC");
+    leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"Data Unf.","pl");
+    //leg3->AddEntry(hgen_folded_ratio[kRegDraw],"MC Fold(Unf.)/MC Truth","pl");
+    //leg3->SetTextSize(0.02);
+    leg3->Draw();
     
-    if(drawRespMatrix){    
-      
-      
-      std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;
-      
-      std::string outPdfFile=outRespMatPdfFile;
-      std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
-      
-      TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv_respMat","",1200,1200);    
-      tempCanvForPdfPrint->cd();
-      
-      if(useSimpBins){	tempCanvForPdfPrint->SetLogx(0);
-	tempCanvForPdfPrint->SetLogy(0);       
-	tempCanvForPdfPrint->SetLogz(1);          }
-      else {	tempCanvForPdfPrint->SetLogx(1);
-	tempCanvForPdfPrint->SetLogy(1);       
-	tempCanvForPdfPrint->SetLogz(1);         }       
-      
-      // open file
-      
-      tempCanvForPdfPrint->Print(open_outPdfFile.c_str()); 
-      
-      // orig matrix ---------------
-      
-      matStylePrint(hmat, "ppMC Resp Matrix, original", tempCanvForPdfPrint, outPdfFile, useSimpBins);      
-      
-      // orig matrix w/ used pt range ---------------
-      
-      tempCanvForPdfPrint->cd();
-      
-      hmat->SetTitle("ppMC Resp Matrix, used pt range");
-      hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
-      hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");      
-      hmat->Draw("COLZ");           
-      
-      tempCanvForPdfPrint->Print(outPdfFile.c_str());      
-      
-      // matrix rebinned ---------------
-      
-      matStylePrint(hmat_rebin, "ppMC Resp Matrix, rebinned", tempCanvForPdfPrint, outPdfFile, useSimpBins);
-      
-      // error matrix in binning of interest ---------------
-      
-      matStylePrint(hmat_errors, "ppMC Resp Matrix errors", tempCanvForPdfPrint, outPdfFile, useSimpBins);
-      
-	
-      TH2F* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2F*) hmat_errors, (TH2F*) hmat_rebin,
-							 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-							 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
-      hmat_percenterrs->Write();
-      if(debugMode) hmat_percenterrs->Print("base");
-      
-      
-      
-      // percent error matrix in binning of interest ---------------
-      
-      matStylePrint(hmat_percenterrs, "ppMC Resp Matrix % Errors", tempCanvForPdfPrint, outPdfFile, useSimpBins);
-      
-//      // col normd matrix in binning of interest  ---------------
-//      // row/col normd matrix, has correct errors since hmat_rebin has correct errors ---------------
-//      // POTENTIAL ISSUE: using the resp matrix post rebinning/divide bin width/clearing overflows... should i be using the original matrix?
-//      TH2F* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2F*)  hmat_rebin,
-//							   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-//							   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-//      hmat_rebin_colnormd->Write();
-//      if(debugMode)  hmat_rebin_colnormd->Print("base");
-//      
-//      matStylePrint(hmat_rebin_colnormd, "ppMC Resp Matrix, Columns Normalized", tempCanvForPdfPrint, outPdfFile, useSimpBins);
-//      
-//      // row normd matrix in binning of interest  ---------------
-//      
-//      TH2F*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2F*)  hmat_rebin,
-//							    (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-//							    (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-//      hmat_rebin_rownormd->Write();
-//      if(debugMode)  hmat_rebin_rownormd->Print("base");
-//      
-//      matStylePrint(hmat_rebin_rownormd, "ppMC Resp Matrix, Rows Normalized", tempCanvForPdfPrint, outPdfFile, useSimpBins);
-      
-      // close file     
-      tempCanvForPdfPrint->Print(close_outPdfFile.c_str());   
-      }//end drawRespMatrix
+    //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+    //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+    //drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
+    
+    theGenLine->Draw();
+    theLineAtp9_gen->Draw();
+    theLineAt1p1_gen->Draw();
     
     
-      
+    cCheck->Print(outPdfFile.c_str());
+    
+    
+
+    
+    
+
+
+
+
+    
+    // Ratios w/ Meas. --------------------------------------------------
+    cCheck->cd();
+    cCheck->SetLogy(0);
+    if(!useSimpBins)
+      cCheck->SetLogx(1);
+    
+    hrec_unfolded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
+    hrec_unfolded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ Data Meas.");    
+    hrec_unfolded_ratio[kRegDraw]->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
+    setupHistXAxis(hrec_unfolded_ratio[kRegDraw], useSimpBins);
+    
+    
+    hrec_unfolded_ratio[kRegDraw]->Draw("P E");
+    //hrec_folded_ratio[kRegDraw]->Draw("P E SAME");
+    
+    TLegend * leg2 = new TLegend(0.1, 0.8, 0.2, 0.9, NULL,"NBNDC");
+    leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Data Unf.","pl");
+    //leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Data Fold(Unf.)/Data Meas.","pl");
+    //leg2->SetTextSize(0.02);
+    leg2->Draw();
+    
+    //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+    //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+    //drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
+    
+    theRecoLine->Draw();
+    theLineAtp9_gen->Draw();
+    theLineAt1p1_gen->Draw();
+    
+    cCheck->Print(outPdfFile.c_str());
     
     
     
     
-  }// end drawPDFs
+    
+    
+    
+    
+    
+    
+    //   --------------------------------------------------
+    // data-side pearson matrix for best kreg choice      
+    cCheck->cd();      
+    cCheck->SetLogx(0);
+    cCheck->SetLogy(0);
+    
+    hPearsonSVD[kRegDraw]->Draw("COLZ");            
+    cCheck->Print(outPdfFile.c_str());
+    
+
+    //  data-side singular values+divectors --------------------------------------------------
+    c11->cd()                ;   
+    c11->Print(outPdfFile.c_str());
+    
+    
+    
+    
+    
+    
+    // ----------------------------
+    cCheck->Print(close_outPdfFile.c_str());
+    
   
-  
+    // ------ RESPONSE MATRIX DRAWING    
+    if(drawRespMatrix)
+      drawRespMatrixFile((TH2*)hmat, (TH2*)hmat_rebin, (TH2*)hmat_errors,
+			 //(TH2*)covmat_TH2, (TH2*)PearsonBayes, (TH2*)unfmat_TH2,
+			 (double*)boundaries_pt_reco_mat, (int)nbins_pt_reco_mat,
+			 (double*)boundaries_pt_gen_mat , (int)nbins_pt_gen_mat,
+			 (std::string)outRespMatPdfFile , (bool)useSimpBins);
+    
+  } // end drawPDFs
+  if(debugMode)std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;
+
   if(debugMode) std::cout<<"writing output root file..."<<std::endl;
   fout->Write();
   
-  std::cout<<"closing input/output root files..."<<std::endl;
+  if(debugMode)std::cout<<"closing input/output root files..."<<std::endl;
   fout->Close();
   fpp_Data->Close();
   fpp_MC->Close();
@@ -1338,22 +1247,6 @@ int main(int argc, char* argv[]){  int rStatus = -1;
 
 
 
-  //std::cout<<"underflow="<<hrec_rebin->GetBinContent(0)<<std::endl;
-  //std::cout<<"overflow="<<hrec_rebin->GetBinContent(1001)<<std::endl;
-  //float _56to64GeVSum = 0.;
-  //for(int i=57 ; i < 65; i++) {
-  //  std::cout<<"i="<<i<<std::endl;
-  //  std::cout<<"bin center ="<< hrec_rebin->GetBinCenter(i) <<std::endl;
-  //  std::cout<<"bin content ="<< hrec_rebin->GetBinContent(i) <<std::endl;
-  //  _56to64GeVSum += hrec_rebin->GetBinContent(i);
-  //  std::cout<<"Sum now ="<< _56to64GeVSum<<std::endl;
-  //
-  //}
-  //std::cout<<"before rebinning: 56-64GeV's contents are:"<< _56to64GeVSum <<std::endl;//57 because 1 GeV bins-> 56-57 is 57'th bin because 0-1 is the first bin
-  //std::cout<<"before rebinning: first bin's width is:"    << hrec_rebin->GetBinWidth(57)<<std::endl;
-  //std::cout<<"after rebinning: first bin's center is    :"<< hrec_rebin->GetBinCenter(1)<<std::endl;
-  //std::cout<<"after rebinning: first bin's contents are :"<< hrec_rebin->GetBinContent(1)<<std::endl;
-  //std::cout<<"after rebinning: first bin's width is     :"<< hrec_rebin->GetBinWidth(1)<<std::endl;
 
 
 
@@ -1362,68 +1255,94 @@ int main(int argc, char* argv[]){  int rStatus = -1;
 
 
 
-      //cPearsonMatrixIter->cd(kr+1)->SetLogz(1);
-      //int kr_add1=kr+1;
-      //i'm sorry, programming gods
-      //TPad * thePad;
-      //if       (kr<3)   thePad = new TPad( ("pad"+std::to_string(kr)).c_str(), "thepad" , 0.33*kr    , 0.67 , 0.33*(kr+1)     , 1.00 );
-      //else if  (kr<6)   thePad = new TPad( ("pad"+std::to_string(kr)).c_str(), "thepad" , 0.33*(kr%3), 0.34 , 0.33*((kr%3)+1) , 0.67 );
-      //else /*if(kr<9)*/ thePad = new TPad( ("pad"+std::to_string(kr)).c_str(), "thepad" , 0.33*(kr%3), 0.00 , 0.33*((kr%3)+1) , 0.34 );
-      //cPearsonMatrixIter->SetLogz(1);
-      //thePad->SetLogz(1);
-      //thePad->Draw();
-      //thePad->cd();
-      
-      //float ZminNmax=1.0;             //int XYmin=1; int XYmax=99;
-      //int XYmin=1; int XYmax=1000;
-      //hPearsonSVDPriorMeas[kr]->SetMinimum(-1*ZminNmax);  
-      //hPearsonSVDPriorMeas[kr]->SetMaximum(1.0);
 
 
 
-
-    //std::cout<<"GetSumw2N="<<h_recratio_ssgen->TH1::GetSumw2N()<<std::endl<<std::endl; 
-
-
-
-      //TH1F* hgen_rebin_forDiv=(TH1F*)hgen_rebin->Clone("hgen_rebin_clone_forSVDdiv");
-      //hgen_rebin_forDiv=(TH1F*)hgen_rebin_forDiv->Rebin(nbins_pt_reco, "hgen_rebin_clone_forSVDdiv_recobins" , boundaries_pt_reco);
-      //hratio_svd[kr]->Divide(hgen_rebin_forDiv);
-
-
-
-      //hgen_unfolded_ratio[kr] = (TH1F*)hgen_unfolded_ratio[kr]->Rebin(nbins_pt_reco, ("ppMC_SVDUnf_Ratio_rebin4div"+kRegRandEtaRange).c_str() , boundaries_pt_reco);
-      //if(clearOverUnderflows)TH1clearOverUnderflows((TH1*)hgen_unfolded_ratio[kr]);
-
-//hrec_unfolded_ratio[kr]->Print("base");
-      //hrec_unfolded_ratio[kr] = (TH1F*)hrec_unfolded_ratio[kr]->Rebin(nbins_pt_reco, ("ppMC_SVDUnf_Ratio_rebin4div"+kRegRandEtaRange).c_str() , boundaries_pt_reco);
-      //if(clearOverUnderflows)TH1clearOverUnderflows((TH1*)hrec_unfolded_ratio[kr]);
-      //hrec_folded_ratio[kr]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_reco[nbins_pt_reco]);      
-      //hrec_unfolded_ratio[kr]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_reco[nbins_pt_reco])
-      //hrec_unfolded_ratio[kr]->SetTitle( ("SVD Unf./Meas.,"+kRegRandEtaRange_plotTitle).c_str() );
-
-
-
-      //hgen_folded_ratio[kr] = (TH1F*)hfold_svd[kr]->Clone( ("ppMC_SVDUnf_reFold_Ratio"+kRegRandEtaRange).c_str() );
-      //hgen_folded_ratio[kr]->Print("base");
-      //hgen_folded_ratio[kr]->Divide(hgen_rebin);
-
-      //hgen_unfolded_ratio[kr] = (TH1F*)hunf_svd[kr]->Clone( ("ppMC_SVDUnf_Ratio"+kRegRandEtaRange).c_str());
-      //hgen_unfolded_ratio[kr]->Print("base");
-      //hgen_unfolded_ratio[kr]->Divide(hgen_rebin);
-
-
-//std::cout<<"GetSumw2N="<<hunf->TH1::GetSumw2N()<<std::endl<<std::endl ;
-
-
-
-//  if(zeroBins){
-//    TH1zeroBins((TH1*)hrec_rebin,Nbins2Clear_reco_lowpt, Nbins2Clear_reco_highpt);
-//    hrec_rebin->Write("hpp_mcclosure_reco_test_rebinned_divBinWidth_noOverUnderFlows_zeroBins");
-//    hrec_rebin->Print("base");  
-//    //std::cout<<"GetSumw2N="<<hrec_rebin->TH1::GetSumw2N()<<std::endl<<std::endl;    
-//  }
-  
-  
- 
- 
+    //    //SS SVD UNFOLDING
+    //    {
+    //      // form filename string, open pdf file and draw the canvases we have so far
+    //      std::string outPdfFile=outSSSVDPdfFile;
+    //      std::string open_outPdfFile=outPdfFile+"[";      std::string close_outPdfFile=outPdfFile+"]";
+    //      
+    //      //std::string out3x3PdfFile=out3x3SSSVDPdfFile;
+    //      //	std::string open_out3x3PdfFile=out3x3SSSVDPdfFile+"[";      std::string close_out3x3PdfFile=out3x3SSSVDPdfFile+"]";
+    //      
+    //      //  already-drawn sameside canvases --------------------------------------------------
+    //      c11->Print(open_outPdfFile.c_str());
+    //      c11_ss->cd()                ;   c11_ss->Print(outPdfFile.c_str());
+    //      cPearsonMatrixIter_ss->cd() ;   cPearsonMatrixIter_ss->Print(outPdfFile.c_str());
+    //      cSpectra_ss->cd()           ;   cSpectra_ss->Print(outPdfFile.c_str());
+    //      
+    //      
+    //      //  cRatio Check for meas --------------------------------------------------
+    //      cRatio_rec_ss->cd()         ;   cRatio_rec_ss->Print(outPdfFile.c_str());   //   cRatio_rec_ss->Print(out3x3PdfFile.c_str());      
+    //      
+    //      TCanvas *cRatioCheck_rec_ss        = new TCanvas("cRatioCheck_rec_ss","",        1800, 1500);    
+    //      cRatioCheck_rec_ss->cd();
+    //      if(!useSimpBins)cRatioCheck_rec_ss->SetLogx(1);
+    //      //cRatioCheck_rec_ss->SetLogx(1);
+    //      
+    //      hrec_ss_folded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
+    //      //hrec_ss_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
+    //      hrec_ss_folded_ratio[kRegDraw]->SetTitle("S.S. SVD Unf. Ratios w/ Meas.");
+    //      
+    //      hrec_ss_unfolded_ratio[kRegDraw]->Draw("P E");
+    //      //hrec_ss_folded_ratio[kRegDraw]->Draw("P E SAME");
+    //      
+    //      TLegend * leg_ss2 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
+    //      leg_ss2->AddEntry(hrec_ss_unfolded_ratio[kRegDraw],"Data Unf./Data Meas.","pl");
+    //      //leg_ss2->AddEntry(hrec_ss_folded_ratio[kRegDraw],"Data Fold(Unf.)/Data Meas.","pl");
+    //      leg_ss2->SetTextSize(0.02);
+    //      leg_ss2->Draw();
+    //      
+    //      //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+    //      //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+    //      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    //      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
+    //      
+    //      //TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
+    //      //theLine->SetLineWidth(1);
+    //      //theLine->SetLineStyle(2);
+    //      //theLine->SetLineColor(36);
+    //      theRecoLine->Draw();
+    //      
+    //      cRatioCheck_rec_ss->Print(outPdfFile.c_str());
+    //      
+    //      
+    //      //  cRatio Check for gen --------------------------------------------------
+    //      cRatio_gen_ss->cd()         ;   cRatio_gen_ss->Print(outPdfFile.c_str());	//  cRatio_gen_ss->Print(out3x3PdfFile.c_str());	
+    //      TCanvas *cRatioCheck_gen_ss        = new TCanvas("cRatioCheck_gen_ss","",        1800, 1500);    
+    //      cRatioCheck_gen_ss->cd();
+    //      if(!useSimpBins)cRatioCheck_gen_ss->SetLogx(1);
+    //      //cRatioCheck_gen_ss->SetLogx(1);
+    //      
+    //      hgen_ss_folded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");//SetAxisRange(0.5, 1.5, "Y");
+    //	//hgen_ss_folded_ratio[kRegDraw]->SetAxisRange(boundaries_pt_reco[0], boundaries_pt_gen[nbins_pt_gen], "X");
+    //      hgen_ss_folded_ratio[kRegDraw]->SetTitle("S.S. SVD Unf. Ratios w/ Gen Truth");
+    //      
+    //      hgen_ss_unfolded_ratio[kRegDraw]->Draw("P E");
+    //      //hgen_ss_folded_ratio[kRegDraw]->Draw("P E SAME");
+    //      
+    //      TLegend * leg_ss3 = new TLegend(0.14, 0.79, 0.34, 0.87, NULL,"NBNDC");
+    //      leg_ss3->AddEntry(hgen_ss_unfolded_ratio[kRegDraw],"MC Unf./MC Truth","pl");
+    //      //leg_ss3->AddEntry(hgen_ss_folded_ratio[kRegDraw],"MC Fold(Unf.)/MC Truth","pl");
+    //      leg_ss3->SetTextSize(0.02);
+    //      leg_ss3->Draw();
+    //      
+    //      //drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+    //      //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+    //      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    //      drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
+    //      
+    //      //TLine* theLine= new TLine(boundaries_pt_gen[0],1.,boundaries_pt_gen[nbins_pt_gen],1.);
+    //      //theLine->SetLineWidth(1);
+    //      //theLine->SetLineStyle(2);
+    //      //theLine->SetLineColor(36);
+    //      theGenLine->Draw();
+    //      
+    //      cRatioCheck_gen_ss->Print(outPdfFile.c_str());
+    //      
+    //      cRatioCheck_gen_ss->Print(close_outPdfFile.c_str());
+    //      //cRatioCheck_gen_ss->Print(close_out3x3PdfFile.c_str());
+    //    }
+    //std::cout<<std::endl<<"done drawing SS SVD PDFs!"<<std::endl<<std::endl;

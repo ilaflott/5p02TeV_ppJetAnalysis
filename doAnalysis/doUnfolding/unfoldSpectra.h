@@ -236,7 +236,7 @@ void matStylePrint(TH2 * mat, std::string hTitle, TCanvas* canv, std::string out
   //mat->SetAxisRange(56.,1000.,"Y");
   
   if( hTitle.find("% Errors") != std::string::npos )
-    mat->SetAxisRange(0.1,1000.,"Z");
+    mat->SetAxisRange(0.1,1000.,"Z");    //mat->SetAxisRange(0.,200.,"Z");
   else if (hTitle.find("Errors") != std::string::npos )
     mat->SetAxisRange(0.000000000000000001,.0001,"Z");
   else if (hTitle.find("Column")  != std::string::npos)
@@ -379,9 +379,9 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
 
 
 
-void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
+void setupHistXAxis(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){
   
-  h->GetXaxis()->SetTitle("jet p_{T} (GeV)");
+  h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
   //  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
   //  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
   h->GetXaxis()->SetMoreLogLabels(true);
@@ -425,7 +425,9 @@ void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPd
 }
 
 
-void checkNRenameFilesSVD (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string*outPdfFileSS,std::string *outRootFile){
+
+
+void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *out3x3PdfFile, std::string *outRootFile){
   bool funcDebug=false;
   int outputInd=1;
   
@@ -433,12 +435,127 @@ void checkNRenameFilesSVD (const std::string outFileName, std::string *outRespMa
     if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
     (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
     (*outPdfFile       )=outFileName+"_"+std::to_string(outputInd)+".pdf";
-    (*outPdfFileSS       )=outFileName+"_SS_"+std::to_string(outputInd)+".pdf";
+    (*out3x3PdfFile       )=outFileName+"_"+std::to_string(outputInd)+"_SS.pdf";
     (*outRootFile      )=outFileName+"_"+std::to_string(outputInd)+".root";      
     if(funcDebug)std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
     outputInd++;
   }
   
   
+  return;
+}
+
+
+
+
+
+
+
+void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
+			//TH2 * covmat_TH2,	//TH2 * Pearson,	//TH2 * unfmat_TH2,
+			double* boundaries_pt_reco_mat , int nbins_pt_reco_mat,
+			double* boundaries_pt_gen_mat , int nbins_pt_gen_mat,
+			std::string outRespMatPdfFile   , bool  useSimpBins){
+  bool funcDebug=false;
+
+  std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;    
+  
+  std::string open_outRespMatPdfFile=outRespMatPdfFile+"[";      
+  std::string close_outRespMatPdfFile=outRespMatPdfFile+"]";    
+  
+      //for TH2s, always make the canvas wider than it's height. The reason is the z-axis label in COLZ mode adds extra width, so for a symmetric canvas, the #'s on the axis are cut off and unreadable
+      TCanvas* tempCanvForPdfPrint=new TCanvas("tempCanv_respMat","",1400,1000);    
+      tempCanvForPdfPrint->cd();    
+      if(useSimpBins){	tempCanvForPdfPrint->SetLogx(0);
+	tempCanvForPdfPrint->SetLogy(0);       
+	tempCanvForPdfPrint->SetLogz(1);          }
+      else {	tempCanvForPdfPrint->SetLogx(1);
+	tempCanvForPdfPrint->SetLogy(1);       
+	tempCanvForPdfPrint->SetLogz(1);         }       
+      
+      // open file    
+      tempCanvForPdfPrint->Print(open_outRespMatPdfFile.c_str()); 
+      
+      // orig matrix ---------------    
+      matStylePrint(hmat, "MC Response Matrix, Original Histogram", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);      
+      
+      // orig matrix w/ used pt range ---------------    
+      tempCanvForPdfPrint->cd();    
+      hmat->SetTitle("MC Response Matrix, p_{T} Range Used");
+      hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
+      hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");      
+      hmat->Draw("COLZ");               
+      tempCanvForPdfPrint->Print(outRespMatPdfFile.c_str());      
+      
+      // matrix rebinned ---------------    
+      matStylePrint(hmat_rebin, "MC Response Matrix, Rebinned", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+      
+      // error matrix in binning of interest ---------------    
+      matStylePrint(hmat_errors, "MC Response Matrix, Bin Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+      
+      
+      TH2F* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2F*) hmat_errors, (TH2F*) hmat_rebin,
+							 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+							 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
+      hmat_percenterrs->Write();
+      if(funcDebug) hmat_percenterrs->Print("base");
+      
+      // percent error matrix in binning of interest ---------------    
+      matStylePrint(hmat_percenterrs, "MC Response Matrix, Bin % Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+      
+      // row/col normd matrix, has correct errors since hmat_rebin has correct errors ---------------
+      // POTENTIAL ISSUE: using the resp matrix post rebinning/divide bin width/clearing overflows... should i be using the original matrix?
+      TH2F* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2F*)  hmat_rebin,
+      							   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+      							   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+      hmat_rebin_colnormd->Write();
+      if(funcDebug)  hmat_rebin_colnormd->Print("base");
+      
+      // col normd matrix in binning of interest  ---------------    
+      matStylePrint(hmat_rebin_colnormd, "MC Response Matrix, Columns Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+      
+      TH2F*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2F*)  hmat_rebin,
+      							    (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+      							    (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+      hmat_rebin_rownormd->Write();
+      if(funcDebug)  hmat_rebin_rownormd->Print("base");
+      
+      // row normd matrix in binning of interest  ---------------    
+      matStylePrint(hmat_rebin_rownormd, "MC Response Matrix, Rows Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+      
+      ////---------------      
+      //tempCanvForPdfPrint->cd();
+      //tempCanvForPdfPrint->SetLogx(0);
+      //tempCanvForPdfPrint->SetLogy(0);
+      //tempCanvForPdfPrint->SetLogz(1);
+
+      ////always use simp bins for covmat to avoid log scaling the x/y axes
+      //matStylePrint( (TH2*)covmat_TH2, "Bayesian Unfolding Covariance Matrix", tempCanvForPdfPrint, outRespMatPdfFile, true);
+      //
+      ////---------------      
+      //tempCanvForPdfPrint->cd();
+      //tempCanvForPdfPrint->SetLogx(0);
+      //tempCanvForPdfPrint->SetLogy(0);
+      //tempCanvForPdfPrint->SetLogz(0);
+      //
+      ////always use simp bins for covmat to avoid log scaling the x/y axes
+      //matStylePrint( (TH2*)Pearson, "Bayesian Unfolding Pearson Matrix", tempCanvForPdfPrint, outRespMatPdfFile, true);
+      //
+      //
+      ////---------------      
+      //tempCanvForPdfPrint->cd();
+      //tempCanvForPdfPrint->SetLogx(0);
+      //tempCanvForPdfPrint->SetLogy(0);
+      //tempCanvForPdfPrint->SetLogz(1);
+      //
+      ////always use simp bins for covmat to avoid log scaling the x/y axes
+      //matStylePrint( (TH2*)unfmat_TH2, "Bayesian Unfolding Matrix", tempCanvForPdfPrint, outRespMatPdfFile, true);
+      
+      // close file     
+      tempCanvForPdfPrint->Print(close_outRespMatPdfFile.c_str());   
+      
+      
+      
+
   return;
 }

@@ -42,29 +42,21 @@ mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/temp/.
 #source runData.sh "0.0eta2.0" "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "01" "18" 1 1 1
 #source runData.sh "0.0eta2.0" "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "01" "18" 1 1 0
 
-
-
-
 #source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56" "0.0eta2.0_ptHi1032_ptLoRec56_ptLoGen56" "05" "09" "18" 1 0 0
-
 #source runData.sh "0.0eta2.0_ptHi1032_ptLoRec56" "0.0eta2.0_ptHi1032_ptLoRec56_ptLoGen56" "05" "09" "18" 1 0 0
-
 #source runData.sh "0.0eta2.0_ptHi1032_ptLoRec32" "0.0eta2.0_ptHi1032_ptLoRec32_ptLoGen32" "05" "09" "18" 1 0 0
-
 #source runData.sh "0.0eta2.0_ptHi967_ptLoRec49" "0.0eta2.0_ptHi1032_ptLoRec32_ptLoGen32" "05" "09" "18" 1 0 0
-
-
-
 #source runData.sh "0.0eta2.0_ptHi967_ptLoRec49"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 0 0
 #source runData.sh "0.0eta2.0_ptHi967_ptLoRec49"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 1 1
-
 #source runData.sh "0.0eta2.0_ptHi967_ptLoRec49"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 0 0
 #source runData.sh "0.0eta2.0_ptHi967_ptLoRec49" "0.0eta2.0_ptHi1032_ptLoRec56_ptLoGen56" "05" "09" "18" 1 1 0
-
-source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 0 1
-
 #source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi1032_ptLoRec32_ptLoGen32" "05" "09" "18" 1 0 0
+
+####best unfolding (between 64-967 GeV) of 05/09/18 samples. 
+#source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 1 0
+
+
+source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49"  "0.0eta2.0_ptHi2116_ptLoRec49_ptLoGen49" "05" "29" "18" 1 1 0
 
 
 

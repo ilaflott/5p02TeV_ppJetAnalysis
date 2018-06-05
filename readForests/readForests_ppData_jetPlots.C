@@ -16,8 +16,8 @@ const bool useHLT100=false;
 
 const int jetIDint=(int)fillDataJetIDHists;
 
-const std::string trgCombType="Calo";
-//const std::string trgCombType="PF";
+//const std::string trgCombType="Calo";
+const std::string trgCombType="PF";
 
 
 //// readForests_ppData_jetPlots
@@ -895,7 +895,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	hNEvts_withJets_jtptCut_Filled=true;}    
       h_NJets_jtptCut->Fill(0.); h_NJets_jtptCut->Fill(1.,weight_eS);      
       
-      if(absreceta > 4.7 ) {       
+      if( !(absreceta < 4.7) ) {       
 	jetsPerEvent--; 
 	continue;}      
       if(!hNEvts_withJets_jtetaCut1_Filled){ 
@@ -903,8 +903,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	hNEvts_withJets_jtetaCut1_Filled=true;}    
       h_NJets_jtetaCut1->Fill(0.); h_NJets_jtetaCut1->Fill(1.,weight_eS);      
       
-      if( !(absreceta > jtEtaCutLo) ) { jetsPerEvent--;	continue;}
-      if( absreceta > jtEtaCutHi ) { jetsPerEvent--;	continue;}
+      if( absreceta < jtEtaCutLo ) { jetsPerEvent--;	continue;}
+      if( !(absreceta < jtEtaCutHi) ) { jetsPerEvent--;	continue;}
       
       if(!hNEvts_withJets_jtetaCut2_Filled){ 
 	h_NEvents_withJets_jtetaCut2->Fill(0.);  	h_NEvents_withJets_jtetaCut2->Fill(1.,weight_eS);  

@@ -199,11 +199,19 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   /////   JET QA HISTS   ///// 
   //jet QA
   TH1F *hJetQA[2][N_vars]={};
+
   //MC JetQA
-  TH1F *hMCJetQA_genpt[2]={}, *hMCJetQA_geneta[2]={};
-  TH1F *hMCJetQA_genrecpt[2]={}, *hMCJetQA_genreceta[2]={};
+  TH1F *hMCJetQA_genpt[2]={};
+  TH1F *hMCJetQA_geneta[2]={};
+  TH1F *hMCJetQA_genphi[2]={};
+  TH1F *hMCJetQA_genrecpt[2]={};
+  TH1F *hMCJetQA_genreceta[2]={};
+  TH1F *hMCJetQA_genrecphi[2]={};
+  TH1F *hMCJetQA_gendrjt[2]={};
+  
   if(fillMCJetQAHists){
     for(int k = 0; k<2; ++k){
+
       if(!fillMCJetIDHists && k==1)continue;
       if(fillMCJetIDHists && k==0)continue;
       //if( fillMCJetIDHists && k==0)continue;	
@@ -242,10 +250,16 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       }
       
       if(fillgenJetQA){	
-	hMCJetQA_genpt[k]    = new TH1F(Form("hJetQA_%dwJetID_genpt",k)     , "genpt",    2500, 0,2500 );
-	hMCJetQA_geneta[k]   = new TH1F(Form("hJetQA_%dwJetID_geneta",k)    , "geneta", 200,  -6.,6. );
-	hMCJetQA_genrecpt[k] = new TH1F(Form("hJetQA_%dwJetID_genrecpt",k)  , "genrecpt",    100, 0, 2. );
-	hMCJetQA_genreceta[k]= new TH1F(Form("hJetQA_%dwJetID_genreceta",k) , "gen-receta", 2000,  -100, 100 ); }
+	hMCJetQA_genpt[k]     = new TH1F(Form("hJetQA_%dwJetID_genpt",k)     , "genpt",    2500, 0,2500 );
+	hMCJetQA_geneta[k]    = new TH1F(Form("hJetQA_%dwJetID_geneta",k)    , "geneta", 200,  -6.,6. );
+	hMCJetQA_genphi[k]    = new TH1F(Form("hJetQA_%dwJetID_genphi",k)    , "genphi", 1280,  -6.4,6.4 );
+	hMCJetQA_genrecpt[k]  = new TH1F(Form("hJetQA_%dwJetID_genrecpt",k)  , "genrecpt",    200, 0., 2. );
+	hMCJetQA_genreceta[k] = new TH1F(Form("hJetQA_%dwJetID_genreceta",k) , "genreceta", 200,  -10, 10 ); 
+	hMCJetQA_genrecphi[k] = new TH1F(Form("hJetQA_%dwJetID_genrecphi",k) , "genrecphi", 256,  -12.8, 12.8 ); 
+	hMCJetQA_gendrjt[k] = new TH1F(Form("hJetQA_%dwJetID_gendrjt",k) , "gendrjt", 200,  -1., 1. ); 
+	
+	
+      }
       
     }}
   
@@ -439,6 +453,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
         nEvt%1000==0     )std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     else if(nEvt%10000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
     
+    
+    
     jetpp[0]->GetEntry(nEvt);
     h_NEvents_read->Fill(1);
     
@@ -476,9 +492,24 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     //	  vzBinLeftSide+=binsize_vzWeights;
     //	  vzBinRightSide+=binsize_vzWeights; } }
     //    }
+    
+    float evtPthatWeight=0.;  
+    //int evtPthatBin=-1; float evtPthat=0.;  
+    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){       
+      //evtPthatBin=i;
+      //evtPthat=pthatbins[i];
+      evtPthatWeight=pthatWeights[i];//in millibarns
+      evtPthatWeight*=10e+06;//in nanobarns
+    } 
 
-    float evtPthatWeight=0.;    
-    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; } 
+    //if(debugMode)
+    //if(true){
+    //  std::cout<<std::endl;
+    //  std::cout<<"evtPthatBin = "<<evtPthatBin<<std::endl;
+    //  std::cout<<"evtPthat = "<<evtPthat<<std::endl;
+    //  std::cout<<"pthat_F     = "<<pthat_F<<std::endl;
+    //  std::cout<<"evtPthatWeight="<<evtPthatWeight<<std::endl;      
+    //}
     
     float trigWeight=1.;
     //trigWeight = trigComb(trgDec, treePrescl, triggerPt);    
@@ -541,37 +572,45 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	h_NEvents_withJets->Fill(1);
 	hNEvts_withJets_Filled=true;      }      
       
-      float recpt  = pt_F[jet];
-      float receta = eta_F[jet];
+      float recpt     = pt_F[jet];
+      float receta    = eta_F[jet];
+      float recphi    = phi_F[jet];
       float absreceta = fabs(eta_F[jet]);
-      float genpt  = refpt_F[jet];
-      float geneta = refeta_F[jet];
 
+      float genpt   = refpt_F[jet];
+      float genphi  = refphi_F[jet];
+      float geneta  = refeta_F[jet];
+      float gendrjt = refdrjt_F[jet];
+      
       //if reco jet w/o matched gen jet, skip.
       if( subid_F[jet] != 0 )            { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; }
       else if( !(genpt > genJetPtCut)   )  { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; } //paranoia about float comparison
-      //else if( genpt <= genJetPtCut   )  { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; }
       else if( !(genpt < genJetPtCut_Hi)   )  { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }
       else if( !(recpt > jtPtCut)   )      { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; } //paranoia about float comparison
-      //else if( recpt <= jtPtCut   )      { jetsPerEvent--;   /*jetsPerEventJetID--;*/ continue; }           
       else if( !(recpt < jtPtCut_Hi)   )      { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }           
       
       
       //if( absreceta >= jtEtaCutHi ) { 
+      if( (absreceta < jtEtaCutLo ) ) { 
+	jetsPerEvent--; //jetsPerEventJetID--; 
+	continue; }
+      
       if( !(absreceta < jtEtaCutHi) ) { 
 	jetsPerEvent--; //jetsPerEventJetID--;
 	continue; }
-      else if( (absreceta < jtEtaCutLo ) ) { 
-	jetsPerEvent--; //jetsPerEventJetID--; 
-	continue; }
+      
+      if( gendrjt > 0.1 ){
+	jetsPerEvent--;
+	continue;  }
+      
       
       
       //if(absreceta>=4.7) jetsPerEvent--;
       if(!(absreceta < 4.7)) jetsPerEvent--;
       
       // largest jet pt in each event
-      if(recpt>evt_leadJetPt && absreceta<4.7)
-	evt_leadJetPt=recpt;
+      if(recpt>evt_leadJetPt && absreceta<4.7)	evt_leadJetPt=recpt;
+
       //if(recpt>evt_leadJetPt_wJetID && fillDataJetIDHists && passesJetID)
       //evt_leadJetPt_wJetID=recpt;
       
@@ -583,7 +622,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	hNEvts_withJets_kmatCut_Filled=true;  }           
       
       float rawpt  = rawpt_F[jet];      
-      float recphi = phi_F[jet];
+      //float recphi = phi_F[jet];
       
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
@@ -657,7 +696,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       }
       
       
-      
+
       /////   JETQA   ///// 
       if(fillMCJetQAHists	 ){
 
@@ -711,13 +750,24 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
           hJetQA[jetIDint][ind]->Fill(numConst, weight_eS); ind++;
 
 	  if(fillgenJetQA){
+
+	    
 	    hMCJetQA_genpt[jetIDint]    ->Fill(genpt,weight_eS);
 	    hMCJetQA_geneta[jetIDint]   ->Fill(geneta,weight_eS);
+	    hMCJetQA_genphi[jetIDint]   ->Fill(genphi,weight_eS);
 	    hMCJetQA_genrecpt[jetIDint] ->Fill(recpt/genpt,weight_eS);
-	    hMCJetQA_genreceta[jetIDint]->Fill(receta-geneta,weight_eS);	}
+
+
+	    hMCJetQA_genreceta[jetIDint]->Fill(fabs(receta-geneta), weight_eS);	
+	    
+	    hMCJetQA_genrecphi[jetIDint]->Fill(fabs(recphi-genphi), weight_eS);	
+	    
+	    hMCJetQA_gendrjt[jetIDint]->Fill(gendrjt, weight_eS);
+	    //	    assert(false);		    	    
+
+	  }
 
 	}
-	
 	//looking for the first two good jets that meet the criteria specified
 	if(fillMCDijetHists){
 
@@ -785,7 +835,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
     }
 
-    //assert(false);
+    
   }//end event loop
 
   

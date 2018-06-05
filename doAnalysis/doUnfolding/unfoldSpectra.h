@@ -97,6 +97,7 @@ const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 
 //Bayes settings
+//const int kIter = 4; // recommended is 4, default is 4
 const int kIter = 4; // recommended is 4, default is 4
 
 //SVD settings 
@@ -135,8 +136,8 @@ const bool zeroBins=false; //leave false almost always
 
 
 //useful strings, numbers
-//const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
-const float integratedLuminosity=27.4*pow(10.,9.);//+/-2.4%
+//const double integratedLuminosity=27.4;//+/-2.4% //int lumi is in pb-1
+const float integratedLuminosity=27.4*pow(10.,9.);//+/-2.4% //int lumi is in mb^-1
 const std::string CMSPRELIM= "CMS PRELIMINARY"; 
 const std::string MCdesc= "Py8 Tune CUETP8M1 QCD"; 
 const std::string Datadesc1= "pp promptReco, #sqrt{s}=5.02 TeV"; 
@@ -161,8 +162,19 @@ float computeEffLumi(TFile* finData){
   std::cout<<std::endl<<"dataset integrated Luminosity (microbarns) ="<<integratedLuminosity<<std::endl;
   TH1F *h_NEvents_vzCut   = (TH1F*)finData->Get("NEvents_vzCut");
   TH1F *h_NEvents_read    = (TH1F*)finData->Get("NEvents_read");
+
+
+  //LumiEff_vz = (float) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries();
+  //LumiEff_vz = (float) h_NEvents_vzCut->GetBinContent(2)/h_NEvents_read->GetBinContent(2);
+  LumiEff_vz = (float) h_NEvents_vzCut->GetBinContent(1)/h_NEvents_read->GetBinContent(1);
+
   
-  LumiEff_vz = (float) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries();
+  std::cout<<"eff if using entries = " << (float) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries() << std::endl;
+  std::cout<<"eff if using GetBinContent(1) = " << (float) h_NEvents_vzCut->GetBinContent(1)/h_NEvents_read->GetBinContent(1) << std::endl;
+  std::cout<<"eff if using GetBinContent(2) = " << (float) h_NEvents_vzCut->GetBinContent(2)/h_NEvents_read->GetBinContent(2) << std::endl;
+  
+
+
   effIntgrtdLumi_vz=integratedLuminosity*LumiEff_vz;
   
   std::cout<<std::endl<<"lumi efficiency, vz cuts="<<LumiEff_vz<<std::endl;
@@ -361,12 +373,12 @@ int setNBins ( bool useSimpBins, std::string type){
 }
 
 
-void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
+void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){
   
   h->SetAxisRange(0.2, 1.8, "Y");
+  h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
-  h->GetXaxis()->SetTitle("jet p_{T} (GeV)");
   //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
   //if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
 //h->SetAxisRange( boundaries[0] ,  
@@ -379,13 +391,17 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries, int nbins){
 
 
 
-void setupHistXAxis(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){
+void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){
   
+
+ //h->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
+ h->GetYaxis()->SetTitle("A.U.");
   h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
-  //  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
-  //  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
+  
+  //  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
+  //  if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
 //  h->SetAxisRange( boundaries[0] ,  
 //		   boundaries[nbins] + 
 //		   ( boundaries[nbins]-boundaries[nbins-1] ),
@@ -494,9 +510,11 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       matStylePrint(hmat_errors, "MC Response Matrix, Bin Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
       
       
+      //std::cout<<"mem leakhere?!"<<std::endl;
       TH2F* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2F*) hmat_errors, (TH2F*) hmat_rebin,
 							 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 							 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
+      //std::cout<<"mem here in drawRespMatrixFile"<<std::endl;
       hmat_percenterrs->Write();
       if(funcDebug) hmat_percenterrs->Print("base");
       

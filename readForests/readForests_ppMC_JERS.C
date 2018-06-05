@@ -519,7 +519,10 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     }
     
     float evtPthatWeight=1.;    
-    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ evtPthatWeight=pthatWeights[i]; }     
+    for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ 
+      evtPthatWeight=pthatWeights[i]; 
+      evtPthatWeight*=10e+06;//in nanobarns
+    }     
     
     float trigWeight=1.;
     //no trig selection, trig weight always 1
@@ -574,8 +577,8 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       else if ( !(recpt < jtPtCut_Hi)    ) continue;                 
       else if ( !(genpt > genJetPtCut) ) continue;
       else if ( !(genpt < genJetPtCut_Hi) ) continue;
+      else if ( absreceta < jtEtaCutLo ) continue;
       else if (!(absreceta < jtEtaCutHi))continue;
-      else if (absreceta < jtEtaCutLo) continue;
       else if ( gendrjt > 0.1 ) continue;
       
       

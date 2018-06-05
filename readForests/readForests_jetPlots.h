@@ -35,7 +35,7 @@ int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist,
 				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-			       int startfile=0, int endfile=9, 
+			       int startfile=0, int endfile=10, 
 			       int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=defDebugMode,			
 			       std::string outfile=(defMCOutputName),
@@ -48,11 +48,12 @@ const int readForestsArgCount=9+minArgs;
 
 //const float jtPtCut=30; // 49 or 56 or 64 or 74...
 const float jtPtCut=49.; // 49 or 56 or 64 or 74...
-const float jtPtCut_Hi=1172.; 
+const float jtPtCut_Hi=2116.; 
+
 const float jetQAPtCut=jtPtCut;
 
-const float genJetPtCut=56.; //const float genJetPtCut=43.; //const float genJetPtCut=30.; 
-const float genJetPtCut_Hi=1032.; 
+const float genJetPtCut=49.; 
+const float genJetPtCut_Hi=jtPtCut_Hi; 
 
 
 const float ldJetPtCut=76., subldJetPtCut=56., ptAveCut=subldJetPtCut, dPhiCut=2./3.*TMath::Pi();//dijet cuts

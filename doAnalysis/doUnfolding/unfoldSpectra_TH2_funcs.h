@@ -372,10 +372,12 @@ TH2F* makeRespMatrixPercentErrs( TH2F* hmat_errors, TH2F* hmat_anabin,
   int xbinstart=1;
   int ybinstart=1;
   
+  
+  //std::cout<<"memleak here?!"<<std::endl;
   TH2F *fracErrorTH2 = new TH2F("hmat_anabin_percenterrs", "response matrix %error",
 				nbins_pt_reco, boundaries_pt_reco ,
 				nbins_pt_gen, boundaries_pt_gen );
-  
+  //std::cout<<"memleak here in makeRespMatrixPercentErrors"<<std::endl;
   //if(doOverUnderflows){
   //  xbinstart--;
   //  ybinstart--;

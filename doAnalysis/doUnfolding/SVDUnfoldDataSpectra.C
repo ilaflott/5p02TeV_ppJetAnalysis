@@ -137,10 +137,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hrec->Write();
   if(debugMode)hrec->Print("base");
 
-  histTitle+="_divBylumietabin";
+  histTitle+="_divBylumi";
   float effIntgrtdLumi=computeEffLumi(fpp_Data);
   hrec->Scale(1./effIntgrtdLumi); // lumi
-  hrec->Scale(1./etaBinWidth); // |y|
   hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");
   
@@ -153,11 +152,6 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   histTitle+="_rebins";
   hrec_rebin = (TH1F*)hrec_rebin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
   hrec_rebin->Write(histTitle.c_str());   
-  if(debugMode)hrec_rebin->Print("base");  
-  
-  histTitle+="_normbinwidth";
-  //divideBinWidth(hrec_rebin); 
-  hrec_rebin->Write(histTitle.c_str());
   if(debugMode)hrec_rebin->Print("base");  
   
   if(clearOverUnderflows){
@@ -184,10 +178,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
-  histTitle2+="_divByetabin";
-  hrec_sameside->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
-  hrec_sameside->Write( histTitle2.c_str());
-  if(debugMode)hrec_sameside->Print("base");
+  //histTitle2+="_divByetabin";
+  //hrec_sameside->Write( histTitle2.c_str());
+  //if(debugMode)hrec_sameside->Print("base");
   
   
   histTitle2+="_clone";
@@ -201,17 +194,12 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hrec_sameside_rebin->Write( histTitle2.c_str() );   
   if(debugMode)hrec_sameside_rebin->Print("base");  
   
-  histTitle2+="_normbinwidth";
-  //divideBinWidth(hrec_sameside_rebin); 
-  hrec_sameside_rebin->Write( histTitle2.c_str() );
-  if(debugMode)hrec_sameside_rebin->Print("base");  
-  
   if(clearOverUnderflows){
     histTitle2+="_noOverUnderFlows";
     TH1clearOverUnderflows((TH1*)hrec_sameside_rebin);
     hrec_sameside_rebin->Write( histTitle2.c_str() );
     if(debugMode)hrec_sameside_rebin->Print("base");    } 
-
+  
   //cosmetics
   hrec_sameside_rebin->SetMarkerStyle(kOpenSquare);
   hrec_sameside_rebin->SetMarkerColor(kBlue-3);
@@ -247,10 +235,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hgen->Write();
   if(debugMode)hgen->Print("base");    
   
-  genHistTitle+="_divByetabin";
-  hgen->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
-  hgen->Write( genHistTitle.c_str());
-  if(debugMode)hrec_sameside->Print("base");
+  //genHistTitle+="_divByetabin";
+  //hgen->Write( genHistTitle.c_str());
+  //if(debugMode)hrec_sameside->Print("base");
   
   genHistTitle+="_clone";
   TH1F* hgen_rebin = (TH1F*)hgen->Clone( (genHistTitle).c_str() );
@@ -261,18 +248,13 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hgen_rebin = (TH1F*)hgen_rebin->Rebin(nbins_pt_gen, (genHistTitle).c_str() , boundaries_pt_gen);
   hgen_rebin->Write(genHistTitle.c_str());
   if(debugMode)hgen_rebin->Print("base"); 
-  
-  genHistTitle+="_normbinwidth";
-  //divideBinWidth(hgen_rebin);
-  hgen_rebin->Write(genHistTitle.c_str());
-  if(debugMode)hgen_rebin->Print("base");  
-  
+
   if(clearOverUnderflows){
     genHistTitle+="_noOverUnderFlows";
     TH1clearOverUnderflows((TH1*)hgen_rebin);
     hgen_rebin->Write(genHistTitle.c_str());
     if(debugMode)hgen_rebin->Print("base");    }
-
+  
   //cosmetics
   hgen_rebin->SetMarkerStyle(kOpenStar);
   hgen_rebin->SetMarkerColor(kMagenta);
@@ -303,10 +285,10 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hmat->Write();
   if(debugMode)hmat->Print("base");
   
-  TH2_title+="_divByetabin";
-  hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
-  hmat->Write( TH2_title.c_str());
-  if(debugMode)hmat->Print("base");
+  //TH2_title+="_divByetabin";
+  //hmat->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  //hmat->Write( TH2_title.c_str());
+  //if(debugMode)hmat->Print("base");
   
   
   // rebinned matrix ---------------
@@ -322,10 +304,10 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hmat_rebin->Write( TH2_title.c_str() );
   if(debugMode)hmat_rebin->Print("base"); 
   
-  TH2_title+="_normbinwidth";
+  //TH2_title+="_normbinwidth";
   //divideBinWidth_TH2(hmat_rebin);
-  hmat_rebin->Write( TH2_title.c_str() );
-  if(debugMode)hmat_rebin->Print("base"); 
+  //hmat_rebin->Write( TH2_title.c_str() );
+  //if(debugMode)hmat_rebin->Print("base"); 
   
   if(clearOverUnderflows){
     TH2_title+="_noOverUnderFlows";
@@ -364,15 +346,15 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   
   if(debugMode)std::cout<<"cloning input hists..."<<std::endl;
   TH1F* hrec_rebin_clone=(TH1F*)hrec_rebin->Clone("hrec_rebin_clone");
-  setupHistXAxis(hrec_rebin_clone, useSimpBins);
+  setupSpectraHist(hrec_rebin_clone, useSimpBins);
   if(debugMode)hrec_rebin_clone->Print("base");
   
   TH1F* hgen_rebin_clone=(TH1F*)hgen_rebin->Clone("hgen_rebin_clone");
-  setupHistXAxis(hgen_rebin_clone, useSimpBins);
+  setupSpectraHist(hgen_rebin_clone, useSimpBins);
   if(debugMode)hgen_rebin_clone->Print("base");
   
   TH1F* hrec_sameside_rebin_clone=(TH1F*)hrec_sameside_rebin->Clone("hrec_sameside_rebin_clone");
-  setupHistXAxis(hrec_sameside_rebin_clone, useSimpBins);
+  setupSpectraHist(hrec_sameside_rebin_clone, useSimpBins);
   if(debugMode)hrec_sameside_rebin_clone->Print("base");  
   
   // SVD spectra
@@ -380,12 +362,24 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   TH1F *hfold_svd[nKregMax]={};     
   
   // SVD ratios 
-  TH1F *hgen_unfolded_ratio[nKregMax]={};
-  TH1F *hrec_unfolded_ratio[nKregMax]={};
-  TH1F *hgen_folded_ratio[nKregMax]={};  
-  TH1F *hrec_folded_ratio[nKregMax]={};     
+  TH1F* hgen_unfolded_ratio[nKregMax]={}; //data unf/gen truth
+  TH1F* hgen_meas_ratio=(TH1F*)hrec_rebin->Clone("hgen_meas_ratio_clone"); //data meas/gen truth
+  hgen_meas_ratio->Divide(hgen_rebin);
+  TH1F* hgen_ssmeas_ratio=(TH1F*)hrec_sameside_rebin->Clone("hgen_ssmeas_ratio_clone"); //mc meas/gen truth
+  hgen_ssmeas_ratio->Divide(hgen_rebin);
+  TH1F* hgen_folded_ratio[nKregMax]={};   //not drawn anymore
+  
+  TH1F* hrec_unfolded_ratio[nKregMax]={}; //data unf/data meas
+  TH1F* hrec_truth_ratio=(TH1F*)hgen_rebin->Clone("hrec_truth_ratio_clone");  //gen truth/data meas
+  hrec_truth_ratio->Divide(hrec_rebin);
+  TH1F* hrec_ssmeas_ratio=(TH1F*)hrec_sameside_rebin->Clone("hrec_ssmeas_ratio_clone"); //MC meas/data meas  
+  hrec_ssmeas_ratio->Divide(hrec_rebin);
+  TH1F* hrec_folded_ratio[nKregMax]={};     // not really draw anymore
   
   TH2D *hPearsonSVD[nKregMax];      
+  TH2D *hCovmatSVD[nKregMax];
+  //TH2D *hUnfmatSVD[nKregMax];
+
  
   
   //  // MC-side SVD spectra
@@ -512,6 +506,11 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
     RooUnfoldSvd unf_svd(&roo_resp, hrec_rebin, kReg[kr]);
     unf_svd.SetVerbose(2);
+    if(doToyErrs){
+      std::cout<<"using toy errors, suppressing text output"<<std::endl;
+      unf_svd.SetNToys(10000);
+      unf_svd.SetVerbose(1);
+    }
     std::cout<<"RooUnfoldSvd Overflow Status: " << unf_svd.Overflow()<<std::endl;
     
     //std::cout<<"calling Ereco... getting Cov Mat"<<std::endl;
@@ -552,11 +551,20 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(debugMode)std::cout<<"calling Ereco... getting Cov Mat"<<std::endl;
     TMatrixD covmat = unf_svd.Ereco(errorTreatment);
     
-    //if(debugMode)std::cout<<"converting TMatrixD covmat to TH2D* covmat_TH2"<<std::endl;
-    //TH2D* covmat_TH2= new TH2D(covmat);
+    hCovmatSVD[kr]=new TH2D(covmat);
+    hCovmatSVD[kr]->SetName(("SVD_covmatTH2_kr"+std::to_string(kr)).c_str());
     
     hPearsonSVD[kr] = (TH2D*) CalculatePearsonCoefficients(&covmat, false, ("SVD_pearson_"+std::to_string(kr)) );      
     
+    //hUnfmatSVD[kr]=new TH2D(unf_svd.UnfoldingMatrix());
+    //hUnfmatSVD[kr]->SetName(("SVD_unfmatTH2_kr"+std::to_string(kr)).c_str());
+    
+    
+
+    
+    //if(debugMode)std::cout<<"converting TMatrixD covmat to TH2D* covmat_TH2"<<std::endl;
+
+
     //if(debugMode)std::cout<<"creating \"rebinned\" pearson matrix..."<<std::endl;
     //hPearsonSVD[kr] = reBinPearsonTH2( pearson );
     
@@ -587,7 +595,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(debugMode)hfold_svd[kr]->Print("base");
     
     hrec_rebin_clone->SetTitle( ("Jet Spectra, "+kRegRandEtaRange_plotTitle).c_str() );
-    hrec_rebin_clone->GetYaxis()->SetTitle("A.U.");
+    setupSpectraHist(hrec_rebin_clone,useSimpBins);
+    //hrec_rebin_clone->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
     
     hrec_rebin_clone->Draw("P E");
     hgen_rebin_clone->Draw("P E SAME");
@@ -613,7 +622,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     hrec_unfolded_ratio[kr] = (TH1F*)hrec_unfolded_ratio[kr]->Rebin( nbins_pt_reco, ("hrec_unf_ratio"+kRegRandEtaRange+"_rebin").c_str() , boundaries_pt_reco);      
     hrec_unfolded_ratio[kr]->Divide(hrec_rebin);
     hrec_unfolded_ratio[kr]->SetTitle( ("Data Unf./Data Meas., "+kRegRandEtaRange_plotTitle).c_str() );
-    hrec_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
+    //hrec_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
     hrec_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
     if(debugMode)hrec_unfolded_ratio[kr]->Print("base");
     
@@ -646,7 +655,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     //hgen_unfolded_ratio[kr]->SetAxisRange(boundaries_pt_gen[0], boundaries_pt_gen[nbins_pt_gen], "X");
     hgen_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
     hgen_unfolded_ratio[kr]->SetTitle( ("Data Unf./MC Truth, "+kRegRandEtaRange_plotTitle).c_str() );
-    hgen_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");      
+    //hgen_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");      
     hgen_unfolded_ratio[kr]->Divide(hgen_rebin);      
     if(debugMode)hgen_unfolded_ratio[kr]->Print("base");
     
@@ -976,6 +985,36 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
 
   }
   
+
+
+    // ----- PUT BIN WIDTH(s) DIVISIONS + NORMALIZING HERE ----- //
+  
+  // -- MC RECO -- //
+  //histTitle2+="_normbinwidth";
+  //hrec_sameside_rebin->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.  
+  //divideBinWidth(hrec_sameside_rebin); 
+  //hrec_sameside_rebin->Write( histTitle2.c_str() );
+  //if(debugMode)hrec_sameside_rebin->Print("base");  
+  
+  // -- MC GEN -- //
+  //genHistTitle+="_normbinwidth";
+  //hgen_rebin->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
+  //divideBinWidth(hgen_rebin);
+  //hgen_rebin->Write(genHistTitle.c_str());
+  //if(debugMode)hgen_rebin->Print("base");  
+  
+  // -- DATA RECO -- //
+  //histTitle+="_normbinwidth";
+  //hrec_rebin->Scale(1./etaBinWidth); // |y|
+  //divideBinWidth(hrec_rebin); 
+  //hrec_rebin->Write(histTitle.c_str());
+  //if(debugMode)hrec_rebin->Print("base");  
+
+  // -- DATA UNF -- //
+
+  // ----- END BIN WIDTH DIVISIONS + NORMALIZING ----- //
+
+
   if(drawPDFs){
     
     std::cout<<std::endl<<"drawing PDFs for SVD Unfolding..."<<std::endl;
@@ -1027,8 +1066,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(!useSimpBins)	
       cCheck->SetLogx(1);
     
-    hrec_rebin_clone->SetTitle("SVD MC and Data Spectra");
-    setupHistXAxis(hrec_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
+    hrec_rebin_clone->SetTitle("MC, Data, and SVD Unf. Spectra");
+    setupSpectraHist(hrec_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
     
     hrec_rebin_clone->Draw("P E");
     hunf_svd[kRegDraw]->Draw("P E SAME");
@@ -1037,9 +1076,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     
     
     TLegend * leg1 = new TLegend(0.7, 0.7, 0.9, 0.9, NULL,"NBNDC");
-    leg1->AddEntry(hrec_rebin_clone,   "Data Meas","p");
-    leg1->AddEntry(hunf_svd[kRegDraw], "Data Unf.","p");
-    leg1->AddEntry(hgen_rebin_clone,   "MC Truth","p");	
+    leg1->AddEntry(hrec_rebin_clone,   "Data Meas","lp");
+    leg1->AddEntry(hunf_svd[kRegDraw], "Data Unf.","lp");
+    leg1->AddEntry(hgen_rebin_clone,   "MC Truth", "lp");	
     //leg1->AddEntry(hfold_svd[kRegDraw],"Data Fold","p");
     //leg1->SetTextSize(0.02);
     leg1->Draw();
@@ -1060,8 +1099,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
       cCheck->SetLogx(1);
     
     hrec_sameside_rebin->SetTitle("MC Only, Response Spectra and Fakes");
-    setupHistXAxis(hrec_sameside_rebin, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
-    hrec_sameside_rebin->GetYaxis()->SetTitle("A.U.");
+    setupSpectraHist(hrec_sameside_rebin, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
+    //hrec_sameside_rebin->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
     
     hrec_sameside_rebin->Draw("P E");
     hgen_resp_rebin->Draw("P E SAME");
@@ -1090,18 +1129,21 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(!useSimpBins)
       cCheck->SetLogx(1);
     
-    hgen_unfolded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
     hgen_unfolded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ MC Truth Spectra");            
-    hgen_unfolded_ratio[kRegDraw]->GetYaxis()->SetTitle("Ratio w/ MC Truth");
-
-    setupHistXAxis(hgen_unfolded_ratio[kRegDraw], useSimpBins);
+    hgen_unfolded_ratio[kRegDraw]->GetYaxis()->SetTitle("Ratio w/ MC Truth");    
+    setupRatioHist(hgen_unfolded_ratio[kRegDraw], useSimpBins);
     
     
     hgen_unfolded_ratio[kRegDraw]->Draw("P E");
+    hgen_meas_ratio->Draw("P E SAME");
+    hgen_ssmeas_ratio->Draw("P E SAME");
     //hgen_folded_ratio[kRegDraw]->Draw("P E SAME");
     
     TLegend * leg3 = new TLegend(0.1, 0.8, 0.2, 0.9, NULL,"NBNDC");
     leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"Data Unf.","pl");
+    leg3->AddEntry(hgen_meas_ratio,              "Data Meas.","pl");
+    leg3->AddEntry(hgen_ssmeas_ratio,            "MC Meas.","pl");
+
     //leg3->AddEntry(hgen_folded_ratio[kRegDraw],"MC Fold(Unf.)/MC Truth","pl");
     //leg3->SetTextSize(0.02);
     leg3->Draw();
@@ -1133,17 +1175,20 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(!useSimpBins)
       cCheck->SetLogx(1);
     
-    hrec_unfolded_ratio[kRegDraw]->SetAxisRange(0.2, 1.8, "Y");
     hrec_unfolded_ratio[kRegDraw]->SetTitle("SVD, Ratios w/ Data Meas.");    
     hrec_unfolded_ratio[kRegDraw]->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
-    setupHistXAxis(hrec_unfolded_ratio[kRegDraw], useSimpBins);
+    setupRatioHist(hrec_unfolded_ratio[kRegDraw], useSimpBins);
     
     
     hrec_unfolded_ratio[kRegDraw]->Draw("P E");
+    hrec_truth_ratio->Draw("P E SAME");
+    hrec_ssmeas_ratio->Draw("P E SAME");
     //hrec_folded_ratio[kRegDraw]->Draw("P E SAME");
     
     TLegend * leg2 = new TLegend(0.1, 0.8, 0.2, 0.9, NULL,"NBNDC");
     leg2->AddEntry(hrec_unfolded_ratio[kRegDraw],"Data Unf.","pl");
+    leg2->AddEntry(hrec_ssmeas_ratio,"MC Meas.","pl");
+    leg2->AddEntry(hrec_truth_ratio,"MC Truth","pl");
     //leg2->AddEntry(hrec_folded_ratio[kRegDraw],"Data Fold(Unf.)/Data Meas.","pl");
     //leg2->SetTextSize(0.02);
     leg2->Draw();

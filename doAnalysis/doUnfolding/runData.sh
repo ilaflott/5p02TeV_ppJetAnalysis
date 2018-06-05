@@ -48,7 +48,7 @@ then
     then
 	kReg=9
     else
-	kReg=7
+	kReg=9
     fi
 
     echo ""

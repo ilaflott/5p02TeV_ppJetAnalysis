@@ -56,7 +56,8 @@ mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/temp/.
 #source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 1 0
 
 
-source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49"  "0.0eta2.0_ptHi2116_ptLoRec49_ptLoGen49" "05" "29" "18" 1 1 0
+source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"  "0.0eta2.0_ptHi2116_ptLoRec49_ptLoGen49_HLTCalo" "05" "29" "18" 1 0 0
+source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi2116_ptLoRec49_ptLoGen49_HLTPF"   "05" "29" "18" 1 0 0
 
 
 
@@ -71,6 +72,7 @@ echo ""
 echo "moving data pdf output to local cpu"
 echo ""
 scp2Serin "output/unfoldDataSpectra/*.pdf"
+scp2Serin "output/unfoldDataSpectra/*.root"
 
 
 

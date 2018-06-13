@@ -521,7 +521,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     float evtPthatWeight=1.;    
     for( int i=0; i<nbins_pthat && pthat_F>=pthatbins[i]; i++ ){ 
       evtPthatWeight=pthatWeights[i]; 
-      evtPthatWeight*=10e+06;//in nanobarns
+      evtPthatWeight*=1e+06;//in nanobarns
     }     
     
     float trigWeight=1.;

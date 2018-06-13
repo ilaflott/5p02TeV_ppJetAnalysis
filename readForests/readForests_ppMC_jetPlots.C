@@ -499,7 +499,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       //evtPthatBin=i;
       //evtPthat=pthatbins[i];
       evtPthatWeight=pthatWeights[i];//in millibarns
-      evtPthatWeight*=10e+06;//in nanobarns
+      evtPthatWeight*=1e+06;//in nanobarns
     } 
 
     //if(debugMode)

@@ -16,8 +16,8 @@ const bool useHLT100=false;
 
 const int jetIDint=(int)fillDataJetIDHists;
 
-//const std::string trgCombType="Calo";
-const std::string trgCombType="PF";
+const std::string trgCombType="Calo";
+//const std::string trgCombType="PF";
 
 
 //// readForests_ppData_jetPlots
@@ -234,6 +234,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   
   //jet QA, i.e. hists filled once per jet
   TH1F *hJetQA[2][N_vars]={};
+  TH1F *hJetQA_jtptEntries=NULL;
   TH1F *hJetQA_jtpt=NULL, *hJetQA_jtpt_L2Res=NULL, *hJetQA_jtpt_L3Res=NULL;
   TH2F *hJetQA_jtpt_v_L2Res=NULL,*hJetQA_jtpt_v_L3Res=NULL,*hJetQA_jtpt_L2Res_v_L3Res=NULL;
   if(fillDataJetQAHists)
@@ -241,6 +242,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(!fillDataJetIDHists && k==1)continue;	
       if(fillDataJetIDHists && k==0)continue;	
       
+      hJetQA_jtptEntries = new TH1F( Form("hJetQA_%dwJetID_jtptEntries", k) , Form("jtpt hist, weight=1 always") , 2500,0,2500);       
+
       hJetQA_jtpt = new TH1F( Form("hJetQA_%dwJetID_jtpt_forRes", k) , Form(";%s;", "jtpt_forRes") , 2500,0,2500);       
       hJetQA_jtpt_L2Res = new TH1F( Form("hJetQA_%dwJetID_jtpt_L2Res", k) , Form(";%s;", "jtpt_L2Res") , 2500,0,2500);       
       hJetQA_jtpt_L3Res = new TH1F( Form("hJetQA_%dwJetID_jtpt_L3Res", k) , Form(";%s;", "jtpt_L3Res") , 2500,0,2500);       
@@ -1010,6 +1013,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	
 	int ind=0;
 	//jets
+	hJetQA_jtptEntries->Fill(recpt,1.);
 	hJetQA[jetIDint][ind]->Fill(recpt, weight_eS); ind++;
 	hJetQA[jetIDint][ind]->Fill(rawpt_F[jet], weight_eS); ind++;
 	if(recpt>jetQAPtCut){//second jet pt cut

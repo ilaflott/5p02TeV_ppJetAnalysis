@@ -175,6 +175,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   histTitle2+=RandEtaRange;
   
   TH1F*  hrec_sameside = (TH1F*)fpp_MC->Get( histTitle2.c_str() ); 
+  hrec_sameside->Scale(1./10.);
   hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
@@ -232,6 +233,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   genHistTitle+=RandEtaRange;
   
   TH1F* hgen = (TH1F*)fpp_MC->Get( genHistTitle.c_str() );
+  hgen->Scale(1./10.);
   hgen->Write();
   if(debugMode)hgen->Print("base");    
   
@@ -282,6 +284,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   
   //get the response matrix made by readforests
   TH2F* hmat = (TH2F*)fpp_MC->Get( TH2_title.c_str() );
+  hmat->Scale(1./10.);
   hmat->Write();
   if(debugMode)hmat->Print("base");
   
@@ -490,7 +493,13 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   hfak->SetMarkerColor(kGreen);
   hfak->SetMarkerSize(1.02);
 
+  TH1F* hgen_rebin_ratClone=(TH1F*)hgen_rebin->Clone("hgen_rebin_ratioClone");
+  if(nbins_pt_reco<nbins_pt_gen)
+    hgen_rebin_ratClone=(TH1F*)hgen_rebin_ratClone->Rebin( nbins_pt_reco, ("hgen_rebin_ratioClone_rebin") , boundaries_pt_reco);  
   
+  TH1F* hgen_rebin_ratClone=(TH1F*)hgen_rebin->Clone("hgen_rebin_ratioClone");
+
+
   
   
   // SVD unfolding loop
@@ -660,9 +669,6 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
     if(debugMode)hgen_unfolded_ratio[kr]->Print("base");
     
     
-    TH1F* hgen_rebin_ratClone=(TH1F*)hgen_rebin->Clone("hgen_rebin_ratioClone");
-    hgen_rebin_ratClone=(TH1F*)hgen_rebin_ratClone->Rebin( nbins_pt_reco, ("hgen_rebin_ratioClone_rebin") , boundaries_pt_reco);          
-
     hgen_folded_ratio[kr] = (TH1F*)hfold_svd[kr]->Clone( ("hgen_fold_ratio"+kRegRandEtaRange).c_str());            
     hgen_folded_ratio[kr]->SetTitle( ("SVD/Gen.,"+kRegRandEtaRange_plotTitle).c_str() );
     hgen_folded_ratio[kr]->Divide(hgen_rebin_ratClone);      

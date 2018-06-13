@@ -83,7 +83,7 @@
 #include "unfoldSpectra_TMatrix_funcs.h"
 #include "unfoldSpectra_simpbins.h"
 #include "unfoldSpectra_anabins.h"
-
+#include "unfoldSpectra_thySpectra.h"
 
 
 // -----------------------------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 //Bayes settings
 //const int kIter = 4; // recommended is 4, default is 4
-const int kIter = 4; // recommended is 4, default is 4
+const int kIter = 2; // recommended is 4, default is 4
 
 //SVD settings 
 //    max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
@@ -137,7 +137,10 @@ const bool zeroBins=false; //leave false almost always
 
 //useful strings, numbers
 //const double integratedLuminosity=27.4;//+/-2.4% //int lumi is in pb-1
-const float integratedLuminosity=27.4*pow(10.,9.);//+/-2.4% //int lumi is in mb^-1
+const float integratedLuminosity=27.4*pow(10.,3.);//+/-2.4% //int lumi is in nb^-1
+//const float integratedLuminosity=27.4*pow(10.,6.);//+/-2.4% //int lumi is in microb^-1
+//const float integratedLuminosity=27.4*pow(10.,9.);//+/-2.4% //int lumi is in mb^-1
+
 const std::string CMSPRELIM= "CMS PRELIMINARY"; 
 const std::string MCdesc= "Py8 Tune CUETP8M1 QCD"; 
 const std::string Datadesc1= "pp promptReco, #sqrt{s}=5.02 TeV"; 
@@ -393,9 +396,9 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins
 
 void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){
   
-
- //h->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
- h->GetYaxis()->SetTitle("A.U.");
+  h->GetYaxis()->SetTitle("#frac{d^{2} #sigma}{d #eta dp_{T}} (nb/GeV)");
+  //h->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
+  //h->GetYaxis()->SetTitle("A.U.");
   h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
@@ -515,7 +518,7 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
 							 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 							 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
       //std::cout<<"mem here in drawRespMatrixFile"<<std::endl;
-      hmat_percenterrs->Write();
+      if(funcDebug)hmat_percenterrs->Write();
       if(funcDebug) hmat_percenterrs->Print("base");
       
       // percent error matrix in binning of interest ---------------    
@@ -526,7 +529,7 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       TH2F* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2F*)  hmat_rebin,
       							   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
       							   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-      hmat_rebin_colnormd->Write();
+      if(funcDebug)hmat_rebin_colnormd->Write();
       if(funcDebug)  hmat_rebin_colnormd->Print("base");
       
       // col normd matrix in binning of interest  ---------------    
@@ -535,7 +538,7 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       TH2F*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2F*)  hmat_rebin,
       							    (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
       							    (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-      hmat_rebin_rownormd->Write();
+      if(funcDebug)hmat_rebin_rownormd->Write();
       if(funcDebug)  hmat_rebin_rownormd->Print("base");
       
       // row normd matrix in binning of interest  ---------------    
@@ -576,4 +579,92 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       
 
   return;
+}
+
+
+TH1F* makeThyHist_00eta20(std::string filename){
+  
+  bool funcDebug=false;
+  
+  TFile* thyFile=TFile::Open(filename.c_str());
+  if(!thyFile){
+    std::cout<<"err no file"<<std::endl;
+    return NULL;
+  }
+  
+  TH1F* h_00eta05=(TH1F*)thyFile->Get("h0100100");   //  TH1F* h_00eta05=(TH1F*)thyFile->Get("h1100100");
+  TH1F* h_05eta10=(TH1F*)thyFile->Get("h0100200");   //  TH1F* h_05eta10=(TH1F*)thyFile->Get("h1100200");
+  TH1F* h_10eta15=(TH1F*)thyFile->Get("h0100300");   //  TH1F* h_10eta15=(TH1F*)thyFile->Get("h1100300");
+  TH1F* h_15eta20=(TH1F*)thyFile->Get("h0100400");   //  TH1F* h_15eta20=(TH1F*)thyFile->Get("h1100400");
+  
+
+  
+  //highest eta bin has smallest pt range (this is how raghav rigged the files, no choice)
+  //all eta bin hists start at the same pt; 40-something. they only differ in where they end.
+  int nbinsx_forSum = h_15eta20->GetNbinsX();
+  float finalBinLowEdge_forSum=h_15eta20->GetBinLowEdge(nbinsx_forSum);
+  if(funcDebug)std::cout<< "nbinsx_forSum="         << nbinsx_forSum          << std::endl;
+  if(funcDebug)std::cout<< "finalBinLowEdge_forSum="<< finalBinLowEdge_forSum << std::endl;
+  
+  int nbinsx_max =h_00eta05->GetNbinsX();
+  float finalBinLowEdge_max=h_00eta05->GetBinLowEdge(nbinsx_max);
+  if(funcDebug)std::cout<< "nbinsx_max="         << nbinsx_max          << std::endl;
+  if(funcDebug)std::cout<< "finalBinLowEdge_max="<< finalBinLowEdge_max << std::endl;
+
+  //this is the hist that will be returned, clone for binning
+  TH1F* thyHist=(TH1F*)h_00eta05->Clone("sumThyHistClone_forBins");
+  thyHist->Reset("ICES");//resets integ, contents, errs, stats
+  thyHist->Reset("M");//resets max/min
+  //thyHist->SumW2();
+  if(funcDebug)thyHist->Print("base");
+  
+  
+  for(int i=1;i<=nbinsx_max;i++){
+    if(funcDebug)std::cout<<"i="<<i<<std::endl;
+    thyHist->SetBinContent(i,0.);
+    
+    if(i<=nbinsx_forSum){
+      float sumcontent=0.;
+      float sumerr=0.;
+      sumcontent+=h_00eta05->GetBinContent(i);
+      sumerr+=h_00eta05->GetBinContent(i)*h_00eta05->GetBinContent(i);
+      
+      sumcontent+=h_05eta10->GetBinContent(i);
+      sumerr+=h_05eta10->GetBinContent(i)*h_05eta10->GetBinContent(i);
+      
+      sumcontent+=h_10eta15->GetBinContent(i);
+      sumerr+=h_10eta15->GetBinContent(i)*h_10eta15->GetBinContent(i);
+
+      sumcontent+=h_15eta20->GetBinContent(i);
+      sumerr+=h_15eta20->GetBinContent(i)*h_15eta20->GetBinContent(i);
+      
+      sumcontent/=4.;//etabin width
+      sumcontent/=1000.;//picobarns to nanobarns
+      
+      sumerr=sqrt(sumerr);//errs
+      sumerr/=4.;//etabin width
+      sumerr/=1000.;//picobarns to nanobarns
+      
+      if(funcDebug)std::cout<<"sumcontent="<<sumcontent<<std::endl;
+      if(funcDebug)std::cout<<"sumerr="<<sumerr<<std::endl;
+      
+      thyHist->SetBinContent(i,sumcontent);
+      thyHist->SetBinError(i,sumerr);
+      
+      if(funcDebug)std::cout<<"thyHist BinConent="<<thyHist->GetBinContent(i)<<std::endl;
+      if(funcDebug)std::cout<<"thyHist BinError=" <<thyHist->GetBinError(i)<<std::endl;
+      
+    }
+    else continue;
+    
+    
+  }
+  
+  if(funcDebug)std::cout<<"end of makeThyHist_00eta20"<<std::endl;
+  if(funcDebug)thyHist->Print("base");
+
+
+
+  return thyHist;
+
 }

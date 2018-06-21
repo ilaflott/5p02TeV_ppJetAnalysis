@@ -31,8 +31,8 @@
 void divideBinWidth(TH1 *h){
   h->Sumw2();
   for (int i=0;i<=h->GetNbinsX();++i){//binsX loop
-    Float_t val=h->GetBinContent(i);
-    Float_t valErr=h->GetBinError(i);
+    Double_t val=h->GetBinContent(i);
+    Double_t valErr=h->GetBinError(i);
     val/=h->GetBinWidth(i);
     valErr/=h->GetBinWidth(i);
     h->SetBinContent(i,val);
@@ -44,8 +44,8 @@ void divideBinWidth(TH1 *h){
 }
 
 
-float trigComb(bool *trgDec, int *treePrescl, double triggerPt){
-  float weight_eS=0.;
+double trigComb(bool *trgDec, int *treePrescl, double triggerPt){
+  double weight_eS=0.;
   if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS=treePrescl[0];
   if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS=treePrescl[1];
   if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS=treePrescl[2];
@@ -63,22 +63,22 @@ float deltaphi(float phi1, float phi2){
 
 
 
-float cpuVzWeight_poly(float vz_F){
+double cpuVzWeight_poly(float vz_F){
   bool funcDebug=false;
   if(funcDebug)
     std::cout<<"vz_F="<<vz_F<<std::endl;
   // new set using hVz w/ weight=1 and no trig req. / pthat weighted MC // older weights
-  float p0 = 1.165;//1.159;
-  float p1 = 0.009171;//0.008914;
-  float p2 = -0.003257;//-0.003057;
-  float p3 = -2.919e-05;//-2.287e-05;
-  float p4 = -4.647e-06;//-5.287e-06;
-  float p5 = 2.13e-08;//-1.582e-09;
-  float p6 = 2.399e-08;//2.569e-08;
-  float p7 = 4.267e-12;//2.782e-11;
-  float p8 = -2.078e-11;//-2.097e-11;
+  double p0 = 1.165;//1.159;
+  double p1 = 0.009171;//0.008914;
+  double p2 = -0.003257;//-0.003057;
+  double p3 = -2.919e-05;//-2.287e-05;
+  double p4 = -4.647e-06;//-5.287e-06;
+  double p5 = 2.13e-08;//-1.582e-09;
+  double p6 = 2.399e-08;//2.569e-08;
+  double p7 = 4.267e-12;//2.782e-11;
+  double p8 = -2.078e-11;//-2.097e-11;
   
-  float vzWeight=0;
+  double vzWeight=0;
   vzWeight+=p0;
   vzWeight+=p1*pow(vz_F,1);
   vzWeight+=p2*pow(vz_F,2);
@@ -158,7 +158,7 @@ const std::string L1BitStrings[]={//this array is a good idea
 const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
 
 // HLT, both Calo and PF available
-const float HLTCalothresh[]={
+const double HLTCalothresh[]={
   45., 65., 85., 110.   // thought HLT80 threshold was too strict for Calo, now looser
 };
 const std::string Calo_HLTBitStrings[]={
@@ -169,7 +169,7 @@ const std::string Calo_HLTBitStrings[]={
 };
 const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
 
-const float HLTPFthresh[]={
+const double HLTPFthresh[]={
   55., 75., 95., 135.   // thought HLT80 threshold was too strict for Calo, now looser
 };
 const std::string PF_HLTBitStrings[]={
@@ -338,7 +338,7 @@ const int nbins_pt2=sizeof(ptbins2)/sizeof(float)-1;//above values define edges 
 //pthat bins and weights for semi-private MC in millibarns
 const float pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. };
 const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
-const float pthatWeights[]={
+const double pthatWeights[]={
   /*(pthat>=15)&&(pthat<30)    , n[0]=932778   , xsDiff=0.49235 mb    , weight= */ 5.27832e-07,
   /*(pthat>=30)&&(pthat<50)    , n[1]=903567   , xsDiff=0.030482 mb   , weight= */ 3.37352e-08,
   /*(pthat>=50)&&(pthat<80)    , n[2]=983531   , xsDiff=0.0035721 mb  , weight= */ 3.63191e-09,
@@ -374,7 +374,7 @@ const float pthatWeights[]={
 
 const bool doVzWeights=true;
 // non-event triggered vz weights
-const float vzWeights[]={           
+const double vzWeights[]={           
 0.0579229 ,         // vzLow=-24
 0.0622996 ,
 0.061942  ,

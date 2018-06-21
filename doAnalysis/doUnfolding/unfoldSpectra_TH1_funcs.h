@@ -21,8 +21,8 @@ void divideBinWidth(TH1 *h){
       if(funcDebug)std::cout<<"old valErr = "<<      h->GetBinError(i)   << std::endl;
 
 
-      Float_t val    = h->GetBinContent(i);
-      Float_t valErr = h->GetBinError(i);
+      Double_t val    = h->GetBinContent(i);
+      Double_t valErr = h->GetBinError(i);
 
       val    /= h->GetBinWidth(i);
       valErr /= h->GetBinWidth(i);
@@ -106,7 +106,7 @@ void TH1FindHighBin(TH1* h){
     
     
     
-    float content=h->GetBinContent(i);
+    double content=h->GetBinContent(i);
     
     if(content!=0)
       std::cout<<"i="<<i<<" content="<<content<<std::endl;

@@ -97,8 +97,8 @@ const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 
 //Bayes settings
-//const int kIter = 4; // recommended is 4, default is 4
-const int kIter = 2; // recommended is 4, default is 4
+const int kIter = 2; // default is 4
+
 
 //SVD settings 
 //    max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
@@ -137,9 +137,9 @@ const bool zeroBins=false; //leave false almost always
 
 //useful strings, numbers
 //const double integratedLuminosity=27.4;//+/-2.4% //int lumi is in pb-1
-const float integratedLuminosity=27.4*pow(10.,3.);//+/-2.4% //int lumi is in nb^-1
-//const float integratedLuminosity=27.4*pow(10.,6.);//+/-2.4% //int lumi is in microb^-1
-//const float integratedLuminosity=27.4*pow(10.,9.);//+/-2.4% //int lumi is in mb^-1
+const double integratedLuminosity=27.4*pow(10.,3.);//+/-2.4% //int lumi is in nb^-1
+//const double integratedLuminosity=27.4*pow(10.,6.);//+/-2.4% //int lumi is in microb^-1
+//const double integratedLuminosity=27.4*pow(10.,9.);//+/-2.4% //int lumi is in mb^-1
 
 const std::string CMSPRELIM= "CMS PRELIMINARY"; 
 const std::string MCdesc= "Py8 Tune CUETP8M1 QCD"; 
@@ -158,23 +158,23 @@ const Int_t fmstyle[6] = {20,21,22,23,29,3};
 const Int_t emstyle[6] = {24,25,26,27,30,28};
 
 
-float computeEffLumi(TFile* finData){
+double computeEffLumi(TFile* finData){
   
-  float effIntgrtdLumi_vz=1., LumiEff_vz=1.;// eff-> effective, Eff->efficiency
+  double effIntgrtdLumi_vz=1., LumiEff_vz=1.;// eff-> effective, Eff->efficiency
   
   std::cout<<std::endl<<"dataset integrated Luminosity (microbarns) ="<<integratedLuminosity<<std::endl;
-  TH1F *h_NEvents_vzCut   = (TH1F*)finData->Get("NEvents_vzCut");
-  TH1F *h_NEvents_read    = (TH1F*)finData->Get("NEvents_read");
+  TH1 *h_NEvents_vzCut   = (TH1*)finData->Get("NEvents_vzCut");
+  TH1 *h_NEvents_read    = (TH1*)finData->Get("NEvents_read");
 
 
-  //LumiEff_vz = (float) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries();
-  //LumiEff_vz = (float) h_NEvents_vzCut->GetBinContent(2)/h_NEvents_read->GetBinContent(2);
-  LumiEff_vz = (float) h_NEvents_vzCut->GetBinContent(1)/h_NEvents_read->GetBinContent(1);
+  //LumiEff_vz = (double) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries();
+  //LumiEff_vz = (double) h_NEvents_vzCut->GetBinContent(2)/h_NEvents_read->GetBinContent(2);
+  LumiEff_vz = (double) h_NEvents_vzCut->GetBinContent(1)/h_NEvents_read->GetBinContent(1);
 
   
-  std::cout<<"eff if using entries = " << (float) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries() << std::endl;
-  std::cout<<"eff if using GetBinContent(1) = " << (float) h_NEvents_vzCut->GetBinContent(1)/h_NEvents_read->GetBinContent(1) << std::endl;
-  std::cout<<"eff if using GetBinContent(2) = " << (float) h_NEvents_vzCut->GetBinContent(2)/h_NEvents_read->GetBinContent(2) << std::endl;
+  std::cout<<"eff if using entries = " << (double) h_NEvents_vzCut->GetEntries()/h_NEvents_read->GetEntries() << std::endl;
+  std::cout<<"eff if using GetBinContent(1) = " << (double) h_NEvents_vzCut->GetBinContent(1)/h_NEvents_read->GetBinContent(1) << std::endl;
+  std::cout<<"eff if using GetBinContent(2) = " << (double) h_NEvents_vzCut->GetBinContent(2)/h_NEvents_read->GetBinContent(2) << std::endl;
   
 
 
@@ -188,7 +188,7 @@ float computeEffLumi(TFile* finData){
 
 
 
-void drawText(const char *text, float xp, float yp, int size){
+void drawText(const char *text, double xp, double yp, int size){
   bool funcDebug=false;
   if(funcDebug)std::cout<<std::endl<<"in drawText"<<std::endl<<std::endl;
 
@@ -213,7 +213,7 @@ void drawText(const char *text, float xp, float yp, int size){
 
 
 //void matStylePrint(TH2F* mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
-void matStylePrint(TH2 * mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
+void matStylePrint(TH2D * mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
   
   //bool funcDebug=false;
   // general for drawRespMatrix ---------------
@@ -246,26 +246,26 @@ void matStylePrint(TH2 * mat, std::string hTitle, TCanvas* canv, std::string out
   // input resp matrix w/ full range ---------------
   
   mat->SetTitle(hTitle.c_str());
-
+  
   //mat->SetAxisRange(56.,1000.,"X");
   //mat->SetAxisRange(56.,1000.,"Y");
   
   if( hTitle.find("% Errors") != std::string::npos )
-    mat->SetAxisRange(0.1,1000.,"Z");    //mat->SetAxisRange(0.,200.,"Z");
+    mat->SetAxisRange(1.e-01,1.e+03,"Z");    //mat->SetAxisRange(0.,200.,"Z");
   else if (hTitle.find("Errors") != std::string::npos )
-    mat->SetAxisRange(0.000000000000000001,.0001,"Z");
+    mat->SetAxisRange(1.e-12,1.e+02,"Z");
   else if (hTitle.find("Column")  != std::string::npos)
-    mat->SetAxisRange(0.000001,1.,"Z");
+    mat->SetAxisRange(1.e-06,1.e+0,"Z");
   else if (hTitle.find("Row")  != std::string::npos)
-    mat->SetAxisRange(0.000001,1.,"Z");
+    mat->SetAxisRange(1.e-06,1.e+0,"Z");
   else if (hTitle.find("Covariance")  != std::string::npos)
-    mat->SetAxisRange(10e-40,10e-13,"Z");
+    mat->SetAxisRange(1.e-15,1.e+02,"Z");
   else if (hTitle.find("Pearson")  != std::string::npos)
     mat->SetAxisRange(-1.,1.,"Z");
   else if(hTitle.find("Unfolding")  != std::string::npos)
-    mat->SetAxisRange(10e-12,1.,"Z");
+    mat->SetAxisRange(1.e-08,1.e+03,"Z");
   else
-    mat->SetAxisRange(0.000000000000000001,.001,"Z");
+    mat->SetAxisRange(1.e-10,1.e+03,"Z");
   
   //  if(useSimpBins){
   //    if( hTitle.find("%errs") != std::string::npos )
@@ -396,7 +396,7 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins
 
 void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){
   
-  h->GetYaxis()->SetTitle("#frac{d^{2} #sigma}{d #eta dp_{T}} (nb/GeV)");
+  h->GetYaxis()->SetTitle("#frac{d^{2}#sigma}{d#eta dp_{T}} [nb/GeV]");
   //h->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
   //h->GetYaxis()->SetTitle("A.U.");
   h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
@@ -470,13 +470,13 @@ void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPd
 
 
 
-void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
-			//TH2 * covmat_TH2,	//TH2 * Pearson,	//TH2 * unfmat_TH2,
+void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
+			//TH2D* covmat_TH2,	//TH2D* Pearson,	//TH2D* unfmat_TH2,
 			double* boundaries_pt_reco_mat , int nbins_pt_reco_mat,
 			double* boundaries_pt_gen_mat , int nbins_pt_gen_mat,
-			std::string outRespMatPdfFile   , bool  useSimpBins){
+			std::string outRespMatPdfFile   , bool  useSimpBins, TFile* fpp_MC=NULL){
   bool funcDebug=false;
-
+  
   std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;    
   
   std::string open_outRespMatPdfFile=outRespMatPdfFile+"[";      
@@ -496,11 +496,27 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       tempCanvForPdfPrint->Print(open_outRespMatPdfFile.c_str()); 
       
       // orig matrix ---------------    
+      
+      if((bool)fpp_MC){
+	double xLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_lo") )
+				       )->GetTitle() );
+	double xHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_hi") )
+				      )->GetTitle() );
+	double yLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_lo") )
+				       )->GetTitle() );
+	double yHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_hi") )
+				      )->GetTitle() );	
+	hmat->SetAxisRange(xLow,xHi,"X");
+	hmat->SetAxisRange(yLow,yHi,"Y");
+	
+      }
       matStylePrint(hmat, "MC Response Matrix, Original Histogram", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);      
+      
+      
       
       // orig matrix w/ used pt range ---------------    
       tempCanvForPdfPrint->cd();    
-      hmat->SetTitle("MC Response Matrix, p_{T} Range Used");
+      hmat->SetTitle("MC Response Matrix, p_{T} Range Used for Unfolding");
       hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
       hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");      
       hmat->Draw("COLZ");               
@@ -514,7 +530,7 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       
       
       //std::cout<<"mem leakhere?!"<<std::endl;
-      TH2F* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2F*) hmat_errors, (TH2F*) hmat_rebin,
+      TH2D* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2D*) hmat_errors, (TH2D*) hmat_rebin,
 							 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 							 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
       //std::cout<<"mem here in drawRespMatrixFile"<<std::endl;
@@ -526,7 +542,7 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       
       // row/col normd matrix, has correct errors since hmat_rebin has correct errors ---------------
       // POTENTIAL ISSUE: using the resp matrix post rebinning/divide bin width/clearing overflows... should i be using the original matrix?
-      TH2F* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2F*)  hmat_rebin,
+      TH2D* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2D*)  hmat_rebin,
       							   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
       							   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
       if(funcDebug)hmat_rebin_colnormd->Write();
@@ -535,7 +551,7 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
       // col normd matrix in binning of interest  ---------------    
       matStylePrint(hmat_rebin_colnormd, "MC Response Matrix, Columns Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
       
-      TH2F*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2F*)  hmat_rebin,
+      TH2D*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2D*)  hmat_rebin,
       							    (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
       							    (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
       if(funcDebug)hmat_rebin_rownormd->Write();
@@ -582,7 +598,7 @@ void drawRespMatrixFile(TH2 * hmat,TH2 * hmat_rebin,TH2 * hmat_errors,
 }
 
 
-TH1F* makeThyHist_00eta20(std::string filename){
+TH1* makeThyHist_00eta20(std::string filename){
   
   bool funcDebug=false;
   
@@ -592,27 +608,27 @@ TH1F* makeThyHist_00eta20(std::string filename){
     return NULL;
   }
   
-  TH1F* h_00eta05=(TH1F*)thyFile->Get("h0100100");   //  TH1F* h_00eta05=(TH1F*)thyFile->Get("h1100100");
-  TH1F* h_05eta10=(TH1F*)thyFile->Get("h0100200");   //  TH1F* h_05eta10=(TH1F*)thyFile->Get("h1100200");
-  TH1F* h_10eta15=(TH1F*)thyFile->Get("h0100300");   //  TH1F* h_10eta15=(TH1F*)thyFile->Get("h1100300");
-  TH1F* h_15eta20=(TH1F*)thyFile->Get("h0100400");   //  TH1F* h_15eta20=(TH1F*)thyFile->Get("h1100400");
+  TH1* h_00eta05=(TH1*)thyFile->Get("h0100100");   //  TH1* h_00eta05=(TH1*)thyFile->Get("h1100100");
+  TH1* h_05eta10=(TH1*)thyFile->Get("h0100200");   //  TH1* h_05eta10=(TH1*)thyFile->Get("h1100200");
+  TH1* h_10eta15=(TH1*)thyFile->Get("h0100300");   //  TH1* h_10eta15=(TH1*)thyFile->Get("h1100300");
+  TH1* h_15eta20=(TH1*)thyFile->Get("h0100400");   //  TH1* h_15eta20=(TH1*)thyFile->Get("h1100400");
   
 
   
   //highest eta bin has smallest pt range (this is how raghav rigged the files, no choice)
   //all eta bin hists start at the same pt; 40-something. they only differ in where they end.
   int nbinsx_forSum = h_15eta20->GetNbinsX();
-  float finalBinLowEdge_forSum=h_15eta20->GetBinLowEdge(nbinsx_forSum);
+  double finalBinLowEdge_forSum=h_15eta20->GetBinLowEdge(nbinsx_forSum);
   if(funcDebug)std::cout<< "nbinsx_forSum="         << nbinsx_forSum          << std::endl;
   if(funcDebug)std::cout<< "finalBinLowEdge_forSum="<< finalBinLowEdge_forSum << std::endl;
   
   int nbinsx_max =h_00eta05->GetNbinsX();
-  float finalBinLowEdge_max=h_00eta05->GetBinLowEdge(nbinsx_max);
+  double finalBinLowEdge_max=h_00eta05->GetBinLowEdge(nbinsx_max);
   if(funcDebug)std::cout<< "nbinsx_max="         << nbinsx_max          << std::endl;
   if(funcDebug)std::cout<< "finalBinLowEdge_max="<< finalBinLowEdge_max << std::endl;
 
   //this is the hist that will be returned, clone for binning
-  TH1F* thyHist=(TH1F*)h_00eta05->Clone("sumThyHistClone_forBins");
+  TH1* thyHist=(TH1*)h_00eta05->Clone("sumThyHistClone_forBins");
   thyHist->Reset("ICES");//resets integ, contents, errs, stats
   thyHist->Reset("M");//resets max/min
   //thyHist->SumW2();
@@ -624,8 +640,8 @@ TH1F* makeThyHist_00eta20(std::string filename){
     thyHist->SetBinContent(i,0.);
     
     if(i<=nbinsx_forSum){
-      float sumcontent=0.;
-      float sumerr=0.;
+      double sumcontent=0.;
+      double sumerr=0.;
       sumcontent+=h_00eta05->GetBinContent(i);
       sumerr+=h_00eta05->GetBinContent(i)*h_00eta05->GetBinContent(i);
       
@@ -662,9 +678,97 @@ TH1F* makeThyHist_00eta20(std::string filename){
   
   if(funcDebug)std::cout<<"end of makeThyHist_00eta20"<<std::endl;
   if(funcDebug)thyHist->Print("base");
-
-
+  
+  
 
   return thyHist;
 
 }
+
+
+//void divideThyByUnf(TH1* hthyratio, TH1* hunf){
+//    
+//  bool funcDebug=true;
+//  
+//  int nthybins=(int)hthyratio->GetNbinsX();
+//  int nunfbin=(int)hunf->GetNBinsX();
+//  for(int i=1;i<=nthybins; i++){
+//    double thybin_lowedge=hthyratio->GetBinLowEdge(i);
+//    
+//    
+//    for(int j=1; j<=nunfbins; j++){
+//      double hunfbin_lowedge=hunf->GetBinLowEdge(j);
+//      bool edgeMatch=safeDoubleEq(thybin_lowedge,hunfbin_lowedge);
+//      
+//      if(edgeMatch){
+//	double thybinval=hthyratio->GetBinContent(i);
+//	double thybinerr=hthyratio->GetBinError(i);
+//
+//	double hunfbinval=hunf->GetBinContent(i);
+//	double hunfbinerr=hunf->GetBinError(i);
+//
+//	if(!(hunfbinval>0.))
+//	  continue;
+//	
+//	
+//	
+//      }
+//      else 
+//	continue;
+//      
+//    }
+//    
+//    
+//  }
+//  
+//  
+//  return;
+//}
+
+
+
+
+
+
+//TH1* cloneTH1_oneBinWidth(TH1* hist){
+//  int nbinsx=hist->GetNBinsx();
+//  
+//  TH1* hOneBinWidth = new TH1( (hist->GetName()+"_nubins").c_str(),
+//				 (hist->GetTitle()+" one bin width only").c_str(),
+//				 (int)nbinsx,0,(double)nbinsx) ;
+//  
+//  for(int i=1;i<=nbinsx;i++){
+//    double content=hist->GetBinContent(i);
+//    double err=hist->GetBinError(i);
+//    hOneBinWidth->SetBinContent(i,content);
+//    hOneBinWidth->SetBinError(i,err);    
+//  }
+//  
+//  
+//  return (TH1*)hOneBinWidth;
+//}
+//
+//
+//TH1* cloneTH2_oneBinWidth(TH2D* hist){
+//  int nbinsx=hist->GetNBinsx();
+//  int nbinsy=hist->GetNBinsy();
+//  
+//  TH2D* hOneBinWidth = new TH2D( (hist->GetName()+"_nubins").c_str(),
+//				 (hist->GetTitle()+" one bin width only").c_str(), 
+//				 (int)nbinsx,0,(double)nbinsx, 
+//				 (int)nbinsy,0,(double)nbinsy 			 ) ;
+//  
+//  for(int i=1;i<=nbinsx;i++){
+//    for(int j=1;j<=nbinsy;j++){
+//      double content=hist->GetBinContent(i,j);
+//      double err=hist->GetBinError(i,j);
+//      hOneBinWidth->SetBinContent(i,j,content);
+//      hOneBinWidth->SetBinError(i,j,err);    
+//    }
+//  }
+//  
+//  
+//  return (TH2D*)hOneBinWidth;
+//}
+
+

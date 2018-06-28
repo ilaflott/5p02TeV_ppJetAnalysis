@@ -1,20 +1,11 @@
 #!/bin/bash
 
-#cd /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/RooUnfold-svnTrunk
-#pwd
-#
-#echo ""
-#echo "building RooUnfold. make."
-#echo ""
-#make
-#echo ""
-#echo "building RooUnfold. make bin."
-#echo ""
-#make bin
-#
-#cd -
 
 
+
+
+
+make_rooUnfold
 
 
 
@@ -23,13 +14,22 @@
 #
 
 
-echo ""
-echo "running Data."
-echo ""
 
 mv output/unfoldDataSpectra/*.pdf output/unfoldDataSpectra/temp/.
 mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/temp/.
 
+echo ""
+echo "running Data...."
+echo ""
+
+
+echo ""
+echo "// ------------------------------------------------------------------------------------ //"
+echo "// ------------------------------------------------------------------------------------ //"
+echo "// ------------------------------------- BEGIN ---------------------------------------- //"
+echo "// ------------------------------------------------------------------------------------ //"
+echo "// ------------------------------------------------------------------------------------ //"
+echo ""
 
 ####UPDATE runData.sh ALA runMC.sh WHEN YOU GET A CHANCE
 ###prefer these right here, gendr0p1 slightly better than gendr0p2
@@ -62,21 +62,32 @@ mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/temp/.
 #source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi2116_ptLoRec49_ptLoGen49_HLTCalo"   "05" "29" "18" 1 1 1
 #source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi2116_ptLoRec49_ptLoGen49_HLTPF"   "05" "29" "18" 1 1 1
 
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1172_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1101_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1032_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi967_ptLoRec64_ptLoGen64_HLTPF"   "06" "18" "18" 0 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1172_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1101_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"    "0.0eta2.0_ptHi1032_ptLoRec49_ptLoGen49_HLTPF"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTPF"     "0.0eta2.0_ptHi967_ptLoRec64_ptLoGen64_HLTPF"   "06" "18" "18" 1 1 0
 
 
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1172_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 0 1 0
-source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1101_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1032_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 0 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi967_ptLoRec64_ptLoGen64_HLTCalo"   "06" "18" "18" 0 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1172_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1101_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1032_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi967_ptLoRec64_ptLoGen64_HLTCalo"   "06" "18" "18" 1 1 0
 
-##
+
+source runData.sh "0.0eta2.0"    "0.0eta2.0"   "06" "21" "18" 1 1 0
+
 #source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 0 1 0
+
+
+echo ""
+echo "// ------------------------------------------------------------------------------------ //"
+echo "// ------------------------------------------------------------------------------------ //"
+echo "// -------------------------------------- END ----------------------------------------- //"
+echo "// ------------------------------------------------------------------------------------ //"
+echo "// ------------------------------------------------------------------------------------ //"
+echo ""
 
 echo ""
 echo "done w/ Data."

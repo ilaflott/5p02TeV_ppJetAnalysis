@@ -1264,7 +1264,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   hunf->Write();    
   hfold->Write();        
   hfold_truth->Write();
-  
+  hfak->Write();
   // output gen ratios (denom=mc truth)
   h_genratio_oppunf->Write();  //data unf/mc truth	   
   h_genratio_oppfold->Write(); //data fold(unf)/mc truth 

@@ -6,7 +6,7 @@ const bool fillMCEvtQAHists=true;
 const bool fillJERSHists=false;
 const bool fillMCUnfoldingHists=true;
 const bool fillMCEffHists=false;
-const bool fillMCJetIDHists=true;//, tightJetID=false;
+const bool fillMCJetIDHists=false;//, tightJetID=false;
 
 //// readForests_ppMC_JERS
 // ---------------------------------------------------------------------------------------------------------------
@@ -596,35 +596,38 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
+
+      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
+      //float jetIDpt=rawpt_F[jet]; //ala SMP JetID (which should really use energy fractions, not pt)
       
       // 13 TeV JetID criterion
       bool passesJetID=false; //int jtID=0;
       if(fillMCJetIDHists) 	{
 	if (!(absreceta>2.4)) 
 	  { 
-	    if( neSum_F[jet]/rawpt    < 0.99 &&
-		phSum_F[jet]/rawpt    < 0.99 &&
+	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
+		phSum_F[jet]/jetIDpt    < 0.99 &&
 		numConst              > 1    &&      
-		chSum_F[jet]/rawpt    > 0.00 && 
+		chSum_F[jet]/jetIDpt    > 0.00 && 
 		chMult                > 0    &&
-		eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
+		eSum_F[jet]/jetIDpt     < 0.99    ) passesJetID=true;	      
 	  }
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  {	  
-	    if( neSum_F[jet]/rawpt    < 0.99 &&
-		phSum_F[jet]/rawpt    < 0.99 &&
+	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
+		phSum_F[jet]/jetIDpt    < 0.99 &&
 		numConst              > 1       ) passesJetID=true;	      
 	  }		  
 	else if( !(absreceta>3.0) && absreceta>2.7 ) 
 	  {                                                         // CMSSW [76,80]X criterion
-	    if(  true && //phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
-		 true && //neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
+	    if(  true && //phSum_F[jet]/jetIDpt > 0.00 &&                       // else if(  phSum_F[jet]/jetIDpt [< 0.90 ] / [ > 0.01 &&]		     
+		 true && //neSum_F[jet]/jetIDpt < 1.00 &&                       //           neSum_F[jet]/jetIDpt [null   ] / [ < 0.98 &&]		     
 		 numConst            > 0       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
 	  }							      
 	else //( absreceta>3.0) 
 	  {                                                                                        // CMSSW 76X criterion
-	    if( phSum_F[jet] < 0.4 &&         //( phSum_F[jet]/rawpt > 0.                      // else if( phSum_F[jet]/rawpt < 0.90 &&
-		trkSum_F[jet] < 0.4 && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
+	    if( phSum_F[jet] < 0.4 &&         //( phSum_F[jet]/jetIDpt > 0.                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
+		trkSum_F[jet] < 0.4 && //  neSum_F[jet]/jetIDpt > 0. ) &&                         //          neSum_F[jet]/jetIDpt < null &&
 		true       ) passesJetID=true;     //          neuMult            > 10
 	  }	  	  
       }

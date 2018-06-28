@@ -429,7 +429,7 @@ inline bool fileExists (const std::string& name) {
 void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile){
   bool funcDebug=false;
   int outputInd=1;
-
+  
   while( (bool)fileExists(*(outRootFile)) ) {
     if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
     (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
@@ -454,7 +454,7 @@ void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPd
     if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
     (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
     (*outPdfFile       )=outFileName+"_"+std::to_string(outputInd)+".pdf";
-    (*out3x3PdfFile       )=outFileName+"_"+std::to_string(outputInd)+"_SS.pdf";
+    (*out3x3PdfFile       )=outFileName+"_"+std::to_string(outputInd)+"_3x3.pdf";
     (*outRootFile      )=outFileName+"_"+std::to_string(outputInd)+".root";      
     if(funcDebug)std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
     outputInd++;
@@ -771,4 +771,54 @@ TH1* makeThyHist_00eta20(std::string filename){
 //  return (TH2D*)hOneBinWidth;
 //}
 
+TH2D* absVal_TH2Content(TH2D* hist){
+  //bool funcDebug=false;
+  
+  int  nbinsx=(int)hist->GetNbinsX();
+  int  nbinsy=(int)hist->GetNbinsY();
+  
+  std::string newname=(std::string)hist->GetName();
+  newname+="_absvalclone";
+  
+  TH2D* clonehist=(TH2D*)hist->Clone(newname.c_str());
+  
+  for(int i = 1; i<=nbinsx; i++){
+    for(int j = 1;j<=nbinsy; j++){
+      
+      double val=hist->GetBinContent(i,j);
+      
+      if(val<0.)val*=-1;
+      
+      clonehist->SetBinContent(i,j,val);
+      
+      
+    }
+  }
+  
+  
+  
+  
+  return (TH2D*)clonehist;
+}
+
+void divBinWidth_DiAndSVals(double * binning, int binninglength, TH1D* hdisval){
+  
+  //bool funcDebug=false;
+  int numbins=hdisval->GetNbinsX();
+  
+  for(int i=1; i<=numbins; i++){
+    
+    double val= hdisval->GetBinContent(i);
+    
+    double width=binning[i]-binning[i-1];
+    
+    val/=width;
+    
+    hdisval->SetBinContent(i, val);
+    
+  }
+  
+  
+  return;
+}
 

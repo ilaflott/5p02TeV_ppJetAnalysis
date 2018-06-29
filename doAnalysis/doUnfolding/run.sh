@@ -51,6 +51,7 @@ echo ""
 #source runData.sh "0.0eta2.0_ptHi967_ptLoRec49"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 0 0
 #source runData.sh "0.0eta2.0_ptHi967_ptLoRec49" "0.0eta2.0_ptHi1032_ptLoRec56_ptLoGen56" "05" "09" "18" 1 1 0
 #source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi1032_ptLoRec32_ptLoGen32" "05" "09" "18" 1 0 0
+#source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 0 1 0
 
 ####best unfolding (between 64-967 GeV) of 05/09/18 samples. 
 #source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 1 1 0
@@ -73,13 +74,33 @@ echo ""
 #source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1172_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 1 1 0
 #source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1101_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 1 1 0
 #source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi1032_ptLoRec49_ptLoGen49_HLTCalo"   "06" "18" "18" 1 1 0
-#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi967_ptLoRec64_ptLoGen64_HLTCalo"   "06" "18" "18" 1 1 0
+#source runData.sh "0.0eta2.0_ptHi2116_ptLoRec49_HLTCalo"    "0.0eta2.0_ptHi967_ptLoRec64_ptLoGen64_HLTCalo"   "06" "18" "18" 0 1 0
+
+##first job w/ TH1D instead of TH1F
+#source runData.sh "0.0eta2.0"    "0.0eta2.0"   "06" "21" "18" 1 1 0
+
+##new jobs w/ TH1D
+#source runData.sh    "0.0eta2.0_norawJetID_HLTPF"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_noJetID"   "06" "28" "18"   1 1 0
+#source runData.sh      "0.0eta2.0_rawJetID_HLTPF"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_rawJetID"   "06" "28" "18"  1 1 0
+#source runData.sh     "0.0eta2.0_recoJetID_HLTPF"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_recoJetID"   "06" "28" "18" 1 1 0
+#source runData.sh "0.0eta2.0_L2L3recoJetID_HLTPF"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_L2L3recoJetID"   "06" "28" "18" 1 1 0
+#
+#
+#mkdir output/unfoldDataSpectra/HLTPFunfolded_noJetID
+#mv output/unfoldDataSpectra/*.pdf output/unfoldDataSpectra/HLTPFunfolded_noJetID
+#mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/HLTPFunfolded_noJetID
+#scp2Serin output/unfoldDataSpectra/HLTPFunfolded_noJetID
 
 
-source runData.sh "0.0eta2.0"    "0.0eta2.0"   "06" "21" "18" 1 1 0
-
-#source runData.sh "0.0eta2.0_ptHi1588_ptLoRec56"  "0.0eta2.0_ptHi967_ptLoRec49_ptLoGen49" "05" "09" "18" 0 1 0
-
+source runData.sh    "0.0eta2.0_norawJetID_HLTCalo"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_noJetID"   "06" "28" "18"   1 1 0
+#source runData.sh      "0.0eta2.0_rawJetID_HLTCalo"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_rawJetID"   "06" "28" "18"  1 1 0
+#source runData.sh     "0.0eta2.0_recoJetID_HLTCalo"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_recoJetID"   "06" "28" "18" 1 1 0
+#source runData.sh "0.0eta2.0_L2L3recoJetID_HLTCalo"    "0.0eta2.0_ptHi1248_ptLoRec49_ptLoGen49_L2L3recoJetID"   "06" "28" "18" 1 1 0
+#
+mkdir                              output/unfoldDataSpectra/HLTCalounfolded_noJetID
+mv output/unfoldDataSpectra/*.pdf  output/unfoldDataSpectra/HLTCalounfolded_noJetID
+mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/HLTCalounfolded_noJetID
+scp2Serin                          output/unfoldDataSpectra/HLTCalounfolded_noJetID
 
 echo ""
 echo "// ------------------------------------------------------------------------------------ //"
@@ -94,15 +115,38 @@ echo "done w/ Data."
 echo ""
 
 
+### way i generally deal with output
+#echo ""
+#echo "moving data pdf output to local cpu"
+#echo ""
+#scp2Serin "output/unfoldDataSpectra/*.pdf"
+#scp2Serin "output/unfoldDataSpectra/*.root"
 
 
-echo ""
-echo "moving data pdf output to local cpu"
-echo ""
-scp2Serin "output/unfoldDataSpectra/*.pdf"
-scp2Serin "output/unfoldDataSpectra/*.root"
+
+####special circumstances....
+#mkdir output/unfoldDataSpectra/TH1D_v_TH1F_resetBinErrs
+#mv output/unfoldDataSpectra/*.pdf  output/unfoldDataSpectra/TH1D_v_TH1F_resetBinErrs
+#mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/TH1D_v_TH1F_resetBinErrs
 
 
+#mkdir output/unfoldDataSpectra/TH1D_v_TH1F_noResetBinErrs
+#rm output/unfoldDataSpectra/TH1D_v_TH1F_noResetBinErrs/*
+#mv output/unfoldDataSpectra/*.pdf  output/unfoldDataSpectra/TH1D_v_TH1F_noResetBinErrs
+#mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/TH1D_v_TH1F_noResetBinErrs
+#scp2Serin output/unfoldDataSpectra/TH1D_v_TH1F_noResetBinErrs
+
+
+#mkdir  output/unfoldDataSpectra/TH1D_v_TH1F_noFakeSub_noResetBinErrs
+#mv output/unfoldDataSpectra/*.pdf  output/unfoldDataSpectra/TH1D_v_TH1F_noFakeSub_noResetBinErrs
+#mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/TH1D_v_TH1F_noFakeSub_noResetBinErrs
+#scp2Serin output/unfoldDataSpectra/TH1D_v_TH1F_noFakeSub_noResetBinErrs
+
+
+#mkdir  output/unfoldDataSpectra/TH1D_v_TH1F_diffFakeSub_resetBinErrs
+#mv output/unfoldDataSpectra/*.pdf  output/unfoldDataSpectra/TH1D_v_TH1F_diffFakeSub_resetBinErrs
+#mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/TH1D_v_TH1F_diffFakeSub_resetBinErrs
+#scp2Serin output/unfoldDataSpectra/TH1D_v_TH1F_diffFakeSub_resetBinErrs
 
 
 

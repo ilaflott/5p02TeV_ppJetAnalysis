@@ -2,7 +2,7 @@
 
 
 ##CONST
-jtID=1
+jtID=0
 ##CONST
 
 if [ $# -eq 10 ]

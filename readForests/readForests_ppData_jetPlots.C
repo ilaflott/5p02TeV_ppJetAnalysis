@@ -16,8 +16,8 @@ const bool useHLT100=false;
 
 const int jetIDint=(int)fillDataJetIDHists;
 
-const std::string trgCombType="Calo";
-//const std::string trgCombType="PF";
+//const std::string trgCombType="Calo";
+const std::string trgCombType="PF";
 
 
 //// readForests_ppData_jetPlots
@@ -927,10 +927,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
-      //float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
-      float jetIDpt=jtpt;//ala HIN jetID, jtpt is what is read from the HiForest
+      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
+      //float jetIDpt=jtpt;//ala HIN jetID, jtpt is what is read from the HiForest
       //float jetIDpt=rawpt_F[jet];//ala SMP jetID (which should really use energy fractions, not pt)
-
+      
 
       if(fillDataJetIDHists) 	{
 	//if (absreceta<2.4) 

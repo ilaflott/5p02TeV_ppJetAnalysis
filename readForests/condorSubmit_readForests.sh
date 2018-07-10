@@ -73,28 +73,28 @@ outName="${dataType}_${trig}_ak${radius}${jetType}Jets" #echo "outName is ${outN
 dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}_${etaCutLo}eta${etaCutHi}"
 logFileDir="${PWD}/outputCondor/${dirName}"
 
+### uncomment me to run diff jobs w/ unique-but-similar dir names. 
+### if commented, will put all output into one directory
+### create output directory for condor job
+#AltCounter=0
+#while [[ -d "${logFileDir}"  ]]
+#  do
+#  AltCounter=$(( $AltCounter + 1 ))
+#  echo "dir exists!"
+#  dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}__${etaCutLo}eta${etaCutHi}_${AltCounter}"
+#  logFileDir="${PWD}/outputCondor/${dirName}"    
+#done
 
-## create output directory for condor job
-AltCounter=0
-while [[ -d "${logFileDir}"  ]]
-  do
-  AltCounter=$(( $AltCounter + 1 ))
-  echo "dir exists!"
-  dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}__${etaCutLo}eta${etaCutHi}_${AltCounter}"
-  logFileDir="${PWD}/outputCondor/${dirName}"    
-done
 echo "output in outputCondor/${dirName}"
 mkdir $logFileDir
 
 if [[ -d "${logFileDir}"  ]]
 then
-    echo "logFileDir created."
+    echo "logFileDir exists."
 else
     echo "logFileDir not created. exit."
     return
 fi
-
-
 
 
 #uncomment me to work on T2 US MIT
@@ -111,7 +111,20 @@ cp ${readForestsCode}.* "${logFileDir}"
 cp readForests_*.h "${logFileDir}"
 cp condorRun_readForests.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
-cp JECDataDriven.tar.gz "${logFileDir}"
+
+## if ppMC, no JEC tar ball needed (takes up to 2 MB each time)
+readForestsCode2=${readForestsCode#*_}
+#echo "readForestsCode2 = $readForestsCode2"
+readForestsCode3=${readForestsCode2%_*}
+#echo "readForestsCode3 = $readForestsCode3"
+if [[ "$readForestsCode3" == "ppData" ]]
+then
+    transferInputFileList="${filelist},${readForestsExe},JECDataDriven.tar.gz"
+    cp JECDataDriven.tar.gz "${logFileDir}"    
+else
+    transferInputFileList="${filelist},${readForestsExe}"
+fi
+#echo "transferInputFileList=$transferInputFileList"
 cd ${logFileDir}
 
 
@@ -175,7 +188,7 @@ GetEnv         = True
 Rank           = kflops
 Requirements   = Arch == "X86_64"
 should_transfer_files   = YES
-transfer_input_files = ${filelist},${readForestsExe},JECDataDriven.tar.gz
+transfer_input_files = ${transferInputFileList}
 when_to_transfer_output = ON_EXIT
 Notification  =  never
 Queue
@@ -184,13 +197,12 @@ EOF
     ## submit the job defined in the above submit file
     echo "running ${readForestsCode} on files #${startfile} to #${endfile}"
     condor_submit ${logFileDir}/subfile    
-    #sleep 0.3s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
-    sleep 0.1s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
+    sleep 0.5s  #my way of being nicer to condor, not sure it really matters but i'm paranoid
 done
 
 cd -
 echo "done."
-condor_q ilaflott
+#condor_q ilaflott
 return
 
 

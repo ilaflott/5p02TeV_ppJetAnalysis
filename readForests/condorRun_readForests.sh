@@ -26,7 +26,14 @@ echo "contents before job processing is..."
 ls -al
 echo ""
 
-tar -zxvf JECDataDriven.tar.gz
+if [ ! -f ./JECDataDriven.tar.gz ]
+then
+    echo "JEC file not found. Residual corrections will not be applied."
+else
+    echo "JEC file found. Residual corrections may be applied."
+    tar -zxvf JECDataDriven.tar.gz
+fi
+
 
 # inputs for run+root script
 readFilesExe=${1}

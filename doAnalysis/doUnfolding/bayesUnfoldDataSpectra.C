@@ -6,6 +6,7 @@ const bool debugMode=false;
 const bool drawRespMatrix=true;
 
 const double etaBinWidth=4.;//for |y|<2.0
+//const double etaBinWidth=1.;//for |y|<0.5 etc.
 
 //const double MCscaling=1e-06;//05/09/18
 //const double MCscaling=1e+01;//05/29/18
@@ -536,15 +537,15 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   if(debugMode)h_genratio_oppunf->Print("base");
   
   TH1D *h_genratio_oppfold = (TH1D*)hfold->Clone( "ppData_Gen_Ratio_OppFold" );
-  if(nbins_pt_reco>nbins_pt_gen)
-    h_genratio_oppfold=(TH1D*)h_genratio_oppfold->Rebin(nbins_pt_gen,"ppData_Gen_Ratio_OppFold_rebin",boundaries_pt_gen);
+//  if(nbins_pt_reco>nbins_pt_gen)
+//    h_genratio_oppfold=(TH1D*)h_genratio_oppfold->Rebin(nbins_pt_gen,"ppData_Gen_Ratio_OppFold_rebin",boundaries_pt_gen);
   h_genratio_oppfold->SetTitle( "Fold. Data/GEN Py8" );
   h_genratio_oppfold->Divide(hgen_rebin_ratiobin);
   if(debugMode)h_genratio_oppfold->Print("base");
   
   TH1D *h_genratio_oppmeas = (TH1D*)hrec_rebin->Clone( "ppData_Gen_Ratio_Meas" );
-  if(nbins_pt_reco>nbins_pt_gen)
-    h_genratio_oppmeas=(TH1D*)h_genratio_oppmeas->Rebin(nbins_pt_gen,"ppData_Gen_Ratio_Meas_rebin",boundaries_pt_gen);
+//  if(nbins_pt_reco>nbins_pt_gen)
+//    h_genratio_oppmeas=(TH1D*)h_genratio_oppmeas->Rebin(nbins_pt_gen,"ppData_Gen_Ratio_Meas_rebin",boundaries_pt_gen);
   h_genratio_oppmeas->SetTitle( "Meas. Data/GEN Py8" );
   h_genratio_oppmeas->Divide(hgen_rebin_ratiobin);
   if(debugMode)h_genratio_oppmeas->Print("base");
@@ -562,7 +563,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
   // ---------------- RATIOS WITH DATA MEAS -----------------
   TH1D *hrec_rebin_ratiobin=(TH1D*)hrec_rebin->Clone("ppData_Meas_Ratio_denom");
-  hrec_rebin_ratiobin=(TH1D*)hrec_rebin_ratiobin->Rebin(nbins_pt_gen,"ppData_Meas_Ratio_denom_rebin",boundaries_pt_gen);
+  //hrec_rebin_ratiobin=(TH1D*)hrec_rebin_ratiobin->Rebin(nbins_pt_gen,"ppData_Meas_Ratio_denom_rebin",boundaries_pt_gen);
   if(debugMode)hgen_rebin_ratiobin->Print("base");
   
   
@@ -671,33 +672,33 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   // must be after the binwidth divisions + normalization (the thy hists are made this way by default)
   
   TH1D* h_thyratio_CT10nlo  =(TH1D*)CT10nlo  ->Clone("");
-  h_thyratio_CT10nlo = (TH1D*)h_thyratio_CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_Ratio_rebin",boundaries_pt_gen);
+  //h_thyratio_CT10nlo = (TH1D*)h_thyratio_CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_CT10nlo  ->SetTitle("CT10 NLO/Data Unf.");  
-  h_thyratio_CT10nlo  ->Divide(hunf);
+  //h_thyratio_CT10nlo  ->Divide(hunf);
   if(debugMode)h_thyratio_CT10nlo  ->Print("base");
   
   TH1D* h_thyratio_CT14nlo  =(TH1D*)CT14nlo  ->Clone("");  
-  h_thyratio_CT14nlo=(TH1D*)h_thyratio_CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_Ratio_rebin",boundaries_pt_gen);
+  //h_thyratio_CT14nlo=(TH1D*)h_thyratio_CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_CT14nlo  ->SetTitle("CT14 NLO/Data Unf.");
-  h_thyratio_CT14nlo  ->Divide(hunf);
+  //h_thyratio_CT14nlo  ->Divide(hunf);
   if(debugMode)h_thyratio_CT14nlo  ->Print("base");
   
   TH1D* h_thyratio_HERAPDF  =(TH1D*)HERAPDF  ->Clone("");  
-  h_thyratio_HERAPDF=(TH1D*)h_thyratio_HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_Ratio_rebin",boundaries_pt_gen);
+  //h_thyratio_HERAPDF=(TH1D*)h_thyratio_HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_HERAPDF  ->SetTitle("HERAPDF15 NLO/Data Unf.");
-  h_thyratio_HERAPDF  ->Divide(hunf);
+  //h_thyratio_HERAPDF  ->Divide(hunf);
   if(debugMode)h_thyratio_HERAPDF  ->Print("base");
   
   TH1D* h_thyratio_MMHTnlo  =(TH1D*)MMHTnlo  ->Clone("");
-  h_thyratio_MMHTnlo=(TH1D*)h_thyratio_MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_Ratio_rebin",boundaries_pt_gen);
+  //h_thyratio_MMHTnlo=(TH1D*)h_thyratio_MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_MMHTnlo  ->SetTitle("MMHT14 NLO/Data Unf.");
-  h_thyratio_MMHTnlo  ->Divide(hunf);
+  //h_thyratio_MMHTnlo  ->Divide(hunf);
   if(debugMode)h_thyratio_MMHTnlo  ->Print("base");
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
-  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
+  //h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/Data Unf.");
-  h_thyratio_NNPDFnnlo->Divide(hunf);
+  //h_thyratio_NNPDFnnlo->Divide(hunf);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
 
@@ -1036,11 +1037,11 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
     h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Bayes Unf. Data");
     
-    h_thyratio_CT10nlo ->Draw( "][HIST ");      
-    h_thyratio_CT14nlo ->Draw( "][HIST SAME"); 
-    h_thyratio_HERAPDF ->Draw( "][HIST SAME"); 
-    h_thyratio_MMHTnlo ->Draw( "][HIST SAME"); 
-    h_thyratio_NNPDFnnlo->Draw("][HIST SAME"); 
+//    h_thyratio_CT10nlo ->Draw( "][HIST ");      
+//    h_thyratio_CT14nlo ->Draw( "][HIST SAME"); 
+//    h_thyratio_HERAPDF ->Draw( "][HIST SAME"); 
+//    h_thyratio_MMHTnlo ->Draw( "][HIST SAME"); 
+//    h_thyratio_NNPDFnnlo->Draw("][HIST SAME"); 
 
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
@@ -1139,19 +1140,32 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     
     // NJets v. Jet p_T hist (all weight=1) ---------------------
     
-    if( (bool)hJetQA_jtptEntries )
-      {
-	canvForPrint->cd();
-	if(!useSimpBins)canvForPrint->SetLogx(1);
-	canvForPrint->SetLogy(1);
-	
-	setupSpectraHist(hJetQA_jtptEntries, useSimpBins);
-	hJetQA_jtptEntries->GetYaxis()->SetTitle("NJets/Bin [weights=1]");
-	
-	hJetQA_jtptEntries->Draw("HIST E");
-	canvForPrint->Print(outPdfFile.c_str());
-      }
+    if( (bool)hJetQA_jtptEntries )      {
+      TLine* theLineAt100_reco= new TLine( boundaries_pt_reco_mat[0]  
+					   ,100.   
+					   ,(boundaries_pt_reco_mat[nbins_pt_reco_mat])
+					   ,100.);
+      if(debugMode)std::cout<<"theLineAt1p1_reco starts at "<<boundaries_pt_reco_mat[0]  <<std::endl;
+      if(debugMode)std::cout<<"theLineAt1p1_reco ends at   "<<(boundaries_pt_reco_mat[nbins_pt_reco_mat])  <<std::endl;
+      theLineAt100_reco->SetLineWidth(1);
+      theLineAt100_reco->SetLineStyle(2);
+      theLineAt100_reco->SetLineColor(36);
+      
+      canvForPrint->cd();
+      if(!useSimpBins)canvForPrint->SetLogx(1);
+      canvForPrint->SetLogy(1);
+      
+      setupSpectraHist(hJetQA_jtptEntries, useSimpBins);
+      hJetQA_jtptEntries->GetYaxis()->SetTitle("NJets/Bin [weights=1]");
+      
+      hJetQA_jtptEntries->Draw("HIST E");
 
+      theLineAt100_reco->Draw();
+
+      canvForPrint->Print(outPdfFile.c_str());
+      
+    }
+    
     // covariance matrix ---------------      
     canvForPrint->cd();
     canvForPrint->SetLogx(0);

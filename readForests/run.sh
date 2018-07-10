@@ -9,11 +9,11 @@ echo ""
 #echo "...ppMC jetPlots..."
 #rootcompile readForests_ppMC_jetPlots.C
 
-#echo "...ppMC JERS..."
-#rootcompile readForests_ppMC_JERS.C
+echo "...ppMC JERS..."
+rootcompile readForests_ppMC_JERS.C
 
-echo "...ppData jetPlots..."
-rootcompile readForests_ppData_jetPlots.C
+#echo "...ppData jetPlots..."
+#rootcompile readForests_ppData_jetPlots.C
 
 #echo "...ppData jetMult..."
 #rootcompile readForests_ppData_jetMult.C
@@ -25,13 +25,40 @@ echo ""
 echo "done compiling code(s), submitting."
 echo ""
 
+
+####################################################
+
+source run_readForests_JERS.sh 4 "0.0" "0.5" 
+source run_readForests_JERS.sh 4 "0.5" "1.0" 
+source run_readForests_JERS.sh 4 "1.0" "1.5" 
+source run_readForests_JERS.sh 4 "1.5" "2.0" 
+
 #source run_readForests_JERS.sh 4 "0.0" "1.0"
 #source run_readForests_JERS.sh 4 "1.0" "2.0"
+
 #source run_readForests_JERS.sh 4 "0.0" "2.0"
+
+####################################################
+
+#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
+#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
+#source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
+#source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
 
 #source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
 #source run_readForests_jetPlots.sh 4 "1.0" "2.0" "ppData"
-source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
+
+#source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
+
+####################################################
+
+#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
+#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
+#source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppMC"
+#source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppMC"
+
+#source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
+#source run_readForests_jetPlots.sh 4 "1.0" "2.0" "ppMC"
 
 #source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
 
@@ -44,7 +71,7 @@ echo "done running code(s)."
 echo ""
 
 #askCondor  100 30
-askCondor  1 1
+askCondor  100 100
 
 return
 

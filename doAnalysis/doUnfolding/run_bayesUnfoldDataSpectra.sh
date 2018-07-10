@@ -2,7 +2,7 @@
 
 
 ##CONST
-jtID=0
+jtID=1
 ##CONST
 
 if [ $# -eq 9 ]

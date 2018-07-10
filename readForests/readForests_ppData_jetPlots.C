@@ -6,7 +6,7 @@ const bool fillDataEvtQAHists=true;
 //const bool fillDataVtxTrkQAHists=true; //in the works
 
 const bool fillDataJetQAHists=true;
-const bool fillDataJetIDHists=false;//, tightJetID=false;
+const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 
 const bool fillDataDijetHists=false;
@@ -16,8 +16,8 @@ const bool useHLT100=false;
 
 const int jetIDint=(int)fillDataJetIDHists;
 
-//const std::string trgCombType="Calo";
-const std::string trgCombType="PF";
+const std::string trgCombType="Calo";
+//const std::string trgCombType="PF";
 
 
 //// readForests_ppData_jetPlots

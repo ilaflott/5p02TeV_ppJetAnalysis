@@ -97,7 +97,7 @@ const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 
 //Bayes settings
-const int kIter = 2; // default is 4
+const int kIter = 4; // default is 4
 
 
 //SVD settings 
@@ -426,37 +426,42 @@ inline bool fileExists (const std::string& name) {
   return (stat (name.c_str(), &buffer) == 0); 
 }
 
-void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile){
+
+//void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile){
+//  bool funcDebug=false;
+//  int outputInd=1;
+//  
+//  while( (bool)fileExists(*(outRootFile)) ) {
+//    if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
+//    (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
+//    (*outPdfFile       )=outFileName+"_"+std::to_string(outputInd)+".pdf";
+//    (*outRootFile      )=outFileName+"_"+std::to_string(outputInd)+".root";      
+//    if(funcDebug)std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
+//    outputInd++;
+//  }
+//  
+//  
+//  return;
+//}
+
+
+
+
+void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile, std::string *out3x3PdfFile=NULL){
   bool funcDebug=false;
   int outputInd=1;
   
   while( (bool)fileExists(*(outRootFile)) ) {
-    if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
+    if(funcDebug)
+      std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
     (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
     (*outPdfFile       )=outFileName+"_"+std::to_string(outputInd)+".pdf";
     (*outRootFile      )=outFileName+"_"+std::to_string(outputInd)+".root";      
-    if(funcDebug)std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
-    outputInd++;
-  }
-  
-  
-  return;
-}
+    if((bool)out3x3PdfFile)
+      (*out3x3PdfFile       )=outFileName+"_"+std::to_string(outputInd)+"_3x3.pdf";
 
-
-
-
-void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *out3x3PdfFile, std::string *outRootFile){
-  bool funcDebug=false;
-  int outputInd=1;
-  
-  while( (bool)fileExists(*(outRootFile)) ) {
-    if(funcDebug)std::cout<<"fileExists! adding ind="<<outputInd<<std::endl;
-    (*outRespMatPdfFile)=outFileName+"_"+std::to_string(outputInd)+"_respMat.pdf";
-    (*outPdfFile       )=outFileName+"_"+std::to_string(outputInd)+".pdf";
-    (*out3x3PdfFile       )=outFileName+"_"+std::to_string(outputInd)+"_3x3.pdf";
-    (*outRootFile      )=outFileName+"_"+std::to_string(outputInd)+".root";      
-    if(funcDebug)std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
+    if(funcDebug)
+      std::cout<<"outPdffile="<<(*outPdfFile)<<std::endl;    
     outputInd++;
   }
   

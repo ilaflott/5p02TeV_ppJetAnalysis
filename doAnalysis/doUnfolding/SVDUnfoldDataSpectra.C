@@ -8,6 +8,7 @@ const bool drawPDFs=true;
 const bool debugMode=false;
 const bool drawRespMatrix=true;
 const double etaBinWidth=4.;
+//const double etaBinWidth=1.;
 
 //const double MCscaling=1e-06;//05/09/18
 //const double MCscaling=1e+01;//05/29/18
@@ -75,15 +76,15 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
   
   std::string outRespMatPdfFile =  outFileName+"_respMat.pdf";
   std::string outSVDPdfFile   =  outFileName+".pdf";  
-  std::string out3x3SVDPdfFile   =  outFileName+"_3x3.pdf"; 
   std::string outRootFile     =  outFileName+".root";  
+  std::string out3x3SVDPdfFile   =  outFileName+"_3x3.pdf"; 
   
   checkNRenameFiles( outFileName, 
 		     &outRespMatPdfFile, 
 		     &outSVDPdfFile, 
-		     &out3x3SVDPdfFile, 
-		     &outRootFile );
-
+		     &outRootFile,
+		     &out3x3SVDPdfFile);
+  
   //for output
   if(debugMode)std::cout<<"opening output file: "<<outRootFile<<std::endl;
   TFile* fout = new TFile(outRootFile.c_str(),"RECREATE");   
@@ -525,7 +526,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
       //divBinWidth_DiAndSVals( (double*)boundaries_pt_gen, (int)nbins_pt_gen, (TH1D*)hSVal);
       
       //hSVal->SetTitle(" singular values ");
-      //hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
+      hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
       //hSVal->SetAxisRange(0.,(double)(hSVal->GetNbinsX()),"X");
       hSVal->SetXTitle("i");        
       hSVal->SetYTitle("Singular Values s_{i}");        
@@ -537,9 +538,10 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir, std::string inFile_MC_dir
       c11->cd(2);
       c11->cd(2)->SetLogy();    
 
+      //dont do this. misguided at best.
       //divBinWidth_DiAndSVals( (double*)boundaries_pt_gen, (int)nbins_pt_gen, (TH1D*)hdi);
       
-      //hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
+      hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
       //hdi->SetAxisRange(0.,(double)(hdi->GetNbinsX()),"X");
       hdi->SetXTitle("i");
       hdi->SetYTitle("Divector Values d_{i}");

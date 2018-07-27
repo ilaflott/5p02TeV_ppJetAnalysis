@@ -246,8 +246,8 @@ void matStylePrint(TH2D * mat, std::string hTitle, TCanvas* canv, std::string ou
 double* setBinning ( bool useSimpBins, std::string type){
   bool funcDebug=false;
   if(funcDebug)std::cout<<std::endl<<"in setBinning"<<std::endl<<std::endl;  
-
-  if(type!="gen"||type!="reco"){    
+  
+  if( type!="gen" && type!="reco" ){    
     std::cout<<"type not found; bins not set!"<<std::endl;
     std::cout<<"SHUT"<<std::endl;
     std::cout<<"DOWN"<<std::endl;
@@ -273,8 +273,8 @@ double* setBinning ( bool useSimpBins, std::string type){
 int setNBins ( bool useSimpBins, std::string type){
   bool funcDebug=false;
   if(funcDebug)std::cout<<std::endl<<"in set/nBins"<<std::endl<<std::endl;
-
-  if(type!="gen"||type!="reco"){    
+  
+  if( type!="gen" && type!="reco" ){    
     std::cout<<"type not found; bins not set!"<<std::endl;
     std::cout<<"SHUT"<<std::endl;
     std::cout<<"DOWN"<<std::endl;
@@ -441,8 +441,8 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
 }
 
 
-TH1* makeThyHist_00eta20(std::string filename){
-  bool funcDebug=false;
+TH1* makeThyHist_00eta20(std::string filename, bool applyNPCorrFactor=true){
+  bool funcDebug=true;
   
   TFile* thyFile=TFile::Open(filename.c_str());
   if(!thyFile){
@@ -473,26 +473,68 @@ TH1* makeThyHist_00eta20(std::string filename){
   //thyHist->SumW2();
   if(funcDebug)thyHist->Print("base");
   
+  TFile* NPCorrFile=NULL;
+  TF1* fNPCorr_00eta05=NULL;
+  TF1* fNPCorr_05eta10=NULL;
+  TF1* fNPCorr_10eta15=NULL;
+  TF1* fNPCorr_15eta20=NULL;
+  if(applyNPCorrFactor){
+    NPCorrFile=(TFile*)TFile::Open(NPCorr_filename.c_str());
+    if(NPCorr_filename.find("nnlo")!=std::string::npos){
+      fNPCorr_00eta05=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin0");
+      fNPCorr_05eta10=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin1");
+      fNPCorr_10eta15=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin2");
+      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin3");    }
+    else{
+      fNPCorr_00eta05=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin0");
+      fNPCorr_05eta10=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin1");
+      fNPCorr_10eta15=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin2");
+      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin3");    }
+  }
+  
+  
   for(int i=1;i<=nbinsx_max;i++){
     if(funcDebug)std::cout<<"i="<<i<<std::endl;
     thyHist->SetBinContent(i,0.);
     
     if(i<=nbinsx_forSum){
-      double sumcontent=0.;
-      sumcontent+=h_00eta05->GetBinContent(i);
-      sumcontent+=h_05eta10->GetBinContent(i);
-      sumcontent+=h_10eta15->GetBinContent(i);
-      sumcontent+=h_15eta20->GetBinContent(i);
+      
+      double NPCF_00eta05=1.;
+      double NPCF_05eta10=1.;
+      double NPCF_10eta15=1.;
+      double NPCF_15eta20=1.;
+      if(applyNPCorrFactor&&((bool)NPCorrFile)){
+	double bincenter=(double)thyHist->GetXaxis()->GetBinCenter(i);
+	NPCF_00eta05=fNPCorr_00eta05->Eval(bincenter) ;
+	NPCF_05eta10=fNPCorr_05eta10->Eval(bincenter) ;
+	NPCF_10eta15=fNPCorr_10eta15->Eval(bincenter) ;
+	NPCF_15eta20=fNPCorr_15eta20->Eval(bincenter) ;  
+	if(funcDebug){
+	  std::cout << "NPCF_00eta05 = " << NPCF_00eta05 << std::endl;
+	  std::cout << "NPCF_05eta10 = " << NPCF_05eta10 << std::endl;
+	  std::cout << "NPCF_10eta15 = " << NPCF_10eta15 << std::endl;
+	  std::cout << "NPCF_15eta20 = " << NPCF_15eta20 << std::endl;	}
+	if(NPCF_00eta05>1.)NPCF_00eta05=1.;
+	if(NPCF_05eta10>1.)NPCF_05eta10=1.;
+	if(NPCF_10eta15>1.)NPCF_10eta15=1.;
+	if(NPCF_15eta20>1.)NPCF_15eta20=1.;	
+      }
+      
+      double sumcontent=0.;     
+      sumcontent+=(h_00eta05->GetBinContent(i)*NPCF_00eta05 );
+      sumcontent+=(h_05eta10->GetBinContent(i)*NPCF_05eta10 );
+      sumcontent+=(h_10eta15->GetBinContent(i)*NPCF_10eta15 );
+      sumcontent+=(h_15eta20->GetBinContent(i)*NPCF_15eta20 );
       sumcontent/=4.;//etabin width
       sumcontent/=1000.;//picobarns to nanobarns
       if(funcDebug)std::cout<<"sumcontent="<<sumcontent<<std::endl;
       thyHist->SetBinContent(i,sumcontent);
       
       double sumerr=0.;
-      sumerr+=h_00eta05->GetBinContent(i)*h_00eta05->GetBinContent(i);      
-      sumerr+=h_05eta10->GetBinContent(i)*h_05eta10->GetBinContent(i);
-      sumerr+=h_10eta15->GetBinContent(i)*h_10eta15->GetBinContent(i);
-      sumerr+=h_15eta20->GetBinContent(i)*h_15eta20->GetBinContent(i);
+      sumerr+=h_00eta05->GetBinError(i)*h_00eta05->GetBinError(i)*NPCF_00eta05*NPCF_00eta05;      
+      sumerr+=h_05eta10->GetBinError(i)*h_05eta10->GetBinError(i)*NPCF_05eta10*NPCF_05eta10;
+      sumerr+=h_10eta15->GetBinError(i)*h_10eta15->GetBinError(i)*NPCF_10eta15*NPCF_10eta15;
+      sumerr+=h_15eta20->GetBinError(i)*h_15eta20->GetBinError(i)*NPCF_15eta20*NPCF_15eta20;
       sumerr=sqrt(sumerr);//errs
       sumerr/=4.;//etabin width
       sumerr/=1000.;//picobarns to nanobarns      

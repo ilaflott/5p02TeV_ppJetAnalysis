@@ -990,7 +990,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"Data Unf.","pl");
     leg3->AddEntry(hgen_meas_ratio,              "Data Meas.","pl");
     leg3->AddEntry(hgen_ssmeas_ratio,            "MC Meas.","pl");
-
+    
     //leg3->AddEntry(hgen_folded_ratio[kRegDraw],"MC Fold(Unf.)/MC Truth","pl");
     //leg3->SetTextSize(0.02);
     leg3->Draw();
@@ -1105,9 +1105,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     //legfake->SetTextSize(0.02);
     legfake->Draw();
     
-//    drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
-//    drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
-//    drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
+    //    drawText( "5.02 TeV pp, ak4PF Jets",          0.14, 0.75, 22);
+    //    drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
+    //    drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
     drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
     
     cCheck->Print(outPdfFile.c_str());
@@ -1158,7 +1158,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
 
     //HERAPDF->SetLineColor(kBlue);
     setupSpectraHist(HERAPDF  ,useSimpBins);
-    legendThy->AddEntry(HERAPDF  ,"HERAPDF 2015 NLO","l");
+    //legendThy->AddEntry(HERAPDF  ,"HERAPDF 2015 NLO","l");
     if(debugMode){fout->cd(); HERAPDF->Write("HERAPDF105_NLO_R04_jtpt");}
     
     //MMHTnlo->SetLineColor(kMagenta);
@@ -1180,16 +1180,17 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     legendThy->AddEntry(hunf_svd[kRegDraw],"Data Unf.","lp");
     legendThy->AddEntry(hgen_rebin,"MC Truth", "lp");
     
-    HERAPDF->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
-    HERAPDF->SetTitle("NLO Thy w/ Data Unf., MC Truth");
+    //HERAPDF->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
+    //HERAPDF->SetTitle("NLO Thy w/ Data Unf., MC Truth");
+    MMHTnlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
+    MMHTnlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
     
-    HERAPDF  ->Draw("][HIST E");
-    MMHTnlo  ->Draw("][HIST E SAME");
+    //HERAPDF  ->Draw("][HIST E");
+    MMHTnlo  ->Draw("][HIST E");
     NNPDFnnlo->Draw("][HIST E SAME");
     
     hgen_rebin->Draw("P E SAME");
-    hunf_svd[kRegDraw]->Draw("P E SAME");   //just for axis range
-    
+    hunf_svd[kRegDraw]->Draw("P E SAME");   //just for axis range    
     
     legendThy->Draw();
 
@@ -1199,7 +1200,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
 
     //   --------------------------------------------------
     //  thy ratios
-   
+    
     cCheck->cd();
     if(!useSimpBins)cCheck->SetLogx(1);
     cCheck->SetLogy(0);
@@ -1216,20 +1217,20 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     
 
     h_thyratio_mctruth->Draw("P E");
-    h_thyratio_CT10nlo ->Draw( "][HIST SAME");      
-    h_thyratio_CT14nlo ->Draw( "][HIST SAME"); 
-    h_thyratio_HERAPDF ->Draw( "][HIST SAME"); 
-    h_thyratio_MMHTnlo ->Draw( "][HIST SAME"); 
-    h_thyratio_NNPDFnnlo->Draw("][HIST SAME"); 
+    h_thyratio_CT10nlo ->Draw( "][HIST E SAME");      
+    h_thyratio_CT14nlo ->Draw( "][HIST E SAME"); 
+    //h_thyratio_HERAPDF ->Draw( "][HIST E SAME"); 
+    h_thyratio_MMHTnlo ->Draw( "][HIST E SAME"); 
+    h_thyratio_NNPDFnnlo->Draw("][HIST E SAME"); 
     
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
     legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
-    legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
+    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
     legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
-    legendthyrat->AddEntry(h_thyratio_mctruth,   "PY8 MC LO",       "lp");
+    legendthyrat->AddEntry(h_thyratio_mctruth,   "PY8 MC LO (truth)",       "lp");
     
     legendthyrat->Draw();
     

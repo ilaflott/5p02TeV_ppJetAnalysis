@@ -1,10 +1,10 @@
 #!/bin/bash
 #CONST
-doBayes=0
+doBayes=1
 doSVD=1
 useSimpBins=0
-doMCUnfolding=0
-doDataUnfolding=1
+doMCUnfolding=1
+doDataUnfolding=0
 dataHLTPF=1
 dataHLTCalo=0
 #CONST

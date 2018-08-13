@@ -235,7 +235,9 @@ TSVDUnfold::~TSVDUnfold()
 
 //_______________________________________________________________________
 TH1D* TSVDUnfold::Unfold( Int_t kreg )
-{
+{  
+  cout<<"IN ROOUNFOLD's TSVDUnfold.cxx, Unfold(Int_t kreg)"<<endl;
+  cout<<"RooUnfoldSvd.cxx called me!"<<endl;
    // Perform the unfolding with regularisation parameter kreg
    fKReg = kreg;
    

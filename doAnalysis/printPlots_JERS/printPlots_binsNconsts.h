@@ -55,23 +55,45 @@ const int Nbins_pthat=sizeof(pthat)/sizeof(double);
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 
 // Error in <TAxis::TAxis::Set>: bins must be in increasing order
 const Double_t ptbins_debug[]={
-  //5.,
-  //15., 18., 21., 24., 28.,
-  32., 
-  37., 
-  43., 
-  49., 
-  56., 
-  64., 
-  74., 
-  84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
-  507., 548., 592., 638., 686., // junk bins below
-  1000.,
-  1500.
-  //  1050.
-  //  737, 790, 
-  //  846, 905, 
-  //  967
+  //15., 18., 21., 24.,
+  28.,
+  32.,
+  37.,
+  43., //garbage bins
+  49. , 56.,
+  64., 74., 84., 97., 114.,
+  133., 153., 174., 196.,
+  220., 245., 272.,
+  300., 330., 362., 395., 430., 468., 507.,
+  548., 592., 638., 686.,
+  737., 790., 846.,
+  905.,   
+  967.,
+  1032.//, //generally, garbage bins
+  //1101.,
+  //1172.,
+  //1248.,
+  //1327.,
+  //1410.
+  
+  // BINS USED FOR APS DNP BELOW
+  //  //5.,
+  //  //15., 18., 21., 24., 28.,
+  //  32., 
+  //  37., 
+  //  43., 
+  //  49., 
+  //  56., 
+  //  64., 
+  //  74., 
+  //  84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
+  //  507., 548., 592., 638., 686., // junk bins below
+  //  1000.,
+  //  1500.
+  //  //  1050.
+  //  //  737, 790, 
+  //  //  846, 905, 
+  //  //  967
 }; 
 const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;
 
@@ -86,6 +108,35 @@ const Double_t absetabins[]={
 //const double absetabins_lo[] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.2};
 //const double absetabins_hi[] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.7};
 const int nbins_abseta = 8; //sizeof(absetabins)/sizeof(Double_t)-1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

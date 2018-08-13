@@ -112,6 +112,8 @@ cp readForests_*.h "${logFileDir}"
 cp condorRun_readForests.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 
+readForestsExe="${readForestsCode}.exe"
+
 ## if ppMC, no JEC tar ball needed (takes up to 2 MB each time)
 readForestsCode2=${readForestsCode#*_}
 #echo "readForestsCode2 = $readForestsCode2"
@@ -129,7 +131,6 @@ cd ${logFileDir}
 
 
 ### CREATE NAMES AND FILES, THEN SUBMIT ###
-readForestsExe="${readForestsCode}.exe"
 lastFilePos=$(( $nFiles-1 ))
 NthJob=0
 startfile=0

@@ -110,6 +110,7 @@ ClassImp (RooUnfold);
 RooUnfold::RooUnfold (const RooUnfoldResponse* res, const TH1* meas, const char* name, const char* title)
   : TNamed (name, title)
 {
+  cout<<"in ROOUNFOLD's RooUnfold.cxx, special base RooUnfold constructor accessed by constructiors of unfolding classes"<<endl;
   // Constructor with response matrix object and measured unfolding input histogram.
   // Should not normally be used directly - instead, create an instance of one of RooUnfold's subclasses,
   // or use the New() static constructor.
@@ -330,6 +331,10 @@ void RooUnfold::SetResponse (RooUnfoldResponse* res, Bool_t takeOwnership)
 
 void RooUnfold::Unfold()
 {
+  cout<<endl;
+  cout<<"IN ROOUNFOLD'S RooUnfold.cxx, Unfold( )"<<endl;
+  cout<<"RooUnfold.cxx, UnfoldWithErrors() called me!!"<<endl;
+  cout<<"WARNING NOT ACTUALLY UNFOLDING I SHOULDNT BE HERE"<<endl;
   // Dummy unfolding - just copies input
   cout << "********************** " << ClassName() << ": dummy unfolding - just copy input **********************" << endl;
   _rec.ResizeTo (_nt);
@@ -402,6 +407,9 @@ void RooUnfold::GetErrMat()
 
 Bool_t RooUnfold::UnfoldWithErrors (ErrorTreatment withError, bool getWeights)
 {
+    cout<<endl;
+  cout<<"IN ROOUNFOLD'S RooUnfold.cxx, UnfoldWithErrors( ErrorTreatment , bool)"<<endl;
+  cout<<"RooUnfold.cxx, Hreco() called me!!"<<endl;
   if (!_unfolded) {
     if (_fail) return false;
     const TH1* rmeas= _res->Hmeasured();
@@ -417,6 +425,9 @@ Bool_t RooUnfold::UnfoldWithErrors (ErrorTreatment withError, bool getWeights)
       if (rmeas->GetDimension()>=3) cerr << "x" << rmeas->GetNbinsZ();
       cerr << "-bin measured histogram from RooUnfoldResponse" << endl;
     }
+    cout<<endl;
+    cout<<"IN ROOUNFOLD'S RooUnfold.cxx, UnfoldWithErrors( ErrorTreatment , bool)"<<endl;
+    cout<<"Calling Unfold()"<<endl;
     Unfold();
     if (!_unfolded) {
       _fail= true;
@@ -661,17 +672,34 @@ void RooUnfold::SetNameTitleDefault()
 
 TH1* RooUnfold::Hreco (ErrorTreatment withError)
 {
+  cout<<"IN ROOUNFOLD'S RooUnfold.cxx, Hreco( ErrorTreatment )"<<endl;
+  cout<<"SVDUnfoldDataSpectra.C calls me directly!"<<endl;
+  cout<<endl;
+    
     /*Creates reconstructed distribution. Error calculation varies by withError:
     0: No errors
     1: Errors from the square root of the diagonals of the covariance matrix given by the unfolding
     2: Errors from the square root of of the covariance matrix given by the unfolding
     3: Errors from the square root of the covariance matrix from the variation of the results in toy MC tests
     */
+
+
   TH1* reco= (TH1*) _res->Htruth()->Clone(GetName());
+
+
   reco->Reset();
+
+
   reco->SetTitle (GetTitle());
+  
+  
+  cout<<endl;
+  cout<<"IN ROOUNFOLD'S RooUnfold.cxx, Hreco( ErrorTreatment )"<<endl;
+  cout<<"CALLING UnfoldWithErrors()"<<endl;
   if (!UnfoldWithErrors (withError)) withError= kNoError;
+
   if (!_unfolded) return reco;
+
 
   for (Int_t i= 0; i < _nt; i++) {
     Int_t j= RooUnfoldResponse::GetBin (reco, i, _overflow);
@@ -684,7 +712,6 @@ TH1* RooUnfold::Hreco (ErrorTreatment withError)
       reco->SetBinError (j, sqrt (fabs (_err_mat(i,i))));
     }
   }
-
   return reco;
 }
 

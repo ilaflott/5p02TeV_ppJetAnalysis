@@ -1,9 +1,6 @@
 #include "smearTheorySpectra.h"
 
-
-
 void smearTheorySpectra_gaussCoreJER( string inputString ){
-  
   
   //gStyle->SetOptStat(0);
   //gROOT->ForceStyle();
@@ -15,7 +12,7 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   TFile *outf    = new TFile(outputFile.c_str(), "RECREATE" );
   
   // Input, Theory spectrum
-  string inputFile = "fNLOJetsSpectra/"+inputString+".root";
+  string inputFile = "fNLOJetsSpectra/R04/"+inputString+".root";
   // TFile *f1 = new TFile("PredictionsFastNLO-ak7-CT14nlo.root");
   cout<<"opening input:"<<inputFile<<endl<<endl;
   TFile *f1 = new TFile(inputFile.c_str());
@@ -49,15 +46,24 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   /////////////// NPs to theory spectra ////////////////////////////////////////////////////////
   /////////////// Create functions just to check NPs
   
-  TF1 *fNP_ynew = new TF1("fNP_ynew",NP_ynew_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
+  TCanvas *plot_y0toy3NPs = new TCanvas("plot_y0toy3NPs", "plot_y0toy3NPs",1200,800);
+  plot_y0NP->Divide(2,2);
+  plot_y0NP->cd(1);
+  TF1 *fNP_y0 = new TF1("fNP_y0",NP_y0_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
+  TF1 *fNP_y1 = new TF1("fNP_y1",NP_y1_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
+  TF1 *fNP_y2 = new TF1("fNP_y2",NP_y2_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
+  TF1 *fNP_y3 = new TF1("fNP_y3",NP_y3_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
+  
+  TCanvas *plot_totNPs = new TCanvas("plot_totNPs", "plot_totNPs",1200,800);
+  plot_totNPs->SetLogx(1);
+  plot_totNPs->cd();
+  TF1 *fNP_ynew = new TF1("fNP_ynew",NP_ynew_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);  
+  fNP_ynew->Draw();
+  plot_totNPs->Update();  
   
   /// check NPs
-  TCanvas *plotNPs = new TCanvas("plotNPs", "plotNPs",1200,800);
-  
   //  plotNPs->Divide(4,2);  
-  plotNPs->cd();
-  fNP_ynew->Draw();
-  plotNPs->Update();
+
   
   
   /////////////// Core p_T Resolution ////////////////////////////////////////////////////////

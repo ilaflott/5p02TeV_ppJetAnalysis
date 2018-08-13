@@ -58,7 +58,7 @@ const std::string SCRATCH_BASE=
   //"/cms/heavyion/obaron/5p02TeV_ppJetAnalysis/";
   "/cms/heavyion/ilaflott/T2_US_MIT_SCRATCH/5p02TeV_ppJetAnalysis/readForests/";
 const std::string HOME_BASE=
-  "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/";
+  "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/";
 
   //  "/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/";
 

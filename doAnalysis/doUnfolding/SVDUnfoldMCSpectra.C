@@ -452,10 +452,10 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
     RooUnfoldSvd unf_svd(&roo_resp, hrec_rebin, kReg[kr]);
-    
-    if(kr==0) unf_svd.SetVerbose(2);
-    else  unf_svd.SetVerbose(0);
-    if(debugMode) unf_svd.SetVerbose(2);
+    unf_svd.SetVerbose(0);    
+    //if(kr==0) unf_svd.SetVerbose(2);
+    //else  unf_svd.SetVerbose(0);
+    //if(debugMode) unf_svd.SetVerbose(2);
     
     if(doToyErrs){
       std::cout<<"using toy errors, suppressing text output"<<std::endl;
@@ -474,10 +474,10 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
     RooUnfoldSvd unf_ss_svd(&roo_resp, hrec_sameside_rebin, kReg[kr]);
-    
-    if(kr==0) unf_ss_svd.SetVerbose(2);
-    else  unf_ss_svd.SetVerbose(0);
-    if(debugMode) unf_ss_svd.SetVerbose(2);
+    unf_ss_svd.SetVerbose(0);
+    //if(kr==0) unf_ss_svd.SetVerbose(2);
+    //else  unf_ss_svd.SetVerbose(0);
+    //if(debugMode) unf_ss_svd.SetVerbose(2);
     
     if(doToyErrs){
       std::cout<<"using toy errors, suppressing text output"<<std::endl;

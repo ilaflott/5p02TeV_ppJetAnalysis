@@ -18,7 +18,20 @@ echo ""
 echo "submitting Py8 ppMC JERS job(s)"
 echo ""
 
-source condorSubmit_readForests.sh readForests_ppMC_JERS -1 75 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source condorSubmit_readForests.sh     <readForestsCode>  <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug> [<etaCutLo> <etaCutHi>]
+source  condorSubmit_readForests.sh readForests_ppMC_JERS -1 80 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 6 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 2160 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 3600 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 4720 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 5760 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 6000 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 6080 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 6160 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 80 6320 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+
 
 echo ""
 echo "done submitting JERS job(s)"
@@ -27,3 +40,20 @@ echo ""
 condor_q ilaflott
 
 return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

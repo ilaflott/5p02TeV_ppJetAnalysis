@@ -28,15 +28,15 @@ echo ""
 
 ####################################################
 
-source run_readForests_JERS.sh 4 "0.0" "0.5" 
-source run_readForests_JERS.sh 4 "0.5" "1.0" 
-source run_readForests_JERS.sh 4 "1.0" "1.5" 
-source run_readForests_JERS.sh 4 "1.5" "2.0" 
+#source run_readForests_JERS.sh 4 "0.0" "0.5" 
+#source run_readForests_JERS.sh 4 "0.5" "1.0" 
+#source run_readForests_JERS.sh 4 "1.0" "1.5" 
+#source run_readForests_JERS.sh 4 "1.5" "2.0" 
 
 #source run_readForests_JERS.sh 4 "0.0" "1.0"
 #source run_readForests_JERS.sh 4 "1.0" "2.0"
 
-#source run_readForests_JERS.sh 4 "0.0" "2.0"
+source run_readForests_JERS.sh 4 "0.0" "2.0"
 
 ####################################################
 

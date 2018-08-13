@@ -1,10 +1,9 @@
-
 #include "printPlots.h"
 
 const bool debugMode=true;
 const bool draw_hJER=true;
 const bool draw_MCEff=false;
-const bool drawProfiles = true;
+const bool drawProfiles = false;
 const bool rebinJER=false;
 
 //other options
@@ -59,7 +58,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04); 
   TF1 *fgaus=NULL;   
-  
+  //for later
+  Double_t fit_ptLo=-1.;//, fit_ptHi;
   // input hists
   if(draw_hJER){
     
@@ -76,7 +76,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
       const std::string algname=algo+srad[nj]+jetType; 
       std::cout<<"making hists for algorithm "<< algname<<"..."<<std::endl;
-
+      
       // initialize mean hist    
       hMean[nj] = new TH1F(Form( "hMean%d", nj),    
 			   Form( "Mean %s %s", algname.c_str(), ccent[nj]),    
@@ -96,8 +96,15 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
       // pt bin hJER-fit loop    
       if(debugMode)std::cout<<"nbins_pt="<<nbins_pt_debug<<std::endl;    
+      bool ptLoSet=false;
       for(int ip=0; ip<nbins_pt_debug; ip++){    
 	
+	if(ip<3)continue;
+
+	if(!ptLoSet){
+	  fit_ptLo=ptbins_debug[ip];
+	  ptLoSet=true;
+	}
 	int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
 	if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
 
@@ -266,8 +273,10 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 //			     ptbins_debug[nbins_pt_debug]);       // I want this fit to end at 967 GeV (for entire range)
 
       TF1 *hSigmaFit=new TF1("hSigmaFit","[0]+[1]/(pow(x,[2])+[3]*x)", 
-			     ptbins_debug[2],                     // I want this fit to start at 56 GeV or so
-			     ptbins_debug[nbins_pt_debug-1]);       // I want this fit to end at 967 GeV (for entire range)
+			     fit_ptLo,
+			     ptbins_debug[nbins_pt_debug-1] );       // I want this fit to end at 967 GeV (for entire range)
+			     //			     ptbins_debug[2],                     // I want this fit to start at 56 GeV or so
+			     //			     ptbins_debug[nbins_pt_debug-1] );       // I want this fit to end at 967 GeV (for entire range)
 
       
       float fitParam_0    =hSigmaFit->GetParameter(0);
@@ -360,6 +369,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 
       
       for(int j=0;j<nbins_pt_debug;++j){    
+	
+	if(j<3)continue;
 	
 	int ptbin_j=(int)ptbins_debug[j];
 	int ptbin_j1=(int)ptbins_debug[j+1];

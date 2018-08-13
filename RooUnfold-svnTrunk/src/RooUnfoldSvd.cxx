@@ -33,14 +33,39 @@ END_HTML */
 #include "TH2.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
+
+
+////below preprocessor says, in clearer syntax
+//if(local TSVDUnfold condition){ 
+//  include local TSVDUnfold
+//  }
+// else{ 
+//  include TSVDUnfold
+//    if (another condition){ 
+//      define TSVDUnfold LEAK
+//      }
+//  }
+//ORIG//
 #if defined(HAVE_TSVDUNFOLD) || ROOT_VERSION_CODE < ROOT_VERSION(5,34,99)
-#include "TSVDUnfold_local.h"  /* Use local copy of TSVDUnfold.h */
+#include "TSVDUnfold_local.h"
+#include "TSVDUnfold.h"
 #else
 #include "TSVDUnfold.h"
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,34,0)
 #define TSVDUNFOLD_LEAK 1
-#endif
-#endif
+#endif // ends root v code
+#endif // ends if / else statement
+//ORIG//
+////NEW//
+//#include "TSVDUnfold.h"
+//#include "TSVDUnfold_local.h"
+//#if ROOT_VERSION_CODE < ROOT_VERSION(5,34,0)
+//#define TSVDUNFOLD_LEAK 1
+//#endif // ends root v code
+////NEW//
+
+
+
 
 #include "RooUnfoldResponse.h"
 
@@ -62,6 +87,8 @@ RooUnfoldSvd::RooUnfoldSvd (const RooUnfoldResponse* res, const TH1* meas, Int_t
                             const char* name, const char* title)
   : RooUnfold (res, meas, name, title), _kreg(kreg ? kreg : res->GetNbinsTruth()/2)
 {
+  cout<<"in ROOUNFOLD's RooUnfoldSvd.cxx, special RooUnfoldSvd constructor."<<endl;
+  cout<<"SVDUnfoldDataSpectra.C calls me!"<<endl;
   // Constructor with response matrix object and measured unfolding input histogram.
   // The regularisation parameter is kreg.
   Init();
@@ -136,8 +163,18 @@ RooUnfoldSvd::Impl()
 void
 RooUnfoldSvd::Unfold()
 {
-
   // Subtract fakes from measured distribution if they're there...
+  cout<<"IN ROOUNFOLD's RooUnfoldSvd.cxx, Unfold()"<<endl;
+  cout<<"WHO CALLED ME?!!?!"<<endl;
+    
+//#if defined(HAVE_TSVDUNFOLD) || ROOT_VERSION_CODE < ROOT_VERSION(5,34,99)
+//    cout<<endl<<"!!!USING TUnfold_local.h!!!!"<<endl<<endl;
+//#endif
+
+#ifdef TSVDUNFOLD_LEAK
+  cout<<endl<<"!!!TSVDUNFOLD_LEAK DEFINED!!!!"<<endl<<endl;
+#endif
+
   cout<<endl;
   bool fakesExist=(bool)_res->FakeEntries();
   if(fakesExist)cout<<"//---------------------- \"fakes\" in response matrix detected!!! --------------------------- //"<<endl;
@@ -154,10 +191,10 @@ RooUnfoldSvd::Unfold()
   if(subtractFakes&&!resetBinErrs)cout<<"WARNING: subtracting fakes but not resetting bin errors in measured data. Error bars may not accurately reflect real error!"<<endl;
   
   
-
-
-
-
+  
+  
+  
+  
   if (_res->GetDimensionTruth() != 1 || _res->GetDimensionMeasured() != 1) {
     cerr << "RooUnfoldSvd may not work very well for multi-dimensional distributions" << endl;
   }
@@ -172,8 +209,8 @@ RooUnfoldSvd::Unfold()
     cerr << "RooUnfoldSvd invalid kreg=" << _kreg << " with " << _nb << " bins" << endl;
     return;
   }
-
-
+  
+  
   Bool_t oldstat= TH1::AddDirectoryStatus();
   TH1::AddDirectory (kFALSE);
   _meas1d=  HistNoOverflow (_meas,             _overflow); // data measured
@@ -194,10 +231,9 @@ RooUnfoldSvd::Unfold()
   Resize (_reshist, _nb, _nb);
   Resize (  hfakes, _nb );
   
-  //cout<<endl;
   
-
-
+  
+  
   
   //if ( (_res->FakeEntries()) && true ) {
   if ( fakesExist && subtractFakes) {
@@ -245,6 +281,7 @@ RooUnfoldSvd::Unfold()
 	    Double_t train_err_i=(_train1d->GetBinError(i+1)/_train1d->GetBinContent(i+1));
 	    train_err_i*=train_err_i;
 	    fac_err_array[i] = fac_array[i]*sqrt( train_err_i + meas_err_i );
+
 	  }//end bin content check of _meas1d
 	  else {
 	    cout<<"WARNING bin i="<<i<<" for either meas or train 1d has no bin contents. fac_err_array entry not computed (div 0 issue). "<<endl;
@@ -273,7 +310,7 @@ RooUnfoldSvd::Unfold()
     Double_t _truth1d_integ =_truth1d->TH1::IntegralAndError(1, _nb, _truth1d_integ_err , "");
     Double_t _reshist_integ =_reshist->TH1::IntegralAndError(1, _nb, _reshist_integ_err , "");
     
-    if(_verbose>=1){
+    if(_verbose>=2){
       cout<<endl;
       cout<<"  _hfakes_integ = " <<  _hfakes_integ << " +/- " <<  _hfakes_integ_err << endl;
       cout<<"  _meas1d_integ = " <<  _meas1d_integ << " +/- " <<  _meas1d_integ_err << endl;
@@ -377,18 +414,20 @@ RooUnfoldSvd::Unfold()
       	Double_t _meas1dErr= _meas1d->GetBinError(i)*_meas1d->GetBinError(i);
       	Double_t _meas1dErrNew= _meas1dErr+fakesErr;
       	
-	cout<<fakesubtype<<endl;
-	cout<<endl;
-      	cout<<"fakesErr     ="<<sqrt(fakesErr)<<endl;
-      	cout<<"_meas1dErr   ="<<sqrt(_meas1dErr)<<endl;
-      	cout<<"_meas1dErrNew="<<sqrt(_meas1dErrNew)<<endl;
-      	cout<<endl;
-      	
-      	//_meas1d->SetBinError(  i, sqrt( _meas1dErrNew )  );
-	
-	cout<<endl;
-	cout<<"final err = "<<_meas1d->GetBinError(i)<<endl;
-	cout<<endl;
+	if(_verbose>=2){
+	  cout<<fakesubtype<<endl;
+	  cout<<endl;
+	  cout<<"fakesErr     ="<<sqrt(fakesErr)<<endl;
+	  cout<<"_meas1dErr   ="<<sqrt(_meas1dErr)<<endl;
+	  cout<<"_meas1dErrNew="<<sqrt(_meas1dErrNew)<<endl;
+	  cout<<endl;
+	  
+	  //_meas1d->SetBinError(  i, sqrt( _meas1dErrNew )  );
+	  
+	  cout<<endl;
+	  cout<<"final err = "<<_meas1d->GetBinError(i)<<endl;
+	  cout<<endl;
+	}
 	
       }//end resetting bin errs in data
       
@@ -419,6 +458,7 @@ RooUnfoldSvd::Unfold()
   //_reshist=_res->HresponseNoOverflow() --> ??? not exactly sure, response matrix projection onto x axis?
   _svd= new TSVDUnfold (_meas1d, _meascov, _train1d, _truth1d, _reshist);
 
+  cout <<"in RooUnfoldSvd.cxx Unfold(), calling TSVDUnfold.cxx's TSVDUnfold::Unfold(_kreg)"<<endl;
   TH1D* rechist= _svd->Unfold (_kreg);                 
   
   _rec.ResizeTo (_nt);

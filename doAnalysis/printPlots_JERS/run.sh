@@ -59,7 +59,8 @@ echo ""
 #source run_printPlots_ppMC_JERS.sh "4" "10.02.17_outputCondor" "10-02-17" "1.0eta1.5" "10eta15_10.2.17_badTF1"
 #source run_printPlots_ppMC_JERS.sh "4" "10.02.17_outputCondor" "10-02-17" "1.5eta2.0" "15eta20_10.2.17_badTF1"
 
-source run_printPlots_ppMC_JERS.sh "4" "10.03.17_outputCondor" "10-03-17" "0.0eta2.0" "00eta20_10.3.17"
+#source run_printPlots_ppMC_JERS.sh "4" "10.03.17_outputCondor" "10-03-17" "0.0eta2.0" "00eta20_10.3.17"
+source run_printPlots_ppMC_JERS.sh "4" "08.07.18_outputCondor" "08-07-18" "0.0eta2.0" "00eta20_08.07.18"
 
 echo ""
 echo "done running ppMC JERS!"

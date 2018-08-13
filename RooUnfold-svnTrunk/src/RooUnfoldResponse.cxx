@@ -341,6 +341,7 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth)
 RooUnfoldResponse&
 RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* response)
 {
+  bool funcDebug=false;
   // Set up from already-filled histograms.
   // "response" gives the response matrix, measured X truth.
   // "measured" and "truth" give the projections of "response" onto the X-axis and Y-axis respectively,
@@ -396,7 +397,7 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
 
 
 
-
+  
   
   if (!measured || _mes->GetEntries() == 0.0) {
     
@@ -423,7 +424,7 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
     //cout<<"_mes hist exists, filling _fak with diff between _mes and _res->ProjectionX()"<<endl;
     Int_t sm= _mes->GetSumw2N(), nfake=0;
     bool _mesErrsExist=(bool)sm;
-    	
+    
     
     
     //for (Int_t i= 0; i<nm; i++) {
@@ -434,9 +435,9 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
       float _res_xbin_low=_res->GetXaxis()->GetBinLowEdge(i);
       float _res_xbin_hi =(_res->GetXaxis()->GetBinLowEdge(i)) + (_res->GetXaxis()->GetBinWidth(i));
       
-      cout<<"--- X-AXIS --- bin (i)="<<(i)<<endl;
-      cout<<"--- X-AXIS --- pt range from "<<_res_xbin_low << " GeV to " << _res_xbin_hi << " GeV" << endl;      
-      cout<<endl;
+      if(funcDebug)cout<<"--- X-AXIS --- bin (i)="<<(i)<<endl;
+      if(funcDebug)cout<<"--- X-AXIS --- pt range from "<<_res_xbin_low << " GeV to " << _res_xbin_hi << " GeV" << endl;      
+      if(funcDebug)cout<<endl;
 
       
 
@@ -454,9 +455,9 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
 	
 	float _res_ybin_low=_res->GetYaxis()->GetBinLowEdge(j);
 	float _res_ybin_hi =(_res->GetYaxis()->GetBinLowEdge(j)) + (_res->GetYaxis()->GetBinWidth(j));
-	cout<<"--- Y-AXIS --- y-axis bin (j)="<<(j)<<endl;
-	cout<<"--- Y-AXIS --- pt range from "<<_res_ybin_low << " GeV to " << _res_ybin_hi << " GeV" << endl;
-	cout<<"--- Y-AXIS --- _res->GetBinContent("<<i<<","<<j<<")="<<_res->GetBinContent(i,j)<<" +/- "<< _res->GetBinError(i,j) << endl;
+	if(funcDebug)cout<<"--- Y-AXIS --- y-axis bin (j)="<<(j)<<endl;
+	if(funcDebug)cout<<"--- Y-AXIS --- pt range from "<<_res_ybin_low << " GeV to " << _res_ybin_hi << " GeV" << endl;
+	if(funcDebug)cout<<"--- Y-AXIS --- _res->GetBinContent("<<i<<","<<j<<")="<<_res->GetBinContent(i,j)<<" +/- "<< _res->GetBinError(i,j) << endl;
 	
 	
 	
@@ -466,14 +467,14 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
 	
       }//end loop over j
       
-      cout<<"currently: nmes = "<<nmes<< " +/- "<< wmes << endl;
+      if(funcDebug)cout<<"currently: nmes = "<<nmes<< " +/- "<< wmes << endl;
       
       
       //Int_t bin= GetBin (_mes, i, _overflow);
       
       Int_t bin=i;      
-      cout<<endl<<"pt range from "<< (_mes->GetBinLowEdge(bin)) << " GeV to " << (_mes->GetBinLowEdge(bin) + _mes->GetBinWidth(bin)) << " GeV" << endl;
-      cout<<"_meas->GetBinContent("<<bin<<")="<<_mes->GetBinContent (bin)<<endl<<endl;
+      if(funcDebug)cout<<endl<<"pt range from "<< (_mes->GetBinLowEdge(bin)) << " GeV to " << (_mes->GetBinLowEdge(bin) + _mes->GetBinWidth(bin)) << " GeV" << endl;
+      if(funcDebug)cout<<"_meas->GetBinContent("<<bin<<")="<<_mes->GetBinContent (bin)<<endl<<endl;
       
       Double_t fake= _mes->GetBinContent (bin) - nmes;
       
@@ -485,12 +486,13 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
       
       if(fake<0.){
 	//cout.precision(100);
-	cout<<endl<<"WARNING negative fake hist content, check fake calculation!!!"<<endl;
-	cout<<" _meas->GetBinContent("<<bin<<") = "<<_mes->GetBinContent (bin)<<endl;	
-	cout<<"                    nmes = "<< nmes << endl;
-	cout<<"                    fake = "<< fake <<endl;
+
+	if(funcDebug)cout<<endl<<"WARNING negative fake hist content, check fake calculation!!!"<<endl;
+	if(funcDebug)cout<<" _meas->GetBinContent("<<bin<<") = "<<_mes->GetBinContent (bin)<<endl;	
+	if(funcDebug)cout<<"                    nmes = "<< nmes << endl;
+	if(funcDebug)cout<<"                    fake = "<< fake <<endl;	
+	if(funcDebug)cout<<endl<<"WARNING setting bin content to zero!!!"<<endl;
 	
-	cout<<endl<<"WARNING setting bin content to zero!!!"<<endl;
 	_fak->SetBinContent (bin, 0.);                        
 	
       }
@@ -498,7 +500,7 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
 	_fak->SetBinContent (bin, fake);                        
       }
       
-      cout<< "final: _fak->GetBinContent("<<bin<<") = " <<_fak->GetBinContent(bin)<<endl;
+      if(funcDebug)cout<< "final: _fak->GetBinContent("<<bin<<") = " <<_fak->GetBinContent(bin)<<endl;
       
       
       
@@ -526,17 +528,19 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
 	Double_t _newErr=_mesErr-_projErr;
       	
 	if(_newErr<0. || (fake<0.) ){
-	  if(_newErr<0.)cout<<endl<<"WARNING _newErr is negative!!!!"<<endl;
-	  else if(fake<0.)cout<<endl<<"WARNING fake was negative!!!! check this calculation!"<<endl;
-	  cout<<"sqrt(fabs( _mesErr))= "<< sqrt(fabs(_mesErr )) <<endl;
-	  cout<<"sqrt(fabs(_projErr))= "<< sqrt(fabs(_projErr)) <<endl;
-	  cout<<"sqrt(fabs( _newErr))= "<< sqrt(fabs(_newErr )) <<endl<<endl;	  
+	  if(_newErr<0.)
+	    cout<<endl<<"WARNING _newErr is negative!!!!"<<endl;
+	  else if(fake<0.)
+	    cout<<endl<<"WARNING fake was negative!!!! check this calculation!"<<endl;
+	  if(funcDebug)cout<<"sqrt(fabs( _mesErr))= "<< sqrt(fabs(_mesErr )) <<endl;
+	  if(funcDebug)cout<<"sqrt(fabs(_projErr))= "<< sqrt(fabs(_projErr)) <<endl;
+	  if(funcDebug)cout<<"sqrt(fabs( _newErr))= "<< sqrt(fabs(_newErr )) <<endl<<endl;	  
 	  
 	  if(fake>0.){
-	    cout<<"WARNING setting bin error to content!!!"<<endl;
+	    if(funcDebug)cout<<"WARNING setting bin error to content!!!"<<endl;
 	    _fak->SetBinError   (bin, _fak->GetBinContent(bin) );	  }
 	  else{
-	    cout<<"WARNING setting bin error to zero!!!"<<endl;
+	    if(funcDebug)cout<<"WARNING setting bin error to zero!!!"<<endl;
 	    _fak->SetBinError   (bin, 0. );	  }
 	}
 	else
@@ -549,7 +553,7 @@ RooUnfoldResponse::Setup (const TH1* measured, const TH1* truth, const TH2* resp
       } //assume poisson errors in _mes if no sumw2 structure
       
       cout<< "final: _fak->GetBinError("<<bin<<") = " <<_fak->GetBinError(bin)<<endl<<endl;
-
+      
       
       
       

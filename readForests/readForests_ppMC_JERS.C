@@ -3,8 +3,8 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true;
-const bool fillJERSHists=false;
-const bool fillMCUnfoldingHists=true;
+const bool fillJERSHists=true;
+const bool fillMCUnfoldingHists=false;
 const bool fillMCEffHists=false;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
@@ -579,7 +579,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       else if ( !(genpt < genJetPtCut_Hi) ) continue;
       else if ( absreceta < jtEtaCutLo ) continue;
       else if (!(absreceta < jtEtaCutHi))continue;
-      else if ( gendrjt > 0.4 ) continue;
+      else if ( gendrjt > 0.1 ) continue;
       
       
       // jet/event counts
@@ -697,7 +697,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if( !(genpt < ptbins[nbins_pt]) ) ptbin=-1;//check end of binning array    //else if (!passesEtaCut) ptbin=-1;
 	else {
 	  for(int bin = 0; bin<nbins_pt; ++bin)      
-	    if(!(genpt > ptbins[bin])) ptbin = bin;  	
+	    if(! (genpt < ptbins[bin])) ptbin = bin;  	
 	}
 	
 	if(ptbin != -1) {	  
@@ -799,9 +799,11 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   std::cout<<std::endl<<"readForests_ppMC_JERS finished."<<std::endl;  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
+  
+  return 0;
+}
 
-return 0;
-}// end readForests_ppMC_JERS
+// end readForests_ppMC_JERS
 								 
 
 ////// main //////

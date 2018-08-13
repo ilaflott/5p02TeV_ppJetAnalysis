@@ -70,7 +70,7 @@ fi
 
 
 echo ""
-echo "done unfolding MC."
+echo "done unfolding Data."
 echo ""
 
 return

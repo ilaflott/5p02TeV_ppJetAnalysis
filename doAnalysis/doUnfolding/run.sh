@@ -1,19 +1,20 @@
 #!/bin/bash
 #CONST
+doMCUnfolding=1
+doDataUnfolding=1
+dataHLTPF=1
+dataHLTCalo=0
 doBayes=1
 doSVD=1
 useSimpBins=0
-doMCUnfolding=1
-doDataUnfolding=0
-dataHLTPF=1
-dataHLTCalo=0
 #CONST
 
 
 
 #FINALOUTDIR=/cms/heavyion/ilaflott/temp
 FINALOUTDIR=/cms/heavyion/ilaflott/temp/4scp
-
+DATAOUTDIR=output/unfoldDataSpectra
+MCOUTDIR=output/unfoldMCSpectra
 
 ################################################################################################################################
 ################################################################################################################################
@@ -25,8 +26,8 @@ function unfoldData(){
     echo "... cleaning up previous unfoldDataSpectra output ..."
     echo ""
     
-    mv output/unfoldDataSpectra/*.pdf output/unfoldDataSpectra/temp/.
-    mv output/unfoldDataSpectra/*.root output/unfoldDataSpectra/temp/.
+    mv ${DATAOUTDIR}/*.pdf  ${DATAOUTDIR}/temp/.
+    mv ${DATAOUTDIR}/*.root ${DATAOUTDIR}/temp/.
     
     
     echo ""
@@ -36,19 +37,19 @@ function unfoldData(){
     echo "// -------------------------------------------------------------------------------------------------- //"
     echo "// -------------------------------------------------------------------------------------------------- //"
     echo ""
-
-
+    
+    
     if [[ $# -eq 1 ]]
     then
-	HLTPFdir=output/unfoldDataSpectra/L2L3recoJetID_HLTPF_gendr0p1_${1}
-	HLTCalodir=output/unfoldDataSpectra/L2L3recoJetID_HLTCalo_gendr0p1_${1}
+	HLTPFdir=L2L3recoJetID_HLTPF_${1}
+	HLTCalodir=L2L3recoJetID_HLTCalo_${1}
     else
-	HLTPFdir=output/unfoldDataSpectra/L2L3recoJetID_HLTPF_gendr0p1
-	HLTCalodir=output/unfoldDataSpectra/L2L3recoJetID_HLTCalo_gendr0p1
+	HLTPFdir=L2L3recoJetID_HLTPF
+	HLTCalodir=L2L3recoJetID_HLTCalo
     fi
     
-
-
+    
+    
     
     if [[ dataHLTPF -eq 1 ]]
     then
@@ -62,24 +63,36 @@ function unfoldData(){
     #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTPF"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTPF"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
-	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
-	
-	rm -r $HLTPFdir
-	mkdir $HLTPFdir
-	mv output/unfoldDataSpectra/*.pdf   $HLTPFdir
-	mv output/unfoldDataSpectra/*.root  $HLTPFdir
+	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
+	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	
 	echo ""
-	echo "moving data output to local cpu"
+	echo "cleaning up previous DATA output in ${DATAOUTDIR}/${HLTPFdir}"
+	echo ""
+	
+	rm -r ${DATAOUTDIR}/${HLTPFdir}
+	mkdir ${DATAOUTDIR}/${HLTPFdir}
+	
+	echo ""
+	echo "moving DATA output to ${DATAOUTDIR}/${HLTPFdir}"
+	echo ""
+	
+	mv ${DATAOUTDIR}/*.pdf   ${DATAOUTDIR}/${HLTPFdir}
+	mv ${DATAOUTDIR}/*.root  ${DATAOUTDIR}/${HLTPFdir}
+	
+	echo ""
+	echo "moving DATA output to ${FINALOUTDIR}/${HLTPFdir}"
 	echo ""
 	
     #scp2Serin $HLTPFdir
     #mv -f $HLTPFdir output/unfoldDataSpectra/temp    
-	#rm -r $FINALOUTDIR
-	mv -f $HLTPFdir/* $FINALOUTDIR/.
+        rm -r ${FINALOUTDIR}/${HLTPFdir}
+	mv  ${DATAOUTDIR}/${HLTPFdir} ${FINALOUTDIR}/${HLTPFdir}
+	#scp2Serin ${FINALOUTDIR}/${HLTPFdir}
     fi
     
-
+    
     if [[ dataHLTCalo -eq 1 ]]
     then
     #source runData.sh    "0.0eta0.5_L2L3recoJetID_HLTCalo"      "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
@@ -92,22 +105,28 @@ function unfoldData(){
 	
 	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTCalo"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
-	rm -r $HLTCalodir
-	mkdir $HLTCalodir
-	mv output/unfoldDataSpectra/*.pdf   $HLTCalodir
-	mv output/unfoldDataSpectra/*.root  $HLTCalodir
+	echo ""
+	echo "cleaning up previous output in ${DATAOUTDIR}/${HLTCalodir}"
+	echo ""
+	
+	rm -r ${DATAOUTDIR}/${HLTCalodir}
+	mkdir ${DATAOUTDIR}/${HLTCalodir}
 	
 	echo ""
-	echo "moving data output"
+	echo "moving output to ${DATAOUTDIR}/${HLTCalodir}"
+	echo ""
+	
+	mv ${DATAOUTDIR}/*.pdf   ${DATAOUTDIR}/${HLTCalodir}
+	mv ${DATAOUTDIR}/*.root  ${DATAOUTDIR}/${HLTCalodir}
+	
+	echo ""
+	echo "moving DATA output to ${FINALOUTDIR}/${HLTCalodir}"
 	echo ""
 	
     #scp2Serin $HLTCalodir
-    #mv -f $HLTCalodir output/unfoldDataSpectra/temp
-	mv -f $HLTCalodir/* $FINALOUTDIR/.
-	
-    ### default way i generally deal with output
-    #scp2Serin "output/unfoldDataSpectra/*.pdf"
-    #scp2Serin "output/unfoldDataSpectra/*.root"
+    #mv -f $HLTCalodir output/unfoldDataSpectra/temp    
+        rm -r ${FINALOUTDIR}/${HLTCalodir}
+	mv  ${DATAOUTDIR}/${HLTCalodir} ${FINALOUTDIR}/${HLTCalodir}
 
     fi
 
@@ -136,9 +155,9 @@ function unfoldMC(){
     echo "... cleaning up previous unfoldMCSpectra output ..."
     echo ""
     
-    mv output/unfoldMCSpectra/*.pdf  output/unfoldMCSpectra/temp/.
-    mv output/unfoldMCSpectra/*.root output/unfoldMCSpectra/temp/.
-    
+    mv ${MCOUTDIR}/*.pdf  ${MCOUTDIR}/temp/.
+    mv ${MCOUTDIR}/*.root ${MCOUTDIR}/temp/.
+
     echo ""
     echo "// ------------------------------------------------------------------------------------------------ //"
     echo "// ------------------------------------------------------------------------------------------------ //"
@@ -148,12 +167,11 @@ function unfoldMC(){
 
     if [[ $# -eq 1 ]]
     then
-	MCdir=output/unfoldDataSpectra/L2L3recoJetID_MCClosure_gendr0p1_${1}
+	MCdir=L2L3recoJetID_MCClosure_gendr0p1_${1}
     else
-	MCdir=output/unfoldDataSpectra/L2L3recoJetID_MCClosure_gendr0p1
+	MCdir=L2L3recoJetID_MCClosure_gendr0p1
     fi
-    echo ""
-    
+
     #source runMC.sh   "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
     #source runMC.sh   "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
     #source runMC.sh   "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
@@ -162,25 +180,37 @@ function unfoldMC(){
     #source runMC.sh   "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runMC.sh   "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 
-    source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+#    source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 
-    rm -r $MCdir
-    mkdir $MCdir
-    mv output/unfoldMCSpectra/*.pdf   $MCdir
-    mv output/unfoldMCSpectra/*.root  $MCdir
 
-    echo ""
-    echo "moving MC output"
-    echo ""
 
-    #scp2Serin $MCdir
-    #mv -f $MCdir output/unfoldMCSpectra/temp    
-#    rm -r $FINALOUTDIR
-    mv $MCdir/* $FINALOUTDIR/.
+#	MCdir=output/unfoldDataSpectra/L2L3recoJetID_MCClosure_gendr0p1_${1}
     
-    ### default way i generally deal with output
-    #scp2Serin "output/unfoldMCSpectra/*.pdf"
-    #scp2Serin "output/unfoldMCSpectra/*.root"
+
+    echo ""
+    echo "cleaning up previous MC output in ${MCOUTDIR}/${MCdir}"
+    echo ""
+    
+    rm -r ${MCOUTDIR}/${MCdir}
+    mkdir ${MCOUTDIR}/${MCdir}
+
+    echo ""
+    echo "moving MC output to ${MCOUTDIR}/${MCdir}"
+    echo ""
+    
+    mv ${MCOUTDIR}/*.pdf   ${MCOUTDIR}/${MCdir}
+    mv ${MCOUTDIR}/*.root  ${MCOUTDIR}/${MCdir}
+
+
+    echo ""
+    echo "moving MC output to ${FINALOUTDIR}/${MCdir}"
+    echo ""
+    
+    rm -r ${FINALOUTDIR}/${MCdir}
+    mv  ${MCOUTDIR}/${MCdir} ${FINALOUTDIR}/${MCdir}
+    #scp2Serin ${FINALOUTDIR}/${MCdir}
+    
 
     echo ""
     echo "// -------------------------------------------------------------------------------------------- //"
@@ -210,7 +240,7 @@ echo ""
 echo "... making rooUnfold ..."
 echo ""
 
-#make_rooUnfold
+make_rooUnfold
 
 if [[ $# -eq 1 ]]
 then

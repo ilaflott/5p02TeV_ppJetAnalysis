@@ -458,13 +458,20 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     
     
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
+    if(kr==0){
+      std::cout<<std::endl;
+      std::cout<<"in SVDUnfoldDataSpectra.C, CREATING instance of class RooUnfoldSvd"<<std::endl;
+    }
     RooUnfoldSvd unf_svd(&roo_resp, hrec_rebin, kReg[kr]);
-    
-    if(kr==0) unf_svd.SetVerbose(2);
-    else  unf_svd.SetVerbose(0);
-    
+    unf_svd.SetVerbose(0);
+    //if(kr==0) unf_svd.SetVerbose(2);
+    //else  unf_svd.SetVerbose(0);
     //if(kr==1)assert(false);
-    
+    if(kr==0){
+      std::cout<<"in SVDUnfoldDataSpectra.C, DONE CREATING instance of class RooUnfoldSvd"<<std::endl;
+      std::cout<<std::endl;
+
+    }
     if(debugMode) unf_svd.SetVerbose(2);
     
     if(doToyErrs){
@@ -475,9 +482,17 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     
 
 
+    if(kr==0){
+      std::cout<<std::endl;
+      std::cout<<"in SVDUnfoldDataSpectra.C, CALLING RooUnfold.cxx's Hreco of RooUnfoldSvd instance"<<std::endl;
+    }
     if(debugMode)std::cout<<"unfolding into hunf_svd[kr="<<kr<<"]..."<<std::endl;
     hunf_svd[kr] = (TH1D*)unf_svd.Hreco(errorTreatment);
-    
+    if(kr==0){
+      std::cout<<"in SVDUnfoldDataSpectra.C, DONE CALLING RooUnfold.cxx's Hreco of RooUnfoldSvd instance"<<std::endl;
+      std::cout<<std::endl;
+      //assert(false);
+    }
     
     if(debugMode)std::cout<<"applying roo_resp to histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
     hfold_svd[kr] = (TH1D*)roo_resp.ApplyToTruth(hunf_svd[kr]);
@@ -550,27 +565,63 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       //divBinWidth_DiAndSVals( (double*)boundaries_pt_gen, (int)nbins_pt_gen, (TH1D*)hSVal);
       
       //hSVal->SetTitle(" singular values ");
-      hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
+      //hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
       //hSVal->SetAxisRange(0.,(double)(hSVal->GetNbinsX()),"X");
-      hSVal->SetXTitle("i");        
-      hSVal->SetYTitle("Singular Values s_{i}");        
+      hSVal->SetTitle("Singular Values (AC^{-1})");        
+      hSVal->SetXTitle("index i");        
+      hSVal->SetYTitle("s_{i}");        
       //hSVal->DrawCopy("HIST E");
       hSVal->Draw("HIST E");
       
+      double tau=hSVal->GetBinContent(kRegCenter+1)*hSVal->GetBinContent(kRegCenter+1);
+      printf("(orig)tau=%f\n",tau);
+      tau*=100.;
+      printf("tau=%f\n",tau);
+      tau=(int)tau;
+      printf("tau=%f\n",tau);
+      tau/=100;
+      printf("tau=%f\n",tau);
       
+      float x=0.550173, y=0.8459761;
+      drawText( "5.02 TeV ak4PFJets",                                 x, y, 19);y-=0.03;
+      drawText( "2015 Prompt Reco"  ,                                 x, y, 19);y-=0.03;
+      drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
+      drawText( ("Current kReg="+std::to_string(kRegCenter)).c_str() , x, y, 19);y-=0.03;	
+      drawText( ("#tau = "+std::to_string( tau ) ).c_str() , x, y, 19);	      
+      
+                  
       // di vector values
       c11->cd(2);
-      c11->cd(2)->SetLogy();    
-
-      //dont do this. misguided at best.
-      //divBinWidth_DiAndSVals( (double*)boundaries_pt_gen, (int)nbins_pt_gen, (TH1D*)hdi);
+      c11->cd(2)->SetLogy(1);    
       
-      hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
+      //hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
       //hdi->SetAxisRange(0.,(double)(hdi->GetNbinsX()),"X");
-      hdi->SetXTitle("i");
-      hdi->SetYTitle("Divector Values d_{i}");
+      hdi->SetTitle("Divector Values (#||{d_{i}}) ");
+      hdi->SetXTitle("index i");
+      hdi->SetYTitle("#||{d_{i}}");
       //hdi->DrawCopy("HIST E"); 
       hdi->Draw("HIST E"); 
+      
+      ((TPad*)(c11->cd(2)))->Update();      //note, if you do this to a pad that is log scaled, this returns the log of the max+min, not the max+min
+      double ymax= gPad->GetUymax();
+      ymax=pow(10,ymax);
+      ((TPad*)(c11->cd(2)))->Update();            
+      double ymin= gPad->GetUymin();
+      ymin=pow(10,ymin);
+      
+      c11->cd(2);
+      
+      hdi->Draw("HIST E"); 
+      
+      double xcoord= ( ((double)kRegCenter) + 1. );
+      
+      std::cout<<"ymax="<<ymax<<std::endl;
+      std::cout<<"ymin="<<ymin<<std::endl;
+      std::cout<<"kRegDraw="<<kr<<std::endl;
+      std::cout<<"kRegCenter="<<kRegCenter<<std::endl;
+      std::cout<<"((double)kRegCenter) + 1. = "<< (((double)kRegCenter) + 1.) <<std::endl;
+      std::cout<<"xcoord="<<xcoord<<std::endl;
+      //assert(false);
       
       TLine* theLineAtOne_hdi=new TLine(1., 1., (double)(hdi->GetNbinsX()), 1.);
       theLineAtOne_hdi->SetLineWidth(1);
@@ -578,10 +629,73 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       theLineAtOne_hdi->SetLineColor(36);
       theLineAtOne_hdi->Draw();
       
-      drawText( "5.02 TeV ak4PFJets",0.358173, 0.8459761, 19);
-      drawText( "2015 Prompt Reco",0.358173, 0.8159761, 19);
-      drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
-      drawText( ("Current kReg="+std::to_string(kReg[kr])).c_str() ,0.408173, 0.7359761, 19);	
+      TLine* kRegLine_hdi=new TLine(xcoord, ymin, xcoord, ymax);      
+      kRegLine_hdi->SetLineWidth(1);
+      kRegLine_hdi->SetLineStyle(2);
+      kRegLine_hdi->SetLineColor(36);
+      kRegLine_hdi->Draw();
+
+      float x1=0.550173, y1=0.8459761;
+      drawText( "5.02 TeV ak4PFJets",                                 x1, y1, 19);y1-=0.03;
+      drawText( "2015 Prompt Reco"  ,                                 x1, y1, 19);y1-=0.03;
+      drawText( MCdesc.c_str()      ,                                 x1, y1, 19);y1-=0.03;
+      drawText( ("Current kReg="+std::to_string(kRegCenter)).c_str() , x1, y1, 19);y1-=0.03;	
+      drawText( ("#tau="+std::to_string(tau) ).c_str() , x1, y1, 19);	
+      
+      float hdi_signif_mean=0;
+      int signif_count=0;
+      float hdi_insignif_mean=0;
+      int insignif_count=0;
+      for(int k=1; k<= (hdi->GetNbinsX());k++){
+	int lowedge = (int)hdi->GetBinLowEdge(k);
+	if(lowedge<1){
+	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
+	  continue;
+	}
+	else if(lowedge>=1 && lowedge <= kRegCenter){
+	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
+	  signif_count++;
+	  hdi_signif_mean+=hdi->GetBinContent(k);
+	}
+	else{
+	  std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
+	  insignif_count++;
+	  hdi_insignif_mean+=hdi->GetBinContent(k);
+      	}
+      }
+      hdi_signif_mean/=  (float)signif_count;
+      hdi_insignif_mean/=  (float)insignif_count;
+
+      float hdi_signif_stddev=0;
+      float hdi_insignif_stddev=0;
+      for(int k=1; k<= (hdi->GetNbinsX());k++){
+	int lowedge = (int)hdi->GetBinLowEdge(k);
+	if(lowedge<1){
+	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
+	  continue;
+	}
+	else if(lowedge>=1 && lowedge <= kRegCenter){
+	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
+	  hdi_signif_stddev+=(hdi->GetBinContent(k)-hdi_signif_mean)*(hdi->GetBinContent(k)-hdi_signif_mean);
+	}
+	else{
+	  std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
+	  hdi_insignif_stddev+=(hdi->GetBinContent(k)-hdi_insignif_mean)*(hdi->GetBinContent(k)-hdi_insignif_mean);
+	}
+      }
+      hdi_signif_stddev/=(float)(signif_count -1 );
+      hdi_signif_stddev=sqrt(hdi_signif_stddev);
+      hdi_insignif_stddev/=(float)(insignif_count -1 );
+      hdi_insignif_stddev=sqrt(hdi_insignif_stddev);
+      std::cout<<"fo divectors for significant principal components of AC^-1's SVD decomposition"<<std::endl;
+      std::cout<<"mean = "<<hdi_signif_mean<<std::endl;
+      std::cout<<"std dev = "<<hdi_signif_stddev<<std::endl;
+
+      std::cout<<"fo divectors for INsignificant principal components of AC^-1's SVD decomposition"<<std::endl;
+      std::cout<<"mean = "<<hdi_insignif_mean<<std::endl;
+      std::cout<<"std dev = "<<hdi_insignif_stddev<<std::endl;
+      
+      //assert(false);
       if(debugMode)std::cout<<std::endl<<"done with kr=="<< kRegDraw<<" specifics"<<std::endl<<std::endl;          }
 
     

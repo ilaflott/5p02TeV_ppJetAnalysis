@@ -6,8 +6,8 @@ echo ""
 
 localDir=/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/outputCondor
 
-MM="07"
-DD="02"
+MM="08"
+DD="07"
 YY="18"
 
 
@@ -25,19 +25,15 @@ YY="18"
 
 ############################################################
 
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta0.5_gendr0p3_recoJetID" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.5eta1.0_gendr0p3_recoJetID" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.0eta1.5_gendr0p3_recoJetID" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.5eta2.0_gendr0p3_recoJetID" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta0.5_gendr0p4_recoJetID" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.5eta1.0_gendr0p4_recoJetID" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.0eta1.5_gendr0p4_recoJetID" "ppMC"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.5eta2.0_gendr0p4_recoJetID" "ppMC"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta0.5_gendr0p3_recoJetID" "ppMC"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.5eta1.0_gendr0p3_recoJetID" "ppMC"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.0eta1.5_gendr0p3_recoJetID" "ppMC"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.5eta2.0_gendr0p3_recoJetID" "ppMC"
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta1.0" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.0eta2.0" "ppMC"
 
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0" "ppMC"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0_2ndBin" "ppMC"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS__0.0eta2.0_1" "ppMC"
 
 ############################################################
@@ -52,11 +48,6 @@ source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_1.5eta2.0_
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots__0.0eta2.0_1" "ppData"
-
-
-
-
-
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots__0.0eta2.0_1" "ppMC"
 

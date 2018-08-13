@@ -1,9 +1,9 @@
 #!/bin/bash
 
 
-echo "sourcing condor+OSG software"
-source /condor/HTCondor/current/condor.sh
-source /osg/current/setup.sh
+#echo "sourcing condor+OSG software"
+#source /condor/HTCondor/current/condor.sh
+#source /osg/current/setup.sh
 
 echo "setting environment variables"
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch

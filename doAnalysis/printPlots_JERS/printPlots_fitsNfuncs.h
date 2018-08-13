@@ -193,7 +193,8 @@ void LoadStyle(){
 
   gStyle->SetOptStat(0);
   //gStyle->SetOptStat("emr");
-  gStyle->SetOptFit(1);
+  //gStyle->SetOptFit(1);
+  gStyle->SetOptFit(101);
   
   
   //color

@@ -444,7 +444,8 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   //double ptmax_thy_splinevalid=thyBins_incl[n_thybins_incl] - 0.5*(thyBins_incl[n_thybins_incl] - thyBins_incl[n_thybins_incl-1]);//i'm sorry scientific integrity....
   //double ptmax_thy_splinevalid=877.3827;//found painfully by hand... 
   // double ptmax_thy_splinevalid= 877.382702298;//found painfully by hand...
-  double ptmax_thy_splinevalid=  877.3827022981749337304790;
+  //double ptmax_thy_splinevalid=  877.3827022981749337304790;//erroneous as pointed out by caitlin!
+  double ptmax_thy_splinevalid=  877.38271270188766941;
   ////over-correction option, problem; avoids neg weight, but last bin for smeared NLO spectra is basically lost. might be palatable because we're stat-limited there anyways.
   //double ptmin_thy = thyBins_incl[1];
   //double ptmax_thy = thyBins_incl[n_thybins_incl-1];

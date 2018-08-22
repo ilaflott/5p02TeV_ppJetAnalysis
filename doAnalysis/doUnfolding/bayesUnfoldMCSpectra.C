@@ -380,19 +380,19 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   
   
   // thy spectra  
-  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_CT10nlo  ).c_str());
+  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str());
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_CT14nlo  ).c_str());
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str());
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_HERAPDF  ).c_str());
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str());
   HERAPDF->SetMarkerSize(0);
   HERAPDF->SetLineColor(kViolet-5);  
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_MMHTnlo  ).c_str());
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str());
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20((fNLOFile_R04_NNPDFnnlo).c_str());
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str());
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6);  
 

@@ -430,19 +430,19 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   hfak->SetMarkerSize(1.02);
   
     // thy spectra  
-  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_CT10nlo  ).c_str());
+  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str());
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_CT14nlo  ).c_str());
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str());
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_HERAPDF  ).c_str());
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str());
   HERAPDF->SetMarkerSize(0);
   HERAPDF->SetLineColor(kViolet-5);  
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20((fNLOFile_R04_MMHTnlo  ).c_str());
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str());
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20((fNLOFile_R04_NNPDFnnlo).c_str());
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str());
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6);  
 
@@ -550,12 +550,12 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       
       hSVal         = (TH1D*) temphSVal         ->Clone();      
       hdi           = (TH1D*) temphdi           ->Clone();
-
+      
       hRegCovMat    = (TH2D*) temphRegCovMat    ->Clone();
       hRegCovMatInv = (TH2D*) temphRegCovMatInv ->Clone();
       hDataCovMat   = (TH2D*) temphDataCovMat   ->Clone();
-
-
+      
+      
       
       if(debugMode)std::cout<<std::endl<<"drawing singular values on c11 canvas.."<<std::endl<<std::endl;
       c11->cd(1);
@@ -565,7 +565,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       //divBinWidth_DiAndSVals( (double*)boundaries_pt_gen, (int)nbins_pt_gen, (TH1D*)hSVal);
       
       //hSVal->SetTitle(" singular values ");
-      //hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
+      hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
       //hSVal->SetAxisRange(0.,(double)(hSVal->GetNbinsX()),"X");
       hSVal->SetTitle("Singular Values (AC^{-1})");        
       hSVal->SetXTitle("index i");        
@@ -594,7 +594,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       c11->cd(2);
       c11->cd(2)->SetLogy(1);    
       
-      //hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
+      hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
       //hdi->SetAxisRange(0.,(double)(hdi->GetNbinsX()),"X");
       hdi->SetTitle("Divector Values (#||{d_{i}}) ");
       hdi->SetXTitle("index i");

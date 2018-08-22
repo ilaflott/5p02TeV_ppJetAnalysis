@@ -7,6 +7,7 @@ dataHLTCalo=0
 doBayes=1
 doSVD=1
 useSimpBins=0
+makeRooUnf=0
 #CONST
 
 
@@ -63,8 +64,8 @@ function unfoldData(){
     #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTPF"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTPF"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
-	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
-	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
+	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	
 	echo ""
@@ -164,14 +165,14 @@ function unfoldMC(){
     echo "// ------------------------------------- RUNNING MC UNFOLDING ------------------------------------- //"
     echo "// ------------------------------------------------------------------------------------------------ //"
     echo "// ------------------------------------------------------------------------------------------------ //"
-
+    
     if [[ $# -eq 1 ]]
     then
 	MCdir=L2L3recoJetID_MCClosure_gendr0p1_${1}
     else
 	MCdir=L2L3recoJetID_MCClosure_gendr0p1
     fi
-
+    
     #source runMC.sh   "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
     #source runMC.sh   "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
     #source runMC.sh   "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
@@ -180,11 +181,11 @@ function unfoldMC(){
     #source runMC.sh   "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runMC.sh   "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 
-#    source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-    source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-
-
-
+    source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    #source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    
+    
+    
 #	MCdir=output/unfoldDataSpectra/L2L3recoJetID_MCClosure_gendr0p1_${1}
     
 
@@ -240,7 +241,10 @@ echo ""
 echo "... making rooUnfold ..."
 echo ""
 
-make_rooUnfold
+if [[ $makeRooUnf -eq 1 ]]
+then
+    make_rooUnfold
+fi
 
 if [[ $# -eq 1 ]]
 then

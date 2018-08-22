@@ -478,6 +478,7 @@ TH1* makeThyHist_00eta20(std::string filename, bool applyNPCorrFactor=true){
   TF1* fNPCorr_05eta10=NULL;
   TF1* fNPCorr_10eta15=NULL;
   TF1* fNPCorr_15eta20=NULL;
+
   if(applyNPCorrFactor){
     NPCorrFile=(TFile*)TFile::Open(NPCorr_filename.c_str());
     if(NPCorr_filename.find("nnlo")!=std::string::npos){
@@ -495,7 +496,6 @@ TH1* makeThyHist_00eta20(std::string filename, bool applyNPCorrFactor=true){
   
   for(int i=1;i<=nbinsx_max;i++){
     if(funcDebug)std::cout<<"i="<<i<<std::endl;
-    thyHist->SetBinContent(i,0.);
     
     if(i<=nbinsx_forSum){
       
@@ -544,6 +544,155 @@ TH1* makeThyHist_00eta20(std::string filename, bool applyNPCorrFactor=true){
     if(funcDebug)std::cout<<"thyHist BinConent="<<thyHist->GetBinContent(i)<<std::endl;
     if(funcDebug)std::cout<<"thyHist BinError=" <<thyHist->GetBinError(i)<<std::endl;          
   }
+  
+  if(funcDebug)std::cout<<"end of makeThyHist_00eta20"<<std::endl;
+  if(funcDebug)thyHist->Print("base");
+  return thyHist;
+}
+
+
+
+TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true){
+  bool funcDebug=true;
+  
+  TFile* thyFile=TFile::Open(filename.c_str());
+  if(!thyFile){
+    std::cout<<"err no file"<<std::endl;
+    return NULL;  }
+  
+  TH1* h_00eta05=(TH1*)thyFile->Get("h0100100");   //  TH1* h_00eta05=(TH1*)thyFile->Get("h1100100");
+  TH1* h_05eta10=(TH1*)thyFile->Get("h0100200");   //  TH1* h_05eta10=(TH1*)thyFile->Get("h1100200");
+  TH1* h_10eta15=(TH1*)thyFile->Get("h0100300");   //  TH1* h_10eta15=(TH1*)thyFile->Get("h1100300");
+  TH1* h_15eta20=(TH1*)thyFile->Get("h0100400");   //  TH1* h_15eta20=(TH1*)thyFile->Get("h1100400");
+  int nbinsx_00eta05=h_00eta05->GetNbinsX();
+  int nbinsx_05eta10=h_05eta10->GetNbinsX();
+  int nbinsx_10eta15=h_10eta15->GetNbinsX();
+  int nbinsx_15eta20=h_15eta20->GetNbinsX();
+  
+  int nbinsx =h_00eta05->GetNbinsX();
+  double finalBinHighEdge=h_00eta05->GetBinLowEdge(nbinsx) + h_00eta05->GetBinWidth(nbinsx);
+  double firstBinLowEdge=h_00eta05->GetBinLowEdge(1);
+  if(funcDebug)std::cout<< "nbinsx="         << nbinsx         << std::endl;
+  if(funcDebug)std::cout<< "finalBinHighEdge="         << finalBinHighEdge         << std::endl;
+  if(funcDebug)std::cout<< "firstBinLowEdge="          << firstBinLowEdge         << std::endl;
+  
+  //this is the hist that will be returned, clone the most central |y| hist for binning (less-central |y| hists' pt binning are subsets of this one) 
+  TH1* thyHist=(TH1*)h_00eta05->Clone("sumThyHistClone_forBins");
+  thyHist->Reset("ICES");//resets integ, contents, errs, stats
+  thyHist->Reset("M");//resets max/min
+  if(funcDebug)thyHist->Print("base");
+  
+  TFile* NPCorrFile=NULL;
+  TF1* fNPCorr_00eta05=NULL;
+  TF1* fNPCorr_05eta10=NULL;
+  TF1* fNPCorr_10eta15=NULL;
+  TF1* fNPCorr_15eta20=NULL;
+  
+  if(applyNPCorrFactor){
+    NPCorrFile=(TFile*)TFile::Open(NPCorr_filename.c_str());
+    if(NPCorr_filename.find("nnlo")!=std::string::npos){
+      fNPCorr_00eta05=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin0");
+      fNPCorr_05eta10=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin1");
+      fNPCorr_10eta15=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin2");
+      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin3");    }
+    else{
+      fNPCorr_00eta05=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin0");
+      fNPCorr_05eta10=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin1");
+      fNPCorr_10eta15=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin2");
+      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin3");    }
+    if(!((bool)NPCorrFile)){
+      std::cout<<"warning; want to open NP correction file + apply corrections but NP correction file not open nor present. Exit."<<std::endl;
+      assert(false);
+    }
+  }
+  
+  
+  for(int i=1;i<=nbinsx;i++){
+    
+    
+    double NPCF_00eta05=1.;
+    double NPCF_05eta10=1.;
+    double NPCF_10eta15=1.;
+    double NPCF_15eta20=1.;    
+    
+    if(applyNPCorrFactor){
+      double bincenter=(double)thyHist->GetXaxis()->GetBinCenter(i);
+      if(i<=nbinsx_00eta05)NPCF_00eta05=fNPCorr_00eta05->Eval(bincenter) ;
+      if(i<=nbinsx_05eta10)NPCF_05eta10=fNPCorr_05eta10->Eval(bincenter) ;
+      if(i<=nbinsx_10eta15)NPCF_10eta15=fNPCorr_10eta15->Eval(bincenter) ;
+      if(i<=nbinsx_15eta20)NPCF_15eta20=fNPCorr_15eta20->Eval(bincenter) ;  
+      if(funcDebug){
+	std::cout << "NPCF_00eta05 = " << NPCF_00eta05 << std::endl;
+	std::cout << "NPCF_05eta10 = " << NPCF_05eta10 << std::endl;
+	std::cout << "NPCF_10eta15 = " << NPCF_10eta15 << std::endl;
+	std::cout << "NPCF_15eta20 = " << NPCF_15eta20 << std::endl;	}      
+      if(NPCF_00eta05>1.)NPCF_00eta05=1.;
+      if(NPCF_05eta10>1.)NPCF_05eta10=1.;
+      if(NPCF_10eta15>1.)NPCF_10eta15=1.;
+      if(NPCF_15eta20>1.)NPCF_15eta20=1.;
+      if(funcDebug){
+	std::cout << "NPCF_00eta05 = " << NPCF_00eta05 << std::endl;
+	std::cout << "NPCF_05eta10 = " << NPCF_05eta10 << std::endl;
+	std::cout << "NPCF_10eta15 = " << NPCF_10eta15 << std::endl;
+	std::cout << "NPCF_15eta20 = " << NPCF_15eta20 << std::endl;	}      
+    }
+    
+    
+    if(funcDebug)std::cout<<"i="<<i<<std::endl;
+    double sumcontent=0.;     
+    
+    if(i<=nbinsx_00eta05){
+      sumcontent+=(h_00eta05->GetBinContent(i)*NPCF_00eta05 );}
+    if(i<=nbinsx_05eta10){
+      sumcontent+=(h_05eta10->GetBinContent(i)*NPCF_05eta10 );}
+    if(i<=nbinsx_10eta15){
+      sumcontent+=(h_10eta15->GetBinContent(i)*NPCF_10eta15 );}
+    if(i<=nbinsx_15eta20){
+      sumcontent+=(h_15eta20->GetBinContent(i)*NPCF_15eta20 );}
+    
+    sumcontent/=4.;//etabin width
+    sumcontent/=1000.;//picobarns to nanobarns
+    if(funcDebug)std::cout<<"sumcontent="<<sumcontent<<std::endl;
+    thyHist->SetBinContent(i,sumcontent);
+    
+    double sumerr=0.;
+    sumerr+=h_00eta05->GetBinError(i)*h_00eta05->GetBinError(i)*NPCF_00eta05*NPCF_00eta05;      
+    sumerr+=h_05eta10->GetBinError(i)*h_05eta10->GetBinError(i)*NPCF_05eta10*NPCF_05eta10;
+    sumerr+=h_10eta15->GetBinError(i)*h_10eta15->GetBinError(i)*NPCF_10eta15*NPCF_10eta15;
+    sumerr+=h_15eta20->GetBinError(i)*h_15eta20->GetBinError(i)*NPCF_15eta20*NPCF_15eta20;
+    sumerr=sqrt(sumerr);//errs
+    sumerr/=4.;//etabin width
+    sumerr/=1000.;//picobarns to nanobarns      
+    if(funcDebug)std::cout<<"sumerr="<<sumerr<<std::endl;
+    thyHist->SetBinError(i,sumerr);
+    
+    
+    if(funcDebug)std::cout<<"thyHist BinConent="<<thyHist->GetBinContent(i)<<std::endl;
+    if(funcDebug)std::cout<<"thyHist BinError=" <<thyHist->GetBinError(i)<<std::endl;          
+  }
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
   
   if(funcDebug)std::cout<<"end of makeThyHist_00eta20"<<std::endl;
   if(funcDebug)thyHist->Print("base");

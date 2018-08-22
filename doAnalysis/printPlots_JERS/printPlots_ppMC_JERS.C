@@ -99,14 +99,54 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       bool ptLoSet=false;
       for(int ip=0; ip<nbins_pt_debug; ip++){    
 	
+	int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
+	if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
+	//// reco/gen pt in gen pt bins for fits
+	// open the input hist    
+	std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
+	hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
+	if(rebinJER){	  hrsp[nj][ip]= (TH1F*)hrsp[nj][ip]->TH1::Rebin(5, (inputHistName+"_rebin5").c_str());	}
+	
+	if(!hrsp[nj][ip]){ 
+	  std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;
+	  assert(false);}          
+	else if(hrsp[nj][ip]->GetEntries()<3)
+	  continue;	
+	if(debugMode)std::cout<<std::endl;  
+	if(debugMode)hrsp[nj][ip]->Print("base");    
+	hrsp[nj][ip]->Scale( 1./ hrsp[nj][ip]->Integral() );    
+
+	//fgaus = new TF1("fgaus","gaus", 0.10,1.90);    
+	//fgaus = new TF1("fgaus","gaus", 0.70,1.30);    
+	fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
+	//fgaus = new TF1("fgaus","gaus", 0.90,1.10);    
+	//fgaus->SetParLimits(0,0.98,1.02);    //normalization
+	//fgaus->SetParLimits(1,0.95,1.05);   // mean
+	//fgaus->SetParLimits(2,0.0,0.5);     // width
+	
+	std::cout<<"fitting..."<<std::endl;    
+	std::cout<<"inputHist "<<inputHistName<<std::endl;    
+	if(debugMode)std::cout<< "Mean= "<< hrsp[nj][ip]->GetMean()<<" +/- " <<hrsp[nj][ip]->GetMeanError()<< std::endl;    	
+	
+	int fitstatus = 1;    	//fit status=0 if fit successful... annoying
+	//fitstatus = hrsp[nj][ip]->Fit(fgaus,"RQ");    
+	//fitstatus = hrsp[nj][ip]->Fit(fgaus,"RS");    
+	fitstatus = hrsp[nj][ip]->Fit(fgaus,"R");    
+	//fitstatus = hrsp[nj][ip]->Fit(fgaus);    
+	std::cout<< "Fit Status: "<< fitstatus<< std::endl;    
+
+
+	hrsp[nj][ip]->Write();
+	
+
+
 	if(ip<3)continue;
 
 	if(!ptLoSet){
 	  fit_ptLo=ptbins_debug[ip];
 	  ptLoSet=true;
 	}
-	int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
-	if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
+	
 
 
 	/*
@@ -130,21 +170,6 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	hcorr[nj][ip]->Scale( 1./ hcorr[nj][ip]->Integral() );    
 	*/
 
-	//// reco/gen pt in gen pt bins for fits
-	// open the input hist    
-	std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
-	hrsp[nj][ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
-	if(rebinJER){	  hrsp[nj][ip]= (TH1F*)hrsp[nj][ip]->TH1::Rebin(5, (inputHistName+"_rebin5").c_str());	}
-	
-	if(!hrsp[nj][ip]){ 
-	  std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;
-	  assert(false);}          
-	else if(hrsp[nj][ip]->GetEntries()<3)
-	  continue;	
-	if(debugMode)std::cout<<std::endl;  
-	if(debugMode)hrsp[nj][ip]->Print("base");    
-	hrsp[nj][ip]->Scale( 1./ hrsp[nj][ip]->Integral() );    
-	
 	// get some quick stats    
 	//float norm  = hrsp[nj][ip]->GetMaximumStored();    
 	float mean  = hrsp[nj][ip]->GetMean();    
@@ -155,24 +180,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	float chi2NDF = -1.;
 	
 
-	//fgaus = new TF1("fgaus","gaus", 0.10,1.90);    
-	//fgaus = new TF1("fgaus","gaus", 0.70,1.30);    
-	fgaus = new TF1("fgaus","gaus", 0.80,1.20);    
-	//fgaus = new TF1("fgaus","gaus", 0.90,1.10);    
-	//fgaus->SetParLimits(0,0.98,1.02);    //normalization
-	//fgaus->SetParLimits(1,0.95,1.05);   // mean
-	//fgaus->SetParLimits(2,0.0,0.5);     // width
-	
-	std::cout<<"fitting..."<<std::endl;    
-	std::cout<<"inputHist "<<inputHistName<<std::endl;    
-	if(debugMode)std::cout<< "Mean= "<< hrsp[nj][ip]->GetMean()<<" +/- " <<hrsp[nj][ip]->GetMeanError()<< std::endl;    	
-	
-	int fitstatus = 1;    	//fit status=0 if fit successful... annoying
-	//fitstatus = hrsp[nj][ip]->Fit(fgaus,"RQ");    
-	//fitstatus = hrsp[nj][ip]->Fit(fgaus,"RS");    
-	fitstatus = hrsp[nj][ip]->Fit(fgaus,"R");    
-	//fitstatus = hrsp[nj][ip]->Fit(fgaus);    
-	std::cout<< "Fit Status: "<< fitstatus<< std::endl;    
+
 	
 	mean  = (fitstatus!=0) ? hrsp[nj][ip]->GetMean()        : fgaus->GetParameter(1); // z = if(condition) then(?) <do this> else(:) <do this>   
 	emean = (fitstatus!=0) ? hrsp[nj][ip]->GetMeanError()   : fgaus->GetParError(1) ; 
@@ -205,8 +213,6 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	hChi2NDF[nj]->SetBinContent (ip+1, chi2NDF );
 	hChi2NDF[nj]->SetBinError (ip+1, 0. );
 
-	hrsp[nj][ip]->Write();
-	
       }// end fit-loop over ptbins    
      
     }// end loop over available jet radii    
@@ -370,7 +376,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       
       for(int j=0;j<nbins_pt_debug;++j){    
 	
-	if(j<3)continue;
+	//if(j<3)continue;
 	
 	int ptbin_j=(int)ptbins_debug[j];
 	int ptbin_j1=(int)ptbins_debug[j+1];

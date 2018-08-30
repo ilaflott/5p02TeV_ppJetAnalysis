@@ -16,6 +16,7 @@
 #include <TLegend.h>
 
 #include <TSpline.h>
+#include <TLine.h>
 
 #include "RooUnfoldResponse.h"
 
@@ -35,6 +36,7 @@ TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
 		       "NP+"+((std::string)xsec->GetTitle())
 		       ).c_str()
 		      );
+  xsec_wNP->Sumw2(true);
   int nbinsx=xsec->GetNbinsX();
   for(int i=1; i<=nbinsx; ++i){
     Double_t bincent = xsec->GetBinCenter(i);
@@ -120,6 +122,25 @@ double thyBins_incl[]={
   //  1032., 1101. //junk from here down
 }; 
 const int n_thybins_incl=sizeof(thyBins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
+double thyBins_incl2[]={
+  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
+  //  32., 37., //junk bins above 
+  //43., 49., 
+  //37.,
+  43., 49.,
+  56., 64., 74., 84., 97., 
+  114., 133., 153., 174., 196., 
+  220., 245., 272., 
+  300., 330., 362., 395., 
+  430., 468.,
+  507., 548., 592., 
+  638., 
+  686.//, 
+  //1000.//,//967.//1032. 
+  //1500.
+  //  1032., 1101. //junk from here down
+}; 
+const int n_thybins_incl2=sizeof(thyBins_incl2)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
 
 
 double smearedBins_incl[]={
@@ -213,6 +234,7 @@ TH1D* make00eta20Hist( TH1D * h_1,
   TH1D* h00eta20 = (TH1D*)h_1->Clone("h00eta20");
   h00eta20->Reset("ICES");
   h00eta20->Reset("M");
+  h00eta20->Sumw2(true);
   h00eta20->Print("base");
   
   //this part assumes all hists start at same lower limit; which they better!
@@ -284,6 +306,69 @@ TH1D* make00eta20Hist( TH1D * h_1,
   
   return h00eta20;
 }
+
+void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER, 
+		    int nevts, TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, RooUnfoldResponse* resp ){
+  
+  int tenth_nEvents=nevts/10;
+  
+  TRandom3 *rnd = new TRandom3();
+  double ptmin_thy=hthy->GetBinLowEdge(1);
+  double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
+  double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
+  
+  int respcount=0, misscount=0, fakecount=0;
+  for(int i=0;i<nevts;++i){      
+    
+    if(i%tenth_nEvents==0)
+      cout<<"throwing random #'s for event # "<<i<<endl;
+    
+    double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
+    double sigma   = fJER->Eval(ptTrue);
+    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+    double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
+    double pt_w      =  hthy_spline->Eval(ptTrue);
+
+    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
+    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
+    bool fillresp=in_smearpt_range&&in_trupt_range;
+    
+    if(fillresp){
+      resp->Fill(ptSmeared,ptTrue,pt_w);
+      hthy_toyMC    -> Fill(ptTrue,pt_w);
+      hsmeared_toyMC -> Fill(ptSmeared,pt_w);      
+      respcount++;
+    }
+    else if(in_trupt_range){//not in smear pt range but in truept range
+      resp->Miss(ptTrue,pt_w);                                        
+      hthy_toyMC    -> Fill(ptTrue,pt_w);
+      misscount++;
+    }
+    else if(in_smearpt_range){//shouldnt get filled by construction. ptTrue always pulled s.t. in_trupt_range is true. if in_smearpt_range is true, so it in_trupt_range
+      resp->Fake(ptSmeared,pt_w);                                        
+      hsmeared_toyMC    -> Fill(ptSmeared,pt_w);
+      fakecount++;
+    }
+    
+    
+    
+  }//end loop throwing random no's
+
+  cout<<"done smearing ynew."<<endl;  
+  cout<<"smear summary;"<<endl;
+  cout<<"nEvents="<<nevts<<endl;
+  cout<<"response_count="<<respcount<<endl;
+  cout<<"miss_count="<<misscount<<endl;
+  cout<<"fake_count="<<fakecount<<endl;
+
+  
+  
+  
+  
+  
+  return;
+}
+
 
 
 //void smear_theory_spectra(TH1D* hthy, TH1D* hsmrd, RooUnfoldResponse respmat, TSpline3* spline, TF1* fJER){

@@ -444,48 +444,6 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   double ptmax_smeared = smearedBins_incl[n_smearedbins_incl];
   double ptmin_thy = thyBins_incl[0];
   double ptmax_thy = thyBins_incl[n_thybins_incl];
-  //double ptmax_thy_splinevalid=877.3827;//found painfully by hand
-  // double ptmax_thy_splinevalid= 877.382702298;
-  //double ptmax_thy_splinevalid=  877.3827022981749337304790;//erroneous as pointed out by caitlin!
-  //double ptmax_thy_splinevalid=  877.38271270188766941;//last double-value of TSpline3 that yields a sensible positive weight  
-  
-  double ptmax_thy_splinevalid=thyBins_incl[n_thybins_incl] - 0.5*(thyBins_incl[n_thybins_incl] - thyBins_incl[n_thybins_incl-1]);//
-  //double ptmax_thy_splinevalid=843.;//last x value before using a linear fit to y=0 from 843 to max-pt value.
-  double y1=spline3_ynew->Eval(ptmax_thy_splinevalid);
-  //  double y2=theory_ynew->GetBinContent(theory_ynew->GetNbinsX());
-  double logdiff=log(theory_ynew->GetBinContent(theory_ynew->GetNbinsX()-1)) -log(theory_ynew->GetBinContent(theory_ynew->GetNbinsX())) ;
-  double nupow=log(theory_ynew->GetBinContent(theory_ynew->GetNbinsX() )) - 2*logdiff;
-  double y2=pow(10.,nupow);
-
-  double slope_m=(y2-y1)/(ptmax_thy - ptmax_thy_splinevalid);
-  double yint_b=y2-slope_m*ptmax_thy;
-  TF1* spline3_line_ext_ynew=new TF1("spline3_line_ext_ynew", "[0]*x+[1]", ptmax_thy_splinevalid , ptmax_thy);
-  spline3_line_ext_ynew->SetParameter(0,slope_m);
-  spline3_line_ext_ynew->SetParameter(1,yint_b);
-  if(true){
-    cout<<"y1="<<y1<<endl;
-    cout<<"logdiff="<<logdiff <<endl;
-    cout<<"nupow="<<nupow <<endl;
-    cout<<"y2="<<y2<<endl;
-    cout<<"slope_m="<<slope_m<<endl;
-    cout<<"yint_b="<<yint_b<<endl;
-    cout<<"testing linear fit at ptmax_thy_splinevalid="<<ptmax_thy_splinevalid<<endl; 
-    cout<<"testing linear fit at spline3_line_ext_ynew->Eval="<<  spline3_line_ext_ynew->Eval(ptmax_thy_splinevalid) << endl;
-    cout<<"spline3_ynew->Eval="<<  spline3_ynew->Eval(ptmax_thy_splinevalid) << endl;
-    
-    cout<<"testing linear fit at ptmax_thy="<<ptmax_thy<<endl;
-    cout<<"testing linear fit at spline3_line_ext_ynew->Eval="<<  spline3_line_ext_ynew->Eval(ptmax_thy) << endl;
-    cout<<"spline3_ynew->Eval="<<  spline3_ynew->Eval(ptmax_thy) << endl;
-    //assert(false);  
-  }
-  
-  //compute the linear extrapolation 
-  ////over-correction option, problem; avoids neg weight, but last bin for smeared NLO spectra is basically lost. might be palatable because we're stat-limited there anyways.
-  //double ptmin_thy = thyBins_incl[1];
-  //double ptmax_thy = thyBins_incl[n_thybins_incl-1];
-  //slightly-less-over-correction problem; avoids neg weight, maximises pt range possible w/ current NLO spectra, but last bin probably still not going to be usable. slightly prefer
-  //double ptmin_thy = thyBins_incl[0]+0.5*(thyBins_incl[1]-thyBins_incl[0]);
-  //double ptmax_thy = thyBins_incl[n_thybins_incl]-0.5*(thyBins_incl[n_thybins_incl]-thyBins_incl[n_thybins_incl-1]);  
   
   
   TRandom3 *rnd = new TRandom3();
@@ -497,113 +455,65 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   RooUnfoldResponse response_ynew(smeared_rnd_ynew,theory_rnd_ynew); 
   
   
-  //makeToySpectra(theory_ynew_spl3clone, spline3_ynew, fJER_ynew, 
-  //		 nEvents, theory_rnd_ynew, smeared_rnd_ynew, &response_ynew);  
-//assert(false);
+  makeToySpectra(theory_ynew_spl3clone, spline3_ynew, fJER_ynew, 
+  		 nEvents, theory_rnd_ynew, smeared_rnd_ynew, &response_ynew);  
+  //assert(false);
 
-  int response_count=0, fake_count=0, miss_count=0;
-  int debug_ptw_lt0_count=0, debug_ptTrue_gt843_count=0;//, debug_ptTrue_lt46_count=0;
-  
-  TH1D* theory_rnd_ynew_deltaptw   =new TH1D("theory_rnd_ynew_deltaptw"  ,"theory_rnd_ynew_deltaptw"  ,(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  TH1D* theory_rnd_ynew_nuptw      =new TH1D("theory_rnd_ynew_nuptw"     ,"theory_rnd_ynew_nuptw"     ,(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  TH1D* theory_rnd_ynew_oldptw     =new TH1D("theory_rnd_ynew_oldptw"    ,"theory_rnd_ynew_oldptw"    ,(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  TH1D* theory_rnd_ynew_negoldptw  =new TH1D("theory_rnd_ynew_negoldptw" ,"theory_rnd_ynew_negoldptw" ,(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  TH1D* smeared_rnd_ynew_deltaptw  =new TH1D("smeared_rnd_ynew_deltaptw" ,"smeared_rnd_ynew_deltaptw" ,(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  TH1D* smeared_rnd_ynew_nuptw     =new TH1D("smeared_rnd_ynew_nuptw"    ,"smeared_rnd_ynew_nuptw"    ,(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  TH1D* smeared_rnd_ynew_oldptw    =new TH1D("smeared_rnd_ynew_oldptw"   ,"smeared_rnd_ynew_oldptw"   ,(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  TH1D* smeared_rnd_ynew_negoldptw =new TH1D("smeared_rnd_ynew_negoldptw","smeared_rnd_ynew_negoldptw",(500+(int)ptmax_thy-(int)thyBins_incl[n_thybins_incl-2]),thyBins_incl[n_thybins_incl-2],ptmax_thy+500);
-  for(int i=0;i<nEvents;++i){      
-    
-    if(i%tenth_nEvents==0)
-      cout<<"throwing random #'s for event # "<<i<<endl;
-    
-    double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
-    double sigma   = gJER_ynew(ptTrue); 
-    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
-    double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
-    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
-    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
-    
-    double pt_w      =  spline3_ynew->Eval(ptTrue);
-
-
-    
-    if(ptTrue>ptmax_thy_splinevalid){
-      debug_ptTrue_gt843_count++;
-      double oldpt_w=pt_w;
-      if(oldpt_w<0.){
-	debug_ptw_lt0_count++;
-      }
-      //pt_w=spline3_line_ext_ynew->Eval(ptTrue);
-      
-      
-      
-      ////misguided, weights underestimated
-      //cout<<"replacing w/ weight of largest possible pt value!! "<<ptmax_thy_splinevalid<<endl
-      //pt_w=spline3_ynew->Eval(ptmax_thy_splinevalid);
-      //cout<<"pt_w now = "<<pt_w<<endl;      
-      
-      //linear fit from last valid y-value to zero by the end of the pt bin. weights not 
-      //cout<<"now pt_w ="<<pt_w<<endl;
-      //if(in_smearpt_range && in tru){
-      //}
-      
-      if(in_trupt_range){
-	theory_rnd_ynew_deltaptw->Fill(ptTrue,(pt_w - oldpt_w));
-	theory_rnd_ynew_nuptw->Fill(ptTrue,(pt_w) );
-	theory_rnd_ynew_oldptw->Fill(ptTrue,(oldpt_w) );
-	if(oldpt_w<0.)	  theory_rnd_ynew_negoldptw->Fill(ptTrue,(oldpt_w) );
-      }
-      if(in_smearpt_range){
-	smeared_rnd_ynew_deltaptw->Fill(ptSmeared,(pt_w - oldpt_w));
-	smeared_rnd_ynew_nuptw   ->Fill(ptSmeared,(pt_w) );
-	smeared_rnd_ynew_oldptw  ->Fill(ptSmeared,(oldpt_w) );
-	if(oldpt_w<0.)smeared_rnd_ynew_negoldptw  ->Fill(ptSmeared,(oldpt_w) );
-      } 
-    }
-    
-    
-    
-    //    if (  in_smearpt_range && in_trupt_range){
-    bool fillRespMatrix=(in_smearpt_range && in_trupt_range);
-    if (  fillRespMatrix){
-      if(response_count%tenth_nEvents==0){
-	cout<<"filling response w/ jet, response_count="<<response_count<<endl;
-	cout<< "ptTrue / ptSmeared = "<< ptTrue << " / " << ptSmeared << endl;      }
-      response_ynew.Fill(ptSmeared,ptTrue,pt_w); 
-      response_count++;          
-      theory_rnd_ynew    -> Fill(ptTrue,pt_w);
-      smeared_rnd_ynew -> Fill(ptSmeared,pt_w);    }
-    else if (  in_trupt_range ){
-      if(miss_count%100000==0){
-	cout<<"filling response w/ missed jet, miss_count="<<miss_count<<endl;
-	cout<< "ptTrue / ptSmeared = "<< ptTrue << " / " << ptSmeared << endl;      }
-      response_ynew.Miss(ptTrue,pt_w); 
-      theory_rnd_ynew    -> Fill(ptTrue,pt_w);
-      miss_count++;        }
-    else if ( in_smearpt_range) {
-      if(fake_count%100000==0){
-	cout<<"filling response w/ 'fake' jet, fake_count="<<fake_count<<endl;
-	cout<< "ptTrue / ptSmeared = "<< ptTrue << " / " << ptSmeared << endl;      }
-      response_ynew.Fake(ptSmeared,pt_w); 
-      smeared_rnd_ynew -> Fill(ptSmeared,pt_w);
-      fake_count++;          }
-    
-    
-    
-  }
-  cout<<"done smearing ynew."<<endl;  
-  cout<<"smear summary;"<<endl;
-  cout<<"nEvents="<<nEvents<<endl;
-  cout<<"response_count="<<response_count<<endl;
-  cout<<"miss_count="<<miss_count<<endl;
-  cout<<"fake_count="<<fake_count<<endl;
-  
-  cout<<"debug_ptTrue_gt843_count="<<debug_ptTrue_gt843_count<<endl;
-  cout<<"debug_ptw_lt0_count="<<debug_ptw_lt0_count<<endl;
-  
-  
-  
+  //int response_count=0, fake_count=0, miss_count=0;  
+  //for(int i=0;i<nEvents;++i){      
+  //  
+  //  if(i%tenth_nEvents==0)
+  //    cout<<"throwing random #'s for event # "<<i<<endl;
+  //  
+  //  double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
+  //  double sigma   = gJER_ynew(ptTrue); 
+  //  //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+  //  double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
+  //  bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
+  //  bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
+  //  
+  //  double pt_w      =  spline3_ynew->Eval(ptTrue);
+  //
+  //
+  //  
+  //  
+  //  
+  //  
+  //  
+  //  //    if (  in_smearpt_range && in_trupt_range){
+  //  bool fillRespMatrix=(in_smearpt_range && in_trupt_range);
+  //  if (  fillRespMatrix){
+  //    if(response_count%tenth_nEvents==0){
+  //	cout<<"filling response w/ jet, response_count="<<response_count<<endl;
+  //	cout<< "ptTrue / ptSmeared = "<< ptTrue << " / " << ptSmeared << endl;      }
+  //    response_ynew.Fill(ptSmeared,ptTrue,pt_w); 
+  //    response_count++;          
+  //    theory_rnd_ynew    -> Fill(ptTrue,pt_w);
+  //    smeared_rnd_ynew -> Fill(ptSmeared,pt_w);    }
+  //  else if (  in_trupt_range ){
+  //    if(miss_count%100000==0){
+  //	cout<<"filling response w/ missed jet, miss_count="<<miss_count<<endl;
+  //	cout<< "ptTrue / ptSmeared = "<< ptTrue << " / " << ptSmeared << endl;      }
+  //    response_ynew.Miss(ptTrue,pt_w); 
+  //    theory_rnd_ynew    -> Fill(ptTrue,pt_w);
+  //    miss_count++;        }
+  //  else if ( in_smearpt_range) {
+  //    if(fake_count%100000==0){
+  //	cout<<"filling response w/ 'fake' jet, fake_count="<<fake_count<<endl;
+  //	cout<< "ptTrue / ptSmeared = "<< ptTrue << " / " << ptSmeared << endl;      }
+  //    response_ynew.Fake(ptSmeared,pt_w); 
+  //    smeared_rnd_ynew -> Fill(ptSmeared,pt_w);
+  //    fake_count++;          }
+  //  
+  //  
+  //  
+  //}
+  //cout<<"done smearing ynew."<<endl;  
+  //cout<<"smear summary;"<<endl;
+  //cout<<"nEvents="<<nEvents<<endl;
+  //cout<<"response_count="<<response_count<<endl;
+  //cout<<"miss_count="<<miss_count<<endl;
+  //cout<<"fake_count="<<fake_count<<endl;
   
 
   divideBinWidth(theory_rnd_ynew);
@@ -618,6 +528,9 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   maxy*=2.;  cout<<"maxy="<<maxy<<endl;
   Float_t miny=smeared_rnd_ynew->GetMinimum();   cout<<"miny="<<miny<<endl;
   miny/=2.; cout<<"miny="<<miny<<endl;
+  if(miny<0.){
+    cout<<"WARNING! Bin contents of smeared hist is NEGATIVE! Not possible!"<<endl;
+  }
   theory_rnd_ynew->SetAxisRange(miny,maxy,"Y");
   //theory_rnd_ynew->SetTitle( ((std::string)("Toy MC Incl. NLO #sigma;;"+ddxsec_yax)).c_str() );
   
@@ -686,31 +599,8 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   response_ynew_th2->Draw("COLZ");
   
   
-  //TH1D *ynew_true_smeared_rat_test=(TH1D*)theory_rnd_ynew->Clone("ynew_true_smeared_rat_test"); 
-  //if(printBaseDebug)ynew_true_smeared_rat_test->Print("base");
-  //ynew_true_smeared_rat_test->SetTitle("Inclusive NLO #sigma_{jet}, True/Smeared TEST HIST ratio; Jet p_T (GeV); True/Smeared          ");
-  //ynew_true_smeared_rat_test->Divide(smeared_rnd_ynew);  
-  //
-  /////// alt ratio plot test; want to see how the lack of the "B" option in divide changes the answer
-  //TCanvas *plot_ynew_true_smeared_rat_test = new TCanvas("plot_ynew_true_smeared_rat_test", "plot_ynew_true_smeared_rat_test",1600,800);  
-  //plot_ynew_true_smeared_rat_test->SetLogx(1);
-  //plot_ynew_true_smeared_rat_test->SetLogy(0);
-  //plot_ynew_true_smeared_rat_test->cd();
-  //ynew_true_smeared_rat_test->SetAxisRange(0.6,1.4,"Y");
-  //ynew_true_smeared_rat_test->Draw("HIST E");        
-  
-  
-  
-  //rebin 4 ratio only
-  //cout<<"rebinning..."<<endl;
-  //ynew_true_smeared_rat=(TH1D*)ynew_true_smeared_rat->TH1::Rebin(n_smearedbins_incl, "theory_rnd_ynew_clone_ratio_rebin", smearedBins_incl)    ;
-  //if(printBaseDebug)ynew_true_smeared_rat->Print("base");  
-  //cout<<"dividing..."<<endl;
-  //ynew_true_smeared_rat->Divide(theory_rnd_ynew,smeared_rnd_ynew,1.,1.,"B");  
-  //ynew_true_smeared_rat->Divide(smeared_rnd_ynew);  
-  //ynew_true_smeared_rat->SetAxisRange(smearedBins_incl[0],smearedBins_incl[n_smearedbins_incl],"X"); 
-  
-  
+
+
   //NP+NLO smearing next
   cout<<"creating TH1 for toy NP+NLO spectra generation"<<endl<<endl;
   TH1D *theory_rnd_NPynew    = new TH1D("theory_rnd_NPynew","theory_rnd_NPynew", n_thybins_incl, thyBins_incl);   
@@ -799,15 +689,6 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   smeared_rnd_NPynew->Write(); 
   //NPynew_true_smeared_rat->Write();  //ratio
   //plot_NPynew_true_smeared_rat->Write();
-  
-  theory_rnd_ynew_deltaptw   ->Write();
-  theory_rnd_ynew_nuptw      ->Write();
-  theory_rnd_ynew_oldptw     ->Write();
-  theory_rnd_ynew_negoldptw  ->Write();
-  smeared_rnd_ynew_deltaptw  ->Write();
-  smeared_rnd_ynew_nuptw     ->Write();
-  smeared_rnd_ynew_oldptw    ->Write();
-  smeared_rnd_ynew_negoldptw ->Write();
   
   
   outf->Write();

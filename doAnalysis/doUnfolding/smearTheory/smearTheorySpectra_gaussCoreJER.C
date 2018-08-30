@@ -437,16 +437,7 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   
   
   //////////////////////  Start production of Smeared spectra
-  int tenth_nEvents=nEvents/10;//for debug text output
   
-  ////intuitive option, problem; neg weight from TSpline for ptTrue>the center of last bin
-  double ptmin_smeared = smearedBins_incl[0];
-  double ptmax_smeared = smearedBins_incl[n_smearedbins_incl];
-  double ptmin_thy = thyBins_incl[0];
-  double ptmax_thy = thyBins_incl[n_thybins_incl];
-  
-  
-  TRandom3 *rnd = new TRandom3();
   
   //NLO smearing first
   cout<<"creating TH1 for toy NLO spectra generation, RooUnfoldResponse class, etc."<<endl<<endl;
@@ -457,8 +448,14 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   
   makeToySpectra(theory_ynew_spl3clone, spline3_ynew, fJER_ynew, 
   		 nEvents, theory_rnd_ynew, smeared_rnd_ynew, &response_ynew);  
-  //assert(false);
 
+  //TRandom3 *rnd = new TRandom3();
+  //int tenth_nEvents=nEvents/10;//for debug text output  
+  //double ptmin_smeared = smearedBins_incl[0];
+  //double ptmax_smeared = smearedBins_incl[n_smearedbins_incl];
+  //double ptmin_thy = thyBins_incl[0];
+  //double ptmax_thy = thyBins_incl[n_thybins_incl];  
+  //assert(false);
   //int response_count=0, fake_count=0, miss_count=0;  
   //for(int i=0;i<nEvents;++i){      
   //  
@@ -581,7 +578,7 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   ynew_true_smeared_rat->SetAxisRange(0.6,1.4,"Y");
   ynew_true_smeared_rat->Draw("HIST E");        
   
-  TLine* lineatone=new TLine(ptmin_thy,1.,ptmax_thy,1.);
+  TLine* lineatone=new TLine(thyBins_incl[0],1.,thyBins_incl[n_thybins_incl],1.);
   lineatone->Draw();
 
 

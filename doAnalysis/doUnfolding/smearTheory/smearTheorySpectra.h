@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 #include <cassert>
 
 #include <TROOT.h>
@@ -116,8 +118,8 @@ double thyBins_incl[]={
   430., 468.,
   507., 548., 592., 
   638., 
-  686., 
-  1000.//,//967.//1032. 
+  686.//, 
+  //1000.//,//967.//1032. 
   //1500.
   //  1032., 1101. //junk from here down
 }; 
@@ -154,8 +156,8 @@ double smearedBins_incl[]={
   430., 468.,
   507., 548., 592., 
   638., 
-  686., 
-  1000.//,
+  686.//, 
+  //1000.//,
   //1500.//967.//1032.
   //,1500.
   //  1032., 1101. //junk from here down
@@ -164,6 +166,8 @@ const int n_smearedbins_incl=sizeof(smearedBins_incl)/sizeof(double)-1; //this i
 
 
 ////////// NPs from Paolo 4/9/2015
+// THESE ARE LIKELY FOR R>0.4
+// RAGHAV SAYS NP CORR FACTORS > 1 FOR R=0.5 AND ABOVE
 /// y = [0] + [1] * pow (x , [2] )
 ///   The values of the parameters are for each bin:
 ///                      [0]            [1]             [2]
@@ -307,12 +311,28 @@ TH1D* make00eta20Hist( TH1D * h_1,
   return h00eta20;
 }
 
-void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER, 
-		    int nevts, TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, RooUnfoldResponse* resp ){
-  
+
+
+//int getRandomSeed(){
+//  bool funcDebug=true;  
+//  int
+//}
+
+void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER, int nevts, 
+		    TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, RooUnfoldResponse* resp ){
+  bool funcDebug=true;
   int tenth_nEvents=nevts/10;
+
+  srand((unsigned)time(0));  
+  UInt_t rnd_seed=rand();
+  if(funcDebug)cout<<"rnd_seed="<<rnd_seed<<endl;
+  TRandom3 *rnd = new TRandom3(rnd_seed);
   
-  TRandom3 *rnd = new TRandom3();
+  //srand((unsigned)time(0));
+  UInt_t rnd_test_seed=rand();
+  if(funcDebug)cout<<"rnd_test_seed="<<rnd_test_seed<<endl;
+  TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
+  
   double ptmin_thy=hthy->GetBinLowEdge(1);
   double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
   double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
@@ -324,8 +344,86 @@ void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER,
       cout<<"throwing random #'s for event # "<<i<<endl;
     
     double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
-    double sigma   = fJER->Eval(ptTrue);
-    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+    double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+    double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
+    double pt_w      =  hthy_spline->Eval(ptTrue);
+
+    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
+    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
+    bool fillresp=in_smearpt_range&&in_trupt_range;
+
+    if(fillresp){
+      resp->Fill(ptSmeared,ptTrue,pt_w);
+      hthy_toyMC    -> Fill(ptTrue,pt_w);
+      hsmeared_toyMC -> Fill(ptSmeared,pt_w);            
+      respcount++;
+    }
+    else if(in_trupt_range){//not in smear pt range but in truept range
+      resp->Miss(ptTrue,pt_w);                                        
+      hthy_toyMC    -> Fill(ptTrue,pt_w);
+      misscount++;
+    }
+    else if(in_smearpt_range){//shouldnt get filled by construction. ptTrue always pulled s.t. in_trupt_range is true. if in_smearpt_range is true, so it in_trupt_range
+      resp->Fake(ptSmeared,pt_w);                                        
+      hsmeared_toyMC    -> Fill(ptSmeared,pt_w);
+      fakecount++;
+    }
+    
+    double    ptTrue_test = rnd_test->Uniform(ptmin_thy,ptmax_thy);
+    double     sigma_test = fJER->Eval(ptTrue_test);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+    double ptSmeared_test =  rnd_test->Gaus(ptTrue_test,ptTrue_test*sigma_test);
+    double      pt_w_test =  hthy_spline->Eval(ptTrue_test);
+    
+    bool in_test_smearpt_range=(  ( ptSmeared_test>ptmin_smeared ) && ( ptSmeared_test<ptmax_smeared )  );
+    if(in_test_smearpt_range)
+      hsmeared_toyMC_test->Fill(ptSmeared_test,pt_w_test);
+    
+  }//end loop throwing random no's
+  
+  cout<<"done smearing ynew."<<endl;  
+  cout<<"smear summary;"<<endl;
+  cout<<"nEvents="<<nevts<<endl;
+  cout<<"response_count="<<respcount<<endl;
+  cout<<"miss_count="<<misscount<<endl;
+  cout<<"fake_count="<<fakecount<<endl;
+
+  
+  
+  
+  
+  
+  return;
+}
+
+
+
+void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER, 
+		    int nevts, TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, TH2D* resp ){
+  bool funcDebug=true;
+  int tenth_nEvents=nevts/10;
+  
+  srand((unsigned)time(0));  
+  UInt_t rnd_seed=rand();
+  if(funcDebug)cout<<"rnd_seed="<<rnd_seed<<endl;
+  TRandom3 *rnd = new TRandom3(rnd_seed);
+  
+  //srand((unsigned)time(0));
+  UInt_t rnd_test_seed=rand();
+  if(funcDebug)cout<<"rnd_test_seed="<<rnd_test_seed<<endl;
+  TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
+  
+  double ptmin_thy=hthy->GetBinLowEdge(1);
+  double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
+  double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
+  
+  int respcount=0, misscount=0, fakecount=0;
+  for(int i=0;i<nevts;++i){      
+    
+    if(i%tenth_nEvents==0)
+      cout<<"throwing random #'s for event # "<<i<<endl;
+    
+    double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
+    double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
     double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
     double pt_w      =  hthy_spline->Eval(ptTrue);
 
@@ -340,31 +438,34 @@ void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER,
       respcount++;
     }
     else if(in_trupt_range){//not in smear pt range but in truept range
-      resp->Miss(ptTrue,pt_w);                                        
+      //      resp->Miss(ptTrue,pt_w);                                        
       hthy_toyMC    -> Fill(ptTrue,pt_w);
       misscount++;
     }
     else if(in_smearpt_range){//shouldnt get filled by construction. ptTrue always pulled s.t. in_trupt_range is true. if in_smearpt_range is true, so it in_trupt_range
-      resp->Fake(ptSmeared,pt_w);                                        
+      //      resp->Fake(ptSmeared,pt_w);                                        
       hsmeared_toyMC    -> Fill(ptSmeared,pt_w);
       fakecount++;
     }
     
+    double    ptTrue_test = rnd_test->Uniform(ptmin_thy,ptmax_thy);
+    double     sigma_test = fJER->Eval(ptTrue_test);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+    double ptSmeared_test =  rnd_test->Gaus(ptTrue_test,ptTrue_test*sigma_test);
+    double      pt_w_test =  hthy_spline->Eval(ptTrue_test);
+    
+    bool in_test_smearpt_range=(  ( ptSmeared_test>ptmin_smeared ) && ( ptSmeared_test<ptmax_smeared )  );
+    if(in_test_smearpt_range)
+      hsmeared_toyMC_test->Fill(ptSmeared_test,pt_w_test);
     
     
   }//end loop throwing random no's
-
+  
   cout<<"done smearing ynew."<<endl;  
   cout<<"smear summary;"<<endl;
   cout<<"nEvents="<<nevts<<endl;
   cout<<"response_count="<<respcount<<endl;
   cout<<"miss_count="<<misscount<<endl;
   cout<<"fake_count="<<fakecount<<endl;
-
-  
-  
-  
-  
   
   return;
 }
@@ -386,5 +487,42 @@ void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER,
 
 
 
+
+
+void setTH2_ZAxisRange(TH2* h){
+  bool funcDebug=false;
+  int nbinsx=h->GetNbinsX();
+  int nbinsy=h->GetNbinsY();
+  if(funcDebug){
+    std::cout<<"nbinsx="<<nbinsx<<std::endl;
+    std::cout<<"nbinsy="<<nbinsy<<std::endl;  }
+  double maxVal=1.e-30, minVal=1.e+30;
+  if(funcDebug){
+    std::cout<<"maxVal="<<maxVal<<std::endl;
+    std::cout<<"minVal="<<minVal<<std::endl;  }
+  
+  for (int i=1;i<=nbinsx;i++){
+    for (int j=1;j<=nbinsy;j++){
+      if(funcDebug)std::cout<<"(i, j) = ("<<i<<", "<<j<<")"<<std::endl;
+      double val=h->GetBinContent(i,j);
+
+      if(val>maxVal){    
+	maxVal=val;
+	if(funcDebug)std::cout<<"maxVal="<<maxVal<<std::endl;
+      }
+      if(val<minVal){
+	if(val>0.){
+	  minVal=val;
+	  if(funcDebug)
+	    std::cout<<"minVal="<<minVal<<std::endl;		}
+      }       
+    }
+  }
+  
+  
+  h->SetAxisRange(minVal/2.,maxVal*2.,"Z");
+  
+  return;  
+}
 
 

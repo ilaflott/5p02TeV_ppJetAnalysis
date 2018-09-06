@@ -1,11 +1,11 @@
 #!/bin/bash
 #CONST
 doMCUnfolding=1
-doDataUnfolding=1
+doDataUnfolding=0
 dataHLTPF=1
 dataHLTCalo=0
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 #CONST
@@ -158,7 +158,7 @@ function unfoldMC(){
     
     mv ${MCOUTDIR}/*.pdf  ${MCOUTDIR}/temp/.
     mv ${MCOUTDIR}/*.root ${MCOUTDIR}/temp/.
-
+    
     echo ""
     echo "// ------------------------------------------------------------------------------------------------ //"
     echo "// ------------------------------------------------------------------------------------------------ //"
@@ -168,27 +168,29 @@ function unfoldMC(){
     
     if [[ $# -eq 1 ]]
     then
-	MCdir=L2L3recoJetID_MCClosure_gendr0p1_${1}
+	#MCdir=L2L3recoJetID_MCClosure_gendr0p1_${1}
+	MCdir=0.0eta2.0_NLOMC_CTEQ10PDF_toyMC_${1}
     else
-	MCdir=L2L3recoJetID_MCClosure_gendr0p1
+	#MCdir=L2L3recoJetID_MCClosure_gendr0p1
+	MCdir=0.0eta2.0_NLOMC_CTEQ10PDF_toyMC
     fi
     
     #source runMC.sh   "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
     #source runMC.sh   "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
     #source runMC.sh   "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
     #source runMC.sh   "1.5eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
-
+    
     #source runMC.sh   "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runMC.sh   "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-
-    source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    
+    #source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     
     
-    
-#	MCdir=output/unfoldDataSpectra/L2L3recoJetID_MCClosure_gendr0p1_${1}
-    
+    source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $doBayes $doSVD $useSimpBins    
+#"0.0eta2.0_NLOMC_CTEQ10PDF_toyMC"  
 
+    
     echo ""
     echo "cleaning up previous MC output in ${MCOUTDIR}/${MCdir}"
     echo ""
@@ -210,7 +212,7 @@ function unfoldMC(){
     
     rm -r ${FINALOUTDIR}/${MCdir}
     mv  ${MCOUTDIR}/${MCdir} ${FINALOUTDIR}/${MCdir}
-    #scp2Serin ${FINALOUTDIR}/${MCdir}
+    scp2Serin ${FINALOUTDIR}/${MCdir}
     
 
     echo ""

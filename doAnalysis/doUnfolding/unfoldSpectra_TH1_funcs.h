@@ -46,6 +46,54 @@ void divideBinWidth(TH1 *h){
 }
 
 
+void multiplyBinWidth(TH1 *h){
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in divideBinWidth"<<std::endl<<std::endl;
+  //h->Sumw2();
+  if(funcDebug)h->Print("base");
+  double nEntries=h->GetEntries();
+  int numbins=h->GetNbinsX();
+
+  //std::cout<<"#of bin should be = "<<nbins_pt<<std::endl;
+  if(funcDebug)std::cout<<"#of bins = "<<numbins<<std::endl;
+  if(funcDebug)std::cout<<"integral before = "<<h->Integral()<<std::endl;
+  if(funcDebug)std::cout<<"entries before = "<<nEntries<<std::endl;
+
+  for (int i=1;i<=numbins;i++)
+    {
+
+      if(funcDebug)std::cout<<std::endl<<"bin-i = "<< i <<std::endl;
+      if(funcDebug)std::cout<<"bin-i width = "<<  h->GetBinWidth(i)  << std::endl;
+      if(funcDebug)std::cout<<"bin-i pt range is "<<   h->GetBinLowEdge(i) << " to " << (h->GetBinLowEdge(i)+h->GetBinWidth(i)) << std::endl;
+      if(funcDebug)std::cout<<std::endl<<"old val = "   <<      h->GetBinContent(i) << std::endl;
+      if(funcDebug)std::cout<<"old valErr = "<<      h->GetBinError(i)   << std::endl;
+
+
+      Double_t val    = h->GetBinContent(i);
+      Double_t valErr = h->GetBinError(i);
+
+      val    *= h->GetBinWidth(i);
+      valErr *= h->GetBinWidth(i);
+
+      h->SetBinContent(i,val);
+      h->SetBinError(i,valErr);
+      
+      if(funcDebug)std::cout<<"new val = "   <<      h->GetBinContent(i) << std::endl;
+      if(funcDebug)std::cout<<"new valErr = "<<      h->GetBinError(i)   << std::endl;
+      
+    }
+
+  if(funcDebug)std::cout<<"integral after = "<<h->Integral()<<std::endl;
+  if(funcDebug)std::cout<<"entries after = "<<h->GetEntries()<<std::endl;
+
+  //h->SetEntries(nEntries);
+
+  //std::cout<<"exiting function"<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"divideBinWidth done"<<std::endl<<std::endl;
+  return;
+}
+
+
 
 
 

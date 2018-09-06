@@ -99,6 +99,7 @@ const int kIter = 4; // default is 4, Bayes
 // max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ; //SVD
 
+const double NLOMCscaling=1e+03; // i.e. for when i fuck up the scaling/normalization
 const double MCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
 const double etaBinWidth=4.;   // e.g. |y| < 2.0
 //const double etaBinWidth=2.; // e.g. |y| < 1.0
@@ -362,7 +363,7 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
 			double* boundaries_pt_reco_mat , int nbins_pt_reco_mat,
 			double* boundaries_pt_gen_mat , int nbins_pt_gen_mat,
 			std::string outRespMatPdfFile   , bool  useSimpBins, TFile* fpp_MC=NULL){
-  bool funcDebug=false;
+  bool funcDebug=true;
   std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;    
   
   std::string open_outRespMatPdfFile=outRespMatPdfFile+"[";      
@@ -553,7 +554,7 @@ TH1* makeThyHist_00eta20(std::string filename, bool applyNPCorrFactor=true){
 
 
 TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true){
-  bool funcDebug=true;
+  bool funcDebug=false;
   
   TFile* thyFile=TFile::Open(filename.c_str());
   if(!thyFile){

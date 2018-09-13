@@ -8,6 +8,7 @@ const int nEvents=1e+06;  /// debug nevents
 std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [unit]";
 
 const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
+const std::string JERCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta20_08.07.18.root";
 
 
 int debugInt=0;
@@ -32,30 +33,64 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   string inputFile = "fNLOJetsSpectra/R04/"+inputString+".root";
   cout<<"opening input file:"<<inputFile<<endl<<endl;
   TFile* fin_NLO=TFile::Open(inputFile.c_str());
-  TFile* fin_NP=TFile::Open(NPCorrFile.c_str());
-  //TFile *f1 = new TFile(inputFile.c_str());  
-  cout<<endl;
   
-  /////////////// NPs to NLO jet spectra ////////////////////////////////////////////////////////
-  cout<<"plotting NP fits! " << endl;
-  
+
+  /////////////// NPs to NLO jet spectra ////////////////////////////////////////////////////////  
+  cout<<"opening NP corr file + fits! " << endl;
+  TFile* fin_NP=TFile::Open(NPCorrFile.c_str());  
+  std::string NPCorrFits_str;
+  if(NPCorrFile.find("nnlo")!=std::string::npos)
+    NPCorrFits_str="fNPC_POWPY8_R4_etabin";//raghavs suggestion to use POWPY8 for NNLO thy.
+  else
+    NPCorrFits_str="fNPC_HerwigEE4C_R4_etabin";
   /////////////// Get NP fit functions
   //TF1 *fNP_y0 = new TF1("fNP_y0",NP_y0_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
   //TF1 *fNP_y1 = new TF1("fNP_y1",NP_y1_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
   //TF1 *fNP_y2 = new TF1("fNP_y2",NP_y2_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
   //TF1 *fNP_y3 = new TF1("fNP_y3",NP_y3_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);
   //TF1 *fNP_ynew = new TF1("fNP_ynew",NP_ynew_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);  //avg of other four
-  TF1 *fNP_y0 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin0");
-  TF1 *fNP_y1 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin1");
-  TF1 *fNP_y2 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin2");
-  TF1 *fNP_y3 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin3");
-  std::string fNP_ynew_str= "("+fNP_y0->GetName() + "+" + 
-    fNP_y1->GetName() + "+" +
-    fNP_y2->GetName() + "+" +
-    fNP_y3->GetName() +")/4.";
-  TF1 *fNP_ynew= new TF1("fNP_ynew",fNP_ynew_str.c_str());
+  //TF1 *fNP_y0 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin0");
+  //TF1 *fNP_y1 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin1");
+  //TF1 *fNP_y2 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin2");
+  //TF1 *fNP_y3 = (TF1*)fin_NP->Get("fNPC_POWPY8_R4_etabin3");
+  TF1 *fNP_y0 = (TF1*)fin_NP->Get((NPCorrFits_str+"0").c_str());
+  TF1 *fNP_y1 = (TF1*)fin_NP->Get((NPCorrFits_str+"1").c_str());
+  TF1 *fNP_y2 = (TF1*)fin_NP->Get((NPCorrFits_str+"2").c_str());
+  TF1 *fNP_y3 = (TF1*)fin_NP->Get((NPCorrFits_str+"3").c_str());
+  if(!fin_NP ||
+     !fNP_y0 || !fNP_y1 || !fNP_y2 || !fNP_y3 )
+    {cout<<"error, NP file and/or fits not found."<<endl; assert(false);}
+  std::string fNP_ynew_str= "(" + 
+    ((std::string)fNP_y0->GetName()) + "+" + 
+    ((std::string)fNP_y1->GetName()) + "+" +
+    ((std::string)fNP_y2->GetName()) + "+" +
+    ((std::string)fNP_y3->GetName()) +")/4.";  
+  TF1 *fNP_ynew=new TF1("fNP_ynew",fNP_ynew_str.c_str() ,thyBins_incl[0],thyBins_incl[n_thybins_incl]);
   //TF1 *fNP_ynew = new TF1("fNP_ynew",NP_ynew_str.c_str(), thyBins_incl[0], thyBins_incl[n_thybins_incl]);  //avg of other four
   //-----------------------------------
+
+
+  cout<<"opening JER file + fits! " << endl;
+  TFile* fin_JER=TFile::Open(JERCorrFile.c_str());
+  /////////////// Create/Get JER fit function(s)
+  TF1 *fJER_default = new TF1("fJER_ynew",gJER_ynew_str.c_str(),thyBins_incl[0], thyBins_incl[n_thybins_incl]);  //for comparison only
+  fJER_default->SetLineColor(kBlue);
+  fJER_default->SetMinimum(0.); //do i need to set min/max really?
+  fJER_default->SetMaximum(0.25);
+  TF1 *fJER_ynew = (TF1*)fin_JER->Get("hSigmaFit");
+  if(!fin_JER || !fJER_ynew)
+    {cout<<"error, JER file and/or fits not found."<<endl; assert(false);}
+  fJER_ynew->SetLineColor(kRed);
+  fJER_ynew->SetMinimum(0.); //do i need to set min/max really?
+  fJER_ynew->SetMaximum(0.25);
+  
+  
+  //TFile *f1 = new TFile(inputFile.c_str());  
+  cout<<endl;
+  
+
+
+
 
   /////////////// plots to to check NPs 
   // 2x2 canv of |y| bins
@@ -107,6 +142,7 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   // |y|<2.0
   TCanvas *plot_totNPs = new TCanvas("plot_totNPs", "plot_totNPs",600,500);//1600,1200);
   plot_totNPs->SetLogx(1);
+  plot_totNPs->SetLogy(0);
   plot_totNPs->cd();
   //-----------------------------------
   TH1F *hNP_ynew = (TH1F*)( (TH1F*)fNP_ynew->GetHistogram()
@@ -146,11 +182,6 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   /////////////// Core p_T Resolution ////////////////////////////////////////////////////////
   cout<<"plotting JER!"<<  endl;  //cout<<""<<  << endl;
   
-  /////////////// Create/Get JER fit function(s)
-  TF1 *fJER_ynew = new TF1("fJER_ynew",gJER_ynew_str.c_str(),thyBins_incl[0], thyBins_incl[n_thybins_incl]);  
-  fJER_ynew->SetLineColor(2);
-  fJER_ynew->SetMinimum(0); 
-  fJER_ynew->SetMaximum(0.25);
   //-----------------------------------  
   
   /////////////// Create plot to check
@@ -160,19 +191,28 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   hJER_ynew->SetTitle(" Gauss Core JER Fit #||{y} < 2.0 ; Jet p_{T} ; #sigma / #mu from Fit");//sets hist title+xaxis+yaxis title
   hJER_ynew->GetXaxis()->SetNoExponent(true);
   hJER_ynew->GetXaxis()->SetMoreLogLabels(true);
+  TH1D *hJER_default = (TH1D*)(
+			       (TH1D*)fJER_default->GetHistogram()
+			       )->Clone("hJER_default");//for comparison only
+  hJER_default->SetTitle(" Gauss Core JER Fit #||{y} < 2.0 ; Jet p_{T} ; #sigma / #mu from Fit");//sets hist title+xaxis+yaxis title
+  hJER_default->GetXaxis()->SetNoExponent(true);
+  hJER_default->GetXaxis()->SetMoreLogLabels(true);
   //-----------------------------------  
-  TCanvas *plotJER = new TCanvas("plotJER", "plotJER",700,550);
+  TCanvas *plotJER = new TCanvas("plotJER", "plotJER",900,600);
   plotJER->cd()->SetLogx(1);
   plotJER->cd();  
-  hJER_ynew->DrawClone();    
+  hJER_default->DrawClone("HIST E");    
+  hJER_ynew->DrawClone("HIST E SAME");    
   //REPLACE ME W/TEXT SAYING SAME THING
-  //TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
+  TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
+  leg->AddEntry(hJER_ynew, "PY8 MC CUETP8M1 JER Fits New");
+  leg->AddEntry(hJER_default, "Default JER Fits from APS DNP 10/3/17");
   //leg->AddEntry(fJER_ynew,"PYTHIA8 CUETP8M1 @ 5.02 TeV", "");
   //leg->AddEntry(fJER_ynew,"ak4PFJets", "");
   //leg->AddEntry(fJER_ynew,"0<|y|<2.0", "l"); 
   //leg->SetTextFont(42);
   //leg->SetFillColor(kWhite);
-  //leg->Draw();
+  leg->Draw();
   //-----------------------------------
 
   
@@ -465,10 +505,13 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   
   //////////////////////  START production of Smeared NLO spectra     //////////////////////  
   cout<<"creating TH1 for toy NLO spectra generation, RooUnfoldResponse class, etc."<<endl<<endl;
-  TH1D *theory_rnd_ynew    = new TH1D("theory_rnd_ynew","theory_rnd_ynew", n_thybins_incl, thyBins_incl);   
-  TH1D *smeared_rnd_ynew = new TH1D("smeared_rnd_ynew","smeared_rnd_ynew", n_smearedbins_incl, smearedBins_incl);   
+  //TH1D *theory_rnd_ynew    = new TH1D("theory_rnd_ynew","theory_rnd_ynew", n_thybins_incl, thyBins_incl);   
+  //TH1D *smeared_rnd_ynew = new TH1D("smeared_rnd_ynew","smeared_rnd_ynew", n_smearedbins_incl, smearedBins_incl);   
+  //TH1D *smeared_rnd_ynew_test = new TH1D("smeared_rnd_ynew_test","smeared_rnd_ynew_test", n_smearedbins_incl, smearedBins_incl);   
+  TH1D *theory_rnd_ynew       = new TH1D("theory_rnd_ynew","theory_rnd_ynew",             n_thybins_incl    , thyBins_incl);   
+  TH1D *smeared_rnd_ynew      = new TH1D("smeared_rnd_ynew","smeared_rnd_ynew",           n_smearedbins_incl, smearedBins_incl);   
   TH1D *smeared_rnd_ynew_test = new TH1D("smeared_rnd_ynew_test","smeared_rnd_ynew_test", n_smearedbins_incl, smearedBins_incl);   
-
+  
   //RooUnfoldResponse response_ynew(smeared_rnd_ynew,theory_rnd_ynew);   
   //TH2* response_ynew_th2=(response_ynew.Hresponse());
   TH2D* response_ynew_th2=new TH2D("response_ynew_th2","response_ynew_th2",

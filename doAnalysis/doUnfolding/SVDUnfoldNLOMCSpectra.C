@@ -5,12 +5,16 @@ const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on
 const int kRegDrawSS = 1;
 
 const bool drawPDFs=true; 
-const bool debugMode=false;
+const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=false;
 
+const int verbosity=1;
+const bool doJetID=true;
+
 // CODE --------------------------------------------------
-int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName   ,
-			const bool doJetID=true   , const bool useSimpBins=false , const int kRegCenter= 5 ){
+int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_name, 
+			const std::string baseName   ,
+			const bool useNPCorrSpectra=false, const bool useSimpBins=false , const int kRegCenter= 4 ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
@@ -27,39 +31,56 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   
   // STRINGS -----------
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
-  inFile_MC_dir  =SCRATCH_BASE+inFile_MC_dir;
+  //inFile_MC_dir  =SCRATCH_BASE+inFile_MC_dir;
   
-  std::size_t radPos=inFile_MC_dir.find("_ak")+3;  
-  const std::string radius="R"+inFile_MC_dir.substr( radPos,1 );
+  //std::size_t radPos=inFile_MC_dir.find("_ak")+3;  
+  //const std::string radius="R"+inFile_MC_dir.substr( radPos,1 );
+  const std::string radiusint="4";
+  const std::string radius="R"+radiusint;
   const std::string RandEtaRange="_"+radius+"_20_eta_20";
   const std::string RandEtaRange_plotTitle=" "+radius+" 20eta20";// R4 20eta20
   if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
   if(debugMode)std::cout<<"RandEtaRange string is = "<<RandEtaRange<<std::endl;  
   
-  std::size_t jetTypePos=radPos+1, jetsPos=inFile_MC_dir.find("Jets");
-  const std::string jetType=inFile_MC_dir.substr( jetTypePos,(jetsPos-jetTypePos) );//PFJets
-  const std::string fullJetType="ak"+inFile_MC_dir.substr( radPos,1 )+jetType;//"ak4PFJets"
+  //std::size_t jetTypePos=radPos+1, jetsPos=inFile_MC_dir.find("Jets");
+  const std::string jetType="PFJets";//inFile_MC_dir.substr( jetTypePos,(jetsPos-jetTypePos) );//PFJets
+  const std::string fullJetType="ak"+radiusint+jetType;//"ak4PFJets"
   if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
 
+  std::string NLOMCtitle_str;
+  if(     inFile_MC_name.find("CT10")!=std::string::npos)   NLOMCtitle_str="CT10 NLO";
+  else if(inFile_MC_name.find("CT14")!=std::string::npos)   NLOMCtitle_str="CT14 NLO";
+  else if(inFile_MC_name.find("HERAPDF")!=std::string::npos)NLOMCtitle_str="HERAPDF15 NLO";
+  else if(inFile_MC_name.find("MMHT")!=std::string::npos)   NLOMCtitle_str="MMHT2014 NLO";
+  else if(inFile_MC_name.find("NNPDF")!=std::string::npos)  NLOMCtitle_str="NNPDF30 NNLO";
+  if(useNPCorrSpectra)NLOMCtitle_str+="+NP";
   
   // INFILE NAME(S) -----------
-  const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
+  //const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
   //const std::string inFile_Data_name="/HighPtJetTrig_"+fullJetType+"-allFiles.root";
 
   // ppMC input file -------------------------
   std::cout<<std::endl<<std::endl<<"opening INPUT histos from MC file"<<std::endl; 
   std::cout<<"input MC dir : "<< (inFile_MC_dir)  <<std::endl; 
   std::cout<<"MC file name : "<< (inFile_MC_name)<<std::endl;   std::cout<<std::endl<<std::endl;  
-  TFile *fpp_MC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
+  TFile *fin_ppMC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
   
   
   // OUTPUT FILE, NAME(S) -----------
+//  std::string outFileName=unfoldMCSpectra_outdir+fullJetType;
+//  if(doJetID)outFileName+="_wjtID";
+//  if(!useSimpBins)outFileName+="_anabins";
+//  else outFileName+="_simpbins";
+//  outFileName+="_"+baseName;
+  
   std::string outFileName=unfoldMCSpectra_outdir+fullJetType;
   if(doJetID)outFileName+="_wjtID";
   if(!useSimpBins)outFileName+="_anabins";
   else outFileName+="_simpbins";
-  outFileName+="_"+baseName;
+  if(useNPCorrSpectra) outFileName+="_NPNLO";
+  else outFileName+="_NLO";
+  outFileName+=baseName;
   
   std::string outRespMatPdfFile =  outFileName+"_respMat.pdf";//add SS to outfile name itself
   std::string outSVDPdfFile     =  outFileName+".pdf";  
@@ -75,7 +96,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   //for output
   if(debugMode)std::cout<<"opening output file: "<<outRootFile<<std::endl;
   TFile* fout = new TFile(outRootFile.c_str(),"RECREATE");   
-  if(debugMode)fout->cd();  
+  if(debugWrite)fout->cd();  
   
 
 
@@ -97,34 +118,42 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   
   // ---------- reco, measured spectra to unfold
   //std::string histTitle="hJetQA";
-  std::string histTitle="hpp_mcclosure_reco_test";
-  if(doJetID)histTitle+="_wJetID";
+  //std::string histTitle="hpp_mcclosure_reco_test";
+  //if(doJetID)histTitle+="_wJetID";
   //else histTitle+="_0wJetID";
   //histTitle+="_jtpt";
-  histTitle+=RandEtaRange;
+  //histTitle+=RandEtaRange;
+  std::string histTitle="smeared_rnd";//"hpp_mcclosure_reco_test";
+  if(useNPCorrSpectra) histTitle+="_NPynew_test";
+  else histTitle+="_ynew_test";
   if(debugMode)std::cout<<"histTitle="<<histTitle<<std::endl;
+  
 
-  TH1D*  hrec = (TH1D*)fpp_MC->Get( histTitle.c_str() ); 
+  TH1D*  hrec = (TH1D*)fin_ppMC->Get( histTitle.c_str() ); 
+  hrec->Scale(1./NLOMCscaling);
+  hrec->Scale(4.);
+  multiplyBinWidth(hrec);
+  
   if(debugMode)hrec->Print("base");
-  if(debugMode)hrec->Write();
+  if(debugWrite)hrec->Write();
   
   
   histTitle+="_clone";
   TH1D *hrec_rebin = (TH1D*)hrec->Clone( (histTitle).c_str() );
   if(debugMode)hrec_rebin->Print("base");
-  if(debugMode)hrec_rebin->Write(histTitle.c_str());
+  if(debugWrite)hrec_rebin->Write(histTitle.c_str());
   
   std::cout<<"rebinning hrec..."<<std::endl;
   histTitle+="_rebins";
   hrec_rebin = (TH1D*)hrec_rebin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
   if(debugMode)hrec_rebin->Print("base");  
-  if(debugMode)hrec_rebin->Write(histTitle.c_str());   
+  if(debugWrite)hrec_rebin->Write(histTitle.c_str());   
   
   if(clearOverUnderflows){
     histTitle+="_noOverUnderFlows";
     TH1clearOverUnderflows((TH1*)hrec_rebin);
     if(debugMode)hrec_rebin->Print("base");  
-    if(debugMode)hrec_rebin->Write(histTitle.c_str());
+    if(debugWrite)hrec_rebin->Write(histTitle.c_str());
   }
   
   //cosmetics
@@ -136,30 +165,36 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   
   
   // ---------- reco, measured same-side spectra used to create response matrix, and for "sameside" unfolding test
-  std::string histTitle2="hpp_mcclosure_reco";
-  if(doJetID)histTitle2+="_wJetID";
-  histTitle2+=RandEtaRange;
+  //  std::string histTitle2="hpp_mcclosure_reco";
+  //  if(doJetID)histTitle2+="_wJetID";
+  //  histTitle2+=RandEtaRange;
+  std::string histTitle2="smeared_rnd";//"_NPynew";//"hpp_mcclosure_reco";//    hpp_reco_wJetID_R4_20_eta_20
+  if(useNPCorrSpectra) histTitle2+="_NPynew";
+  else histTitle2+="_ynew";
   
-  TH1D*  hrec_sameside = (TH1D*)fpp_MC->Get( histTitle2.c_str() );   
+  TH1D*  hrec_sameside = (TH1D*)fin_ppMC->Get( histTitle2.c_str() );   
+  hrec_sameside->Scale(1./NLOMCscaling);
+  hrec_sameside->Scale(4.);
+  multiplyBinWidth(hrec_sameside);
   if(debugMode)hrec_sameside->Print("base");
-  if(debugMode)hrec_sameside->Write(histTitle2.c_str());
+  if(debugWrite)hrec_sameside->Write(histTitle2.c_str());
   
   histTitle2+="_clone";
   TH1D *hrec_sameside_rebin = (TH1D*)hrec_sameside->Clone( (histTitle2).c_str() );
   if(debugMode)hrec_sameside_rebin->Print("base");
-  if(debugMode)hrec_sameside_rebin->Write( histTitle2.c_str() );
+  if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );
   
   std::cout<<"rebinning hrec_sameside..."<<std::endl;
   histTitle2+="_rebins";
   hrec_sameside_rebin = (TH1D*)hrec_sameside_rebin->Rebin( nbins_pt_reco, (histTitle2).c_str() , boundaries_pt_reco);
   if(debugMode)hrec_sameside_rebin->Print("base");  
-  if(debugMode)hrec_sameside_rebin->Write( histTitle2.c_str() );   
+  if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );   
   
   if(clearOverUnderflows){
     histTitle2+="_noOverUnderFlows";
     TH1clearOverUnderflows((TH1*)hrec_sameside_rebin);
     if(debugMode)hrec_sameside_rebin->Print("base");  
-    if(debugMode)hrec_sameside_rebin->Write( histTitle2.c_str() );  } 
+    if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );  } 
   
   //cosmetics
   hrec_sameside_rebin->SetMarkerStyle(kOpenSquare);
@@ -175,33 +210,39 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
 					 nbins_pt_reco, boundaries_pt_reco); 
   
   if(debugMode)hrec_sameside_resp_rebin->Print(" base");  
-  if(debugMode)hrec_sameside_resp_rebin->Write( histTitle2.c_str() );
+  if(debugWrite)hrec_sameside_resp_rebin->Write( histTitle2.c_str() );
   
   
   // ---------- gen, MC truth spectra
-  std::string genHistTitle="hpp_mcclosure_gen";
-  if(doJetID)genHistTitle+="_wJetID";
-  genHistTitle+=RandEtaRange;
-  
-  TH1D* hgen = (TH1D*)fpp_MC->Get( genHistTitle.c_str() );
+  //std::string genHistTitle="hpp_mcclosure_gen";
+  //if(doJetID)genHistTitle+="_wJetID";
+  //genHistTitle+=RandEtaRange;
+  std::string genHistTitle="theory_rnd";//"hpp_mcclosure_gen"
+  if(useNPCorrSpectra) genHistTitle+="_NPynew";
+  else genHistTitle+="_ynew";
+
+  TH1D* hgen = (TH1D*)fin_ppMC->Get( genHistTitle.c_str() );
+  hgen->Scale(1./NLOMCscaling);
+  hgen->Scale(4.);
+  multiplyBinWidth(hgen);
   if(debugMode)hgen->Print("base");    
-  if(debugMode)hgen->Write();
+  if(debugWrite)hgen->Write();
   
   genHistTitle+="_clone";
   TH1D* hgen_rebin = (TH1D*)hgen->Clone( (genHistTitle).c_str() );
   if(debugMode)hgen_rebin->Print("base");
-  if(debugMode)hgen_rebin->Write(genHistTitle.c_str());
+  if(debugWrite)hgen_rebin->Write(genHistTitle.c_str());
   
   genHistTitle+="_rebins";
   hgen_rebin = (TH1D*)hgen_rebin->Rebin(nbins_pt_gen, (genHistTitle).c_str() , boundaries_pt_gen);
   if(debugMode)hgen_rebin->Print("base"); 
-  if(debugMode)hgen_rebin->Write(genHistTitle.c_str());
+  if(debugWrite)hgen_rebin->Write(genHistTitle.c_str());
 
   if(clearOverUnderflows){
     genHistTitle+="_noOverUnderFlows";
     TH1clearOverUnderflows((TH1*)hgen_rebin);
     if(debugMode)hgen_rebin->Print("base");    
-    if(debugMode)hgen_rebin->Write(genHistTitle.c_str());}
+    if(debugWrite)hgen_rebin->Write(genHistTitle.c_str());}
   
   //cosmetics
   hgen_rebin->SetMarkerStyle(kOpenStar);
@@ -217,7 +258,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   else
     hgen_resp_rebin = new TH1D( ("hpp_gen_response_rebin"+RandEtaRange).c_str() ,"", 
 				nbins_pt_gen, boundaries_pt_gen);  
-  if(debugMode)hgen_resp_rebin->Write();
+  if(debugWrite)hgen_resp_rebin->Write();
   if(debugMode)hgen_resp_rebin->Print("base");  
   
   
@@ -225,32 +266,38 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   
   
   // ---------- open MC "response" matrix
-  std::string TH2_title="hpp_mcclosure_matrix";//+RandEtaRange;
-  if(doJetID)TH2_title+="_wJetID";
-  TH2_title+=RandEtaRange;
+  //std::string TH2_title="hpp_mcclosure_matrix";//+RandEtaRange;
+  //if(doJetID)TH2_title+="_wJetID";
+  //TH2_title+=RandEtaRange;
+  
+  std::string TH2_title="response";//"_ynew_th2";//"hpp_mcclosure_matrix";//+RandEtaRange;
+  if(useNPCorrSpectra)TH2_title+="_NPynew_th2";
+  else TH2_title+="_ynew_th2";
   
   //get the response matrix made by readforests
-  TH2D* hmat = (TH2D*)fpp_MC->Get( TH2_title.c_str() );
-  if(debugMode)hmat->Write();
+  TH2D* hmat = (TH2D*)fin_ppMC->Get( TH2_title.c_str() );
+  hmat->Scale(1./NLOMCscaling);//hmat isn't scaled on file at all because it's not supposed to be norm'd to the bin width. 
+                               //BUT it is still filled with weighted entries, and those weights have units of cross section. so we scale for that.
+  if(debugWrite)hmat->Write();
   if(debugMode)hmat->Print("base");
   
   // rebinned matrix ---------------
   TH2_title+="_clone";
   TH2D* hmat_rebin = (TH2D*)hmat->Clone( (TH2_title).c_str() );
-  if(debugMode)hmat_rebin->Write( TH2_title.c_str() );
+  if(debugWrite)hmat_rebin->Write( TH2_title.c_str() );
   if(debugMode)hmat_rebin->Print("base"); 
   
   TH2_title+="_rebins";
   hmat_rebin=(TH2D*) reBinTH2(hmat_rebin, (TH2_title).c_str(), 
 			       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 			       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-  if(debugMode)hmat_rebin->Write( TH2_title.c_str() );
+  if(debugWrite)hmat_rebin->Write( TH2_title.c_str() );
   if(debugMode)hmat_rebin->Print("base"); 
   
   if(clearOverUnderflows){
     TH2_title+="_noOverUnderFlows";
     TH2clearOverUnderflows((TH2D*)hmat_rebin);
-    if(debugMode)hmat_rebin->Write( TH2_title.c_str() );
+    if(debugWrite)hmat_rebin->Write( TH2_title.c_str() );
     if(debugMode)hmat_rebin->Print("base");  }
 
     
@@ -259,20 +306,20 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   TH2D* hmat_errors=makeRespMatrixErrors( (TH2D*) hmat,
 					  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 					  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-  if(debugMode)hmat_errors->Write( errTH2_title.c_str() );
+  if(debugWrite)hmat_errors->Write( errTH2_title.c_str() );
   if(debugMode)hmat_errors->Print("base");
   
   if(clearOverUnderflows){
     errTH2_title+="_noOverUnderFlows";
     TH2clearOverUnderflows((TH2D*)hmat_errors);
-    if(debugMode)hmat_errors->Write(errTH2_title.c_str());
+    if(debugWrite)hmat_errors->Write(errTH2_title.c_str());
     if(debugMode)hmat_errors->Print("base");  }
   
   
   // give response matrix the correct errors
   setRespMatrixErrs( (TH2D*)hmat_rebin, (TH2D*) hmat_errors , (bool)zeroBins);
   TH2_title+="_wseterrs";
-  if(debugMode)hmat_rebin->Write(TH2_title.c_str());
+  if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
   if(debugMode)hmat_rebin->Print("base");
   
   
@@ -414,7 +461,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   std::string roo_resp_title = "Response_matrix_rebin_"+radius+std::to_string(kRegCenter);  
   RooUnfoldResponse roo_resp(hrec_sameside_resp_rebin, hgen_resp_rebin, hmat_rebin, (roo_resp_title).c_str());    
   roo_resp.UseOverflow(doOverUnderflows);
-  if(debugMode)roo_resp.Write();
+  if(debugWrite)roo_resp.Write();
   
   TH1D* hfak=  (TH1D*) roo_resp.Hfakes() ;
   hfak->Print("base");
@@ -452,9 +499,9 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
     RooUnfoldSvd unf_svd(&roo_resp, hrec_rebin, kReg[kr]);
-    unf_svd.SetVerbose(0);    
+    unf_svd.SetVerbose(verbosity);    
     //if(kr==0) unf_svd.SetVerbose(2);
-    //else  unf_svd.SetVerbose(0);
+    //else  unf_svd.SetVerbose(verbosity);
     //if(debugMode) unf_svd.SetVerbose(2);
     
     if(doToyErrs){
@@ -474,9 +521,9 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
     RooUnfoldSvd unf_ss_svd(&roo_resp, hrec_sameside_rebin, kReg[kr]);
-    unf_ss_svd.SetVerbose(0);
+    unf_ss_svd.SetVerbose(verbosity);
     //if(kr==0) unf_ss_svd.SetVerbose(2);
-    //else  unf_ss_svd.SetVerbose(0);
+    //else  unf_ss_svd.SetVerbose(verbosity);
     //if(debugMode) unf_ss_svd.SetVerbose(2);
     
     if(doToyErrs){
@@ -878,8 +925,8 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     if(kReg[kr]==kRegDraw){
       hunf_x2=(TH1D*)hunf_svd[kr]->Clone( ( ((std::string)hunf_svd[kr]->GetName()) + "_2xScaled").c_str() );
-      hunf_x2->Scale(2.);
-      if(debugMode)hunf_x2->Write();
+      //hunf_x2->Scale(2.);
+      if(debugWrite)hunf_x2->Write();
       if(debugMode)hunf_x2->Print("base");
     }
     
@@ -908,8 +955,8 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   
   // -- MC OS UNF x2 (for thy comparison) -- //
   TH1D* hgen_rebin_x2=(TH1D*)hgen_rebin->Clone( ( ((std::string)hgen_rebin->GetName()) + "_2xScaled").c_str() );
-  hgen_rebin_x2->Scale(2.);
-  if(debugMode)hgen_rebin_x2->Write();
+  //hgen_rebin_x2->Scale(2.);
+  if(debugWrite)hgen_rebin_x2->Write();
   if(debugMode)hgen_rebin_x2->Print("base");
   
   // ---------------- THY RATIOS (THY / DATA) ----------------- //
@@ -1193,14 +1240,14 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     //CT10nlo->SetLineColor(kRed);
     setupSpectraHist(CT10nlo  ,useSimpBins);
     legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
-    if(debugMode){fout->cd(); CT10nlo->Write("CT10_NLO_R04_jtpt");}
+    if(debugWrite){fout->cd(); CT10nlo->Write("CT10_NLO_R04_jtpt");}
     
     //CT14nlo->SetLineColor(kGreen);
     setupSpectraHist(CT14nlo  ,useSimpBins);
     legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
-    if(debugMode){fout->cd(); CT14nlo->Write("CT14_NLO_R04_jtpt");}
+    if(debugWrite){fout->cd(); CT14nlo->Write("CT14_NLO_R04_jtpt");}
     
-    if(debugMode)fout->cd();//makeThyHist will make me cd to last thy file opened...
+    if(debugWrite)fout->cd();//makeThyHist will make me cd to last thy file opened...
     
     cCheck->cd();
     if(!useSimpBins)cCheck->SetLogx(1);
@@ -1232,19 +1279,19 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     //HERAPDF->SetLineColor(kBlue);
     setupSpectraHist(HERAPDF  ,useSimpBins);
     legendThy->AddEntry(HERAPDF  ,"HERAPDF 2015 NLO","l");
-    if(debugMode){fout->cd(); HERAPDF->Write("HERAPDF105_NLO_R04_jtpt");}
+    if(debugWrite){fout->cd(); HERAPDF->Write("HERAPDF105_NLO_R04_jtpt");}
     
     //MMHTnlo->SetLineColor(kMagenta);
     setupSpectraHist(MMHTnlo  ,useSimpBins);
     legendThy->AddEntry(MMHTnlo  ,"MMHT 2014 NLO   ","l");
-    if(debugMode){fout->cd(); MMHTnlo->Write("MMHT2014_NLO_R04_jtpt"); }
+    if(debugWrite){fout->cd(); MMHTnlo->Write("MMHT2014_NLO_R04_jtpt"); }
     
     //NNPDFnnlo->SetLineColor(kBlack);
     setupSpectraHist(NNPDFnnlo,useSimpBins);
     legendThy->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");
-    if(debugMode){fout->cd(); NNPDFnnlo->Write("NNPDF_NLO_R04_jtpt");    }
+    if(debugWrite){fout->cd(); NNPDFnnlo->Write("NNPDF_NLO_R04_jtpt");    }
     
-    if(debugMode)fout->cd();//makeThyHist will make me cd to last thy file opened...
+    if(debugWrite)fout->cd();//makeThyHist will make me cd to last thy file opened...
     
     cCheck->cd();
     if(!useSimpBins)cCheck->SetLogx(1);
@@ -1346,7 +1393,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
 			 //(TH2*)covmat_TH2, (TH2*)PearsonBayes, (TH2*)unfmat_TH2,
 			 (double*)boundaries_pt_reco_mat, (int)nbins_pt_reco_mat,
 			 (double*)boundaries_pt_gen_mat , (int)nbins_pt_gen_mat,
-			 (std::string)outRespMatPdfFile , (bool)useSimpBins, (TFile*)fpp_MC);
+			 (std::string)outRespMatPdfFile , (bool)useSimpBins, (TFile*)fin_ppMC);
     
   } // end drawPDFs
   if(debugMode)std::cout<<std::endl<<"done drawing SVD PDFs!"<<std::endl<<std::endl;
@@ -1408,7 +1455,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   if(debugMode)std::cout<<"closing input/output root files..."<<std::endl;
   fout->Close();
   //fpp_Data->Close();
-  fpp_MC->Close();
+  fin_ppMC->Close();
   return 0;
     
 } // end unfoldDataSpectra
@@ -1418,18 +1465,19 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
   
-  if( argc!=6 ){
-    std::cout<<"do ./SVDUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kRegCenter>"<<std::endl;
+  if( argc!=7 ){
+    std::cout<<"do ./SVDUnfoldNLOMCSpectra.exe <targMCDir> <targMCFile> <baseOutputName> <useNPCorr> <useSimpleBins> <kRegCenter>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
     
     return rStatus;  }
   
   rStatus=1; // runtime error
   
-  rStatus=SVDUnfoldMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], 
-			       (int)std::atoi(argv[3]) , 
-			       (int)std::atoi(argv[4]) , 
-			       (int)std::atoi(argv[5])   ); 
+  rStatus=SVDUnfoldNLOMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], 
+				  (const std::string)argv[3], 
+				  (bool)std::atoi(argv[4]) , 
+				  (bool)std::atoi(argv[5]) , 
+				  (int)std::atoi(argv[6])   ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

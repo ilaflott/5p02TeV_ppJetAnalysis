@@ -15,17 +15,22 @@ then
     echo ""
     
     ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT10nlo_HS
-#./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT14nlo_HS
-#./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS
-#./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS
-#./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC
+    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT14nlo_HS
+    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS 
+    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS	    
+    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC
     
     echo ""
     echo "DONE NLO smearing."
     echo "DONE NLO smearing. scp2Serin"
     echo ""
     
-    scp2Serin fnl5020_LO2_R04Jets_modify_CT10nlo_HS_gaussSmear_00eta20.root
+    #scp2Serin fnl5020_LO2_R04Jets_modify_CT10nlo_HS_gaussSmear_00eta20.root
+    ##scp2Serin fnl5020_LO2_R04Jets_modify_CT14nlo_HS_gaussSmear_00eta20.root
+    ##scp2Serin fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS_gaussSmear_00eta20.root
+    ##scp2Serin fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root
+    ##scp2Serin fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root
+    scp2Serin "fnl5020_LO2_R04Jets_modify_*_gaussSmear_00eta20.root"
 elif [[ "$#" -eq 1 ]]
 then
     etaBin=$1

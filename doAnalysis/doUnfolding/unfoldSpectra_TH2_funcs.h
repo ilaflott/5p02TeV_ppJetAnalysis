@@ -3,6 +3,7 @@
 TH2D* reBinTH2( TH2D* inputTH2, std::string rebinTH2_name,
 		double* boundaries_pt_reco, int nbins_pt_reco,
 		double* boundaries_pt_gen  , int nbins_pt_gen           ){
+  
   bool funcDebug=false;
   if(funcDebug)std::cout<<std::endl<<"in reBinTH2"<<std::endl<<std::endl;
   
@@ -421,13 +422,12 @@ TH2D* makeRespMatrixPercentErrs( TH2D* hmat_errors, TH2D* hmat_anabin,
 }
 
 void setRespMatrixErrs( TH2D* hmat_anabin , TH2D* hmat_errors , bool zeroBins){   
-
-
-  bool funcDebug=false;
-  if(funcDebug)std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;  
   
-  if(funcDebug) hmat_errors->Print("base");
-  if(funcDebug) hmat_anabin->Print("base");
+  
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;    
+  //if(funcDebug) hmat_errors->Print("base");
+  //if(funcDebug) hmat_anabin->Print("base");
 
   //,
   //				 double* boundaries_pt_reco, int nbins_pt_reco,
@@ -436,11 +436,11 @@ void setRespMatrixErrs( TH2D* hmat_anabin , TH2D* hmat_errors , bool zeroBins){
   TAxis *xaxis_hmat = hmat_anabin->GetXaxis(); //reco pt axis
   int nbins_x= xaxis_hmat->GetNbins();
   int xbinstart=1;
-
+  
   TAxis *yaxis_hmat = hmat_anabin->GetYaxis(); //gen pt axis
   int nbins_y = yaxis_hmat->GetNbins();
   int ybinstart=1;  
-
+  
  
   TAxis *xaxis_hmaterr = hmat_errors->GetXaxis(); //reco pt axis
   int nbins_hmaterr_x= xaxis_hmaterr->GetNbins();
@@ -472,19 +472,26 @@ void setRespMatrixErrs( TH2D* hmat_anabin , TH2D* hmat_errors , bool zeroBins){
       double theErr=hmat_errors->GetBinContent(xbin,ybin);
       double theVal=hmat_anabin->GetBinContent(xbin,ybin);
       if(theErr>theVal){
-	if(funcDebug)std::cout<<"error greater than bin value. setting error to bin value."<<std::endl;
+	if(funcDebug)std::cout<<"WARNING error greater than bin value. setting error to bin value."<<std::endl;
+	if(funcDebug)std::cout<<"theErr is = "<< theErr << std::endl;
+	if(funcDebug)std::cout<<"theVal is = "<< theVal<< std::endl;
+	if(funcDebug)std::cout<<"theDiff is = "<< fabs(theVal-theErr)<< std::endl;
 	hmat_anabin->SetBinError( xbin ,  ybin , theVal );      }
       else if (theErr==theVal && theVal>0.){
 	if(zeroBins){
 	  binsZerod++;
-	  if(funcDebug)std::cout<<"error equal to bin value. content/err zero"<<std::endl;
+	  if(funcDebug)std::cout<<"error equal to bin value. setting content/err to zero!"<<std::endl;
 	  hmat_anabin->SetBinContent( xbin ,  ybin , 0. );
 	  hmat_anabin->SetBinError( xbin ,  ybin , 0. );	}
-	else
+	else{
+	  if(funcDebug)std::cout<<"setting error."<<std::endl;
 	  hmat_anabin->SetBinError( xbin ,  ybin , theErr );
+	}
       }
-      else
+      else{
+	if(funcDebug)std::cout<<"setting error."<<std::endl;
 	hmat_anabin->SetBinError( xbin ,  ybin , theErr );
+      }
       
     }  }//end x-y loop
   

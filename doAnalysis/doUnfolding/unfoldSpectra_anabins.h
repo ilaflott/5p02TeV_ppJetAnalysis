@@ -22,8 +22,8 @@ const double anabins_pt_gen[] = {//analysis pt bins
   //1., 5., 6., 8., 10., 12., 15., 
   //18., //21., //24., 
   //28., //32., //37., 
-  43., //garbage bins
-  49., //typical gen pt cut
+  //43., //garbage bins
+  //49., //typical gen pt cut
   56., //typical recopt cut
   64., 
   74., 
@@ -67,8 +67,8 @@ const int n_anabins_pt_gen = sizeof(anabins_pt_gen)/sizeof(double)-1;
 const double anabins_pt_reco[] = {//analysis pt bins
   //1., 5., 6., 8., 10., 12., 15., 
   //18., //21., //24., 28., //32., //37., 
-  43., //garbage bins
-  49., //typical gen pt cut
+  //43., //garbage bins
+  //49., //typical gen pt cut
   56., //typical recopt cut
   64., 
   74., 

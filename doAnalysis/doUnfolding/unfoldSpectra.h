@@ -381,63 +381,91 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
     tempCanvForPdfPrint->SetLogz(1);         }       
   
   // open file    
+  if(funcDebug)std::cout<<"opening response matrix pdf file"<<std::endl;
   tempCanvForPdfPrint->Print(open_outRespMatPdfFile.c_str()); 
   
+
   // orig matrix ---------------          
-  if((bool)fpp_MC){
-    double xLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_lo") )
-				     )->GetTitle() );
-    double xHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_hi") )
-				    )->GetTitle() );
-    double yLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_lo") )
-				     )->GetTitle() );
-    double yHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_hi") )
-				    )->GetTitle() );	
+  bool isForNLOMC=(((std::string)hmat->GetName()).find("ynew")!=std::string::npos);
+  double xLow,xHi;//=boundaries_pt_reco_mat[0];
+  double yLow, yHi;//=boundaries_pt_gen_mat[0];
+  if( (bool)fpp_MC && !isForNLOMC){
+    xLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_lo") )
+			      )->GetTitle() );
+    xHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_hi") )
+			     )->GetTitle() );
+    yLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_lo") )
+			      )->GetTitle() );
+    yHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_hi") )
+			     )->GetTitle() );	
     hmat->SetAxisRange(xLow,xHi,"X");
-    hmat->SetAxisRange(yLow,yHi,"Y");    
+    hmat->SetAxisRange(yLow,yHi,"Y");        
   }
-
+//  else{
+//    xLow=boundaries_pt_reco_mat[0];
+//    xHi=boundaries_pt_reco_mat[nbins_pt_reco_mat];
+//    yLow=boundaries_pt_gen_mat[0];
+//    yHi=boundaries_pt_gen_mat[nbins_pt_gen_mat]; }
+  
+  
+  
+  
+  //assert(false);
+  if(funcDebug)std::cout<<"matStylePrint(hmat)"<<std::endl;
   matStylePrint(hmat, "MC Response Matrix, Original Histogram", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);      
-
+  
   // orig matrix w/ used pt range ---------------    
   tempCanvForPdfPrint->cd();    
   hmat->SetTitle("MC Response Matrix, p_{T} Range Used for Unfolding");
-  hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
-  hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");      
+  if(!isForNLOMC)hmat->SetAxisRange(boundaries_pt_reco_mat[0],boundaries_pt_reco_mat[nbins_pt_reco_mat],"X");
+  if(!isForNLOMC)hmat->SetAxisRange(boundaries_pt_gen_mat[0],boundaries_pt_gen_mat[nbins_pt_gen_mat],"Y");      
   hmat->Draw("COLZ");               
   tempCanvForPdfPrint->Print(outRespMatPdfFile.c_str());      
   
+  
   // matrix rebinned ---------------    
+  if(funcDebug)std::cout<<"matStylePrint(hmat_rebin)"<<std::endl;
   matStylePrint(hmat_rebin, "MC Response Matrix, Rebinned", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
   
   // error matrix in binning of interest ---------------    
+  if(funcDebug)std::cout<<"matStylePrint(hmat_errors)"<<std::endl;
   matStylePrint(hmat_errors, "MC Response Matrix, Bin Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
   
   // percent error matrix in binning of interest ---------------    
+  if(funcDebug)std::cout<<"makeRespMatrixPercentErrs(hmat_errors, hmat_rebin)"<<std::endl;
   TH2D* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2D*) hmat_errors, (TH2D*) hmat_rebin,
 						     (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 						     (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
   if(funcDebug) hmat_percenterrs->Print("base");
+  if(funcDebug)std::cout<<"matStylePrint(hmat_percenterrs)"<<std::endl;
   matStylePrint(hmat_percenterrs, "MC Response Matrix, Bin % Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
   
   
   // col normd matrix in binning of interest  ---------------    
   // POTENTIAL ISSUE: using the resp matrix post rebinning/divide bin width/clearing overflows... should i be using the original matrix?
+  if(funcDebug)std::cout<<"normalizeCol_RespMatrix(hmat_rebin)"<<std::endl;
   TH2D* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2D*)  hmat_rebin,
 						       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 						       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
   if(funcDebug)  hmat_rebin_colnormd->Print("base");  
+  
+  if(funcDebug)std::cout<<"matStylePrint(hmat_rebin_colnormd)"<<std::endl;
   matStylePrint(hmat_rebin_colnormd, "MC Response Matrix, Columns Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
   
   // row normd matrix in binning of interest  ---------------    
+  if(funcDebug)std::cout<<"normalizeRow_RespMatrix(hmat_rebin)"<<std::endl;
   TH2D*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2D*)  hmat_rebin,
 							(double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 							(double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
   if(funcDebug)  hmat_rebin_rownormd->Print("base");
+  if(funcDebug)std::cout<<"matStylePrint(hmat_rebin_rownormd)"<<std::endl;
   matStylePrint(hmat_rebin_rownormd, "MC Response Matrix, Rows Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
   
   // close file     
+  if(funcDebug)std::cout<<"closing outRespMatPdfFile"<<std::endl;
   tempCanvForPdfPrint->Print(close_outRespMatPdfFile.c_str());   
+
+  if(funcDebug)std::cout<<"done. exiting drawRespMatrixFile"<<std::endl;
   return;
 }
 
@@ -515,10 +543,10 @@ TH1* makeThyHist_00eta20(std::string filename, bool applyNPCorrFactor=true){
 	  std::cout << "NPCF_05eta10 = " << NPCF_05eta10 << std::endl;
 	  std::cout << "NPCF_10eta15 = " << NPCF_10eta15 << std::endl;
 	  std::cout << "NPCF_15eta20 = " << NPCF_15eta20 << std::endl;	}
-	if(NPCF_00eta05>1.)NPCF_00eta05=1.;
-	if(NPCF_05eta10>1.)NPCF_05eta10=1.;
-	if(NPCF_10eta15>1.)NPCF_10eta15=1.;
-	if(NPCF_15eta20>1.)NPCF_15eta20=1.;	
+	//if(NPCF_00eta05>1.)NPCF_00eta05=1.;
+	//if(NPCF_05eta10>1.)NPCF_05eta10=1.;
+	//if(NPCF_10eta15>1.)NPCF_10eta15=1.;
+	//if(NPCF_15eta20>1.)NPCF_15eta20=1.;	
       }
       
       double sumcontent=0.;     

@@ -3,13 +3,14 @@
 //other settings
 const bool drawPDFs=true; 
 const bool debugMode=true, debugWrite=false;
-const bool drawRespMatrix=false;
+const bool drawRespMatrix=true;
 const bool useNPCorrSpectra=false;
 const int verbosity=1;
+const bool doJetID=true;
 // CODE --------------------------------------------------
 int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_name, //input 
 			      std::string baseName ,  //output 
-			      const bool doJetID=true   , const bool useSimpBins=false )//details of unfolding
+			      const bool useNPCorrSpectra=true   , const bool useSimpBins=false )//details of unfolding
 { 
   
   // BINNING -----------  
@@ -64,19 +65,23 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
   
-  
-  
-  // INFILE NAME(S) -----------
-  //const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
-  
-  
+  std::string NLOMCtitle_str;
+  if(     inFile_MC_name.find("CT10")!=std::string::npos)   NLOMCtitle_str="CT10 NLO";
+  else if(inFile_MC_name.find("CT14")!=std::string::npos)   NLOMCtitle_str="CT14 NLO";
+  else if(inFile_MC_name.find("HERAPDF")!=std::string::npos)NLOMCtitle_str="HERAPDF15 NLO";
+  else if(inFile_MC_name.find("MMHT")!=std::string::npos)   NLOMCtitle_str="MMHT2014 NLO";
+  else if(inFile_MC_name.find("NNPDF")!=std::string::npos)  NLOMCtitle_str="NNPDF30 NNLO";
+  if(useNPCorrSpectra)NLOMCtitle_str+="+NP";
+
   // OUTPUT FILE, NAME(S) -----------
   std::string outFileName=unfoldMCSpectra_outdir+fullJetType;
   if(doJetID)outFileName+="_wjtID";
   if(!useSimpBins)outFileName+="_anabins";
   else outFileName+="_simpbins";
-  outFileName+="_"+baseName;
-    
+  if(useNPCorrSpectra) outFileName+="_NPNLO";
+  else outFileName+="_NLO";
+  outFileName+=baseName;
+  
   std::string outRespMatPdfFile =  outFileName+"_respMat.pdf";
   std::string outBayesPdfFile =  outFileName+".pdf";
   std::string outRootFile     =  outFileName+".root";  
@@ -106,8 +111,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   std::string TH2_title="response";//"_ynew_th2";//"hpp_mcclosure_matrix";//+RandEtaRange;
   if(useNPCorrSpectra)TH2_title+="_NPynew_th2";
   else TH2_title+="_ynew_th2";
-  //  if(doJetID)TH2_title+="_wJetID";
-  //  TH2_title+=RandEtaRange;  
+
   //get the response matrix made by readforests
   TH2D* hmat = (TH2D*)fin_ppMC->Get( TH2_title.c_str() );
   hmat->Scale(1./NLOMCscaling);//05/09/18
@@ -117,15 +121,15 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   // rebinned matrix ---------------
   TH2_title+="_clone";
   TH2D* hmat_rebin = (TH2D*)hmat->Clone( (TH2_title).c_str() );
-  //if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
-  //if(debugMode)hmat_rebin->Print("base"); 
-  //
-  //TH2_title+="_rebins";
-  //hmat_rebin=(TH2D*) reBinTH2(hmat_rebin, (TH2_title).c_str(), 
-  //			      (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-  //			      (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-  //if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
-  //if(debugMode)hmat_rebin->Print("base"); 
+  if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
+  if(debugMode)hmat_rebin->Print("base"); 
+  
+  TH2_title+="_rebins";
+  hmat_rebin=(TH2D*) reBinTH2(hmat_rebin, (TH2_title).c_str(), 
+  			      (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+			      (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+  if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
+  if(debugMode)hmat_rebin->Print("base"); 
   
   if(clearOverUnderflows){
     TH2_title+="_noOverUnderFlows";
@@ -136,20 +140,19 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   // error and %error for response matrix ---------------
   std::string errTH2_title="hmat_errors_rebins";
-  //TH2D* hmat_errors=makeRespMatrixErrors( (TH2D*) hmat,
-  //					  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-  //					  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  ); 
+  TH2D* hmat_errors=makeRespMatrixErrors( (TH2D*) hmat,
+  					  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+  					  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  ); 
   
-  //TODO
   //TH2D* hmat_errors=makeNLORespMatrixErrors( (TH2D*) hmat,
   //					     (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
   //					     (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-
-  TH2D* hmat_errors= (TH2D*)hmat_rebin->Clone(errTH2_title.c_str());
-  hmat_errors->Reset("M ICES");
-  for(int i=1; i<=(hmat_errors->GetNbinsX());i++)
-    for(int j=1; j<=(hmat_errors->GetNbinsY());j++)
-      hmat_errors->SetBinContent(i,j,hmat_rebin->GetBinError(i,j));
+  
+  //TH2D* hmat_errors= (TH2D*)hmat_rebin->Clone(errTH2_title.c_str());
+  //hmat_errors->Reset("M ICES");
+  //for(int i=1; i<=(hmat_errors->GetNbinsX());i++)
+  //for(int j=1; j<=(hmat_errors->GetNbinsY());j++)
+  //hmat_errors->SetBinContent(i,j,hmat_rebin->GetBinError(i,j));
   
   if(debugWrite)hmat_errors->Write(errTH2_title.c_str());
   if(debugMode)hmat_errors->Print("base");
@@ -161,16 +164,10 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     if(debugMode)hmat_errors->Print("base");  }
   
   //// give response matrix the correct errors
-  //setRespMatrixErrs( (TH2D*)hmat_rebin, (TH2D*) hmat_errors , (bool)zeroBins);  
-  //TH2_title+="_wseterrs";
-  //if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
-  //if(debugMode)hmat_rebin->Print("base");
-  
-  
-
-
-
-
+  setRespMatrixErrs( (TH2D*)hmat_rebin, (TH2D*) hmat_errors , (bool)zeroBins);  
+  TH2_title+="_wseterrs";
+  if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
+  if(debugMode)hmat_rebin->Print("base");
   
   // ---------- reco, measured same-side spectra used to create response matrix, and for "sameside" unfolding test
   std::string histTitle2="smeared_rnd";//"_NPynew";//"hpp_mcclosure_reco";//    hpp_reco_wJetID_R4_20_eta_20
@@ -186,19 +183,14 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   if(debugWrite)hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
   
-  //assert(false);
-  
   histTitle2+="_clone";
   TH1D *hrec_sameside_rebin = (TH1D*)hrec_sameside->Clone( (histTitle2).c_str() );
-  if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );
-  if(debugMode)hrec_sameside_rebin->Print("base");
-  
-  
-  //std::cout<<"rebinning hrec_sameside..."<<std::endl;
-  //histTitle2+="_rebins";
-  //hrec_sameside_rebin = (TH1D*)hrec_sameside_rebin->Rebin( nbins_pt_reco, (histTitle2).c_str() , boundaries_pt_reco);
-  //if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );   
-  //if(debugMode)hrec_sameside_rebin->Print("base");  
+  std::cout<<"rebinning hrec_sameside..."<<std::endl;
+  histTitle2+="_rebins";
+  hrec_sameside_rebin = (TH1D*)hrec_sameside_rebin->Rebin( nbins_pt_reco, (histTitle2).c_str() , boundaries_pt_reco);
+  if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );   
+  if(debugMode)hrec_sameside_rebin->Print("base");  
+
   
   if(clearOverUnderflows){
     histTitle2+="_noOverUnderFlows";
@@ -220,9 +212,6 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   if(useNPCorrSpectra) genHistTitle+="_NPynew";
   else genHistTitle+="_ynew";
  
-  //  if(doJetID)genHistTitle+="_wJetID";
-  //  genHistTitle+=RandEtaRange;
-  
   TH1D* hgen = (TH1D*)fin_ppMC->Get( genHistTitle.c_str() );
   hgen->Scale(1./NLOMCscaling);//05/09/18
   hgen->Scale(4.);
@@ -232,13 +221,10 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   genHistTitle+="_clone";
   TH1D* hgen_rebin = (TH1D*)hgen->Clone( (genHistTitle).c_str() );
+  genHistTitle+="_rebins";
+  hgen_rebin = (TH1D*)hgen_rebin->Rebin(nbins_pt_gen, (genHistTitle).c_str() , boundaries_pt_gen);
   if(debugWrite)hgen_rebin->Write(genHistTitle.c_str());
-  if(debugMode)hgen_rebin->Print("base");
-  
-  //genHistTitle+="_rebins";
-  //hgen_rebin = (TH1D*)hgen_rebin->Rebin(nbins_pt_gen, (genHistTitle).c_str() , boundaries_pt_gen);
-  //if(debugWrite)hgen_rebin->Write(genHistTitle.c_str());
-  //if(debugMode)hgen_rebin->Print("base"); 
+  if(debugMode)hgen_rebin->Print("base"); 
   
   if(clearOverUnderflows){
     genHistTitle+="_noOverUnderFlows";
@@ -389,14 +375,11 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   histTitle+="_clone";
   TH1D *hrec_rebin = (TH1D*)hrec->Clone( (histTitle).c_str() );
-  if(debugWrite)hrec_rebin->Write(histTitle.c_str());
-  if(debugMode)hrec_rebin->Print("base");
-  
-  //std::cout<<"rebinning hrec..."<<std::endl;
-  //histTitle+="_rebins";
-  //hrec_rebin = (TH1D*)hrec_rebin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
-  //if(debugWrite)hrec_rebin->Write(histTitle.c_str());   
-  //if(debugMode)hrec_rebin->Print("base");  
+  std::cout<<"rebinning hrec..."<<std::endl;
+  histTitle+="_rebins";
+  hrec_rebin = (TH1D*)hrec_rebin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
+  if(debugWrite)hrec_rebin->Write(histTitle.c_str());   
+  if(debugMode)hrec_rebin->Print("base");  
   
   
   if(clearOverUnderflows){
@@ -416,19 +399,19 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   
   // thy spectra  
-  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str());
+  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),useNPCorrSpectra);
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str());
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),useNPCorrSpectra);
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str());
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),useNPCorrSpectra);
   HERAPDF->SetMarkerSize(0);
   HERAPDF->SetLineColor(kViolet-5);  
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str());
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),useNPCorrSpectra);
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str());
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),useNPCorrSpectra);
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6);  
 
@@ -465,7 +448,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   TH1D *hunf = (TH1D*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppMC_OS_BayesUnf_Spectra");
-  hunf->SetTitle("OS MC Unf.");
+  hunf->SetTitle(("OS "+NLOMCtitle_str+" Toy MC Unf.").c_str());
   if(debugMode)hunf->Print("base");
   
   //cosmetics
@@ -477,7 +460,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   std::cout<<"folding unfolded MC histogram!!"<<std::endl;
   TH1D* hfold=(TH1D*)roo_resp.ApplyToTruth(hunf);          
   hfold->SetName("ppMC_OS_BayesFold_Spectra");
-  hfold->SetTitle("OS MC Fold(Unf.)");
+  hfold->SetTitle(("OS "+NLOMCtitle_str+" Toy MC Fold(Unf.)").c_str());
   if(debugMode)hfold->Print("base");
   
   
@@ -503,7 +486,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   TH1D *hunf_ss = (TH1D*)unf_ss_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf_ss->SetName("ppMC_SS_BayesUnf_Spectra");
-  hunf_ss->SetTitle("SS MC Unf.");
+  //hunf_ss->SetTitle("SS Toy NLO MC Unf.");
+  hunf_ss->SetTitle(("SS "+NLOMCtitle_str+" Toy MC Unf.").c_str());
   if(debugMode)hunf_ss->Print("base");
   
   //cosmetics
@@ -514,10 +498,11 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
      
   
 
-  std::cout<<"folding unfolded same side MC histogram!!"<<std::endl;
+  std::cout<<"folding unfolded same side Toy NLO MC histogram!!"<<std::endl;
   TH1D* hfold_ss=(TH1D*)roo_resp.ApplyToTruth(hunf_ss);          
   hfold_ss->SetName("ppMC_SS_BayesFold_Spectra");
-  hfold_ss->SetTitle("SS MC Fold(Unf.)");
+  hfold_ss->SetTitle(("SS "+NLOMCtitle_str+" Toy MC Fold(Unf.)").c_str());
+  //hfold_ss->SetTitle("SS Toy NLO MC Fold(Unf.)");
   if(debugMode)hfold_ss->Print("base");
   
   //cosmetics
@@ -535,6 +520,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   std::cout<<"folding MC Truth histogram!!"<<std::endl;
   TH1D* hfold_truth=(TH1D*)roo_resp.ApplyToTruth(hgen_rebin);          
   hfold_truth->SetName("ppMC_SS_BayesFoldMCTruth_Spectra");
+  hfold_truth->SetTitle(("Truth "+NLOMCtitle_str+" Toy MC Folded").c_str());
   hfold_truth->SetTitle("MC Truth Folded");
   if(debugMode)hfold_truth->Print("base");
   
@@ -578,39 +564,39 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   if(debugMode)hgen_rebin_ratiodenom->Print("base");
   
   TH1D *h_genratio_oppunf = (TH1D*)hunf->Clone( "ppMC_Gen_Ratio_OppUnf" );
-  h_genratio_oppunf->SetTitle( "OS MC Unf./SS MC Truth" );
+  h_genratio_oppunf->SetTitle( "OS Toy NLO MC Unf./SS Toy NLO MC Truth" );
   h_genratio_oppunf->Divide(hgen_rebin_ratiodenom);
   if(debugMode)h_genratio_oppunf->Print("base");
 
   TH1D *h_genratio_ssunf = (TH1D*)hunf_ss->Clone( "ppMC_Gen_Ratio_SSUnf" );
-  h_genratio_ssunf->SetTitle( "SS MC Unf./SS MC Truth" );
+  h_genratio_ssunf->SetTitle( "SS Toy NLO MC Unf./SS Toy NLO MC Truth" );
   h_genratio_ssunf->Divide(hgen_rebin_ratiodenom);
   if(debugMode)h_genratio_ssunf->Print("base");
   
   TH1D *h_genratio_oppfold = (TH1D*)hfold->Clone( "ppMC_Gen_Ratio_OppFold" );
 //  if(nbins_pt_reco>nbins_pt_gen)
 //    h_genratio_oppfold=(TH1D*)h_genratio_oppfold->Rebin(nbins_pt_gen,"ppMC_Gen_Ratio_OppFold_rebin",boundaries_pt_gen);
-  h_genratio_oppfold->SetTitle( "OS MC Fold(Unf.)/SS MC Truth" );
+  h_genratio_oppfold->SetTitle( "OS Toy NLO MC Fold(Unf.)/SS Toy NLO MC Truth" );
   h_genratio_oppfold->Divide(hgen_rebin_ratiodenom);
   if(debugMode)h_genratio_oppfold->Print("base");
 
   TH1D *h_genratio_ssfold = (TH1D*)hfold_ss->Clone( "ppMC_Gen_Ratio_SSFold" );
 //  if(nbins_pt_reco>nbins_pt_gen)
 //    h_genratio_oppfold=(TH1D*)h_genratio_oppfold->Rebin(nbins_pt_gen,"ppMC_Gen_Ratio_OppFold_rebin",boundaries_pt_gen);
-  h_genratio_ssfold->SetTitle( "SS MC Fold(Unf.)/SS MC Truth" );
+  h_genratio_ssfold->SetTitle( "SS Toy NLO MC Fold(Unf.)/SS Toy NLO MC Truth" );
   h_genratio_ssfold->Divide(hgen_rebin_ratiodenom);
   if(debugMode)h_genratio_ssfold->Print("base");
   
   TH1D *h_genratio_oppmeas = (TH1D*)hrec_rebin->Clone( "ppMC_Gen_Ratio_OppMeas" );
 //  if(nbins_pt_reco>nbins_pt_gen)
 //    h_genratio_oppmeas=(TH1D*)h_genratio_oppmeas->Rebin(nbins_pt_gen,"ppMC_Gen_Ratio_Meas_rebin",boundaries_pt_gen);
-  h_genratio_oppmeas->SetTitle( "OS MC Meas./SS MC Truth" );
+  h_genratio_oppmeas->SetTitle( "OS Toy NLO MC Meas./SS Toy NLO MC Truth" );
   h_genratio_oppmeas->Divide(hgen_rebin_ratiodenom);
   if(debugMode)h_genratio_oppmeas->Print("base");
 
   
   TH1D *h_genratio_ssmeas = (TH1D*)hrec_sameside_rebin->Clone( "ppMC_Gen_Ratio_SSMeas" );
-  h_genratio_ssmeas->SetTitle( "SS MC Meas./SS MC Truth" );
+  h_genratio_ssmeas->SetTitle( "SS Toy NLO MC Meas./SS Toy NLO MC Truth" );
   h_genratio_ssmeas->Divide(hgen_rebin_ratiodenom);
   if(debugMode)h_genratio_ssmeas->Print("base");
   
@@ -645,49 +631,49 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   
   TH1D *h_recratio_oppunf = (TH1D*)hunf->Clone( "ppMC_OS_Meas_Ratio_OppUnf" );
-  h_recratio_oppunf->SetTitle( "OS MC Unf./OS MC Meas." );
+  h_recratio_oppunf->SetTitle( "OS Toy NLO MC Unf./OS Toy NLO MC Meas." );
   h_recratio_oppunf->Divide(hrec_rebin);
   if(debugMode)h_recratio_oppunf->Print("base");
   
   TH1D *h_recratio_oppfold = (TH1D*)hfold->Clone( "ppMC_OS_Meas_Ratio_OppFold" );
-  h_recratio_oppfold->SetTitle( "OS MC Fold(Unf.)/OS MC Meas." );
+  h_recratio_oppfold->SetTitle( "OS Toy NLO MC Fold(Unf.)/OS Toy NLO MC Meas." );
   h_recratio_oppfold->Divide(hrec_rebin_fakecorr);
   if(debugMode)h_recratio_oppunf->Print("base");
   
   TH1D *h_recratio_ssunf = (TH1D*)hunf_ss->Clone( "ppMC_OS_Meas_Ratio_SSUnf" );
-  h_recratio_ssunf->SetTitle( "SS MC Unf./SS MC Meas." );
+  h_recratio_ssunf->SetTitle( "SS Toy NLO MC Unf./SS Toy NLO MC Meas." );
   h_recratio_ssunf->Divide(hrec_rebin);
   if(debugMode)h_recratio_oppunf->Print("base");
   
   TH1D *h_recratio_ssfold = (TH1D*)hfold->Clone( "ppMC_OS_Meas_Ratio_SSFold" );
-  h_recratio_ssfold->SetTitle( "SS MC Fold(Unf.)/OS MC Meas." );
+  h_recratio_ssfold->SetTitle( "SS Toy NLO MC Fold(Unf.)/OS Toy NLO MC Meas." );
   h_recratio_ssfold->Divide(hrec_rebin_fakecorr);
   if(debugMode)h_recratio_ssunf->Print("base");
 
   TH1D *h_recratio_ssmeas = (TH1D*)hrec_sameside_rebin->Clone( "ppMC_OS_Meas_Ratio_SSMeas" );
-  h_recratio_ssmeas->SetTitle( "SS MC Meas./OS MC Meas." );
+  h_recratio_ssmeas->SetTitle( "SS Toy NLO MC Meas./OS Toy NLO MC Meas." );
   h_recratio_ssmeas->Divide(hrec_rebin);
   if(debugMode)h_recratio_ssmeas->Print("base");
  
   TH1D *h_recratio_ssgen = (TH1D*)hgen_rebin->Clone( "ppMC_OS_Meas_Ratio_Truth" );    
-  h_recratio_ssgen->SetTitle( "SS MC Truth/OS MC Meas." );
+  h_recratio_ssgen->SetTitle( "SS Toy NLO MC Truth/OS Toy NLO MC Meas." );
   h_recratio_ssgen->Divide(hrec_rebin);
   if(debugMode)h_recratio_ssgen->Print("base");
   
   // ---------------- FOLDED RATIOS ----------------- //
   
   TH1D *h_foldratio_datafold=(TH1D*)hfold->Clone("ppMC_OS_Meas_Ratio_OppFold");
-  h_foldratio_datafold->SetTitle( "OS MC Fold(Unf.)/OS MC Meas." );
+  h_foldratio_datafold->SetTitle( "OS Toy NLO MC Fold(Unf.)/OS Toy NLO MC Meas." );
   h_foldratio_datafold->Divide(hrec_rebin_fakecorr);
   if(debugMode)h_foldratio_datafold->Print("base");
     
   TH1D *h_foldratio_mcfold=(TH1D*)hfold_truth->Clone("ppMC_OS_Meas_Ratio_TruthFold");
-  h_foldratio_mcfold->SetTitle( "SS MC Truth Fold/SS MC Meas." );
+  h_foldratio_mcfold->SetTitle( "SS Toy NLO MC Truth Fold/SS Toy NLO MC Meas." );
   h_foldratio_mcfold->Divide(hrec_sameside_rebin_fakecorr);
   if(debugMode)h_foldratio_mcfold->Print("base");
 
   TH1D *h_foldratio_ssfold=(TH1D*)hfold_ss->Clone("ppMC_OS_Meas_Ratio_SSFold");
-  h_foldratio_ssfold->SetTitle( "SS MC Fold(Unf.)/SS MC Meas." );
+  h_foldratio_ssfold->SetTitle( "SS Toy NLO MC Fold(Unf.)/SS Toy NLO MC Meas." );
   h_foldratio_ssfold->Divide(hrec_sameside_rebin_fakecorr);
   if(debugMode)h_foldratio_mcfold->Print("base");
   
@@ -787,31 +773,31 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   TH1D* h_thyratio_CT10nlo  =(TH1D*)CT10nlo  ->Clone("");
   h_thyratio_CT10nlo = (TH1D*)h_thyratio_CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_CT10nlo  ->SetTitle("CT10 NLO/OS MC Unf.");  
+  h_thyratio_CT10nlo  ->SetTitle("CT10 NLO/OS Toy NLO MC Unf.");  
   h_thyratio_CT10nlo  ->Divide(hunf_x2);
   if(debugMode)h_thyratio_CT10nlo  ->Print("base");
   
   TH1D* h_thyratio_CT14nlo  =(TH1D*)CT14nlo  ->Clone("");  
   h_thyratio_CT14nlo=(TH1D*)h_thyratio_CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_CT14nlo  ->SetTitle("CT14 NLO/OS MC Unf.");
+  h_thyratio_CT14nlo  ->SetTitle("CT14 NLO/OS Toy NLO MC Unf.");
   h_thyratio_CT14nlo  ->Divide(hunf_x2);
   if(debugMode)h_thyratio_CT14nlo  ->Print("base");
   
   TH1D* h_thyratio_HERAPDF  =(TH1D*)HERAPDF  ->Clone("");  
   h_thyratio_HERAPDF=(TH1D*)h_thyratio_HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_HERAPDF  ->SetTitle("HERAPDF15 NLO/OS MC Unf.");
+  h_thyratio_HERAPDF  ->SetTitle("HERAPDF15 NLO/OS Toy NLO MC Unf.");
   h_thyratio_HERAPDF  ->Divide(hunf_x2);
   if(debugMode)h_thyratio_HERAPDF  ->Print("base");
   
   TH1D* h_thyratio_MMHTnlo  =(TH1D*)MMHTnlo  ->Clone("");
   h_thyratio_MMHTnlo=(TH1D*)h_thyratio_MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_MMHTnlo  ->SetTitle("MMHT14 NLO/OS MC Unf.");
+  h_thyratio_MMHTnlo  ->SetTitle("MMHT14 NLO/OS Toy NLO MC Unf.");
   h_thyratio_MMHTnlo  ->Divide(hunf_x2);
   if(debugMode)h_thyratio_MMHTnlo  ->Print("base");
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
   h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/OS MC Unf.");
+  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/OS Toy NLO MC Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf_x2);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
@@ -918,7 +904,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     setupSpectraHist(hunf		       , useSimpBins);    
     setupSpectraHist(hunf_ss		       , useSimpBins);    
     
-    hrec_rebin->SetTitle("Bayesian, OS and SS MC Spectra");
+    //hrec_rebin->SetTitle("Bayesian, OS and SS Toy NLO MC Spectra");
+    hrec_rebin->SetTitle(("Bayesian, OS and SS "+NLOMCtitle_str+"Toy MC Spectra").c_str());
     
     hrec_rebin->Draw("P E");           
     hrec_sameside_rebin->Draw("P E SAME");           
@@ -927,11 +914,11 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     hunf_ss->Draw("P E SAME");
     
     TLegend* legend_in1 = new TLegend( 0.7,0.7,0.9,0.9 );
-    legend_in1->AddEntry(hrec_sameside_rebin, "SS MC Meas."  ,  "lp");
-    legend_in1->AddEntry(hrec_rebin,          "OS MC Meas." , "lp");	
-    legend_in1->AddEntry(hunf,                "OS MC Unf." ,  "lp");
-    legend_in1->AddEntry(hunf_ss,             "SS MC Unf." ,  "lp");
-    legend_in1->AddEntry(hgen_rebin,          "SS MC Truth"   , "lp");
+    legend_in1->AddEntry(hrec_sameside_rebin, "SS Toy NLO MC Meas."  ,  "lp");
+    legend_in1->AddEntry(hrec_rebin,          "OS Toy NLO MC Meas." , "lp");	
+    legend_in1->AddEntry(hunf,                "OS Toy NLO MC Unf." ,  "lp");
+    legend_in1->AddEntry(hunf_ss,             "SS Toy NLO MC Unf." ,  "lp");
+    legend_in1->AddEntry(hgen_rebin,          "SS Toy NLO MC Truth"   , "lp");
     
     legend_in1->Draw();
     
@@ -951,8 +938,9 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     //setupRatioHist(h_genratio_oppfold, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     //setupRatioHist(h_genratio_ssmeas, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);    
     
-    h_genratio_oppunf->SetTitle( "Bayesian, Ratios w/ SS MC Truth Spectra" );
-    h_genratio_oppunf->GetYaxis()->SetTitle("Ratio w/ SS MC Truth");
+    //h_genratio_oppunf->SetTitle( "Bayesian, Ratios w/ SS Toy NLO MC Truth Spectra" );
+    h_genratio_oppunf->SetTitle(("Bayes, "+NLOMCtitle_str+" Toy MC, Ratio w/ SS Toy NLO MC Truth").c_str());
+    h_genratio_oppunf->GetYaxis()->SetTitle("Ratio w/ SS Toy NLO MC Truth");
     
 
     h_genratio_oppunf->Draw("P E");            // os mc unf/mc truth
@@ -962,11 +950,11 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     //h_genratio_oppfold->Draw("P E SAME");
     
     TLegend* legend2 = new TLegend( 0.1,0.8,0.2,0.9 );
-    legend2->AddEntry(h_genratio_oppunf,  "OS MC Unf." ,  "lp");
-    legend2->AddEntry(h_genratio_ssunf,  "SS MC Unf." ,  "lp");
-    legend2->AddEntry(h_genratio_oppmeas, "OS MC Meas." , "lp"); 
-    legend2->AddEntry(h_genratio_ssmeas, "SS MC Meas.", "lp");
-    //legend2->AddEntry(h_genratio_oppfold, "OS MC Fold(Unf.)", "lp");
+    legend2->AddEntry(h_genratio_oppunf,  "OS Toy NLO MC Unf." ,  "lp");
+    legend2->AddEntry(h_genratio_ssunf,  "SS Toy NLO MC Unf." ,  "lp");
+    legend2->AddEntry(h_genratio_oppmeas, "OS Toy NLO MC Meas." , "lp"); 
+    legend2->AddEntry(h_genratio_ssmeas, "SS Toy NLO MC Meas.", "lp");
+    //legend2->AddEntry(h_genratio_oppfold, "OS Toy NLO MC Fold(Unf.)", "lp");
     
     legend2->Draw();
     
@@ -982,11 +970,14 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(0);      
     
-    //h_recratio_oppunf->SetTitle("Bayesian, Ratios w/ OS MC Meas. Spectra");
-    //h_recratio_oppunf->GetYaxis()->SetTitle("Ratio w/ OS MC Meas.");
+    //h_recratio_oppunf->SetTitle("Bayesian, Ratios w/ OS Toy NLO MC Meas. Spectra");
+    //h_recratio_oppunf->GetYaxis()->SetTitle("Ratio w/ OS Toy NLO MC Meas.");
 
-    h_recratio_ssmeas->SetTitle("Bayesian, Ratios w/ OS MC Meas. Spectra");
-    h_recratio_ssmeas->GetYaxis()->SetTitle("Ratio w/ OS MC Meas.");
+    //h_recratio_ssmeas->SetTitle("Bayesian, Ratios w/ OS Toy NLO MC Meas. Spectra");
+    h_recratio_ssmeas->SetTitle(("Bayesian, "+ NLOMCtitle_str+" Toy MC, Ratios w/ OS Toy NLO MC Meas. Spectra").c_str());
+    
+
+    h_recratio_ssmeas->GetYaxis()->SetTitle("Ratio w/ OS Toy NLO MC Meas.");
     
     setupRatioHist(h_recratio_ssmeas , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
     setupRatioHist(h_recratio_oppunf , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
@@ -1001,11 +992,11 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     //h_recratio_ssfold->Draw("P E SAME");
     
     TLegend* legend4 = new TLegend( 0.1,0.8,0.2,0.9 );
-    legend4->AddEntry(h_recratio_ssmeas, "SS MC Meas.", "lp");
-    legend4->AddEntry(h_recratio_oppunf,  "OS MC Unf.", "lp");
-    legend4->AddEntry(h_recratio_ssgen,   "SS MC Truth", "lp");
-    legend4->AddEntry(h_recratio_ssunf, "SS MC Unf.", "p");
-    //legend4->AddEntry(h_recratio_oppfold, "OS MC Fold(Unf.)", "lp");
+    legend4->AddEntry(h_recratio_ssmeas, "SS Toy NLO MC Meas.", "lp");
+    legend4->AddEntry(h_recratio_oppunf,  "OS Toy NLO MC Unf.", "lp");
+    legend4->AddEntry(h_recratio_ssgen,   "SS Toy NLO MC Truth", "lp");
+    legend4->AddEntry(h_recratio_ssunf, "SS Toy NLO MC Unf.", "p");
+    //legend4->AddEntry(h_recratio_oppfold, "OS Toy NLO MC Fold(Unf.)", "lp");
     //legend4->AddEntry(h_recratio_ssfold, "MC Fold(Unf.)", "p");
     legend4->Draw();
 
@@ -1027,8 +1018,9 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     setupRatioHist(h_foldratio_datafold, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
     setupRatioHist(h_foldratio_mcfold, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
     
-    h_foldratio_datafold->SetTitle( "Folded Ratios w/ (Corrected) MC Meas. Spectra" );
-    h_foldratio_datafold->GetYaxis()->SetTitle("Ratio w/ MC Meas.");
+
+    h_foldratio_datafold->SetTitle( (NLOMCtitle_str+" Toy MC, Folded Ratios w/ (Corrected) Toy NLO MC Meas. Spectra" ).c_str());
+    h_foldratio_datafold->GetYaxis()->SetTitle("Ratio w/ Toy NLO MC Meas.");
     
     h_foldratio_datafold->Draw("P E");
     h_foldratio_mcfold->Draw("P E SAME");
@@ -1036,9 +1028,9 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     
     TLegend* legendfold = new TLegend( 0.1,0.8,0.4,0.9, NULL, "NBNDC" );
     
-    legendfold->AddEntry(h_foldratio_datafold ,  "OS MC Fold(Unf.)/OS MC Meas." , "lp");
-    legendfold->AddEntry(h_foldratio_mcfold  ,   "SS MC Truth Fold/SS MC Meas.",  "lp");
-    legendfold->AddEntry(h_foldratio_ssfold  ,   "SS MC Fold(Unf.)/SS MC Meas.",  "lp");
+    legendfold->AddEntry(h_foldratio_datafold ,  "OS Toy NLO MC Fold(Unf.)/OS Toy NLO MC Meas." , "lp");
+    legendfold->AddEntry(h_foldratio_mcfold  ,   "SS Toy NLO MC Truth Fold/SS Toy NLO MC Meas.",  "lp");
+    legendfold->AddEntry(h_foldratio_ssfold  ,   "SS Toy NLO MC Fold(Unf.)/SS Toy NLO MC Meas.",  "lp");
     
     legendfold->Draw();
     
@@ -1063,7 +1055,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     
     //histograms given to roo_resp + the fakes histo made from these spectra + response matrix projection
     //hrec_sameside_resp_rebin->SetTitle("MC Only, Response Spectra and Fakes");
-    hfak->SetTitle("MC Only, Spectra and Kinematic Fakes");
+    hfak->SetTitle((NLOMCtitle_str+" Toy MC Only, Spectra and Kinematic Fakes").c_str());
+
     //hrec_sameside_resp_rebin->GetYaxis()->SetTitle("N_{Jets}/L_{int}");    
     
     hfak->Draw("P E");           
@@ -1072,10 +1065,10 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     hgen_resp_rebin->Draw("P E SAME");                 
     
     TLegend* legend_resp = new TLegend( 0.6,0.7,0.9,0.9 , NULL, "NBNDC");
-    legend_resp->AddEntry(hfak,          "SS MC Kinematic Fakes" , "lp");    
-    legend_resp->AddEntry(hgen_resp_rebin,          "SS MC Truth" , "lp");
-    legend_resp->AddEntry(hrec_sameside_resp_rebin, "SS MC Meas." , "lp");
-    legend_resp->AddEntry(hrec_rebin, "OS MC Meas." , "lp");
+    legend_resp->AddEntry(hfak,          "SS Toy NLO MC Kinematic Fakes" , "lp");    
+    legend_resp->AddEntry(hgen_resp_rebin,          "SS Toy NLO MC Truth" , "lp");
+    legend_resp->AddEntry(hrec_sameside_resp_rebin, "SS Toy NLO MC Meas." , "lp");
+    legend_resp->AddEntry(hrec_rebin, "OS Toy NLO MC Meas." , "lp");
     
     legend_resp->Draw();
     
@@ -1153,8 +1146,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(1);                  
     
-    legendThy1->AddEntry(hunf_x2,"2 x (OS MC Unf.)","lp");
-    legendThy1->AddEntry(hgen_rebin_x2,"2 x (SS MC Truth)", "lp");
+    legendThy1->AddEntry(hunf_x2,"(OS Toy NLO MC Unf.)","lp");
+    legendThy1->AddEntry(hgen_rebin_x2,"(SS Toy NLO MC Truth)", "lp");
         
     CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
     CT10nlo->SetTitle("NLO Thy w/ MC, OS Unf., SS Truth");
@@ -1196,8 +1189,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(1);                  
     
-    legendThy->AddEntry(hunf_x2,"2 x (OS MC Unf.)","lp");
-    legendThy->AddEntry(hgen_rebin_x2,"2 x (SS MC Truth)", "lp");
+    legendThy->AddEntry(hunf_x2,"(OS Toy NLO MC Unf.)","lp");
+    legendThy->AddEntry(hgen_rebin_x2,"(SS Toy NLO MC Truth)", "lp");
     
     HERAPDF->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
     HERAPDF->SetTitle("NLO Thy w/ MC, OS Unf., SS Truth");
@@ -1226,8 +1219,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     setupRatioHist(h_thyratio_MMHTnlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ 2 x (Bayes Unf. OS MC)" );
-    h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / 2 x (Bayes Unf. OS MC)");
+    h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ (Bayes Unf. OS MC)" );
+    h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / (Bayes Unf. OS MC)");
     
     h_thyratio_CT10nlo ->Draw( "][HIST ");      
     h_thyratio_CT14nlo ->Draw( "][HIST SAME"); 
@@ -1364,6 +1357,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
      
     //---------------          
     if(drawRespMatrix){    
+      //assert(false);
       drawRespMatrixFile((TH2D*)hmat, (TH2D*)hmat_rebin, (TH2D*)hmat_errors,
 			 //(TH2D*)covmat_TH2, (TH2D*)PearsonBayes, (TH2D*)unfmat_TH2,
 			 (double*)boundaries_pt_reco_mat, (int)nbins_pt_reco_mat,

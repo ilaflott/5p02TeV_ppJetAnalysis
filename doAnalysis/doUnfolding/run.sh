@@ -1,11 +1,13 @@
 #!/bin/bash
 #CONST
-doMCUnfolding=1
-doDataUnfolding=0
+doMCUnfolding=0
+doNLOMCUnfolding=0
+doDataUnfolding=1
+doDataUnfoldingwNLO=1
 dataHLTPF=1
 dataHLTCalo=0
 doBayes=1
-doSVD=0
+doSVD=1
 useSimpBins=0
 makeRooUnf=0
 #CONST
@@ -38,15 +40,18 @@ function unfoldData(){
     echo "// -------------------------------------------------------------------------------------------------- //"
     echo "// -------------------------------------------------------------------------------------------------- //"
     echo ""
-    
+    HLTPFdir=L2L3recoJetID_HLTPF_w_Py8LOMC_NLOMC_NLONPMC
+    HLTCalodir=L2L3recoJetID_HLTCalo_w_Py8LOMC_NLOMC_NLONPMC
     
     if [[ $# -eq 1 ]]
     then
-	HLTPFdir=L2L3recoJetID_HLTPF_${1}
-	HLTCalodir=L2L3recoJetID_HLTCalo_${1}
-    else
-	HLTPFdir=L2L3recoJetID_HLTPF
-	HLTCalodir=L2L3recoJetID_HLTCalo
+	#HLTPFdir=L2L3recoJetID_HLTPF_${1}
+	#HLTCalodir=L2L3recoJetID_HLTCalo_${1}
+	HLTPFdir=${HLTPFdir}_${1}
+	HLTCalodir=${HLTCalodir}_${1}
+    #else
+	#HLTPFdir=L2L3recoJetID_HLTPF
+	#HLTCalodir=L2L3recoJetID_HLTCalo
     fi
     
     
@@ -55,18 +60,24 @@ function unfoldData(){
     if [[ dataHLTPF -eq 1 ]]
     then
 	
-    ### 07.02.18 --> TH1D's, eta bins of 0.5, two ppMC JER's w/ diff gendrjt cuts (0.1, 0.2)    
-    #source runData.sh    "0.0eta0.5_L2L3recoJetID_HLTPF"      "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-    #source runData.sh    "0.5eta1.0_L2L3recoJetID_HLTPF"      "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-    #source runData.sh    "1.0eta1.5_L2L3recoJetID_HLTPF"      "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-    #source runData.sh    "1.5eta2.0_L2L3recoJetID_HLTPF"      "1.5eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+        ### 07.02.18 --> TH1D's, eta bins of 0.5, two ppMC JER's w/ diff gendrjt cuts (0.1, 0.2)    
+        #source runData.sh    "0.0eta0.5_L2L3recoJetID_HLTPF"      "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+        #source runData.sh    "0.5eta1.0_L2L3recoJetID_HLTPF"      "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+        #source runData.sh    "1.0eta1.5_L2L3recoJetID_HLTPF"      "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+        #source runData.sh    "1.5eta2.0_L2L3recoJetID_HLTPF"      "1.5eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    	
+        #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTPF"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+        #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTPF"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
-    #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTPF"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-    #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTPF"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-	
-	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
+	
+	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+	if [[ doDataUnfoldingwNLO -eq 1 ]]
+	then
+	    source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+	fi
 	
 	echo ""
 	echo "cleaning up previous DATA output in ${DATAOUTDIR}/${HLTPFdir}"
@@ -86,23 +97,23 @@ function unfoldData(){
 	echo "moving DATA output to ${FINALOUTDIR}/${HLTPFdir}"
 	echo ""
 	
-    #scp2Serin $HLTPFdir
-    #mv -f $HLTPFdir output/unfoldDataSpectra/temp    
+        #scp2Serin $HLTPFdir
+        #mv -f $HLTPFdir output/unfoldDataSpectra/temp    
         rm -r ${FINALOUTDIR}/${HLTPFdir}
 	mv  ${DATAOUTDIR}/${HLTPFdir} ${FINALOUTDIR}/${HLTPFdir}
-	#scp2Serin ${FINALOUTDIR}/${HLTPFdir}
+	scp2Serin ${FINALOUTDIR}/${HLTPFdir}
     fi
     
     
     if [[ dataHLTCalo -eq 1 ]]
     then
-    #source runData.sh    "0.0eta0.5_L2L3recoJetID_HLTCalo"      "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-    #source runData.sh    "0.5eta1.0_L2L3recoJetID_HLTCalo"      "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-    #source runData.sh    "1.0eta1.5_L2L3recoJetID_HLTCalo"      "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-    #source runData.sh    "1.5eta2.0_L2L3recoJetID_HLTCalo"      "1.5eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
-	
-    #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTCalo"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-    #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTCalo"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+        #source runData.sh    "0.0eta0.5_L2L3recoJetID_HLTCalo"      "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+        #source runData.sh    "0.5eta1.0_L2L3recoJetID_HLTCalo"      "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+        #source runData.sh    "1.0eta1.5_L2L3recoJetID_HLTCalo"      "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+        #source runData.sh    "1.5eta2.0_L2L3recoJetID_HLTCalo"      "1.5eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+    	
+        #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTCalo"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+        #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTCalo"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
 	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTCalo"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
@@ -124,11 +135,11 @@ function unfoldData(){
 	echo "moving DATA output to ${FINALOUTDIR}/${HLTCalodir}"
 	echo ""
 	
-    #scp2Serin $HLTCalodir
-    #mv -f $HLTCalodir output/unfoldDataSpectra/temp    
+        #scp2Serin $HLTCalodir
+        #mv -f $HLTCalodir output/unfoldDataSpectra/temp    
         rm -r ${FINALOUTDIR}/${HLTCalodir}
 	mv  ${DATAOUTDIR}/${HLTCalodir} ${FINALOUTDIR}/${HLTCalodir}
-
+	
     fi
 
     echo ""
@@ -166,13 +177,14 @@ function unfoldMC(){
     echo "// ------------------------------------------------------------------------------------------------ //"
     echo "// ------------------------------------------------------------------------------------------------ //"
     
+    MCdir=L2L3recoJetID_MCClosure_Py8LOMC_NLOMC_NLONPMC
     if [[ $# -eq 1 ]]
     then
 	#MCdir=L2L3recoJetID_MCClosure_gendr0p1_${1}
-	MCdir=0.0eta2.0_NLOMC_CTEQ10PDF_toyMC_${1}
-    else
+	MCdir=${MCdir}_${1}
+#    else
 	#MCdir=L2L3recoJetID_MCClosure_gendr0p1
-	MCdir=0.0eta2.0_NLOMC_CTEQ10PDF_toyMC
+	#MCdir=0.0eta2.0_toyMC_NLO_wANDwoNP
     fi
     
     #source runMC.sh   "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
@@ -183,12 +195,14 @@ function unfoldMC(){
     #source runMC.sh   "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runMC.sh   "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     
-    #source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     
-    
-    source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $doBayes $doSVD $useSimpBins    
-#"0.0eta2.0_NLOMC_CTEQ10PDF_toyMC"  
+    if [[ doNLOMCUnfolding -eq 1 ]]
+    then
+	source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $doBayes $doSVD $useSimpBins    
+    fi
+
 
     
     echo ""

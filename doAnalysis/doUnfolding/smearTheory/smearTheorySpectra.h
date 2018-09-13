@@ -235,7 +235,10 @@ TH1D* make00eta20Hist( TH1D * h_1,
   bool funcDebug=true;
   
   //TH1D* h00eta20 = new TH1D( "h00eta20","thyHist 00eta20", numBins, (const double*) thyBins_incl_00eta20 );
-  TH1D* h00eta20 = (TH1D*)h_1->Clone("h00eta20");
+  std::string h00eta20_title="h00eta20";
+  if( ((std::string)h_1->GetName()).find("_wNP") )
+    h00eta20_title+="_wNP";
+  TH1D* h00eta20 = (TH1D*)h_1->Clone(h00eta20_title.c_str());
   h00eta20->Reset("ICES");
   h00eta20->Reset("M");
   h00eta20->Sumw2(true);

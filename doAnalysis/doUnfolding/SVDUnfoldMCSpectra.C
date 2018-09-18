@@ -1,8 +1,8 @@
 #include "unfoldSpectra.h"
 
 //other settings
-const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
-const int kRegDrawSS = 1;
+const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+const int kRegDrawSS = 0;
 
 const bool drawPDFs=true; 
 const bool debugMode=false;
@@ -876,7 +876,8 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     hCovmatAbsValSVD[kr]->GetZaxis()->SetLabelSize(0.035);
     hCovmatAbsValSVD[kr]->Draw("COLZ");
     
-    if(kReg[kr]==kRegDraw){
+    //if(kReg[kr]==kRegDraw){
+    if(kr==kRegDraw){
       hunf_x2=(TH1D*)hunf_svd[kr]->Clone( ( ((std::string)hunf_svd[kr]->GetName()) + "_2xScaled").c_str() );
       hunf_x2->Scale(2.);
       if(debugMode)hunf_x2->Write();

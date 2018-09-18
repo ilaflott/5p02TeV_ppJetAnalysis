@@ -1,7 +1,7 @@
 #!/bin/bash
 #CONST
-doMCUnfolding=0
-doNLOMCUnfolding=0
+doMCUnfolding=1
+doNLOMCUnfolding=1
 doDataUnfolding=1
 doDataUnfoldingwNLO=1
 dataHLTPF=1

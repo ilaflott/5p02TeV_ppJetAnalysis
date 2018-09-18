@@ -1,11 +1,11 @@
 #include "unfoldSpectra.h"
 
 //other settings
-const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
-const int kRegDrawSS = 1;
-const int verbosity=1;
+const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+const int kRegDrawSS = 0;
+const int verbosity=0;
 const bool drawPDFs=true; 
-const bool debugMode=true, debugWrite=false;
+const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=false;
 
 // CODE --------------------------------------------------
@@ -847,7 +847,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     hrec_rebin_clone->SetTitle( ("Jet Spectra, "+kRegRandEtaRange_plotTitle).c_str() ); //FOR TITLE OF PLOT
     //hrec_rebin_clone->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
     
-    hrec_rebin_clone->Draw("P E");
+    hrec_rebin_clone->DrawClone("P E");
     hgen_rebin_clone->Draw("P E SAME");
     hunf_svd[kr]->Draw("P E SAME");
     //hfold_svd[kr]->Draw("P E SAME");      

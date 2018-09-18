@@ -48,9 +48,9 @@ then
 
     if [ ${simpbins} -eq 1 ]
     then
-	kReg=5
+	kReg=4
     else
-	kReg=5
+	kReg=4
     fi
     
     echo ""
@@ -58,7 +58,7 @@ then
     echo ""
     echo "kReg=${kReg}"
     rooUnfoldCompile SVDUnfoldMCSpectra.C
-
+    
     #USE: "source run_SVDUnfoldMCSpectra.sh [R=3,4] [condorDir] [date_output] [etaBin] [etaBinOut] [kReg] [useSimpleBinning]"    
     source run_SVDUnfoldMCSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "SVD_${condorDate}_${dirTag}" "${kReg}" "${simpbins}"
 ####source run_SVDUnfoldMCSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${dirTag}" "SVD_00eta20_${condorDate}${dirTag}" 5 1    

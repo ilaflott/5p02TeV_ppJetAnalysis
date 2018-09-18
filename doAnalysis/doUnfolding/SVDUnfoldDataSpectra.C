@@ -820,7 +820,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     hrec_rebin_clone->SetTitle( ("Jet Spectra, "+kRegRandEtaRange_plotTitle).c_str() ); //FOR TITLE OF PLOT
     //hrec_rebin_clone->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
     
-    hrec_rebin_clone->Draw("P E");
+    hrec_rebin_clone->DrawClone("P E");
     hgen_rebin_clone->Draw("P E SAME");
     hunf_svd[kr]->Draw("P E SAME");
     //hfold_svd[kr]->Draw("P E SAME");      

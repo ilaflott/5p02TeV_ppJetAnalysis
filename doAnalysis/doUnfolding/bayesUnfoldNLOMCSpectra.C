@@ -2,10 +2,10 @@
 
 //other settings
 const bool drawPDFs=true; 
-const bool debugMode=true, debugWrite=false;
+const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool useNPCorrSpectra=false;
-const int verbosity=1;
+const int verbosity=0;
 const bool doJetID=true;
 // CODE --------------------------------------------------
 int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_name, //input 

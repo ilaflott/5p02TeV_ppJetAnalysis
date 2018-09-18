@@ -1,14 +1,14 @@
 #include "unfoldSpectra.h"
 
 //other settings
-const int kRegDraw  = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
-const int kRegDrawSS = 1;
+const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
+const int kRegDrawSS = 0;
 
 const bool drawPDFs=true; 
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=false;
 
-const int verbosity=1;
+const int verbosity=0;
 const bool doJetID=true;
 
 // CODE --------------------------------------------------
@@ -923,7 +923,8 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
     hCovmatAbsValSVD[kr]->GetZaxis()->SetLabelSize(0.035);
     hCovmatAbsValSVD[kr]->Draw("COLZ");
     
-    if(kReg[kr]==kRegDraw){
+    //    if(kReg[kr]==kRegDraw){
+    if(kr==kRegDraw){
       hunf_x2=(TH1D*)hunf_svd[kr]->Clone( ( ((std::string)hunf_svd[kr]->GetName()) + "_2xScaled").c_str() );
       //hunf_x2->Scale(2.);
       if(debugWrite)hunf_x2->Write();
@@ -1042,7 +1043,7 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
     TCanvas *cCheck        = new TCanvas("cCheck","",        1400, 1000);          
     cCheck->Print(open_outPdfFile.c_str());
 
-
+    
     //  data-side singular values+divectors --------------------------------------------------
     c11->cd()                ;   
     c11->Print(outPdfFile.c_str());
@@ -1229,12 +1230,13 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
 //    drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
 //    drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
     drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-    
+
     cCheck->Print(outPdfFile.c_str());
     
     
-    // thy spectra CT10/14 NNPDF NLO---------------------------
 
+    // thy spectra CT10/14 NNPDF NLO---------------------------
+    
     TLegend* legendThy1 =new TLegend( 0.7,0.7,0.9,0.9 );    
     
     //CT10nlo->SetLineColor(kRed);
@@ -1245,13 +1247,14 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
     //CT14nlo->SetLineColor(kGreen);
     setupSpectraHist(CT14nlo  ,useSimpBins);
     legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
-    if(debugWrite){fout->cd(); CT14nlo->Write("CT14_NLO_R04_jtpt");}
-    
+
+    if(debugWrite){fout->cd(); CT14nlo->Write("CT14_NLO_R04_jtpt");}    
     if(debugWrite)fout->cd();//makeThyHist will make me cd to last thy file opened...
     
     cCheck->cd();
     if(!useSimpBins)cCheck->SetLogx(1);
     cCheck->SetLogy(1);                  
+
     
     legendThy1->AddEntry(hunf_x2,"2 x (OS MC Unf.)","lp");
     legendThy1->AddEntry(hgen_rebin_x2,"2 x (SS MC Truth)", "lp");
@@ -1264,10 +1267,11 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
     
     hgen_rebin_x2->Draw("P E SAME");
     hunf_x2->Draw("P E SAME");   //just for axis range
+    //assert(false);
     
 
     legendThy1->Draw();
-
+    
     cCheck->Print(outPdfFile.c_str());
 
 

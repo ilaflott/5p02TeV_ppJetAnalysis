@@ -30,13 +30,19 @@ void safe_getNdraw(TFile* f, std::string plotname){
   }
   else{
     cout<<"PLOT NOT FOUND; SKIPPING PLOT "<<plotname<<endl;
+    return;
   }
   std::string fname=(std::string)f->GetName();
-  if(fname.find(     "CT10" )!=std::string::npos )canv->SaveAs( ("CT10nlo_"      +plotname+".png" ).c_str());
-  else if(fname.find("CT14" )!=std::string::npos )canv->SaveAs( ("CT14nlo_"      +plotname+".png" ).c_str());
-  else if(fname.find("HERAPDF")!=std::string::npos )canv->SaveAs( ("HERAPDF15NLO_"   +plotname+".png").c_str());
-  else if(fname.find("MMHT"   )!=std::string::npos )canv->SaveAs( ("MMHT2014nlo68cl_"+plotname+".png"   ).c_str());
-  else if(fname.find("NNPDF"  )!=std::string::npos )canv->SaveAs( ("NNPDF30_nnlo_"   +plotname+".png"  ).c_str());
+  std::string dname="default_gausSmThy_hists";
+  if(fname.find(     "CT10" )!=std::string::npos )  {canv->SaveAs( ("CT10nlo_"      +plotname+".png" ).c_str());     }
+  else if(fname.find("CT14" )!=std::string::npos )  {canv->SaveAs( ("CT14nlo_"      +plotname+".png" ).c_str());     }
+  else if(fname.find("HERAPDF")!=std::string::npos ){canv->SaveAs( ("HERAPDF15NLO_"   +plotname+".png").c_str());    }
+  else if(fname.find("MMHT"   )!=std::string::npos ){canv->SaveAs( ("MMHT2014nlo68cl_"+plotname+".png"   ).c_str()); }
+  else if(fname.find("NNPDF"  )!=std::string::npos ){
+    dname="NNPDF_NNLO_00eta20_gausSmThy_plots/";
+    canv->SaveAs( (dname+"NNPDF30_nnlo_"   +plotname+".png"  ).c_str());  
+  }
+  
   return;
 }
 
@@ -149,17 +155,17 @@ void print_gausSmThy_singleBin(int etaBin){
 
 
 
-void quickCheck_gausSmThy( bool print00eta20=false, bool printXXetaYY=false, int etabin=0){
+void quickCheck_gausSmThy( bool print00eta20=true, bool printXXetaYY=false, int etabin=0){
 
   std::cout<<"quickly printing gausSmThy hists" <<std::endl;
-
+  
   if(print00eta20){
     std::cout<<"printing 00eta20 gausSmThy hists"<<std::endl;
-
-    print_gausSmThy("fnl5020_LO2_R04Jets_modify_CT10nlo_HS_gaussSmear_00eta20.root"             );
-    print_gausSmThy("fnl5020_LO2_R04Jets_modify_CT14nlo_HS_gaussSmear_00eta20.root"		);
-    print_gausSmThy("fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS_gaussSmear_00eta20.root"	);
-    print_gausSmThy("fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root"	);
+    
+    //print_gausSmThy("fnl5020_LO2_R04Jets_modify_CT10nlo_HS_gaussSmear_00eta20.root"             );
+    //print_gausSmThy("fnl5020_LO2_R04Jets_modify_CT14nlo_HS_gaussSmear_00eta20.root"		);
+    //print_gausSmThy("fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS_gaussSmear_00eta20.root"	);
+    //print_gausSmThy("fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root"	);
     print_gausSmThy("fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root");
   }
   if(printXXetaYY){

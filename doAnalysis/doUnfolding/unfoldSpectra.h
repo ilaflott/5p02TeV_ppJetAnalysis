@@ -99,7 +99,7 @@ const int kIter = 4; // default is 4, Bayes
 // max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ; //SVD
 
-const double NLOMCscaling=1e+03; // i.e. for when i fuck up the scaling/normalization
+const double NLOMCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
 const double MCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
 const double etaBinWidth=4.;   // e.g. |y| < 2.0
 //const double etaBinWidth=2.; // e.g. |y| < 1.0
@@ -609,6 +609,7 @@ TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true){
   TH1* thyHist=(TH1*)h_00eta05->Clone("sumThyHistClone_forBins");
   thyHist->Reset("ICES");//resets integ, contents, errs, stats
   thyHist->Reset("M");//resets max/min
+  thyHist->Sumw2(true);
   if(funcDebug)thyHist->Print("base");
   
   TFile* NPCorrFile=NULL;
@@ -650,15 +651,18 @@ TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true){
       if(i<=nbinsx_05eta10)NPCF_05eta10=fNPCorr_05eta10->Eval(bincenter) ;
       if(i<=nbinsx_10eta15)NPCF_10eta15=fNPCorr_10eta15->Eval(bincenter) ;
       if(i<=nbinsx_15eta20)NPCF_15eta20=fNPCorr_15eta20->Eval(bincenter) ;  
+      
       if(funcDebug){
 	std::cout << "NPCF_00eta05 = " << NPCF_00eta05 << std::endl;
 	std::cout << "NPCF_05eta10 = " << NPCF_05eta10 << std::endl;
 	std::cout << "NPCF_10eta15 = " << NPCF_10eta15 << std::endl;
 	std::cout << "NPCF_15eta20 = " << NPCF_15eta20 << std::endl;	}      
-      if(NPCF_00eta05>1.)NPCF_00eta05=1.;
-      if(NPCF_05eta10>1.)NPCF_05eta10=1.;
-      if(NPCF_10eta15>1.)NPCF_10eta15=1.;
-      if(NPCF_15eta20>1.)NPCF_15eta20=1.;
+      
+      //if(NPCF_00eta05>1.)NPCF_00eta05=1.;
+      //if(NPCF_05eta10>1.)NPCF_05eta10=1.;
+      //if(NPCF_10eta15>1.)NPCF_10eta15=1.;
+      //if(NPCF_15eta20>1.)NPCF_15eta20=1.;
+      
       if(funcDebug){
 	std::cout << "NPCF_00eta05 = " << NPCF_00eta05 << std::endl;
 	std::cout << "NPCF_05eta10 = " << NPCF_05eta10 << std::endl;

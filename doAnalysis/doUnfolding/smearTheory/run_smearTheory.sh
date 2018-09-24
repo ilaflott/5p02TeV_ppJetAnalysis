@@ -14,11 +14,12 @@ then
     echo "RUN NLO smearing"
     echo ""
     
-    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT10nlo_HS
-    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT14nlo_HS
-    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS 
-    ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS	    
+    #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT10nlo_HS
+    #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT14nlo_HS
+    #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS 
+    #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS	    
     ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC
+    root -l -b -q quickCheck_gausSmThy.C++
     
     echo ""
     echo "DONE NLO smearing."
@@ -29,8 +30,13 @@ then
     ##scp2Serin fnl5020_LO2_R04Jets_modify_CT14nlo_HS_gaussSmear_00eta20.root
     ##scp2Serin fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS_gaussSmear_00eta20.root
     ##scp2Serin fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root
-    ##scp2Serin fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root
-    scp2Serin "fnl5020_LO2_R04Jets_modify_*_gaussSmear_00eta20.root"
+    ##scp2Serin fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root    
+    #scp2Serin "fnl5020_LO2_R04Jets_modify_*_gaussSmear_00eta20.root"
+
+    cp fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root NNPDF_NNLO_00eta20_gausSmThy_plots/.
+    scp2Serin "NNPDF_NNLO_00eta20_gausSmThy_plots"
+
+
 elif [[ "$#" -eq 1 ]]
 then
     etaBin=$1

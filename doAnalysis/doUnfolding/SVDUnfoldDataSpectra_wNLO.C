@@ -428,10 +428,33 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   
   //for kreg = user spec
   int kReg[nKregMax]={0};
-  for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) 
-    kReg[i+kRegRange]=kRegCenter+i;  
+  bool addExtraOne=false;
+  
+  for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i)   {
+    int arrind=i+kRegRange;
+    
+    if( (arrind)==0 )  {
+      //kReg[arrind]=16;  //my choice          
+      kReg[arrind]=(nbins_pt_gen_mat/2) + 1;
+    }
+    else if( arrind>=1){
+      if(arrind==1 && (kRegCenter+i)==1){
+	addExtraOne=true;
+      }      
+      kReg[arrind]=kRegCenter+i;
+      if(addExtraOne)
+	kReg[arrind]+=1;
+    }
+    if(true) std::cout<<"kReg["<<arrind<<"]="<<kReg[arrind]<<std::endl;    
+  }
+  //assert(false);
+  //    if((arrind)>=1){//
+  //kReg[arrind]=kRegCenter+i+1;  
+  //}
+    
+
   if(debugMode){
-    for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i)
+  for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i)
       std::cout<<"kReg["<<i+kRegRange<<"]="<<kReg[i+kRegRange]<<std::endl;}
   
   //for kregSS = 1 through 9
@@ -613,7 +636,8 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       drawText( "5.02 TeV ak4PFJets",                                 x, y, 19);y-=0.03;
       drawText( "2015 Prompt Reco"  ,                                 x, y, 19);y-=0.03;
       drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
-      drawText( ("Current kReg="+std::to_string(kRegCenter)).c_str() , x, y, 19);y-=0.03;	
+      //drawText( ("Current kReg="+std::to_string(kRegCenter)).c_str() , x, y, 19);y-=0.03;	
+      drawText( ("Current kReg="+std::to_string(kReg[kRegDraw])).c_str() , x, y, 19);y-=0.03;	
       drawText( ("#tau = "+std::to_string( tau ) ).c_str() , x, y, 19);	      
       
                   
@@ -1014,10 +1038,11 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   
   TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");
   h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_MCTruth_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");
+  //h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");  
+  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Prior/Data Unf.");
   h_thyratio_mctruth->Divide(hunf_svd[kRegDraw]);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
-
+  
 
   if(drawPDFs){
     
@@ -1353,25 +1378,28 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    h_thyratio_mctruth->SetTitle( "Thy Ratios w/ SVD Unf. Data" );
-    h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
+    //h_thyratio_mctruth->SetTitle( "Thy Ratios w/ SVD Unf. Data" );
+    //h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
+    h_thyratio_CT10nlo->SetTitle( "NLO Ratios w/ SVD Unf. Data" );
+    h_thyratio_CT10nlo->GetYaxis()->SetTitle("NLO / SVD Unf. Data");
     
-
-    h_thyratio_mctruth->Draw("P E");
-    h_thyratio_CT10nlo ->Draw( "][HIST E SAME");      
-    h_thyratio_CT14nlo ->Draw( "][HIST E SAME"); 
-    //h_thyratio_HERAPDF ->Draw( "][HIST E SAME"); 
-    h_thyratio_MMHTnlo ->Draw( "][HIST E SAME"); 
-    h_thyratio_NNPDFnnlo->Draw("][HIST E SAME"); 
+    h_thyratio_CT10nlo ->Draw( "HIST ");      
+    h_thyratio_CT14nlo ->Draw( "HIST  SAME"); 
+    //h_thyratio_HERAPDF ->Draw( "HIST E SAME"); 
+    //h_thyratio_MMHTnlo ->Draw( "HIST E SAME"); 
+    h_thyratio_NNPDFnnlo->Draw("HIST E SAME"); 
+    h_thyratio_mctruth->Draw("P E SAME");
     
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
     legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
     //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
-    legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
+    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
-    legendthyrat->AddEntry(h_thyratio_mctruth,   "PY8 MC LO (truth)",       "lp");
+    //legendthyrat->AddEntry(h_thyratio_mctruth,   "PY8 MC LO (truth)",       "lp");
+    //legendthyrat->AddEntry(h_thyratio_mctruth,   "PY8 MC LO (truth)",       "lp");
+    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Prior",       "lp");
     
     legendthyrat->Draw();
     

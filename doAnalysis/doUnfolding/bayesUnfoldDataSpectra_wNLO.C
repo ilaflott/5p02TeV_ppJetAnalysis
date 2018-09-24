@@ -186,7 +186,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   
   TH1D*  hrec_sameside = (TH1D*)fin_ppMC->Get( histTitle2.c_str() ); 
   hrec_sameside->Scale(1./NLOMCscaling);  //hrec_sameside->Scale(1./MCscaling);//05/09/18
-  hrec_sameside->Scale(4.);
+  hrec_sameside->Scale(etaBinWidth);
   multiplyBinWidth(hrec_sameside);
   if(debugWrite)hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
@@ -230,7 +230,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   
   TH1D* hgen = (TH1D*)fin_ppMC->Get( genHistTitle.c_str() );
   hgen->Scale(1./NLOMCscaling);//05/09/18  //hgen->Scale(1./MCscaling);//05/09/18
-  hgen->Scale(4.);
+  hgen->Scale(etaBinWidth);
   multiplyBinWidth(hgen);  
   if(debugWrite)hgen->Write(genHistTitle.c_str());
   if(debugMode)hgen->Print("base");    
@@ -731,14 +731,15 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
   h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/Data Unf.");
+  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NNLO/Data Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
-
-
+  
+  
   TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");
   h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_MCTruth_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");
+  //h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");
+  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Prior/Data Unf.");
   h_thyratio_mctruth->Divide(hunf);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
@@ -1181,23 +1182,22 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     //h_thyratio_mctruth->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
     //h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
     
-    //h_thyratio_mctruth->Draw("P E"); 
-    //h_thyratio_CT10nlo ->Draw( "][HIST E SAME");      
-    h_thyratio_CT10nlo ->Draw( "][HIST E");      
-    h_thyratio_CT14nlo ->Draw( "][HIST E SAME"); 
-    h_thyratio_HERAPDF ->Draw( "][HIST E SAME"); 
-    h_thyratio_MMHTnlo ->Draw( "][HIST E SAME"); 
-    h_thyratio_NNPDFnnlo->Draw("][HIST E SAME"); 
+    h_thyratio_CT10nlo ->Draw( "HIST ");      
+    h_thyratio_CT14nlo ->Draw( "HIST  SAME"); 
+    //h_thyratio_HERAPDF ->Draw( "][HIST E SAME"); 
+    //h_thyratio_MMHTnlo ->Draw( "][HIST E SAME"); 
+    h_thyratio_NNPDFnnlo->Draw("HIST E SAME"); 
+    h_thyratio_mctruth->Draw("P E SAME"); 
     
     
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
     legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
-    legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
-    legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
+    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
+    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
-    //legendthyrat->AddEntry(h_thyratio_mctruth, "PY8 MC LO (truth)",       "lp");
+    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Prior",       "lp");
     
     legendthyrat->Draw();
     

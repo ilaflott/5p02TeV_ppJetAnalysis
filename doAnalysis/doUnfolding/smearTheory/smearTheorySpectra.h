@@ -28,6 +28,10 @@ using namespace std;
 TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
   const bool funcDebug=true;
   if(funcDebug)xsec->Print("base");
+  if(funcDebug){
+    std::cout<<"pre NP Corr, xsec mean along x axis is = " << xsec->GetMean(1) << std::endl;
+    std::cout<<"pre NP Corr, xsec mean along y axis is = " << xsec->GetMean(2) << std::endl;
+  }
   //if(funcDebug)fNP->Print("base");  
   TH1D* xsec_wNP=(TH1D*)xsec->Clone( ( 
 				      ((std::string)xsec->GetName()) + "_wNP"
@@ -52,6 +56,10 @@ TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
   }
   if(funcDebug)xsec_wNP->Print("base");
   cout<<"done making theory cross section hist"<<endl;
+  if(funcDebug){
+    std::cout<<"post NP Corr, xsec mean along x axis is = " << xsec_wNP->GetMean(1) << std::endl;
+    std::cout<<"post NP Corr, xsec mean along y axis is = " << xsec_wNP->GetMean(2) << std::endl;
+  }
   return (TH1D*)xsec_wNP;
 }
 

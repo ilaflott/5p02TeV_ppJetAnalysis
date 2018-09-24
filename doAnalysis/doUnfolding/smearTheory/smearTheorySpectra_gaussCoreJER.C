@@ -1,11 +1,11 @@
 #include "smearTheorySpectra.h"
 
 const bool printBaseDebug=true;
-//const int nEvents=1e+08;  /// Increase your stats here, typically 100M events are enough 
+const int nEvents=1e+09;  /// Increase your stats here, typically 100M events are enough 
 //const int nEvents=1e+07;  /// debug nevents
-const int nEvents=1e+06;  /// debug nevents
+//const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
-std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [unit]";
+std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [nb/GeV]";
 
 const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
 const std::string JERCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta20_08.07.18.root";
@@ -88,12 +88,13 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   //TFile *f1 = new TFile(inputFile.c_str());  
   cout<<endl;
   
-
+  
 
 
 
   /////////////// plots to to check NPs 
   // 2x2 canv of |y| bins
+  TLine* lineatone=new TLine(thyBins_incl[0],1.,1000.,1.); lineatone->SetLineStyle(7);
   TCanvas *plot_y0_to_y3_NPs = new TCanvas("plot_y0_to_y3_NPs", "plot_y0_to_y3_NPs",1200,1000);
   plot_y0_to_y3_NPs->Divide(2,2);
   //-----------------------------------
@@ -101,41 +102,50 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   plot_y0_to_y3_NPs->cd(1);
   TH1F *hNP_y0 = (TH1F*)( (TH1F*)fNP_y0->GetHistogram()
 			  )->Clone("hNP_y0");
-  hNP_y0->SetTitle("NP Corr Fit for 0.0 < #||{y} < 0.5;Jet p_{T};Fit Val");
+  hNP_y0->SetTitle("NP Corr Fit for 0.0 < #||{y} < 0.5;Jet p_{T};NP Corr. Factor");
   hNP_y0->GetXaxis()->SetNoExponent(true);
   hNP_y0->GetXaxis()->SetMoreLogLabels(true);
   hNP_y0->SetLineColor(kRed);
   hNP_y0->DrawClone();  
+  lineatone->SetX2( hNP_y0->GetBinLowEdge(hNP_y0->GetNbinsX())+ hNP_y0->GetBinWidth(hNP_y0->GetNbinsX()) );
+  lineatone->DrawClone();
   //-----------------------------------  
   plot_y0_to_y3_NPs->cd(2)->SetLogx(1);
   plot_y0_to_y3_NPs->cd(2);
   TH1F *hNP_y1 = (TH1F*)( (TH1F*)fNP_y1->GetHistogram()
 			  )->Clone("hNP_y1");  
-  hNP_y1->SetTitle("NP Corr Fit for 0.5 < #||{y} < 1.0;Jet p_{T};Fit Val");
+  hNP_y1->SetTitle("NP Corr Fit for 0.5 < #||{y} < 1.0;Jet p_{T};NP Corr. Factor");
   hNP_y1->GetXaxis()->SetNoExponent(true);
   hNP_y1->GetXaxis()->SetMoreLogLabels(true);
   hNP_y1->SetLineColor(kBlue);
   hNP_y1->DrawClone();  
+  lineatone->SetX2( hNP_y1->GetBinLowEdge(hNP_y1->GetNbinsX())+ hNP_y1->GetBinWidth(hNP_y1->GetNbinsX()) );
+  lineatone->DrawClone();
   //-----------------------------------
   plot_y0_to_y3_NPs->cd(3)->SetLogx(1);
   plot_y0_to_y3_NPs->cd(3);
   TH1F *hNP_y2 = (TH1F*)( (TH1F*)fNP_y2->GetHistogram()
 			  )->Clone("hNP_y2");  
-  hNP_y2->SetTitle("NP Corr Fit for 1.0 < #||{y} < 1.5;Jet p_{T};Fit Val");
+  hNP_y2->SetTitle("NP Corr Fit for 1.0 < #||{y} < 1.5;Jet p_{T};NP Corr. Factor");
   hNP_y2->GetXaxis()->SetNoExponent(true);
   hNP_y2->GetXaxis()->SetMoreLogLabels(true);
   hNP_y2->SetLineColor(kGreen);
   hNP_y2->DrawClone();  
+  lineatone->SetX2( hNP_y2->GetBinLowEdge(hNP_y2->GetNbinsX())+ hNP_y2->GetBinWidth(hNP_y2->GetNbinsX()) );
+  lineatone->DrawClone();
+
   //-----------------------------------
   plot_y0_to_y3_NPs->cd(4)->SetLogx(1);
   plot_y0_to_y3_NPs->cd(4);
   TH1F *hNP_y3 = (TH1F*)( (TH1F*)fNP_y3->GetHistogram()
 			  )->Clone("hNP_y3");  
-  hNP_y3->SetTitle("NP Corr Fit for 1.5 < #||{y} < 2.0;Jet p_{T};Fit Val");
+  hNP_y3->SetTitle("NP Corr Fit for 1.5 < #||{y} < 2.0;Jet p_{T};NP Corr. Factor");
   hNP_y3->GetXaxis()->SetNoExponent(true);
   hNP_y3->GetXaxis()->SetMoreLogLabels(true);
   hNP_y3->SetLineColor(kMagenta);
   hNP_y3->DrawClone();    
+  lineatone->SetX2( hNP_y3->GetBinLowEdge(hNP_y3->GetNbinsX())+ hNP_y3->GetBinWidth(hNP_y3->GetNbinsX()) );
+  lineatone->DrawClone();  
   //-----------------------------------
   
 
@@ -147,11 +157,13 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   //-----------------------------------
   TH1F *hNP_ynew = (TH1F*)( (TH1F*)fNP_ynew->GetHistogram()
 			    )->Clone("hNP_ynew");  
-  hNP_ynew->SetTitle("Avg. NP Corr Fit for 0.0 < #||{y} < 2.0;Jet p_{T};Fit Val");
+  hNP_ynew->SetTitle("Avg. NP Corr Fit for 0.0 < #||{y} < 2.0;Jet p_{T};NP Corr. Factor");
   hNP_ynew->GetXaxis()->SetNoExponent(true);
   hNP_ynew->GetXaxis()->SetMoreLogLabels(true);
   hNP_ynew->SetLineColor(kTeal);
   hNP_ynew->DrawClone();  //plot_totNPs->Update();  //why did this need to happen?
+  lineatone->SetX2( hNP_ynew->GetBinLowEdge(hNP_ynew->GetNbinsX())+ hNP_ynew->GetBinWidth(hNP_ynew->GetNbinsX()) );
+  lineatone->DrawClone();  
   //-----------------------------------  
   
   
@@ -160,15 +172,25 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   plot_allNPs->SetLogx(1);
   plot_allNPs->cd();
   //-----------------------------------  
-  hNP_ynew->SetTitle("NP fits all #||{y} bins");
-  hNP_ynew->DrawClone();
-  hNP_y0  ->DrawClone("SAME");
+  float NPfit_max=hNP_y1->GetMaximum();
+  float NPfit_min=hNP_y3->GetMinimum();
+  hNP_y0->SetAxisRange(NPfit_min/1.02,NPfit_max*1.02,"Y");
+  //hNP_ynew->SetTitle("NP fits all #||{y} bins");
+  hNP_y0->SetTitle("NP Fits, all #||{y} bins;Jet p_{T};NP Corr. Factor");
+  hNP_y0  ->DrawClone("");
   hNP_y1  ->DrawClone("SAME");
   hNP_y2  ->DrawClone("SAME");
   hNP_y3  ->DrawClone("SAME");
+  //hNP_ynew->DrawClone("SAME");
   //-----------------------------------    
-  TLegend* leg_allNPs=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-  leg_allNPs->AddEntry(hNP_ynew , "#||{y} < 2.0 (avg of others)" , "l");
+  hNP_y0->SetTitle("NP Corr Fit for 0.0 < #||{y} < 0.5;Jet p_{T};NP Corr. Factor");//undo the titling because this is for this plot only
+  //-----------------------------------    
+  lineatone->SetX2( 1000.);//hNP_y0->GetBinLowEdge(hNP_y0->GetNbinsX())+ hNP_y0->GetBinWidth(hNP_y0->GetNbinsX()) );
+  lineatone->DrawClone();
+  //-----------------------------------    
+  //TLegend* leg_allNPs=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
+  TLegend* leg_allNPs=new TLegend(0.10, 0.70, 0.35, 0.9, NULL,"BRNDC");
+  //leg_allNPs->AddEntry(hNP_ynew , "#||{y} < 2.0 (avg of others)" , "l");
   leg_allNPs->AddEntry(hNP_y0   , "0.0 < #||{y} < 0.5" , "l");
   leg_allNPs->AddEntry(hNP_y1   , "0.5 < #||{y} < 1.0" , "l");
   leg_allNPs->AddEntry(hNP_y2   , "1.0 < #||{y} < 1.5" , "l");
@@ -201,18 +223,18 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   TCanvas *plotJER = new TCanvas("plotJER", "plotJER",900,600);
   plotJER->cd()->SetLogx(1);
   plotJER->cd();  
-  hJER_default->DrawClone("HIST E");    
-  hJER_ynew->DrawClone("HIST E SAME");    
+  //hJER_default->DrawClone("HIST E");    
+  hJER_ynew->DrawClone("HIST E");    
   //REPLACE ME W/TEXT SAYING SAME THING
-  TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
-  leg->AddEntry(hJER_ynew, "PY8 MC CUETP8M1 JER Fits New");
-  leg->AddEntry(hJER_default, "Default JER Fits from APS DNP 10/3/17");
+  //TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
+  //leg->AddEntry(hJER_ynew, "PY8 MC CUETP8M1 JER Fits New");
+  //leg->AddEntry(hJER_default, "Default JER Fits from APS DNP 10/3/17");
   //leg->AddEntry(fJER_ynew,"PYTHIA8 CUETP8M1 @ 5.02 TeV", "");
   //leg->AddEntry(fJER_ynew,"ak4PFJets", "");
   //leg->AddEntry(fJER_ynew,"0<|y|<2.0", "l"); 
   //leg->SetTextFont(42);
   //leg->SetFillColor(kWhite);
-  leg->Draw();
+  //leg->Draw();
   //-----------------------------------
 
   
@@ -224,19 +246,19 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   TH1D *theory_y0 = (TH1D*)fin_NLO->Get("h0100100");
   theory_y0->Sumw2(true);
   if(printBaseDebug)  theory_y0->Print("Base");
-  //theory_y0->Scale(1.e-03);//picobarns to nanobarns
+  theory_y0->Scale(1.e-03);//picobarns to nanobarns
   TH1D *theory_y1 = (TH1D*)fin_NLO->Get("h0100200");
   theory_y1->Sumw2(true);
   if(printBaseDebug)  theory_y1->Print("Base");
-  //theory_y1->Scale(1.e-03);
+  theory_y1->Scale(1.e-03);
   TH1D *theory_y2 = (TH1D*)fin_NLO->Get("h0100300");
   theory_y2->Sumw2(true);
   if(printBaseDebug)  theory_y2->Print("Base");
-  //theory_y2->Scale(1.e-03);
+  theory_y2->Scale(1.e-03);
   TH1D *theory_y3 = (TH1D*)fin_NLO->Get("h0100400");
   theory_y3->Sumw2(true);
   if(printBaseDebug)  theory_y3->Print("Base");
-  //theory_y3->Scale(1.e-03);
+  theory_y3->Scale(1.e-03);
   cout<<endl;
   //-----------------------------------
   cout <<"making 00eta20 hist from theory curves..."<<endl<<endl;
@@ -317,19 +339,22 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   theory_y2->Scale(1.e+01);
   theory_y3->Scale(1.e+00);                                                                                      
   //--------------------------------------------  
-  theory_ynew->SetTitle("NLO Inclusive #sigma_{jet} all #||{y} bins");
-  Double_t max=(Double_t)theory_ynew->GetMaximum();
+  //theory_ynew->SetTitle("NLO Inclusive #sigma_{jet} all #||{y} bins");
+  theory_y0->SetTitle("NLO Inclusive #sigma_{jet} all #||{y} bins");
+  Double_t max=(Double_t)theory_y0->GetMaximum();
   Double_t min=(Double_t)theory_y3->GetMinimum();
-  theory_ynew->SetAxisRange((min/2.),(max*2.),"Y");
-  theory_ynew->DrawClone("HIST E");
-  theory_y0->DrawClone("HIST E SAME");
+  //theory_ynew->SetAxisRange((min/2.),(max*2.),"Y");
+  theory_y0->SetAxisRange((min/2.),(max*2.),"Y");
+  //theory_ynew->DrawClone("HIST E");
+  theory_y0->DrawClone("HIST E");
+  //theory_y0->DrawClone("HIST E SAME");
   theory_y1->DrawClone("HIST E SAME");
   theory_y2->DrawClone("HIST E SAME");
   theory_y3->DrawClone("HIST E SAME");  
   //-------------------------------------------- 
   TLegend* leg_allNLOxsec=new TLegend(0.60, 0.70, 0.9, 0.9, NULL,"BRNDC");
   //leg_allNPs->AddEntry(hNP_ynew , "#||{y} < 2.0 (sum of others)" , "l");
-  leg_allNLOxsec->AddEntry(theory_ynew   , "(0.0 < #||{y} < 2.0) x 10^{4}" , "lp");
+  //leg_allNLOxsec->AddEntry(theory_ynew   , "(0.0 < #||{y} < 2.0) x 10^{4}" , "lp");
   leg_allNLOxsec->AddEntry(theory_y0   , "(0.0 < #||{y} < 0.5) x 10^{3}" , "lp");
   leg_allNLOxsec->AddEntry(theory_y1   , "(0.5 < #||{y} < 1.0) x 10^{2}" , "lp");
   leg_allNLOxsec->AddEntry(theory_y2   , "(1.0 < #||{y} < 1.5) x 10^{1}" , "lp");
@@ -342,6 +367,7 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   theory_y1->Scale(  1.e-02);
   theory_y2->Scale(  1.e-01);
   theory_y3->Scale(  1.e-00);                                                                                      
+  theory_y0->SetTitle(("NLO #sigma_{jet}, 0.0 < #||{y} < 0.5;Jet p_{T};"+ddxsec_yax).c_str());
   //--------------------------------------------
   
   
@@ -356,12 +382,16 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   TH1D *theory_NPy1=(TH1D*)applyNPtoxsec(theory_y1, fNP_y1);
   TH1D *theory_NPy2=(TH1D*)applyNPtoxsec(theory_y2, fNP_y2);
   TH1D *theory_NPy3=(TH1D*)applyNPtoxsec(theory_y3, fNP_y3);
-
+  
   //TH1D *theory_NPynew=(TH1D*)applyNPtoxsec(theory_ynew, fNP_ynew);
   TH1D *theory_NPynew=    make00eta20Hist( (TH1D*) theory_NPy0, 
 					   (TH1D*) theory_NPy1, 
 					   (TH1D*) theory_NPy2, 
 					   (TH1D*) theory_NPy3 );  
+  theory_NPynew->SetTitle(("NP+NLO Inclusive #sigma_{jet}, #||{y} < 2.0;Jet p_{T};"+ddxsec_yax).c_str());
+  theory_NPynew->GetXaxis()->SetNoExponent(true);
+  theory_NPynew->GetXaxis()->SetMoreLogLabels(true);
+  theory_NPynew->SetLineColor(kTeal);
   
 
   //2X2 CANV THEORY NPNLO xsec
@@ -411,20 +441,22 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   theory_NPy2->Scale(1.e+01);
   theory_NPy3->Scale(1.e+00);                                                                                      
   //--------------------------------------------  
-  theory_NPynew->SetTitle("NP+NLO Inclusive #sigma_{jet} all #||{y} bins");
-  //Double_t NPmax=(Double_t)theory_NPy0->GetMaximum();
-  Double_t NPmax=(Double_t)theory_NPynew->GetMaximum();
+  //theory_NPynew->SetTitle("NP+NLO Inclusive #sigma_{jet} all #||{y} bins");
+  theory_NPy0->SetTitle("NP+NLO Inclusive #sigma_{jet}, all #||{y} bins");
+  Double_t NPmax=(Double_t)theory_NPy0->GetMaximum();
+  //Double_t NPmax=(Double_t)theory_NPynew->GetMaximum();
   Double_t NPmin=(Double_t)theory_NPy3->GetMinimum();
-  theory_NPynew->SetAxisRange((NPmin/2.),(NPmax*2.),"Y");
-  theory_NPynew->DrawClone("HIST E");
-  theory_NPy0->DrawClone("HIST E SAME");
+  theory_NPy0->SetAxisRange((NPmin/2.),(NPmax*2.),"Y");
+  //theory_NPynew->DrawClone("HIST E");
+  //theory_NPy0->DrawClone("HIST E SAME");
+  theory_NPy0->DrawClone("HIST E");
   theory_NPy1->DrawClone("HIST E SAME");
   theory_NPy2->DrawClone("HIST E SAME");
   theory_NPy3->DrawClone("HIST E SAME");  
   //-------------------------------------------- 
   TLegend* leg_allNPNLOxsec=new TLegend(0.60, 0.70, 0.9, 0.9, NULL,"BRNDC");
   //leg_allNPs->AddEntry(hNP_ynew , "#||{y} < 2.0 (sum of others)" , "l");
-  leg_allNPNLOxsec->AddEntry(theory_NPynew   , "(0.0 < #||{y} < 2.0) x 10^{4}" , "lp");
+  //leg_allNPNLOxsec->AddEntry(theory_NPynew   , "(0.0 < #||{y} < 2.0) x 10^{4}" , "lp");
   leg_allNPNLOxsec->AddEntry(theory_NPy0   , "(0.0 < #||{y} < 0.5) x 10^{3}" , "lp");
   leg_allNPNLOxsec->AddEntry(theory_NPy1   , "(0.5 < #||{y} < 1.0) x 10^{2}" , "lp");
   leg_allNPNLOxsec->AddEntry(theory_NPy2   , "(1.0 < #||{y} < 1.5) x 10^{1}" , "lp");
@@ -436,7 +468,8 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   theory_NPy0->Scale(  1.e-03);  
   theory_NPy1->Scale(  1.e-02);
   theory_NPy2->Scale(  1.e-01);
-  theory_NPy3->Scale(  1.e-00);                                                                                      
+  theory_NPy3->Scale(  1.e-00);                            
+  theory_NPy0->SetTitle(("NP+NLO #sigma_{jet}, 0.0 < #||{y} < 0.5;Jet p_{T};"+ddxsec_yax).c_str());
   //--------------------------------------------
 
 
@@ -542,7 +575,7 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   
   double norm_rnd_ynew=theory_ynew_spl3clone->Integral()/theory_rnd_ynew->Integral();
   response_ynew_th2->Scale(   norm_rnd_ynew);
-      
+  
   theory_rnd_ynew->Scale( norm_rnd_ynew);
   multiplyBinWidth(theory_rnd_ynew);  //for creating resp matrix
   theory_rnd_ynew->Scale(4.);//etabinwidth
@@ -641,8 +674,9 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   ynew_true_smeared_rat->Draw("HIST E");        
   ynew_true_smeared_test_rat->Draw("HIST E SAME");        
   
-  TLine* lineatone=new TLine(thyBins_incl[0],1.,thyBins_incl[n_thybins_incl],1.);
-  lineatone->Draw();
+  //TLine* lineatone=new TLine(thyBins_incl[0],1.,thyBins_incl[n_thybins_incl],1.);
+  lineatone->SetX2(thyBins_incl[n_thybins_incl]);
+  lineatone->DrawClone();
   
   
   TH1D* theory_ynew_ratio_rnd_ynew=(TH1D*)theory_rnd_ynew->Clone ( 
@@ -831,7 +865,7 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   NPynew_true_smeared_rat->Draw("HIST E");        
   NPynew_true_smeared_test_rat->Draw("HIST E SAME");        
   
-  lineatone->Draw();
+  lineatone->DrawClone();
   
   
   TH1D* theory_NPynew_ratio_rnd_NPynew=(TH1D*)theory_rnd_NPynew->Clone ( 

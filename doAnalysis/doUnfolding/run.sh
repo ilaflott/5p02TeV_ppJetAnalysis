@@ -1,7 +1,7 @@
 #!/bin/bash
 #CONST
-doMCUnfolding=1
-doNLOMCUnfolding=1
+doMCUnfolding=0
+doNLOMCUnfolding=0
 doDataUnfolding=1
 doDataUnfoldingwNLO=1
 dataHLTPF=1
@@ -73,7 +73,7 @@ function unfoldData(){
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	
-	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
 	if [[ doDataUnfoldingwNLO -eq 1 ]]
 	then
 	    source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $doBayes $doSVD $useSimpBins         

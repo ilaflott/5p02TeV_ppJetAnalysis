@@ -1,19 +1,20 @@
 #!/bin/bash
 
 ### ----------------------------------------------------------------------------------
-if [ $# -eq 8 ]
+if [ $# -eq 9 ]
 then
     datadirTag=$1
     MCdirTag=$2
     MM=$3
     DD=$4
     YY=$5
-    runBayes=$6
-    runSVD=$7
-    simpbins=$8
+    simpbins=$6
+    runBayes=$7
+    runSVD=$8
+    SVDkReg=$9
 else
     echo "usage:"
-    echo "source runData.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [runBayes] [runSVD] [useSimpBins]"
+    echo "source runData.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg]"
     return
 fi
 
@@ -44,22 +45,21 @@ fi
 ### ----------------------------------------------------------------------------------
 if [ $runSVD -eq 1 ]
 then
-    if [ ${simpbins} -eq 1 ]
-    then
-	kReg=9
-    else
-	kReg=10
-    fi
+    #if [ ${simpbins} -eq 1 ]
+    #then
+    #	kReg=9
+    #else
+    #	kReg=10
+    #fi
 
     echo ""
     echo "compiling SVDUnfoldDataSpectra.C"
     echo ""
-    echo "kReg=${kReg}"
     rooUnfoldCompile SVDUnfoldDataSpectra.C
 
 # "source run_SVDUnfoldDataSpectra.sh [R=3,4] [dataCondorDir] [data_date] [dataEtaBin] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [kReg] [useSimpleBinning]"    
-
-    source run_SVDUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "SVD_${condorDate}_${MCdirTag}" "${kReg}" "${simpbins}" 
+    echo "kReg setting = ${SVDkReg}"
+    source run_SVDUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "SVD_${condorDate}_${MCdirTag}" "${SVDkReg}" "${simpbins}" 
     
 
     echo ""

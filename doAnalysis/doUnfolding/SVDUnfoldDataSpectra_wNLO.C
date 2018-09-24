@@ -1,17 +1,18 @@
 #include "unfoldSpectra.h"
 
 //other settings
-const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
-const int kRegDrawSS = 0;
+
 const int verbosity=0;
 const bool drawPDFs=true; 
-const bool debugMode=false, debugWrite=false;
+const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=false;
 
 // CODE --------------------------------------------------
 int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_MC_dir     , std::string inFile_MC_name     , 
 			       const std::string baseName , 
-			       const bool useNPCorrSpectra=false, const bool doJetID=true     ,  const bool useSimpBins=false , const int kRegCenter= 5 ){
+			       const bool useNPCorrSpectra=false, const bool doJetID=true     ,  const bool useSimpBins=false , const int kRegInput= 5 ){
+  //note; kRegInput = kReg setting for the center entry in the 3x3 array of spectra+ratios
+  //i.e. kReg[4]=kRegInput
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
@@ -422,53 +423,24 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   theRecoLine->SetLineStyle(2);
   theRecoLine->SetLineColor(36);      
   
-  // prep for svd unfolding loop
-  if(debugMode) std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
-  if(debugMode) std::cout<<kRegCenter-kRegRange<<" <= kReg[i] <= "<<kRegCenter+kRegRange<<std::endl;
-  
-  //for kreg = user spec
+  // prep for svd unfolding loop, kreg = user spec
+  int kRegDraw  =  4; //use the middle entry in the kReg array, typically kReg[4]= kRegInput
   int kReg[nKregMax]={0};
-  bool addExtraOne=false;
-  
-  for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i)   {
-    int arrind=i+kRegRange;
-    
-    if( (arrind)==0 )  {
-      //kReg[arrind]=16;  //my choice          
-      kReg[arrind]=(nbins_pt_gen_mat/2) + 1;
+  init_kRegParamArray((int*)kReg, nbins_pt_gen_mat , kRegInput);  
+  if(debugMode)
+    for(int i=0; i<nKregMax; ++i){
+      if(i==kRegDraw)std::cout<<"*DRAWING* ";
+      else           std::cout<<"          ";
+      std::cout<<"kReg["<<i<<"] = "<<kReg[i];  
+      if(i==kRegDraw)std::cout<<" *DRAWING*"<<std::endl;
+      else std::cout<<std::endl;
     }
-    else if( arrind>=1){
-      if(arrind==1 && (kRegCenter+i)==1){
-	addExtraOne=true;
-      }      
-      kReg[arrind]=kRegCenter+i;
-      if(addExtraOne)
-	kReg[arrind]+=1;
-    }
-    if(true) std::cout<<"kReg["<<arrind<<"]="<<kReg[arrind]<<std::endl;    
-  }
-  //assert(false);
-  //    if((arrind)>=1){//
-  //kReg[arrind]=kRegCenter+i+1;  
-  //}
-    
+  //  assert(false);
 
-  if(debugMode){
-  for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i)
-      std::cout<<"kReg["<<i+kRegRange<<"]="<<kReg[i+kRegRange]<<std::endl;}
-  
-  //for kregSS = 1 through 9
-  int kRegSS[nKregMax]={0};
-  for(int i=1; i<=9; ++i) 
-    kRegSS[i-1]=i; 
-  if(debugMode){
-    for(int i=1; i<=9; ++i) 
-      std::cout<<"kRegSS["<<i<<"]="<<kRegSS[i-1]<<std::endl;}
-  
   std::cout<<std::endl;
   std::cout<<"creating instance of RooUnfoldResponse class"<<std::endl;    
   std::cout<<std::endl;
-  std::string roo_resp_title = "Response_matrix_rebin_"+radius+std::to_string(kRegCenter);  
+  std::string roo_resp_title = "Response_matrix_rebin_"+radius+std::to_string(kRegInput);  
   RooUnfoldResponse roo_resp(hrec_sameside_resp_rebin, hgen_resp_rebin, hmat_rebin, (roo_resp_title).c_str());    
   roo_resp.UseOverflow(doOverUnderflows);
   if(debugMode)roo_resp.Write();
@@ -610,42 +582,40 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       if(debugMode)std::cout<<std::endl<<"drawing singular values on c11 canvas.."<<std::endl<<std::endl;
       c11->cd(1);
       c11->cd(1)->SetLogy();  
-      
-      
-      //divBinWidth_DiAndSVals( (double*)boundaries_pt_gen, (int)nbins_pt_gen, (TH1D*)hSVal);
-      
-      //hSVal->SetTitle(" singular values ");
-      hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
-      //hSVal->SetAxisRange(0.,(double)(hSVal->GetNbinsX()),"X");
+      float xlo=hSVal->GetBinLowEdge(1),xhi=hSVal->GetBinLowEdge(hSVal->GetBinLowEdge(hSVal->GetNbinsX())+1);
+      std::cout<<"hSVal/hdi lo/hi="<<xlo<<"/"<<xhi<<std::endl;
+      xlo+=1.;
+      hSVal->SetAxisRange(xlo,xhi,"X");      //hSVal->SetAxisRange(0.,(double)(hSVal->GetNbinsX()),"X");
       hSVal->SetTitle("Singular Values (AC^{-1})");        
       hSVal->SetXTitle("index i");        
-      hSVal->SetYTitle("s_{i}");        
+      hSVal->SetYTitle("#||{s_{i}}");        
       //hSVal->DrawCopy("HIST E");
       hSVal->Draw("HIST E");
       
-      double tau=hSVal->GetBinContent(kRegCenter+1)*hSVal->GetBinContent(kRegCenter+1);
+      double tau=hSVal->GetBinContent(kReg[kRegDraw] +1);//add one because the first bins value is always 0//*hSVal->GetBinContent(kReg[kRegDraw]);
+      tau*=tau;
       printf("(orig)tau=%f\n",tau);
-      tau*=100.;
+      tau*=1.;
       printf("tau=%f\n",tau);
       tau=(int)tau;
       printf("tau=%f\n",tau);
-      tau/=100;
+      tau/=1;
       printf("tau=%f\n",tau);
       
-      float x=0.550173, y=0.8459761;
+      float x=0.47, y=0.8459761;
       drawText( "5.02 TeV ak4PFJets",                                 x, y, 19);y-=0.03;
       drawText( "2015 Prompt Reco"  ,                                 x, y, 19);y-=0.03;
-      drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
-      //drawText( ("Current kReg="+std::to_string(kRegCenter)).c_str() , x, y, 19);y-=0.03;	
-      drawText( ("Current kReg="+std::to_string(kReg[kRegDraw])).c_str() , x, y, 19);y-=0.03;	
-      drawText( ("#tau = "+std::to_string( tau ) ).c_str() , x, y, 19);	      
-      
+      //drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
+      drawText( ("d_{Cutoff} = #||{d_{"+std::to_string(kReg[kRegDraw])+"}}").c_str() , x, y, 19);  y-=0.03;	
+      drawText( ("#tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( (int)tau ) ).c_str() , x, y, 19);	      
+      //drawText( ("Reg. Strength = #tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( (int)tau ) ).c_str() , x, y, 19);	      
+		
                   
       // di vector values
       c11->cd(2);
       c11->cd(2)->SetLogy(1);    
       
-      hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
+      hdi->SetAxisRange(xlo,xhi,"X");
       //hdi->SetAxisRange(0.,(double)(hdi->GetNbinsX()),"X");
       hdi->SetTitle("Divector Values (#||{d_{i}}) ");
       hdi->SetXTitle("index i");
@@ -664,13 +634,13 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       
       hdi->Draw("HIST E"); 
       
-      double xcoord= ( ((double)kRegCenter) + 1. );
+      double xcoord= ( ((double)kRegInput) + 1. );
       
       std::cout<<"ymax="<<ymax<<std::endl;
       std::cout<<"ymin="<<ymin<<std::endl;
       std::cout<<"kRegDraw="<<kr<<std::endl;
-      std::cout<<"kRegCenter="<<kRegCenter<<std::endl;
-      std::cout<<"((double)kRegCenter) + 1. = "<< (((double)kRegCenter) + 1.) <<std::endl;
+      std::cout<<"kRegInput="<<kRegInput<<std::endl;
+      std::cout<<"((double)kRegInput) + 1. = "<< (((double)kRegInput) + 1.) <<std::endl;
       std::cout<<"xcoord="<<xcoord<<std::endl;
       //assert(false);
       
@@ -683,15 +653,15 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       TLine* kRegLine_hdi=new TLine(xcoord, ymin, xcoord, ymax);      
       kRegLine_hdi->SetLineWidth(1);
       kRegLine_hdi->SetLineStyle(2);
-      kRegLine_hdi->SetLineColor(36);
+      kRegLine_hdi->SetLineColor(kRed);
       kRegLine_hdi->Draw();
-
-      float x1=0.550173, y1=0.8459761;
-      drawText( "5.02 TeV ak4PFJets",                                 x1, y1, 19);y1-=0.03;
-      drawText( "2015 Prompt Reco"  ,                                 x1, y1, 19);y1-=0.03;
-      drawText( MCdesc.c_str()      ,                                 x1, y1, 19);y1-=0.03;
-      drawText( ("Current kReg="+std::to_string(kRegCenter)).c_str() , x1, y1, 19);y1-=0.03;	
-      drawText( ("#tau="+std::to_string(tau) ).c_str() , x1, y1, 19);	
+      
+      //float x1=0.550173, y1=0.8459761;
+      //drawText( "5.02 TeV ak4PFJets",                                 x1, y1, 19);y1-=0.03;
+      //drawText( "2015 Prompt Reco"  ,                                 x1, y1, 19);y1-=0.03;
+      //drawText( MCdesc.c_str()      ,                                 x1, y1, 19);y1-=0.03;
+      //drawText( ("Current kReg="+std::to_string(kReg[kRegDraw])).c_str() , x1, y1, 19);y1-=0.03;	
+      //drawText( ("#tau="+std::to_string(tau) ).c_str() , x1, y1, 19);	
       
       float hdi_signif_mean=0;
       int signif_count=0;
@@ -703,7 +673,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
 	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
 	  continue;
 	}
-	else if(lowedge>=1 && lowedge <= kRegCenter){
+	else if(lowedge>=1 && lowedge <= kRegInput){
 	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
 	  signif_count++;
 	  hdi_signif_mean+=hdi->GetBinContent(k);
@@ -725,7 +695,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
 	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
 	  continue;
 	}
-	else if(lowedge>=1 && lowedge <= kRegCenter){
+	else if(lowedge>=1 && lowedge <= kRegInput){
 	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
 	  hdi_signif_stddev+=(hdi->GetBinContent(k)-hdi_signif_mean)*(hdi->GetBinContent(k)-hdi_signif_mean);
 	}
@@ -1522,7 +1492,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
 int main(int argc, char* argv[]){  int rStatus = -1;
   
   if( argc!=9 ){
-    std::cout<<"do ./SVDUnfoldDataSpectra_wNLO.exe <targDataDir> <targMCDir> <targMCFile> <baseOutputName> <useNPCorr> <doJetID> <useSimpleBins> <kRegCenter>"<<std::endl;
+    std::cout<<"do ./SVDUnfoldDataSpectra_wNLO.exe <targDataDir> <targMCDir> <targMCFile> <baseOutputName> <useNPCorr> <doJetID> <useSimpleBins> <kRegInput>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
     
     return rStatus;  }

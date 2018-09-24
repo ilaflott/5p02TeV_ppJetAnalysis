@@ -1,16 +1,17 @@
 #!/bin/bash
 
 ### ----------------------------------------------------------------------------------
-if [ $# -eq 8 ]
+if [ $# -eq 9 ]
 then
     datadirTag=$1
     MCdirTag=$2
     MM=$3
     DD=$4
     YY=$5
-    runBayes=$6
-    runSVD=$7
-    simpbins=$8
+    simpbins=$6
+    runBayes=$7
+    runSVD=$8
+    SVDkReg=$9
 else
     echo "usage:"
     echo "source runData_wNLO.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [runBayes] [runSVD] [useSimpBins]"
@@ -45,24 +46,24 @@ fi
 ### ----------------------------------------------------------------------------------
 if [ $runSVD -eq 1 ]
 then
-    if [ ${simpbins} -eq 1 ]
-    then
-	kReg=4
-    else
-	kReg=4
-    fi
+    #if [ ${simpbins} -eq 1 ]
+    #then
+    #	kReg=4
+    #else
+    #	kReg=4
+    #fi
 
     echo ""
     echo "compiling SVDUnfoldDataSpectra_wNLO.C"
     echo ""
-    echo "kReg=${kReg}"
+    echo "kReg setting = ${SVDkReg}"
     rooUnfoldCompile SVDUnfoldDataSpectra_wNLO.C
-
-# "source run_SVDUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [dataEtaBin] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [kReg] [useSimpleBinning]"    
-
-    source run_SVDUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "SVD_${condorDate}_${MCdirTag}" "${kReg}" "${simpbins}" 
     
-
+# "source run_SVDUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [dataEtaBin] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [kReg] [useSimpleBinning]"    
+    
+    source run_SVDUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "SVD_${condorDate}_${MCdirTag}" "${SVDkReg}" "${simpbins}" 
+    
+    
     echo ""
     echo "SVD Data Unfolding Done."
     echo ""

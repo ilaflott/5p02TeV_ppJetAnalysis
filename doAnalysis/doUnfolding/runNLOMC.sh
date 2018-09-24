@@ -2,16 +2,17 @@
 
 ### ----------------------------------------------------------------------------------
 ### ----------------------------------------------------------------------------------
-if [ $# -eq 7 ]
+if [ $# -eq 8 ]
 then
-
+    
     dirTag=$1
     MM=$2
     DD=$3
     YY=$4
-    runBayes=$5
-    runSVD=$6
-    simpbins=$7
+    simpbins=$5
+    runBayes=$6
+    runSVD=$7
+    SVDkReg=$8
     
 else
     echo "usage:"
@@ -45,12 +46,12 @@ if [ $runSVD -eq 1 ]
 then
 #    kReg=5
 
-    if [ ${simpbins} -eq 1 ]
-    then
-	kReg=4
-    else
-	kReg=4
-    fi
+    #if [ ${simpbins} -eq 1 ]
+    #then
+    #	kReg=4
+    #else
+    #	kReg=4
+    #fi
     
     echo ""
     echo "compiling SVDUnfoldNLOMCSpectra.C"
@@ -59,7 +60,7 @@ then
     rooUnfoldCompile SVDUnfoldNLOMCSpectra.C
     
     #USE: "source run_SVDUnfoldNLOMCSpectra.sh [R=3,4] [condorDir] [date_output] [etaBin] [etaBinOut] [kReg] [useSimpleBinning]"    
-    source run_SVDUnfoldNLOMCSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "SVD_${condorDate}_${dirTag}" "${kReg}" "${simpbins}"
+    source run_SVDUnfoldNLOMCSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "SVD_${condorDate}_${dirTag}" "${SVDkReg}" "${simpbins}"
 
     
     echo ""

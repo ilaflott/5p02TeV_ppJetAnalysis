@@ -98,6 +98,8 @@ const int kIter = 4; // default is 4, Bayes
 
 // max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ; //SVD
+//const int KREGMAXN  = 9 , KREGRAMGE=(KREGMAXN-1)/2 ; //SVD TO DO
+
 
 const double NLOMCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
 const double MCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
@@ -134,7 +136,8 @@ const bool zeroBins=false; //leave false almost always
 // -----------------------------------------------------------------------------------------------------------------------
 //useful strings, numbers
 const std::string CMSPRELIM= "CMS PRELIMINARY"; 
-const std::string MCdesc= "Py8 Tune CUETP8M1 QCD"; 
+const std::string MCdesc= "PY8 CUETP8M1, LO QCD MC"; 
+const std::string NLOMCdesc= "NLO QCD MC"; 
 const std::string Datadesc1= "pp promptReco, #sqrt{s}=5.02 TeV"; 
 const std::string Datadesc2= "L_{int}=27.4 pb^{-1} +/- 2.4%"; 
 
@@ -757,6 +760,45 @@ void divBinWidth_DiAndSVals(double * binning, int binninglength, TH1D* hdisval){
     val/=width;
     hdisval->SetBinContent(i, val);
   }
+  return;
+}
+
+
+void init_kRegParamArray(int* kReg, int nbins, int kRegInput){
+  bool funcDebug=true;
+  
+  int kReg_lo=kRegInput-kRegRange+1,kReg_hi=kRegInput+kRegRange;
+  if(funcDebug) std::cout<<std::endl<<"length of kReg parameter array = "<<nKregMax<<" elements"<<std::endl;
+  if(funcDebug) std::cout<<"kRegInput = "<< kRegInput<<std::endl;  
+  if(funcDebug) std::cout<<(kReg_lo)<<" <= kReg[i] <= "<<(kReg_hi)<<std::endl;
+  if(funcDebug) std::cout<<" nbins/2 = "<<nbins<<"/2 = "<< nbins/2<<std::endl;
+  if(kReg_hi>nbins){
+    if(funcDebug) std::cout<<"kRegInput was = "<< kRegInput<<std::endl;  
+    kRegInput=nbins-1-kRegRange;
+    kReg_lo=kRegInput-kRegRange+1;
+    kReg_hi=kRegInput+kRegRange;
+    std::cout<<"kRegInput too big. Setting to largest possible value."<<std::endl;
+    if(funcDebug) std::cout<<"kRegInput is now = "<< kRegInput<<std::endl;      
+    if(funcDebug) std::cout<<(kReg_lo)<<" <= kReg[i] <= "<<(kReg_hi)<<std::endl;
+    if(funcDebug) std::cout<<" nbins/2 = "<<nbins<<"/2 = "<< nbins/2<<std::endl;      }
+  bool addExtraOne=false; //in case the kRegParam=1 (which is a useless case to check, the normalization is consistently wrong in this case)
+  for(int i=0; i<nKregMax; ++i)   {
+    int kRegParam=kReg_lo+i-1;
+    if( i==0 )  
+      kReg[i]=(nbins/2);
+    
+    else if( i>=1){
+      if(i==1 && kRegParam==1)
+	addExtraOne=true;
+      
+      
+      kReg[i]=kRegParam;
+      if(addExtraOne)
+	kReg[i]+=1;
+    }
+    
+  }
+
   return;
 }
 

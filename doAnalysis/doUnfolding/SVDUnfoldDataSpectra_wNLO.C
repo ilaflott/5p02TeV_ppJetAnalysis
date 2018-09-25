@@ -593,22 +593,20 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       hSVal->Draw("HIST E");
       
       double tau=hSVal->GetBinContent(kReg[kRegDraw] +1);//add one because the first bins value is always 0//*hSVal->GetBinContent(kReg[kRegDraw]);
-      tau*=tau;
-      printf("(orig)tau=%f\n",tau);
-      tau*=1.;
-      printf("tau=%f\n",tau);
-      tau=(int)tau;
-      printf("tau=%f\n",tau);
-      tau/=1;
-      printf("tau=%f\n",tau);
+      tau*=tau;//reg strength = sing. val. squared//     printf("(orig)tau=%f\n",tau);
+      //tau*=1.;//      printf("tau=%f\n",tau);
+      //tau=(int)tau;      //      printf("tau=%f\n",tau);
+      //tau/=1;//for rounding//     printf("tau=%f\n",tau);
+      int tauint=( ((int)tau)/1 );
       
       float x=0.47, y=0.8459761;
-      drawText( "5.02 TeV ak4PFJets",                                 x, y, 19);y-=0.03;
-      drawText( "2015 Prompt Reco"  ,                                 x, y, 19);y-=0.03;
+      drawText( "2015 pp Prompt Reco"  ,                                 x, y, 19);y-=0.03;
+      drawText( "ak4PFJets",                                 x, y, 19);y-=0.03;
       //drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
+      drawText( ("kReg Cut = "+std::to_string(kReg[kRegDraw])).c_str() , x, y, 19);  y-=0.03;	
       drawText( ("d_{Cutoff} = #||{d_{"+std::to_string(kReg[kRegDraw])+"}}").c_str() , x, y, 19);  y-=0.03;	
-      drawText( ("#tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( (int)tau ) ).c_str() , x, y, 19);	      
-      //drawText( ("Reg. Strength = #tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( (int)tau ) ).c_str() , x, y, 19);	      
+      drawText( ("#tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( tauint )).c_str() , x, y, 19);	      
+		//drawText( ("Reg. Strength = #tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( (int)tau ) ).c_str() , x, y, 19);	      
 		
                   
       // di vector values
@@ -634,7 +632,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       
       hdi->Draw("HIST E"); 
       
-      double xcoord= ( ((double)kRegInput) + 1. );
+      double xcoord= ( ((double)kRegInput) + 1. - 0.5);
       
       std::cout<<"ymax="<<ymax<<std::endl;
       std::cout<<"ymin="<<ymin<<std::endl;
@@ -644,7 +642,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       std::cout<<"xcoord="<<xcoord<<std::endl;
       //assert(false);
       
-      TLine* theLineAtOne_hdi=new TLine(1., 1., (double)(hdi->GetNbinsX()), 1.);
+      TLine* theLineAtOne_hdi=new TLine(1., 1.1, (double)(hdi->GetNbinsX()), 1.1);
       theLineAtOne_hdi->SetLineWidth(1);
       theLineAtOne_hdi->SetLineStyle(2);
       theLineAtOne_hdi->SetLineColor(36);

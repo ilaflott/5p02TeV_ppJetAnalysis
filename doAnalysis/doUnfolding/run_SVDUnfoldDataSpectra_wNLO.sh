@@ -27,7 +27,7 @@ fi
 echo ""
 echo "running SVDUnfoldDataSpectra_wNLO"
 echo ""
-useNPCorr=0
+#useNPCorr=0
 #./SVDUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} ${MC_condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${MC_date}_JERS_${MCetaBin} unf_HPtJetTrig_w_Py8_${etaBinOut} ${jtID} ${useSimpleBinning} ${kReg} 
 
 
@@ -38,7 +38,7 @@ useNPCorr=0
 ./SVDUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root  unf_HPtJetTrig_${etaBinOut}_NNPDF30nnlo 1 ${jtID} ${useSimpleBinning} ${kReg} 
 
 
-return
+#return
 
 
 #useNPCorr=1

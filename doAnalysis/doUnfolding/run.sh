@@ -3,23 +3,23 @@
 
 #Data and SVD Unfolding settings
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
 #doMCUnfolding
-doLOMCUnfolding=1
+doLOMCUnfolding=0
 LOMCSVDkReg=10
-doNLOMCUnfolding=1
+doNLOMCUnfolding=0
 NLOMCSVDkReg=10
 
 #doDataUnfolding
 dataHLTPF=1
 dataHLTCalo=0
 doDataUnfoldingwLO=0
-dataSVDkReg=7
+dataLOSVDkReg=7
 doDataUnfoldingwNLO=1
-datawNLOSVDkReg=16
+dataNLOSVDkReg=16
 
 
 
@@ -88,12 +88,12 @@ function unfoldData(){
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	    
-	    source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataSVDkReg
+	    source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg
 	fi
 	
 	if [[ doDataUnfoldingwNLO -eq 1 ]]
 	then
-	    source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $useSimpBins $doBayes $doSVD $datawNLOSVDkReg
+	    source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg
 	fi
 	
 	echo ""

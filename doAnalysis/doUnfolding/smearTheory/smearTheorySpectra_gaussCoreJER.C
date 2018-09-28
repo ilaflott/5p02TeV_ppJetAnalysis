@@ -1,8 +1,11 @@
 #include "smearTheorySpectra.h"
 
 const bool printBaseDebug=true;
-const int nEvents=1e+09;  /// Increase your stats here, typically 100M events are enough 
-//const int nEvents=1e+07;  /// debug nevents
+
+//Increase your stats here, typically 100M events are enough 
+//const int nEvents=1e+09;  ///10x typical
+//const int nEvents=1e+08;  ///typical
+const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [nb/GeV]";

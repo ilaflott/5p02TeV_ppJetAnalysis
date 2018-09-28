@@ -21,6 +21,24 @@ const int CANVYW=(int)
 //hist-name array pattern is always
 // // std::string namearray={ MCprior, MCmeas, datameas, dataunfolded}
 
+void checkHistVector(std::vector<TH1D*> th1vect){
+  //if(!th1vect){
+  //  std::cout<<"*** WARNING *** vector pointer DNE or is NULL *** WARNING ***"<<std::endl;
+  //  std::cout<<"*** WARNING *** i may crash!                  *** WARNING ***"<<std::endl; 
+  //  std::cout<<"*** WARNING *** vector pointer DNE or is NULL *** WARNING ***"<<std::endl;
+  //  std::cout<<"*** WARNING *** i may crash!                  *** WARNING ***"<<std::endl;
+  //  std::cout<<"*** WARNING *** vector pointer DNE or is NULL *** WARNING ***"<<std::endl;
+  //  std::cout<<"*** WARNING *** i may crash!                  *** WARNING ***"<<std::endl;
+  //}
+  for (int i=0;i<(int)th1vect.size();i++){
+    TH1D* theHist=(TH1D*) th1vect[i];    
+    if(!theHist){
+      std::cout<<"*** WARNING *** theHist pointer DNE or is NULL *** WARNING ***"<<std::endl;
+      std::cout<<"*** WARNING *** i="<<i<<" may crash!           *** WARNING ***"<<std::endl;      
+    }
+  }
+  return;
+}
 
 // general stuff --------------
 void writeNsaveCanvas(TFile* fout, TCanvas* canv){
@@ -166,6 +184,7 @@ void print_compareMethods( TFile* fin_meth1, std::vector<std::string> hnames_met
 			   std::string prior_nameB, //for hist titling
 			   //std::string methcomp_title   , 
 			   std::vector<std::string> names){//, TFile* fout){
+  
   if(!fin_meth1 || !fin_meth2){
     std::cout<<"file not found. skipping comparison between "<<meth1_name<<" and "<<meth2_name<<std::endl;
     return;
@@ -204,6 +223,7 @@ void print_compareMethods( TFile* fin_meth1, std::vector<std::string> hnames_met
   setupSpectraCanv(meth2_spectra_canv);
   drawhArrayOnSpectraCanv(meth2_spectra_canv, meth2_hvector, (prior_nameB+", "+meth2_name+", Spectra"));
   sethArrayTitles(meth2_hvector,prior_nameB+"."+meth2_name, names);
+
   TLegend* meth2_spectra_leg=buildSpectraLegend(meth2_hvector);
   meth2_spectra_canv->cd();
   meth2_spectra_leg->Draw();
@@ -326,10 +346,10 @@ void quick_compareMethods(TFile* fin_p8byes, TFile* fin_NLObyes, TFile* fin_NLOw
 			  TFile* fin_p8svd,  TFile* fin_NLOsvd,   TFile* fin_NLOwNPsvd ){//, TFile* fout   ) {
   std::cout<<"comparing data unfolded w/ same priors yet diff methods"<<std::endl;  
   
-  //if( !((bool) fin_p8byes) || !((bool) fin_NLObyes) || !((bool) fin_NLOwNPbyes) ||	 
-  //    !((bool) fin_p8svd ) || !((bool) fin_NLOsvd ) || !((bool) fin_NLOwNPsvd )  ){
-  //  std::cout<<"file not found. exit."<<endl;
-  //  assert(false);  }      
+  if( !((bool) fin_p8byes) || !((bool) fin_NLObyes) || !((bool) fin_NLOwNPbyes) ||	 
+      !((bool) fin_p8svd ) || !((bool) fin_NLOsvd ) || !((bool) fin_NLOwNPsvd )  ){
+    std::cout<<"file not found. exit."<<std::endl;
+    assert(false);  }      
   
   //-----------------------------------------//
   //compare py8byes file w/ p8svd file (prior in common is p8 prior)
@@ -370,7 +390,9 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
 			 TFile* fin_prior2, std::vector<std::string> hnames_prior2, std::string prior2_name,std::string prior2_desc,
 			 TFile* fin_prior3, std::vector<std::string> hnames_prior3, std::string prior3_name,std::string prior3_desc,
 			 std::string meth_name, std::vector<std::string> names			 ){
-
+  std::cout<<std::endl<<"running print_comparePriors"<<std::endl;
+  
+  
   if(!fin_prior1 || !fin_prior2 || !fin_prior3){
     std::cout<<"file not found. skipping comparison between priors using "<<meth_name<<" unfolding."<<std::endl;
     return;
@@ -380,18 +402,21 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
   std::string fout_name=meth_name+"_"+prior1_name+"."+prior2_name+"."+prior3_name+"_"+"comparePriors.root";  
   TFile* fout=new TFile(fout_name.c_str(),"RECREATE");
   
-  
+
   std::vector<TH1D*> prior1_hvector;
   for(int i =0; i<((int)hnames_prior1.size()); i++)
     prior1_hvector.push_back((TH1D*)fin_prior1->Get(  ((std::string)hnames_prior1[i]).c_str()));
+  checkHistVector(prior1_hvector);
 
   std::vector<TH1D*> prior2_hvector;
   for(int i =0; i<((int)hnames_prior2.size()); i++)
     prior2_hvector.push_back((TH1D*)fin_prior2->Get(  ((std::string)hnames_prior2[i]).c_str()));
+  checkHistVector(prior2_hvector);
 
   std::vector<TH1D*> prior3_hvector;
   for(int i =0; i<((int)hnames_prior3.size()); i++)
     prior3_hvector.push_back((TH1D*)fin_prior3->Get(  ((std::string)hnames_prior3[i]).c_str()));
+  checkHistVector(prior3_hvector);
   
   
 
@@ -430,7 +455,6 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
   writeNsaveCanvas(fout, priorX_measdata_canv);
   
   
-  
   //PRIORX UNFOLDED OVER MEASURED DATA
   TCanvas* priorXunf_measdata_canv=new TCanvas((meth_name+"_"+prior1_name+"."+prior2_name+"."+prior3_name+"_measdatarat").c_str(),
 					       (meth_name+"_"+prior1_name+"."+prior2_name+"."+prior3_name+"_measdatarat").c_str(),
@@ -439,10 +463,14 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
   
   //TH1D* h_measdata=(TH1D*)prior1_hvector[2]->Clone();//clone meas data 
   std::vector<TH1D*> priorunf_measdata_rat_vector;
-  priorunf_measdata_rat_vector.push_back((TH1D*)prior1_hvector[3]->Clone());
-  priorunf_measdata_rat_vector.push_back((TH1D*)prior2_hvector[3]->Clone());
+
+
+
+  priorunf_measdata_rat_vector.push_back((TH1D*)prior1_hvector[3]->Clone()); 
+  priorunf_measdata_rat_vector.push_back((TH1D*)prior2_hvector[3]->Clone()); 
   priorunf_measdata_rat_vector.push_back((TH1D*)prior3_hvector[3]->Clone());
   
+
   priorunf_measdata_rat_vector[0]->Divide(h_measdata);
   priorunf_measdata_rat_vector[1]->Divide(h_measdata);
   priorunf_measdata_rat_vector[2]->Divide(h_measdata);
@@ -463,6 +491,7 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
   
   writeNsaveCanvas(fout, priorXunf_measdata_canv);
   
+
   
   
   
@@ -499,7 +528,7 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
   
   
   
-  
+  //assert(false);  
   
   
   
@@ -510,10 +539,8 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
   
   
   
-  
-
-
-  std::cout<<"helloworld"<<std::endl;
+ 
+  //std::cout<<"helloworld"<<std::endl;
   return;
 }
 
@@ -522,25 +549,31 @@ void print_comparePriors(TFile* fin_prior1, std::vector<std::string> hnames_prio
 //i.e. match the priors, but make sure diff methods
 void quick_comparePriors(TFile* fin_p8byes, TFile* fin_NLObyes, TFile* fin_NLOwNPbyes,
 			 TFile* fin_p8svd, TFile* fin_NLOsvd, TFile* fin_NLOwNPsvd){
-  std::cout<<"comparing data unfolded w/ same methods yet diff priors"<<std::endl;    
+  std::cout<<std::endl<<"running quick_comparePriors"<<std::endl;  
   
-  //-----------------------------------------//
-  std::cout<<"comparing bayes unfolded data across PY8, NLO, and NLO+NP priors"<<std::endl;
-  print_comparePriors( (TFile*)fin_p8byes,   PY8_bayes_NAMES,          "PY8_LO",        "PY8 LO",       
-		       (TFile*)fin_NLObyes,  NLO_bayes_NAMES,          "NNPDF_NNLO",    "NNPDF NNLO",   
-		       (TFile*)fin_NLOwNPbyes,  NLOwNP_bayes_NAMES,    "NNPDF_NNLOwNP", "NNPDF NNLO+NP",
-		       "Bayes", 
-		       (std::vector<std::string>)HNAMES );
-  //-----------------------------------------//
+  //std::cout<<"comparing data unfolded w/ same methods yet diff priors"<<std::endl;    
   
   ////-----------------------------------------//
-  std::cout<<"comparing bayes unfolded data across PY8, NLO, and NLO+NP priors"<<std::endl;
+  std::cout<<std::endl<<"comparing SVD unfolded data across PY8, NLO, and NLO+NP priors"<<std::endl;
   print_comparePriors(     (TFile*)fin_p8svd,     PY8_SVD_NAMES,    "PY8_LO",        "PY8 LO",       
 			   (TFile*)fin_NLOsvd,     NLO_SVD_NAMES,    "NNPDF_NNLO",    "NNPDF NNLO",   
 			   (TFile*)fin_NLOwNPsvd,  NLOwNP_SVD_NAMES,    "NNPDF_NNLOwNP", "NNPDF NNLO+NP",
 			   "SVD", 
 			   (std::vector<std::string>)HNAMES );
   ////-----------------------------------------//
+
+
+  //assert(false);
+  //-----------------------------------------//
+  std::cout<<std::endl<<"comparing bayes unfolded data across PY8, NLO, and NLO+NP priors"<<std::endl;
+  print_comparePriors( (TFile*)fin_p8byes,   PY8_bayes_NAMES,          "PY8_LO",        "PY8 LO",       
+		       (TFile*)fin_NLObyes,  NLO_bayes_NAMES,          "NNPDF_NNLO",    "NNPDF NNLO",   
+		       (TFile*)fin_NLOwNPbyes,  NLOwNP_bayes_NAMES,    "NNPDF_NNLOwNP", "NNPDF NNLO+NP",
+		       "Bayes", 
+		       (std::vector<std::string>)HNAMES );
+  //-----------------------------------------//
+
+
   
   return;
 }
@@ -550,7 +583,19 @@ void quick_comparePriors(TFile* fin_p8byes, TFile* fin_NLObyes, TFile* fin_NLOwN
 
 
 
-void quickCompare_unfoldedData(bool compareMethods=true, bool comparePriors=true){
+//void quickCompare_unfoldedData(bool compareMethods=false, bool comparePriors=true){
+int main (int argc, char* argv[]){
+  if(argc!=3)
+    return 0;
+  
+  bool compareMethods=(bool)std::atoi(argv[1]);
+  bool comparePriors=(bool)std::atoi(argv[2]);
+  
+  
+  int rStatus=1;
+  
+  std::cout<<std::endl<<"running quickCompare_unfoldedData"<<std::endl;
+
   TFile* fin_PY8_bayes   =TFile::Open(FILE_PY8_bayes.c_str(),"READ");
   TFile* fin_NLO_bayes   =TFile::Open(FILE_NLO_bayes.c_str(),"READ");
   TFile* fin_NLOwNP_bayes=TFile::Open(FILE_NLOwNP_bayes.c_str(),"READ");
@@ -569,6 +614,7 @@ void quickCompare_unfoldedData(bool compareMethods=true, bool comparePriors=true
     quick_comparePriors( fin_PY8_bayes, fin_NLO_bayes, fin_NLOwNP_bayes,
 			 fin_PY8_SVD,   fin_NLO_SVD,   fin_NLOwNP_SVD  );    
   std::cout<<"done w/ all comparisons. exit."<<std::endl;
-  return;
+  
+  return rStatus;
 }
 

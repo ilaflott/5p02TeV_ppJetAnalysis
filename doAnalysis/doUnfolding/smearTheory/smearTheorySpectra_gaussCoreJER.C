@@ -1,6 +1,8 @@
 #include "smearTheorySpectra.h"
 
 const bool printBaseDebug=true;
+const string SPLINE_STR="spline";
+const string FIT_STR="fit";
 
 //Increase your stats here, typically 100M events are enough 
 //const int nEvents=1e+09;  ///10x typical
@@ -18,22 +20,39 @@ int debugInt=0;
 void debugcout(){
   std::cout<<"location #"<<debugInt<<endl;
   debugInt++;
-  return; }
+  return; 
+}
 
-void smearTheorySpectra_gaussCoreJER( string inputString ){
+void smearTheorySpectra_gaussCoreJER( string infileString , string weightMode="spline" //"fit"// 
+				      ){
+  //see SPLINE_STR,FIT_STR consts defn above
+  //if(weightMode!=SPLINE_STR && weightMode!=FIT_STR){
+  bool splineWeight=(bool)(weightMode!=SPLINE_STR);
+  bool fitWeight=!splineWeight;
+  
+  //if(weightMode!=SPLINE_STR && weightMode!=FIT_STR){
+  if( (!splineWeight) && (!fitWeight)){
+    std::cout<<"weightMode="<<weightMode<<" invalid. options are 'spline' or 'fit'."<<std::endl;
+    return;
+  }
+  
+  
   
   gStyle->SetOptStat(0);
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
-  
-  
+    
   // Output File to write to
-  string outputFile= inputString+"_gaussSmear_00eta20.root";
+  string outputFile= infileString;//+
+  if(splineWeight)    outputFile+="_spl3wgts";
+  else    outputFile+="_fitwgts";
+  outputFile+="_gaussSmear_00eta20.root";
+
   cout<<"opening output:"<<outputFile<<endl<<endl;
   TFile *outf    = new TFile(outputFile.c_str(), "RECREATE" );
   
   // Input, Theory spectrum
-  string inputFile = "fNLOJetsSpectra/R04/"+inputString+".root";
+  string inputFile = "fNLOJetsSpectra/R04/"+infileString+".root";
   cout<<"opening input file:"<<inputFile<<endl<<endl;
   TFile* fin_NLO=TFile::Open(inputFile.c_str());
   
@@ -481,92 +500,100 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
 
   
 
-  /////////////// Fitting Spectra with spline3
-  /////////////// Not worning well for y6 bin because Klaus's spectra ends < 500 GeV
-  /////////////// We must fit spectra by hand for y6 bin
-  
-  
+  /////////////// Interpolating Spectra with spline3
+  /////////////// Not worning well for y6 bin because Klaus's spectra ends < 500 GeV, use special by-hand solution
   ///Create Cubic Splines using Cross sections
-  cout<<"creating TSpline of cross section hist"<<endl;
-  TH1D* theory_ynew_spl3clone=(TH1D*)theory_ynew->Clone(  
-							( ( (std::string) theory_ynew->GetName() ) +"_specialrebin").c_str() 
-							  );
-  theory_ynew_spl3clone=(TH1D*)theory_ynew_spl3clone->TH1::Rebin(n_thybins_incl, 
-								 theory_ynew_spl3clone->GetName(), 
-								 thyBins_incl );
-  theory_ynew_spl3clone->SetLineColor(kCyan+4);    
+  TH1D *theory_ynew_spl3clone=NULL, *theory_NPynew_spl3clone=NULL;
+  TSpline3 *spline3_ynew=NULL, *spline3_NPynew=NULL;
+  TCanvas *plot_splines=NULL;
+  TLegend *leg_spline=NULL;
+  if(splineWeight){
+    cout<<"creating TSpline of cross section hist"<<endl;
+//    theory_ynew_spl3clone=(TH1D*)theory_ynew->Clone(  
+//							  ( ( (std::string) theory_ynew->GetName() ) +"_specialrebin").c_str() 
+//							    );
+//    theory_ynew_spl3clone=(TH1D*)theory_ynew_spl3clone->TH1::Rebin(n_thybins_incl, 
+//								   theory_ynew_spl3clone->GetName(), 
+//								   thyBins_incl );
+//    theory_ynew_spl3clone=(TH1D*)theory_ynew->TH1::Rebin(n_thybins_incl, 
+							 //							 ( ( (std::string) theory_ynew->GetName() ) +"_specialrebin").c_str() ,	 
+							 //							 thyBins_incl );
+    theory_ynew_spl3clone=new TH1D("testonly","testonly" ,n_thybins_incl    , thyBins_incl);
+    theory_ynew_spl3clone->SetLineColor(kCyan+4);    
+    
+    spline3_ynew = new TSpline3( theory_ynew_spl3clone);
+    spline3_ynew->SetName( ( (std::string)theory_ynew_spl3clone->GetName() + "_spline3").c_str() );
+    spline3_ynew->SetLineColor(kAzure);  
+    
+    
+    
+    theory_NPynew_spl3clone=(TH1D*)theory_NPynew->Clone(  
+							      ( ( (std::string) theory_NPynew->GetName() ) +"_specialrebin").c_str() 
+								);  
+    theory_NPynew_spl3clone=(TH1D*)theory_NPynew_spl3clone->TH1::Rebin(n_thybins_incl, 
+								       theory_NPynew_spl3clone->GetName(), 
+								       thyBins_incl );  
+    theory_NPynew_spl3clone->SetLineColor(kCyan-6);
+    
+    spline3_NPynew = new TSpline3( theory_NPynew_spl3clone);
+    spline3_NPynew->SetName( ( (std::string)theory_NPynew_spl3clone->GetName() + "_spline3").c_str() );
+    spline3_NPynew->SetLineColor(kAzure-8);  
+    
+    
+    
+    
+    /// check spectra with splines
+    cout<<"drawing Tspline and cross section on canvas"<<endl;
+    plot_splines = new TCanvas("plot_splines", "plot_splines",1200,800);
+    plot_splines->cd()->SetLogx(1);
+    plot_splines->cd()->SetLogy(1);
+    plot_splines->cd();
+    
+    //draw
+    theory_ynew_spl3clone->SetTitle("Cubic Splines for #||{y}<2.0;Jet p_{T};Smear Weight");
+    theory_ynew_spl3clone->DrawClone("HIST E");
+    spline3_ynew->Draw("SAME");
+    theory_NPynew_spl3clone->DrawClone("HIST E SAME");  
+    spline3_NPynew->Draw("SAME");
+    
+    assert((bool)theory_ynew_spl3clone);        
+    leg_spline=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
+    leg_spline->AddEntry(theory_ynew_spl3clone , "Weighted NLO Jet Counts for #||{y} < 2.0" , "lp");
+    leg_spline->AddEntry(spline3_ynew   , "Cubic Spline for NLO #||{y} < 2.0" , "l");
+    leg_spline->AddEntry(theory_NPynew_spl3clone , "Weighted NP+NLO Jet Counts for #||{y} < 2.0" , "lp");
+    leg_spline->AddEntry(spline3_NPynew   , "Cubic Spline for NP+NLO #||{y} < 2.0" , "l");
+    leg_spline->Draw();
+    
+  }
   
-  TSpline3 *spline3_ynew = new TSpline3( theory_ynew_spl3clone);
-  spline3_ynew->SetName( ( (std::string)theory_ynew_spl3clone->GetName() + "_spline3").c_str() );
-  spline3_ynew->SetLineColor(kAzure);  
-  
-  
-  
-  TH1D* theory_NPynew_spl3clone=(TH1D*)theory_NPynew->Clone(  
-							    ( ( (std::string) theory_NPynew->GetName() ) +"_specialrebin").c_str() 
-							      );  
-  theory_NPynew_spl3clone=(TH1D*)theory_NPynew_spl3clone->TH1::Rebin(n_thybins_incl, 
-								     theory_NPynew_spl3clone->GetName(), 
-								     thyBins_incl );  
-  theory_NPynew_spl3clone->SetLineColor(kCyan-6);
-  
-  TSpline3 *spline3_NPynew = new TSpline3( theory_NPynew_spl3clone);
-  spline3_NPynew->SetName( ( (std::string)theory_NPynew_spl3clone->GetName() + "_spline3").c_str() );
-  spline3_NPynew->SetLineColor(kAzure-8);  
-  
-  /// check spectra with splines
-  cout<<"drawing Tspline and cross section on canvas"<<endl;
-  TCanvas *plot_splines = new TCanvas("plot_splines", "plot_splines",1200,800);
-  plot_splines->cd()->SetLogx(1);
-  plot_splines->cd()->SetLogy(1);
-  plot_splines->cd();
-  
-  //draw
-  theory_ynew_spl3clone->SetTitle("Cubic Spline Fits #||{y}<2.0;Jet p_{T};Smear Weight");
-  theory_ynew_spl3clone->DrawClone("HIST E");
-  spline3_ynew->Draw("SAME");
-  theory_NPynew_spl3clone->DrawClone("HIST E SAME");  
-  spline3_NPynew->Draw("SAME");
-
-  
-  TLegend* leg_spline=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-  leg_spline->AddEntry(theory_ynew_spl3clone , "Weighted NLO Jet Counts for #||{y} < 2.0" , "lp");
-  leg_spline->AddEntry(spline3_ynew   , "Cubic Spline Fit for NLO #||{y} < 2.0" , "l");
-  leg_spline->AddEntry(theory_NPynew_spl3clone , "Weighted NP+NLO Jet Counts for #||{y} < 2.0" , "lp");
-  leg_spline->AddEntry(spline3_NPynew   , "Cubic Spline Fit for NP+NLO #||{y} < 2.0" , "l");
-  leg_spline->Draw();
-  
-  
-  
-  
-  //////////////////////  START production of Smeared NLO spectra     //////////////////////  
+  assert((bool)theory_ynew_spl3clone);        
+  ///////////////////////////////////////////////////////////////////////////////////////////// 
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  START production of Smeared NLO spectra  ////////////////////////////
+  //-----------------------------------------------------------------------------------------//
+  ///////////////////////////////////////////////////////////////////////////////////////////// 
   cout<<"creating TH1 for toy NLO spectra generation, RooUnfoldResponse class, etc."<<endl<<endl;
-  //TH1D *theory_rnd_ynew    = new TH1D("theory_rnd_ynew","theory_rnd_ynew", n_thybins_incl, thyBins_incl);   
-  //TH1D *smeared_rnd_ynew = new TH1D("smeared_rnd_ynew","smeared_rnd_ynew", n_smearedbins_incl, smearedBins_incl);   
-  //TH1D *smeared_rnd_ynew_test = new TH1D("smeared_rnd_ynew_test","smeared_rnd_ynew_test", n_smearedbins_incl, smearedBins_incl);   
   TH1D *theory_rnd_ynew       = new TH1D("theory_rnd_ynew","theory_rnd_ynew",             n_thybins_incl    , thyBins_incl);   
   TH1D *smeared_rnd_ynew      = new TH1D("smeared_rnd_ynew","smeared_rnd_ynew",           n_smearedbins_incl, smearedBins_incl);   
   TH1D *smeared_rnd_ynew_test = new TH1D("smeared_rnd_ynew_test","smeared_rnd_ynew_test", n_smearedbins_incl, smearedBins_incl);   
   
   //RooUnfoldResponse response_ynew(smeared_rnd_ynew,theory_rnd_ynew);   
-  //TH2* response_ynew_th2=(response_ynew.Hresponse());
   TH2D* response_ynew_th2=new TH2D("response_ynew_th2","response_ynew_th2",
 				   (Int_t)n_smearedbins_incl, (Double_t*)smearedBins_incl,
 				   (Int_t)n_thybins_incl, (Double_t*)thyBins_incl);
   
-  
-  ///////////////////////////////////////////////////////////////////////////////////////////// 
-  //-----------------------------------------------------------------------------------------//
-  //-----------------------------------------------------------------------------------------//
-  //makeToySpectra(theory_ynew_spl3clone, spline3_ynew, fJER_ynew,              //-------------//
-  //nEvents, theory_rnd_ynew, smeared_rnd_ynew, (RooUnfoldResponse*)&response_ynew); //-------------//
-  //makeToySpectra(theory_ynew_spl3clone, spline3_ynew, fJER_ynew,              //-------------//
-  //		 nEvents, theory_rnd_ynew, smeared_rnd_ynew, (TH2D*)response_ynew_th2); //-------------//
-  makeToySpectra(theory_ynew_spl3clone, spline3_ynew, fJER_ynew,              //-------------//
-		 nEvents, theory_rnd_ynew, smeared_rnd_ynew, smeared_rnd_ynew_test, (TH2D*)response_ynew_th2); //-------------//
-  //-----------------------------------------------------------------------------------------//
-  //-----------------------------------------------------------------------------------------//
-  ///////////////////////////////////////////////////////////////////////////////////////////// 
+  //--------------------------------------------------------------------------------------------------------//
+
+  makeToySpectra( (TH1D*)theory_ynew_spl3clone, 
+		  (TSpline3*)spline3_ynew, 
+		  (TF1*)fJER_ynew, 
+		  nEvents, 
+		  theory_rnd_ynew, 
+		  smeared_rnd_ynew, 
+		  smeared_rnd_ynew_test, 
+		  (TH2D*)response_ynew_th2); 
+  //--------------------------------------------------------------------------------------------------------//
+
   divideBinWidth(theory_rnd_ynew);  //for normalization only.
   theory_rnd_ynew->Scale(1./4.);//etabinwidth
 
@@ -727,43 +754,47 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   //debugcout();
   
   response_ynew_th2->Draw("COLZ");
+  ///////////////////////////////////////////////////////////////////////////////////////////// 
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  END production of Smeared NLO spectra  ////////////////////////////
+  //-----------------------------------------------------------------------------------------//
+  /////////////////////////////////////////////////////////////////////////////////////////////   
+
   
-  //////////////////////  END production of Smeared NLO spectra     //////////////////////    
-  
 
 
 
 
 
 
-  //////////////////////  START production of Smeared NP+NLO spectra     //////////////////////  
+
+
+
+  ///////////////////////////////////////////////////////////////////////////////////////////// 
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  START production of Smeared NLO+NP spectra  /////////////////////////
+  //-----------------------------------------------------------------------------------------//
+  ///////////////////////////////////////////////////////////////////////////////////////////// 
   cout<<"creating TH1 for toy NP+NLO spectra generation"<<endl<<endl;
   TH1D *theory_rnd_NPynew    = new TH1D("theory_rnd_NPynew","theory_rnd_NPynew", n_thybins_incl, thyBins_incl);   
   TH1D *smeared_rnd_NPynew = new TH1D("smeared_rnd_NPynew","smeared_rnd_NPynew", n_smearedbins_incl, smearedBins_incl);     
   TH1D *smeared_rnd_NPynew_test = new TH1D("smeared_rnd_NPynew_test","smeared_rnd_NPynew_test", n_smearedbins_incl, smearedBins_incl);     
   cout<<"creating instance of RooUnfoldResponse class (response_NPynew)"<<endl;
   
-  //RooUnfoldResponse response_NPynew(smeared_rnd_NPynew,theory_rnd_NPynew); 
-  //TH2* response_NPynew_th2=(response_NPynew.Hresponse());
   TH2D* response_NPynew_th2=new TH2D("response_NPynew_th2","response_NPynew_th2",
 				     (Int_t)n_smearedbins_incl, (Double_t*)smearedBins_incl,
 				     (Int_t)n_thybins_incl, (Double_t*)thyBins_incl);
   
-  ///////////////////////////////////////////////////////////////////////////////////////////// 
-  //-----------------------------------------------------------------------------------------//
-  //-----------------------------------------------------------------------------------------//
-  //makeToySpectra(theory_NPynew_spl3clone, spline3_NPynew, fJER_ynew,              //-------------//
-  //nEvents, theory_rnd_NPynew, smeared_rnd_NPynew, (RooUnfoldResponse*)&response_NPynew); //-------------//
-  //makeToySpectra(theory_NPynew_spl3clone, spline3_NPynew, fJER_ynew,              //-------------//
-  //nEvents, theory_rnd_NPynew, smeared_rnd_NPynew, (TH2D*)response_NPynew_th2); //-------------//
-  makeToySpectra(theory_NPynew_spl3clone, spline3_NPynew, fJER_ynew,              //-------------//
-		 nEvents, theory_rnd_NPynew, smeared_rnd_NPynew, smeared_rnd_NPynew_test, (TH2D*)response_NPynew_th2); //-------------//
-  //-----------------------------------------------------------------------------------------//
-  //-----------------------------------------------------------------------------------------//
-  ///////////////////////////////////////////////////////////////////////////////////////////// 
+  //----------------------------------------------------------------------------------------------------------------//
+  makeToySpectra(theory_NPynew_spl3clone, (TSpline3*)spline3_NPynew, (TF1*)fJER_ynew, 
+		 nEvents, 
+		 theory_rnd_NPynew, smeared_rnd_NPynew, smeared_rnd_NPynew_test, 
+		 (TH2D*) response_NPynew_th2);
+  //----------------------------------------------------------------------------------------------------------------//
+  
   divideBinWidth(theory_rnd_NPynew);  //for normalization only.
   theory_rnd_NPynew->Scale(1./4.);//etabinwidth
-
+  
   divideBinWidth(smeared_rnd_NPynew); 
   smeared_rnd_NPynew->Scale(1./4.);
 
@@ -878,12 +909,6 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   theory_NPynew_ratio_rnd_NPynew->GetYaxis()->SetTitle("Toy MC / orig. NLO+NP");
   theory_NPynew_ratio_rnd_NPynew->SetAxisRange(0.95,1.05,"Y");
 
-
-
-
-
-  
-
   TCanvas* plot_response_NPynew_th2=new TCanvas("plot_response_NPynew_th2","plot_response_NPynew_th2",1200, 1000);
   plot_response_NPynew_th2->cd()->SetLogx(1);
   plot_response_NPynew_th2->cd()->SetLogy(1);
@@ -906,7 +931,12 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   setTH2_ZAxisRange(response_NPynew_th2);
   
   response_NPynew_th2->Draw("COLZ");
-  //////////////////////  END production of Smeared NLO spectra     //////////////////////    
+  ///////////////////////////////////////////////////////////////////////////////////////////// 
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  END production of Smeared NLO+NP spectra  ///////////////////////////
+  //-----------------------------------------------------------------------------------------//
+  ///////////////////////////////////////////////////////////////////////////////////////////// 
+
 
   
 
@@ -960,14 +990,22 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   plot_allNPNLOxsec->Write();
   
   // SPLINES
-  theory_ynew_spl3clone->Write();
-  spline3_ynew->Write();
-  
-  theory_NPynew_spl3clone->Write();
-  spline3_NPynew->Write();
-  
-  plot_splines->Write();
-  
+  if(splineWeight){
+    theory_ynew_spl3clone->Write();
+    spline3_ynew->Write();
+    theory_NPynew_spl3clone->Write();
+    spline3_NPynew->Write();
+    plot_splines->Write();
+  }
+
+  // FITS
+//  if(fitWeight){
+//    theory_ynew_fitclone->Write();
+//    fit_ynew->Write();    
+//    theory_NPynew_fitclone->Write();
+//    fit_NPynew->Write();    
+//    plot_fits->Write();
+//  }
   
   
   //TOY MC, JER SMEARED NLO SPECTRA
@@ -1005,14 +1043,17 @@ void smearTheorySpectra_gaussCoreJER( string inputString ){
   outf->Write();
   return;
 }
-
-
+  
+  
 //  steering ---------------------------------------------------------------------------------
-int main(int argc, char* argv[]){  
+  int main(int argc, char* argv[]){  
   int rStatus = -1;   
   
   if(argc==2) {
     smearTheorySpectra_gaussCoreJER( (string) argv[1] );  
+    rStatus=0;  }
+  if(argc==3) {
+    smearTheorySpectra_gaussCoreJER( (string) argv[1] , (string) argv[2]);  
     rStatus=0;  }
   else 
     rStatus=1;  
@@ -1020,8 +1061,8 @@ int main(int argc, char* argv[]){
   cout<<"rStatus="<<rStatus<<endl;
   return rStatus;
 }
-
-
+  
+  
 
 
 

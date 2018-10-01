@@ -329,87 +329,16 @@ TH1D* make00eta20Hist( TH1D * h_1,
 //  int
 //}
 
-void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER, int nevts, 
-		    TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, RooUnfoldResponse* resp ){
-  bool funcDebug=true;
-  int tenth_nEvents=nevts/10;
-
-  srand((unsigned)time(0));  
-  UInt_t rnd_seed=rand();
-  if(funcDebug)cout<<"rnd_seed="<<rnd_seed<<endl;
-  TRandom3 *rnd = new TRandom3(rnd_seed);
-  
-  //srand((unsigned)time(0));
-  UInt_t rnd_test_seed=rand();
-  if(funcDebug)cout<<"rnd_test_seed="<<rnd_test_seed<<endl;
-  TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
-  
-  double ptmin_thy=hthy->GetBinLowEdge(1);
-  double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
-  double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
-  
-  int respcount=0, misscount=0, fakecount=0;
-  for(int i=0;i<nevts;++i){      
-    
-    if(i%tenth_nEvents==0)
-      cout<<"throwing random #'s for event # "<<i<<endl;
-    
-    double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
-    double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
-    double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
-    double pt_w      =  hthy_spline->Eval(ptTrue);
-
-    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
-    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
-    bool fillresp=in_smearpt_range&&in_trupt_range;
-
-    if(fillresp){
-      resp->Fill(ptSmeared,ptTrue,pt_w);
-      hthy_toyMC    -> Fill(ptTrue,pt_w);
-      hsmeared_toyMC -> Fill(ptSmeared,pt_w);            
-      respcount++;
-    }
-    else if(in_trupt_range){//not in smear pt range but in truept range
-      resp->Miss(ptTrue,pt_w);                                        
-      hthy_toyMC    -> Fill(ptTrue,pt_w);
-      misscount++;
-    }
-    else if(in_smearpt_range){//shouldnt get filled by construction. ptTrue always pulled s.t. in_trupt_range is true. if in_smearpt_range is true, so it in_trupt_range
-      resp->Fake(ptSmeared,pt_w);                                        
-      hsmeared_toyMC    -> Fill(ptSmeared,pt_w);
-      fakecount++;
-    }
-    
-    double    ptTrue_test = rnd_test->Uniform(ptmin_thy,ptmax_thy);
-    double     sigma_test = fJER->Eval(ptTrue_test);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
-    double ptSmeared_test =  rnd_test->Gaus(ptTrue_test,ptTrue_test*sigma_test);
-    double      pt_w_test =  hthy_spline->Eval(ptTrue_test);
-    
-    bool in_test_smearpt_range=(  ( ptSmeared_test>ptmin_smeared ) && ( ptSmeared_test<ptmax_smeared )  );
-    if(in_test_smearpt_range)
-      hsmeared_toyMC_test->Fill(ptSmeared_test,pt_w_test);
-    
-  }//end loop throwing random no's
-  
-  cout<<"done smearing ynew."<<endl;  
-  cout<<"smear summary;"<<endl;
-  cout<<"nEvents="<<nevts<<endl;
-  cout<<"response_count="<<respcount<<endl;
-  cout<<"miss_count="<<misscount<<endl;
-  cout<<"fake_count="<<fakecount<<endl;
-
-  
-  
-  
-  
-  
-  return;
-}
 
 
 
-void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER, 
-		    int nevts, TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, TH2D* resp ){
+
+void makeToySpectra(TH1D* hthy, 
+		    TSpline3* hthy_spline, 
+		    TF1* fJER, 
+		    int nevts, 
+		    TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, 
+		    TH2D* resp ){
   bool funcDebug=true;
   int tenth_nEvents=nevts/10;
   
@@ -422,26 +351,34 @@ void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER,
   UInt_t rnd_test_seed=rand();
   if(funcDebug)cout<<"rnd_test_seed="<<rnd_test_seed<<endl;
   TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
-  
+ 
+  assert(false);          
   double ptmin_thy=hthy->GetBinLowEdge(1);
   double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
   double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
   
   int respcount=0, misscount=0, fakecount=0;
+
   for(int i=0;i<nevts;++i){      
     
+
+
     if(i%tenth_nEvents==0)
       cout<<"throwing random #'s for event # "<<i<<endl;
-    
+
     double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
+
     double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+
     double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
+
     double pt_w      =  hthy_spline->Eval(ptTrue);
 
     bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
     bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
     bool fillresp=in_smearpt_range&&in_trupt_range;
-    
+
+
     if(fillresp){
       resp->Fill(ptSmeared,ptTrue,pt_w);
       hthy_toyMC    -> Fill(ptTrue,pt_w);
@@ -468,9 +405,9 @@ void makeToySpectra(TH1D* hthy, TSpline3* hthy_spline, TF1* fJER,
     if(in_test_smearpt_range)
       hsmeared_toyMC_test->Fill(ptSmeared_test,pt_w_test);
     
-    
+
   }//end loop throwing random no's
-  
+
   cout<<"done smearing ynew."<<endl;  
   cout<<"smear summary;"<<endl;
   cout<<"nEvents="<<nevts<<endl;
@@ -535,5 +472,3 @@ void setTH2_ZAxisRange(TH2* h){
   
   return;  
 }
-
-

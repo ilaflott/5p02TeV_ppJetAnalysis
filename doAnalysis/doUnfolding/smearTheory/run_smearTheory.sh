@@ -5,7 +5,7 @@
 if [[ "$#" -eq 0 ]]
 then
     echo ""
-    echo "compiling JER_gaussCore_smearTheoryCurves"
+    echo "compiling smearTheorySpectra_gaussCoreJER"
     echo ""
     
     rooUnfoldCompile smearTheorySpectra_gaussCoreJER.C

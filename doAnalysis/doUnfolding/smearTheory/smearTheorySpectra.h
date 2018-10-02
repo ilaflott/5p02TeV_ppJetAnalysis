@@ -1,10 +1,15 @@
-#include <iostream>
-#include <cmath>
 #include <cstdlib>
-#include <ctime>
 #include <cassert>
+#include <cmath>
+#include <string>
+#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <ctime>
 
-#include <TROOT.h>
+
+//#include <TROOT.h>
 #include <TMath.h>
 #include <TRandom3.h>
 
@@ -20,10 +25,13 @@
 #include <TSpline.h>
 #include <TLine.h>
 
-#include "RooUnfoldResponse.h"
+//using namespace std;
 
-using namespace std;
+//#include "RooUnfoldResponse.h"
+
+//using namespace std;
 //TH1D *cross_section(TH1D *Spectra_);
+//int smearTheorySpectra_gaussCoreJER(std::string inFileString);
 
 TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
   const bool funcDebug=true;
@@ -55,7 +63,7 @@ TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
     xsec_wNP->SetBinError(i,binerr);
   }
   if(funcDebug)xsec_wNP->Print("base");
-  cout<<"done making theory cross section hist"<<endl;
+  std::cout<<"done making theory cross section hist"<<std::endl;
   if(funcDebug){
     std::cout<<"post NP Corr, xsec mean along x axis is = " << xsec_wNP->GetMean(1) << std::endl;
     std::cout<<"post NP Corr, xsec mean along y axis is = " << xsec_wNP->GetMean(2) << std::endl;
@@ -189,36 +197,36 @@ const int n_smearedbins_incl=sizeof(smearedBins_incl)/sizeof(double)-1; //this i
 
 double NP_y0(double x){
   return (0.998262 + 314.329 * pow (x ,-1.60473));}
-string NP_y0_str="0.998262 + 314.329 * pow (x ,-1.60473)";
+std::string NP_y0_str="0.998262 + 314.329 * pow (x ,-1.60473)";
 
 double NP_y1(double x){
   return (1.00199  + 593.25  * pow (x ,-1.73981));}
-string NP_y1_str="1.00199  + 593.25  * pow (x ,-1.73981)";
+std::string NP_y1_str="1.00199  + 593.25  * pow (x ,-1.73981)";
 
 double NP_y2(double x){
   return (1.00209  + 325.315 * pow (x ,-1.61465));}
-string NP_y2_str="1.00209  + 325.315 * pow (x ,-1.61465)";
+std::string NP_y2_str="1.00209  + 325.315 * pow (x ,-1.61465)";
 
 double NP_y3(double x){
   return (1.01009  + 474.01  * pow (x ,-1.72148));}
-string NP_y3_str="1.01009  + 474.01  * pow (x ,-1.72148)";
+std::string NP_y3_str="1.01009  + 474.01  * pow (x ,-1.72148)";
 
 double NP_y4(double x){
   return (1.02156  + 1854.2  * pow (x ,-2.05028));}
-string NP_y4_str="1.02156  + 1854.2  * pow (x ,-2.05028)";
+std::string NP_y4_str="1.02156  + 1854.2  * pow (x ,-2.05028)";
 
 double NP_y5(double x){
   return (1.01768  + 277.946 * pow (x ,-1.66097));}
-string NP_y5_str="1.01768  + 277.946 * pow (x ,-1.66097)";
+std::string NP_y5_str="1.01768  + 277.946 * pow (x ,-1.66097)";
 
 double NP_y6(double x){
   return (-65.6541 + 67.1291 * pow (x ,-0.00113689));}
-string NP_y6_str="-65.6541 + 67.1291 * pow (x ,-0.00113689)";
+std::string NP_y6_str="-65.6541 + 67.1291 * pow (x ,-0.00113689)";
 
 double NP_ynew(double x){  
   return ( ( NP_y0(x) + NP_y1(x) + NP_y2(x) + NP_y3(x) ) / 4. ); 
 }
-string NP_ynew_str= 
+std::string NP_ynew_str= 
   "( (" + 
   NP_y0_str + " + " + 
   NP_y1_str + " + " + 
@@ -231,7 +239,7 @@ string NP_ynew_str=
 // from JER fits using, sigma/mu = [0] + [1] /( pow (gen p_T , [2] ) + [3] * gen p_t)
 double gJER_ynew(double x){
   return ( 4.80963e-02 + 1.51797e-02/(pow(x , -5.78569e-01)+(2.17736e-03*x)) );}
-string gJER_ynew_str="4.80963e-02+1.51797e-02/(pow(x,-5.78569e-01)+(2.17736e-03*x))";
+std::string gJER_ynew_str="4.80963e-02+1.51797e-02/(pow(x,-5.78569e-01)+(2.17736e-03*x))";
 
 
 
@@ -253,16 +261,16 @@ TH1D* make00eta20Hist( TH1D * h_1,
   h00eta20->Print("base");
   
   //this part assumes all hists start at same lower limit; which they better!
-  if(funcDebug)cout<<endl;
-  if(funcDebug)cout<<"filling new hist!"<<endl;
-  if(funcDebug)cout<<endl;
+  if(funcDebug)std::cout<<std::endl;
+  if(funcDebug)std::cout<<"filling new hist!"<<std::endl;
+  if(funcDebug)std::cout<<std::endl;
   int n_thybins=h00eta20->GetNbinsX();
   
   for(int i=1; i<=n_thybins; i++) {
     
-    if(funcDebug)cout<<"i="<<i<<endl;
-    if(funcDebug)cout<<"lower edge of bin i for h00eta20="<<h00eta20->GetXaxis()->GetBinLowEdge(i)<<endl;
-    if(funcDebug)cout<<"lower edge of bin i for h_1="<<h_1->GetXaxis()->GetBinLowEdge(i)<<endl;
+    if(funcDebug)std::cout<<"i="<<i<<std::endl;
+    if(funcDebug)std::cout<<"lower edge of bin i for h00eta20="<<h00eta20->GetXaxis()->GetBinLowEdge(i)<<std::endl;
+    if(funcDebug)std::cout<<"lower edge of bin i for h_1="<<h_1->GetXaxis()->GetBinLowEdge(i)<<std::endl;
     float v=0., v_err=0.;
     
     float v_1=0., v_1err=0.;
@@ -272,7 +280,7 @@ TH1D* make00eta20Hist( TH1D * h_1,
       v+=v_1;
       v_err+=v_1err*v_1err;    }
     else 
-      cout<<"no more bins for hist h_1!"<<endl;
+      std::cout<<"no more bins for hist h_1!"<<std::endl;
     
     float v_2=0., v_2err=0.;
     if(i <= h_2->GetNbinsX() ) {
@@ -281,7 +289,7 @@ TH1D* make00eta20Hist( TH1D * h_1,
       v+=v_2;
       v_err+=v_2err*v_2err;      }
     else
-      cout<<"no more bins for hist h_2!"<<endl;
+      std::cout<<"no more bins for hist h_2!"<<std::endl;
     
     float v_3=0., v_3err=0.;
     if(i <= h_3->GetNbinsX() ) {
@@ -290,7 +298,7 @@ TH1D* make00eta20Hist( TH1D * h_1,
       v+=v_3;
       v_err+=v_3err*v_3err;        }
     else 
-      cout<<"no more bins for hist h_3!"<<endl;
+      std::cout<<"no more bins for hist h_3!"<<std::endl;
     
     float v_4=0., v_4err=0.;
     if(i <= h_4->GetNbinsX() ) {
@@ -299,7 +307,7 @@ TH1D* make00eta20Hist( TH1D * h_1,
       v+=v_4;
       v_err+=v_4err*v_4err;        }
     else 
-      cout<<"no more bins for hist h_4!"<<endl;
+      std::cout<<"no more bins for hist h_4!"<<std::endl;
     
     v/=4.;//for etabin width    
     //v/=1000.;//picobarns to nanobarns
@@ -308,15 +316,15 @@ TH1D* make00eta20Hist( TH1D * h_1,
     v_err/=4.;
     //v_err/=1000.;//picobarns to nanobarns
     
-    if(funcDebug)cout<<"v="<<v<<endl;
-    if(funcDebug)cout<<"v_err="<<v_err<<endl;
-    if(funcDebug)cout<<"setting bin content..."<<endl;
+    if(funcDebug)std::cout<<"v="<<v<<std::endl;
+    if(funcDebug)std::cout<<"v_err="<<v_err<<std::endl;
+    if(funcDebug)std::cout<<"setting bin content..."<<std::endl;
     h00eta20->SetBinContent(i, v);
     h00eta20->SetBinError(i, v_err);
-    if(funcDebug)cout<<"histogram contents..."<<endl;
-    if(funcDebug)cout<<"bincontent="<<h00eta20->GetBinContent(i)<<endl;
-    if(funcDebug)cout<<"binerr="<<h00eta20->GetBinError(i)<<endl;
-    if(funcDebug)cout<<endl;
+    if(funcDebug)std::cout<<"histogram contents..."<<std::endl;
+    if(funcDebug)std::cout<<"bincontent="<<h00eta20->GetBinContent(i)<<std::endl;
+    if(funcDebug)std::cout<<"binerr="<<h00eta20->GetBinError(i)<<std::endl;
+    if(funcDebug)std::cout<<std::endl;
   }
   
   return h00eta20;
@@ -344,15 +352,15 @@ void makeToySpectra(TH1D* hthy,
   
   srand((unsigned)time(0));  
   UInt_t rnd_seed=rand();
-  if(funcDebug)cout<<"rnd_seed="<<rnd_seed<<endl;
+  if(funcDebug)std::cout<<"rnd_seed="<<rnd_seed<<std::endl;
   TRandom3 *rnd = new TRandom3(rnd_seed);
   
   //srand((unsigned)time(0));
   UInt_t rnd_test_seed=rand();
-  if(funcDebug)cout<<"rnd_test_seed="<<rnd_test_seed<<endl;
+  if(funcDebug)std::cout<<"rnd_test_seed="<<rnd_test_seed<<std::endl;
   TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
  
-  assert(false);          
+  //assert(false);          
   double ptmin_thy=hthy->GetBinLowEdge(1);
   double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
   double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
@@ -364,7 +372,7 @@ void makeToySpectra(TH1D* hthy,
 
 
     if(i%tenth_nEvents==0)
-      cout<<"throwing random #'s for event # "<<i<<endl;
+      std::cout<<"throwing random #'s for event # "<<i<<std::endl;
 
     double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
 
@@ -408,12 +416,12 @@ void makeToySpectra(TH1D* hthy,
 
   }//end loop throwing random no's
 
-  cout<<"done smearing ynew."<<endl;  
-  cout<<"smear summary;"<<endl;
-  cout<<"nEvents="<<nevts<<endl;
-  cout<<"response_count="<<respcount<<endl;
-  cout<<"miss_count="<<misscount<<endl;
-  cout<<"fake_count="<<fakecount<<endl;
+  std::cout<<"done smearing ynew."<<std::endl;  
+  std::cout<<"smear summary;"<<std::endl;
+  std::cout<<"nEvents="<<nevts<<std::endl;
+  std::cout<<"response_count="<<respcount<<std::endl;
+  std::cout<<"miss_count="<<misscount<<std::endl;
+  std::cout<<"fake_count="<<fakecount<<std::endl;
   
   return;
 }

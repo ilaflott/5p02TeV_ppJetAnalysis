@@ -4,16 +4,15 @@
 
 if [[ "$#" -eq 0 ]]
 then
-    echo ""
-    echo "compiling smearTheorySpectra_gaussCoreJER"
-    echo ""
-    
-    rooUnfoldCompile smearTheorySpectra_gaussCoreJER.C
+
+
+    ##DEBUG
+    #rootcompile smearTheorySpectra_gaussCoreJER.C    
     
     echo ""
     echo "RUN NLO smearing"
     echo ""
-    
+
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT10nlo_HS
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT14nlo_HS
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS 

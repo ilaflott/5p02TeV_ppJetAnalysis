@@ -7,7 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
-
+#include <vector>
 
 //#include <TROOT.h>
 #include <TMath.h>
@@ -24,28 +24,24 @@
 
 #include <TSpline.h>
 #include <TLine.h>
+#include <TVirtualFitter.h>
+#include <Minuit2/Minuit2Minimizer.h>
+#include <Math/Functor.h>
+ //#include "RooUnfoldResponse.h"
 
-//using namespace std;
-
-//#include "RooUnfoldResponse.h"
-
-//using namespace std;
-//TH1D *cross_section(TH1D *Spectra_);
-//int smearTheorySpectra_gaussCoreJER(std::string inFileString);
+ //TH1D *cross_section(TH1D *Spectra_);
 
 TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
   const bool funcDebug=true;
-  if(funcDebug)xsec->Print("base");
-  if(funcDebug){
-    std::cout<<"pre NP Corr, xsec mean along x axis is = " << xsec->GetMean(1) << std::endl;
-    std::cout<<"pre NP Corr, xsec mean along y axis is = " << xsec->GetMean(2) << std::endl;
-  }
-  //if(funcDebug)fNP->Print("base");  
+  
+  if(funcDebug)std::cout<<"pre NP Corr, xsec mean along x axis is = " << xsec->GetMean(1) << std::endl;
+  xsec->Print("base");
+
   TH1D* xsec_wNP=(TH1D*)xsec->Clone( ( 
 				      ((std::string)xsec->GetName()) + "_wNP"
 				       ).c_str() 
 				     );
-  xsec_wNP->Reset();
+  xsec_wNP->Reset("M ICES");
   xsec_wNP->SetTitle( (
 		       "NP+"+((std::string)xsec->GetTitle())
 		       ).c_str()
@@ -62,31 +58,31 @@ TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
     xsec_wNP->SetBinContent(i,binval);
     xsec_wNP->SetBinError(i,binerr);
   }
-  if(funcDebug)xsec_wNP->Print("base");
+  
+  if(funcDebug)std::cout<<"post NP Corr, xsec mean along x axis is = " << xsec_wNP->GetMean(1) << std::endl;
+  xsec_wNP->Print("base");
+  
   std::cout<<"done making theory cross section hist"<<std::endl;
-  if(funcDebug){
-    std::cout<<"post NP Corr, xsec mean along x axis is = " << xsec_wNP->GetMean(1) << std::endl;
-    std::cout<<"post NP Corr, xsec mean along y axis is = " << xsec_wNP->GetMean(2) << std::endl;
-  }
   return (TH1D*)xsec_wNP;
 }
 
-TH1D* cross_section(TH1D* Spectra_){  
-  /// Evaluate xSections
-  TH1D *Xsection_=(TH1D*)Spectra_->Clone();
-  for(int i=0; i<Spectra_->GetNbinsX(); ++i){
-    Double_t bin_value = Spectra_->GetBinContent(1+i);
-    Double_t bin_error = Spectra_->GetBinError(1+i);
-    Double_t bin_width = Spectra_->GetBinWidth(1+i);
-    Double_t new_bin_value = bin_value/bin_width;
-    Double_t new_bin_error = bin_error/bin_width;
-    Xsection_->SetBinContent(1+i,new_bin_value);
-    Xsection_->SetBinError(1+i,new_bin_error);
-  }
-  //   std::cout<<Integral_<<std::endl;
-  
-  return Xsection_;
-}
+//TH1D* cross_section(TH1D* Spectra_){  
+//  /// Evaluate xSections
+//  TH1D *Xsection_=(TH1D*)Spectra_->Clone();
+//  for(int i=0; i<Spectra_->GetNbinsX(); ++i){
+//    Double_t bin_value = Spectra_->GetBinContent(1+i);
+//    Double_t bin_error = Spectra_->GetBinError(1+i);
+//    Double_t bin_width = Spectra_->GetBinWidth(1+i);
+//    Double_t new_bin_value = bin_value/bin_width;
+//    Double_t new_bin_error = bin_error/bin_width;
+//    Xsection_->SetBinContent(1+i,new_bin_value);
+//    Xsection_->SetBinError(1+i,new_bin_error);
+//  }
+//  //   std::cout<<Integral_<<std::endl;
+//  
+//  return Xsection_;
+//}
+
 void divideBinWidth(TH1D* h){  
   /// Evaluate xSections
   //TH1D *Xsection_=(TH1D*)Spectra_->Clone();
@@ -134,8 +130,8 @@ double thyBins_incl[]={
   430., 468.,
   507., 548., 592., 
   638., 
-  686.//, 
-  //1000.//,//967.//1032. 
+  686., 
+  1000.//,//967.//1032. 
   //1500.
   //  1032., 1101. //junk from here down
 }; 
@@ -153,8 +149,8 @@ double thyBins_incl2[]={
   430., 468.,
   507., 548., 592., 
   638., 
-  686.//, 
-  //1000.//,//967.//1032. 
+  686., 
+  1000.//,//967.//1032. 
   //1500.
   //  1032., 1101. //junk from here down
 }; 
@@ -172,8 +168,8 @@ double smearedBins_incl[]={
   430., 468.,
   507., 548., 592., 
   638., 
-  686.//, 
-  //1000.//,
+  686., 
+  1000.//,
   //1500.//967.//1032.
   //,1500.
   //  1032., 1101. //junk from here down
@@ -243,33 +239,39 @@ std::string gJER_ynew_str="4.80963e-02+1.51797e-02/(pow(x,-5.78569e-01)+(2.17736
 
 
 
+
+
+
 TH1D* make00eta20Hist( TH1D * h_1, 
 		       TH1D * h_2, 
 		       TH1D * h_3, 
-		       TH1D * h_4  ){
+		       TH1D * h_4,
+		       std::string histTitle){
   
-  bool funcDebug=true;
+  bool funcDebug=false;
   
-  //TH1D* h00eta20 = new TH1D( "h00eta20","thyHist 00eta20", numBins, (const double*) thyBins_incl_00eta20 );
-  std::string h00eta20_title="h00eta20";
-  if( ((std::string)h_1->GetName()).find("_wNP") )
-    h00eta20_title+="_wNP";
-  TH1D* h00eta20 = (TH1D*)h_1->Clone(h00eta20_title.c_str());
-  h00eta20->Reset("ICES");
-  h00eta20->Reset("M");
-  h00eta20->Sumw2(true);
-  h00eta20->Print("base");
+
+  //  std::string histTitle="hfinal_00eta20";
+  //  if( 
+  //     ((std::string)h_1->GetName()).find("_wNP") 
+  //      )
+  //    histTitle+="_wNP";
+
+  TH1D* hfinal_00eta20 = (TH1D*)h_1->Clone(histTitle.c_str());
+  hfinal_00eta20->Reset("M ICES");
+  hfinal_00eta20->Sumw2(true);
+  hfinal_00eta20->Print("base");
   
   //this part assumes all hists start at same lower limit; which they better!
   if(funcDebug)std::cout<<std::endl;
   if(funcDebug)std::cout<<"filling new hist!"<<std::endl;
   if(funcDebug)std::cout<<std::endl;
-  int n_thybins=h00eta20->GetNbinsX();
+  int n_thybins=hfinal_00eta20->GetNbinsX();
   
   for(int i=1; i<=n_thybins; i++) {
     
     if(funcDebug)std::cout<<"i="<<i<<std::endl;
-    if(funcDebug)std::cout<<"lower edge of bin i for h00eta20="<<h00eta20->GetXaxis()->GetBinLowEdge(i)<<std::endl;
+    if(funcDebug)std::cout<<"lower edge of bin i for hfinal_00eta20="<<hfinal_00eta20->GetXaxis()->GetBinLowEdge(i)<<std::endl;
     if(funcDebug)std::cout<<"lower edge of bin i for h_1="<<h_1->GetXaxis()->GetBinLowEdge(i)<<std::endl;
     float v=0., v_err=0.;
     
@@ -319,36 +321,45 @@ TH1D* make00eta20Hist( TH1D * h_1,
     if(funcDebug)std::cout<<"v="<<v<<std::endl;
     if(funcDebug)std::cout<<"v_err="<<v_err<<std::endl;
     if(funcDebug)std::cout<<"setting bin content..."<<std::endl;
-    h00eta20->SetBinContent(i, v);
-    h00eta20->SetBinError(i, v_err);
+    hfinal_00eta20->SetBinContent(i, v);
+    hfinal_00eta20->SetBinError(i, v_err);
     if(funcDebug)std::cout<<"histogram contents..."<<std::endl;
-    if(funcDebug)std::cout<<"bincontent="<<h00eta20->GetBinContent(i)<<std::endl;
-    if(funcDebug)std::cout<<"binerr="<<h00eta20->GetBinError(i)<<std::endl;
+    if(funcDebug)std::cout<<"bincontent="<<hfinal_00eta20->GetBinContent(i)<<std::endl;
+    if(funcDebug)std::cout<<"binerr="<<hfinal_00eta20->GetBinError(i)<<std::endl;
     if(funcDebug)std::cout<<std::endl;
   }
   
-  return h00eta20;
+  return hfinal_00eta20;
 }
-
-
-
-//int getRandomSeed(){
-//  bool funcDebug=true;  
-//  int
-//}
 
 
 
 
 
 void makeToySpectra(TH1D* hthy, 
-		    TSpline3* hthy_spline, 
+		    //		    TSpline3* hthy_spline, 
+		    TObject* weights, 
 		    TF1* fJER, 
 		    int nevts, 
 		    TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, 
 		    TH2D* resp ){
-  bool funcDebug=true;
+  bool funcDebug=false;
   int tenth_nEvents=nevts/10;
+  TSpline3* spl3weights=NULL;
+  TF1* fitweights=NULL;
+  if( weights->InheritsFrom("TSpline3") ) {
+    std::cout<<"using spline weights"<<std::endl;
+    spl3weights=(TSpline3*)weights->Clone(((std::string)weights->GetName()+"_funcclone").c_str() );
+    std::cout<<"weights object name = "<< spl3weights->GetName()<<std::endl;
+  }
+  else if(weights->InheritsFrom("TF1") ) {
+    std::cout<<"using fit weights"<<std::endl;
+    fitweights=(TF1*)weights->Clone(((std::string)weights->GetName()+"_funcclone").c_str() );    
+    std::cout<<"weights object name = "<< fitweights->GetName()<<std::endl;
+  }
+  
+  //if both sets of weights are there, or if both sets are not there, shut everything down, we have a weird scenario on our hands...
+  if( (bool)fitweights == (bool)spl3weights ) assert(false);
   
   srand((unsigned)time(0));  
   UInt_t rnd_seed=rand();
@@ -373,19 +384,21 @@ void makeToySpectra(TH1D* hthy,
 
     if(i%tenth_nEvents==0)
       std::cout<<"throwing random #'s for event # "<<i<<std::endl;
-
+    
     double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
-
     double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
-
     double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
-
-    double pt_w      =  hthy_spline->Eval(ptTrue);
-
+    
+    double pt_w =0.;//     =  hthy_spline->Eval(ptTrue);
+    if((bool)spl3weights)
+      pt_w=spl3weights->Eval(ptTrue);
+    else if((bool)fitweights)
+      pt_w=fitweights->Eval(ptTrue);
+    //if(!(pt_w>0.))assert(false);
+    
     bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
     bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
     bool fillresp=in_smearpt_range&&in_trupt_range;
-
 
     if(fillresp){
       resp->Fill(ptSmeared,ptTrue,pt_w);
@@ -407,35 +420,30 @@ void makeToySpectra(TH1D* hthy,
     double    ptTrue_test = rnd_test->Uniform(ptmin_thy,ptmax_thy);
     double     sigma_test = fJER->Eval(ptTrue_test);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
     double ptSmeared_test =  rnd_test->Gaus(ptTrue_test,ptTrue_test*sigma_test);
-    double      pt_w_test =  hthy_spline->Eval(ptTrue_test);
+    
+    double      pt_w_test =  0.;//hthy_spline->Eval(ptTrue_test);
+    if((bool)spl3weights)
+      pt_w_test=spl3weights->Eval(ptTrue_test);
+    else if((bool)fitweights)
+      pt_w_test=fitweights->Eval(ptTrue_test);
+    //if(!(pt_w_test>0.))assert(false);
     
     bool in_test_smearpt_range=(  ( ptSmeared_test>ptmin_smeared ) && ( ptSmeared_test<ptmax_smeared )  );
     if(in_test_smearpt_range)
       hsmeared_toyMC_test->Fill(ptSmeared_test,pt_w_test);
     
-
+    
   }//end loop throwing random no's
 
   std::cout<<"done smearing ynew."<<std::endl;  
-  std::cout<<"smear summary;"<<std::endl;
-  std::cout<<"nEvents="<<nevts<<std::endl;
-  std::cout<<"response_count="<<respcount<<std::endl;
-  std::cout<<"miss_count="<<misscount<<std::endl;
-  std::cout<<"fake_count="<<fakecount<<std::endl;
+  if(funcDebug)std::cout<<"smear summary;"<<std::endl;
+  if(funcDebug)std::cout<<"nEvents="<<nevts<<std::endl;
+  if(funcDebug)std::cout<<"response_count="<<respcount<<std::endl;
+  if(funcDebug)std::cout<<"miss_count="<<misscount<<std::endl;
+  if(funcDebug)std::cout<<"fake_count="<<fakecount<<std::endl;
   
   return;
 }
-
-
-
-//void smear_theory_spectra(TH1D* hthy, TH1D* hsmrd, RooUnfoldResponse respmat, TSpline3* spline, TF1* fJER){
-// 
-//  bool funcDebug=true;
-//  
-//  return;
-//}
-
-
 
 
 
@@ -480,3 +488,256 @@ void setTH2_ZAxisRange(TH2* h){
   
   return;  
 }
+
+void makeModLogFits(TH1D* hthy, 
+		    TF1* logFit    =NULL , 
+		    TF1* modLogFit =NULL , 
+		    TF1* modLog2Fit=NULL , 
+		    TF1* modLog3Fit=NULL ,
+		    TF1* modLog4Fit=NULL ,
+		    TF1* modLog5Fit=NULL 
+		    ){
+  if( !((bool)logFit) || !((bool)modLogFit) || !((bool)modLog2Fit)){
+    std::cout<<"don't do this fit unless you plan on going to at least third order, bare minimum! exit."<<std::endl;
+    assert(false);
+  }
+  
+  bool funcDebug=false;
+  std::string fitOpt="MRE";
+  if(funcDebug)fitOpt+="V";
+  //void makeModLogFits(TH1D* hthy, std::vector<TF1*> logfitarr){
+  
+  // fit of real interest is; A(B/pt)^[C+ D Log(pt/B) + E(Log(pt/B))^2]
+  
+  const int nbins=hthy->GetNbinsX();
+  const int parambin=nbins/2;
+  //const int startbin=1, endbin=hthy->GetNbinsX();
+  //const float xlo=hthy->GetBinLowEdge(startbin);
+  //const float xhi=hthy->GetBinLowEdge(endbin) + hthy->GetBinWidth(endbin);
+  
+  TVirtualFitter::SetDefaultFitter("Minuit2");
+  ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04);      
+  
+  TH1D* hthy_log    =(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_logfit").c_str());
+  TH1D* hthy_modlog =(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_modlogfit").c_str());   
+  TH1D* hthy_modlog2=(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_modlog2fit").c_str());
+  TH1D* hthy_modlog3=(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_modlog3fit").c_str());
+  TH1D* hthy_modlog4=(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_modlog4fit").c_str());
+  TH1D* hthy_modlog5=(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_modlog5fit").c_str());
+  
+  float logfit_p0=hthy->GetBinContent(parambin); //std::cout<<"fit param 0 being set to="<<logFitp0<<std::endl;  //parameter 0 val of xsec
+  float logfit_p1=hthy->GetBinCenter(parambin);  //std::cout<<"fit param 1 being set to="<<logFitp1<<std::endl;  //parameter 1 val bin center of param 0's bin
+  //basically, using my hist, in logx/logy coordinates, this is a linear fit
+  //TF1* logFit=new TF1("logfit",    "[0]*( TMath::Power( ( [1]/x ) , [2] ) )",xlo,xhi);
+  logFit->SetParameter(0,logfit_p0);
+  logFit->SetParameter(1,logfit_p1);
+  hthy_log->Fit(logFit->GetName(),fitOpt.c_str());  
+  logFit->SetLineColor(kRed);
+  
+  float modlogfit_p0=logFit->GetParameter(0);
+  float modlogfit_p1=logFit->GetParameter(1);
+  float modlogfit_p2=logFit->GetParameter(2);
+  //thus, this is a parabolic fit in logx/logy
+  //TF1* modLogFit=new TF1("modlogfit","[0]*( TMath::Power( ( [1]/x ) , [2]+[3]*TMath::Log10( x/[1] ) ) )",xlo,xhi);
+  modLogFit->SetParameter(0,modlogfit_p0);
+  modLogFit->SetParameter(1,modlogfit_p1);
+  modLogFit->SetParameter(2,modlogfit_p2);
+  hthy_modlog->Fit(modLogFit->GetName(),fitOpt.c_str());
+  modLogFit->SetLineColor(kBlue);
+  
+  float modlog2fit_p0=modLogFit->GetParameter(0);
+  float modlog2fit_p1=modLogFit->GetParameter(1);
+  float modlog2fit_p2=modLogFit->GetParameter(2);
+  float modlog2fit_p3=modLogFit->GetParameter(3);
+  //thus, this is a cubic fit fit in logx/logy
+  //TF1* modLog2Fit=new TF1("modlog2fit", "[0] * ( TMath::Power( ( [1]/x ) , ( [2] + [3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 )  ) ) )",xlo,xhi);
+  modLog2Fit->SetParameter(0,modlog2fit_p0);
+  modLog2Fit->SetParameter(1,modlog2fit_p1);
+  modLog2Fit->SetParameter(2,modlog2fit_p2);
+  modLog2Fit->SetParameter(3,modlog2fit_p3);
+  hthy_modlog2->Fit(modLog2Fit->GetName(),fitOpt.c_str());
+  modLog2Fit->SetLineColor(kMagenta);
+
+
+  if((bool)modLog3Fit){
+    float modlog3fit_p0=modLog2Fit->GetParameter(0);
+    float modlog3fit_p1=modLog2Fit->GetParameter(1);
+    float modlog3fit_p2=modLog2Fit->GetParameter(2);
+    float modlog3fit_p3=modLog2Fit->GetParameter(3);
+    float modlog3fit_p4=modLog2Fit->GetParameter(4);
+    //thus, this is a cubic fit fit in logx/logy
+    //TF1* modLog3Fit=new TF1("modlog2fit", "[0] * ( TMath::Power( ( [1]/x ) , ( [2] + [3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 )  ) ) )",xlo,xhi);
+    modLog3Fit->SetParameter(0,modlog3fit_p0);
+    modLog3Fit->SetParameter(1,modlog3fit_p1);
+    modLog3Fit->SetParameter(2,modlog3fit_p2);
+    modLog3Fit->SetParameter(3,modlog3fit_p3);
+    modLog3Fit->SetParameter(4,modlog3fit_p4);
+    hthy_modlog3->Fit(modLog3Fit->GetName(),fitOpt.c_str());
+    modLog3Fit->SetLineColor(kGreen+2);
+  }
+
+  if((bool)modLog4Fit){
+    float modlog4fit_p0=modLog3Fit->GetParameter(0);
+    float modlog4fit_p1=modLog3Fit->GetParameter(1);
+    float modlog4fit_p2=modLog3Fit->GetParameter(2);
+    float modlog4fit_p3=modLog3Fit->GetParameter(3);
+    float modlog4fit_p4=modLog3Fit->GetParameter(4);
+    float modlog4fit_p5=modLog3Fit->GetParameter(5);
+    //thus, this is a cubic fit fit in logx/logy
+    //TF1* modLog3Fit=new TF1("modlog2fit", "[0] * ( TMath::Power( ( [1]/x ) , ( [2] + [3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 )  ) ) )",xlo,xhi);
+    modLog4Fit->SetParameter(0,modlog4fit_p0);
+    modLog4Fit->SetParameter(1,modlog4fit_p1);
+    modLog4Fit->SetParameter(2,modlog4fit_p2);
+    modLog4Fit->SetParameter(3,modlog4fit_p3);
+    modLog4Fit->SetParameter(4,modlog4fit_p4);
+    modLog4Fit->SetParameter(5,modlog4fit_p5);
+    hthy_modlog4->Fit(modLog4Fit->GetName(),fitOpt.c_str());
+    modLog4Fit->SetLineColor(kTeal);
+  }
+
+  if((bool)modLog5Fit){
+    float modlog5fit_p0=modLog4Fit->GetParameter(0);
+    float modlog5fit_p1=modLog4Fit->GetParameter(1);
+    float modlog5fit_p2=modLog4Fit->GetParameter(2);
+    float modlog5fit_p3=modLog4Fit->GetParameter(3);
+    float modlog5fit_p4=modLog4Fit->GetParameter(4);
+    float modlog5fit_p5=modLog4Fit->GetParameter(5);
+    float modlog5fit_p6=modLog4Fit->GetParameter(6);
+    //thus, this is a cubic fit fit in logx/logy
+    //TF1* modLog3Fit=new TF1("modlog2fit", "[0] * ( TMath::Power( ( [1]/x ) , ( [2] + [3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 )  ) ) )",xlo,xhi);
+    modLog5Fit->SetParameter(0,modlog5fit_p0);
+    modLog5Fit->SetParameter(1,modlog5fit_p1);
+    modLog5Fit->SetParameter(2,modlog5fit_p2);
+    modLog5Fit->SetParameter(3,modlog5fit_p3);
+    modLog5Fit->SetParameter(4,modlog5fit_p4);
+    modLog5Fit->SetParameter(5,modlog5fit_p5);
+    modLog5Fit->SetParameter(6,modlog5fit_p6);
+    hthy_modlog5->Fit(modLog5Fit->GetName(),fitOpt.c_str());
+    modLog5Fit->SetLineColor(kOrange);
+  }
+  
+  
+  
+  std::cout<<"    (bool)logFit = "<<    (bool)logFit<<std::endl;
+  std::cout<<" (bool)modLogFit = "<< (bool)modLogFit<<std::endl;
+  std::cout<<"(bool)modLog2Fit = "<<(bool)modLog2Fit<<std::endl;
+  std::cout<<"(bool)modLog3Fit = "<<(bool)modLog3Fit<<std::endl;
+  std::cout<<"(bool)modLog4Fit = "<<(bool)modLog4Fit<<std::endl;
+  std::cout<<"(bool)modLog5Fit = "<<(bool)modLog5Fit<<std::endl;
+  
+  return;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+//int getRandomSeed(){
+//  bool funcDebug=true;  
+//  int
+//}
+
+
+
+
+//BACKUP
+//void makeToySpectra(TH1D* hthy, 
+//		    TSpline3* hthy_spline, 
+//		    TF1* fJER, 
+//		    int nevts, 
+//		    TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, 
+//		    TH2D* resp ){
+//  bool funcDebug=true;
+//  int tenth_nEvents=nevts/10;
+//  
+//  srand((unsigned)time(0));  
+//  UInt_t rnd_seed=rand();
+//  if(funcDebug)std::cout<<"rnd_seed="<<rnd_seed<<std::endl;
+//  TRandom3 *rnd = new TRandom3(rnd_seed);
+//  
+//  //srand((unsigned)time(0));
+//  UInt_t rnd_test_seed=rand();
+//  if(funcDebug)std::cout<<"rnd_test_seed="<<rnd_test_seed<<std::endl;
+//  TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
+// 
+//  //assert(false);          
+//  double ptmin_thy=hthy->GetBinLowEdge(1);
+//  double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
+//  double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
+//  
+//  int respcount=0, misscount=0, fakecount=0;
+//
+//  for(int i=0;i<nevts;++i){      
+//    
+//
+//
+//    if(i%tenth_nEvents==0)
+//      std::cout<<"throwing random #'s for event # "<<i<<std::endl;
+//
+//    double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
+//
+//    double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+//
+//    double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
+//
+//    double pt_w      =  hthy_spline->Eval(ptTrue);
+//
+//    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
+//    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
+//    bool fillresp=in_smearpt_range&&in_trupt_range;
+//
+//
+//    if(fillresp){
+//      resp->Fill(ptSmeared,ptTrue,pt_w);
+//      hthy_toyMC    -> Fill(ptTrue,pt_w);
+//      hsmeared_toyMC -> Fill(ptSmeared,pt_w);      
+//      respcount++;
+//    }
+//    else if(in_trupt_range){//not in smear pt range but in truept range
+//      //      resp->Miss(ptTrue,pt_w);                                        
+//      hthy_toyMC    -> Fill(ptTrue,pt_w);
+//      misscount++;
+//    }
+//    else if(in_smearpt_range){//shouldnt get filled by construction. ptTrue always pulled s.t. in_trupt_range is true. if in_smearpt_range is true, so it in_trupt_range
+//      //      resp->Fake(ptSmeared,pt_w);                                        
+//      hsmeared_toyMC    -> Fill(ptSmeared,pt_w);
+//      fakecount++;
+//    }
+//    
+//    double    ptTrue_test = rnd_test->Uniform(ptmin_thy,ptmax_thy);
+//    double     sigma_test = fJER->Eval(ptTrue_test);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+//    double ptSmeared_test =  rnd_test->Gaus(ptTrue_test,ptTrue_test*sigma_test);
+//    double      pt_w_test =  hthy_spline->Eval(ptTrue_test);
+//    
+//    bool in_test_smearpt_range=(  ( ptSmeared_test>ptmin_smeared ) && ( ptSmeared_test<ptmax_smeared )  );
+//    if(in_test_smearpt_range)
+//      hsmeared_toyMC_test->Fill(ptSmeared_test,pt_w_test);
+//    
+//
+//  }//end loop throwing random no's
+//
+//  std::cout<<"done smearing ynew."<<std::endl;  
+//  std::cout<<"smear summary;"<<std::endl;
+//  std::cout<<"nEvents="<<nevts<<std::endl;
+//  std::cout<<"response_count="<<respcount<<std::endl;
+//  std::cout<<"miss_count="<<misscount<<std::endl;
+//  std::cout<<"fake_count="<<fakecount<<std::endl;
+//  
+//  return;
+//}
+//BACKUP
+
+
+//void smear_theory_spectra(TH1D* hthy, TH1D* hsmrd, RooUnfoldResponse respmat, TSpline3* spline, TF1* fJER){
+// 
+//  bool funcDebug=true;
+//  
+//  return;
+//}

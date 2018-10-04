@@ -3,7 +3,7 @@
 
 #Data and SVD Unfolding settings
 doBayes=1
-doSVD=0
+doSVD=1
 useSimpBins=0
 makeRooUnf=0
 
@@ -19,7 +19,7 @@ dataHLTCalo=0
 doDataUnfoldingwLO=0
 dataLOSVDkReg=7
 doDataUnfoldingwNLO=1
-dataNLOSVDkReg=16
+dataNLOSVDkReg=8
 
 
 
@@ -221,7 +221,7 @@ function unfoldMC(){
     
     if [[ doNLOMCUnfolding -eq 1 ]]
     then
-	source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $useSimpBins $doBayes $doSVD $NLOSVDkReg
+	source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $useSimpBins $doBayes $doSVD $NLOMCSVDkReg
     fi
 
 

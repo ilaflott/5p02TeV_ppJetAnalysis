@@ -4,14 +4,14 @@
 const bool drawPDFs=true; 
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
-const bool useNPCorrSpectra=false;
+//const bool useNPCorrSpectra=false;
 const int verbosity=0;
 const bool doJetID=true;
+
 // CODE --------------------------------------------------
 int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_name, //input 
 			      std::string baseName ,  //output 
-			      const bool useNPCorrSpectra=true   , const bool useSimpBins=false )//details of unfolding
-{ 
+			      bool useNPCorrSpectra=true   , bool useSimpBins=false ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
@@ -797,9 +797,17 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
   h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/OS Toy NLO MC Unf.");
+  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NNLO/OS Toy NLO MC Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf_x2);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
+
+  TH1D* h_thyratio_mctruth=(TH1D*)NNPDFnnlo->Clone("");
+  h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_MCTruth_Ratio_rebin",boundaries_pt_gen);
+  //h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");  
+  h_thyratio_mctruth->SetTitle("NNPDF NNLO/OS Toy NNPDF NNLO Toy MC Truth.");
+  h_thyratio_mctruth->Divide(hgen_rebin);
+  if(debugMode)h_thyratio_mctruth->Print("base");
+
   
 
   
@@ -1218,30 +1226,32 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     setupRatioHist(h_thyratio_HERAPDF , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_MMHTnlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    
+    setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+
     h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ (Bayes Unf. OS MC)" );
     h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / (Bayes Unf. OS MC)");
     
     h_thyratio_CT10nlo ->Draw( "][HIST ");      
     h_thyratio_CT14nlo ->Draw( "][HIST SAME"); 
-    h_thyratio_HERAPDF ->Draw( "][HIST SAME"); 
-    h_thyratio_MMHTnlo ->Draw( "][HIST SAME"); 
+    //h_thyratio_HERAPDF ->Draw( "][HIST SAME"); 
+    //h_thyratio_MMHTnlo ->Draw( "][HIST SAME"); 
     h_thyratio_NNPDFnnlo->Draw("][HIST SAME"); 
-
+    h_thyratio_mctruth->Draw("P E SAME"); 
+    
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
     legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
-    legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
-    legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
+    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
+    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
+    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Truth",       "l");
     
     legendthyrat->Draw();
     
     theLineAtOne_gen->Draw();
     theLineAtp9_gen->Draw();
-    theLineAt1p1_gen->Draw();
- 
+    theLineAt1p1_gen->Draw();    
 
 
     canvForPrint->Print(outPdfFile.c_str());
@@ -1463,7 +1473,7 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   rStatus=1; // runtime error
   
   rStatus=bayesUnfoldNLOMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], 
-				    (int)std::atoi(argv[4]) ,   (int)std::atoi(argv[5])   ); 
+				    (bool)std::atoi(argv[4]) ,   (bool)std::atoi(argv[5])   ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

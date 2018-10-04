@@ -31,10 +31,10 @@ then
     echo "compiling bayesUnfoldNLOMCSpectra.C"
     echo ""
     rooUnfoldCompile bayesUnfoldNLOMCSpectra.C
-
+    
     #USE: "source run_bayesUnfoldNLOMCSpectra.sh [R=3,4] [condorDir] [date_output] [etaBin] [etaBinOut] [useSimpleBinning]"
     source run_bayesUnfoldNLOMCSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "Bayes_${condorDate}_${dirTag}" "${simpbins}"
-
+    
     echo ""
     echo "Bayes MC Unfolding Done."
     echo ""

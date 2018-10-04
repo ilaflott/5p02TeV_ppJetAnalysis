@@ -23,7 +23,7 @@
 
 
 
-void safe_getNdraw(TFile* f, std::string plotname){
+void safe_getNdraw(TFile* f, std::string plotname ){//, std::string dname="default_gausSmThy_hists"){
   TCanvas* canv=(TCanvas*)f->Get(plotname.c_str());
   if(((bool)canv)){
     canv->Draw();
@@ -39,8 +39,13 @@ void safe_getNdraw(TFile* f, std::string plotname){
   else if(fname.find("HERAPDF")!=std::string::npos ){canv->SaveAs( ("HERAPDF15NLO_"   +plotname+".png").c_str());    }
   else if(fname.find("MMHT"   )!=std::string::npos ){canv->SaveAs( ("MMHT2014nlo68cl_"+plotname+".png"   ).c_str()); }
   else if(fname.find("NNPDF"  )!=std::string::npos ){
-    dname="NNPDF_NNLO_00eta20_gausSmThy_plots/";
+    
+    if(fname.find("spl3wgts")!=std::string::npos )dname="NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots/";
+    else if(fname.find("fitwgts")!=std::string::npos )dname="NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots/";
+    else    dname="NNPDF_NNLO_00eta20_gausSmThy_plots/";
+    
     canv->SaveAs( (dname+"NNPDF30_nnlo_"   +plotname+".png"  ).c_str());  
+
   }
   
   return;
@@ -64,12 +69,17 @@ std::string plotnames[]={
   "plot_allNPNLOxsec",
   //TSplines  
   "plot_splines",
+  //TF1s
+  "plot_logfits_ynew",
+  "plot_logfits_NPynew",
   //NLOsmearing
   "plot_response_ynew_th2",
   "plot_ynew_true_smeared_rat",
   //NP+NLOsmearing
   "plot_response_NPynew_th2",
-  "plot_NPynew_true_smeared_rat"  
+  "plot_NPynew_true_smeared_rat"  ,
+  //compare rnd w/ true hist
+  "plot_true_rnd_rat"
 };
 const int N_plotnames=sizeof(plotnames)/sizeof(std::string);
 //-----------------------------------------------
@@ -166,7 +176,8 @@ void quickCheck_gausSmThy( bool print00eta20=true, bool printXXetaYY=false, int 
     //print_gausSmThy("fnl5020_LO2_R04Jets_modify_CT14nlo_HS_gaussSmear_00eta20.root"		);
     //print_gausSmThy("fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS_gaussSmear_00eta20.root"	);
     //print_gausSmThy("fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root"	);
-    print_gausSmThy("fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root");
+    print_gausSmThy("fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_gaussSmear_00eta20.root");
+    print_gausSmThy("fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_gaussSmear_00eta20.root");
   }
   if(printXXetaYY){
     std::cout<<"printing gausSmThy hists for single eta bin..."<<std::endl;

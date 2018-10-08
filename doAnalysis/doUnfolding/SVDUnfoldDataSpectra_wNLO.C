@@ -428,7 +428,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   int kReg[nKregMax]={0};
   init_kRegParamArray((int*)kReg, nbins_pt_gen_mat , kRegInput);  
   if(debugMode)
-    for(int i=0; i<nKregMax; ++i){
+    for(int i=0; i<nKregMax; ++i){//this loop looks weird but it's so the text output is nice. 
       if(i==kRegDraw)std::cout<<"*DRAWING* ";
       else           std::cout<<"          ";
       std::cout<<"kReg["<<i<<"] = "<<kReg[i];  
@@ -590,7 +590,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       hSVal->SetXTitle("index i");        
       hSVal->SetYTitle("#||{s_{i}}");        
       //hSVal->DrawCopy("HIST E");
-      hSVal->Draw("HIST E");
+      hSVal->DrawClone("HIST E");
       
       double tau=hSVal->GetBinContent(kReg[kRegDraw] +1);//add one because the first bins value is always 0//*hSVal->GetBinContent(kReg[kRegDraw]);
       tau*=tau;//reg strength = sing. val. squared//     printf("(orig)tau=%f\n",tau);
@@ -619,7 +619,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       hdi->SetXTitle("index i");
       hdi->SetYTitle("#||{d_{i}}");
       //hdi->DrawCopy("HIST E"); 
-      hdi->Draw("HIST E"); 
+      hdi->DrawClone("HIST E"); 
       
       ((TPad*)(c11->cd(2)))->Update();      //note, if you do this to a pad that is log scaled, this returns the log of the max+min, not the max+min
       double ymax= gPad->GetUymax();
@@ -630,7 +630,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       
       c11->cd(2);
       
-      hdi->Draw("HIST E"); 
+      hdi->DrawClone("HIST E"); 
       
       double xcoord= ( ((double)kRegInput) + 1. - 0.5);
       
@@ -840,9 +840,9 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     //hrec_rebin_clone->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
     
     hrec_rebin_clone->DrawClone("P E");
-    hgen_rebin_clone->Draw("P E SAME");
-    hunf_svd[kr]->Draw("P E SAME");
-    //hfold_svd[kr]->Draw("P E SAME");      
+    hgen_rebin_clone->DrawClone("P E SAME");
+    hunf_svd[kr]->DrawClone("P E SAME");
+    //hfold_svd[kr]->DrawClone("P E SAME");      
     
     leg[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option 
     leg[kr]->AddEntry(hrec_rebin_clone,"Data Meas.","p");
@@ -880,8 +880,8 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     //hrec_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
     hrec_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
     
-    hrec_unfolded_ratio[kr]->Draw("P E");
-    //hrec_fold_ratio[kr]->Draw("P E SAME");
+    hrec_unfolded_ratio[kr]->DrawClone("P E");
+    //hrec_fold_ratio[kr]->DrawClone("P E SAME");
     
     leg1[kr] = new TLegend(0.67, 0.80, 0.9, 0.9, NULL,"BRNDC");   
     leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],"Data Unf./Data Meas.","pl");
@@ -914,8 +914,8 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     
     setupRatioHist(hgen_unfolded_ratio[kr],useSimpBins);
     
-    hgen_unfolded_ratio[kr]->Draw("P E");
-    //hgen_folded_ratio[kr]->Draw("P E SAME");
+    hgen_unfolded_ratio[kr]->DrawClone("P E");
+    //hgen_folded_ratio[kr]->DrawClone("P E SAME");
     
     leg2[kr] = new TLegend(0.67, 0.80, 0.9, 0.9, NULL,"BRNDC");
     leg2[kr]->AddEntry(hgen_unfolded_ratio[kr],"Data Unf./MC Truth","pl");
@@ -937,7 +937,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     
     hPearsonSVD[kr]->GetZaxis()->SetLabelSize(0.035);
     hPearsonSVD[kr]->SetAxisRange(-1., 1., "Z");    
-    hPearsonSVD[kr]->Draw("COLZ");
+    hPearsonSVD[kr]->DrawClone("COLZ");
     
     
     // Covariance Matrix Drawing
@@ -951,7 +951,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     
     hCovmatSVD[kr]->SetAxisRange(1e-15,1e+02,"Z");
     hCovmatSVD[kr]->GetZaxis()->SetLabelSize(0.035);
-    hCovmatSVD[kr]->Draw("COLZ");
+    hCovmatSVD[kr]->DrawClone("COLZ");
 
 
 
@@ -966,7 +966,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     
     hCovmatAbsValSVD[kr]->SetAxisRange(1e-15,1e+02,"Z");
     hCovmatAbsValSVD[kr]->GetZaxis()->SetLabelSize(0.035);
-    hCovmatAbsValSVD[kr]->Draw("COLZ");
+    hCovmatAbsValSVD[kr]->DrawClone("COLZ");
     
     // ----------------------- END 3X3 CANVAS DRAWING for data unfolding ----------------------- //
   }
@@ -1081,11 +1081,11 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     //hrec_rebin_clone->SetTitle("MC, Data, and SVD Unf. Spectra");
     setupSpectraHist(hrec_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
     
-    hrec_rebin_clone->Draw("P E");
-    hrec_sameside_rebin->Draw("P E SAME");
-    hunf_svd[kRegDraw]->Draw("P E SAME");
-    hgen_rebin_clone->Draw("P E SAME");	
-    //hfold_svd[kRegDraw]->Draw("P E SAME");
+    hrec_rebin_clone->DrawClone("P E");
+    hrec_sameside_rebin->DrawClone("P E SAME");
+    hunf_svd[kRegDraw]->DrawClone("P E SAME");
+    hgen_rebin_clone->DrawClone("P E SAME");	
+    //hfold_svd[kRegDraw]->DrawClone("P E SAME");
     
     
     TLegend * leg1 = new TLegend(0.7, 0.7, 0.9, 0.9, NULL,"NBNDC");
@@ -1115,10 +1115,10 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     setupRatioHist(hgen_unfolded_ratio[kRegDraw], useSimpBins);
     
     
-    hgen_unfolded_ratio[kRegDraw]->Draw("P E");
-    hgen_meas_ratio->Draw("P E SAME");
-    hgen_ssmeas_ratio->Draw("P E SAME");
-    //hgen_folded_ratio[kRegDraw]->Draw("P E SAME");
+    hgen_unfolded_ratio[kRegDraw]->DrawClone("P E");
+    hgen_meas_ratio->DrawClone("P E SAME");
+    hgen_ssmeas_ratio->DrawClone("P E SAME");
+    //hgen_folded_ratio[kRegDraw]->DrawClone("P E SAME");
     
     TLegend * leg3 = new TLegend(0.1, 0.75, 0.25, 0.9, NULL,"NBNDC");
     leg3->AddEntry(hgen_unfolded_ratio[kRegDraw],"Data Unf.","pl");
@@ -1156,10 +1156,10 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     setupRatioHist(hrec_unfolded_ratio[kRegDraw], useSimpBins);
     
     
-    hrec_unfolded_ratio[kRegDraw]->Draw("P E");
-    hrec_truth_ratio->Draw("P E SAME");
-    hrec_ssmeas_ratio->Draw("P E SAME");
-    //hrec_fold_ratio[kRegDraw]->Draw("P E SAME");
+    hrec_unfolded_ratio[kRegDraw]->DrawClone("P E");
+    hrec_truth_ratio->DrawClone("P E SAME");
+    hrec_ssmeas_ratio->DrawClone("P E SAME");
+    //hrec_fold_ratio[kRegDraw]->DrawClone("P E SAME");
     
     TLegend * leg2 = new TLegend(0.1, 0.75, 0.25, 0.9, NULL,"NBNDC");
     leg2->AddEntry(hrec_ssmeas_ratio,             "MC Meas.","pl");
@@ -1195,9 +1195,9 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     setupRatioHist(hrec_fold_ratio[kRegDraw], useSimpBins);
     
     
-    hrec_fold_ratio[kRegDraw]->Draw("P E");
-    //hrec_ssfold_ratio[kRegDraw]->Draw("P E SAME");
-    hrec_truthfold_ratio[kRegDraw]->Draw("P E SAME");
+    hrec_fold_ratio[kRegDraw]->DrawClone("P E");
+    //hrec_ssfold_ratio[kRegDraw]->DrawClone("P E SAME");
+    hrec_truthfold_ratio[kRegDraw]->DrawClone("P E SAME");
     
     TLegend * legfold = new TLegend(0.1, 0.8, 0.4, 0.9, NULL,"NBNDC");
     legfold->AddEntry(hrec_fold_ratio[kRegDraw],   "Fold(Data Unf.)/Data Meas.","pl");
@@ -1228,9 +1228,9 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     hfak->SetTitle("MC Only, Meas. and Kinematic Fakes Spectra");
     setupSpectraHist(hfak, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
     
-    hfak->Draw("P E");
-    hrec_sameside_rebin->Draw("P E SAME");
-    hgen_resp_rebin->Draw("P E SAME");
+    hfak->DrawClone("P E");
+    hrec_sameside_rebin->DrawClone("P E SAME");
+    hgen_resp_rebin->DrawClone("P E SAME");
     
     TLegend * legfake = new TLegend(0.6, 0.7, 0.9, 0.9, NULL,"NBNDC");
     legfake->AddEntry(hfak,"MC Kinematic Fakes","lp");
@@ -1273,11 +1273,11 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
     CT10nlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
     
-    CT10nlo  ->Draw("][HIST E");
-    CT14nlo  ->Draw("][HIST E SAME");
+    CT10nlo  ->DrawClone("][HIST E");
+    CT14nlo  ->DrawClone("][HIST E SAME");
     
-    hgen_rebin->Draw("P E SAME");
-    hunf_svd[kRegDraw]->Draw("P E SAME");   //just for axis range
+    hgen_rebin->DrawClone("P E SAME");
+    hunf_svd[kRegDraw]->DrawClone("P E SAME");   //just for axis range
     
     legendThy1->Draw();
     
@@ -1319,12 +1319,12 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     MMHTnlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
     MMHTnlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
     
-    //HERAPDF  ->Draw("][HIST E");
-    MMHTnlo  ->Draw("][HIST E");
-    NNPDFnnlo->Draw("][HIST E SAME");
+    //HERAPDF  ->DrawClone("][HIST E");
+    MMHTnlo  ->DrawClone("][HIST E");
+    NNPDFnnlo->DrawClone("][HIST E SAME");
     
-    hgen_rebin->Draw("P E SAME");
-    hunf_svd[kRegDraw]->Draw("P E SAME");   //just for axis range    
+    hgen_rebin->DrawClone("P E SAME");
+    hunf_svd[kRegDraw]->DrawClone("P E SAME");   //just for axis range    
     
     legendThy->Draw();
 
@@ -1351,12 +1351,12 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     h_thyratio_CT10nlo->SetTitle( "NLO Ratios w/ SVD Unf. Data" );
     h_thyratio_CT10nlo->GetYaxis()->SetTitle("NLO / SVD Unf. Data");
     
-    h_thyratio_CT10nlo ->Draw( "HIST ");      
-    h_thyratio_CT14nlo ->Draw( "HIST  SAME"); 
-    //h_thyratio_HERAPDF ->Draw( "HIST E SAME"); 
-    //h_thyratio_MMHTnlo ->Draw( "HIST E SAME"); 
-    h_thyratio_NNPDFnnlo->Draw("HIST E SAME"); 
-    h_thyratio_mctruth->Draw("P E SAME");
+    h_thyratio_CT10nlo ->DrawClone( "HIST ");      
+    h_thyratio_CT14nlo ->DrawClone( "HIST  SAME"); 
+    //h_thyratio_HERAPDF ->DrawClone( "HIST E SAME"); 
+    //h_thyratio_MMHTnlo ->DrawClone( "HIST E SAME"); 
+    h_thyratio_NNPDFnnlo->DrawClone("HIST E SAME"); 
+    h_thyratio_mctruth->DrawClone("P E SAME");
     
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );

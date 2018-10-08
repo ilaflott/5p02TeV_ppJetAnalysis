@@ -177,7 +177,7 @@ void quickCheck_gausSmThy( bool print00eta20=true, bool printXXetaYY=false, int 
     //print_gausSmThy("fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS_gaussSmear_00eta20.root"	);
     //print_gausSmThy("fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root"	);
     print_gausSmThy("fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_gaussSmear_00eta20.root");
-    print_gausSmThy("fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_gaussSmear_00eta20.root");
+    //print_gausSmThy("fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_gaussSmear_00eta20.root");
   }
   if(printXXetaYY){
     std::cout<<"printing gausSmThy hists for single eta bin..."<<std::endl;

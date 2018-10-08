@@ -4,8 +4,8 @@
 
 if [[ "$#" -eq 0 ]]
 then
-
-
+    
+    
     ##DEBUG
     #rootcompile smearTheorySpectra_gaussCoreJER.C    
     
@@ -21,7 +21,7 @@ then
     
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC 0    #fitweights
     ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC 1    #splineweights
-
+    
     #rm NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots/*
     rm NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots/*
     
@@ -38,13 +38,14 @@ then
     ##scp2Serin fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root
     ##scp2Serin fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root    
     #scp2Serin "fnl5020_LO2_R04Jets_modify_*_gaussSmear_00eta20.root"
-
+    
     #cp fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root NNPDF_NNLO_00eta20_gausSmThy_plots/.
     #cp fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_gaussSmear_00eta20.root NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots/.
     cp fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_gaussSmear_00eta20.root NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots/.
-
+    
     scp2Serin NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots    
-#scp2Serin NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots    
+    
+    #scp2Serin NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots    
     #scp2Serin "NNPDF_NNLO_00eta20_*_gausSmThy_plots"
     
 

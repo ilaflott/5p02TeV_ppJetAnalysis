@@ -72,8 +72,8 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     ((std::string)fNP_y2->GetName()) + "+" +
     ((std::string)fNP_y3->GetName()) +")/4.";  
   TF1 *fNP_ynew=new TF1("fNP_ynew",fNP_ynew_str.c_str() ,thyBins_incl[0],thyBins_incl[n_thybins_incl]);
-
-
+  
+  
   /////////////// Create/Get JER fit function(s)
   std::cout<<"opening JER file + fits! " << std::endl;
   TFile* fin_JER=TFile::Open(JERCorrFile.c_str());
@@ -478,9 +478,11 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   
   ///Cubic Spline Interpolations using Cross sections; has issues for p_T beyond first/last bin centers
   TSpline3 *spline3_ynew=NULL, *spline3_NPynew=NULL;
+  TF1      *spline3_ynew_ext=NULL, *spline3_NPynew_ext=NULL;
   TCanvas *plot_splines=NULL;
   TLegend *leg_spline=NULL;
   if(useSplineWeights){
+    
     /// check spectra with splines
     std::cout<<"drawing Tspline and cross section on canvas"<<std::endl;
     plot_splines = new TCanvas("plot_splines", "plot splines",1200,800);
@@ -493,26 +495,58 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     spline3_ynew = new TSpline3( theory_ynew_clone);
     spline3_ynew->SetName( ( (std::string)theory_ynew_clone->GetName() + "_spline3").c_str() );
     spline3_ynew->SetLineColor(kAzure);  
-        
+    
+    //double ynew_x1=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX());// bad idea, spline3's val at x1 is approx the val of the last bin's height. 
+    //double ynew_x1=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX());//diff idea 1
+    double x1=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX()-1);//diff idea 2
+    //double x1=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX()-1);//diff idea 3
+    double x2=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX()) + theory_ynew_clone->GetBinWidth(theory_ynew_clone->GetNbinsX());
+    //double ynew_y2=theory_ynew_clone->GetBinContent(theory_ynew_clone->GetNbinsX());
+    double ynew_y2=calc_spline3ext_y2(theory_ynew_clone);
+    double xprime=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX());
+    //double xprime=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX()) - 0.25*theory_ynew_clone->GetBinWidth(theory_ynew_clone->GetNbinsX());
+    double ynew_yprime=theory_ynew_clone->GetBinContent(theory_ynew_clone->GetNbinsX());
+    spline3_ynew_ext= new TF1( ((std::string)spline3_ynew->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
+    //    make_spline3_ext(  (TSpline3*)spline3_ynew, (TF1*)spline3_ynew_ext , (double)x1, (double)x2, (double)ynew_y2);    
+    make_spline3_extv2(  (TSpline3*)spline3_ynew, (TF1*)spline3_ynew_ext , (double)x1, (double)x2, (double)ynew_y2, (double)xprime, (double)ynew_yprime);    
+    spline3_ynew_ext->SetLineColor(kAzure-1);
+    
+    
     // NLO+NP //      
     spline3_NPynew = new TSpline3( theory_NPynew_clone);
     spline3_NPynew->SetName( ( (std::string)theory_NPynew_clone->GetName() + "_spline3").c_str() );
     spline3_NPynew->SetLineColor(kAzure-8);  
     
+    //double NPynew_x1=theory_NPynew_clone->GetBinCenter(theory_NPynew_clone->GetNbinsX());
+    //double NPynew_x2=theory_NPynew_clone->GetBinLowEdge(theory_NPynew_clone->GetNbinsX()) + theory_NPynew_clone->GetBinWidth(theory_NPynew_clone->GetNbinsX());
+    //double NPynew_y2=theory_NPynew_clone->GetBinContent(theory_NPynew_clone->GetNbinsX());
+    double NPynew_y2=calc_spline3ext_y2(theory_NPynew_clone);
+    spline3_NPynew_ext= new TF1( ((std::string)spline3_NPynew->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
+    make_spline3_ext(  (TSpline3*)spline3_NPynew, (TF1*)spline3_NPynew_ext , (double)x1, (double)x2, (double)NPynew_y2);    
+    spline3_NPynew_ext->SetLineColor(kAzure-9);
+    
     //draw
     theory_ynew_clone->SetTitle("Cubic Splines for #||{y}<2.0;Jet p_{T};Smear Weight");    
+    theory_ynew_clone->SetAxisRange( ynew_y2/2., theory_ynew_clone->GetMaximum()*2., "Y");
+    
     theory_ynew_clone->DrawClone("HIST E");
     spline3_ynew->Draw("SAME");    
+    spline3_ynew_ext->Draw("SAME");
+    
     theory_NPynew_clone->DrawClone("HIST E SAME");  
     spline3_NPynew->Draw("SAME");
+    spline3_NPynew_ext->Draw("SAME");
     
     leg_spline=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
     leg_spline->AddEntry(theory_ynew_clone , "Weighted NLO Jet Counts for #||{y} < 2.0" , "lp");
     leg_spline->AddEntry(spline3_ynew   , "Cubic Spline for NLO #||{y} < 2.0" , "l");
+    leg_spline->AddEntry(spline3_ynew_ext  , "Parabolic Spline Extension for NLO #||{y} < 2.0" , "l");
     leg_spline->AddEntry(theory_NPynew_clone , "Weighted NP+NLO Jet Counts for #||{y} < 2.0" , "lp");
     leg_spline->AddEntry(spline3_NPynew   , "Cubic Spline for NP+NLO #||{y} < 2.0" , "l");
+    leg_spline->AddEntry(spline3_NPynew_ext  , "Parabolic Spline Extension for NP+NLO #||{y} < 2.0" , "l");
     leg_spline->Draw();    
   }
+  
   
   ///Log fit: A(B/pt)^[C+ D Log(pt/B) + E(Log(pt/B))^2] using Cross sections; currently no known issues
   TF1 *logFit_ynew  =NULL, *modLogFit_ynew  =NULL, *modLog2Fit_ynew  =NULL, *modLog3Fit_ynew  =NULL, *modLog4Fit_ynew  =NULL,*modLog5Fit_ynew  =NULL;
@@ -639,7 +673,9 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
 		    theory_rnd_ynew, 
 		    smeared_rnd_ynew, 
 		    smeared_rnd_ynew_test, 
-		    (TH2D*)response_ynew_th2); }
+		    (TH2D*)response_ynew_th2,
+		    //NULL ) ;}
+		    (TF1*) spline3_ynew_ext); }
   if(useFitWeights){
     makeToySpectra( (TH1D*)theory_ynew_clone, 
 		    (TF1*)modLog4Fit_ynew, 
@@ -650,7 +686,7 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
 		    smeared_rnd_ynew_test, 
 		    (TH2D*)response_ynew_th2); }  
   //--------------------------------------------------------------------------------------------------------//
-  
+
   divideBinWidth(theory_rnd_ynew);  //for normalization only.
   theory_rnd_ynew->Scale(1./4.);//etabinwidth
 
@@ -816,7 +852,10 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
 		   theory_rnd_NPynew, 
 		   smeared_rnd_NPynew, 
 		   smeared_rnd_NPynew_test, 
-		   (TH2D*) response_NPynew_th2);}
+		   (TH2D*) response_NPynew_th2, 
+		    //NULL ) ;}
+		    (TF1*) spline3_NPynew_ext); }
+
   if(useFitWeights){
     makeToySpectra(theory_NPynew_clone, 
 		   (TF1*)modLog4Fit_NPynew,
@@ -866,6 +905,12 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   smeared_rnd_NPynew->SetLineColor(kBlue);    
   smeared_rnd_NPynew_test->SetLineColor(kBlue-5);    
   
+  if(theory_rnd_NPynew->GetBinContent(theory_rnd_NPynew->GetNbinsX() )<0.)
+    theory_rnd_NPynew->SetBinContent(theory_rnd_NPynew->GetNbinsX(),1.e-10);
+  if(smeared_rnd_NPynew->GetBinContent(smeared_rnd_NPynew->GetNbinsX() )<0.)
+    smeared_rnd_NPynew->SetBinContent(smeared_rnd_NPynew->GetNbinsX(),1.e-08);
+  
+  
   Float_t NPmaxy=theory_rnd_NPynew->GetMaximum();    std::cout<<"NPmaxy="<<NPmaxy<<std::endl;
   NPmaxy*=2.;  std::cout<<"NPmaxy="<<NPmaxy<<std::endl;
   Float_t NPminy=smeared_rnd_NPynew->GetMinimum();   std::cout<<"NPminy="<<NPminy<<std::endl;
@@ -892,7 +937,6 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   NPleg_smear->AddEntry(smeared_rnd_NPynew , "Smeared Incl. NP+NLO #sigma" , "lp" );
   NPleg_smear->Draw();
   
-
   plot_NPynew_true_smeared_rat->cd();//go back to main canvas before doing new pad
   
   TPad* NPratio_pad=new TPad("NPratio_pad","pad for ratio",0.0,0.05,1.0,0.30);
@@ -969,17 +1013,22 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   theory_ynew_ratio_rnd_ynew->Divide(theory_rnd_ynew);
   theory_ynew_ratio_rnd_ynew->SetLineColor(kBlack);
   theory_ynew_ratio_rnd_ynew->SetTitle(thy_rnd_rat_title.c_str());
-  
+
   
   TH1D* theory_NPynew_ratio_rnd_NPynew=(TH1D*)theory_NPynew_clone->Clone ( 
-  									( (std::string)theory_NPynew->GetName() +"_debughist") .c_str()
-								     );
+									  ( (std::string)theory_NPynew->GetName() +"_debughist") .c_str()
+									   );
   theory_NPynew_ratio_rnd_NPynew->Divide(theory_rnd_NPynew);
   theory_NPynew_ratio_rnd_NPynew->SetLineColor(kGray+1);
   theory_NPynew_ratio_rnd_NPynew->SetTitle(thy_rnd_rat_title.c_str());
   
-  theory_ynew_ratio_rnd_ynew->SetAxisRange    (0.5,1.5,"Y");
-  theory_NPynew_ratio_rnd_NPynew->SetAxisRange(0.5,1.5,"Y");
+  theory_ynew_ratio_rnd_ynew->SetAxisRange    (0.1,1.5,"Y");
+  theory_NPynew_ratio_rnd_NPynew->SetAxisRange(0.1,1.5,"Y");
+  
+
+  std::cout<<"NLO THY/RND THY LAST BIN CONTENT = "<<theory_ynew_ratio_rnd_ynew->GetBinContent(theory_ynew_ratio_rnd_ynew->GetNbinsX()) <<std::endl;
+  std::cout<<"NLO THY/RND THY LAST BIN CONTENT = "<<theory_NPynew_ratio_rnd_NPynew->GetBinContent(theory_NPynew_ratio_rnd_NPynew->GetNbinsX()) <<std::endl;
+
   
   theory_ynew_ratio_rnd_ynew->DrawClone("HIST E");
   theory_NPynew_ratio_rnd_NPynew->DrawClone("HIST E SAME");
@@ -1046,6 +1095,8 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   if(useSplineWeights){
     spline3_ynew->Write();
     spline3_NPynew->Write();
+    spline3_ynew_ext->Write();
+    spline3_NPynew_ext->Write();
     plot_splines->Write();  }
   // FITS
   if(useFitWeights){
@@ -1073,11 +1124,11 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   
   smeared_rnd_ynew->Write(); 
   smeared_rnd_ynew_test->Write(); 
+
   ynew_true_smeared_rat->Write();  //ratio
   ynew_true_smeared_test_rat->Write();  //ratio
   plot_ynew_true_smeared_rat->Write();
   
-  //response_ynew.Write();//response matrix
   response_ynew_th2->Write();
   plot_response_ynew_th2->Write();  
   
@@ -1088,24 +1139,24 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   
   smeared_rnd_NPynew->Write(); 
   smeared_rnd_NPynew_test->Write(); 
+
   NPynew_true_smeared_rat->Write();  //ratio
   NPynew_true_smeared_test_rat->Write();  //ratio
   plot_NPynew_true_smeared_rat->Write();
   
-  //response_NPynew.Write();
   response_NPynew_th2->Write();
   plot_response_NPynew_th2->Write();  
   
-  theory_ynew_ratio_rnd_ynew->Write();
-  theory_NPynew_ratio_rnd_NPynew->Write();
-  plot_true_rnd_rat->Write();
 
+  // toy spectra comparison w/ orig calculation
+  plot_true_rnd_rat->Write();
+  
   
   outf->Write();
   return 1;
 }
-  
-  
+
+
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  
   int rStatus = -1;   

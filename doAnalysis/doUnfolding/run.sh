@@ -3,7 +3,7 @@
 
 #Data and SVD Unfolding settings
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
@@ -16,12 +16,10 @@ NLOMCSVDkReg=10
 #doDataUnfolding
 dataHLTPF=1
 dataHLTCalo=0
-doDataUnfoldingwLO=0
+doDataUnfoldingwLO=1
 dataLOSVDkReg=7
-doDataUnfoldingwNLO=1
+doDataUnfoldingwNLO=0
 dataNLOSVDkReg=8
-
-
 
 #CONST
 
@@ -214,7 +212,7 @@ function unfoldMC(){
     #source runMC.sh   "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     #source runMC.sh   "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
-	#source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    #source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18" $useSimpBins  $doBayes $doSVD $LOMCSVDkReg
     #source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     fi

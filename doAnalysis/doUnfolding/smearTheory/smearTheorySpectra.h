@@ -136,26 +136,6 @@ double thyBins_incl[]={
   //  1032., 1101. //junk from here down
 }; 
 const int n_thybins_incl=sizeof(thyBins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
-double thyBins_incl2[]={
-  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
-  //  32., 37., //junk bins above 
-  //43., 49., 
-  //37.,
-  43., 49.,
-  56., 64., 74., 84., 97., 
-  114., 133., 153., 174., 196., 
-  220., 245., 272., 
-  300., 330., 362., 395., 
-  430., 468.,
-  507., 548., 592., 
-  638., 
-  686., 
-  1000.//,//967.//1032. 
-  //1500.
-  //  1032., 1101. //junk from here down
-}; 
-const int n_thybins_incl2=sizeof(thyBins_incl2)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
-
 
 double smearedBins_incl[]={
   //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
@@ -239,24 +219,138 @@ std::string gJER_ynew_str="4.80963e-02+1.51797e-02/(pow(x,-5.78569e-01)+(2.17736
 
 
 
+//adds a parabolic extension of the spline, smoothly reducing weights to 0 (avoid neg weight in spline3)
+//void make_spline3_ext(TH1D* hthy, TSpline3* hthy_spline3, TF1* hthy_spline3_ext){
+void make_spline3_ext(TSpline3* hthy_spline3, TF1* hthy_spline3_ext , double x1, double x2, double y2){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"calculating spline3 extension for between x1="<<x1<<" and x2="<<x2<<std::endl;
+  
+  double y1=hthy_spline3->Eval(x1);
+  //double y2=0.;//don't delete.
+  
+  //note; f=Ax^2+Bx+C
+  //hthy_spline3_ext=new TF1( (hthy_spline3->GetName() + "_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1,x2);  
+  //a few boundary conditions are assumed here;
+  // 1; fext(x1)=spl3(x1)
+  // 2; fext(x2)=0.
+  // 3; fext'(x2)=0. (first deriv. condition) 
+  
+  //note, A/B/C here calculated assuming y2=0. more general formula so i can mess w/ end points should be put in here at some point for more tests
+  if(funcDebug){
+    std::cout<<"y1="<<y1<<std::endl;
+    std::cout<<"y2="<<y2<<std::endl;
+    //assert(false);
+  }
+  double A= (y1-y2)/( (x1*x1) + (x2*x2) - (2.*x1*x2) );
+  double B= (-2.)*A*x2;
+  double C= y2 - (1.*(A*pow(x2,2) + B*x2));
+  hthy_spline3_ext->SetParameter(0,A);
+  hthy_spline3_ext->SetParameter(1,B);
+  hthy_spline3_ext->SetParameter(2,C);    
+  hthy_spline3_ext->SetLineColor(kRed);
+  
+  if(funcDebug){
+    std::cout<<"spline3 calculation done!"<<std::endl;
+    std::cout<<"A="<<hthy_spline3_ext->GetParameter(0)<<std::endl;
+    std::cout<<"B="<<hthy_spline3_ext->GetParameter(1)<<std::endl;
+    std::cout<<"C="<<hthy_spline3_ext->GetParameter(2)<<std::endl;
+    
+    std::cout<<"compare spline3 at halfway point between x1="<<x1<<" and x2="<<x2<<std::endl;
+    double xtest=x1+(x2-x1)/2.;
+    std::cout<<"xtest=x1+(x2-x1)/2.="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
+
+    xtest+=10.;
+    std::cout<<"xtest="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
+
+    xtest+=10.;
+    std::cout<<"xtest="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
+
+    xtest+=10.;
+    std::cout<<"xtest="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
+  }
+  
+  return;
+}
 
 
+void make_spline3_extv2(TSpline3* hthy_spline3, TF1* hthy_spline3_ext , double x1, double x2, double y2, double xprime, double yprime){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"calculating spline3 extension for between x1="<<x1<<" and x2="<<x2<<std::endl;
+  
+  double y1=hthy_spline3->Eval(x1);
+  //double y2=0.;//don't delete.
+  
+  //note; f=Ax^2+Bx+C
+  //hthy_spline3_ext=new TF1( (hthy_spline3->GetName() + "_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1,x2);  
+  //a few boundary conditions are assumed here;
+  // 1; fext(x1)=spl3(x1)
+  // 2; fext(xprime)=yprime
+  // 3; fext'(x2)=0. (first deriv. condition) 
+  //comparing w/ the original make_spline3_ext, this one makes sure that the parabola passes through the final bin's height at the bin center.
+  
+  //note, A/B/C here calculated assuming y2=0. more general formula so i can mess w/ end points should be put in here at some point for more tests
+  if(funcDebug){
+    std::cout<<"x1="<<x1<<std::endl;
+    std::cout<<"y1="<<y1<<std::endl;
+    std::cout<<"x2="<<x2<<std::endl;
+    std::cout<<"y2="<<y2<<std::endl;
+    std::cout<<"xprime="<<xprime<<std::endl;
+    std::cout<<"yprime="<<yprime<<std::endl;
+    //assert(false);
+  }
+  double A= (y1-yprime)/( (x1*x1) - (xprime*xprime) - 2.*(x2*x1 - x2*xprime) );
+  double B= (-2.)*A*x2;
+  double C= y2 - (1.*((A*x2*x2) + B*x2));
+  //double C= yprime - (A*xprime*xprime) - (B*xprime);
+  hthy_spline3_ext->SetParameter(0,A);
+  hthy_spline3_ext->SetParameter(1,B);
+  hthy_spline3_ext->SetParameter(2,C);    
+  hthy_spline3_ext->SetLineColor(kRed);
+  
+  if(funcDebug){
+    std::cout<<"spline3 calculation done!"<<std::endl;
+    std::cout<<"A="<<hthy_spline3_ext->GetParameter(0)<<std::endl;
+    std::cout<<"B="<<hthy_spline3_ext->GetParameter(1)<<std::endl;
+    std::cout<<"C="<<hthy_spline3_ext->GetParameter(2)<<std::endl;
+    
+    std::cout<<"compare spline3 at halfway point between x1="<<x1<<" and x2="<<x2<<std::endl;
+    double xtest=x1+(x2-x1)/2.;
+    std::cout<<"xtest=x1+(x2-x1)/2.="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
 
-TH1D* make00eta20Hist( TH1D * h_1, 
-		       TH1D * h_2, 
-		       TH1D * h_3, 
-		       TH1D * h_4,
+    xtest+=10.;
+    std::cout<<"xtest="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
+
+    xtest+=10.;
+    std::cout<<"xtest="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
+
+    xtest+=10.;
+    std::cout<<"xtest="<<xtest<<std::endl;
+    std::cout<<"spl3(xtest)="<<hthy_spline3->Eval(xtest)<<std::endl;
+    std::cout<<"spl3ext(xtest)="<<hthy_spline3_ext->Eval(xtest)<<std::endl;
+  }
+  //  assert(false);
+  return;
+}
+
+TH1D* make00eta20Hist( TH1D * h_1, TH1D * h_2, TH1D * h_3, TH1D * h_4,
 		       std::string histTitle){
   
-  bool funcDebug=false;
+  bool funcDebug=false;  
   
-
-  //  std::string histTitle="hfinal_00eta20";
-  //  if( 
-  //     ((std::string)h_1->GetName()).find("_wNP") 
-  //      )
-  //    histTitle+="_wNP";
-
   TH1D* hfinal_00eta20 = (TH1D*)h_1->Clone(histTitle.c_str());
   hfinal_00eta20->Reset("M ICES");
   hfinal_00eta20->Sumw2(true);
@@ -342,24 +436,28 @@ void makeToySpectra(TH1D* hthy,
 		    TF1* fJER, 
 		    int nevts, 
 		    TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, 
-		    TH2D* resp ){
+		    TH2D* resp , TF1* spline3ext=NULL){
   bool funcDebug=false;
   int tenth_nEvents=nevts/10;
   TSpline3* spl3weights=NULL;
   TF1* fitweights=NULL;
+  bool useFitWeights=false, useSplineWeights=false, useSplineExt=false;
   if( weights->InheritsFrom("TSpline3") ) {
     std::cout<<"using spline weights"<<std::endl;
     spl3weights=(TSpline3*)weights->Clone(((std::string)weights->GetName()+"_funcclone").c_str() );
     std::cout<<"weights object name = "<< spl3weights->GetName()<<std::endl;
+    useSplineWeights=true;
+    if((bool)spline3ext) useSplineExt=true;    
   }
   else if(weights->InheritsFrom("TF1") ) {
     std::cout<<"using fit weights"<<std::endl;
     fitweights=(TF1*)weights->Clone(((std::string)weights->GetName()+"_funcclone").c_str() );    
     std::cout<<"weights object name = "<< fitweights->GetName()<<std::endl;
+    useFitWeights=true;
   }
   
   //if both sets of weights are there, or if both sets are not there, shut everything down, we have a weird scenario on our hands...
-  if( (bool)fitweights == (bool)spl3weights ) assert(false);
+  if( useFitWeights == useSplineWeights ) assert(false);
   
   srand((unsigned)time(0));  
   UInt_t rnd_seed=rand();
@@ -372,15 +470,23 @@ void makeToySpectra(TH1D* hthy,
   TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
  
   //assert(false);          
+  int nbins=hthy->GetNbinsX();
   double ptmin_thy=hthy->GetBinLowEdge(1);
-  double ptmax_thy=hthy->GetBinLowEdge(hthy->GetNbinsX()) + hthy->GetBinWidth(hthy->GetNbinsX());
-  double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;
-  
+  double ptmax_thy=hthy->GetBinLowEdge(nbins) + hthy->GetBinWidth(nbins);
+  double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;  
   int respcount=0, misscount=0, fakecount=0;
-
+  
+  //  double spline3_maxptval=hthy->GetBinLowEdge(nbins)+0.5*hthy->GetBinWidth(nbins);
+  double spline3_ext_ptmin=-1., spline3_ext_ptmax=-1.;
+  if(useSplineExt){
+    spline3ext->GetRange( spline3_ext_ptmin, spline3_ext_ptmax);
+    std::cout<<"using spline3 extension for p_T range " << (spline3_ext_ptmin) << " GeV - " << (spline3_ext_ptmax) << std::endl;
+    if(spline3_ext_ptmin<0. || spline3_ext_ptmax<0.)assert(false);
+  }
+  
   for(int i=0;i<nevts;++i){      
     
-
+    
 
     if(i%tenth_nEvents==0)
       std::cout<<"throwing random #'s for event # "<<i<<std::endl;
@@ -390,16 +496,25 @@ void makeToySpectra(TH1D* hthy,
     double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
     
     double pt_w =0.;//     =  hthy_spline->Eval(ptTrue);
-    if((bool)spl3weights)
+    if(useSplineWeights){
       pt_w=spl3weights->Eval(ptTrue);
-    else if((bool)fitweights)
-      pt_w=fitweights->Eval(ptTrue);
-    //if(!(pt_w>0.))assert(false);
+      if(useSplineExt)
+	{
+	  if(ptTrue>spline3_ext_ptmin &&
+	     ptTrue<spline3_ext_ptmax ){
+	    //std::cout<<"pt_w="<<pt_w<<std::endl;
+	    pt_w=spline3ext->Eval(ptTrue);      
+	    //std::cout<<"pt_w="<<pt_w<<std::endl;
+	  }	  
+	}
+    }
+    else if(useFitWeights){
+      pt_w=fitweights->Eval(ptTrue);    }
     
     bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
     bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
     bool fillresp=in_smearpt_range&&in_trupt_range;
-
+    
     if(fillresp){
       resp->Fill(ptSmeared,ptTrue,pt_w);
       hthy_toyMC    -> Fill(ptTrue,pt_w);
@@ -422,11 +537,14 @@ void makeToySpectra(TH1D* hthy,
     double ptSmeared_test =  rnd_test->Gaus(ptTrue_test,ptTrue_test*sigma_test);
     
     double      pt_w_test =  0.;//hthy_spline->Eval(ptTrue_test);
-    if((bool)spl3weights)
+    if(useSplineWeights){
       pt_w_test=spl3weights->Eval(ptTrue_test);
-    else if((bool)fitweights)
-      pt_w_test=fitweights->Eval(ptTrue_test);
-    //if(!(pt_w_test>0.))assert(false);
+      if(useSplineExt){
+	if(ptTrue_test>spline3_ext_ptmin && 
+	   ptTrue_test<spline3_ext_ptmax )
+	  pt_w_test=spline3ext->Eval(ptTrue_test);}      }
+    else if((bool)fitweights){
+      pt_w_test=fitweights->Eval(ptTrue_test);    }
     
     bool in_test_smearpt_range=(  ( ptSmeared_test>ptmin_smeared ) && ( ptSmeared_test<ptmax_smeared )  );
     if(in_test_smearpt_range)
@@ -741,3 +859,32 @@ void makeModLogFits(TH1D* hthy,
 //  
 //  return;
 //}
+
+double calc_spline3ext_y2(TH1D* hthy){
+  bool funcDebug=true;
+  int nbins=hthy->GetNbinsX();
+  if(funcDebug)std::cout<<"nbins="<< nbins<< std::endl;
+  double y_lastbin=hthy->GetBinContent(nbins);
+  double y_nxt2lastbin=hthy->GetBinContent(nbins-1);
+  if(funcDebug)std::cout<<"y_lastbin     ="<< y_lastbin     << std::endl;
+  if(funcDebug)std::cout<<"y_nxt2lastbin ="<< y_nxt2lastbin << std::endl;
+  
+  double log_y_lastbin=TMath::Log10(y_lastbin);
+  double log_y_nxt2lastbin=TMath::Log10(y_nxt2lastbin);
+  if(funcDebug)std::cout<<"log_y_lastbin     ="<< log_y_lastbin     << std::endl;
+  if(funcDebug)std::cout<<"log_y_nxt2lastbin ="<< log_y_nxt2lastbin << std::endl;
+
+  double logdiff=log_y_nxt2lastbin-log_y_lastbin;
+  double logdiff_ov2=logdiff/2.;
+  if(funcDebug)std::cout<<"logdiff     ="<< logdiff     << std::endl;
+  if(funcDebug)std::cout<<"logdiff_ov2 ="<< logdiff_ov2 << std::endl;
+
+  //double y2_log=log_y_lastbin-logdiff_ov2;  
+  //double y2_log=log_y_lastbin-16.0*logdiff;  
+  double y2_log=log_y_lastbin-4.0*logdiff;  
+  double y2=TMath::Power(10., y2_log);
+  if(funcDebug)std::cout<<"y2_log ="<< y2_log<< std::endl;
+  if(funcDebug)std::cout<<"y2     ="<< y2<< std::endl;  
+  
+  return y2;
+}

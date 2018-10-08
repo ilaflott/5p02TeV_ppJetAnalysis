@@ -1,8 +1,7 @@
 #include "unfoldSpectra.h"
 
 //other settings
-const int kRegDraw  = 0 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
-const int kRegDrawSS = 0;
+const int kRegDraw   = 4 ; // array entries w/ arguments 0-8. 4 -> middle hist on 3x3 SVDplot
 
 const bool drawPDFs=true; 
 const bool debugMode=false;
@@ -10,7 +9,7 @@ const bool drawRespMatrix=false;
 
 // CODE --------------------------------------------------
 int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName   ,
-			const bool doJetID=true   , const bool useSimpBins=false , const int kRegCenter= 5 ){
+			const bool doJetID=true   , const bool useSimpBins=false , const int kRegInput= 5 ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl<<std::endl;
@@ -390,28 +389,24 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   
   // prep for svd unfolding loop
   if(debugMode) std::cout<<std::endl<<"initializing kReg parameter array w/ "<<nKregMax<<" elements"<<std::endl;
-  if(debugMode) std::cout<<kRegCenter-kRegRange<<" <= kReg[i] <= "<<kRegCenter+kRegRange<<std::endl;
+  if(debugMode) std::cout<<kRegInput-kRegRange<<" <= kReg[i] <= "<<kRegInput+kRegRange<<std::endl;
   
   //for kreg = user spec
   int kReg[nKregMax]={0};
-  for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i) 
-    kReg[i+kRegRange]=kRegCenter+i;  
-  if(debugMode){
-    for(int i=(-1*kRegRange); (i+kRegRange)<nKregMax; ++i)
-      std::cout<<"kReg["<<i+kRegRange<<"]="<<kReg[i+kRegRange]<<std::endl;}
-  
-  //for kregSS = 1 through 9
-  int kRegSS[nKregMax]={0};
-  for(int i=1; i<=9; ++i) 
-    kRegSS[i-1]=i; 
-  if(debugMode){
-    for(int i=1; i<=9; ++i) 
-      std::cout<<"kRegSS["<<i<<"]="<<kRegSS[i-1]<<std::endl;}
+  init_kRegParamArray((int*)kReg, nbins_pt_gen_mat , kRegInput);  
+  //if(debugMode)
+  for(int i=0; i<nKregMax; ++i){
+    if(i==kRegDraw)std::cout<<"*DRAWING* ";
+    else           std::cout<<"          ";
+    std::cout<<"kReg["<<i<<"] = "<<kReg[i];  
+    if(i==kRegDraw)std::cout<<" *DRAWING*"<<std::endl;
+    else std::cout<<std::endl;
+  }
   
   std::cout<<std::endl;
   std::cout<<"creating instance of RooUnfoldResponse class"<<std::endl;    
   std::cout<<std::endl;
-  std::string roo_resp_title = "Response_matrix_rebin_"+radius+std::to_string(kRegCenter);  
+  std::string roo_resp_title = "Response_matrix_rebin_"+radius+std::to_string(kRegInput);  
   RooUnfoldResponse roo_resp(hrec_sameside_resp_rebin, hgen_resp_rebin, hmat_rebin, (roo_resp_title).c_str());    
   roo_resp.UseOverflow(doOverUnderflows);
   if(debugMode)roo_resp.Write();
@@ -561,7 +556,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
       hSVal->SetXTitle("i");        
       hSVal->SetYTitle("Singular Values s_{i}");        
       //hSVal->DrawCopy("HIST E");
-      hSVal->Draw("HIST E");
+      hSVal->DrawClone("HIST E");
       
       
       // di vector values
@@ -576,7 +571,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
       hdi->SetXTitle("i");
       hdi->SetYTitle("Divector Values d_{i}");
       //hdi->DrawCopy("HIST E"); 
-      hdi->Draw("HIST E"); 
+      hdi->DrawClone("HIST E"); 
       
       TLine* theLineAtOne_hdi=new TLine(1., 1., (double)(hdi->GetNbinsX()), 1.);
       theLineAtOne_hdi->SetLineWidth(1);
@@ -745,10 +740,10 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     //hrec_rebin_clone->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
     hunf_svd[kr]->SetTitle( ("Jet Spectra,"+kRegRandEtaRange_plotTitle).c_str() );
 
-    hunf_svd[kr]->Draw("P E");
-    hrec_rebin_clone->Draw("P E SAME");
-    hgen_rebin_clone->Draw("P E SAME");
-    //hfold_svd[kr]->Draw("P E SAME");      
+    hunf_svd[kr]->DrawClone("P E");
+    hrec_rebin_clone->DrawClone("P E SAME");
+    hgen_rebin_clone->DrawClone("P E SAME");
+    //hfold_svd[kr]->DrawClone("P E SAME");      
     
     leg[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option 
     leg[kr]->AddEntry(hrec_rebin_clone,"OS MC Meas.","p");
@@ -795,8 +790,8 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     //hrec_unfolded_ratio[kr]->SetXTitle("Jet p_{T} (GeV/c)");
     hrec_unfolded_ratio[kr]->SetAxisRange(0.2, 1.8, "Y");
     
-    hrec_unfolded_ratio[kr]->Draw("P E");
-    //hrec_fold_ratio[kr]->Draw("P E SAME");
+    hrec_unfolded_ratio[kr]->DrawClone("P E");
+    //hrec_fold_ratio[kr]->DrawClone("P E SAME");
     
     leg1[kr] = new TLegend(0.67, 0.80, 0.9, 0.9, NULL,"BRNDC");   
     leg1[kr]->AddEntry(hrec_unfolded_ratio[kr],"OS MC Unf./OS MC Meas.","pl");
@@ -833,8 +828,8 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     setupRatioHist(hgen_unfolded_ratio[kr],useSimpBins);
     
-    hgen_unfolded_ratio[kr]->Draw("P E");
-    //hgen_folded_ratio[kr]->Draw("P E SAME");
+    hgen_unfolded_ratio[kr]->DrawClone("P E");
+    //hgen_folded_ratio[kr]->DrawClone("P E SAME");
     
     leg2[kr] = new TLegend(0.67, 0.80, 0.9, 0.9, NULL,"BRNDC");
     leg2[kr]->AddEntry(hgen_unfolded_ratio[kr],"OS MC Unf./SS MC Truth","pl");
@@ -859,7 +854,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     hCovmatSVD[kr]->SetAxisRange(1e-15,1e+02,"Z");
     hCovmatSVD[kr]->GetZaxis()->SetLabelSize(0.035);
-    hCovmatSVD[kr]->Draw("COLZ");
+    hCovmatSVD[kr]->DrawClone("COLZ");
 
 
 
@@ -874,7 +869,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     hCovmatAbsValSVD[kr]->SetAxisRange(1e-15,1e+02,"Z");
     hCovmatAbsValSVD[kr]->GetZaxis()->SetLabelSize(0.035);
-    hCovmatAbsValSVD[kr]->Draw("COLZ");
+    hCovmatAbsValSVD[kr]->DrawClone("COLZ");
     
     //if(kReg[kr]==kRegDraw){
     if(kr==kRegDraw){
@@ -895,7 +890,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     
     hPearsonSVD[kr]->GetZaxis()->SetLabelSize(0.035);
     hPearsonSVD[kr]->SetAxisRange(-1., 1., "Z");    
-    hPearsonSVD[kr]->Draw("COLZ");
+    hPearsonSVD[kr]->DrawClone("COLZ");
 
 
 
@@ -1014,12 +1009,12 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     hrec_rebin_clone->SetTitle("SVD, OS and SS MC Spectra");
     setupSpectraHist(hrec_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
     
-    hrec_rebin_clone->Draw("P E");
-    hrec_sameside_rebin_clone->Draw("P E SAME");
-    hgen_rebin_clone->Draw("P E SAME");	
-    hunf_svd[kRegDraw]->Draw("P E SAME");
-    hunf_ss_svd[kRegDraw]->Draw("P E SAME");
-    //hfold_svd[kRegDraw]->Draw("P E SAME");
+    hrec_rebin_clone->DrawClone("P E");
+    hrec_sameside_rebin_clone->DrawClone("P E SAME");
+    hgen_rebin_clone->DrawClone("P E SAME");	
+    hunf_svd[kRegDraw]->DrawClone("P E SAME");
+    hunf_ss_svd[kRegDraw]->DrawClone("P E SAME");
+    //hfold_svd[kRegDraw]->DrawClone("P E SAME");
     
     
     TLegend * leg1 = new TLegend(0.7, 0.7, 0.9, 0.9, NULL,"NBNDC");
@@ -1051,11 +1046,11 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     setupRatioHist(hgen_unfolded_ratio[kRegDraw], useSimpBins);
     
     
-    hgen_unfolded_ratio[kRegDraw]->Draw("P E");
-    hgen_ssunfolded_ratio[kRegDraw]->Draw("P E SAME");
-    hgen_meas_ratio->Draw("P E SAME");
-    hgen_ssmeas_ratio->Draw("P E SAME");
-    //hgen_folded_ratio[kRegDraw]->Draw("P E SAME");
+    hgen_unfolded_ratio[kRegDraw]->DrawClone("P E");
+    hgen_ssunfolded_ratio[kRegDraw]->DrawClone("P E SAME");
+    hgen_meas_ratio->DrawClone("P E SAME");
+    hgen_ssmeas_ratio->DrawClone("P E SAME");
+    //hgen_folded_ratio[kRegDraw]->DrawClone("P E SAME");
     
     TLegend * leg3 = new TLegend(0.1, 0.8, 0.2, 0.9, NULL,"NBNDC");
     leg3->AddEntry(hgen_meas_ratio,              "OS MC Meas.","pl");
@@ -1095,11 +1090,11 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     setupRatioHist(hrec_unfolded_ratio[kRegDraw], useSimpBins);
     
     
-    hrec_unfolded_ratio[kRegDraw]->Draw("P E");
-    hrec_ssunfolded_ratio[kRegDraw]->Draw("P E SAME");
-    hrec_truth_ratio->Draw("P E SAME");
-    hrec_ssmeas_ratio->Draw("P E SAME");
-    //hrec_fold_ratio[kRegDraw]->Draw("P E SAME");
+    hrec_unfolded_ratio[kRegDraw]->DrawClone("P E");
+    hrec_ssunfolded_ratio[kRegDraw]->DrawClone("P E SAME");
+    hrec_truth_ratio->DrawClone("P E SAME");
+    hrec_ssmeas_ratio->DrawClone("P E SAME");
+    //hrec_fold_ratio[kRegDraw]->DrawClone("P E SAME");
     
     TLegend * leg2 = new TLegend(0.1, 0.8, 0.2, 0.9, NULL,"NBNDC");
     leg2->AddEntry(hrec_ssmeas_ratio,"SS MC Meas.","pl");
@@ -1134,9 +1129,9 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     setupRatioHist(hrec_fold_ratio[kRegDraw], useSimpBins);
     
     
-    hrec_fold_ratio[kRegDraw]->Draw("P E");
-    hrec_ssfold_ratio[kRegDraw]->Draw("P E SAME");
-    hrec_truthfold_ratio[kRegDraw]->Draw("P E SAME");
+    hrec_fold_ratio[kRegDraw]->DrawClone("P E");
+    hrec_ssfold_ratio[kRegDraw]->DrawClone("P E SAME");
+    hrec_truthfold_ratio[kRegDraw]->DrawClone("P E SAME");
     
     TLegend * legfold = new TLegend(0.1, 0.8, 0.4, 0.9, NULL,"NBNDC");
     legfold->AddEntry(hrec_fold_ratio[kRegDraw],"OS MC Fold(Unf.)/OS MC Meas.","pl");
@@ -1166,10 +1161,10 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     hfak->SetTitle("MC Only, Spectra and Kinematic Fakes");
     setupSpectraHist(hfak, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
     
-    hfak->Draw("P E");
-    hrec_sameside_rebin->Draw("P E SAME");
-    hrec_rebin->Draw("P E SAME");
-    hgen_resp_rebin->Draw("P E SAME");
+    hfak->DrawClone("P E");
+    hrec_sameside_rebin->DrawClone("P E SAME");
+    hrec_rebin->DrawClone("P E SAME");
+    hgen_resp_rebin->DrawClone("P E SAME");
     
     TLegend * legfake = new TLegend(0.6, 0.7, 0.9, 0.9, NULL,"NBNDC");
     legfake->AddEntry(hfak,"SS MC Kinematic Fakes","lp");
@@ -1213,11 +1208,11 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
     CT10nlo->SetTitle("NLO Thy w/ MC, OS Unf., SS Truth");
 
-    CT10nlo  ->Draw("][HIST E");
-    CT14nlo  ->Draw("][HIST E SAME");
+    CT10nlo  ->DrawClone("][HIST E");
+    CT14nlo  ->DrawClone("][HIST E SAME");
     
-    hgen_rebin_x2->Draw("P E SAME");
-    hunf_x2->Draw("P E SAME");   //just for axis range
+    hgen_rebin_x2->DrawClone("P E SAME");
+    hunf_x2->DrawClone("P E SAME");   //just for axis range
     
 
     legendThy1->Draw();
@@ -1257,12 +1252,12 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     HERAPDF->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
     HERAPDF->SetTitle("NLO Thy w/ MC, OS Unf., SS Truth");
     
-    HERAPDF  ->Draw("][HIST E");
-    MMHTnlo  ->Draw("][HIST E SAME");
-    NNPDFnnlo->Draw("][HIST E SAME");
+    HERAPDF  ->DrawClone("][HIST E");
+    MMHTnlo  ->DrawClone("][HIST E SAME");
+    NNPDFnnlo->DrawClone("][HIST E SAME");
     
-    hgen_rebin_x2->Draw("P E SAME");
-    hunf_x2->Draw("P E SAME");   //just for axis range
+    hgen_rebin_x2->DrawClone("P E SAME");
+    hunf_x2->DrawClone("P E SAME");   //just for axis range
     
 
     legendThy->Draw();
@@ -1284,11 +1279,11 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ 2 x (SVD Unf. OS MC)" );
     h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / 2 x (Unf. OS MC)");
     
-    h_thyratio_CT10nlo ->Draw( "][HIST ");      
-    h_thyratio_CT14nlo ->Draw( "][HIST SAME"); 
-    h_thyratio_HERAPDF ->Draw( "][HIST SAME"); 
-    h_thyratio_MMHTnlo ->Draw( "][HIST SAME"); 
-    h_thyratio_NNPDFnnlo->Draw("][HIST SAME"); 
+    h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
+    h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
+    h_thyratio_HERAPDF ->DrawClone( "][HIST SAME"); 
+    h_thyratio_MMHTnlo ->DrawClone( "][HIST SAME"); 
+    h_thyratio_NNPDFnnlo->DrawClone("][HIST SAME"); 
 
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
@@ -1420,7 +1415,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
 int main(int argc, char* argv[]){  int rStatus = -1;
   
   if( argc!=6 ){
-    std::cout<<"do ./SVDUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kRegCenter>"<<std::endl;
+    std::cout<<"do ./SVDUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kRegInput>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
     
     return rStatus;  }

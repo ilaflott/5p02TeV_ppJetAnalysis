@@ -781,29 +781,170 @@ void init_kRegParamArray(int* kReg, int nbins, int kRegInput){
     if(funcDebug) std::cout<<"kRegInput is now = "<< kRegInput<<std::endl;      
     if(funcDebug) std::cout<<(kReg_lo)<<" <= kReg[i] <= "<<(kReg_hi)<<std::endl;
     if(funcDebug) std::cout<<" nbins/2 = "<<nbins<<"/2 = "<< nbins/2<<std::endl;      }
-  bool addExtraOne=false; //in case the kRegParam=1 (which is a useless case to check, the normalization is consistently wrong in this case)
+  bool addOne_avdOne=false; //in case the kRegParam=1 (which is a useless case to check, the normalization is consistently wrong in this casw
+  bool addOne_avdkr0=false;
   for(int i=0; i<nKregMax; ++i)   {
     int kRegParam=kReg_lo+i-1;
     if( i==0 )  
-      kReg[i]=(nbins/2);
+      kReg[0]=(nbins/2);
     
     else if( i>=1){
       if(i==1 && kRegParam==1)
-	addExtraOne=true;
+	addOne_avdOne=true;
+      if(kRegParam==kReg[0])
+	addOne_avdkr0=true;
       
       
       kReg[i]=kRegParam;
-      if(addExtraOne)
-	kReg[i]+=1;
-    }
-    
-  }
 
+      if(addOne_avdOne)
+	kReg[i]+=1;
+      
+      if(addOne_avdkr0)//avoid nbins/2
+	kReg[i]+=1;
+      
+      
+    }
+    if(funcDebug) std::cout<<"kReg["<<i<<"]="<<kReg[i]<<std::endl;
+  }
+  //assert(false);
   return;
 }
 
 
 
+void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput){
+  
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<std::endl<<"drawing singular values on di_sv_canv canvas.."<<std::endl<<std::endl;
+  di_sv_canv->cd(1);
+  di_sv_canv->cd(1)->SetLogy();  
+  
+  hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
+  hSVal->SetTitle("Singular Values (AC^{-1})");        
+  hSVal->SetXTitle("index i");        
+  hSVal->SetYTitle("s_{i}");        
+  hSVal->DrawClone("HIST E");
+  
+  double tau=hSVal->GetBinContent(kRegInput+1)*hSVal->GetBinContent(kRegInput+1);
+  printf("(orig)tau=%f\n",tau);
+  tau*=100.;
+  printf("tau=%f\n",tau);
+  tau=(int)tau;
+  printf("tau=%f\n",tau);
+  tau/=100;
+  printf("tau=%f\n",tau);
+  
+  float x=0.550173, y=0.8459761;
+  drawText( "5.02 TeV ak4PFJets",                                 x, y, 19);y-=0.03;
+  drawText( "2015 Prompt Reco"  ,                                 x, y, 19);y-=0.03;
+  drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
+  drawText( ("Current kReg="+std::to_string(kRegInput)).c_str() , x, y, 19);y-=0.03;	
+  drawText( ("#tau = "+std::to_string( tau ) ).c_str() , x, y, 19);	      
+  
+  // di vector values
+  di_sv_canv->cd(2);
+  di_sv_canv->cd(2)->SetLogy(1);    
+  
+  hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
+  hdi->SetTitle("Divector Values (#||{d_{i}}) ");
+  hdi->SetXTitle("index i");
+  hdi->SetYTitle("#||{d_{i}}");
+  hdi->DrawClone("HIST E"); 
+  
+  ((TPad*)(di_sv_canv->cd(2)))->Update();      //note, if you do this to a pad that is log scaled, this returns the log of the max+min, not the max+min
+  double ymax= gPad->GetUymax();
+  ymax=pow(10,ymax);
+  ((TPad*)(di_sv_canv->cd(2)))->Update();            
+  double ymin= gPad->GetUymin();
+  ymin=pow(10,ymin);
+  
+  di_sv_canv->cd(2);      
+  hdi->DrawClone("HIST E"); 
+  
+  double xcoord= ( ((double)kRegInput) + 1. );	
+  std::cout<<"ymax="<<ymax<<std::endl;
+  std::cout<<"ymin="<<ymin<<std::endl;
+
+  std::cout<<"kRegInput="<<kRegInput<<std::endl;
+  std::cout<<"((double)kRegInput) + 1. = "<< (((double)kRegInput) + 1.) <<std::endl;
+  std::cout<<"xcoord="<<xcoord<<std::endl;
+  
+  TLine* theLineAtOne_hdi=new TLine(1., 1., (double)(hdi->GetNbinsX()), 1.);
+  theLineAtOne_hdi->SetLineWidth(1);
+  theLineAtOne_hdi->SetLineStyle(2);
+  theLineAtOne_hdi->SetLineColor(36);
+  theLineAtOne_hdi->Draw();
+  
+  TLine* kRegLine_hdi=new TLine(xcoord, ymin, xcoord, ymax);      
+  kRegLine_hdi->SetLineWidth(1);
+  kRegLine_hdi->SetLineStyle(2);
+  kRegLine_hdi->SetLineColor(36);
+  kRegLine_hdi->Draw();
+  
+  float x1=0.550173, y1=0.8459761;
+  drawText( "5.02 TeV ak4PFJets",                                 x1, y1, 19);y1-=0.03;
+  drawText( "2015 Prompt Reco"  ,                                 x1, y1, 19);y1-=0.03;
+  drawText( MCdesc.c_str()      ,                                 x1, y1, 19);y1-=0.03;
+  drawText( ("Current kReg="+std::to_string(kRegInput)).c_str() , x1, y1, 19);y1-=0.03;	
+  drawText( ("#tau="+std::to_string(tau) ).c_str() , x1, y1, 19);	
+  
+  float hdi_signif_mean=0;
+  int signif_count=0;
+  float hdi_insignif_mean=0;
+  int insignif_count=0;
+  for(int k=1; k<= (hdi->GetNbinsX());k++){
+    int lowedge = (int)hdi->GetBinLowEdge(k);
+    if(lowedge<1){
+      std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
+      continue;
+    }
+    else if(lowedge>=1 && lowedge <= kRegInput){
+      std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
+      signif_count++;
+      hdi_signif_mean+=hdi->GetBinContent(k);
+    }
+    else{
+      std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
+      insignif_count++;
+      hdi_insignif_mean+=hdi->GetBinContent(k);
+    }
+  }
+  hdi_signif_mean/=  (float)signif_count;
+  hdi_insignif_mean/=  (float)insignif_count;
+	
+  float hdi_signif_stddev=0;
+  float hdi_insignif_stddev=0;
+  for(int k=1; k<= (hdi->GetNbinsX());k++){
+    int lowedge = (int)hdi->GetBinLowEdge(k);
+    if(lowedge<1){
+      std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
+      continue;	}
+    else if(lowedge>=1 && lowedge <= kRegInput){
+      std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
+      hdi_signif_stddev+=(hdi->GetBinContent(k)-hdi_signif_mean)*(hdi->GetBinContent(k)-hdi_signif_mean);	}
+    else{
+      std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
+      hdi_insignif_stddev+=(hdi->GetBinContent(k)-hdi_insignif_mean)*(hdi->GetBinContent(k)-hdi_insignif_mean);	}
+  }
+  
+  hdi_signif_stddev/=(float)(signif_count -1 );
+  hdi_signif_stddev=sqrt(hdi_signif_stddev);
+  hdi_insignif_stddev/=(float)(insignif_count -1 );
+  hdi_insignif_stddev=sqrt(hdi_insignif_stddev);
+  
+  std::cout<<"fo divectors for significant principal components of AC^-1's SVD decomposition"<<std::endl;
+  std::cout<<"mean = "<<hdi_signif_mean<<std::endl;
+  std::cout<<"std dev = "<<hdi_signif_stddev<<std::endl;
+  
+  std::cout<<"fo divectors for INsignificant principal components of AC^-1's SVD decomposition"<<std::endl;
+  std::cout<<"mean = "<<hdi_insignif_mean<<std::endl;
+  std::cout<<"std dev = "<<hdi_insignif_stddev<<std::endl;
+  
+
+  
+  return;
+}
 
 
 

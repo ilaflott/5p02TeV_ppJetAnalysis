@@ -794,6 +794,20 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
   
   TH2D* hmat_percenterrs=NULL;
+
+  //misc printing prep
+  TLine* theLineAtOne= new TLine( boundaries_pt_gen_mat[0], 1., 
+				  (boundaries_pt_gen_mat[nbins_pt_gen_mat]), 1.);
+  theLineAtOne->SetLineWidth(1);
+  theLineAtOne->SetLineStyle(2);
+  theLineAtOne->SetLineColor(36);    
+  
+  TLine* theLineAtp9= (TLine*)theLineAtOne->Clone();
+  theLineAtp9->SetY1(0.9);    theLineAtp9->SetY2(0.9);       
+  
+  TLine* theLineAt1p1= (TLine*)theLineAtOne->Clone();
+  theLineAt1p1->SetY1(1.1);    theLineAt1p1->SetY2(1.1);
+  
   
   if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<"drawing output PDFs for Bayesian Unfolding..."<<std::endl;
@@ -808,19 +822,6 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
     
 
 
-
-    //misc printing prep
-    TLine* theLineAtOne= new TLine( boundaries_pt_gen_mat[0], 1., 
-				    (boundaries_pt_gen_mat[nbins_pt_gen_mat]), 1.);
-    theLineAtOne->SetLineWidth(1);
-    theLineAtOne->SetLineStyle(2);
-    theLineAtOne->SetLineColor(36);    
-    
-    TLine* theLineAtp9= (TLine*)theLineAtOne->Clone();
-    theLineAtp9->SetY1(0.9);    theLineAtp9->SetY2(0.9);       
-    
-    TLine* theLineAt1p1= (TLine*)theLineAtOne->Clone();
-    theLineAt1p1->SetY1(1.1);    theLineAt1p1->SetY2(1.1);
 
     
 
@@ -971,7 +972,7 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
 
 
     canvForPrint->Print(outPdfFile.c_str());    
-        canv_fold_ratio=(TCanvas*)canvForPrint->DrawClone();
+    canv_fold_ratio=(TCanvas*)canvForPrint->DrawClone();
 
     
     // gen/reco response spectra hists ---------------    

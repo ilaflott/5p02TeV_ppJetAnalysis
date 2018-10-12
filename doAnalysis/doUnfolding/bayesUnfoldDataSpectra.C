@@ -676,6 +676,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
 
 
+
+
+
   //TCanvas pointers for writing canvs to file
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
@@ -1088,9 +1091,11 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
   }// end draw pdfs
   
+  std::cout<<"writing output hists to file... "<<std::endl;
+
   fout->cd();
   
-  std::cout<<"writing output hists to file... "<<std::endl;
+
   
   // input data ------------------
   hrec_rebin->SetTitle("Data Meas.");hrec_rebin->Write("Data_meas");

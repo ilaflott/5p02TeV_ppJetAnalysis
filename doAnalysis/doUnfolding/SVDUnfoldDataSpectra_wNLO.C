@@ -1,10 +1,9 @@
 #include "unfoldSpectra.h"
 
 //other settings
-
 const int verbosity=0;
 const bool drawPDFs=true; 
-const bool debugMode=true, debugWrite=false;
+const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=false;
 
 // CODE --------------------------------------------------
@@ -318,18 +317,21 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   
   
   
-  if(debugWrite)std::cout<<"cloning input hists..."<<std::endl;
-  TH1D* hrec_rebin_clone=(TH1D*)hrec_rebin->Clone("hrec_rebin_clone");
-  setupSpectraHist(hrec_rebin_clone, useSimpBins);
-  if(debugMode)hrec_rebin_clone->Print("base");
-
-  TH1D* hgen_rebin_clone=(TH1D*)hgen_rebin->Clone("hgen_rebin_clone");
-  setupSpectraHist(hgen_rebin_clone, useSimpBins);
-  if(debugMode)hgen_rebin_clone->Print("base");
   
-  TH1D* hrec_sameside_rebin_clone=(TH1D*)hrec_sameside_rebin->Clone("hrec_sameside_rebin_clone");
-  setupSpectraHist(hrec_sameside_rebin_clone, useSimpBins);
-  if(debugMode)hrec_sameside_rebin_clone->Print("base");  
+
+
+  
+  TH1D* hgen_meas_ratio=(TH1D*)hrec_rebin->Clone("hgen_meas_ratio_clone"); //data meas/gen truth
+  hgen_meas_ratio->Divide(hgen_rebin);  
+  TH1D* hgen_ssmeas_ratio=(TH1D*)hrec_sameside_rebin->Clone("hgen_ssmeas_ratio_clone"); //mc meas/gen truth
+  hgen_ssmeas_ratio->Divide(hgen_rebin);  
+  TH1D* hrec_truth_ratio=(TH1D*)hgen_rebin->Clone("hrec_truth_ratio_clone");  //gen truth/data meas
+  hrec_truth_ratio->Divide(hrec_rebin);
+  TH1D* hrec_ssmeas_ratio=(TH1D*)hrec_sameside_rebin->Clone("hrec_ssmeas_ratio_clone"); //MC meas/data meas  
+  hrec_ssmeas_ratio->Divide(hrec_rebin);
+  
+  TH1D *hSVal=NULL;
+  TH1D *hdi=NULL;
   
 
   // SVD spectra
@@ -340,30 +342,9 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   // SVD ratios 
   TH1D* hgen_unfolded_ratio[nKregMax]={}; //data unf/gen truth
   TH1D* hgen_folded_ratio[nKregMax]={};   //not drawn anymore
-
-  TH1D* hgen_meas_ratio=(TH1D*)hrec_rebin->Clone("hgen_meas_ratio_clone"); //data meas/gen truth
-  hgen_meas_ratio->Divide(hgen_rebin);
-  
-  TH1D* hgen_ssmeas_ratio=(TH1D*)hrec_sameside_rebin->Clone("hgen_ssmeas_ratio_clone"); //mc meas/gen truth
-  hgen_ssmeas_ratio->Divide(hgen_rebin);
-  
-  TH1D* hrec_unfolded_ratio[nKregMax]={}; //data unf/data meas
-  
+  TH1D* hrec_unfolded_ratio[nKregMax]={}; //data unf/data meas  
   TH1D* hrec_fold_ratio[nKregMax]={};       // not really draw anymore
-  //TH1D* hrec_ssfold_ratio[nKregMax]={};     // not really draw anymore
   TH1D* hrec_truthfold_ratio[nKregMax]={};  // not really draw anymore
-  
-  TH1D* hrec_truth_ratio=(TH1D*)hgen_rebin->Clone("hrec_truth_ratio_clone");  //gen truth/data meas
-  hrec_truth_ratio->Divide(hrec_rebin);
-
-  TH1D* hrec_ssmeas_ratio=(TH1D*)hrec_sameside_rebin->Clone("hrec_ssmeas_ratio_clone"); //MC meas/data meas  
-  hrec_ssmeas_ratio->Divide(hrec_rebin);
-  
-  TH1D* hgen_rebin_ratClone=(TH1D*)hgen_rebin->Clone("hgen_rebin_ratioClone");
-  
-  TH1D *hSVal=NULL;
-  TH1D *hdi=NULL;
-  
 
   // TH2s
   TH2D *hPearsonSVD[nKregMax];      
@@ -375,53 +356,6 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   TH2D *hRegCovMatInv=NULL;//i *think* it's the inv of the reg covmat, could be wrong and it's the data covmat instead...
   TH2D *hDataCovMat  =NULL;
   
-  
-  // TCanvases (do i really want this many? Do i really want this here in my code?)
-  if(debugMode)std::cout<<"creating histos/arrays/canvases for SVD unfolding..."<<std::endl;
-  TCanvas *cSpectra               = new TCanvas("cSpectra","",                      1800, 1500);      cSpectra->Divide(3,3);	   
-  TCanvas *cRatio_gen             = new TCanvas("cRatio_gen","",                    1800, 1500);      cRatio_gen->Divide(3,3);      		
-  TCanvas *cRatio_rec             = new TCanvas("cRatio_rec","",                    1800, 1500);      cRatio_rec->Divide(3,3);      		
-  TCanvas *cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","",                1800, 1500);      cPearsonMatrixIter->Divide(3,3);    
-  TCanvas *cCovMatrix         = new TCanvas("cCovMatrix","",                1800, 1500);      cCovMatrix->Divide(3,3);    
-  TCanvas *cCovMatrixAbs         = new TCanvas("cCovMatrixAbs","",                1800, 1500);      cCovMatrixAbs->Divide(3,3);    
-  TCanvas *c11                = new TCanvas("c11"," Singular Values and divectors", 1400, 1000);      c11->Divide(2);                    
-  
-  TLegend *leg[nKregMax],*leg1[nKregMax], *leg2[nKregMax];      
-  
-  
-  
-  TLine* theGenLine= new TLine( boundaries_pt_gen_mat[0]   	        , 1.,
-				boundaries_pt_gen_mat[nbins_pt_gen_mat] , 1.  ); 
-  theGenLine->SetLineWidth(1);
-  theGenLine->SetLineStyle(2);
-  theGenLine->SetLineColor(36);    
-  
-
-  TLine* theLineAtp9_gen= new TLine( boundaries_pt_gen_mat[0], 0.9, 
-				     boundaries_pt_gen_mat[nbins_pt_gen_mat], 0.9);
-  theLineAtp9_gen->SetLineWidth(1);
-  theLineAtp9_gen->SetLineStyle(2);
-  theLineAtp9_gen->SetLineColor(36);
-  if(debugMode)std::cout<<"theLineAtp9_gen starts at "<<boundaries_pt_gen_mat[0]  <<std::endl;
-  if(debugMode)std::cout<<"theLineAtp9_gen ends at   "<<(boundaries_pt_gen_mat[nbins_pt_gen_mat])  <<std::endl;
-  
-  TLine* theLineAt1p1_gen= new TLine( boundaries_pt_gen_mat[0], 1.1,
-				      boundaries_pt_gen_mat[nbins_pt_gen_mat], 1.1);
-  theLineAt1p1_gen->SetLineWidth(1);
-  theLineAt1p1_gen->SetLineStyle(2);
-  theLineAt1p1_gen->SetLineColor(36);
-  
-  TLine* theLineAtOne_gen= new TLine( boundaries_pt_gen_mat[0], 1.0,
-				      boundaries_pt_gen_mat[nbins_pt_gen_mat], 1.0);
-  theLineAtOne_gen->SetLineWidth(1);
-  theLineAtOne_gen->SetLineStyle(2);
-  theLineAtOne_gen->SetLineColor(36);
-
-  TLine* theRecoLine= new TLine( boundaries_pt_reco_mat[0], 1.,
-				 boundaries_pt_reco_mat[nbins_pt_reco_mat] , 1.  );
-  theRecoLine->SetLineWidth(1);
-  theRecoLine->SetLineStyle(2);
-  theRecoLine->SetLineColor(36);      
   
   // prep for svd unfolding loop, kreg = user spec
   int kRegDraw  =  4; //use the middle entry in the kReg array, typically kReg[4]= kRegInput
@@ -453,21 +387,23 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   
     // thy spectra  
   TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(), useNPCorrSpectra);
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(), useNPCorrSpectra);
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(), useNPCorrSpectra);
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(), useNPCorrSpectra);
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(), useNPCorrSpectra);
+
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(), useNPCorrSpectra);
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(), useNPCorrSpectra);
   HERAPDF->SetMarkerSize(0);
   HERAPDF->SetLineColor(kViolet-5);  
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(), useNPCorrSpectra);
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(), useNPCorrSpectra);
   NNPDFnnlo->SetMarkerSize(0);
-  NNPDFnnlo->SetLineColor(kCyan-6);  
+  NNPDFnnlo->SetLineColor(kCyan-6); 
 
+  TCanvas *di_sv_canv                = new TCanvas("di_sv_canv"," Singular Values and divectors", 1400, 1000);      di_sv_canv->Divide(2);                    
 
   // SVD unfolding loop
   for(int kr = 0; kr < nKregMax; ++kr){
@@ -476,30 +412,34 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     std::cout<<std::endl<<std::endl<<"kr="<<kr<<" , kReg = "<<kReg[kr]<<std::endl<<std::endl;        
     
     std::string kRegRandEtaRange_plotTitle="kReg="+std::to_string(kReg[kr]);
-    std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr]);
-    
+    std::string kRegRandEtaRange="_kReg"+std::to_string(kReg[kr]);    
     
     if(debugMode)std::cout<<std::endl<<"calling RooUnfoldSvd..."<<std::endl<<std::endl;
+    
     if(kr==0){
       std::cout<<std::endl;
       std::cout<<"in SVDUnfoldDataSpectra_wNLO.C, CREATING instance of class RooUnfoldSvd"<<std::endl;
     }
+    
     RooUnfoldSvd unf_svd(&roo_resp, hrec_rebin, kReg[kr]);
-    unf_svd.SetVerbose(verbosity);
+    
+    //unf_svd.SetVerbose(verbosity);
     //if(kr==0) unf_svd.SetVerbose(2);
     //else  unf_svd.SetVerbose(0);
     //if(kr==1)assert(false);
+
     if(kr==0){
       std::cout<<"in SVDUnfoldDataSpectra_wNLO.C, DONE CREATING instance of class RooUnfoldSvd"<<std::endl;
       std::cout<<std::endl;
-
     }
+
     if(debugMode) unf_svd.SetVerbose(2);
     
     if(doToyErrs){
       std::cout<<"using toy errors, suppressing text output"<<std::endl;
       unf_svd.SetVerbose(verbosity);    //trust me, so much output it slows the code down
       unf_svd.SetNToys(10000);     }
+
     if(debugMode) std::cout<<"RooUnfoldSvd Overflow Status: " << unf_svd.Overflow()<<std::endl;
     
 
@@ -509,11 +449,12 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
       std::cout<<"in SVDUnfoldDataSpectra_wNLO.C, CALLING RooUnfold.cxx's Hreco of RooUnfoldSvd instance"<<std::endl;
     }
     if(debugMode)std::cout<<"unfolding into hunf_svd[kr="<<kr<<"]..."<<std::endl;
+
     hunf_svd[kr] = (TH1D*)unf_svd.Hreco(errorTreatment);
+    
     if(kr==0){
       std::cout<<"in SVDUnfoldDataSpectra_wNLO.C, DONE CALLING RooUnfold.cxx's Hreco of RooUnfoldSvd instance"<<std::endl;
       std::cout<<std::endl;
-      //assert(false);
     }
     
     if(debugMode)std::cout<<"applying roo_resp to histo hunf_svd[kr="<<kr<<"]..."<<std::endl;
@@ -543,180 +484,42 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     
     
     
-    
-    //  singular values and d_i vector ---------------------------
-    //Note that these do not depend on the regularization.
-    //The opposite: they tell you which regularization to use! (ian note: how?)
+    //  singular values and d_i vector --------------------------- don't depend on reg selected, actually enable you to identify the optimal reg strnegth
+    // if doesn't dep on kReg, why do i do this in the loop? because i dont have a better place to put this yet. 
     if(kr == kRegDraw ){      
       
-      std::cout << "  getting divectors and singular values for oppSide ... " << std::endl;
+      //std::cout << "  getting divectors and singular values for oppSide ... " << std::endl;
       TSVDUnfold *svdUnfold = unf_svd.Impl();
       //svdUnfold->SetNormalize(true);
       
-      std::cout << "  getting singular values... " << std::endl;
+      std::cout << "  getting singular values... " << std::endl;      
       TH1D* temphSVal = (TH1D*)svdUnfold->GetSV();      
-      //hSVal = (TH1D*)svdUnfold->GetSV();      
-      if(debugMode)
-	for(int bin=1; bin<=temphSVal->GetNbinsX(); bin++) std::cout<<"bin: "<<bin<<",  SV: "<<temphSVal->GetBinContent(bin)<< std::endl;
-      
       
       std::cout << "  getting di vector values... " <<  std::endl;
       TH1D* temphdi = (TH1D*)svdUnfold->GetD();
-      //hdi = (TH1D*)svdUnfold->GetD();
+      
+      
+      hSVal         = (TH1D*) temphSVal         ->Clone();      
       if(debugMode)
-	for(int bin=1; bin<=temphdi->GetNbinsX(); bin++)	  std::cout<<"i: "<<bin<<",  di: "<<temphdi->GetBinContent(bin)<<std::endl;
+	for(int bin=1; bin<=hSVal->GetNbinsX(); bin++) std::cout<<"bin: "<<bin<<",  SV: "<<hSVal->GetBinContent(bin)<< std::endl;      
+      
+      hdi           = (TH1D*) temphdi           ->Clone();      
+      if(debugMode)
+	for(int bin=1; bin<=hdi->GetNbinsX(); bin++)   std::cout<<"i: "<<bin<<",  di: "<<hdi->GetBinContent(bin)<<std::endl;
+
       
       TH2D* temphRegCovMat    = (TH2D*)svdUnfold->GetXtau();
       TH2D* temphRegCovMatInv = (TH2D*)svdUnfold->GetXinv();
       TH2D* temphDataCovMat   = (TH2D*)svdUnfold->GetBCov();
       
-      hSVal         = (TH1D*) temphSVal         ->Clone();      
-      hdi           = (TH1D*) temphdi           ->Clone();
-      
       hRegCovMat    = (TH2D*) temphRegCovMat    ->Clone();
       hRegCovMatInv = (TH2D*) temphRegCovMatInv ->Clone();
       hDataCovMat   = (TH2D*) temphDataCovMat   ->Clone();
-      
-      
-      
-      if(debugMode)std::cout<<std::endl<<"drawing singular values on c11 canvas.."<<std::endl<<std::endl;
-      c11->cd(1);
-      c11->cd(1)->SetLogy();  
-      float xlo=hSVal->GetBinLowEdge(1),xhi=hSVal->GetBinLowEdge(hSVal->GetBinLowEdge(hSVal->GetNbinsX())+1);
-      std::cout<<"hSVal/hdi lo/hi="<<xlo<<"/"<<xhi<<std::endl;
-      xlo+=1.;
-      hSVal->SetAxisRange(xlo,xhi,"X");      //hSVal->SetAxisRange(0.,(double)(hSVal->GetNbinsX()),"X");
-      hSVal->SetTitle("Singular Values (AC^{-1})");        
-      hSVal->SetXTitle("index i");        
-      hSVal->SetYTitle("#||{s_{i}}");        
-      //hSVal->DrawCopy("HIST E");
-      hSVal->DrawClone("HIST E");
-      
-      double tau=hSVal->GetBinContent(kReg[kRegDraw] +1);//add one because the first bins value is always 0//*hSVal->GetBinContent(kReg[kRegDraw]);
-      tau*=tau;//reg strength = sing. val. squared//     printf("(orig)tau=%f\n",tau);
-      //tau*=1.;//      printf("tau=%f\n",tau);
-      //tau=(int)tau;      //      printf("tau=%f\n",tau);
-      //tau/=1;//for rounding//     printf("tau=%f\n",tau);
-      int tauint=( ((int)tau)/1 );
-      
-      float x=0.47, y=0.8459761;
-      drawText( "2015 pp Prompt Reco"  ,                                 x, y, 19);y-=0.03;
-      drawText( "ak4PFJets",                                 x, y, 19);y-=0.03;
-      //drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
-      drawText( ("kReg Cut = "+std::to_string(kReg[kRegDraw])).c_str() , x, y, 19);  y-=0.03;	
-      drawText( ("d_{Cutoff} = #||{d_{"+std::to_string(kReg[kRegDraw])+"}}").c_str() , x, y, 19);  y-=0.03;	
-      drawText( ("#tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( tauint )).c_str() , x, y, 19);	      
-		//drawText( ("Reg. Strength = #tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( (int)tau ) ).c_str() , x, y, 19);	      
-		
-                  
-      // di vector values
-      c11->cd(2);
-      c11->cd(2)->SetLogy(1);    
-      
-      hdi->SetAxisRange(xlo,xhi,"X");
-      //hdi->SetAxisRange(0.,(double)(hdi->GetNbinsX()),"X");
-      hdi->SetTitle("Divector Values (#||{d_{i}}) ");
-      hdi->SetXTitle("index i");
-      hdi->SetYTitle("#||{d_{i}}");
-      //hdi->DrawCopy("HIST E"); 
-      hdi->DrawClone("HIST E"); 
-      
-      ((TPad*)(c11->cd(2)))->Update();      //note, if you do this to a pad that is log scaled, this returns the log of the max+min, not the max+min
-      double ymax= gPad->GetUymax();
-      ymax=pow(10,ymax);
-      ((TPad*)(c11->cd(2)))->Update();            
-      double ymin= gPad->GetUymin();
-      ymin=pow(10,ymin);
-      
-      c11->cd(2);
-      
-      hdi->DrawClone("HIST E"); 
-      
-      double xcoord= ( ((double)kRegInput) + 1. - 0.5);
-      
-      std::cout<<"ymax="<<ymax<<std::endl;
-      std::cout<<"ymin="<<ymin<<std::endl;
-      std::cout<<"kRegDraw="<<kr<<std::endl;
-      std::cout<<"kRegInput="<<kRegInput<<std::endl;
-      std::cout<<"((double)kRegInput) + 1. = "<< (((double)kRegInput) + 1.) <<std::endl;
-      std::cout<<"xcoord="<<xcoord<<std::endl;
-      //assert(false);
-      
-      TLine* theLineAtOne_hdi=new TLine(1., 1.1, (double)(hdi->GetNbinsX()), 1.1);
-      theLineAtOne_hdi->SetLineWidth(1);
-      theLineAtOne_hdi->SetLineStyle(2);
-      theLineAtOne_hdi->SetLineColor(36);
-      theLineAtOne_hdi->Draw();
-      
-      TLine* kRegLine_hdi=new TLine(xcoord, ymin, xcoord, ymax);      
-      kRegLine_hdi->SetLineWidth(1);
-      kRegLine_hdi->SetLineStyle(2);
-      kRegLine_hdi->SetLineColor(kRed);
-      kRegLine_hdi->Draw();
-      
-      //float x1=0.550173, y1=0.8459761;
-      //drawText( "5.02 TeV ak4PFJets",                                 x1, y1, 19);y1-=0.03;
-      //drawText( "2015 Prompt Reco"  ,                                 x1, y1, 19);y1-=0.03;
-      //drawText( MCdesc.c_str()      ,                                 x1, y1, 19);y1-=0.03;
-      //drawText( ("Current kReg="+std::to_string(kReg[kRegDraw])).c_str() , x1, y1, 19);y1-=0.03;	
-      //drawText( ("#tau="+std::to_string(tau) ).c_str() , x1, y1, 19);	
-      
-      float hdi_signif_mean=0;
-      int signif_count=0;
-      float hdi_insignif_mean=0;
-      int insignif_count=0;
-      for(int k=1; k<= (hdi->GetNbinsX());k++){
-	int lowedge = (int)hdi->GetBinLowEdge(k);
-	if(lowedge<1){
-	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
-	  continue;
-	}
-	else if(lowedge>=1 && lowedge <= kRegInput){
-	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
-	  signif_count++;
-	  hdi_signif_mean+=hdi->GetBinContent(k);
-	}
-	else{
-	  std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
-	  insignif_count++;
-	  hdi_insignif_mean+=hdi->GetBinContent(k);
-      	}
-      }
-      hdi_signif_mean/=  (float)signif_count;
-      hdi_insignif_mean/=  (float)insignif_count;
 
-      float hdi_signif_stddev=0;
-      float hdi_insignif_stddev=0;
-      for(int k=1; k<= (hdi->GetNbinsX());k++){
-	int lowedge = (int)hdi->GetBinLowEdge(k);
-	if(lowedge<1){
-	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
-	  continue;
-	}
-	else if(lowedge>=1 && lowedge <= kRegInput){
-	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
-	  hdi_signif_stddev+=(hdi->GetBinContent(k)-hdi_signif_mean)*(hdi->GetBinContent(k)-hdi_signif_mean);
-	}
-	else{
-	  std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
-	  hdi_insignif_stddev+=(hdi->GetBinContent(k)-hdi_insignif_mean)*(hdi->GetBinContent(k)-hdi_insignif_mean);
-	}
-      }
-      hdi_signif_stddev/=(float)(signif_count -1 );
-      hdi_signif_stddev=sqrt(hdi_signif_stddev);
-      hdi_insignif_stddev/=(float)(insignif_count -1 );
-      hdi_insignif_stddev=sqrt(hdi_insignif_stddev);
-      std::cout<<"fo divectors for significant principal components of AC^-1's SVD decomposition"<<std::endl;
-      std::cout<<"mean = "<<hdi_signif_mean<<std::endl;
-      std::cout<<"std dev = "<<hdi_signif_stddev<<std::endl;
-
-      std::cout<<"fo divectors for INsignificant principal components of AC^-1's SVD decomposition"<<std::endl;
-      std::cout<<"mean = "<<hdi_insignif_mean<<std::endl;
-      std::cout<<"std dev = "<<hdi_insignif_stddev<<std::endl;
+      draw_di_sv_canv(di_sv_canv, hSVal, hdi, kRegInput);
       
-      //assert(false);
-      if(debugMode)std::cout<<std::endl<<"done with kr=="<< kRegDraw<<" specifics"<<std::endl<<std::endl;          }
-
+    }
+    
     
   }// kReg loop ends
   
@@ -727,14 +530,6 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
 
   divideBinWidth((TH1D*)hgen_resp_rebin);
   hgen_resp_rebin->Scale(1./etaBinWidth);
-
-  divideBinWidth((TH1D*)hgen_rebin_clone);
-  hgen_rebin_clone->Scale(1./etaBinWidth);
-
-  divideBinWidth((TH1D*)hgen_rebin_ratClone);
-  hgen_rebin_ratClone->Scale(1./etaBinWidth);
-
-
   
   divideBinWidth((TH1D*)hrec_rebin);
   hrec_rebin->Scale(1./etaBinWidth);
@@ -745,9 +540,6 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   divideBinWidth((TH1D*)hrec_sameside_resp_rebin);
   hrec_sameside_resp_rebin->Scale(1./etaBinWidth);
   
-  divideBinWidth((TH1D*)hrec_rebin_clone);
-  hrec_rebin_clone->Scale(1./etaBinWidth);
-
   divideBinWidth((TH1D*) hfak);
   hfak->Scale(1./etaBinWidth);
   
@@ -772,6 +564,31 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
 
 
   // 3x3 TCanvas drawing loop
+  // TCanvases (do i really want this many? Do i really want this here in my code?)
+  if(debugMode)std::cout<<"creating histos/arrays/canvases for SVD unfolding..."<<std::endl;
+  TCanvas *cSpectra               = new TCanvas("cSpectra","",                      1800, 1500);      cSpectra->Divide(3,3);	   
+  TCanvas *cRatio_gen             = new TCanvas("cRatio_gen","",                    1800, 1500);      cRatio_gen->Divide(3,3);      		
+  TCanvas *cRatio_rec             = new TCanvas("cRatio_rec","",                    1800, 1500);      cRatio_rec->Divide(3,3);      		
+  TCanvas *cPearsonMatrixIter = new TCanvas("cPearsonMatrixIter","",                1800, 1500);      cPearsonMatrixIter->Divide(3,3);    
+  TCanvas *cCovMatrix         = new TCanvas("cCovMatrix","",                1800, 1500);      cCovMatrix->Divide(3,3);    
+  TCanvas *cCovMatrixAbs         = new TCanvas("cCovMatrixAbs","",                1800, 1500);      cCovMatrixAbs->Divide(3,3);    
+  
+  TLegend *leg[nKregMax],*leg1[nKregMax], *leg2[nKregMax];      
+  
+  
+  TLine* theLineAtOne= new TLine( boundaries_pt_gen_mat[0], 1., 
+				  (boundaries_pt_gen_mat[nbins_pt_gen_mat]), 1.);
+  theLineAtOne->SetLineWidth(1);
+  theLineAtOne->SetLineStyle(2);
+  theLineAtOne->SetLineColor(36);    
+  
+  TLine* theLineAtp9= (TLine*)theLineAtOne->Clone();
+  theLineAtp9->SetY1(0.9);    theLineAtp9->SetY2(0.9);       
+  
+  TLine* theLineAt1p1= (TLine*)theLineAtOne->Clone();
+  theLineAt1p1->SetY1(1.1);    theLineAt1p1->SetY2(1.1);
+  
+  
   
   for(int kr = 0; kr < nKregMax; ++kr){
 
@@ -835,18 +652,18 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     if(!useSimpBins)
       cSpectra->cd(kr+1)->SetLogx(1);
     
-    setupSpectraHist(hrec_rebin_clone,useSimpBins);
-    hrec_rebin_clone->SetTitle( ("Jet Spectra, "+kRegRandEtaRange_plotTitle).c_str() ); //FOR TITLE OF PLOT
-    //hrec_rebin_clone->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
+    setupSpectraHist(hrec_rebin,useSimpBins);
+    hrec_rebin->SetTitle( ("Jet Spectra, "+kRegRandEtaRange_plotTitle).c_str() ); //FOR TITLE OF PLOT
+
     
-    hrec_rebin_clone->DrawClone("P E");
-    hgen_rebin_clone->DrawClone("P E SAME");
+    hrec_rebin->DrawClone("P E");
+    hgen_rebin->DrawClone("P E SAME");
     hunf_svd[kr]->DrawClone("P E SAME");
     //hfold_svd[kr]->DrawClone("P E SAME");      
     
     leg[kr] = new TLegend(0.62, 0.75, 0.9, 0.9, NULL,"NBNDC");//x1,y1,x2,y2,header,option 
-    leg[kr]->AddEntry(hrec_rebin_clone,"Data Meas.","p");
-    leg[kr]->AddEntry(hgen_rebin_clone,"MC Truth","p");
+    leg[kr]->AddEntry(hrec_rebin,"Data Meas.","p");
+    leg[kr]->AddEntry(hgen_rebin,"MC Truth","p");
     leg[kr]->AddEntry(hunf_svd[kr],"Data Unf.","p");
     //leg[kr]->AddEntry(hfold_svd[kr],"Data Fold(Unf.)","p");
     leg[kr]->SetTextSize(0.03);
@@ -889,7 +706,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     leg1[kr]->SetTextSize(0.02); 
     leg1[kr]->Draw();
     
-    theRecoLine->Draw();
+    theLineAtOne->Draw();
     
     
     
@@ -904,7 +721,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     if(debugMode)hgen_unfolded_ratio[kr]->Print("base");
     
     hgen_folded_ratio[kr] = (TH1D*)hfold_svd[kr]->Clone( ("hgen_fold_ratio"+kRegRandEtaRange).c_str());            
-    hgen_folded_ratio[kr]->Divide(hgen_rebin_ratClone);      
+    hgen_folded_ratio[kr]->Divide(hgen_rebin);      
     if(debugMode)hgen_folded_ratio[kr]->Print("base");      
     
     
@@ -923,7 +740,9 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     leg2[kr]->SetTextSize(0.02); 
     leg2[kr]->Draw();
     
-    theGenLine->Draw();
+    theLineAtOne->Draw();
+
+
     
     
     // Pearson Drawing
@@ -1011,6 +830,9 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   h_thyratio_mctruth->Divide(hunf_svd[kRegDraw]);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
+  TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
+  TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
+  TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL;//, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
 
   if(drawPDFs){
     
@@ -1064,9 +886,8 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
 
 
     //  data-side singular values+divectors --------------------------------------------------
-    c11->cd()                ;   
-    c11->Print(outPdfFile.c_str());
-    
+    di_sv_canv->cd()                ;   
+    di_sv_canv->Print(outPdfFile.c_str());    
 
 
 
@@ -1077,22 +898,21 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     if(!useSimpBins)	
       cCheck->SetLogx(1);
     
-    hrec_rebin_clone->SetTitle("SVD, MC and Data Spectra");
-    //hrec_rebin_clone->SetTitle("MC, Data, and SVD Unf. Spectra");
-    setupSpectraHist(hrec_rebin_clone, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
+    hrec_rebin->SetTitle("MC, Data, and SVD Unf. Spectra");
+    setupSpectraHist(hrec_rebin, useSimpBins, boundaries_pt_reco, nbins_pt_reco);
     
-    hrec_rebin_clone->DrawClone("P E");
+    hrec_rebin->DrawClone("P E");
     hrec_sameside_rebin->DrawClone("P E SAME");
     hunf_svd[kRegDraw]->DrawClone("P E SAME");
-    hgen_rebin_clone->DrawClone("P E SAME");	
+    hgen_rebin->DrawClone("P E SAME");	
     //hfold_svd[kRegDraw]->DrawClone("P E SAME");
     
     
     TLegend * leg1 = new TLegend(0.7, 0.7, 0.9, 0.9, NULL,"NBNDC");
     leg1->AddEntry(hrec_sameside_rebin,   "MC Meas.","lp");
-    leg1->AddEntry(hrec_rebin_clone,   "Data Meas.","lp");
+    leg1->AddEntry(hrec_rebin,   "Data Meas.","lp");
     leg1->AddEntry(hunf_svd[kRegDraw], "Data Unf.","lp");
-    leg1->AddEntry(hgen_rebin_clone,   "MC Truth", "lp");	
+    leg1->AddEntry(hgen_rebin,   "MC Truth", "lp");	
     //leg1->AddEntry(hfold_svd[kRegDraw],"Data Fold","p");
     //leg1->SetTextSize(0.02);
     leg1->Draw();
@@ -1103,6 +923,8 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.43, 0.69, 22);
     
     cCheck->Print(outPdfFile.c_str());
+    canv_spectra=(TCanvas*)cCheck->DrawClone();
+
     
     //  ratios w/ MC truth --------------------------------------------------
     cCheck->cd();
@@ -1134,12 +956,12 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     //drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
     drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.28, 0.82, 22);
     
-    theGenLine->Draw();
-    theLineAtp9_gen->Draw();
-    theLineAt1p1_gen->Draw();
+    theLineAtOne->Draw();
+
     
     
     cCheck->Print(outPdfFile.c_str());
+    canv_gen_ratio=(TCanvas*)cCheck->DrawClone();
     
 
 
@@ -1174,12 +996,13 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     //drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
     drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.28, 0.82, 22);
     
-    theRecoLine->Draw();
-    theLineAtp9_gen->Draw();
-    theLineAt1p1_gen->Draw();
+    theLineAtp9 ->Draw();
+    theLineAtOne->Draw();
+    theLineAt1p1->Draw();
     
     cCheck->Print(outPdfFile.c_str());
-    
+    canv_rec_ratio=(TCanvas*)cCheck->DrawClone();
+
 
 
     //   --------------------------------------------------
@@ -1209,12 +1032,13 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     //drawText( "Prompt-Reco, Jet80+LowerJets",     0.14, 0.72, 22);
     //drawText( MCdesc.c_str(),0.358173, 0.7859761, 19);
     drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
-    
-    theRecoLine->Draw();
-    theLineAtp9_gen->Draw();
-    theLineAt1p1_gen->Draw();
+
+    theLineAtp9 ->Draw();
+    theLineAtOne->Draw();
+    theLineAt1p1->Draw();
     
     cCheck->Print(outPdfFile.c_str());
+    canv_fold_ratio=(TCanvas*)cCheck->DrawClone();
 
 
 
@@ -1245,7 +1069,8 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     drawText( ("kReg="+std::to_string(kReg[kRegDraw])).c_str(), 0.14, 0.69, 22);
     
     cCheck->Print(outPdfFile.c_str());
-    
+    canv_mc_fakes_spectra=(TCanvas*)cCheck->DrawClone();
+
      
     //   --------------------------------------------------
     //  thy spectra 1
@@ -1282,8 +1107,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     legendThy1->Draw();
     
     cCheck->Print(outPdfFile.c_str());
-
-
+    canv_thy_spectra_1=(TCanvas*)cCheck->DrawClone();
 
     //   --------------------------------------------------
     //  thy spectra 2
@@ -1329,6 +1153,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     legendThy->Draw();
 
     cCheck->Print(outPdfFile.c_str());
+    canv_thy_spectra_2=(TCanvas*)cCheck->DrawClone();
 
 
 
@@ -1371,13 +1196,12 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     
     legendthyrat->Draw();
     
-    theLineAtOne_gen->Draw();
-    theLineAtp9_gen->Draw();
-    theLineAt1p1_gen->Draw();
- 
-
+    theLineAtp9 ->Draw();
+    theLineAtOne->Draw();
+    theLineAt1p1->Draw();
 
     cCheck->Print(outPdfFile.c_str());    
+    canv_thy_ratio=(TCanvas*)cCheck->DrawClone();
 
     
     //   --------------------------------------------------
@@ -1388,6 +1212,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     cCheck->SetLogz(1);
     
     matStylePrint( (TH2D*)hCovmatSVD[kRegDraw], hCovmatSVD[kRegDraw]->GetTitle(), cCheck, outPdfFile, true);    
+    canv_covmat=(TCanvas*)cCheck->DrawClone();
     
     //   --------------------------------------------------
     // data-side abs cov matrix for best kreg choice      
@@ -1397,6 +1222,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     cCheck->SetLogz(1);
     
     matStylePrint( (TH2D*)hCovmatAbsValSVD[kRegDraw], hCovmatAbsValSVD[kRegDraw]->GetTitle(), cCheck, outPdfFile, true);    
+    canv_absval_covmat=(TCanvas*)cCheck->DrawClone();
     
     //   --------------------------------------------------
     // data-side pearson matrix for best kreg choice      
@@ -1406,6 +1232,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     cCheck->SetLogz(0);
     
     matStylePrint( (TH2D*)hPearsonSVD[kRegDraw], hPearsonSVD[kRegDraw]->GetTitle(), cCheck, outPdfFile, true);        
+    canv_pearson=(TCanvas*)cCheck->DrawClone();
 
     
     
@@ -1431,48 +1258,156 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
 
   std::cout<<std::endl<<"writing hists to file..."<<std::endl;    
   fout->cd();
-  
-  
-  //output, 3x3 plots
-  for(int kr = 0; kr<nKregMax; ++kr) hunf_svd[kr]->Write();            
-  for(int kr = 0; kr<nKregMax; ++kr) hfold_svd[kr]->Write();           
-  for(int kr = 0; kr<nKregMax; ++kr) hrec_unfolded_ratio[kr]->Write();          
-  for(int kr = 0; kr<nKregMax; ++kr) hrec_fold_ratio[kr]->Write();          
-  for(int kr = 0; kr<nKregMax; ++kr) hgen_unfolded_ratio[kr]->Write();          
-  for(int kr = 0; kr<nKregMax; ++kr) hgen_folded_ratio[kr]->Write();              
-  for(int kr = 0; kr<nKregMax; ++kr) hPearsonSVD[kr]->Write();
-  for(int kr = 0; kr<nKregMax; ++kr) hCovmatSVD[kr]->Write();
-  for(int kr = 0; kr<nKregMax; ++kr) hCovmatAbsValSVD[kr]->Write();
-  
 
-  //output, other
-  hdi->Write();  
-  hSVal->Write();
-  //assert(false);
-  hRegCovMat->Write();
-  hRegCovMatInv->Write();
-  hDataCovMat->Write();
 
+
+
+  //for consistency w/ output from the bayes scripts only
+  TH1D* hunf=NULL, *hfold=NULL, *hfold_truth=NULL;
+  TH1D* h_genratio_oppunf=NULL,* h_recratio_oppunf=NULL;
+  TH2D* covmat_TH2=NULL, *covmatabsval_TH2=NULL, *PearsonSVD=NULL;
+  TDirectory* fout_kreg_dir= fout->mkdir("all_kreg_plots");
+  fout_kreg_dir->cd();
+  
+  for(int kr = 0; kr<nKregMax; ++kr) {
+    hunf_svd[kr]->Write();         
+    if(kr==kRegDraw)
+      hunf=(TH1D*)hunf_svd[kr]->Clone(); }
+  for(int kr = 0; kr<nKregMax; ++kr)    {
+    hfold_svd[kr]->Write();           
+    if(kr==kRegDraw)
+      hfold=(TH1D*)hfold_svd[kr]->Clone();    }
+  for(int kr = 0; kr<nKregMax; ++kr)    {
+    hfold_truth_svd[kr]->Write();           
+    if(kr==kRegDraw)
+      hfold_truth=(TH1D*)hfold_truth_svd[kr]->Clone();    }    
+  for(int kr = 0; kr<nKregMax; ++kr) {
+    hrec_unfolded_ratio[kr]->Write();
+    if(kr==kRegDraw)
+      h_recratio_oppunf=(TH1D*)hrec_unfolded_ratio[kr]->Clone();    }    
+  for(int kr = 0; kr<nKregMax; ++kr) {
+    hgen_unfolded_ratio[kr]->Write();            
+    if(kr==kRegDraw)
+      h_genratio_oppunf=(TH1D*)hgen_unfolded_ratio[kr]->Clone();    }    
+  
+  for(int kr = 0; kr<nKregMax; ++kr) hrec_fold_ratio[kr]->Write();          //not drawn anymore really?
+  for(int kr = 0; kr<nKregMax; ++kr) hgen_folded_ratio[kr]->Write();        // not drawn anymore really?
+  
+  for(int kr = 0; kr<nKregMax; ++kr){ 
+    hPearsonSVD[kr]->Write();     
+    if(kr==kRegDraw)
+      PearsonSVD=(TH2D*)hPearsonSVD[kr]->Clone();  }
+  for(int kr = 0; kr<nKregMax; ++kr){ 
+    hCovmatSVD[kr]->Write();
+    if(kr==kRegDraw)
+      covmat_TH2=(TH2D*)hCovmatSVD[kr]->Clone();     
+  }
+  for(int kr = 0; kr<nKregMax; ++kr){ 
+    hCovmatAbsValSVD[kr]->Write();
+    if(kr==kRegDraw)
+      covmatabsval_TH2=(TH2D*)hCovmatAbsValSVD[kr]->Clone();
+  }
+
+  fout->cd();
+  
   // input data ------------------
-  hrec_rebin->Write();
+  hrec_rebin->SetTitle("Data Meas.");hrec_rebin->Write("Data_meas");
+  //if((bool)hJetQA_jtptEntries){ 
+  //hJetQA_jtptEntries->SetTitle("Data N_{Jets}");hJetQA_jtptEntries->Write("Data_njets");}
   
   // input MC ---------------------
-  hgen_rebin->Write();
-  hrec_sameside_rebin->Write();
-  //hJetQA_jtptEntries->Write();
+  hgen_rebin->SetTitle("MC Truth");  hgen_rebin->Write("MC_truth");
+  hrec_sameside_rebin->SetTitle("MC Meas.");  hrec_sameside_rebin->Write("MC_meas");
   
-  //response matrix
-  hmat->Write();
-  hmat_rebin->Write();
-  hmat_errors->Write();    
+  hmat->SetTitle("MC Response Matrix");  hmat->Write("MC_mat");
+  hmat_rebin->SetTitle("MC Response Matrix Rebinned");  hmat_rebin->Write("MC_mat_rebin"); 
+  hmat_errors->SetTitle("MC Response Matrix Errors");  hmat_errors->Write("MC_mat_rebin_errors");
+  //if((bool)hmat_percenterrs){
+  //  hmat_percenterrs->SetTitle("MC Response Matrix Percent Errors");hmat_percenterrs->Write("MC_mat_rebin_percerrors");  }
+
+  // input thy ----------------  
+  CT10nlo  ->SetTitle("CT10 NLO Spectra");         CT10nlo  ->Write("NLO_CT10_NLO_R04_jtpt");       
+  CT14nlo  ->SetTitle("CT14 NLO Spectra");    CT14nlo  ->Write("NLO_CT14_NLO_R04_jtpt");       
+  HERAPDF  ->SetTitle("HERAPDF NLO Spectra");    HERAPDF  ->Write("NLO_HERAPDF105_NLO_R04_jtpt");  
+  MMHTnlo  ->SetTitle("MMHT NLO Spectra");    MMHTnlo  ->Write("NLO_MMHT2014_NLO_R04_jtpt");    
+  NNPDFnnlo->SetTitle("NNPDF NNLO Spectra");    NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt");       
   
-  hfak->Write();
+  // output hists -------------
+  hunf->SetTitle(       ((std::string)"Data Unf., kReg="+std::to_string(kReg[kRegDraw])).c_str()); hunf->Write("Data_unf");    
+  hfold->SetTitle(((std::string)"Data Fold(Unf.), kReg="+std::to_string(kReg[kRegDraw])).c_str()); hfold->Write("Data_fold");          
+  hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");
+  
+  hfold_truth->SetTitle(((std::string)"MC Fold(Truth), kReg="+std::to_string(kReg[kRegDraw])).c_str());hfold_truth->Write("MC_truth_fold");  
+  hfak->SetTitle("MC Meas. Fakes");hfak->Write("MC_meas_fakes");
+  hrec_sameside_rebin_fakecorr->SetTitle("MC Fake Corr. Meas."); hrec_sameside_rebin_fakecorr->Write("MC_measfakcorr");
+  
+  covmat_TH2->SetTitle(((std::string)"Covariance Matrix, kReg="+std::to_string(kReg[kRegDraw])).c_str());      covmat_TH2->Write("covmat");
+  covmatabsval_TH2->SetTitle(((std::string)"Abs. Val. Covariance Matrix, kReg="+std::to_string(kReg[kRegDraw])).c_str());covmatabsval_TH2->Write("covmatabsval");
+  PearsonSVD->SetTitle(((std::string)"Pearson Matrix, kReg="+std::to_string(kReg[kRegDraw])).c_str());      PearsonSVD->Write("pearson");
+  //unfmat_TH2->Write("unfmat");
 
 
+  // output ratio comparisons -------------
+  // gen ratios (denom=mc truth)
+  h_genratio_oppunf ->SetTitle("Data Unf./MC Truth");h_genratio_oppunf ->Write("ratio_Data_unf_MC_truth");  //data unf/mc truth    
+  // NOT FOR SVD? TO DO//h_genratio_oppfold->SetTitle("Data Fold(Unf.)/MC Truth");h_genratio_oppfold->Write("ratio_Data_fold_MC_truth"); //data fold(unf)/mc truth 
+  // NOT FOR SVD? TO DO//h_genratio_oppmeas->SetTitle("Data Meas./MC Truth");h_genratio_oppmeas->Write("ratio_Data_meas_MC_truth"); //data meas/mc truth    
+  // NOT FOR SVD? TO DO//h_genratio_ssmeas ->SetTitle("MC Meas./MC Truth");h_genratio_ssmeas ->Write("ratio_MC_meas_MC_truth");  //mc meas/mc truth        
+  
+  // rec ratios (denom=data meas)
+  h_recratio_oppunf ->SetTitle("Data Unf./Data Meas.");h_recratio_oppunf ->Write("ratio_Data_unf_Data_meas");  //data unf       / data meas    
+  // NOT FOR SVD? TO DO//h_recratio_oppfold->SetTitle("Data Fold(Unf.)/Data Meas.");h_recratio_oppfold->Write("ratio_Data_fold_Data_meas"); //data fold(unf) / data meas     
+  // NOT FOR SVD? TO DO//h_recratio_ssmeas ->SetTitle("MC Meas./Data Meas.");h_recratio_ssmeas ->Write("ratio_MC_meas_Data_meas");  //mc meas        / data meas    
+  // NOT FOR SVD? TO DO//h_recratio_ssgen  ->SetTitle("MC Truth/Data Meas.");h_recratio_ssgen  ->Write("ratio_MC_truth_Data_meas");   //mc truth       / data meas        
+  
+  // fold ratio test
+  //h_foldratio_datafold->SetTitle("Data Fold(Unf.)/Data Fake Corr. Meas.");h_foldratio_datafold->Write("ratio_Data_fold_Data_measfakcorr");
+  //h_foldratio_mcfold  ->SetTitle("MC Fold(Truth)/MC Fake Corr. Meas.");   h_foldratio_mcfold  ->Write("ratio_MC_fold_Data_measfakcorr");
+  
+  // thy ratios w/ unfolded data
+  h_thyratio_CT10nlo  ->Write("ratio_CT10_NLO_Data_unf");
+  h_thyratio_CT14nlo  ->Write("ratio_CT14_NLO_Data_unf");
+  h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_Data_unf");
+  h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
+  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_Data_unf");
 
-
-
-
+  
+  
+  hdi->Write("divectors");  //SVD spec
+  hSVal->Write("singvals"); //SVD spec 
+  hRegCovMat->SetTitle("Reg. Covariance Matrix");     hRegCovMat->Write("reg_covmat"     ); //SVD spec?
+  hRegCovMatInv->SetTitle("Inv. Reg. Covariance Matrix");  hRegCovMatInv->Write("inv_reg_covmat" ); // SVD spec? 
+  hDataCovMat->SetTitle("Data Covariance Matrix");    hDataCovMat->Write("Data_covmat");//what is a data covariance matrix exactly?? SVD spec?
+  
+  if(drawPDFs){
+    //3x3 canvases
+    cSpectra          ->SetTitle("3x3 I/O Spectra Canvas");cSpectra          ->Write("canv_3x3_spectra");
+    cRatio_gen        ->SetTitle("3x3 MC Truth Ratios Canvas");cRatio_gen        ->Write("canv_3x3_gen_ratio");
+    cRatio_rec        ->SetTitle("3x3 Data Meas Ratios Canvas");cRatio_rec        ->Write("canv_3x3_meas_ratio");
+    cPearsonMatrixIter->SetTitle("3x3 Pearson Matrix Canvas");cPearsonMatrixIter->Write("canv_3x3_pearson");
+    cCovMatrix        ->SetTitle("3x3 Covariance Matrix Canvas");cCovMatrix        ->Write("canv_3x3_covmat");
+    cCovMatrixAbs     ->SetTitle("3x3 Abs. Val. Covariance Matrix Canvas");cCovMatrixAbs     ->Write("canv_3x3_covmat_absval");
+    
+    // all other non 3x3 canvases
+    di_sv_canv->Write();
+    
+    canv_spectra          ->SetTitle("I/O Spectra Canvas");        canv_spectra           ->Write("canv_spectra");
+    canv_mc_fakes_spectra ->SetTitle("MC Fakes Spectra Canvas");   canv_mc_fakes_spectra  ->Write("canv_mc_fakes_spectra");
+    canv_thy_spectra_1    ->SetTitle("NLO Thy Spectra 1 Canvas");  canv_thy_spectra_1     ->Write("canv_thy_spectra_1");
+    canv_thy_spectra_2    ->SetTitle("NLO Thy Spectra 2 Canvas");  canv_thy_spectra_2     ->Write("canv_thy_spectra_2");                                
+    
+    canv_gen_ratio        ->SetTitle("MC Truth Ratios Canvas");   canv_gen_ratio          ->Write("canv_gen_ratio");
+    canv_rec_ratio        ->SetTitle("Data Meas Ratios Canvas");  canv_rec_ratio          ->Write("canv_meas_ratio");
+    canv_fold_ratio       ->SetTitle("Fold Test Ratios Canvas");  canv_fold_ratio         ->Write("canv_fakcorr_meas_ratio");
+    canv_thy_ratio        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio          ->Write("canv_thy_ratio");                                
+    
+    canv_covmat           ->SetTitle("Covariance Matrix Canvas");           canv_covmat        ->Write("canv_covmat");
+    canv_absval_covmat    ->SetTitle("Abs Val. Covariance Matrix Canvas");  canv_absval_covmat ->Write("canv_covmatabsval");
+    canv_pearson          ->SetTitle("Pearson Matrix Canvas");      canv_pearson               ->Write("canv_pearson");
+    //canv_unfmat           ->SetTitle("Unfolding Matrix Canvas");    canv_unfmat                ->Write("canv_unfmat");
+    //canv_mat_rebin        ->SetTitle("MC Response Matrix Canvas");  canv_mat_rebin             ->Write("canv_mat_rebin");
+    //canv_mat_percerrs     ->SetTitle("MC Response Matrix % Errors Canvas");  canv_mat_percerrs ->Write("canv_mat_percerrors");
+  }
 
 
   
@@ -1504,3 +1439,194 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ////  singular values and d_i vector ---------------------------
+    ////Note that these do not depend on the regularization.
+    ////The opposite: they tell you which regularization to use! (ian note: how?)
+    //if(kr == kRegDraw ){      
+    //  
+    //  std::cout << "  getting divectors and singular values for oppSide ... " << std::endl;
+    //  TSVDUnfold *svdUnfold = unf_svd.Impl();
+    //  //svdUnfold->SetNormalize(true);
+    //  
+    //  std::cout << "  getting singular values... " << std::endl;
+    //  TH1D* temphSVal = (TH1D*)svdUnfold->GetSV();      
+    //  //hSVal = (TH1D*)svdUnfold->GetSV();      
+    //  if(debugMode)
+    //	for(int bin=1; bin<=temphSVal->GetNbinsX(); bin++) std::cout<<"bin: "<<bin<<",  SV: "<<temphSVal->GetBinContent(bin)<< std::endl;
+    //  
+    //  
+    //  std::cout << "  getting di vector values... " <<  std::endl;
+    //  TH1D* temphdi = (TH1D*)svdUnfold->GetD();
+    //  //hdi = (TH1D*)svdUnfold->GetD();
+    //  if(debugMode)
+    //	for(int bin=1; bin<=temphdi->GetNbinsX(); bin++)	  std::cout<<"i: "<<bin<<",  di: "<<temphdi->GetBinContent(bin)<<std::endl;
+    //  
+    //  TH2D* temphRegCovMat    = (TH2D*)svdUnfold->GetXtau();
+    //  TH2D* temphRegCovMatInv = (TH2D*)svdUnfold->GetXinv();
+    //  TH2D* temphDataCovMat   = (TH2D*)svdUnfold->GetBCov();
+    //  
+    //  hSVal         = (TH1D*) temphSVal         ->Clone();      
+    //  hdi           = (TH1D*) temphdi           ->Clone();
+    //  
+    //  hRegCovMat    = (TH2D*) temphRegCovMat    ->Clone();
+    //  hRegCovMatInv = (TH2D*) temphRegCovMatInv ->Clone();
+    //  hDataCovMat   = (TH2D*) temphDataCovMat   ->Clone();
+    //  
+    //  
+    //  
+    //  if(debugMode)std::cout<<std::endl<<"drawing singular values on c11 canvas.."<<std::endl<<std::endl;
+    //  c11->cd(1);
+    //  c11->cd(1)->SetLogy();  
+    //  float xlo=hSVal->GetBinLowEdge(1),xhi=hSVal->GetBinLowEdge(hSVal->GetBinLowEdge(hSVal->GetNbinsX())+1);
+    //  std::cout<<"hSVal/hdi lo/hi="<<xlo<<"/"<<xhi<<std::endl;
+    //  xlo+=1.;
+    //  hSVal->SetAxisRange(xlo,xhi,"X");      //hSVal->SetAxisRange(0.,(double)(hSVal->GetNbinsX()),"X");
+    //  hSVal->SetTitle("Singular Values (AC^{-1})");        
+    //  hSVal->SetXTitle("index i");        
+    //  hSVal->SetYTitle("#||{s_{i}}");        
+    //  //hSVal->DrawCopy("HIST E");
+    //  hSVal->DrawClone("HIST E");
+    //  
+    //  double tau=hSVal->GetBinContent(kReg[kRegDraw] +1);//add one because the first bins value is always 0//*hSVal->GetBinContent(kReg[kRegDraw]);
+    //  tau*=tau;//reg strength = sing. val. squared//     printf("(orig)tau=%f\n",tau);
+    //  //tau*=1.;//      printf("tau=%f\n",tau);
+    //  //tau=(int)tau;      //      printf("tau=%f\n",tau);
+    //  //tau/=1;//for rounding//     printf("tau=%f\n",tau);
+    //  int tauint=( ((int)tau)/1 );
+    //  
+    //  float x=0.47, y=0.8459761;
+    //  drawText( "2015 pp Prompt Reco"  ,                                 x, y, 19);y-=0.03;
+    //  drawText( "ak4PFJets",                                 x, y, 19);y-=0.03;
+    //  //drawText( MCdesc.c_str()      ,                                 x, y, 19);y-=0.03;
+    //  drawText( ("kReg Cut = "+std::to_string(kReg[kRegDraw])).c_str() , x, y, 19);  y-=0.03;	
+    //  drawText( ("d_{Cutoff} = #||{d_{"+std::to_string(kReg[kRegDraw])+"}}").c_str() , x, y, 19);  y-=0.03;	
+    //  drawText( ("#tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( tauint )).c_str() , x, y, 19);	      
+    //		//drawText( ("Reg. Strength = #tau = (s_{"+std::to_string(kReg[kRegDraw])+"})^{2} = "+std::to_string( (int)tau ) ).c_str() , x, y, 19);	      
+    //		
+    //              
+    //  // di vector values
+    //  c11->cd(2);
+    //  c11->cd(2)->SetLogy(1);    
+    //  
+    //  hdi->SetAxisRange(xlo,xhi,"X");
+    //  //hdi->SetAxisRange(0.,(double)(hdi->GetNbinsX()),"X");
+    //  hdi->SetTitle("Divector Values (#||{d_{i}}) ");
+    //  hdi->SetXTitle("index i");
+    //  hdi->SetYTitle("#||{d_{i}}");
+    //  //hdi->DrawCopy("HIST E"); 
+    //  hdi->DrawClone("HIST E"); 
+    //  
+    //  ((TPad*)(c11->cd(2)))->Update();      //note, if you do this to a pad that is log scaled, this returns the log of the max+min, not the max+min
+    //  double ymax= gPad->GetUymax();
+    //  ymax=pow(10,ymax);
+    //  ((TPad*)(c11->cd(2)))->Update();            
+    //  double ymin= gPad->GetUymin();
+    //  ymin=pow(10,ymin);
+    //  
+    //  c11->cd(2);
+    //  
+    //  hdi->DrawClone("HIST E"); 
+    //  
+    //  double xcoord= ( ((double)kRegInput) + 1. - 0.5);
+    //  
+    //  std::cout<<"ymax="<<ymax<<std::endl;
+    //  std::cout<<"ymin="<<ymin<<std::endl;
+    //  std::cout<<"kRegDraw="<<kr<<std::endl;
+    //  std::cout<<"kRegInput="<<kRegInput<<std::endl;
+    //  std::cout<<"((double)kRegInput) + 1. = "<< (((double)kRegInput) + 1.) <<std::endl;
+    //  std::cout<<"xcoord="<<xcoord<<std::endl;
+    //  //assert(false);
+    //  
+    //  TLine* theLineAtOne_hdi=new TLine(1., 1.1, (double)(hdi->GetNbinsX()), 1.1);
+    //  theLineAtOne_hdi->SetLineWidth(1);
+    //  theLineAtOne_hdi->SetLineStyle(2);
+    //  theLineAtOne_hdi->SetLineColor(36);
+    //  theLineAtOne_hdi->Draw();
+    //  
+    //  TLine* kRegLine_hdi=new TLine(xcoord, ymin, xcoord, ymax);      
+    //  kRegLine_hdi->SetLineWidth(1);
+    //  kRegLine_hdi->SetLineStyle(2);
+    //  kRegLine_hdi->SetLineColor(kRed);
+    //  kRegLine_hdi->Draw();
+    //  
+    //  //float x1=0.550173, y1=0.8459761;
+    //  //drawText( "5.02 TeV ak4PFJets",                                 x1, y1, 19);y1-=0.03;
+    //  //drawText( "2015 Prompt Reco"  ,                                 x1, y1, 19);y1-=0.03;
+    //  //drawText( MCdesc.c_str()      ,                                 x1, y1, 19);y1-=0.03;
+    //  //drawText( ("Current kReg="+std::to_string(kReg[kRegDraw])).c_str() , x1, y1, 19);y1-=0.03;	
+    //  //drawText( ("#tau="+std::to_string(tau) ).c_str() , x1, y1, 19);	
+    //  
+    //  float hdi_signif_mean=0;
+    //  int signif_count=0;
+    //  float hdi_insignif_mean=0;
+    //  int insignif_count=0;
+    //  for(int k=1; k<= (hdi->GetNbinsX());k++){
+    //	int lowedge = (int)hdi->GetBinLowEdge(k);
+    //	if(lowedge<1){
+    //	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
+    //	  continue;
+    //	}
+    //	else if(lowedge>=1 && lowedge <= kRegInput){
+    //	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
+    //	  signif_count++;
+    //	  hdi_signif_mean+=hdi->GetBinContent(k);
+    //	}
+    //	else{
+    //	  std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
+    //	  insignif_count++;
+    //	  hdi_insignif_mean+=hdi->GetBinContent(k);
+    //  	}
+    //  }
+    //  hdi_signif_mean/=  (float)signif_count;
+    //  hdi_insignif_mean/=  (float)insignif_count;
+    //
+    //  float hdi_signif_stddev=0;
+    //  float hdi_insignif_stddev=0;
+    //  for(int k=1; k<= (hdi->GetNbinsX());k++){
+    //	int lowedge = (int)hdi->GetBinLowEdge(k);
+    //	if(lowedge<1){
+    //	  std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
+    //	  continue;
+    //	}
+    //	else if(lowedge>=1 && lowedge <= kRegInput){
+    //	  std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
+    //	  hdi_signif_stddev+=(hdi->GetBinContent(k)-hdi_signif_mean)*(hdi->GetBinContent(k)-hdi_signif_mean);
+    //	}
+    //	else{
+    //	  std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
+    //	  hdi_insignif_stddev+=(hdi->GetBinContent(k)-hdi_insignif_mean)*(hdi->GetBinContent(k)-hdi_insignif_mean);
+    //	}
+    //  }
+    //  hdi_signif_stddev/=(float)(signif_count -1 );
+    //  hdi_signif_stddev=sqrt(hdi_signif_stddev);
+    //  hdi_insignif_stddev/=(float)(insignif_count -1 );
+    //  hdi_insignif_stddev=sqrt(hdi_insignif_stddev);
+    //  std::cout<<"fo divectors for significant principal components of AC^-1's SVD decomposition"<<std::endl;
+    //  std::cout<<"mean = "<<hdi_signif_mean<<std::endl;
+    //  std::cout<<"std dev = "<<hdi_signif_stddev<<std::endl;
+    //
+    //  std::cout<<"fo divectors for INsignificant principal components of AC^-1's SVD decomposition"<<std::endl;
+    //  std::cout<<"mean = "<<hdi_insignif_mean<<std::endl;
+    //  std::cout<<"std dev = "<<hdi_insignif_stddev<<std::endl;
+    //  
+    //  //assert(false);
+    //  if(debugMode)std::cout<<std::endl<<"done with kr=="<< kRegDraw<<" specifics"<<std::endl<<std::endl;          }
+

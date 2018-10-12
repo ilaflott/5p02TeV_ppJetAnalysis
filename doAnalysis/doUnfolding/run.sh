@@ -2,13 +2,13 @@
 #CONST
 
 #Data and SVD Unfolding settings
-doBayes=0
-doSVD=1
+doBayes=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
 #doMCUnfolding
-doLOMCUnfolding=0
+doLOMCUnfolding=1
 LOMCSVDkReg=10
 doNLOMCUnfolding=0
 NLOMCSVDkReg=10
@@ -16,10 +16,10 @@ NLOMCSVDkReg=10
 #doDataUnfolding
 dataHLTPF=1
 dataHLTCalo=0
-doDataUnfoldingwLO=1
+doDataUnfoldingwLO=0
 dataLOSVDkReg=10
 doDataUnfoldingwNLO=0
-dataNLOSVDkReg=8
+dataNLOSVDkReg=10
 
 #CONST
 

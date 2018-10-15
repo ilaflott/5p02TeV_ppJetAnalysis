@@ -424,7 +424,7 @@ TH2D* makeRespMatrixPercentErrs( TH2D* hmat_errors, TH2D* hmat_anabin,
 void setRespMatrixErrs( TH2D* hmat_anabin , TH2D* hmat_errors , bool zeroBins){   
   
   
-  bool funcDebug=true;
+  bool funcDebug=false;
   if(funcDebug)std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;    
   //if(funcDebug) hmat_errors->Print("base");
   //if(funcDebug) hmat_anabin->Print("base");

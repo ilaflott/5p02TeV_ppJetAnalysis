@@ -2,7 +2,7 @@
 
 ### ----------------------------------------------------------------------------------
 ### ----------------------------------------------------------------------------------
-if [ $# -eq 8 ]
+if [ $# -eq 9 ]
 then
     
     dirTag=$1
@@ -13,10 +13,11 @@ then
     runBayes=$6
     runSVD=$7
     SVDkReg=$8
+    BayeskIter=$9
     
 else
     echo "usage:"
-    echo "source runMC.sh [dirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg]"
+    echo "source runMC.sh [dirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg] [BayeskIter]"
     return
 fi
 
@@ -33,7 +34,7 @@ then
     rooUnfoldCompile bayesUnfoldMCSpectra.C
 
     #USE: "source run_bayesUnfoldMCSpectra.sh [R=3,4] [condorDir] [date_output] [etaBin] [etaBinOut] [useSimpleBinning]"
-    source run_bayesUnfoldMCSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "Bayes_${condorDate}_${dirTag}" "${simpbins}"
+    source run_bayesUnfoldMCSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "Bayes_${condorDate}_${dirTag}" "${simpbins}" "${BayeskIter}"
 #####source run_bayesUnfoldMCSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "0.0eta2.0${dirTag}" "Bayes_00eta20_${condorDate}${dirTag}" 1    
     
     echo ""

@@ -17,7 +17,6 @@ then
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_CT14nlo_HS
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS 
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS
-    #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC 	    
     
     #./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC 0    #fitweights
     ./smearTheorySpectra_gaussCoreJER.exe fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC 1    #splineweights
@@ -32,21 +31,18 @@ then
     echo "DONE NLO smearing. scp2Serin"
     echo ""
     
-    #scp2Serin fnl5020_LO2_R04Jets_modify_CT10nlo_HS_gaussSmear_00eta20.root
+    ##scp2Serin fnl5020_LO2_R04Jets_modify_CT10nlo_HS_gaussSmear_00eta20.root
     ##scp2Serin fnl5020_LO2_R04Jets_modify_CT14nlo_HS_gaussSmear_00eta20.root
     ##scp2Serin fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS_gaussSmear_00eta20.root
     ##scp2Serin fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS_gaussSmear_00eta20.root
-    ##scp2Serin fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root    
-    #scp2Serin "fnl5020_LO2_R04Jets_modify_*_gaussSmear_00eta20.root"
     
     #cp fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_gaussSmear_00eta20.root NNPDF_NNLO_00eta20_gausSmThy_plots/.
     #cp fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_gaussSmear_00eta20.root NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots/.
     cp fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_gaussSmear_00eta20.root NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots/.
     
-    scp2Serin NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots    
-    
-    #scp2Serin NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots    
     #scp2Serin "NNPDF_NNLO_00eta20_*_gausSmThy_plots"
+    #scp2Serin NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots    
+    scp2Serin NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots        
     
 
 

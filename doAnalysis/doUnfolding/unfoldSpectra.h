@@ -94,11 +94,15 @@ const std::string unfoldDataSpectra_outdir="output/unfoldDataSpectra/";
 const std::string unfoldMCSpectra_outdir="output/unfoldMCSpectra/";
 
 // -----------------------------------------------------------------------------------------------------------------------
-const int kIter = 4; // default is 4, Bayes
+//const int kIter = 4; // default is 4, Bayes
+//const int DEF_kIter = 4; // default is 4, Bayes
 
 // max diff # of kreg to do  /  "width" of kreg from center; i.e. kregs looped over will be kRegCenter +/- kRegRange
+const int nKiterMax=9, kIterRange=(nKiterMax-1)/2; //Bayes
 const int nKregMax  = 9 , kRegRange=(nKregMax-1)/2 ; //SVD
 //const int KREGMAXN  = 9 , KREGRAMGE=(KREGMAXN-1)/2 ; //SVD TO DO
+const int verbosity=1;
+
 
 
 const double NLOMCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization

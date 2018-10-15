@@ -5,12 +5,12 @@ const bool drawPDFs=true;
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
 //const bool useNPCorrSpectra=false;
-const int verbosity=0;
+//const int verbosity=0;
 
 // CODE --------------------------------------------------
 int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_MC_dir   , std::string inFile_MC_name   , 
 			    std::string baseName , 
-			    const bool useNPCorrSpectra=false, const bool doJetID=true     , const bool useSimpBins=false ){
+				 const bool useNPCorrSpectra=false, const bool doJetID=true     , const bool useSimpBins=false, const int kIterInput=4 ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
@@ -470,7 +470,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   
   
   std::cout<<"calling RooUnfoldBayes..."<<std::endl;
-  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIter );
+  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIterInput );
   unf_bayes.SetVerbose(verbosity);
   if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
@@ -1298,9 +1298,9 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
   
-  if( argc!=8 ){
+  if( argc!=9 ){
     //std::cout<<"do ./bayesUnfoldDataSpectra.exe <targDataDir> <targMCDir> <baseOutputName> <doJetID> <useSimpleBins>"<<std::endl;
-    std::cout<<"do ./bayesUnfoldDataSpectra_wNLO.exe <targDataDir> <targMCDir> <targMCFile> <baseOutputName> <useNPCorr> <doJetID> <useSimpleBins>"<<std::endl;
+    std::cout<<"do ./bayesUnfoldDataSpectra_wNLO.exe <targDataDir> <targMCDir> <targMCFile> <baseOutputName> <useNPCorr> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
     
     return rStatus;  }
@@ -1311,7 +1311,9 @@ int main(int argc, char* argv[]){  int rStatus = -1;
 					  (const std::string)argv[4], 
 					  (int)std::atoi(argv[5]) , 
 					  (int)std::atoi(argv[6]) , 
-					  (int)std::atoi(argv[7]) 				   
+					(int)std::atoi(argv[7]) 				   ,
+					(const int)std::atoi(argv[8])
+					
 				   ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;

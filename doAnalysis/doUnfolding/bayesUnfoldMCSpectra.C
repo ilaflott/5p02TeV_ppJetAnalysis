@@ -2,12 +2,12 @@
 
 //other settings
 const bool drawPDFs=true; 
-const bool debugMode=false, debugWrite=false;
+const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
-
+const bool dokIterQA=true;
 // CODE --------------------------------------------------
 int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName , 
-			   const bool doJetID=true   , const bool useSimpBins=false ){
+			   const bool doJetID=true   , const bool useSimpBins=false, const int kIterInput=4 ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
@@ -302,10 +302,10 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
 
     //else{
     hrec_sameside_resp_rebin = (TH1D*)hrec_sameside_rebin->Clone( (histTitle3+"_clone").c_str() );      
-    if(debugMode)hrec_sameside_resp_rebin->Write( (histTitle3+"_clone").c_str() );    
+    if(debugWrite)hrec_sameside_resp_rebin->Write( (histTitle3+"_clone").c_str() );    
     
     hgen_resp_rebin = (TH1D*)hgen_rebin->Clone( (histTitle3gen+"_clone").c_str() );      
-    if(debugMode)hgen_resp_rebin->Write( (histTitle3gen+"_clone").c_str() );       
+    if(debugWrite)hgen_resp_rebin->Write( (histTitle3gen+"_clone").c_str() );       
     //}
     
   }
@@ -413,10 +413,11 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   hfak->SetMarkerColor(kGreen);
   hfak->SetLineColor(kGreen);
   
-  
+
+  // OS UNFOLDING ----------
   std::cout<<"calling RooUnfoldBayes..."<<std::endl;
-  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIter );
-  unf_bayes.SetVerbose(2);
+  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIterInput );
+  unf_bayes.SetVerbose(verbosity);
   if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
     unf_bayes.SetNToys(10000);
@@ -441,20 +442,17 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   hfold->SetTitle("OS MC Fold(Unf.)");
   if(debugMode)hfold->Print("base");
   
-  
   //cosmetics
   hfold->SetMarkerStyle(kOpenCircle);
   hfold->SetMarkerColor(kGreen-5);
   hfold->SetLineColor(  kGreen-5);
   hfold->SetMarkerSize(1.02);     
-
-
-
-
+  
+  // SS UNFOLDING ----------
   
   std::cout<<"calling RooUnfoldBayes FOR SAME SIDE..."<<std::endl;
-  RooUnfoldBayes unf_ss_bayes( &roo_resp, hrec_sameside_rebin, kIter );
-  unf_ss_bayes.SetVerbose(2);
+  RooUnfoldBayes unf_ss_bayes( &roo_resp, hrec_sameside_rebin, kIterInput );
+  unf_ss_bayes.SetVerbose(verbosity);
   if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
     unf_ss_bayes.SetNToys(10000);
@@ -489,7 +487,7 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   
 
 
-
+  
 
   
   
@@ -654,6 +652,87 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   
   
 
+  
+  
+  TH1D* hunf_bayes[nKiterMax]={};
+  TH1D* hfold_bayes[nKiterMax]={};
+  TH1D* hgen_unf_ratio[nKiterMax]={};
+  TH1D* hrec_unf_ratio[nKiterMax]={};
+  
+  TH1D* hgen_fold_ratio[nKiterMax]={};
+  TH1D* hrec_fold_ratio[nKiterMax]={};
+  
+  int kIter_start=kIterInput-kIterRange;
+  int kIter_end=kIterInput+kIterRange;
+  
+  if(dokIterQA){
+    if(debugMode)std::cout<<"unfolding across diff kIter values"<<std::endl;
+    if(debugMode)std::cout<<kIter_start<<" <= kIter <= "<<kIter_end<<std::endl;
+    for(int ki=0; ki<nKiterMax;ki++){
+      int current_kIter=kIter_start+ki;
+      if(debugMode)std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;
+      
+      RooUnfoldBayes unf_bayes_kIterQA(&roo_resp, hrec_rebin, current_kIter);        
+      
+      hunf_bayes[ki]=(TH1D*)unf_bayes_kIterQA.Hreco(errorTreatment);
+      hunf_bayes[ki]->SetName(("ppMC_OS_unf_kIter"+std::to_string(current_kIter)).c_str());
+      hunf_bayes[ki]->SetTitle(("OS MC Unf., kIter="+std::to_string(current_kIter)+";Jet p_{T}; #sigma" ).c_str());
+      //cosmetics, keep here so they propagate to the ratio hists
+      hunf_bayes[ki]->SetMarkerStyle(kOpenCircle);
+      hunf_bayes[ki]->SetMarkerColor(kRed);
+      hunf_bayes[ki]->SetLineColor(kRed);
+      hunf_bayes[ki]->SetMarkerSize(1.02);     
+
+      if(debugMode)hunf_bayes[ki]->Print("base");
+      
+      hfold_bayes[ki]=(TH1D*)roo_resp.ApplyToTruth(hunf_bayes[ki]);
+      hfold_bayes[ki]->SetName(("ppMC_OS_fold_kIter"+std::to_string(current_kIter)).c_str());
+      hfold_bayes[ki]->SetTitle(("OS MC Fold(Unf.), kIter="+std::to_string(current_kIter)+"; Jet p_{T}; #sigma").c_str());
+      if(debugMode)hfold_bayes[ki]->Print("base");
+      //cosmetics
+      hfold_bayes[ki]->SetMarkerStyle(kOpenCircle);
+      hfold_bayes[ki]->SetMarkerColor(kGreen-5);
+      hfold_bayes[ki]->SetLineColor(  kGreen-5);
+      hfold_bayes[ki]->SetMarkerSize(1.02);     
+      
+      if(debugMode)hfold_bayes[ki]->Print("base");
+      
+      hgen_unf_ratio[ki]=(TH1D*)hunf_bayes[ki]->Clone(("ppMC_OS_unf_genratio_kIter"+std::to_string(current_kIter)).c_str());
+      hgen_unf_ratio[ki]->SetTitle(("OS MC Unf./SS MC Truth, kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      hgen_unf_ratio[ki]->Divide(hgen_rebin);
+      
+      hrec_unf_ratio[ki]=(TH1D*)hunf_bayes[ki]->Clone(("ppMC_OS_unf_recratio_kIter"+std::to_string(current_kIter)).c_str());
+      hrec_unf_ratio[ki]->SetTitle(("OS MC Unf./SS MC Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      hrec_unf_ratio[ki]->Divide(hrec_sameside_rebin_fakecorr);
+      
+      hgen_fold_ratio[ki]=(TH1D*)hfold_bayes[ki]->Clone(("ppMC_OS_fold_genratio_kIter"+std::to_string(current_kIter)).c_str());
+      hgen_fold_ratio[ki]->SetTitle(("OS MC Fold./SS MC Truth, kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      hgen_fold_ratio[ki]->Divide(hgen_rebin);
+      
+      hrec_fold_ratio[ki]=(TH1D*)hfold_bayes[ki]->Clone(("ppMC_OS_fold_recratio_kIter"+std::to_string(current_kIter)).c_str());
+      hrec_fold_ratio[ki]->SetTitle(("OS MC Fold./SS MC Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      hrec_fold_ratio[ki]->Divide(hrec_sameside_rebin_fakecorr);
+      
+
+      //do bin width normalizations here, so the ratios in this loop arent affected by hgen/hrec hists not having been bin-width normalized yet
+      hunf_bayes[ki]->Scale(1./etaBinWidth);
+      divideBinWidth(hunf_bayes[ki]);
+      
+      hfold_bayes[ki]->Scale(1./etaBinWidth);
+      divideBinWidth(hfold_bayes[ki]);
+      
+    }//end kIterLoop
+  }//end if(dokIterQA)
+  //assert(false);
+
+  
+
+
+
+  
+
+
+
 
   // ----- PUT BIN WIDTH(s) DIVISIONS + NORMALIZING HERE ----- //
   
@@ -670,7 +749,7 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   divideBinWidth(hgen_rebin);
   if(debugWrite)hgen_rebin->Write(genHistTitle.c_str());
   if(debugMode)hgen_rebin->Print("base");  
-
+  
   // -- MC SS GEN RESP -- //  
   hgen_resp_rebin->Scale(1./etaBinWidth); // eta bin width for 0.<|y|<2.
   divideBinWidth(hgen_resp_rebin);
@@ -787,6 +866,8 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
+
+  TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL;
   
   TH2D* hmat_percenterrs=NULL;
 
@@ -812,11 +893,13 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
     // canvas for printing
     TCanvas* canvForPrint=new TCanvas("printCanvas","for printing",           1400,1000);    
     canvForPrint->cd();
+
+
     //canvForPrint->SetGridx(1);    //canvForPrint->SetGridy(1);
     canvForPrint->Print(open_outPdfFile.c_str()); 
     
-
-
+    
+    
 
     
 
@@ -1279,9 +1362,73 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
     matStylePrint(hmat_percenterrs, "MC Response Matrix, Bin % Errors", canvForPrint, outPdfFile, useSimpBins);
     canv_mat_percerrs=(TCanvas*)canvForPrint->DrawClone();
     
-    canvForPrint->Print(close_outPdfFile.c_str());      
+
     
-    //---------------          
+    //--------------- 3x3 canvases
+    if(dokIterQA){
+      if(debugMode)std::cout<<"drawing plots across diff kIter values"<<std::endl;
+      if(debugMode)std::cout<<kIter_start<<" <= kIter <= "<<kIter_end<<std::endl;
+      canv_3x3spectra  =new TCanvas("canv_3x3spectra","canv 3x3 spectra", 1500, 1500);   canv_3x3spectra ->Divide(3,3);
+      canv_3x3genratio =new TCanvas("canv_3x3genratio","canv 3x3 genratio", 1500, 1500); canv_3x3genratio->Divide(3,3);
+      canv_3x3recratio =new TCanvas("canv_3x3recratio","canv 3x3 recratio", 1500, 1500); canv_3x3recratio->Divide(3,3);            
+
+      TLegend* leg_3x3=new TLegend(0.62,0.75,0.9,0.9,NULL,"NBNDC");
+      
+      for(int ki=0; ki<nKiterMax;ki++){
+	int current_kIter=kIter_start+ki;
+	int ki_canv=ki+1;
+	if(debugMode)std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;
+	
+	canv_3x3spectra->cd(ki_canv)->SetLogx(1);
+	canv_3x3spectra->cd(ki_canv)->SetLogy(1);
+	canv_3x3spectra->cd(ki_canv);
+	
+	hunf_bayes[ki]->DrawClone("HIST E");
+	hfold_bayes[ki]->DrawClone("HIST E SAME");
+	
+	leg_3x3->Clear();//removes any entries in legend
+	leg_3x3->AddEntry(hunf_bayes[ki] ,"Unf."      ,"lp");
+	leg_3x3->AddEntry(hfold_bayes[ki],"Fold(Unf.)","lp");
+	leg_3x3->DrawClone();
+	
+	canv_3x3genratio->cd(ki_canv)->SetLogx(1);
+	canv_3x3genratio->cd(ki_canv)->SetLogy(0);
+	canv_3x3genratio->cd(ki_canv);
+
+	hgen_unf_ratio[ki]->SetAxisRange(0.5,1.5,"Y");
+	
+	hgen_unf_ratio[ki]->DrawClone("HIST E");
+	hgen_fold_ratio[ki]->DrawClone("HIST E SAME");
+	
+	leg_3x3->Clear();//removes any entries in legend
+	leg_3x3->AddEntry(hgen_unf_ratio[ki] ,"Unf."      ,"lp");
+	leg_3x3->AddEntry(hgen_fold_ratio[ki],"Fold(Unf.)","lp");
+	leg_3x3->DrawClone();
+	
+	canv_3x3recratio->cd(ki_canv)->SetLogx(1);
+	canv_3x3recratio->cd(ki_canv)->SetLogy(0);
+	canv_3x3recratio->cd(ki_canv);
+	
+	hrec_unf_ratio[ki]->SetAxisRange(0.5,1.5,"Y");
+	
+	hrec_unf_ratio[ki]->DrawClone("HIST E");
+	hrec_fold_ratio[ki]->DrawClone("HIST E SAME");	
+	
+	leg_3x3->Clear();//removes any entries in legend
+	leg_3x3->AddEntry(hrec_unf_ratio[ki] ,"Unf."      ,"lp");
+	leg_3x3->AddEntry(hrec_fold_ratio[ki],"Fold(Unf.)","lp");
+	leg_3x3->DrawClone();
+	
+      }
+      canv_3x3spectra ->Print(outPdfFile.c_str());
+      canv_3x3genratio->Print(outPdfFile.c_str());
+      canv_3x3recratio->Print(outPdfFile.c_str());
+      
+    }
+
+    canvForPrint->Print(close_outPdfFile.c_str());      
+    //assert(false);
+
     if(drawRespMatrix){    
       drawRespMatrixFile((TH2D*)hmat, (TH2D*)hmat_rebin, (TH2D*)hmat_errors,
 			 //(TH2D*)covmat_TH2, (TH2D*)PearsonBayes, (TH2D*)unfmat_TH2,
@@ -1364,6 +1511,18 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_OS_MC_unf");
   h_thyratio_mctruth->Write("ratio_OS_MC_Truth_OS_MC_unf");
 
+  if(dokIterQA){
+    
+    for(int ki=0; ki<nKiterMax;ki++) hunf_bayes[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hfold_bayes[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hgen_unf_ratio[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hgen_fold_ratio[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hrec_unf_ratio[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hrec_fold_ratio[ki]->Write();
+      
+    
+  }
+
   // canvases ----------------
   if(drawPDFs){
     canv_spectra          ->SetTitle("I/O Spectra Canvas");        canv_spectra           ->Write("canv_spectra");
@@ -1383,6 +1542,9 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
     canv_unfmat           ->SetTitle("Unfolding Matrix Canvas");    canv_unfmat                ->Write("canv_unfmat");
     canv_mat_rebin        ->SetTitle("SS MC Response Matrix Canvas");  canv_mat_rebin             ->Write("canv_mat_rebin");
     canv_mat_percerrs     ->SetTitle("SS MC Response Matrix % Errors Canvas");  canv_mat_percerrs ->Write("canv_mat_percerrors");
+    if(dokIterQA){ canv_3x3spectra->SetTitle("3x3 Unf. Spectra kIter QA Canvas"); canv_3x3spectra ->Write("canv_3x3spectra");}
+    if(dokIterQA){canv_3x3genratio->SetTitle("3x3 Gen Ratio kIter QA Canvas");    canv_3x3genratio->Write("canv_3x3genratio");}
+    if(dokIterQA){canv_3x3recratio->SetTitle("3x3 Rec Ratio kIter QA Canvas");    canv_3x3recratio->Write("canv_3x3recratio");}
 
   }
 
@@ -1405,8 +1567,8 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
   
-  if( argc!=5 ){
-    std::cout<<"do ./bayesUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins>"<<std::endl;
+  if( argc!=6 ){
+    std::cout<<"do ./bayesUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
     
     return rStatus;  }
@@ -1414,7 +1576,7 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   rStatus=1; // runtime error
   
   rStatus=bayesUnfoldMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], 
-				 (int)std::atoi(argv[3]) ,   (int)std::atoi(argv[4])   ); 
+				 (int)std::atoi(argv[3]) ,   (int)std::atoi(argv[4])   , (int)std::atoi(argv[5])); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

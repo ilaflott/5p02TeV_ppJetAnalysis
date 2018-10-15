@@ -7,7 +7,7 @@ const bool drawRespMatrix=true;
 
 // CODE --------------------------------------------------
 int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir   , std::string baseName , 
-			    const bool doJetID=true     , const bool useSimpBins=false ){
+			    const bool doJetID=true     , const bool useSimpBins=false, const int kIterInput=4 ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
@@ -413,8 +413,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   // Bayesian unfolding -------------------------   
   std::cout<<"calling RooUnfoldBayes..."<<std::endl;  
-  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIter );
-  unf_bayes.SetVerbose(2);
+  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIterInput );
+  unf_bayes.SetVerbose(verbosity);
   if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
     unf_bayes.SetNToys(10000);
@@ -1192,12 +1192,12 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
-  if( argc!=6 ){
-    std::cout<<"do ./bayesUnfoldDataSpectra.exe <targDataDir> <targMCDir> <baseOutputName> <doJetID> <useSimpleBins>"<<std::endl;
+  if( argc!=7 ){
+    std::cout<<"do ./bayesUnfoldDataSpectra.exe <targDataDir> <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;    
     return rStatus;  }  
   rStatus=bayesUnfoldDataSpectra(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], 
-				   (int)std::atoi(argv[4]) , (int)std::atoi(argv[5]) 				   
+				   (int)std::atoi(argv[4]) , (int)std::atoi(argv[5]), (const int)std::atoi(argv[6]) 				   
 				   );   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

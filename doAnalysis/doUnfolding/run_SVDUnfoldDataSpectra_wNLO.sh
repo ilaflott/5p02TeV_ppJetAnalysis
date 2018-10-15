@@ -36,7 +36,9 @@ echo ""
 
 #./SVDUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_ptmax686_gaussSmear_00eta20.root  unf_HPtJetTrig_${etaBinOut}_NNPDF30nnlo 1 ${jtID} ${useSimpleBinning} ${kReg} 
 ./SVDUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_ptmax1000_gaussSmear_00eta20.root  unf_HPtJetTrig_fitwgts_ptmax1000_${etaBinOut}_NNPDF30nnlo 1 ${jtID} ${useSimpleBinning} ${kReg} 
-return
+#return
+./SVDUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_fitwgts_ptmax686_gaussSmear_00eta20.root  unf_HPtJetTrig_fitwgts_ptmax686_${etaBinOut}_NNPDF30nnlo 1 ${jtID} ${useSimpleBinning} ${kReg} 
+#return
 ./SVDUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_ptmax686_gaussSmear_00eta20.root  unf_HPtJetTrig_spl3wgts_ptmax686_${etaBinOut}_NNPDF30nnlo 1 ${jtID} ${useSimpleBinning} ${kReg} 
 return
 

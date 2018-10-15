@@ -5,13 +5,13 @@ const bool drawPDFs=true;
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
 //const bool useNPCorrSpectra=false;
-const int verbosity=0;
+//const int verbosity=0;
 const bool doJetID=true;
 
 // CODE --------------------------------------------------
 int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_name, //input 
 			      std::string baseName ,  //output 
-			      bool useNPCorrSpectra=true   , bool useSimpBins=false ){
+			      bool useNPCorrSpectra=true   , bool useSimpBins=false, const int kIterInput=4 ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
@@ -437,7 +437,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   
   std::cout<<"calling RooUnfoldBayes..."<<std::endl;
-  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIter );
+  RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIterInput );
   unf_bayes.SetVerbose(verbosity);
   if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
@@ -475,7 +475,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
 
   
   std::cout<<"calling RooUnfoldBayes FOR SAME SIDE..."<<std::endl;
-  RooUnfoldBayes unf_ss_bayes( &roo_resp, hrec_sameside_rebin, kIter );
+  RooUnfoldBayes unf_ss_bayes( &roo_resp, hrec_sameside_rebin, kIterInput );
   unf_ss_bayes.SetVerbose(verbosity);
   if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
@@ -1453,8 +1453,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  int rStatus = -1;
   
-  if( argc!=6 ){
-    std::cout<<"do ./bayesUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins>"<<std::endl;
+  if( argc!=7 ){
+    std::cout<<"do ./bayesUnfoldMCSpectra.exe <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;
     
     return rStatus;  }
@@ -1462,7 +1462,7 @@ int main(int argc, char* argv[]){  int rStatus = -1;
   rStatus=1; // runtime error
   
   rStatus=bayesUnfoldNLOMCSpectra(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], 
-				    (bool)std::atoi(argv[4]) ,   (bool)std::atoi(argv[5])   ); 
+				    (bool)std::atoi(argv[4]) ,   (bool)std::atoi(argv[5])  , (const int)std::atoi(argv[6]) ); 
   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

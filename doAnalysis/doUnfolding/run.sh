@@ -3,22 +3,26 @@
 
 #Data and SVD Unfolding settings
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
 #doMCUnfolding
 doLOMCUnfolding=1
+LOMCBayeskIter=8
 LOMCSVDkReg=10
-doNLOMCUnfolding=1
+doNLOMCUnfolding=0
+NLOMCBayeskIter=8
 NLOMCSVDkReg=10
 
 #doDataUnfolding
 dataHLTPF=1
 dataHLTCalo=0
-doDataUnfoldingwLO=1
+doDataUnfoldingwLO=0
+dataLOBayeskIter=8
 dataLOSVDkReg=10
-doDataUnfoldingwNLO=1
+doDataUnfoldingwNLO=0
+dataNLOBayeskIter=8
 dataNLOSVDkReg=10
 
 #CONST
@@ -86,12 +90,12 @@ function unfoldData(){
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	    
-	    source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg
+	    source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
 	fi
 	
 	if [[ doDataUnfoldingwNLO -eq 1 ]]
 	then
-	    source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg
+	    source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg $dataNLOBayeskIter
 	fi
 	
 	echo ""
@@ -213,13 +217,13 @@ function unfoldMC(){
     #source runMC.sh   "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
     #source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-	source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18" $useSimpBins  $doBayes $doSVD $LOMCSVDkReg
+	source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18" $useSimpBins  $doBayes $doSVD $LOMCSVDkReg $LOMCBayeskIter
     #source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
     fi
     
     if [[ doNLOMCUnfolding -eq 1 ]]
     then
-	source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $useSimpBins $doBayes $doSVD $NLOMCSVDkReg
+	source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $useSimpBins $doBayes $doSVD $NLOMCSVDkReg $NLOMCBayeskIter
     fi
 
 

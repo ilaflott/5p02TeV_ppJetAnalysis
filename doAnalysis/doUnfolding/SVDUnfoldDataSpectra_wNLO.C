@@ -819,14 +819,13 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
   h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/OS MC Unf.");
+  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/Data Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf_svd[kRegDraw]);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
   TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");
   h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_MCTruth_Ratio_rebin",boundaries_pt_gen);
-  //h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");  
-  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Prior/Data Unf.");
+  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Truth/Data Unf.");
   h_thyratio_mctruth->Divide(hunf_svd[kRegDraw]);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
@@ -1176,11 +1175,11 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     h_thyratio_CT10nlo->SetTitle( "NLO Ratios w/ SVD Unf. Data" );
     h_thyratio_CT10nlo->GetYaxis()->SetTitle("NLO / SVD Unf. Data");
     
-    h_thyratio_CT10nlo ->DrawClone( "HIST ");      
-    h_thyratio_CT14nlo ->DrawClone( "HIST  SAME"); 
+    h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
+    h_thyratio_CT14nlo ->DrawClone( "][HIST  SAME"); 
     //h_thyratio_HERAPDF ->DrawClone( "HIST E SAME"); 
     //h_thyratio_MMHTnlo ->DrawClone( "HIST E SAME"); 
-    h_thyratio_NNPDFnnlo->DrawClone("HIST E SAME"); 
+    h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
     h_thyratio_mctruth->DrawClone("P E SAME");
     
     
@@ -1190,9 +1189,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
     //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
     //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
-    //legendthyrat->AddEntry(h_thyratio_mctruth,   "PY8 MC LO (truth)",       "lp");
-    //legendthyrat->AddEntry(h_thyratio_mctruth,   "PY8 MC LO (truth)",       "lp");
-    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Prior",       "lp");
+    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Truth",       "lp");
     
     legendthyrat->Draw();
     
@@ -1370,7 +1367,7 @@ int SVDUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_
   h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_Data_unf");
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
   h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_Data_unf");
-
+  h_thyratio_mctruth->Write("ratio_NNPDFnnlo_ToyMCTruth_Data_unf");
   
   
   hdi->Write("divectors");  //SVD spec

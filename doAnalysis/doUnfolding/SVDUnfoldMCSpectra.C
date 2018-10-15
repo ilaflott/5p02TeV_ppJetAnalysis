@@ -849,11 +849,16 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   if(debugMode)h_thyratio_MMHTnlo  ->Print("base");
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
-  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/OS MC Unf.");
+  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnnlo_Ratio_rebin",boundaries_pt_gen);
+  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NNLO/OS MC Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf_x2);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
 
+  TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin_x2->Clone("");
+  h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_2x_SS_MC_Truth_Ratio_rebin",boundaries_pt_gen);
+  h_thyratio_mctruth->SetTitle("SS MC Truth/OS MC Unf.");
+  h_thyratio_mctruth->Divide(hunf_x2);
+  if(debugMode)h_thyratio_mctruth->Print("base");
 
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
@@ -1210,7 +1215,8 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
     //h_thyratio_HERAPDF ->DrawClone( "][HIST SAME"); 
     //h_thyratio_MMHTnlo ->DrawClone( "][HIST SAME"); 
-    h_thyratio_NNPDFnnlo->DrawClone("][HIST SAME"); 
+    h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
+    h_thyratio_mctruth->DrawClone("P E SAME"); 
 
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
@@ -1219,6 +1225,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
     //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
     //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
+    legendthyrat->AddEntry(h_thyratio_mctruth, "2x SS MC Truth",       "l");
     
     legendthyrat->Draw();
     
@@ -1403,6 +1410,7 @@ int SVDUnfoldMCSpectra( std::string inFile_MC_dir , const std::string baseName  
   h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_OS_MC_unf");
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_OS_MC_unf");    
   h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_OS_MC_unf");
+  h_thyratio_mctruth->Write("ratio_OS_MC_Truth_OS_MC_unf");
   
   
   hdi->Write("divectors");  //SVD spec

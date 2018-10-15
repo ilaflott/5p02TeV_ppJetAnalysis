@@ -655,7 +655,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/Data Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
-
+  
   TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");
   h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_MCTruth_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");
@@ -954,12 +954,13 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     h_thyratio_mctruth->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
     h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
     
-    h_thyratio_mctruth->DrawClone("P E"); 
-    h_thyratio_CT10nlo ->DrawClone( "][HIST E SAME");      
-    h_thyratio_CT14nlo ->DrawClone( "][HIST E SAME"); 
+
+    h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
+    h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
     //h_thyratio_HERAPDF ->DrawClone( "][HIST E SAME"); 
     //h_thyratio_MMHTnlo ->DrawClone( "][HIST E SAME"); 
     h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
+    h_thyratio_mctruth->DrawClone("P E SAME");     
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
@@ -967,7 +968,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
     //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
-    legendthyrat->AddEntry(h_thyratio_mctruth, "PY8 MC LO (truth)",       "lp");    
+    legendthyrat->AddEntry(h_thyratio_mctruth, "PY8 MC Truth",       "lp");    
     legendthyrat->Draw();
     
     theLineAtp9 ->Draw();
@@ -1155,7 +1156,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   h_thyratio_CT14nlo  ->Write("ratio_CT14_NLO_Data_unf");
   h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_Data_unf");
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
-  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_Data_unf");
+  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NNLO_Data_unf");
+  h_thyratio_mctruth->Write("ratio_PY8_MCTruth_Data_unf");
   
   // canvases ----------------
   if(drawPDFs){

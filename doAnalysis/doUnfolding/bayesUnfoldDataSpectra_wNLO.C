@@ -737,8 +737,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     
   TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");
   h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_MCTruth_Ratio_rebin",boundaries_pt_gen);
-  //h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");
-  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Prior/Data Unf.");
+  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Truth/Data Unf.");
   h_thyratio_mctruth->Divide(hunf);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
@@ -1034,20 +1033,20 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     //h_thyratio_mctruth->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
     //h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
     
-    h_thyratio_CT10nlo ->DrawClone( "HIST ");      
-    h_thyratio_CT14nlo ->DrawClone( "HIST  SAME"); 
+    h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
+    h_thyratio_CT14nlo ->DrawClone( "][HIST  SAME"); 
     //h_thyratio_HERAPDF ->DrawClone( "][HIST E SAME"); 
     //h_thyratio_MMHTnlo ->DrawClone( "][HIST E SAME"); 
-    h_thyratio_NNPDFnnlo->DrawClone("HIST E SAME"); 
+    h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
     h_thyratio_mctruth->DrawClone("P E SAME");     
-        
+    
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
     legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
     //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
     //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
-    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Prior",       "lp");
+    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Truth",       "lp");
     
     legendthyrat->Draw();
 
@@ -1252,6 +1251,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_Data_unf");
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
   h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_Data_unf");
+  h_thyratio_mctruth->Write("ratio_NNPDFnnlo_ToyMCTruth_Data_unf");
 
 
   if(drawPDFs){

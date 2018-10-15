@@ -791,21 +791,22 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   
   TH1D* h_thyratio_MMHTnlo  =(TH1D*)MMHTnlo  ->Clone("");
   h_thyratio_MMHTnlo=(TH1D*)h_thyratio_MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_MMHTnlo  ->SetTitle("MMHT14 NLO/OS Toy NLO MC Unf.");
+  h_thyratio_MMHTnlo  ->SetTitle("MMHT14 NLO/OS MC Unf.");
   h_thyratio_MMHTnlo  ->Divide(hunf_x2);
   if(debugMode)h_thyratio_MMHTnlo  ->Print("base");
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
-  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NNLO/OS Toy NLO MC Unf.");
+  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnnlo_Ratio_rebin",boundaries_pt_gen);
+  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NNLO/OS MC Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf_x2);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
 
-  TH1D* h_thyratio_mctruth=(TH1D*)NNPDFnnlo->Clone("");
-  h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_MCTruth_Ratio_rebin",boundaries_pt_gen);
+  //  TH1D* h_thyratio_mctruth=(TH1D*)NNPDFnnlo->Clone("");
+  TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");
+  h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_NNPDFnnlo_ToyMCTruth_Ratio_rebin",boundaries_pt_gen);
   //h_thyratio_mctruth->SetTitle("PY8 GEN/Data Unf.");  
-  h_thyratio_mctruth->SetTitle("NNPDF NNLO/OS Toy NNPDF NNLO Toy MC Truth.");
-  h_thyratio_mctruth->Divide(hgen_rebin);
+  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Truth/OS MC Unf.");
+  h_thyratio_mctruth->Divide(hunf_x2);
   if(debugMode)h_thyratio_mctruth->Print("base");
 
   
@@ -1189,7 +1190,7 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
     h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
     //h_thyratio_HERAPDF ->DrawClone( "][HIST SAME"); 
     //h_thyratio_MMHTnlo ->DrawClone( "][HIST SAME"); 
-    h_thyratio_NNPDFnnlo->DrawClone("][HIST SAME"); 
+    h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
     h_thyratio_mctruth->DrawClone("P E SAME"); 
     
     
@@ -1403,7 +1404,8 @@ int bayesUnfoldNLOMCSpectra(  std::string inFile_MC_dir , std::string inFile_MC_
   h_thyratio_CT14nlo  ->Write("ratio_CT14_NLO_OS_MC_unf");
   h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_OS_MC_unf");
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_OS_MC_unf");    
-  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_OS_MC_unf");
+  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NNLO_OS_MC_unf");
+  h_thyratio_mctruth->Write("ratio_NNPDFnnlo_ToyMCTruth_OS_MC_unf");
 
   // canvases ----------------
   if(drawPDFs){

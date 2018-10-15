@@ -400,11 +400,11 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
   hfak->SetMarkerSize(1.02);
   
   // thy spectra  
-  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str());
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str());
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str());
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str());
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str());
+  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),useNPCorrSpectra);
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),useNPCorrSpectra);
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),useNPCorrSpectra);
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),useNPCorrSpectra);
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),useNPCorrSpectra);
 
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
@@ -895,10 +895,16 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
   if(debugMode)h_thyratio_MMHTnlo  ->Print("base");
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
-  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
-  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/OS MC Unf.");
+  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnnlo_Ratio_rebin",boundaries_pt_gen);
+  h_thyratio_NNPDFnnlo->SetTitle("NNPDF NNLO/OS MC Unf.");
   h_thyratio_NNPDFnnlo->Divide(hunf_x2);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
+
+  TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");
+  h_thyratio_mctruth=(TH1D*)h_thyratio_mctruth->Rebin(nbins_pt_gen,"pp_NNPDFnnlo_ToyMCTruth_Ratio_rebin",boundaries_pt_gen);
+  h_thyratio_mctruth->SetTitle("NNPDF NNLO Toy MC Truth/OS MC Unf.");
+  h_thyratio_mctruth->Divide(hunf_x2);
+  if(debugMode)h_thyratio_mctruth->Print("base");
   
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
@@ -1243,23 +1249,26 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
     setupRatioHist(h_thyratio_HERAPDF , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_MMHTnlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
     h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ 2 x (SVD Unf. OS MC)" );
     h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / 2 x (Unf. OS MC)");
     
     h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
     h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
-    h_thyratio_HERAPDF ->DrawClone( "][HIST SAME"); 
-    h_thyratio_MMHTnlo ->DrawClone( "][HIST SAME"); 
-    h_thyratio_NNPDFnnlo->DrawClone("][HIST SAME"); 
+    //h_thyratio_HERAPDF ->DrawClone( "][HIST SAME"); 
+    //h_thyratio_MMHTnlo ->DrawClone( "][HIST SAME"); 
+    h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
+    h_thyratio_mctruth->DrawClone("P E SAME"); 
 
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
     legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
-    legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
-    legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
+    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
+    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
+    legendthyrat->AddEntry(h_thyratio_mctruth, "NNPDF NNLO Toy MC Truth",       "l");
     
     legendthyrat->Draw();
     
@@ -1443,7 +1452,8 @@ int SVDUnfoldNLOMCSpectra( std::string inFile_MC_dir , std::string inFile_MC_nam
   h_thyratio_CT14nlo  ->Write("ratio_CT14_NLO_OS_MC_unf");
   h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_OS_MC_unf");
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_OS_MC_unf");    
-  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_OS_MC_unf");
+  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NNLO_OS_MC_unf");
+  h_thyratio_mctruth->Write("ratio_NNPDFnnlo_ToyMCTruth_OS_MC_unf");
   
   
   hdi->Write("divectors");  //SVD spec

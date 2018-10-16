@@ -8,21 +8,21 @@ useSimpBins=0
 makeRooUnf=0
 
 #doMCUnfolding
-doLOMCUnfolding=1
-LOMCBayeskIter=8
+doLOMCUnfolding=0
+LOMCBayeskIter=5
 LOMCSVDkReg=10
 doNLOMCUnfolding=0
-NLOMCBayeskIter=8
+NLOMCBayeskIter=5
 NLOMCSVDkReg=10
 
 #doDataUnfolding
 dataHLTPF=1
 dataHLTCalo=0
-doDataUnfoldingwLO=0
-dataLOBayeskIter=8
+doDataUnfoldingwLO=1
+dataLOBayeskIter=100
 dataLOSVDkReg=10
 doDataUnfoldingwNLO=0
-dataNLOBayeskIter=8
+dataNLOBayeskIter=5
 dataNLOSVDkReg=10
 
 #CONST

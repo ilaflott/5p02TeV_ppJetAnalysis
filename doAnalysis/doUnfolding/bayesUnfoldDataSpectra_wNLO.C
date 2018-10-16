@@ -4,6 +4,7 @@
 const bool drawPDFs=true; 
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
+const bool dokIterQA=true;
 //const bool useNPCorrSpectra=false;
 //const int verbosity=0;
 

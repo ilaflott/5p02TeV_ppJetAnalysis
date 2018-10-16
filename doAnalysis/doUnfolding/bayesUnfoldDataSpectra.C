@@ -625,8 +625,10 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
       hgen_unf_ratio[ki]->Divide(hgen_rebin);
       
       hrec_unf_ratio[ki]=(TH1D*)hunf_bayes[ki]->Clone(("Data_unf_recratio_kIter"+std::to_string(current_kIter)).c_str());
-      hrec_unf_ratio[ki]->SetTitle(("Data Unf./Data Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
-      hrec_unf_ratio[ki]->Divide(hrec_rebin_fakecorr);
+      hrec_unf_ratio[ki]->SetTitle(("Data Unf./Data Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      hrec_unf_ratio[ki]->Divide(hrec_rebin);
+      //hrec_unf_ratio[ki]->SetTitle(("Data Unf./Data Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      //hrec_unf_ratio[ki]->Divide(hrec_rebin_fakecorr);
       
       hgen_fold_ratio[ki]=(TH1D*)hfold_bayes[ki]->Clone(("Data_fold_genratio_kIter"+std::to_string(current_kIter)).c_str());
       hgen_fold_ratio[ki]->SetTitle(("Data Fold./MC Truth, kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
@@ -1067,10 +1069,11 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    h_thyratio_mctruth->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
-    h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
+    //h_thyratio_mctruth->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
+    //h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
+    h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
+    h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Unf. Data");
     
-
     h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
     h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
     //h_thyratio_HERAPDF ->DrawClone( "][HIST E SAME"); 

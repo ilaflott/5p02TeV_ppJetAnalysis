@@ -1,7 +1,7 @@
 #include "unfoldSpectra.h"
 
 //other settings
-const int verbosity=0;
+//const int verbosity=0;
 const bool drawPDFs=true; 
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=false;

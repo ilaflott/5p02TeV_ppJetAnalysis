@@ -702,8 +702,10 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
       hgen_unf_ratio[ki]->Divide(hgen_rebin);
       
       hrec_unf_ratio[ki]=(TH1D*)hunf_bayes[ki]->Clone(("ppMC_OS_unf_recratio_kIter"+std::to_string(current_kIter)).c_str());
-      hrec_unf_ratio[ki]->SetTitle(("OS MC Unf./SS MC Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
-      hrec_unf_ratio[ki]->Divide(hrec_sameside_rebin_fakecorr);
+      //hrec_unf_ratio[ki]->SetTitle(("OS MC Unf./SS MC Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      //hrec_unf_ratio[ki]->Divide(hrec_sameside_rebin_fakecorr);
+      hrec_unf_ratio[ki]->SetTitle(("OS MC Unf./SS MC Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
+      hrec_unf_ratio[ki]->Divide(hrec_sameside_rebin);
       
       hgen_fold_ratio[ki]=(TH1D*)hfold_bayes[ki]->Clone(("ppMC_OS_fold_genratio_kIter"+std::to_string(current_kIter)).c_str());
       hgen_fold_ratio[ki]->SetTitle(("OS MC Fold./SS MC Truth, kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());

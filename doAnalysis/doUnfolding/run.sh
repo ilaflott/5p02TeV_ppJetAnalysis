@@ -1,43 +1,43 @@
 #!/bin/bash
-#CONST
+
 
 #Data and SVD Unfolding settings
 doBayes=1
-doSVD=0
+doSVD=1
 useSimpBins=0
 makeRooUnf=0
 
 #doMCUnfolding
-doLOMCUnfolding=0
-LOMCBayeskIter=5
+doLOMCUnfolding=1
+LOMCBayeskIter=6
 LOMCSVDkReg=10
-doNLOMCUnfolding=0
-NLOMCBayeskIter=5
+doNLOMCUnfolding=1
+NLOMCBayeskIter=6
 NLOMCSVDkReg=10
 
 #doDataUnfolding
 dataHLTPF=1
 dataHLTCalo=0
 doDataUnfoldingwLO=1
-dataLOBayeskIter=100
+dataLOBayeskIter=6
 dataLOSVDkReg=10
-doDataUnfoldingwNLO=0
-dataNLOBayeskIter=5
+doDataUnfoldingwNLO=1
+dataNLOBayeskIter=6
 dataNLOSVDkReg=10
 
-#CONST
 
 
 
-#FINALOUTDIR=/cms/heavyion/ilaflott/temp
-FINALOUTDIR=/cms/heavyion/ilaflott/temp/4scp
-DATAOUTDIR=output/unfoldDataSpectra
-MCOUTDIR=output/unfoldMCSpectra
+
+
 
 
 ################################################################################################################################
-
-
+FINALOUTDIR=/cms/heavyion/ilaflott/temp/4scp
+DATAOUTDIR=output/unfoldDataSpectra
+HLTPFdir=L2L3recoJetID_HLTPF_w_Py8LOMC_NLOMC_NLONPMC
+HLTCalodir=L2L3recoJetID_HLTCalo_w_Py8LOMC_NLOMC_NLONPMC
+################################################################################################################################
 function unfoldData(){
 
     echo ""
@@ -55,8 +55,7 @@ function unfoldData(){
     echo "// -------------------------------------------------------------------------------------------------- //"
     echo "// -------------------------------------------------------------------------------------------------- //"
     echo ""
-    HLTPFdir=L2L3recoJetID_HLTPF_w_Py8LOMC_NLOMC_NLONPMC
-    HLTCalodir=L2L3recoJetID_HLTCalo_w_Py8LOMC_NLOMC_NLONPMC
+
     
     if [[ $# -eq 1 ]]
     then
@@ -98,29 +97,29 @@ function unfoldData(){
 	    source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg $dataNLOBayeskIter
 	fi
 	
-	echo ""
-	echo "cleaning up previous DATA output in ${DATAOUTDIR}/${HLTPFdir}"
-	echo ""
-	
-	rm -r ${DATAOUTDIR}/${HLTPFdir}
-	mkdir ${DATAOUTDIR}/${HLTPFdir}
-	
-	echo ""
-	echo "moving DATA output to ${DATAOUTDIR}/${HLTPFdir}"
-	echo ""
-	
-	mv ${DATAOUTDIR}/*.pdf   ${DATAOUTDIR}/${HLTPFdir}
-	mv ${DATAOUTDIR}/*.root  ${DATAOUTDIR}/${HLTPFdir}
-	
-	echo ""
-	echo "moving DATA output to ${FINALOUTDIR}/${HLTPFdir}"
-	echo ""
-	
-        #scp2Serin $HLTPFdir
-        #mv -f $HLTPFdir output/unfoldDataSpectra/temp    
-        rm -r ${FINALOUTDIR}/${HLTPFdir}
-	mv  ${DATAOUTDIR}/${HLTPFdir} ${FINALOUTDIR}/${HLTPFdir}
-	scp2Serin ${FINALOUTDIR}/${HLTPFdir}
+	#echo ""
+	#echo "cleaning up previous DATA output in ${DATAOUTDIR}/${HLTPFdir}"
+	#echo ""
+	#
+	#rm -r ${DATAOUTDIR}/${HLTPFdir}
+	#mkdir ${DATAOUTDIR}/${HLTPFdir}
+	#
+	#echo ""
+	#echo "moving DATA output to ${DATAOUTDIR}/${HLTPFdir}"
+	#echo ""
+	#
+	#mv ${DATAOUTDIR}/*.pdf   ${DATAOUTDIR}/${HLTPFdir}
+	#mv ${DATAOUTDIR}/*.root  ${DATAOUTDIR}/${HLTPFdir}
+	#
+	#echo ""
+	#echo "moving DATA output to ${FINALOUTDIR}/${HLTPFdir}"
+	#echo ""
+	#
+        ##scp2Serin $HLTPFdir
+        ##mv -f $HLTPFdir output/unfoldDataSpectra/temp    
+        #rm -r ${FINALOUTDIR}/${HLTPFdir}
+	#mv  ${DATAOUTDIR}/${HLTPFdir} ${FINALOUTDIR}/${HLTPFdir}
+	#scp2Serin ${FINALOUTDIR}/${HLTPFdir}
     fi
     
     
@@ -136,28 +135,28 @@ function unfoldData(){
 	
 	source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTCalo"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	
-	echo ""
-	echo "cleaning up previous output in ${DATAOUTDIR}/${HLTCalodir}"
-	echo ""
-	
-	rm -r ${DATAOUTDIR}/${HLTCalodir}
-	mkdir ${DATAOUTDIR}/${HLTCalodir}
-	
-	echo ""
-	echo "moving output to ${DATAOUTDIR}/${HLTCalodir}"
-	echo ""
-	
-	mv ${DATAOUTDIR}/*.pdf   ${DATAOUTDIR}/${HLTCalodir}
-	mv ${DATAOUTDIR}/*.root  ${DATAOUTDIR}/${HLTCalodir}
-	
-	echo ""
-	echo "moving DATA output to ${FINALOUTDIR}/${HLTCalodir}"
-	echo ""
-	
-        #scp2Serin $HLTCalodir
-        #mv -f $HLTCalodir output/unfoldDataSpectra/temp    
-        rm -r ${FINALOUTDIR}/${HLTCalodir}
-	mv  ${DATAOUTDIR}/${HLTCalodir} ${FINALOUTDIR}/${HLTCalodir}
+	#echo ""
+	#echo "cleaning up previous output in ${DATAOUTDIR}/${HLTCalodir}"
+	#echo ""
+	#
+	#rm -r ${DATAOUTDIR}/${HLTCalodir}
+	#mkdir ${DATAOUTDIR}/${HLTCalodir}
+	#
+	#echo ""
+	#echo "moving output to ${DATAOUTDIR}/${HLTCalodir}"
+	#echo ""
+	#
+	#mv ${DATAOUTDIR}/*.pdf   ${DATAOUTDIR}/${HLTCalodir}
+	#mv ${DATAOUTDIR}/*.root  ${DATAOUTDIR}/${HLTCalodir}
+	#
+	#echo ""
+	#echo "moving DATA output to ${FINALOUTDIR}/${HLTCalodir}"
+	#echo ""
+	#
+        ##scp2Serin $HLTCalodir
+        ##mv -f $HLTCalodir output/unfoldDataSpectra/temp    
+        #rm -r ${FINALOUTDIR}/${HLTCalodir}
+	#mv  ${DATAOUTDIR}/${HLTCalodir} ${FINALOUTDIR}/${HLTCalodir}
 	
     fi
 
@@ -174,12 +173,12 @@ function unfoldData(){
 }
 
 
+
 ################################################################################################################################
+#FINALOUTDIR=/cms/heavyion/ilaflott/temp #defined above, here for convenience
+MCdir=L2L3recoJetID_MCClosure_Py8LOMC_NLOMC_NLONPMC
+MCOUTDIR=output/unfoldMCSpectra
 ################################################################################################################################
-
-
-
-
 function unfoldMC(){
     
     echo ""
@@ -196,7 +195,7 @@ function unfoldMC(){
     echo "// ------------------------------------------------------------------------------------------------ //"
     echo "// ------------------------------------------------------------------------------------------------ //"
     
-    MCdir=L2L3recoJetID_MCClosure_Py8LOMC_NLOMC_NLONPMC
+
     if [[ $# -eq 1 ]]
     then
 	#MCdir=L2L3recoJetID_MCClosure_gendr0p1_${1}
@@ -228,30 +227,30 @@ function unfoldMC(){
 
 
     
-    echo ""
-    echo "cleaning up previous MC output in ${MCOUTDIR}/${MCdir}"
-    echo ""
+    #echo ""
+    #echo "cleaning up previous MC output in ${MCOUTDIR}/${MCdir}"
+    #echo ""
+    #
+    #rm -r ${MCOUTDIR}/${MCdir}
+    #mkdir ${MCOUTDIR}/${MCdir}
+    #
+    #echo ""
+    #echo "moving MC output to ${MCOUTDIR}/${MCdir}"
+    #echo ""
+    #
+    #mv ${MCOUTDIR}/*.pdf   ${MCOUTDIR}/${MCdir}
+    #mv ${MCOUTDIR}/*.root  ${MCOUTDIR}/${MCdir}
+    #
+    #
+    #echo ""
+    #echo "moving MC output to ${FINALOUTDIR}/${MCdir}"
+    #echo ""
+    #
+    #rm -r ${FINALOUTDIR}/${MCdir}
+    #mv  ${MCOUTDIR}/${MCdir} ${FINALOUTDIR}/${MCdir}
+    #scp2Serin ${FINALOUTDIR}/${MCdir}
     
-    rm -r ${MCOUTDIR}/${MCdir}
-    mkdir ${MCOUTDIR}/${MCdir}
-
-    echo ""
-    echo "moving MC output to ${MCOUTDIR}/${MCdir}"
-    echo ""
     
-    mv ${MCOUTDIR}/*.pdf   ${MCOUTDIR}/${MCdir}
-    mv ${MCOUTDIR}/*.root  ${MCOUTDIR}/${MCdir}
-
-
-    echo ""
-    echo "moving MC output to ${FINALOUTDIR}/${MCdir}"
-    echo ""
-    
-    rm -r ${FINALOUTDIR}/${MCdir}
-    mv  ${MCOUTDIR}/${MCdir} ${FINALOUTDIR}/${MCdir}
-    scp2Serin ${FINALOUTDIR}/${MCdir}
-    
-
     echo ""
     echo "// -------------------------------------------------------------------------------------------- //"
     echo "// -------------------------------------------------------------------------------------------- //"
@@ -276,41 +275,147 @@ function unfoldMC(){
 
 
 
-echo ""
-echo "... making rooUnfold ..."
-echo ""
-
 if [[ $makeRooUnf -eq 1 ]]
 then
+    echo ""
+    echo "... making rooUnfold ..."
+    echo ""
     make_rooUnfold
 fi
+
+
+##i'm sorry scripting gods.
+echo ""
+echo "compiling..."
+echo ""
+if [[ $doBayes -eq 1 ]]
+then
+    if [[ $doDataUnfoldingwLO -eq 1 ]]
+    then
+	rooUnfoldCompile bayesUnfoldDataSpectra.C
+    fi
+    if [[ $doDataUnfoldingwNLO -eq 1 ]]
+    then
+	rooUnfoldCompile bayesUnfoldDataSpectra_wNLO.C
+    fi
+    if [[ $doLOMCUnfolding -eq 1 ]]
+    then
+	rooUnfoldCompile bayesUnfoldMCSpectra.C
+    fi
+    if [[ $doNLOMCUnfolding -eq 1 ]]
+    then
+	rooUnfoldCompile bayesUnfoldNLOMCSpectra.C
+    fi
+fi
+
+if [[ $doSVD -eq 1 ]]
+then
+    if [[ $doDataUnfoldingwLO -eq 1 ]]
+    then
+	rooUnfoldCompile SVDUnfoldDataSpectra.C
+    fi
+    if [[ $doDataUnfoldingwNLO -eq 1 ]]
+    then
+	rooUnfoldCompile SVDUnfoldDataSpectra_wNLO.C
+    fi
+    if [[ $doLOMCUnfolding -eq 1 ]]
+    then
+	rooUnfoldCompile SVDUnfoldMCSpectra.C
+    fi
+    if [[ $doNLOMCUnfolding -eq 1 ]]
+    then
+	rooUnfoldCompile SVDUnfoldNLOMCSpectra.C
+    fi    
+fi
+
+#return
+
+
 
 if [[ $# -eq 1 ]]
 then
     dirName=$1
-#    if [[ $doDataUnfolding -eq 1 ]]
     if ([ $doDataUnfoldingwLO == 1 ] || [ $doDataUnfoldingwNLO == 1 ])
     then
 	unfoldData $1    
     fi
-    #if [[ $doMCUnfolding -eq 1 ]]
     if ([ $doLOMCUnfolding -eq 1 ] || [ $doNLOMCUnfolding == 1 ])
     then
 	unfoldMC $1
     fi
 else
-#    if [[ $doDataUnfolding -eq 1 ]]
     if ([ $doDataUnfoldingwLO == 1 ] || [ $doDataUnfoldingwNLO == 1 ])
     then
 	unfoldData    
     fi
-#    if [[ $doMCUnfolding -eq 1 ]]
     if ([ $doLOMCUnfolding -eq 1 ] || [ $doNLOMCUnfolding == 1 ])
     then
 	unfoldMC    
     fi
 fi
 
+echo ""
+echo "cleaning up previous unfolding output in ${FINALOUTDIR}/current_output"
+echo ""
+rm -r  ${FINALOUTDIR}/old_output/*
+mv -f ${FINALOUTDIR}/current_output/*  ${FINALOUTDIR}/old_output/.
+
+
+if ([ $doDataUnfoldingwLO == 1 ] || [ $doDataUnfoldingwNLO == 1 ])
+then
+    
+    echo ""
+    echo "cleaning up previous DATA output in ${DATAOUTDIR}/${HLTPFdir}"
+    echo ""
+    
+    rm -r ${DATAOUTDIR}/${HLTPFdir}
+    mkdir ${DATAOUTDIR}/${HLTPFdir}
+    
+    echo ""
+    echo "moving DATA output to ${DATAOUTDIR}/${HLTPFdir}"
+    echo ""
+    
+    mv ${DATAOUTDIR}/*.pdf   ${DATAOUTDIR}/${HLTPFdir}
+    mv ${DATAOUTDIR}/*.root  ${DATAOUTDIR}/${HLTPFdir}
+    
+    echo ""
+    echo "moving DATA output to ${FINALOUTDIR}/current_output/${HLTPFdir}"
+    echo ""
+    
+    #rm -r ${FINALOUTDIR}/current_output/${HLTPFdir}
+    mv ${DATAOUTDIR}/${HLTPFdir} ${FINALOUTDIR}/current_output/${HLTPFdir}
+
+fi
+
+
+if ([ $doLOMCUnfolding -eq 1 ] || [ $doNLOMCUnfolding == 1 ])
+then
+    
+    echo ""
+    echo "cleaning up previous MC output in ${MCOUTDIR}/${MCdir}"
+    echo ""
+    
+    rm -r ${MCOUTDIR}/${MCdir}
+    mkdir ${MCOUTDIR}/${MCdir}
+    
+    echo ""
+    echo "moving MC output to ${MCOUTDIR}/${MCdir}"
+    echo ""
+    
+    mv ${MCOUTDIR}/*.pdf   ${MCOUTDIR}/${MCdir}
+    mv ${MCOUTDIR}/*.root  ${MCOUTDIR}/${MCdir}
+    
+    
+    echo ""
+    echo "moving MC output to ${FINALOUTDIR}/current_output/${MCdir}"
+    echo ""
+    
+    #rm -r ${FINALOUTDIR}/current_output/${MCdir}
+    mv  ${MCOUTDIR}/${MCdir} ${FINALOUTDIR}/current_output/${MCdir}
+
+fi
+
+scp2Serin ${FINALOUTDIR}/current_output
 
 
 

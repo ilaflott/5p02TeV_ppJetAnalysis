@@ -28,10 +28,10 @@ sampleDate="${MM}-${DD}-${YY}"
 ### ----------------------------------------------------------------------------------
 if [ $runBayes -eq 1 ]
 then
-    echo ""
-    echo "compiling bayesUnfoldDataSpectra.C"
-    echo ""
-    rooUnfoldCompile bayesUnfoldDataSpectra.C
+    #echo ""
+    #echo "compiling bayesUnfoldDataSpectra.C"
+    #echo ""
+    #rooUnfoldCompile bayesUnfoldDataSpectra.C
     
 # "source run_bayesUnfoldDataSpectra.sh [R=3,4] [dataCondorDir] [data_date] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [useSimpleBinning]"    
     
@@ -53,10 +53,10 @@ then
     #	kReg=10
     #fi
 
-    echo ""
-    echo "compiling SVDUnfoldDataSpectra.C"
-    echo ""
-    rooUnfoldCompile SVDUnfoldDataSpectra.C
+    #echo ""
+    #echo "compiling SVDUnfoldDataSpectra.C"
+    #echo ""
+    #rooUnfoldCompile SVDUnfoldDataSpectra.C
 
 # "source run_SVDUnfoldDataSpectra.sh [R=3,4] [dataCondorDir] [data_date] [dataEtaBin] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [kReg] [useSimpleBinning]"    
     echo "kReg setting = ${SVDkReg}"

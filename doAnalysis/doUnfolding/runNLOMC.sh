@@ -28,10 +28,10 @@ sampleDate="${MM}-${DD}-${YY}"
 ### ----------------------------------------------------------------------------------
 if [ $runBayes -eq 1 ]
 then
-    echo ""
-    echo "compiling bayesUnfoldNLOMCSpectra.C"
-    echo ""
-    rooUnfoldCompile bayesUnfoldNLOMCSpectra.C
+    #echo ""
+    #echo "compiling bayesUnfoldNLOMCSpectra.C"
+    #echo ""
+    #rooUnfoldCompile bayesUnfoldNLOMCSpectra.C
     
     #USE: "source run_bayesUnfoldNLOMCSpectra.sh [R=3,4] [condorDir] [date_output] [etaBin] [etaBinOut] [useSimpleBinning]"
     source run_bayesUnfoldNLOMCSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "Bayes_${condorDate}_${dirTag}" "${simpbins}" "${BayeskIter}"
@@ -54,11 +54,11 @@ then
     #	kReg=4
     #fi
     
-    echo ""
-    echo "compiling SVDUnfoldNLOMCSpectra.C"
-    echo ""
+    #echo ""
+    #echo "compiling SVDUnfoldNLOMCSpectra.C"
+    #echo ""
     echo "kReg=${kReg}"
-    rooUnfoldCompile SVDUnfoldNLOMCSpectra.C
+    #rooUnfoldCompile SVDUnfoldNLOMCSpectra.C
     
     #USE: "source run_SVDUnfoldNLOMCSpectra.sh [R=3,4] [condorDir] [date_output] [etaBin] [etaBinOut] [kReg] [useSimpleBinning]"    
     source run_SVDUnfoldNLOMCSpectra.sh "4" "${condorDate}_outputCondor" "${sampleDate}" "${dirTag}" "SVD_${condorDate}_${dirTag}" "${SVDkReg}" "${simpbins}"

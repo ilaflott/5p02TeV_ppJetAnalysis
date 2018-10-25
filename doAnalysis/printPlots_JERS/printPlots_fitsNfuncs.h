@@ -162,15 +162,21 @@ void makeMultiPanelCanvas(TCanvas*& , const Int_t , const Int_t , // canv, colum
                           const Float_t , const Float_t, // left/bottom Margin
                           const Float_t , const Float_t );// edge, asyoffset
 
-void MakeHist(TH1F *&, int,//hist,istat 
-	      const char*, const char*);//xname,yname
+//void MakeHist(TH1F *&, int,//hist,istat 
+	      //	      const char*, const char*);//xname,yname
 
-void MakeHistChi2NDF(TH1F *  , // hRMS 
-		  float , float);// max, min 
-void MakeHistRMS(TH1F *  , // hRMS 
-		 float , float);// max, min 
+void MakeHist( TH1F* ,
+	       float, float);
+
+
 void MakeHistMean(TH1F * , // mean 
 		 float , float);// max, min 
+void MakeHistRMS(TH1F *  , // hRMS 
+		 float , float);// max, min 
+void MakeHistChi2NDF(TH1F *  , // hRMS 
+		  float , float);// max, min 
+
+
 
 void MakeHistRMSEta(TH1F *&  , // hRMS 
 		 float , float);// max, min 
@@ -178,6 +184,10 @@ void MakeHistRMSAbsEta(TH1F *&  , // hRMS
 		 float , float);// max, min 
 void MakeHistMeanEta(TH1F *& , // mean 
 		 float , float);// max, min 
+
+
+
+
 void MakeZero(TH1F *& ); //hist 
 void divideBinWidth(TH1*);
 void drawText2(const char *,  //text 
@@ -290,152 +300,53 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
   return;
 }
 
-void MakeHist(TH1F *&histo,int istat,const char *xname, const char *yname){
-  histo->SetStats(istat);
-  histo->SetMarkerStyle(24);
-  histo->SetMarkerColor(1);
-  histo->SetLineColor(1);
-  histo->SetLineStyle(1);
-  histo->GetXaxis()->SetTitle(xname);
-  histo->GetXaxis()->CenterTitle(true);
-  histo->GetYaxis()->SetTitle(yname);
-  histo->GetYaxis()->CenterTitle(true);
+//void MakeHist(TH1F *&histo,int istat,const char *xname, const char *yname){
+void MakeHist(TH1F* h1, float xmin, float xmax){
+  h1->SetLineColor(kBlue);  
+
+  h1->SetMarkerColor(kBlack);
+  h1->SetMarkerStyle(20);    
+  h1->SetMarkerSize(0.8);    
+
+  h1->GetYaxis()->SetTitleFont(42);
+  h1->GetYaxis()->SetTitleSize(0.05);//default is 0.08
+  h1->GetYaxis()->SetTitleOffset(0.60);//no numerical default; auto calculated
+  h1->GetYaxis()->SetLabelSize(.045);//default is 0.4
+
+  h1->SetAxisRange(xmin,xmax,"X");
+  h1->GetXaxis()->SetTitle("GEN Jet p_{T} (GeV/c)");
+  h1->GetXaxis()->SetMoreLogLabels(true);
+  h1->GetXaxis()->SetNoExponent(true);
+  h1->GetXaxis()->SetLabelSize(.045);//default is 0.4
+  //h1->GetXaxis()->SetLabelOffset(.01); //default is 0.005
+  h1->GetXaxis()->SetTitleSize(0.045);
+
+  return;
 }
 
 
 
 void MakeHistMean(TH1F * h1, float xmin, float xmax){
-  
+  MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("mean, resolution, chi-square, v gen p_{T}");
-  //h1->SetTitleSize(0.08);
-  
-  h1->SetLineColor(kBlue);
-  
-  h1->SetMarkerColor(kBlack);
-  h1->SetMarkerStyle(20);    
-  h1->SetMarkerSize(1.0);    
-  
-  // y axis
   h1->GetYaxis()->SetTitle("#mu");
   h1->GetYaxis()->SetDecimals(true);
-  h1->SetAxisRange(0.90,1.10, "Y");    
-  //h1->GetYaxis()->CenterTitle(true);
-  //h1->GetYaxis()->SetTitleFont(42);
-  //h1->GetYaxis()->SetTitleSize(0.04);
-  //h1->GetYaxis()->SetTitleOffset(1.00);
-  
-  //h1->GetYaxis()->SetLabelFont(42);
-  //h1->GetYaxis()->SetLabelSize(0.03);
-  //h1->GetYaxis()->SetNdivisions(507);
-
-
-  // x axis
-  h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
-  h1->GetXaxis()->SetMoreLogLabels(true);
-  h1->GetXaxis()->SetNoExponent(true);
-
-  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  //h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
-  //h1->GetXaxis()->CenterTitle(true);
-  //h1->GetXaxis()->SetMoreLogLabels();
-  //h1->GetXaxis()->SetNoExponent();
-  
-  //title/label
-  //h1->GetXaxis()->SetTitleFont(42);
-  //h1->GetXaxis()->SetTitleSize(0.03);
-  //h1->GetXaxis()->SetTitleOffset(1.0);
-  //h1->GetXaxis()->SetLabelFont(42);
-  //h1->GetXaxis()->SetLabelSize(0.03);
-  //h1->GetXaxis()->SetLabelOffset(0.005);
-
-  //h1->GetXaxis()->SetNdivisions(507);
-  //h1->SetAxisRange(xmin,xmax, "X");    
-
-  // hist
-  //h1->SetMaximum(ymax);
-  //h1->SetMinimum(ymin);
-  //h1->SetTitle("");
-
+  h1->SetAxisRange(0.99,1.01, "Y");    
   return;
 }
 
 void MakeHistRMS(TH1F * h1,float xmin,float xmax){
-  //gStyle->SetOptStat(0);
-  //gStyle->SetOptFit(1);
-
-  
+  MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("");
-
-  h1->SetLineColor(kBlue);
-  h1->SetMarkerColor(kBlack);
-  h1->SetMarkerStyle(20);    
-  h1->SetMarkerSize(1.0);    
-  
-  // y axis
   h1->GetYaxis()->SetTitle("#sigma / #mu");
-  //h1->GetYaxis()->SetTitleFont(42);
-  //h1->GetYaxis()->SetLabelFont(42);
   h1->GetYaxis()->SetDecimals(true);
-  h1->SetAxisRange(0.0,0.20, "Y");    
-  
-  // x axis
-  h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
-  h1->GetXaxis()->SetMoreLogLabels(true);
-  h1->GetXaxis()->SetNoExponent(true);
-  
-  //h1->GetXaxis()->SetTitleFont(42);
-  //h1->GetXaxis()->SetLabelFont(42);  
-  //h1->SetAxisRange(xmin,xmax, "X");    
+  h1->SetAxisRange(0.00,0.13, "Y");    
   return;
 }
-
-
-
-
-
 void MakeHistChi2NDF(TH1F * h1, float xmin, float xmax){
-  //gStyle->SetOptStat(0);
-
+  MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("");
-  h1->SetLineColor(kBlue);
-  h1->SetMarkerColor(kBlack);
-  h1->SetMarkerStyle(20);    
-  h1->SetMarkerSize(1.0);    
-  
-  // y axis
-  h1->SetAxisRange(0.,50., "Y");    
-  h1->GetYaxis()->SetTitle("#chi^{2}/NDF");
-  //h1->GetYaxis()->CenterTitle(true);
-  //h1->GetYaxis()->SetTitleFont(42);
-  //h1->GetYaxis()->SetTitleSize(0.04);
-  //h1->GetYaxis()->SetTitleOffset(1.00);  
-  //h1->GetYaxis()->SetLabelFont(42);
-  //h1->GetYaxis()->SetLabelSize(0.03);
-  //h1->GetYaxis()->SetNdivisions(507);
-
-  // x axis
-
-  h1->GetXaxis()->SetTitle("gen p_{T} (GeV/c)");
-  h1->GetXaxis()->SetMoreLogLabels(true);
-  h1->GetXaxis()->SetNoExponent(true);
-  //h1->GetXaxis()->SetRangeUser(xmin,xmax);
-  //h1->GetXaxis()->CenterTitle(true);
-
-  //h1->GetXaxis()->SetTitleFont(42);
-  //h1->GetXaxis()->SetTitleSize(0.03);
-  //h1->GetXaxis()->SetTitleOffset(1.0);
-  //h1->GetXaxis()->SetLabelFont(42);
-  //h1->GetXaxis()->SetLabelSize(0.03);
-  //h1->GetXaxis()->SetLabelOffset(0.005);
-  
-  //h1->GetXaxis()->SetNdivisions(507);
-  //h1->SetAxisRange(xmin,xmax, "X");    
-
-  // hist
-  //h1->SetMaximum(ymax);
-  //h1->SetMinimum(ymin);
-  //h1->SetTitle("");
-
+  h1->GetYaxis()->SetTitle("Gaussian JER #chi^{2}/NDF");
   return;
 }
 

@@ -324,9 +324,10 @@ float getIntegralErrJetSpectra(TH1* h){
 }
 
 
-void makeJERSHists(TCanvas* pdfOutCanv, std::string thePDFFileName, 
+//void makeJERSHists(TCanvas* pdfOutCanv=NULL, std::string thePDFFileName, 
+void makeJERSHists(TCanvas* pdfOutCanv, //std::string thePDFFileName, 
 		   TH1F* hrsp, std::string hrspTitle, std::string hrsp_XAxTitle,
-		   TFile* fout=NULL){
+		   TFile* fout=NULL, TDirectory* tdir=NULL){
   bool funcDebug=true;
   pdfOutCanv->cd();
   
@@ -341,11 +342,13 @@ void makeJERSHists(TCanvas* pdfOutCanv, std::string thePDFFileName,
   
   hrsp->Draw("E1");    
 
-  pdfOutCanv->Print(thePDFFileName.c_str());
+  //if((bool)pdfOutCanv)pdfOutCanv->Print(thePDFFileName.c_str());
   
   if((bool)fout){
-
+    
     fout->cd();
+    if((bool)tdir)tdir->cd();
+    
     TCanvas* canv_fout=(TCanvas*)pdfOutCanv->DrawClone();
     if(funcDebug)std::cout<<"writing canvas to file"<<std::endl;
     canv_fout->SetTitle(hrspTitle.c_str());

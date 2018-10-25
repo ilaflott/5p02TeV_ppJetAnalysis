@@ -21,8 +21,8 @@ const std::string algo ="ak";// strings of jet algo
 const std::string jetType="PF";// strings of jet type
 //const std::string jetType[]={"PF","Calo","Cs"};// strings of jet type
 
-const std::string srad[] ={"4"};// strings of jet radii
-const int Nrad =sizeof(srad)/sizeof(std::string);//wasn't in original code, 10 arbitrarily chosen
+//const std::string srad[] ={"4"};// strings of jet radii
+//const int Nrad =sizeof(srad)/sizeof(std::string);//wasn't in original code, 10 arbitrarily chosen
 
 const std::string PFCandType[] = {"unknown",
 				  "chargedHadron",

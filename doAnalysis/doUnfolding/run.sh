@@ -3,15 +3,15 @@
 
 #Data and SVD Unfolding settings
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
 #doMCUnfolding
-doLOMCUnfolding=1
+doLOMCUnfolding=0
 LOMCBayeskIter=6
 LOMCSVDkReg=10
-doNLOMCUnfolding=1
+doNLOMCUnfolding=0
 NLOMCBayeskIter=6
 NLOMCSVDkReg=10
 
@@ -22,7 +22,7 @@ doDataUnfoldingwLO=1
 dataLOBayeskIter=6
 dataLOSVDkReg=10
 doDataUnfoldingwNLO=1
-dataNLOBayeskIter=6
+dataNLOBayeskIter=8
 dataNLOSVDkReg=10
 
 

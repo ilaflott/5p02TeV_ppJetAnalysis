@@ -130,8 +130,8 @@ double thyBins_incl[]={
   430., 468.,
   507., 548., 592., 
   638., 
-  686.//, 
-  //1000.//,//967.//1032. 
+  686., 
+  1000.//,//967.//1032. 
   //1500.
   //  1032., 1101. //junk from here down
 }; 
@@ -148,8 +148,8 @@ double smearedBins_incl[]={
   430., 468.,
   507., 548., 592., 
   638., 
-  686.//, 
-  //1000.//,
+  686., 
+  1000.//,
   //1500.//967.//1032.
   //,1500.
   //  1032., 1101. //junk from here down
@@ -874,14 +874,18 @@ double calc_spline3ext_y2(TH1D* hthy){
   if(funcDebug)std::cout<<"log_y_lastbin     ="<< log_y_lastbin     << std::endl;
   if(funcDebug)std::cout<<"log_y_nxt2lastbin ="<< log_y_nxt2lastbin << std::endl;
 
+  double binwidth_scalefact=hthy->GetBinWidth(nbins)/hthy->GetBinWidth(nbins-1);
   double logdiff=log_y_nxt2lastbin-log_y_lastbin;
-  double logdiff_ov2=logdiff/2.;
+  //double logdiff_ov2=logdiff/2.;
   if(funcDebug)std::cout<<"logdiff     ="<< logdiff     << std::endl;
-  if(funcDebug)std::cout<<"logdiff_ov2 ="<< logdiff_ov2 << std::endl;
-
+  if(funcDebug)std::cout<<"binwidth_scalefact     ="<< binwidth_scalefact     << std::endl;
+  //if(funcDebug)std::cout<<"logdiff_ov2 ="<< logdiff_ov2 << std::endl;
+  
+  
   //double y2_log=log_y_lastbin-logdiff_ov2;  
   //double y2_log=log_y_lastbin-16.0*logdiff;  
-  double y2_log=log_y_lastbin-4.0*logdiff;  
+  double y2_log=log_y_lastbin-8.0*logdiff;  
+  //double y2_log=log_y_lastbin-(binwidth_scalefact*logdiff);  
   double y2=TMath::Power(10., y2_log);
   if(funcDebug)std::cout<<"y2_log ="<< y2_log<< std::endl;
   if(funcDebug)std::cout<<"y2     ="<< y2<< std::endl;  

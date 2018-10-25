@@ -479,6 +479,16 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     unf_bayes.SetVerbose(1);
   }
   std::cout<<"RooUnfoldBayes Overflow Status: " << unf_bayes.Overflow()<<std::endl;
+
+  std::cout<<"calling RooUnfoldBayes..."<<std::endl;
+  RooUnfoldBayes unf_bayes_kIter2( &roo_resp, hrec_rebin, 2 );
+  //unf_bayes.SetVerbose(verbosity);
+  if(doToyErrs){
+    //std::cout<<"using toy errors, suppressing text output"<<std::endl;
+    unf_bayes_kIter2.SetNToys(10000);
+    unf_bayes_kIter2.SetVerbose(1);
+  }
+  //std::cout<<"RooUnfoldBayes Overflow Status: " << unf_bayes.Overflow()<<std::endl;
   
   TH1D *hunf = (TH1D*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_BayesUnf_Spectra");
@@ -490,6 +500,17 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   hunf->SetMarkerColor(kRed);
   hunf->SetLineColor(kRed);
   hunf->SetMarkerSize(1.02);     
+
+  TH1D *hunf_kIter2 = (TH1D*)unf_bayes_kIter2.Hreco(errorTreatment);     std::cout<<std::endl; 
+  hunf_kIter2->SetName("ppData_BayesUnf_Spectra_kIter2");
+  hunf_kIter2->SetTitle("Unf. Data");
+  if(debugMode)hunf_kIter2->Print("base");
+  
+  //cosmetics
+  hunf_kIter2->SetMarkerStyle(kOpenCircle);
+  hunf_kIter2->SetMarkerColor(kRed);
+  hunf_kIter2->SetLineColor(kRed);
+  hunf_kIter2->SetMarkerSize(1.02);     
   
   std::cout<<"folding unfolded data histogram!!"<<std::endl;
   TH1D* hfold=(TH1D*)roo_resp.ApplyToTruth(hunf);          
@@ -517,6 +538,37 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   hfold_truth->SetMarkerColor(kGreen+3);
   hfold_truth->SetLineColor(  kGreen+3);
   hfold_truth->SetMarkerSize(1.02);     
+
+
+  std::cout<<"folding thy histogram!!"<<std::endl;
+  TH1D* CT10nlo_rebin=(TH1D*)CT10nlo->Rebin(nbins_pt_gen,"MC_CT10nlo_fold_rebin",boundaries_pt_gen);
+  CT10nlo_rebin->Scale(etaBinWidth);
+  multiplyBinWidth(CT10nlo_rebin);  
+  TH1clearOverUnderflows((TH1*)CT10nlo_rebin);
+  if(debugMode) CT10nlo_rebin->Print("base");
+  CT10nlo_rebin->Print("base");
+  //assert(false);
+
+  TH1D* hfold_CT10nlo=(TH1D*)roo_resp.ApplyToTruth(CT10nlo_rebin);          
+  hfold_CT10nlo->SetName("ppMC_BayesFoldCT10nlo_Spectra");
+  hfold_CT10nlo->SetTitle("Fold. CT10nlo");
+  if(debugMode)hfold_CT10nlo->Print("base");
+  
+  
+  //cosmetics
+  hfold_CT10nlo->SetMarkerSize(0);
+  hfold_CT10nlo->SetMarkerColor(kBlack);
+  hfold_CT10nlo->SetLineColor(  kBlack);
+  hfold_CT10nlo->Print("base");
+  //assert(false);
+
+  TH1D* hfold_ssmeas=(TH1D*)roo_resp.ApplyToTruth(hrec_sameside_rebin);
+  hfold_ssmeas->SetName("ppMC_BayesFoldMeas_Spectra");
+  hfold_ssmeas->SetTitle("MC Fold(Meas.)");
+  if(debugMode)hfold_ssmeas->Print("base");
+  //cosmetics
+  hfold_ssmeas->SetMarkerStyle(kOpenStar);
+  
   
 
 
@@ -547,75 +599,106 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
 
 
   // --------- RATIOS WITH MC TRUTH ----------------
-  TH1D *hgen_rebin_ratiobin=(TH1D*)hgen_rebin->Clone("ppData_Gen_Ratio_denom");
-  if(debugMode)hgen_rebin_ratiobin->Print("base");
-  
   TH1D *h_genratio_oppunf = (TH1D*)hunf->Clone( "ppData_Gen_Ratio_OppUnf" );
   h_genratio_oppunf->SetTitle( "Unf. Data/GEN Py8" );
-  h_genratio_oppunf->Divide(hgen_rebin_ratiobin);
+  h_genratio_oppunf->Divide(hgen_rebin);
   if(debugMode)h_genratio_oppunf->Print("base");
   
   TH1D *h_genratio_oppfold = (TH1D*)hfold->Clone( "ppData_Gen_Ratio_OppFold" );
-//  if(nbins_pt_reco>nbins_pt_gen)
-//    h_genratio_oppfold=(TH1D*)h_genratio_oppfold->Rebin(nbins_pt_gen,"ppData_Gen_Ratio_OppFold_rebin",boundaries_pt_gen);
   h_genratio_oppfold->SetTitle( "Fold. Data/GEN Py8" );
-  h_genratio_oppfold->Divide(hgen_rebin_ratiobin);
+  h_genratio_oppfold->Divide(hgen_rebin);
   if(debugMode)h_genratio_oppfold->Print("base");
   
   TH1D *h_genratio_oppmeas = (TH1D*)hrec_rebin->Clone( "ppData_Gen_Ratio_Meas" );
-//  if(nbins_pt_reco>nbins_pt_gen)
-//    h_genratio_oppmeas=(TH1D*)h_genratio_oppmeas->Rebin(nbins_pt_gen,"ppData_Gen_Ratio_Meas_rebin",boundaries_pt_gen);
   h_genratio_oppmeas->SetTitle( "Meas. Data/GEN Py8" );
-  h_genratio_oppmeas->Divide(hgen_rebin_ratiobin);
+  h_genratio_oppmeas->Divide(hgen_rebin);
   if(debugMode)h_genratio_oppmeas->Print("base");
 
-  
   TH1D *h_genratio_ssmeas = (TH1D*)hrec_sameside_rebin->Clone( "ppMC_Gen_Ratio4_SSMeas" );
   h_genratio_ssmeas->SetTitle( "RECO Py8/GEN Py8" );
-  h_genratio_ssmeas->Divide(hgen_rebin_ratiobin);
+  h_genratio_ssmeas->Divide(hgen_rebin);
   if(debugMode)h_genratio_ssmeas->Print("base");
   
-  
-
-
 
 
   // ---------------- RATIOS WITH DATA MEAS -----------------
-  //Double_t fac_min1=(hrec_sameside_rebin->Integral()/hrec_rebin->Integral());
-  Double_t fac=(hrec_rebin->Integral()/hrec_sameside_rebin->Integral());
-
+  
   TH1D *hrec_rebin_fakecorr=(TH1D*)hrec_rebin->Clone("ppData_Meas_Ratio_denom");
   if(debugMode)hrec_rebin_fakecorr->Print("base");  
   
   TH1D *hrec_sameside_rebin_fakecorr=(TH1D*)hrec_sameside_rebin->Clone("ppMC_Meas_Ratio_denom");
   if(debugMode)hrec_sameside_rebin_fakecorr->Print("base");  
   
+  TH1D *hfold_truth_wfakes=(TH1D*)hfold_truth->Clone("ppMC_Truth_wFakes");
+  if(debugMode)hfold_truth_wfakes->Print("base");  
 
+  //TH1D *hfold_CT10nlo_wfakes=(TH1D*)hfold_CT10nlo->Clone("ppMC_CT10nlo_wFakes");
+  //if(debugMode)hfold_CT10nlo_wfakes->Print("base");  
+  
   //fake correction
+  Double_t fac=(hrec_rebin->Integral()/hrec_sameside_rebin->Integral());
   int nbins_fakcorr=hrec_rebin_fakecorr->GetNbinsX();
   for(int i=1;i<=nbins_fakcorr; i++){
     Double_t hrec_i     = hrec_rebin_fakecorr->GetBinContent(i); Double_t hrec_i_err = hrec_rebin_fakecorr->GetBinError(i);
     Double_t hrecss_i     = hrec_sameside_rebin_fakecorr->GetBinContent(i); Double_t hrecss_i_err = hrec_sameside_rebin_fakecorr->GetBinError(i);
+    Double_t hfoldss_i     = hfold_truth_wfakes->GetBinContent(i); Double_t hfoldss_i_err = hfold_truth_wfakes->GetBinError(i);
     Double_t hfak_i     = hfak->GetBinContent(i); Double_t hfak_i_err = hfak->GetBinError(i);
     hrec_rebin_fakecorr->SetBinContent( i, hrec_i-fac*hfak_i );     
     hrec_rebin_fakecorr->SetBinError(   i, sqrt(hrec_i_err*hrec_i_err + fac*hfak_i_err*fac*hfak_i_err));  
     hrec_sameside_rebin_fakecorr->SetBinContent( i, hrecss_i-hfak_i );     
     hrec_sameside_rebin_fakecorr->SetBinError(   i, sqrt(hrecss_i_err*hrecss_i_err + hfak_i_err*hfak_i_err));  
+    hfold_truth_wfakes->SetBinContent( i, hfoldss_i+hfak_i );     
+    hfold_truth_wfakes->SetBinError(   i, sqrt(hfoldss_i_err*hfoldss_i_err + hfak_i_err*hfak_i_err));  
   }
-
+  
   TH1D *h_recratio_oppunf = (TH1D*)hunf->Clone( "ppData_Meas_Ratio_OppUnf" );
   h_recratio_oppunf->SetTitle( "Unf. Data/RECO Data" );
   h_recratio_oppunf->Divide(hrec_rebin);
   if(debugMode)h_recratio_oppunf->Print("base");
   
   TH1D *h_recratio_oppfold = (TH1D*)hfold->Clone( "ppData_Meas_Ratio_OppFold" );
-  h_recratio_oppfold->SetTitle( "Fold. Data/RECO Data" );
+  h_recratio_oppfold->SetTitle( "Fold Data/Fake Corr. RECO Data" );
   h_recratio_oppfold->Divide(hrec_rebin_fakecorr);
-  if(debugMode)h_recratio_oppfold->Print("base");  
+  if(debugMode)h_recratio_oppfold->Print("base");    
+  
+  TH1D *h_recratio_ssfold1 = (TH1D*)hfold_truth->Clone( "ppData_Meas_Ratio_SSFold" );
+  h_recratio_ssfold1->SetTitle( "Fold Truth/RECO Data - Fakes" );
+  h_recratio_ssfold1->Divide(hrec_rebin_fakecorr);
+  if(debugMode)h_recratio_ssfold1->Print("base");  
+  
+  TH1D *h_recratio_ssfold2 = (TH1D*)hfold_truth_wfakes->Clone( "ppData_Meas_Ratio_SSFold_wFakes" );
+  h_recratio_ssfold2->SetTitle( "Fold MC Truth + Fakes/RECO Data" );
+  h_recratio_ssfold2->Divide(hrec_rebin);
+  if(debugMode)h_recratio_ssfold2->Print("base");  
+
+  TH1D *h_recratio_ssfold3 = (TH1D*)hfold_ssmeas->Clone( "ppData_Meas_Ratio_SSMeasFold" );
+  h_recratio_ssfold3->SetTitle( "Fold MC Meas./RECO Data - Fakes" );
+  h_recratio_ssfold3->Divide(hrec_rebin_fakecorr);
+  if(debugMode)h_recratio_ssfold3->Print("base");  
+  
+  TH1D *h_recratio_CT10nlofold = (TH1D*)hfold_CT10nlo->Clone( "ppData_Meas_Ratio_FoldCT10nlo" );
+  h_recratio_CT10nlofold->SetTitle( "Fold. CT10 NLO/RECO Data - Fakes" );
+  h_recratio_CT10nlofold->Divide(hrec_rebin_fakecorr);
+  if(debugMode)h_recratio_CT10nlofold->Print("base");    
+  h_recratio_CT10nlofold->Print("base");    
+  
+  TH1D *h_recratio_CT10nlo = (TH1D*)CT10nlo_rebin->Clone( "ppData_Meas_Ratio_CT10nlo" );  
+  h_recratio_CT10nlo->SetLineColor(kGray+2);
+  h_recratio_CT10nlo->SetTitle( "CT10 NLO/RECO Data - Fakes" );
+  h_recratio_CT10nlo->Divide(hrec_rebin_fakecorr);
+  if(debugMode)h_recratio_CT10nlo->Print("base");    
+  h_recratio_CT10nlo->Print("base");    
+  
+
   
   TH1D *h_recratio_ssmeas = (TH1D*)hrec_sameside_rebin->Clone( "ppMC_Meas_Ratio_SSMeas" );
   h_recratio_ssmeas->SetTitle( "RECO Py8/RECO Data" );
   h_recratio_ssmeas->Divide(hrec_rebin);
+  if(debugMode)h_recratio_ssmeas->Print("base");  
+  
+  TH1D *h_recratio_ssmeas2 = (TH1D*)hrec_sameside_rebin_fakecorr->Clone( "ppMC_Meas_Ratio_SSMeas2" );
+  h_recratio_ssmeas2->SetTitle( "RECO Py8/RECO Data - Fakes" );
+  h_recratio_ssmeas2->Divide(hrec_rebin_fakecorr);
   if(debugMode)h_recratio_ssmeas->Print("base");  
   
   TH1D *h_recratio_ssgen = (TH1D*)hgen_rebin->Clone( "ppMC_Meas_Ratio_SSTruth" );    
@@ -638,6 +721,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   
   TH1D* hunf_bayes[nKiterMax]={};
   TH1D* hfold_bayes[nKiterMax]={};
+  TH1D* hunf_unf_ratio[nKiterMax]={};
   TH1D* hgen_unf_ratio[nKiterMax]={};
   TH1D* hrec_unf_ratio[nKiterMax]={};
   
@@ -683,10 +767,14 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
       hgen_unf_ratio[ki]->Divide(hgen_rebin);
       
       hrec_unf_ratio[ki]=(TH1D*)hunf_bayes[ki]->Clone(("Data_unf_recratio_kIter"+std::to_string(current_kIter)).c_str());
-      //hrec_unf_ratio[ki]->SetTitle(("Data Unf./Data Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
-      //hrec_unf_ratio[ki]->Divide(hrec_rebin_fakecorr);
       hrec_unf_ratio[ki]->SetTitle(("Data Unf./Data Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
       hrec_unf_ratio[ki]->Divide(hrec_rebin);
+
+      hunf_unf_ratio[ki]=(TH1D*)hunf_bayes[ki]->Clone(("Data_unf_unfratio_kIter"+std::to_string(current_kIter)).c_str());
+      hunf_unf_ratio[ki]->SetTitle(
+				   ("Data Unf. (kIter="+std::to_string(current_kIter)+
+				    ")/Data Unf. (kIter=2); Jet p_{T}; ratio").c_str());
+      hunf_unf_ratio[ki]->Divide(hunf_kIter2);
       
       hgen_fold_ratio[ki]=(TH1D*)hfold_bayes[ki]->Clone(("Data_fold_genratio_kIter"+std::to_string(current_kIter)).c_str());
       hgen_fold_ratio[ki]->SetTitle(("Data Fold./MC Truth, kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
@@ -696,16 +784,19 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
       hrec_fold_ratio[ki]->SetTitle(("Data Fold./Data Fake Corr. Meas., kIter="+std::to_string(current_kIter)+"; Jet p_{T}; ratio").c_str());
       hrec_fold_ratio[ki]->Divide(hrec_rebin_fakecorr);
       
+      
+    }//end kIterLoop
+    for(int ki=0; ki<nKiterMax;ki++){    
       //do bin width normalizations here, so the ratios in this loop arent affected by hgen/hrec hists not having been bin-width normalized yet
       hunf_bayes[ki]->Scale(1./etaBinWidth);
       divideBinWidth(hunf_bayes[ki]);
       
       hfold_bayes[ki]->Scale(1./etaBinWidth);
-      divideBinWidth(hfold_bayes[ki]);
-      
-    }//end kIterLoop
+      divideBinWidth(hfold_bayes[ki]);}
+    
   }//end if(dokIterQA)
   //assert(false);
+
 
 
 
@@ -769,6 +860,17 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   if(debugWrite)hfold->Write();
   if(debugMode)hfold->Print("base");  
 
+  // -- CT10NLO FOlD -- //
+  CT10nlo_rebin->Scale(1./etaBinWidth); // |y| bin width
+  divideBinWidth(CT10nlo_rebin); 
+  if(debugWrite)CT10nlo_rebin->Write();
+  if(debugMode)CT10nlo_rebin->Print("base");  
+  
+  hfold_CT10nlo->Scale(1./etaBinWidth); // |y| bin width
+  divideBinWidth(hfold_CT10nlo); 
+  if(debugWrite)hfold_CT10nlo->Write();
+  if(debugMode)hfold_CT10nlo->Print("base");  
+  
 
   // ----- END BIN WIDTH DIVISIONS + NORMALIZING ----- //
   
@@ -821,8 +923,10 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   //TCanvas pointers for writing canvs to file
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
+  TCanvas *canv_bottom_line_ratio=NULL;
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
-  TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kIterRatio;
+  TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_3x3unfratio=NULL;
+  TCanvas *canv_kIterRatio;
 
   TH2D *hmat_percenterrs=NULL;
   TH1D* hkiter_ratio=NULL;
@@ -895,7 +999,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     h_genratio_oppunf->SetTitle( "Bayesian, Ratios w/ MC Truth Spectra" );
     h_genratio_oppunf->GetYaxis()->SetTitle("Ratio w/ MC Truth");
     
-
+    
     h_genratio_oppunf->DrawClone("P E");            //data unf/mc truth
     h_genratio_oppmeas->DrawClone("P E SAME");      // data meas/mc truth
     h_genratio_ssmeas->DrawClone("P E SAME");       // mc meas/mc truth
@@ -919,7 +1023,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
 
 
 
-
+    
     // ratio w/ data meas -------------------
     canvForPrint->cd();
     if(!useSimpBins)canvForPrint->SetLogx(1);
@@ -935,17 +1039,15 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     h_recratio_ssmeas->DrawClone("P E");
     h_recratio_oppunf->DrawClone("P E SAME");
     h_recratio_ssgen->DrawClone("P E SAME");
-    //h_recratio_ssunf->DrawClone("P E SAME");
-    //h_recratio_oppfold->DrawClone("P E SAME");  
-    //h_recratio_ssfold->DrawClone("P E SAME");
+    //h_recratio_ssfold1->DrawClone("P E SAME");
+    //h_recratio_ssfold2->DrawClone("P E SAME");
     
     TLegend* legend4 = new TLegend( 0.1,0.8,0.2,0.9 );
     legend4->AddEntry(h_recratio_ssmeas, "MC Meas.", "lp");
     legend4->AddEntry(h_recratio_oppunf,  "Data Unf.", "lp");
     legend4->AddEntry(h_recratio_ssgen,   "MC Truth", "lp");
-    //legend4->AddEntry(h_recratio_ssunf, NULL, "p");
-    //legend4->AddEntry(h_recratio_oppfold, "Data Fold(Unf.)", "lp");
-    //legend4->AddEntry(h_recratio_ssfold, "MC Fold(Unf.)", "p");
+    //legend4->AddEntry(h_recratio_ssfold1, "MC Fold(Truth)1", "lp");
+    //legend4->AddEntry(h_recratio_ssfold2, "MC Fold(Truth)2"  , "p");
     legend4->Draw();
     
     theLineAtp9->Draw();
@@ -953,6 +1055,66 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     theLineAt1p1->Draw();    
 
     canv_rec_ratio=(TCanvas*)canvForPrint->DrawClone();
+    canvForPrint->Print(outPdfFile.c_str());
+
+    // Bottom Line Test Ratios
+    canvForPrint->cd();
+    if(!useSimpBins)canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(0);      
+
+    bool scale_bottomlinetests=false;
+    if(scale_bottomlinetests){
+    h_recratio_CT10nlofold->Scale(h_foldratio_datafold->Integral()/h_recratio_CT10nlofold->Integral());    
+    h_recratio_CT10nlo    ->Scale(h_foldratio_datafold->Integral()/h_recratio_CT10nlo->Integral());        
+    h_recratio_ssfold1    ->Scale(h_foldratio_datafold->Integral()/h_recratio_ssfold1    ->Integral());
+    //h_recratio_ssfold2  ->Scale(h_foldratio_datafold->Integral()/h_recratio_ssfold2  ->Integral());
+    //h_recratio_ssfold3    ->Scale(h_foldratio_datafold->Integral()/h_recratio_ssfold3    ->Integral());
+    h_recratio_ssmeas2    ->Scale(h_foldratio_datafold->Integral()/h_recratio_ssmeas2    ->Integral());
+    h_foldratio_datafold  ->Scale(1.);}
+    
+    
+    setupRatioHist(h_recratio_CT10nlofold , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
+    setupRatioHist(h_recratio_CT10nlo , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
+    setupRatioHist(h_recratio_ssfold1 , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
+    //setupRatioHist(h_recratio_ssfold2 , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
+    //setupRatioHist(h_recratio_ssfold3 , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
+    setupRatioHist(h_recratio_ssmeas2 , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
+    setupRatioHist(h_foldratio_datafold, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
+    
+    h_recratio_CT10nlofold->SetTitle("Bottom Line Test Ratios");
+    if(scale_bottomlinetests)    h_recratio_CT10nlofold->SetTitle("Bottom Line Test Ratios (w/ Norm.)");
+    h_recratio_CT10nlofold->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
+    
+    
+    //h_recratio_ssfold1->SetMarkerColor(kGreen-3);
+    //h_recratio_ssfold1->SetLineColor(  kGreen-3);    
+    //h_recratio_ssfold2->SetMarkerColor(kGreen);
+    //h_recratio_ssfold2->SetLineColor(kGreen);
+
+    h_recratio_CT10nlofold->DrawClone("][HIST E");
+    h_recratio_CT10nlo    ->DrawClone("][HIST E SAME");
+    h_recratio_ssfold1    ->DrawClone("P E SAME");
+    //h_recratio_ssfold2  ->DrawClone("P E SAME");
+    //h_recratio_ssfold3    ->DrawClone("P E SAME");
+    h_recratio_ssmeas2    ->DrawClone("P E SAME");
+    h_foldratio_datafold  ->DrawClone("P E SAME");
+    
+    TLegend* legend5 = new TLegend( 0.1,0.75,0.4,0.9 );    
+    
+    legend5->AddEntry(h_recratio_CT10nlofold, "Fold(CT10 NLO)/Data Meas. - Fakes", "lp");
+    legend5->AddEntry(h_recratio_CT10nlo, "CT10 NLO/Data Meas. - Fakes", "lp");
+    legend5->AddEntry(h_recratio_ssfold1, "Fold(Truth)/Data Meas. - Fakes", "lp");
+    //legend5->AddEntry(h_recratio_ssfold2, "Fold(Truth) + Fakes/Data Meas."  , "lp");
+    //legend5->AddEntry(h_recratio_ssfold3, "Fold(MC Meas.)/Data Meas. - Fakes"  , "lp");
+    legend5->AddEntry(h_recratio_ssmeas2, "MC Meas. - Fakes/Data Meas. - Fakes"  , "lp");
+    legend5->AddEntry(h_foldratio_datafold ,  "Fold(Data Unf.)/Data Meas. - Fakes" , "lp");
+    legend5->Draw();
+    
+    theLineAtp9->Draw();
+    theLineAtOne->Draw();
+    theLineAt1p1->Draw();    
+    
+    canv_bottom_line_ratio=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
 
 
@@ -973,8 +1135,8 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     
     TLegend* legendfold = new TLegend( 0.1,0.8,0.4,0.9 );
     
-    legendfold->AddEntry(h_foldratio_datafold ,  "Fold(Data Unf.)/Data Meas." , "lp");
-    legendfold->AddEntry(h_foldratio_mcfold  ,   "Fold(MC Truth)/MC Meas.",  "lp");
+    legendfold->AddEntry(h_foldratio_datafold ,  "Fold(Data Unf.)/Data Meas. - Fakes" , "lp");
+    legendfold->AddEntry(h_foldratio_mcfold  ,   "Fold(MC Truth)/MC Meas. - Fakes",  "lp");
     
     legendfold->Draw();
     
@@ -1130,7 +1292,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     canv_thy_ratio=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
 
-
+    
     
     
 
@@ -1247,6 +1409,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
       canv_3x3spectra  =new TCanvas("canv_3x3spectra","canv 3x3 spectra", 1500, 1500);   canv_3x3spectra ->Divide(3,3);
       canv_3x3genratio =new TCanvas("canv_3x3genratio","canv 3x3 genratio", 1500, 1500); canv_3x3genratio->Divide(3,3);
       canv_3x3recratio =new TCanvas("canv_3x3recratio","canv 3x3 recratio", 1500, 1500); canv_3x3recratio->Divide(3,3);                  
+      canv_3x3unfratio =new TCanvas("canv_3x3unfratio","canv 3x3 unfratio", 1500, 1500); canv_3x3unfratio->Divide(3,3);                  
       TLegend* leg_3x3=new TLegend(0.62,0.75,0.9,0.9,NULL,"NBNDC");
       
       for(int ki=0; ki<nKiterMax;ki++){
@@ -1308,6 +1471,26 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
 	leg_3x3->AddEntry(hrec_unf_ratio[ki] ,"Unf."      ,"lp");
 	//leg_3x3->AddEntry(hrec_fold_ratio[ki],"Fold(Unf.)","lp");
 	//leg_3x3->DrawClone();
+	
+	canv_3x3unfratio->cd(ki_canv)->SetLogx(1);
+	canv_3x3unfratio->cd(ki_canv)->SetLogy(0);
+	canv_3x3unfratio->cd(ki_canv);
+	
+	hunf_unf_ratio[ki]->GetXaxis()->SetNoExponent(true);
+	hunf_unf_ratio[ki]->GetXaxis()->SetMoreLogLabels(true);
+	hunf_unf_ratio[ki]->SetAxisRange(0.5,1.5,"Y");
+	
+	hunf_unf_ratio[ki]->DrawClone("HIST");
+	theLineAtp9 ->Draw();
+	theLineAtOne->Draw();
+	theLineAt1p1->Draw();
+	hunf_unf_ratio[ki]->DrawClone("HIST E SAME");
+	//hrec_fold_ratio[ki]->DrawClone("HIST E SAME"); 
+	
+	leg_3x3->Clear();//removes any entries in legend
+	leg_3x3->AddEntry(hunf_unf_ratio[ki] ,NULL     ,"lp");
+	//leg_3x3->AddEntry(hrec_fold_ratio[ki],"Fold(Unf.)","lp");
+	//leg_3x3->DrawClone();
  
       }
       
@@ -1315,6 +1498,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
       canv_3x3spectra ->Print(outPdfFile.c_str());
       canv_3x3genratio->Print(outPdfFile.c_str());
       canv_3x3recratio->Print(outPdfFile.c_str());
+      canv_3x3unfratio->Print(outPdfFile.c_str());
       
       canv_kIterRatio=new TCanvas("canv_kiter_ratio","canv kiter ratio" , 1500, 1500);
       canv_kIterRatio->SetName(("canv_hunf_ratio_kIter"+std::to_string(kIter_start)+"_v_kIter"+std::to_string(kIter_end)).c_str());
@@ -1399,6 +1583,8 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");
   
   hfold_truth->SetTitle("MC Fold(Truth)");hfold_truth->Write("MC_truth_fold");
+  hfold_truth_wfakes->SetTitle("MC Fold(Truth) + Fakes");hfold_truth->Write("MC_truth_fold_wfakes");
+  hfold_CT10nlo->SetTitle("MC Fold(CT10NLO)");hfold_CT10nlo->Write("MC_CT10nlo_fold");
   hfak->SetTitle("MC Meas. Fakes");hfak->Write("MC_meas_fakes");
   hrec_sameside_rebin_fakecorr->SetTitle("MC Fake Corr. Meas."); hrec_sameside_rebin_fakecorr->Write("MC_measfakcorr");
   
@@ -1418,7 +1604,12 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   h_recratio_oppunf ->SetTitle("Data Unf./Data Meas.");h_recratio_oppunf ->Write("ratio_Data_unf_Data_meas");  //data unf       / data meas	   
   h_recratio_oppfold->SetTitle("Data Fold(Unf.)/Data Meas.");h_recratio_oppfold->Write("ratio_Data_fold_Data_meas"); //data fold(unf) / data meas     
   h_recratio_ssmeas ->SetTitle("MC Meas./Data Meas.");h_recratio_ssmeas ->Write("ratio_MC_meas_Data_meas");  //mc meas        / data meas	   
+  h_recratio_ssmeas2 ->SetTitle("MC Meas./Data Meas. - Fakes");h_recratio_ssmeas2 ->Write("ratio_MC_meas_Data_meas2");  //mc meas        / data meas	   
   h_recratio_ssgen  ->SetTitle("MC Truth/Data Meas.");h_recratio_ssgen  ->Write("ratio_MC_truth_Data_meas");   //mc truth       / data meas        
+  h_recratio_ssfold1->SetTitle("MC Fold(Truth)/Data Meas. - Fakes");  h_recratio_ssfold1->Write(    "ratio_Truth_fold1_Data_meas"); //data fold(unf) / data meas     
+  h_recratio_ssfold2->SetTitle("MC Fold(Truth) + Fakes/Data Meas.");  h_recratio_ssfold2->Write(    "ratio_Truth_fold2_Data_meas"); //data fold(unf) / data meas     
+  h_recratio_ssfold3->SetTitle("MC Fold(MC Meas.)/Data Meas. - Fakes");  h_recratio_ssfold3->Write(    "ratio_Truth_fold3_Data_meas"); //data fold(unf) / data meas     
+  h_recratio_CT10nlofold->SetTitle("MC Fold(CT10 NLO)/Data Meas. - Fakes");  h_recratio_CT10nlofold->Write("ratio_CT10nlo_fold_Data_meas"); //data fold(unf) / data meas     
   
   // fold ratio test
   h_foldratio_datafold->SetTitle("Data Fold(Unf.)/Data Fake Corr. Meas.");h_foldratio_datafold->Write("ratio_Data_fold_Data_measfakcorr");
@@ -1431,18 +1622,25 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
   h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NLO_Data_unf");
   h_thyratio_mctruth->Write("ratio_NNPDFnnlo_ToyMCTruth_Data_unf");
+  TDirectory* fout_kiter_dir= fout->mkdir("all_kiter_plots");
+  fout_kiter_dir->cd();
+  
   if(dokIterQA){
+    
     
     for(int ki=0; ki<nKiterMax;ki++) hunf_bayes[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hfold_bayes[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hgen_unf_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hgen_fold_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hrec_unf_ratio[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hunf_unf_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hrec_fold_ratio[ki]->Write();
     hkiter_ratio->Write();
     
+  
   }
-
+  fout->cd();
+  
   if(drawPDFs){
     // canvases ----------------
     canv_spectra          ->SetTitle("I/O Spectra Canvas");        canv_spectra           ->Write("canv_spectra");
@@ -1454,7 +1652,8 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     canv_rec_ratio        ->SetTitle("Data Meas Ratios Canvas");  canv_rec_ratio          ->Write("canv_meas_ratio");
     canv_fold_ratio       ->SetTitle("Fold Test Ratios Canvas");  canv_fold_ratio         ->Write("canv_fakcorr_meas_ratio");
     canv_thy_ratio        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio          ->Write("canv_thy_ratio");                                
-  
+    canv_bottom_line_ratio->SetTitle("Bottom Line Ratios Canvas");  canv_bottom_line_ratio          ->Write("canv_bottom_line_ratio");                                
+    
     canv_covmat           ->SetTitle("Covariance Matrix Canvas");           canv_covmat        ->Write("canv_covmat");
     canv_absval_covmat    ->SetTitle("Abs Val. Covariance Matrix Canvas");  canv_absval_covmat ->Write("canv_covmatabsval");
     canv_pearson          ->SetTitle("Pearson Matrix Canvas");      canv_pearson               ->Write("canv_pearson");
@@ -1465,6 +1664,7 @@ int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFil
     if(dokIterQA){ canv_3x3spectra->SetTitle("3x3 Unf. Spectra kIter QA Canvas");  canv_3x3spectra ->Write("canv_3x3spectra");}
     if(dokIterQA){ canv_3x3genratio->SetTitle("3x3 Gen Ratio kIter QA Canvas");    canv_3x3genratio->Write("canv_3x3genratio");}
     if(dokIterQA){ canv_3x3recratio->SetTitle("3x3 Rec Ratio kIter QA Canvas");    canv_3x3recratio->Write("canv_3x3recratio");}
+    if(dokIterQA){ canv_3x3unfratio->SetTitle("3x3 Unf Ratio kIter QA Canvas");    canv_3x3recratio->Write("canv_3x3unfratio");}
     if(dokIterQA) canv_kIterRatio->Write();
   }
 

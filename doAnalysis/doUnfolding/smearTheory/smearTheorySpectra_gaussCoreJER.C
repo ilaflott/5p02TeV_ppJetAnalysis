@@ -8,9 +8,9 @@ const bool printBaseDebug=true;
 //const bool useFitWeights=!useSplineWeights;
 
 //const int nEvents=1e+09;  ///10x typical
-//const int nEvents=1e+08;  ///typical
+const int nEvents=1e+08;  ///typical
 //const int nEvents=1e+07;  /// debug nevents
-const int nEvents=1e+06;  /// debug nevents
+//const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 
 std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [nb/GeV]";
@@ -496,19 +496,24 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     spline3_ynew->SetName( ( (std::string)theory_ynew_clone->GetName() + "_spline3").c_str() );
     spline3_ynew->SetLineColor(kAzure);  
     
-    //double ynew_x1=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX());// bad idea, spline3's val at x1 is approx the val of the last bin's height. 
-    //double ynew_x1=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX());//diff idea 1
-    //double x1=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX()-1);//diff idea 2
-    //double x1=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX()-1);//diff idea 3
-    //double x2=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX()) + theory_ynew_clone->GetBinWidth(theory_ynew_clone->GetNbinsX());
+    //figure out starting values for parabolic extension of spline
+    //double x1=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX());// bad idea, spline3's val at x1 is approx the val of the last bin's height. 
+    //double x1=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX()); //v1
+    double x1=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX()-1);//v2
+    //double x1=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX()-1); //v3
+    double x2=theory_ynew_clone->GetBinLowEdge(theory_ynew_clone->GetNbinsX()) + theory_ynew_clone->GetBinWidth(theory_ynew_clone->GetNbinsX());
+    
+    
+    
     //double ynew_y2=theory_ynew_clone->GetBinContent(theory_ynew_clone->GetNbinsX());
-    //double ynew_y2=calc_spline3ext_y2(theory_ynew_clone);
+    double ynew_y2=calc_spline3ext_y2(theory_ynew_clone);
     //double xprime=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX());
     //double xprime=theory_ynew_clone->GetBinCenter(theory_ynew_clone->GetNbinsX()) - 0.25*theory_ynew_clone->GetBinWidth(theory_ynew_clone->GetNbinsX());
     //double ynew_yprime=theory_ynew_clone->GetBinContent(theory_ynew_clone->GetNbinsX());
-    //spline3_ynew_ext= new TF1( ((std::string)spline3_ynew->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
-    //    make_spline3_ext(  (TSpline3*)spline3_ynew, (TF1*)spline3_ynew_ext , (double)x1, (double)x2, (double)ynew_y2);        //make_spline3_extv2(  (TSpline3*)spline3_ynew, (TF1*)spline3_ynew_ext , (double)x1, (double)x2, (double)ynew_y2, (double)xprime, (double)ynew_yprime);    
-    //spline3_ynew_ext->SetLineColor(kAzure-1);
+    
+    spline3_ynew_ext= new TF1( ((std::string)spline3_ynew->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
+    make_spline3_ext(  (TSpline3*)spline3_ynew, (TF1*)spline3_ynew_ext , (double)x1, (double)x2, (double)ynew_y2);        //make_spline3_extv2(  (TSpline3*)spline3_ynew, (TF1*)spline3_ynew_ext , (double)x1, (double)x2, (double)ynew_y2, (double)xprime, (double)ynew_yprime);    
+    spline3_ynew_ext->SetLineColor(kAzure-1);
     
     
     // NLO+NP //      
@@ -516,33 +521,32 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     spline3_NPynew->SetName( ( (std::string)theory_NPynew_clone->GetName() + "_spline3").c_str() );
     spline3_NPynew->SetLineColor(kAzure-8);  
     
-    //double NPynew_x1=theory_NPynew_clone->GetBinCenter(theory_NPynew_clone->GetNbinsX());
-    //double NPynew_x2=theory_NPynew_clone->GetBinLowEdge(theory_NPynew_clone->GetNbinsX()) + theory_NPynew_clone->GetBinWidth(theory_NPynew_clone->GetNbinsX());
     //double NPynew_y2=theory_NPynew_clone->GetBinContent(theory_NPynew_clone->GetNbinsX());
-    //double NPynew_y2=calc_spline3ext_y2(theory_NPynew_clone);
-    //spline3_NPynew_ext= new TF1( ((std::string)spline3_NPynew->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
-    //make_spline3_ext(  (TSpline3*)spline3_NPynew, (TF1*)spline3_NPynew_ext , (double)x1, (double)x2, (double)NPynew_y2);    
-    //spline3_NPynew_ext->SetLineColor(kAzure-9);
+    double NPynew_y2=calc_spline3ext_y2(theory_NPynew_clone);
+    
+    spline3_NPynew_ext= new TF1( ((std::string)spline3_NPynew->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
+    make_spline3_ext(  (TSpline3*)spline3_NPynew, (TF1*)spline3_NPynew_ext , (double)x1, (double)x2, (double)NPynew_y2);    
+    spline3_NPynew_ext->SetLineColor(kAzure-9);
     
     //draw
     theory_ynew_clone->SetTitle("Cubic Splines for #||{y}<2.0;Jet p_{T};Smear Weight");    
-    //theory_ynew_clone->SetAxisRange( ynew_y2/2., theory_ynew_clone->GetMaximum()*2., "Y");
+    theory_ynew_clone->SetAxisRange( ynew_y2/2., theory_ynew_clone->GetMaximum()*2., "Y");
     
     theory_ynew_clone->DrawClone("HIST E");
     spline3_ynew->Draw("SAME");    
-    //spline3_ynew_ext->Draw("SAME");
+    spline3_ynew_ext->Draw("SAME");
     
     theory_NPynew_clone->DrawClone("HIST E SAME");  
     spline3_NPynew->Draw("SAME");
-    //spline3_NPynew_ext->Draw("SAME");
+    spline3_NPynew_ext->Draw("SAME");
     
     leg_spline=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
     leg_spline->AddEntry(theory_ynew_clone , "Weighted NLO Jet Counts for #||{y} < 2.0" , "lp");
     leg_spline->AddEntry(spline3_ynew   , "Cubic Spline for NLO #||{y} < 2.0" , "l");
-    //leg_spline->AddEntry(spline3_ynew_ext  , "Parabolic Spline Extension for NLO #||{y} < 2.0" , "l");
+    leg_spline->AddEntry(spline3_ynew_ext  , "Parabolic Spline Extension for NLO #||{y} < 2.0" , "l");
     leg_spline->AddEntry(theory_NPynew_clone , "Weighted NP+NLO Jet Counts for #||{y} < 2.0" , "lp");
     leg_spline->AddEntry(spline3_NPynew   , "Cubic Spline for NP+NLO #||{y} < 2.0" , "l");
-    //leg_spline->AddEntry(spline3_NPynew_ext  , "Parabolic Spline Extension for NP+NLO #||{y} < 2.0" , "l");
+    leg_spline->AddEntry(spline3_NPynew_ext  , "Parabolic Spline Extension for NP+NLO #||{y} < 2.0" , "l");
     leg_spline->Draw();    
   }
   

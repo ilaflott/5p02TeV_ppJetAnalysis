@@ -6,7 +6,6 @@ const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
 const bool fillgenJetQA=true&fillMCJetQAHists;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
-
 const bool fillMCDijetHists=false;
 const bool fillMCJetSpectraRapHists=false; //other
 const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches
@@ -590,14 +589,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       else if( !(recpt < jtPtCut_Hi)   )      { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }           
       
       
-      //if( absreceta >= jtEtaCutHi ) { 
-      if( (absreceta < jtEtaCutLo ) ) { 
-	jetsPerEvent--; //jetsPerEventJetID--; 
-	continue; }
-      
-      if( !(absreceta < jtEtaCutHi) ) { 
-	jetsPerEvent--; //jetsPerEventJetID--;
-	continue; }
+      if( absreceta < jtEtaCutLo ) { jetsPerEvent--;	continue;}
+      if( !(absreceta < jtEtaCutHi) ) { jetsPerEvent--;	continue;}
       
       if( gendrjt > 0.1 ){
 	jetsPerEvent--;
@@ -628,24 +621,25 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
       
+      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
       if(fillMCJetIDHists) 	{
 	//if (absreceta<=2.4) 
 	if (!(absreceta > 2.4)) 
 	  { 
-	    if( neSum_F[jet]/rawpt    < 0.99 &&
-		phSum_F[jet]/rawpt    < 0.99 &&
+	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
+		phSum_F[jet]/jetIDpt    < 0.99 &&
 		numConst              > 1    &&      
-		chSum_F[jet]/rawpt    > 0.00 && 
+		chSum_F[jet]/jetIDpt    > 0.00 && 
 		chMult                > 0    &&
-		eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
+		eSum_F[jet]/jetIDpt     < 0.99    ) passesJetID=true;	      
 	  }
 	//else if ( absreceta<=2.7 && absreceta>2.4 ) 
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  {	  
-	    if( neSum_F[jet]/rawpt    < 0.99 &&
-		phSum_F[jet]/rawpt    < 0.99 &&
+	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
+		phSum_F[jet]/jetIDpt    < 0.99 &&
 		numConst              > 1       ) passesJetID=true;	      
 	  }		  
 	//else if( absreceta<=3.0 && absreceta>2.7 ) 

@@ -9,7 +9,7 @@ const bool debugMode=false, doEventCounts=true, doJetIDPlots=true;
 //draw switches
 const bool drawEvtQAPlots=true;
 const bool drawJetQAPlots=true;
-const bool drawJetConstituentPlots=drawJetQAPlots&&false, drawDijetPlots=drawJetQAPlots&&false;
+const bool drawJetConstituentPlots=drawJetQAPlots&&true, drawDijetPlots=drawJetQAPlots&&false;
 const bool drawJetRapBinsPlot=false;//, drawGENJetRapBinsPlot=true;  
 
 
@@ -76,7 +76,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 
 
 
-
+  
   // OPEN INPUT SECTION
   std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;  
 
@@ -111,11 +111,14 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   
   
   
- 
-
-
-
+  
+  
+  
+  
   // GET OUTPUT PDF FILE READY
+  std::string theROOTFileName=outputDir+fullJetType+"_"+output_PDFname_base+"_jetPlots.root";
+  TFile* fout=new TFile(theROOTFileName.c_str(),"RECREATE");
+  
   std::string thePDFFileName=outputDir+fullJetType+"_"+output_PDFname_base+"_jetPlots.pdf";
   std::string open_thePDFFileName=thePDFFileName+"[";    std::string close_thePDFFileName=thePDFFileName+"]";  
   
@@ -124,7 +127,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   //temp_canvOpen->UseCurrentStyle();
   temp_canvOpen->Close();  
   
-
+  
   // evtcounts/effective integrated luminosity ----------------------  
   long double theLumi;
   if(doEventCounts){
@@ -136,34 +139,34 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     std::cout<<"skipping evt/jet QA counts + plots..."<<std::endl<<std::endl;
     theLumi=intgrtdLumi;}
   
-
-
+  
+  
   // evt plots ----------------------
   if(drawEvtQAPlots){
     
     std::cout<<std::endl<<" drawing evt QA Plots now! "<<std::endl<<std::endl;
     
     printMCEvtQAHist( (TFile*) finMC   , "hpthat" ,
-		      (std::string) thePDFFileName );
+		      (std::string) thePDFFileName , (TFile*) fout);
     
     printMCEvtQAHist( (TFile*) finMC   , "hWeightedpthat" ,
-		      (std::string) thePDFFileName );
+		      (std::string) thePDFFileName , (TFile*) fout);
     
     printEvtVtxQAHist( (TFile*) finData , "hWeightedVz" , 
 		       (TFile*) finMC   , "hWeightedVz" ,
-		       (int) 10, (std::string) thePDFFileName  , (long double) theLumi  ) ;
+		       (int) 10, (std::string) thePDFFileName  , (long double) theLumi , (TFile*) fout ) ;
     
     printEvtVtxQAHist( (TFile*) finData , "hWeightedVy" , 
 		       (TFile*) finMC   , "hWeightedVy" ,
-		       (int) 5, (std::string) thePDFFileName  , (long double) theLumi  ) ;
+		       (int) 20, (std::string) thePDFFileName  , (long double) theLumi , (TFile*) fout  ) ;
     
     printEvtVtxQAHist( (TFile*) finData , "hWeightedVx" , 
 		       (TFile*) finMC   , "hWeightedVx" ,
-		       (int) 5, (std::string) thePDFFileName  , (long double) theLumi  ) ;
+		       (int) 20, (std::string) thePDFFileName  , (long double) theLumi , (TFile*) fout ) ;
     
     printEvtVtxQAHist( (TFile*) finData , "hWeightedVr" , 
 		       (TFile*) finMC   , "hWeightedVr" ,
-		       (int) 5, (std::string) thePDFFileName  , (long double) theLumi  ) ;
+		       (int) 20, (std::string) thePDFFileName  , (long double) theLumi , (TFile*) fout ) ;
         
     //printEvtNrefQAHist( (TFile*) finData , "hWNref" , 
     //			(TFile*) finMC   , "hWNref" ,
@@ -214,7 +217,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
       std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j];          
       printJetQAHist( (TFile*) finData , (TFile*) finMC   ,  (int) j, (bool)doJetIDPlots, 
 		      (std::string) inHistName , (std::string) thePDFFileName  , (std::string) fullJetType, 
-		      (long double) theLumi  );      
+		      (long double) theLumi  , (TFile*) fout );      
     }
     
   }
@@ -248,7 +251,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 
 
 
-
+  
   
   
   
@@ -260,7 +263,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   
   
   // for DEBUG ONLY
-  if(debugMode)std::cout<<std::endl<<"closing the PDF file"<<std::endl;
+  if(debugMode)std::cout<<std::endl<<"closing output PDF file"<<std::endl;
   TCanvas *temp_canvClose = new TCanvas("tempClose", "tempClose", 1200, 600);
   temp_canvClose->Print( close_thePDFFileName.c_str() );  
   temp_canvClose->Close();    
@@ -269,7 +272,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   if(debugMode)std::cout<<std::endl<<"closing input files"<<std::endl;
   finMC->Close();
   finData->Close();  
-  
+  if(debugMode)std::cout<<std::endl<<"closing output ROOT"<<std::endl;
+  fout->Close();
   return 0;
   
 }// end printplots

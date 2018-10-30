@@ -4,8 +4,8 @@
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 const bool fillJERSHists=true;
-const bool fillMCUnfoldingHists=false;
-const bool fillMCEffHists=false;
+const bool fillMCUnfoldingHists=true;
+const bool fillMCEffHists=true;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 //// readForests_ppMC_JERS

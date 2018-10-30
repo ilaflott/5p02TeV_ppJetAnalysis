@@ -73,19 +73,26 @@ outName="${dataType}_${trig}_ak${radius}${jetType}Jets" #echo "outName is ${outN
 dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}_${etaCutLo}eta${etaCutHi}"
 logFileDir="${PWD}/outputCondor/${dirName}"
 
-### uncomment me to run diff jobs w/ unique-but-similar dir names. 
-### if commented, will put all output into one directory
-### create output directory for condor job
-#AltCounter=0
-#while [[ -d "${logFileDir}"  ]]
-#  do
-#  AltCounter=$(( $AltCounter + 1 ))
-#  echo "dir exists!"
-#  dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}__${etaCutLo}eta${etaCutHi}_${AltCounter}"
-#  logFileDir="${PWD}/outputCondor/${dirName}"    
-#done
+## uncomment me to run diff jobs w/ unique-but-similar dir names. 
+## if commented, will put all output into one directory
+## create output directory for condor job
+AltCounter=0
+while [[ -d "${logFileDir}"  ]]
+do
+    AltCounter=$(( $AltCounter + 1 ))
+    echo "dir exists!"
+    dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}__${etaCutLo}eta${etaCutHi}_${AltCounter}"
+    logFileDir="${PWD}/outputCondor/${dirName}"    
+done
 
 echo "output in outputCondor/${dirName}"
+##TEMP
+#dirName=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_10-29-18_jetPlots__0.0eta2.0_1
+#dirName=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_10-29-18_jetPlots_0.0eta2.0
+#logFileDir="${PWD}/outputCondor/${dirName}"    
+##TEMP
+# /uncomment me
+
 mkdir $logFileDir
 
 if [[ -d "${logFileDir}"  ]]
@@ -97,13 +104,14 @@ else
 fi
 
 
-#uncomment me to work on T2 US MIT
+
+### uncomment me to work on T2 US MIT
 ### cmsenv for condor
 #echo "cmsenv'ing on CVMFS..."
 #cd ${CVMFS_758}
 #cmsenv
 #cd -
-
+### /uncomment me
 
 ## copy over code used for job running/submitting for archival purposes
 #rootcompile ${readForestsCode}.C

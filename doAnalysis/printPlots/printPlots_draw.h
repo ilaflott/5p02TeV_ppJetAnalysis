@@ -198,9 +198,12 @@ void MCHistStyle(TH1* h ){
 }
 
 
-void ratioHistStyle(TH1* theRatio , std::string h_XAx_Title){
+void ratioHistStyle(TH1* theRatio , std::string h_XAx_Title, std::string h_YAx_Title=AUAxTitle){
   
-  theRatio->SetAxisRange(0.,2.,"Y");    
+  //theRatio->SetAxisRange(0.,2.,"Y");    
+  //theRatio->SetAxisRange(0.5,1.5,"Y");    
+  //theRatio->SetAxisRange(0.25,1.75,"Y");    
+  //theRatio->SetAxisRange(0.4,1.1,"Y");    
   theRatio->GetYaxis()->SetLabelFont(43); 
   theRatio->GetYaxis()->SetLabelSize(13);
   
@@ -208,7 +211,7 @@ void ratioHistStyle(TH1* theRatio , std::string h_XAx_Title){
   theRatio->GetYaxis()->SetTitleFont(43);
   theRatio->GetYaxis()->SetTitleOffset(2);
   
-  theRatio->SetYTitle(jetIDratioTitle.c_str() );
+  theRatio->SetYTitle(h_YAx_Title.c_str() );
   
   
   theRatio->GetXaxis()->SetLabelFont(43); 
@@ -227,6 +230,38 @@ void ratioHistStyle(TH1* theRatio , std::string h_XAx_Title){
 }
 
 
+void jetIDratioHistStyle(TH1* theRatio , std::string h_XAx_Title, std::string h_YAx_Title=AUAxTitle){
+  
+  //theRatio->SetAxisRange(0.,2.,"Y");    
+  //theRatio->SetAxisRange(0.5,1.5,"Y");    
+  //theRatio->SetAxisRange(0.25,1.75,"Y");    
+  //theRatio->SetAxisRange(0.4,1.1,"Y");  
+  //theRatio->GetYaxis()->SetNoExponent(true);  
+  //  theRatio->GetYaxis()->SetMoreLogLabels(true);  
+  theRatio->GetYaxis()->SetLabelFont(43); 
+  theRatio->GetYaxis()->SetLabelSize(14);
+  
+  theRatio->GetYaxis()->SetTitleSize(16);
+  theRatio->GetYaxis()->SetTitleFont(43);
+  theRatio->GetYaxis()->SetTitleOffset(1.1);
+  
+  theRatio->SetYTitle(h_YAx_Title.c_str() );
+  
+  
+  theRatio->GetXaxis()->SetLabelFont(43); 
+  theRatio->GetXaxis()->SetLabelSize(16);
+  
+  theRatio->GetXaxis()->SetTitleSize(20);
+  theRatio->GetXaxis()->SetTitleFont(43);
+  theRatio->GetXaxis()->SetTitleOffset(4.);
+  
+  theRatio->SetXTitle( h_XAx_Title.c_str() );
+  
+  theRatio->SetTitle("");
+  theRatio->SetLineColor( theMCLineColor );    
+  
+  return;
+}
 
 void trigRatioHistStyle(TH1* h, int j){
   
@@ -363,4 +398,25 @@ TLatex* makeTLatex(float x, float y, std::string inputString, float size){
   t->SetLineWidth(1);
   t->SetNDC();
   return t;
+}
+
+//void specialRatio(TH1F* theRatio){
+void fracSubtracted(TH1F* theRatio){
+  bool funcDebug=true;
+  int nbins=theRatio->GetNbinsX();
+  for(int i=1; i<=nbins;i++){
+    
+    float content=theRatio->GetBinContent(i);
+    
+    if(funcDebug)std::cout<<"before bin i="<<i<<" content="<<content<<std::endl;
+    content*=-1.;
+    content+=1.;
+    content*=100.;
+    if(content==100.)continue;//avoid weird scaling shit
+    //if(funcDebug)std::cout<<"now    bin i="<<i<<" content="<<content<<std::endl;
+    theRatio->SetBinContent( i,content);
+    if(funcDebug)std::cout<<"after  bin i="<<i<<" content="<<theRatio->GetBinContent(i)<<std::endl;
+  }
+  //  assert(false);
+  return;
 }

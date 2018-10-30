@@ -4,14 +4,14 @@ const bool debugMode=true;
 const bool draw_hJER=true;
 const bool draw_MCEff=false;
 const bool drawProfiles = false;
-const bool rebinJER=false;
+const bool rebinJER=true;
 
 
 const int CANVX=1200, CANVY=1200;
 const int fit_ptlo_bin=3, fit_pthi_bin=nbins_pt_debug-1;
 const int rebinFactor=1;//5
 const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;
-const float fgaus_xlo=0.90, fgaus_xhi=1.10;
+const float fgaus_xlo=0.87, fgaus_xhi=1.13;
 
 //other options
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
@@ -61,13 +61,14 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
   
   TH1F *hrsp[nbins_pt_debug]={};  //input
   
-  TH1F *hMean=NULL, *hSigma=NULL; //output    
-  TH1F *hChi2NDF=NULL;
+  TH1F *hMean=NULL, *hSigma=NULL; //output     
+  TH1F *hMean_fit=NULL, *hSigma_fit=NULL; //output    
+  TH1F *hChi2NDF=NULL, *hChi2Prob=NULL;
   //  Double_t fit_ptLo=-1.;//, fit_ptHi;
   Double_t fit_ptlo=ptbins_debug[fit_ptlo_bin];
   Double_t fit_pthi=ptbins_debug[fit_pthi_bin];
   TF1 *fgaus=NULL;     //for later
-
+  
   if(!draw_hJER)
     std::cout<<std::endl<<std::endl<<"skipping hJER hists"<<std::endl<<std::endl;
   else {
@@ -84,9 +85,21 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 		       Form( "Sigma %s", algname.c_str()),    
 		       nbins_pt_debug, ptbins_debug);
     
+    hMean_fit = new TH1F( "hMean_fit",    
+			  Form( "Fit Mean %s", algname.c_str()),    
+			  nbins_pt_debug, ptbins_debug);
+    
+    hSigma_fit = new TH1F( "hSigma_fit",    
+			   Form( "Fit Sigma %s", algname.c_str()),    
+			   nbins_pt_debug, ptbins_debug);
+    
     hChi2NDF = new TH1F("hChi2NDF",    
-			Form( "Chi2NDF %s", algname.c_str()),    
+			Form( "Fit Chi2NDF %s", algname.c_str()),    
 			nbins_pt_debug, ptbins_debug); 
+    
+    hChi2Prob = new TH1F("hChi2Prob",    
+			 Form( "Fit Chi2Prob %s", algname.c_str()),    
+			 nbins_pt_debug, ptbins_debug); 
     
     
     
@@ -100,96 +113,104 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       //// reco/gen pt in gen pt bins for fits
       int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
       if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
-
+      
 
       // open the input hist    
       std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
       hrsp[ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
-      
-      if(rebinJER)
-	hrsp[ip]= (TH1F*)hrsp[ip]->TH1::Rebin( rebinFactor, (inputHistName+"_rebin5").c_str());	
       
       if(!hrsp[ip]){ 
 	std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;
 	assert(false);}          
       else if(hrsp[ip]->GetEntries()<3)
 	continue;	
+      
+      if(rebinJER&&rebinFactor!=1)
+	hrsp[ip]= (TH1F*)hrsp[ip]->TH1::Rebin( rebinFactor, (inputHistName+"_rebin5").c_str());	
+      
       if(debugMode)std::cout<<std::endl;  
       if(debugMode)hrsp[ip]->Print("base");    
       hrsp[ip]->Scale( 1./ hrsp[ip]->Integral() );    //scale to area of 1
       
-      fgaus = new TF1("fgaus","gaus", fgaus_xlo,fgaus_xhi);  //what's been typicall used.
+      // get some quick stats    
+      //float norm  = hrsp[ip]->GetMaximumStored();    
+      float h_mean  = hrsp[ip]->GetMean();    
+      float h_emean = hrsp[ip]->GetMeanError();    
+      float h_sig   = hrsp[ip]->GetStdDev()/h_mean;    
+      float h_esig  = h_sig * sqrt (  
+				    pow( h_emean/h_mean,2) + pow( hrsp[ip]->GetStdDevError()/hrsp[ip]->GetStdDev(),2) ) ; 
       
-      //fgaus->SetParLimits(0,0.98,1.02);    //normalization
-      //fgaus->SetParLimits(1,0.95,1.05);   // mean
-      //fgaus->SetParLimits(2,0.0,0.5);     // width
+      // set contents+errors in specific bin    
+      std::cout<<"setting bin content for hMean[ip]=["<< ip<<"] "<<std::endl;    
+      std::cout<<"h_mean ="   << h_mean<<std::endl;    
+      std::cout<<"h_emean ="  << h_emean<<std::endl;    
+      std::cout<<"h_sig ="    << h_sig<<std::endl;    
+      std::cout<<"h_esig ="   << h_esig<<std::endl;    
       
-      std::cout<<"fitting inputHist "<<inputHistName<<std::endl;    
-      if(debugMode)std::cout<< "Mean= "<< hrsp[ip]->GetMean()<<" +/- " <<hrsp[ip]->GetMeanError()<< std::endl;    	
-
-
-      //int fitstatus = 1;    	//fit status=0 if fit successful... annoying
-      //fitstatus = hrsp[ip]->Fit(fgaus,"RQ");          //fitstatus = hrsp[ip]->Fit(fgaus,"RS");          //fitstatus = hrsp[ip]->Fit(fgaus);    
-      bool fitfailed=true;
-      fitfailed = ((bool)(hrsp[ip]->Fit(fgaus,"R")));    
+      hMean->SetBinContent (ip+1, h_mean);    
+      hMean->SetBinError   (ip+1, h_emean);    
+      
+      hSigma->SetBinContent (ip+1, h_sig);    
+      hSigma->SetBinError   (ip+1, h_esig);    
+      
       fout_ptbin_JER->cd();
       hrsp[ip]->Write();
       
       //dont use the first few low pt bins for the fit; just write them to file for record keeping
       if(ip<fit_ptlo_bin)continue;      
-      //if(!ptLoSet){
-      //	fit_ptLo=ptbins_debug[ip];
-      //	ptLoSet=true;
-      //}
+      if(ip>=fit_pthi_bin)continue;
+      std::cout<<"fitting inputHist "<<inputHistName<<std::endl;   
+      fgaus = new TF1("fgaus","gaus", fgaus_xlo,fgaus_xhi);  //what's been typicall used.      
+      //fgaus->SetParLimits(0,0.98,1.02);    //normalization
+      //fgaus->SetParLimits(1,0.95,1.05);   // mean
+      //fgaus->SetParLimits(2,0.0,0.5);     // width
       
-
+      bool fitfailed=true;
+      //fitstatus = hrsp[ip]->Fit(fgaus,"RQ");          //fitstatus = hrsp[ip]->Fit(fgaus,"RS");          //fitstatus = hrsp[ip]->Fit(fgaus);     
+      fitfailed = ((bool)(hrsp[ip]->Fit(fgaus,"R")));    
+      
+      
+      
       if(fitfailed)
 	std::cout<<std::endl<<"!!!WARNING FIT FAILED!!!"<<std::endl<<std::endl;
       else 
 	std::cout<<std::endl<<"fit success"<<std::endl<<std::endl;
       
-      // get some quick stats    
-      //float norm  = hrsp[ip]->GetMaximumStored();    
-      float mean  = hrsp[ip]->GetMean();    
-      float emean = hrsp[ip]->GetMeanError();    
-      float sig   = hrsp[ip]->GetStdDev()/mean;    
-      float esig  = sig* 
-	sqrt (  pow( emean/mean,2) + pow( hrsp[ip]->GetStdDevError()/hrsp[ip]->GetStdDev(),2) ) ; 
+      float f_mean  = -1.;
+      float f_emean = -1.;
+      float f_sig   = -1.;
+      float f_esig  = -1.;      
       float chi2NDF = -1.;
+      float chi2prob= -1.;      
       
-      if(fitfailed)
-
+      f_mean  = (fitfailed)  ? -1. : fgaus->GetParameter(1); // z = if(condition) then(?) <do this> else(:) <do this>   
+      f_emean = (fitfailed)  ? -1. : fgaus->GetParError(1) ; 
+      f_sig   = (fitfailed)  ? -1. : fgaus->GetParameter(2)/f_mean;    
+      f_esig  = (fitfailed)  ? -1. : f_sig * sqrt( pow( (f_emean/f_mean), 2) + 
+						   pow( ( fgaus->GetParError(2)/fgaus->GetParameter(2) ), 2) 
+						   )   ;
+      chi2NDF = (fitfailed)  ? -1. : fgaus->GetChisquare()/((float)fgaus->GetNDF());
+      chi2prob = (fitfailed) ? -1. : fgaus->GetProb();
       
-      mean  = (fitfailed) ? hrsp[ip]->GetMean()        : fgaus->GetParameter(1); // z = if(condition) then(?) <do this> else(:) <do this>   
-      emean = (fitfailed) ? hrsp[ip]->GetMeanError()   : fgaus->GetParError(1) ; 
-      sig   = (fitfailed) ? hrsp[ip]->GetStdDev()/mean : fgaus->GetParameter(2)/mean;    
-      esig  = (fitfailed) ? 
-	sig * sqrt( pow( (emean/mean),2) + 
-		    pow( ( hrsp[ip]->GetStdDevError()/hrsp[ip]->GetStdDev() ),2) 
-		    ) : 
-	sig * sqrt( pow( (emean/mean), 2) + 
-		    pow( ( fgaus->GetParError(2)/fgaus->GetParameter(2) ), 2) 
-		    )   ;
-      chi2NDF = (fitfailed) ? -1. : fgaus->GetChisquare()/((float)fgaus->GetNDF());
+      std::cout<<"setting bin content for fit hists ip="<< ip<<" "<<std::endl;    
+      std::cout<<"f_mean ="   << f_mean<<std::endl;    
+      std::cout<<"f_emean ="  << f_emean<<std::endl;    
+      std::cout<<"f_sig ="    << f_sig<<std::endl;    
+      std::cout<<"f_esig ="   << f_esig<<std::endl;    
+      std::cout<<"Chi2NDF ="   << chi2NDF<<std::endl;    
+      std::cout<<"Chi2Prob ="   << chi2prob<<std::endl;          
       
-      // set contents+errors in specific bin    
-      std::cout<<"setting bin content for hMean[ip]=["<< ip<<"] "<<std::endl;    
-      if(debugMode)std::cout<<"mean ="<< mean<<std::endl;    
-      if(debugMode)std::cout<<"emean ="<< emean<<std::endl;    
-      if(debugMode)std::cout<<"sig ="<< sig<<std::endl;    
-      if(debugMode)std::cout<<"esig ="<< esig<<std::endl;    
-      if(debugMode)std::cout<<"chi2NDF ="<< chi2NDF<<std::endl;    
+      hMean_fit->SetBinContent (ip+1, f_mean);    
+      hMean_fit->SetBinError   (ip+1, f_emean);    
       
-      if((ip+1)==nbins_pt_debug)continue;
-      else if((ip+1)<=2)continue;
-      hMean->SetBinContent (ip+1, mean);    
-      hMean->SetBinError   (ip+1, emean);    
-      
-      hSigma->SetBinContent (ip+1, sig);    
-      hSigma->SetBinError   (ip+1, esig);    
+      hSigma_fit->SetBinContent (ip+1, f_sig);    
+      hSigma_fit->SetBinError   (ip+1, f_esig);    
       
       hChi2NDF->SetBinContent (ip+1, chi2NDF );
-      //      hChi2NDF->SetBinError (ip+1, 0. );
+      hChi2NDF->SetBinError (ip+1, 1. );
+      
+      hChi2Prob->SetBinContent (ip+1, chi2prob );
+      //hChi2Prob->SetBinError (ip+1,  );
       
     }// end fit-loop over ptbins    
     rootfout->cd();//don't wanna be in directory anymore
@@ -201,34 +222,38 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 
     std::cout<<std::endl<<"fitting JER v genpt hists ..."<<std::endl;        
     ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-02); 
-    
-    TF1 *hSigmaFit=new TF1("hSigmaFit","[0]+[1]/(pow(x,[2])+[3]*x)", 
+     
+    TF1 *SigmaFit_h=new TF1("SigmaFit_h","[0]+[1]/(pow(x,[2])+[3]*x)", 
 			   fit_ptlo,
 			   fit_pthi );       // I want this fit to end at 967 GeV (for entire range)    
+   
+    bool hsigmaFitStatus= true;
+    std::cout<<std::endl<<"fitting JER width v. pt... init. sigmaFitStatus="<<hsigmaFitStatus<<std::endl<<std::endl; 
+    //sigmaFitStatus=hSigma->Fit(SigmaFit_h,"MEVR");    //sigmaFitStatus=hSigma->Fit(SigmaFit_h,"MR");
+    hsigmaFitStatus=hSigma->Fit(SigmaFit_h,"MEVR");	
+    hsigmaFitStatus=hSigma->Fit(SigmaFit_h,"EVR");	
+
+
+    TF1 *SigmaFit_f=new TF1("SigmaFit_f","[0]+[1]/(pow(x,[2])+[3]*x)", 
+			   fit_ptlo,
+			   fit_pthi );       // I want this fit to end at 967 GeV (for entire range)    
+
+    bool fsigmaFitStatus= true;
+    std::cout<<std::endl<<"fitting JER width v. pt... init. sigmaFitStatus="<<fsigmaFitStatus<<std::endl<<std::endl; 
+    //sigmaFitStatus=hSigma->Fit(SigmaFit_h,"MEVR");    //sigmaFitStatus=hSigma->Fit(SigmaFit_h,"MR");
+    fsigmaFitStatus=hSigma->Fit(SigmaFit_f,"MEVR");	
+    fsigmaFitStatus=hSigma_fit->Fit(SigmaFit_f,"EVR");	
+
+
     
-    float fitParam_0    =hSigmaFit->GetParameter(0);
-    float fitParam_0_err=hSigmaFit->GetParError(0);
-    float fitParam_1    =hSigmaFit->GetParameter(1);
-    float fitParam_1_err=hSigmaFit->GetParError(1);
-    float fitParam_2    =hSigmaFit->GetParameter(2);
-    float fitParam_2_err=hSigmaFit->GetParError(2); 
-    float fitParam_3    =hSigmaFit->GetParameter(3);
-    float fitParam_3_err=hSigmaFit->GetParError(3); 
-    
-    bool sigmaFitStatus= true;
-    std::cout<<std::endl<<"fitting JER width v. pt... init. sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
-    //sigmaFitStatus=hSigma->Fit(hSigmaFit,"MEVR");    //sigmaFitStatus=hSigma->Fit(hSigmaFit,"MR");
-    sigmaFitStatus=hSigma->Fit(hSigmaFit,"MEVR");	
-    sigmaFitStatus=hSigma->Fit(hSigmaFit,"EVR");	
-    
-    fitParam_0    =hSigmaFit->GetParameter(0);
-    fitParam_0_err=hSigmaFit->GetParError(0);
-    fitParam_1    =hSigmaFit->GetParameter(1);
-    fitParam_1_err=hSigmaFit->GetParError(1);
-    fitParam_2    =hSigmaFit->GetParameter(2);
-    fitParam_2_err=hSigmaFit->GetParError(2); 
-    fitParam_3    =hSigmaFit->GetParameter(3);
-    fitParam_3_err=hSigmaFit->GetParError(3); 
+    float fitParam_0    =SigmaFit_h->GetParameter(0);
+    float fitParam_0_err=SigmaFit_h->GetParError(0);
+    float fitParam_1    =SigmaFit_h->GetParameter(1);
+    float fitParam_1_err=SigmaFit_h->GetParError(1);
+    float fitParam_2    =SigmaFit_h->GetParameter(2);
+    float fitParam_2_err=SigmaFit_h->GetParError(2); 
+    float fitParam_3    =SigmaFit_h->GetParameter(3);
+    float fitParam_3_err=SigmaFit_h->GetParError(3); 
 
     std::cout << "fitParam_0     = " << fitParam_0    << std::endl;
     std::cout << "fitParam_0_err = " << fitParam_0_err<< std::endl;
@@ -245,32 +270,9 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     
     
     
-//    if(!sigmaFitStatus){	
-//      std::cout<<std::endl<<"fit success!, sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
-//      std::cout << "fitParam_0     = " << fitParam_0    << std::endl;
-//      std::cout << "fitParam_0_err = " << fitParam_0_err<< std::endl;
-//      std::cout << "%err fitParam0 = " << (fitParam_0_err/fitParam_0)*100.    << std::endl;
-//      std::cout << "fitParam_1     = " << fitParam_1    << std::endl;
-//      std::cout << "fitParam_1_err = " << fitParam_1_err<< std::endl;
-//      std::cout << "%err fitParam1 = " << (fitParam_1_err/fitParam_1)*100.    << std::endl;
-//      std::cout << "fitParam_2     = " << fitParam_2    << std::endl;
-//      std::cout << "fitParam_2_err =   " << fitParam_2_err<< std::endl;
-//      std::cout << "%err fitParam2 = " << (fitParam_2_err/fitParam_2)*100.    << std::endl;
-//      //	assert(false);
-//    }
-//    else {
-//      std::cout<<std::endl<<"fit failed, sigmaFitStatus="<<sigmaFitStatus<<std::endl<<std::endl; 
-//      //	assert(false);
-//    }
-//    
-
-
-
-
-
-
-
+    
     TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", CANVX, CANVY);    
+    //    pdfoutCanv_muSigma->Divide(1,4);
     pdfoutCanv_muSigma->Divide(1,3);
     pdfoutCanv_muSigma->cd();
     
@@ -290,33 +292,61 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     p3->SetLogx(1);    	
     p3->SetGridx(0);
     p3->cd();        
-    
-    
-    //draw pad 3
-    p3->cd();    
-    MakeHistChi2NDF( (TH1F*)hChi2NDF,xmin,xmax);           
-    hChi2NDF->DrawClone("HIST ][E");
 
-    p2->cd();    
-    MakeHistRMS( (TH1F*) hSigma ,xmin,xmax);           //ptbins_debug[0],ptbins_debug[nbins_pt_debug]);   
-    //hSigma->Draw("HIST E1");
-    hSigma->DrawClone("HIST ][E");
-    hSigmaFit->SetLineWidth(1);
-    hSigmaFit->Draw("SAME");
+//    TPad* p4=(TPad*)pdfoutCanv_muSigma->cd(4);        
+//    p4->SetLogx(1);    	
+//    p4->SetLogy(1);    	
+//    p4->SetGridx(0);
+//    p4->cd();        
     
     
     //draw pad 1
     p1->cd();    
     MakeHistMean( (TH1F*)hMean,xmin,xmax);           //ptbins_debug[0],ptbins_debug[nbins_pt_debug]);     
-    //hMean->Draw("HIST E1"); 
     hMean->DrawClone("HIST ][E"); 
+    
+    MakeHistMean( (TH1F*)hMean_fit, xmin,xmax);           //ptbins_debug[0],ptbins_debug[nbins_pt_debug]);     
+    hMean_fit->SetMarkerStyle(kOpenStar);
+    hMean_fit->SetMarkerColor(kBlack);
+    hMean_fit->SetLineColor(kMagenta);
+    hMean_fit->DrawClone("HIST ][E SAME");
     
     TLine* meanLine=new TLine(xmin,1.,xmax,1.);    
     meanLine->SetLineStyle(2);  
     meanLine->SetLineColor(kBlue);    
     meanLine->Draw();            
     
+    //draw pad 2
+    p2->cd();    
 
+    MakeHistRMS( (TH1F*) hSigma ,xmin,xmax);           //ptbins_debug[0],ptbins_debug[nbins_pt_debug]);   
+    //hSigma->Draw("HIST E1");
+    hSigma->DrawClone("HIST ][E");
+    
+    //this is a hist created from the gauss fits in each bin
+    hSigma_fit->SetMarkerStyle(kOpenStar);
+    hSigma_fit->SetMarkerColor(kBlack);
+    hSigma_fit->SetLineColor(kMagenta);
+    hSigma_fit->DrawClone("HIST ][E SAME");
+
+    //this is a TF1; this is the fit to hSigma_fit
+    SigmaFit_h->SetLineWidth(1);
+    SigmaFit_h->Draw("SAME");
+
+    SigmaFit_f->SetLineWidth(1);
+    SigmaFit_f->Draw("SAME");
+    
+    //draw pad 3
+    p3->cd();    
+    MakeHistChi2NDF( (TH1F*)hChi2NDF,xmin,xmax);           
+    hChi2NDF->DrawClone("HIST ][E");    
+    
+    ////draw pad 4
+    //p4->cd();    
+    //MakeHistChi2Prob( (TH1F*)hChi2Prob,xmin,xmax);           
+    //hChi2Prob->DrawClone("HIST ][E");    
+    
+    
     // DRAW THOSE PDFS //        
     std::string thePDFFileName=outputDir+fullJetType+"_MCJEC_"+outputTag+".pdf";    
     std::string open_thePDFFileName=thePDFFileName+"[";    
@@ -408,7 +438,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     hMean->Write();               
     hSigma->Write();               
     hChi2NDF->Write();                     
-    hSigmaFit->Write();
+    SigmaFit_h->Write();
+    SigmaFit_f->Write();
     pdfoutCanv_muSigma->SetTitle("Mean, Significance, #chi^{2}/n.d.o.f. Canvas");        pdfoutCanv_muSigma->Write("mean_sigma_chi2ndf_canv");    
     
     
@@ -577,7 +608,7 @@ int main(int argc, char*argv[]){
   return rStatus;
 }
 
-    //      TF1 *hSigmaFit=new TF1("hSigmaFit","[0]+[1]*pow(x,[2])", 
+    //      TF1 *SigmaFit_h=new TF1("SigmaFit_h","[0]+[1]*pow(x,[2])", 
     //			     ptbins_debug[2],                     // I want this fit to start at 56 GeV or so
     //			     ptbins_debug[nbins_pt_debug]);       // I want this fit to end at 967 GeV (for entire range)
 

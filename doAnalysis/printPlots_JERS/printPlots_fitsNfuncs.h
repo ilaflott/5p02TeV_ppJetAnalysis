@@ -198,13 +198,14 @@ TLegend* getLegend(double , double ,//x1,y1
 
 // the methods
 void LoadStyle(){
-
+  
   std::cout<<std::endl<<"loading style..." <<std::endl;
-
+  
   gStyle->SetOptStat(0);
   //gStyle->SetOptStat("emr");
   //gStyle->SetOptFit(1);
-  gStyle->SetOptFit(101);
+  //gStyle->SetOptFit(101);
+  gStyle->SetOptFit(1111);
   
   
   //color
@@ -217,8 +218,8 @@ void LoadStyle(){
   //gStyle->SetTitleFillColor(10);
   
   //pad
-  gStyle->SetPadTickX(1);
-  gStyle->SetPadTickY(1);  
+  //gStyle->SetPadTickX(1);
+  //gStyle->SetPadTickY(1);  
   
   //gStyle->SetPadBorderSize(0);
   //gStyle->SetPadBottomMargin(0.1);
@@ -331,7 +332,7 @@ void MakeHistMean(TH1F * h1, float xmin, float xmax){
   h1->SetTitle("mean, resolution, chi-square, v gen p_{T}");
   h1->GetYaxis()->SetTitle("#mu");
   h1->GetYaxis()->SetDecimals(true);
-  h1->SetAxisRange(0.99,1.01, "Y");    
+  h1->SetAxisRange(0.98,1.03, "Y");    
   return;
 }
 
@@ -340,13 +341,29 @@ void MakeHistRMS(TH1F * h1,float xmin,float xmax){
   h1->SetTitle("");
   h1->GetYaxis()->SetTitle("#sigma / #mu");
   h1->GetYaxis()->SetDecimals(true);
-  h1->SetAxisRange(0.00,0.13, "Y");    
+  h1->SetAxisRange(0.03,0.15, "Y");    
+
   return;
 }
 void MakeHistChi2NDF(TH1F * h1, float xmin, float xmax){
   MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("");
   h1->GetYaxis()->SetTitle("Gaussian JER #chi^{2}/NDF");
+  h1->SetMarkerStyle(kOpenStar);
+  h1->SetMarkerColor(kBlack);
+  h1->SetLineColor(kMagenta);
+  return;
+}
+
+
+void MakeHistChi2Prob(TH1F * h1, float xmin, float xmax){
+  MakeHist((TH1F*)h1,xmin,xmax);
+  h1->SetTitle("");
+  h1->GetYaxis()->SetTitle("Gaussian JER #chi^{2} Probability");
+  h1->SetAxisRange(1e-10 , 1., "Y");
+  h1->SetMarkerStyle(kOpenStar);
+    h1->SetMarkerColor(kBlack);
+  h1->SetLineColor(kMagenta);
   return;
 }
 

@@ -7,7 +7,7 @@
 //highPtJetTrig 5.02TeV 2015 prompt reco
 
 //const double intgrtdLumi=25.8*pow(10.,6.);// 25.8 pb^-1 to \microbarns^-1 //old lumi
-const double intgrtdLumi=27.4*pow(10.,6.);// pb^-1 to \microbarns^-1 // new lumi
+const double intgrtdLumi=27.4*pow(10.,3.);// pb^-1 to \microbarns^-1 // new lumi
 const double intgrtdLumi_unc=2.3/100.;
 
 // string arrays

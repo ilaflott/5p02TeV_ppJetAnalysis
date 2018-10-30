@@ -6,11 +6,11 @@ echo ""
 echo "compiling code(s)"
 echo ""
 
-#echo "...ppMC jetPlots..."
-#rootcompile readForests_ppMC_jetPlots.C
+echo "...ppMC jetPlots..."
+rootcompile readForests_ppMC_jetPlots.C
 
-echo "...ppMC JERS..."
-rootcompile readForests_ppMC_JERS.C
+#echo "...ppMC JERS..."
+#rootcompile readForests_ppMC_JERS.C
 
 #echo "...ppData jetPlots..."
 #rootcompile readForests_ppData_jetPlots.C
@@ -36,7 +36,7 @@ echo ""
 #source run_readForests_JERS.sh 4 "0.0" "1.0"
 #source run_readForests_JERS.sh 4 "1.0" "2.0"
 
-source run_readForests_JERS.sh 4 "0.0" "2.0"
+#source run_readForests_JERS.sh 4 "0.0" "2.0"
 
 ####################################################
 
@@ -60,7 +60,7 @@ source run_readForests_JERS.sh 4 "0.0" "2.0"
 #source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
 #source run_readForests_jetPlots.sh 4 "1.0" "2.0" "ppMC"
 
-#source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
+source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
 
 #askCondor  1 1
 #sleep 120s

@@ -14,8 +14,9 @@ then
 	numLines=($(cat $i | wc -l))
 	if [[ $numLines -gt 0 ]]
 	then
-	    echo "i = $i"
-	    echo "numLines=${numLines}"
+	    echo "ERRORS for file $i"
+	    #echo "has errors!"
+	    #echo "numLines=${numLines}"
 	fi
     done
 else

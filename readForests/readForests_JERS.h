@@ -26,7 +26,7 @@ int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile
 
 
 //for unfolding pt cuts only
-const float jtPtCut_unf_lo     = 28.;//37.  ;//64, 49, 43, 37
+const float jtPtCut_unf_lo     = 32.;//37.  ;//64, 49, 43, 37
 const float jtPtCut_unf_hi     = 1410.; //1248.  ;
 const float genJetPtCut_unf_lo = jtPtCut_unf_lo ; //49, 43, 37
 const float genJetPtCut_unf_hi = jtPtCut_unf_hi ; //1248 1172, 1101, 1032. 967
@@ -42,8 +42,6 @@ const float jtPtCut        = jtPtCut_unf_lo     ;
 const float jtPtCut_Hi     = jtPtCut_unf_hi     ;
 const float genJetPtCut    = genJetPtCut_unf_lo ;
 const float genJetPtCut_Hi = genJetPtCut_unf_hi ;
-
-
 
 const int genptBin1Low = 56 , genptBin1High = 64 ;	 
 const int genptBin2Low = 64 , genptBin2High  = 74 ;

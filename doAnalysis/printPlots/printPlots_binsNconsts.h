@@ -53,8 +53,8 @@ const Double_t ptbins_debug[]={
   //846., 
   //905., 
   //967 ., // end of SMP Official bin limits 
-  1000.,  // to catch overflow or other entries?
-  1050. // junk bin, cosmetics only
+  1000. //,  // to catch overflow or other entries?
+  //1050. // junk bin, cosmetics only
 }; 
 const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;
 

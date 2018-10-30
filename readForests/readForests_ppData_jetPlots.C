@@ -3,21 +3,19 @@
 
 // ppData switches
 const bool fillDataEvtQAHists=true;
-//const bool fillDataVtxTrkQAHists=true; //in the works
-
 const bool fillDataJetQAHists=true;
-const bool fillDataJetIDHists=true;//, tightJetID=false;
+const bool fillDataJetIDHists=false;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 
 const bool fillDataDijetHists=false;
 const bool fillDataJetSpectraRapHists=false; //other
-
 const bool useHLT100=false;
 
 const int jetIDint=(int)fillDataJetIDHists;
 
-const std::string trgCombType="Calo";
-//const std::string trgCombType="PF";
+//const bool fillDataVtxTrkQAHists=true; //in the works
+//const std::string trgCombType="Calo";
+const std::string trgCombType="PF";
 
 
 //// readForests_ppData_jetPlots
@@ -239,7 +237,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   TH2D *hJetQA_jtpt_v_L2Res=NULL,*hJetQA_jtpt_v_L3Res=NULL,*hJetQA_jtpt_L2Res_v_L3Res=NULL;
   if(fillDataJetQAHists)
     for(int k = 0; k<2; ++k){
-      if(!fillDataJetIDHists && k==1)continue;	
+      if(!fillDataJetIDHists   && k==1)continue;	
       if(fillDataJetIDHists && k==0)continue;	
       
       hJetQA_jtptEntries = new TH1D( Form("hJetQA_%dwJetID_jtptEntries", k) , Form("jtpt hist, weight=1 always") , 2500,0,2500);       

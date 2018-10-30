@@ -63,10 +63,6 @@
 //#include "printPlots_fitsNfuncs.h"
 
 
-
-
-
-
 //// HELPER FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
 bool str_replace(std::string& str, const std::string& from, const std::string& to) {
@@ -208,7 +204,6 @@ void getEventCounts(TFile* fin, bool isData){
   bool funcDebug=false;
   std::cout<<" grabbing raw event counts "<<std::endl;   
   
-  
   if(!fin){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
   
@@ -218,46 +213,61 @@ void getEventCounts(TFile* fin, bool isData){
   TH1F *h_NEvents_skimCut = (TH1F*)fin->Get("NEvents_skimCut");
   TH1F *h_NEvents_vzCut   = (TH1F*)fin->Get("NEvents_vzCut");
   
-  TH1F *h_NEvents_skipped = NULL;
-  TH1F *h_NEvents_trigd=NULL;
-  TH1F *h_NEvents_jet100=NULL,*h_NEvents_jet80=NULL,*h_NEvents_jet60=NULL,*h_NEvents_jet40=NULL;
+//  if(!h_NEvents        ||
+//     !h_NEvents_read   ||
+//     !h_NEvents_skimCut||
+//     !h_NEvents_vzCut   ) assert(false);
+  if(!h_NEvents        ) assert(false);
+  if(!h_NEvents_read   ) assert(false);
+  if(!h_NEvents_skimCut) assert(false);
+  if(!h_NEvents_vzCut  ) assert(false);
   
-  if(isData)
-    { h_NEvents_skipped=(TH1F*)fin->Get("NEvents_skipped");      
-      h_NEvents_trigd=(TH1F*)fin->Get("NEvents_trigd");      
-      h_NEvents_jet40=(TH1F*)fin->Get("NEvents_jet40Trigd");      
-      h_NEvents_jet60=(TH1F*)fin->Get("NEvents_jet60Trigd");      
-      h_NEvents_jet80=(TH1F*)fin->Get("NEvents_jet80Trigd");      
-      h_NEvents_jet100=(TH1F*)fin->Get("NEvents_jet100Trigd");      
-    }
-  
-  if(isData)std::cout<<std::endl<<"/// Data Evt-Count Summary ///"<<std::endl<<std::endl;      
+  TH1F *h_NEvents_skipped = NULL;    
+  if(isData){
+    h_NEvents_skipped=(TH1F*)fin->Get("NEvents_skipped");      
+    std::cout<<std::endl<<"/// Data Evt-Count Summary ///"<<std::endl<<std::endl;      
+  }
   else std::cout<<std::endl<<"/// MC Evt-Count Summary ///"<<std::endl<<std::endl;      
   
   std::cout<<"Total Num of Events in file(s) opened       = " <<
     h_NEvents->GetEntries()<<std::endl;
-  if(isData)
-    std::cout<<"Total Num of Events skipped from those file(s) = " <<
-      h_NEvents_skipped->GetEntries()<<std::endl;
+  if(isData)  std::cout<<"Total Num of Events skipped from those file(s) = " <<
+		h_NEvents_skipped->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events read from those file(s) = " <<
-	h_NEvents_read->GetEntries()<<std::endl;
+    h_NEvents_read->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events read passing skimCuts   = " <<
     h_NEvents_skimCut->GetEntries()<<std::endl;
   std::cout<<"Total Num of Events read passing vzCuts and skimCuts    = " <<
     h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
   
-  if(isData){
-    std::cout<<"Total Num of Events trigd in those file(s) = " <<
-      h_NEvents_trigd->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events jet40 in those file(s) = " <<
-      h_NEvents_jet40->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events jet60 in those file(s) = " <<
-      h_NEvents_jet60->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events jet80 in those file(s) = " <<
-      h_NEvents_jet80->GetEntries()<<std::endl;
-    std::cout<<"Total Num of Events jet100 in those file(s) = " <<
-      h_NEvents_jet100->GetEntries()<<std::endl;}
-    
+
+//  TH1F *h_NEvents_trigd=NULL;
+//  TH1F *h_NEvents_jet100=NULL,*h_NEvents_jet80=NULL,*h_NEvents_jet60=NULL,*h_NEvents_jet40=NULL;  
+//  if(isData){
+//    
+//    h_NEvents_trigd=(TH1F*)fin->Get("NEvents_trigd");      
+//
+//    h_NEvents_jet40=(TH1F*)fin->Get("NEvents_jet40Trigd");      
+//    h_NEvents_jet60=(TH1F*)fin->Get("NEvents_jet60Trigd");      
+//    h_NEvents_jet80=(TH1F*)fin->Get("NEvents_jet80Trigd");      
+//    h_NEvents_jet100=(TH1F*)fin->Get("NEvents_jet100Trigd");      
+//    
+//
+//    std::cout<<"Total Num of Events trigd in those file(s) = " <<
+//      h_NEvents_trigd->GetEntries()<<std::endl;
+//   a ssert(false);      
+//    std::cout<<"Total Num of Events jet40 in those file(s) = " <<
+//      h_NEvents_jet40->GetEntries()<<std::endl;
+//    std::cout<<"Total Num of Events jet60 in those file(s) = " <<
+//      h_NEvents_jet60->GetEntries()<<std::endl;
+//    std::cout<<"Total Num of Events jet80 in those file(s) = " <<
+//      h_NEvents_jet80->GetEntries()<<std::endl;
+//
+//    if(h_NEvents_jet100)//not always made anymore
+//      std::cout<<"Total Num of Events jet100 in those file(s) = " <<
+//	h_NEvents_jet100->GetEntries()<<std::endl;
+//  }
+  
   return;
 
 }
@@ -513,27 +523,29 @@ long double computeEffLumiTrkMult(TFile* finData){
 }
 
 
+const int CANVX=1000;
+const int CANVY=800;
 
 void printEvtVtxQAHist( TFile* finData , std::string inDataHistName, 
 			TFile* finMC   , std::string inMCHistName  ,
-			int rebin, std::string thePDFFileName, long double theLumi ) {
+			int rebin, std::string thePDFFileName, long double theLumi , TFile* fout=NULL) {
   
   if(!finData || !finMC ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
   bool funcDebug=false;
   
   if(funcDebug)std::cout<<"creating temporary canvas for printing Evt plots..."<<std::endl;
-  TCanvas *temp_canvEvt = new TCanvas(("vtxCanv"+inDataHistName).c_str(), "temp Evt Canv withLog", 1000, 800); //This is for the Jet QA Evt plots without logs
+  TCanvas *temp_canvEvt = new TCanvas(("vtxCanv"+inDataHistName).c_str(), "temp Evt Canv withLog", CANVX,CANVY);
   temp_canvEvt->cd();
   
   TPad *evtpad1 = new TPad("evtpad1", "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
   TPad *evtpad2 = new TPad("evtpad2", "Ratio Pad"  , 0.0, 0.05, 1.0, 0.3);
   
   evtpad1->SetBottomMargin(0); 
-
+  
   evtpad1->Draw();
   evtpad1->cd();
-
+  
   // open hist
   std::cout<<" getting hist(s): "<<inDataHistName<<std::endl;
   
@@ -561,20 +573,33 @@ void printEvtVtxQAHist( TFile* finData , std::string inDataHistName,
   
   std::string h_Title     =PDStatsString_2;
   std::string h_XAx_Title;// ="v_{z}^{evt} (cm)";
+  float vxyr_ymin=1.4e-02, vxyr_ymax=1.e+06;
   
   if( inDataHistName.find("Vz") != std::string::npos ){
     h_XAx_Title ="v_{z}^{evt} (cm)";}
   else if( inDataHistName.find("Vx") != std::string::npos ){
     evtpad1->SetLogy(1);
-    h_XAx_Title ="v_{x}^{evt} (cm)";}
+    h_XAx_Title ="v_{x}^{evt} (cm)";
+    theDataEvtQAHist->SetAxisRange(vxyr_ymin,vxyr_ymax,"Y");
+    theMCEvtQAHist  ->SetAxisRange(vxyr_ymin,vxyr_ymax,"Y");
+  }
   else if( inDataHistName.find("Vy") != std::string::npos ){
     evtpad1->SetLogy(1);
-    h_XAx_Title ="v_{y}^{evt} (cm)";}
+    h_XAx_Title ="v_{y}^{evt} (cm)";
+    theDataEvtQAHist->SetAxisRange(vxyr_ymin,vxyr_ymax,"Y");
+    theMCEvtQAHist  ->SetAxisRange(vxyr_ymin,vxyr_ymax,"Y");
+  }
   else if( inDataHistName.find("Vr") != std::string::npos ){
     evtpad1->SetLogy(1);
-    h_XAx_Title ="v_{r}^{evt} (cm)";}
+    h_XAx_Title ="v_{r}^{evt} (cm)";
+    theDataEvtQAHist->SetAxisRange(vxyr_ymin,vxyr_ymax,"Y");
+    theMCEvtQAHist  ->SetAxisRange(vxyr_ymin,vxyr_ymax,"Y");
+  }
   std::string h_YAx_Title ="A.U.";
   
+
+
+
   
   Double_t dataMax = theDataEvtQAHist->GetMaximum(), MCMax=theMCEvtQAHist->GetMaximum();
   std::cout<<"dataMax="<<dataMax<<std::endl;
@@ -593,7 +618,7 @@ void printEvtVtxQAHist( TFile* finData , std::string inDataHistName,
     theMCEvtQAHist->SetTitle (    h_Title.c_str() );
     theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
     theMCEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
-    theMCEvtQAHist->SetAxisRange(.001,10.*MCMax,"Y");
+    //theMCEvtQAHist->SetAxisRange(.001,10.*MCMax,"Y");
     theMCEvtQAHist->Draw("HIST E"); 
     theDataEvtQAHist->Draw("E SAME"); 
   }
@@ -669,6 +694,14 @@ void printEvtVtxQAHist( TFile* finData , std::string inDataHistName,
   
   // print to PDF file
   temp_canvEvt->Print( thePDFFileName.c_str() ); //ratio plots moved above.
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvEvt->DrawClone();
+    outcanv->SetTitle(("Evt Vtx QA Plots Canvas "+inDataHistName).c_str());
+    outcanv->Write(("EvtVtxQAPlots_"+inDataHistName+"_canv").c_str());    
+    
+  }
+  
   temp_canvEvt->Close();
   return;
 }
@@ -715,7 +748,7 @@ void printEvtNrefQAHist( TFile* finData , std::string inDataHistName,
   bool funcDebug=false;
   
   if(funcDebug)std::cout<<"creating temporary canvas for printing Evt plots..."<<std::endl;
-  TCanvas *temp_canvEvt = new TCanvas("tempEvt", "temp Evt Canv withLog", 1000, 800); //This is for the Jet QA Evt plots without logs
+  TCanvas *temp_canvEvt = new TCanvas("tempEvt", "temp Evt Canv withLog", CANVX, CANVY); //This is for the Jet QA Evt plots without logs
   temp_canvEvt->cd();
   
   TPad *evtpad1 = new TPad("evtpad1", "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
@@ -920,15 +953,16 @@ void printEvtNrefQAHist( TFile* finData , std::string inDataHistName,
 
 
 
-void printMCEvtQAHist( TFile* finMC   , std::string inMCHistName , std::string thePDFFileName  ){
+void printMCEvtQAHist( TFile* finMC   , std::string inMCHistName , std::string thePDFFileName  , TFile* fout=NULL){
   
   if(!finMC ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
   bool funcDebug=false;
   
   if(funcDebug)std::cout<<"creating temporary canvas for printing Evt plots..."<<std::endl;
-  TCanvas *temp_canvEvt = new TCanvas(("tempEvt_"+inMCHistName).c_str(), "temp Evt Canv withLog", 1000, 800); //This is for the Jet QA Evt plots without logs
+  TCanvas *temp_canvEvt = new TCanvas(("tempEvt_"+inMCHistName).c_str(), "temp Evt Canv withLog", CANVX, CANVY); //This is for the Jet QA Evt plots without logs
   temp_canvEvt->SetLogy(1);
+  temp_canvEvt->SetLogx(1);
   temp_canvEvt->cd();  
 
 
@@ -937,7 +971,7 @@ void printMCEvtQAHist( TFile* finMC   , std::string inMCHistName , std::string t
   if(!theMCEvtQAHist){ std::cout<<"input MC hist not found! skipping hist"<<std::endl;
     return;}
   MCHistStyle(theMCEvtQAHist);
-
+  
   std::string h_Title=PDStatsString_2;
   std::string h_XAx_Title="MC evt #hat{p}_{t} (GeV)"       ;
   std::string h_YAx_Title="A.U."       ;
@@ -945,17 +979,25 @@ void printMCEvtQAHist( TFile* finMC   , std::string inMCHistName , std::string t
   theMCEvtQAHist->SetTitle( h_Title.c_str() );
   theMCEvtQAHist->SetXTitle( h_XAx_Title.c_str() );
   theMCEvtQAHist->SetYTitle( h_YAx_Title.c_str() );
+  theMCEvtQAHist->SetAxisRange(15.,1000.,"X");
   
-  if(inMCHistName.find("pthat")==std::string::npos)theMCEvtQAHist->Draw("HIST E");
-  else  theMCEvtQAHist->Draw("E");
+  
+  if (inMCHistName=="hWeightedpthat") 
+    theMCEvtQAHist->SetAxisRange(1.e-7,5.e+5,"Y");
+  else//pthat, unweighted
+    theMCEvtQAHist->SetAxisRange(1.e+1,5.e+5,"Y");
+  
+  theMCEvtQAHist->Draw("HIST E");
   
   // test
   float t1x=.65,t1y=.81;
   TLatex *t1;
-  if (inMCHistName=="hWeightedpthat") 
+  if (inMCHistName=="hWeightedpthat") {
     t1=makeTLatex(t1x,t1y,"QCD MC, weighted");
-  else
+  }
+  else{
     t1=makeTLatex(t1x,t1y,"QCD MC, unweighted");
+  }
   t1->Draw();	
   
   TLatex *t2=makeTLatex(t1x,t1y-0.04,"Py8 Tune CUETP8M1");
@@ -963,6 +1005,14 @@ void printMCEvtQAHist( TFile* finMC   , std::string inMCHistName , std::string t
   
   // print to PDF file
   temp_canvEvt->Print( thePDFFileName.c_str() ); 
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvEvt->DrawClone();
+    outcanv->SetTitle(("MC Evt QA Plots Canvas "+inMCHistName).c_str());
+    outcanv->Write(("MCEvtQAPlots_"+inMCHistName+"_canv").c_str());    
+    //temp_canvEvt->Write();
+  }
+  
   temp_canvEvt->Close();  
   return;
 }
@@ -972,7 +1022,7 @@ void printMCEvtQAHist( TFile* finMC   , std::string inMCHistName , std::string t
 
 void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
 		     std::string inHistName , std::string thePDFFileName , std::string fullJetType, 
-		     long double theLumi  ) {
+		     long double theLumi  ,TFile* fout=NULL) {
 
   
   std::string jetIDInt;
@@ -1045,7 +1095,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
   
   
   std::string inMCHist=inHistName;
-  float MCscale4Units=1000./etaBinWidth;
+  float MCscale4Units=1./etaBinWidth;
   if(var[j]=="jtpt_forRes" || var[j]=="jtpt_L2Res" || var[j]=="jtpt_L3Res"){
     inMCHist="hJetQA_"+std::to_string((int)doJetIDPlots)+"wJetID_jtpt";
     //MCscale4Units=1.;
@@ -1069,8 +1119,6 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     divideBinWidth(theDataJetQAHist);      
     
     theMCJetQAHist=(TH1F*)theMCJetQAHist->TH1::Rebin(nbins_pt_debug, ("ppMC_analysisBins_"+var[j]).c_str(), ptbins_debug);
-    //if(var[j]=="jtpt" || var[j]=="rawpt" ||
-    //   var[j]=="leadJetPt" || var[j]=="subleadJetPt")
     divideBinWidth(theMCJetQAHist); 
       
   }
@@ -1103,7 +1151,8 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
   // TITLES
   std::string h_XAx_Title= var_xAx_Titles[j];
   //std::string h_YAx_Title= dcrossSectionAxTitle;
-  std::string h_YAx_Title= AUAxTitle;//for APS DNP
+  //std::string h_YAx_Title= AUAxTitle;//for APS DNP
+  std::string h_YAx_Title= ddcrossSectionAxTitle;//for APS DNP
   std::string h_Title = PDStatsString_2; //for APS DNP
   
   theDataJetQAHist->SetTitle (    h_Title.c_str() );
@@ -1120,7 +1169,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
   
   
   if(funcDebug) std::cout<<"creating temporary canvas for printing Jet plots..."<<std::endl;
-  TCanvas *temp_canvJet = new TCanvas("tempEvt", "temp Jet Canv withLog", 1000, 800); //This is for the Jet QA Evt plots without logs
+  TCanvas *temp_canvJet = new TCanvas("tempEvt", "temp Jet Canv withLog", CANVX, CANVY); //This is for the Jet QA Evt plots without logs
   temp_canvJet->cd();
   
     
@@ -1163,17 +1212,18 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
   jetpad1->Draw();
   jetpad2->Draw();  
   
-  jetpad1->cd();
+
   
   // variable specific draw orders, canv, etc.
   if(var[j]=="jtpt"||var[j]=="rawpt" ||
-     var[j]=="jtpt_forRes" ||     var[j]=="jtpt_L2Res" ||     var[j]=="jtpt_L3Res" 
-     )     {
+     var[j]=="jtpt_forRes" ||     var[j]=="jtpt_L2Res" ||     var[j]=="jtpt_L3Res"      )         {
     
+    jetpad1->cd();
     if(var[j]=="jtpt"||var[j]=="rawpt"){
       theMCJetQAHist->Draw("HIST E"); 
       theDataJetQAHist->Draw("E SAME"); 
     } 
+    
     else if(var[j]=="jtpt_forRes"||var[j]=="jtpt_L2Res"||var[j]=="jtpt_L3Res"){
       theDataJetQAHist->Draw("E"); 
       theMCJetQAHist->Draw("HIST E SAME"); 
@@ -1207,7 +1257,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     theRatio->GetYaxis()->SetTitleSize(15);
     theRatio->GetYaxis()->SetTitleFont(43);
     theRatio->GetYaxis()->SetTitleOffset(2);
-
+    
     theRatio->GetYaxis()->SetLabelFont(43); 
     theRatio->GetYaxis()->SetLabelSize(13);
     
@@ -1247,18 +1297,18 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
 	  var[j]=="jtphi"	||
 	  ( j>=jetConstits_varStart && j<dijet_varStart )){ 
     
-    
-    if(var[j]=="jtphi"){
-      theMCJetQAHist->SetAxisRange(  .02,.8,"Y");
-      theDataJetQAHist->SetAxisRange(.02,.8,"Y");
-    };
+    jetpad1->cd();
+    //if(var[j]=="jtphi"){
+      //theMCJetQAHist->SetAxisRange(  .02,.8,"Y");
+      //theDataJetQAHist->SetAxisRange(.02,.8,"Y");
+    //};
     
     theMCJetQAHist->Draw("HIST E"); 
     theDataJetQAHist->Draw("E same");  
     
     float t1Loc1=0.54, t1Loc2=0.82;
     //float t1Loc1=0.50, t1Loc2=0.72; 	    
-
+    
     TLatex *t1=makeTLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());    t1->Draw();
     TLatex *t2=makeTLatex((t1Loc1),(t1Loc2-.05),(genJetCutString).c_str());    t2->Draw();
     TLatex *t3=makeTLatex((t1Loc1),(t1Loc2-.10),(jetCutString).c_str());    t3->Draw();
@@ -1326,7 +1376,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
 	  var[j]=="xj"||
 	  var[j]=="dphi"){ 
     
-    
+    jetpad1->cd();
     theMCJetQAHist->Draw("HIST E"); 
     theDataJetQAHist->Draw("E SAME"); 
     
@@ -1401,7 +1451,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
   }
       
   else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt"){ 
-    
+    jetpad1->cd();
     theMCJetQAHist->Draw("HIST E"); 
     theDataJetQAHist->Draw("E SAME"); 
     
@@ -1425,7 +1475,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     //Ratio Plots
     
     jetpad2->cd();
-
+    
     TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("MCJetHistClone4Ratio");
     //theRatio->SetMarkerStyle( kMultiply );
     //theRatio->SetMarkerSize(0.99 );
@@ -1468,7 +1518,13 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
   
   
   // print to PDF file
-  temp_canvJet->Print( thePDFFileName.c_str() ); 
+  temp_canvJet->Print( thePDFFileName.c_str() );
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvJet->DrawClone();
+    outcanv->SetTitle((inHistName+" Canvas").c_str());
+    outcanv->Write((inHistName+"_canv").c_str());    
+  }
   temp_canvJet->Close();  
   return;
 }
@@ -2044,25 +2100,26 @@ void printJetMultQATH2( TFile* finData , std::string inDataHistName,
 
 
 
-void printJetIDHist( TFile* fin , int j, bool isData,
+void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID, 
+		     int j, bool isData,
 		     std::string thePDFFileName , std::string fullJetType, 
-		     long double theLumi  ) {
+		     long double theLumi,  
+		     TFile* fout=NULL) {
   
   
-  if(!fin ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
+  if(!fin_jetID || !fin_nojetID ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
   bool funcDebug=false;
-  
-  
+    
   // PUT JET CUTS SECTION IN HERE
   TH1F* genjtptCut_h=NULL; 
   std::string genjtptCut_str;
   if(!isData){
-    genjtptCut_h=(TH1F*)fin->Get( "hGenJetPtCut" );
+    genjtptCut_h=(TH1F*)fin_jetID->Get( "hGenJetPtCut" );
     genjtptCut_str = std::to_string( (int) genjtptCut_h->GetMean() );
     std::cout<<"genjtptCut_str = "<<genjtptCut_str<<std::endl;}
   
-  TH1F* jtptCut_h= (TH1F*)fin->Get( "hJetPtCut" );
+  TH1F* jtptCut_h= (TH1F*)fin_jetID->Get( "hJetPtCut" );
   std::string jtptCut_str = std::to_string( (int) jtptCut_h->GetMean() );
   std::cout<<"jtptCut_str = "<<jtptCut_str<<std::endl;
   
@@ -2071,18 +2128,18 @@ void printJetIDHist( TFile* fin , int j, bool isData,
   else jetCutString="p_{T}>"+jtptCut_str+" GeV";//, "+jtetaLoCut_str+"<|#eta|<"+jtetaHiCut_str;
   std::cout<<"jetCutString="<<jetCutString<<std::endl;
   
-  TH1F* jtptQACut_h= (TH1F*)fin->Get( "hJetQAPtCut" );
+  TH1F* jtptQACut_h= (TH1F*)fin_jetID->Get( "hJetQAPtCut" );
   std::string jtptQACut_str = std::to_string( (int) jtptQACut_h->GetMean() );
   std::cout<<"jtptQACut_str = "<<jtptQACut_str<<std::endl;
   
-  TH1F* jtetaLoCut_h= (TH1F*)fin->Get( "hJetEtaCutLo" );
+  TH1F* jtetaLoCut_h= (TH1F*)fin_jetID->Get( "hJetEtaCutLo" );
   std::stringstream etaLo; etaLo.precision(1);
   float jtetaLoCut_F=jtetaLoCut_h->GetMean();
   etaLo << std::fixed << jtetaLoCut_F;
   std::string jtetaLoCut_str = etaLo.str(); 
  std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;
-  
-  TH1F* jtetaHiCut_h= (TH1F*)fin->Get( "hJetEtaCutHi" );
+ 
+ TH1F* jtetaHiCut_h= (TH1F*)fin_jetID->Get( "hJetEtaCutHi" );
   std::stringstream etaHi; etaHi.precision(1);
   float jtetaHiCut_F=jtetaHiCut_h->GetMean();
   etaHi << std::fixed << jtetaHiCut_F;
@@ -2094,63 +2151,61 @@ void printJetIDHist( TFile* fin , int j, bool isData,
   
   float etaBinWidth=2.*(jtetaHiCut_F-jtetaLoCut_F);//factor of two, because abseta
   std::cout<<"etaBinWidth="<<etaBinWidth<<std::endl;
-
+  
   std::string sampleDescString;
   if(isData)sampleDescString=sqrts2k15ppString;
   else      sampleDescString=Py8TuneString;
   
-
-    
-  
-  
   std::string inHistName="hJetQA_0wJetID_"+var[j];
   if(funcDebug)std::cout<<" opening input hist "<<inHistName<<std::endl<<std::endl;      
-  TH1F* theNonJetIDHist=(TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
+  
+  TH1F* theNonJetIDHist=(TH1F*) ( (TH1*)fin_nojetID->Get(inHistName.c_str()) );
   if(!theNonJetIDHist){ std::cout<<"input hist not found! skipping hist"<<std::endl;
     return;}
   
-  
   std::string inJetIDHistName="hJetQA_1wJetID_"+var[j];
   if(funcDebug)std::cout<<" opening input jetID hist "<<inJetIDHistName<<std::endl<<std::endl;      
-  TH1F* theJetIDHist= (TH1F*) ( (TH1*)fin->Get(inJetIDHistName.c_str()) );  
+  TH1F* theJetIDHist= (TH1F*) ( (TH1*)fin_jetID->Get(inJetIDHistName.c_str()) );  
   if(!theJetIDHist){ std::cout<<"input jetID hist not found! skipping hist"<<std::endl;
     return;}
   
   // MORE SCALING
   if(var[j]=="jtpt" || var[j]=="rawpt" ||
-     var[j]=="leadJetPt" || var[j]=="subleadJetPt") {
+     var[j]=="leadJetPt" || var[j]=="subleadJetPt"      ||
+     var[j]=="jtpt_forRes" ||     var[j]=="jtpt_L2Res" ||     var[j]=="jtpt_L3Res"      ) {
     
     theNonJetIDHist=(TH1F*)theNonJetIDHist->TH1::Rebin(nbins_pt_debug, "ppData_analysisBins_jtPt", ptbins_debug);
     divideBinWidth(theNonJetIDHist);      
+    if(isData)theNonJetIDHist->Scale(1./theLumi);
+    theNonJetIDHist->Scale(1./etaBinWidth);
     
     theJetIDHist=(TH1F*)theJetIDHist->TH1::Rebin(nbins_pt_debug, "ppMC_analysisBins_jtPt", ptbins_debug);
     divideBinWidth(theJetIDHist);      
+    if(isData)theJetIDHist->Scale(1./theLumi);
+    theJetIDHist->Scale(1./etaBinWidth);
   }
   
   else {
-
+    
     theNonJetIDHist->TH1::Rebin(var_xAx_reBin[j]);
     theNonJetIDHist->Scale( 1./theNonJetIDHist->GetBinWidth(1) );          
+    if(isData)theNonJetIDHist->Scale(1./theLumi);
+    theNonJetIDHist->Scale(1./etaBinWidth);
     
     theJetIDHist->TH1::Rebin(var_xAx_reBin[j]);
-    theJetIDHist->Scale( 1./theJetIDHist->GetBinWidth(1) );          
-    theJetIDHist->Scale( theNonJetIDHist->Integral()/theJetIDHist->Integral() );	        
+    theJetIDHist->Scale( 1./theJetIDHist->GetBinWidth(1) );         
+    if(isData)theJetIDHist->Scale(1./theLumi);
+    theJetIDHist->Scale(1./etaBinWidth);
+    //    theJetIDHist->Scale( theNonJetIDHist->Integral()/theJetIDHist->Integral() );	        
     
   }
   
-  
-  if(funcDebug)theNonJetIDHist->Print("base");       std::cout<<std::endl;  
-  if(funcDebug)theJetIDHist->Print("base");       std::cout<<std::endl;
-  
-  // STYLE  
-  dataHistStyle(theNonJetIDHist);
-  MCHistStyle(theJetIDHist);
   
   
   
   // TITLES
   std::string h_XAx_Title=var_xAx_Titles[j], h_YAx_Title=AUAxTitle;
-  std::string h_Title="JetQA";//, "+var[j];
+  std::string h_Title="HIN Jet ID Efficiency";//, "+var[j];
   
   theNonJetIDHist->SetTitle (    h_Title.c_str() );
   theNonJetIDHist->SetXTitle( h_XAx_Title.c_str() );
@@ -2158,73 +2213,88 @@ void printJetIDHist( TFile* fin , int j, bool isData,
   
   theJetIDHist->SetTitle (    h_Title.c_str() );
   theJetIDHist->SetXTitle( h_XAx_Title.c_str() );
-  theJetIDHist->SetYTitle( h_YAx_Title.c_str() );
-
+  theJetIDHist->SetYTitle( h_YAx_Title.c_str() );  
+  
+  
+  // STYLE  
   TH1F* theRatio=(TH1F*)theJetIDHist->Clone("MCJetHistClone4Ratio");
-  ratioHistStyle(theRatio, h_XAx_Title);
-
-
-
+  
+  dataHistStyle(theNonJetIDHist);
+  MCHistStyle(theJetIDHist);
+  //ratioHistStyle(theRatio, h_XAx_Title, jetIDratioTitle);
+  jetIDratioHistStyle(theRatio, h_XAx_Title, jetIDratioTitle);
+  
+  if(funcDebug)theNonJetIDHist->Print("base");       std::cout<<std::endl;  
+  if(funcDebug)theJetIDHist->Print("base");       std::cout<<std::endl;
+  
   if(funcDebug) std::cout<<"creating temporary canvas for printing Jet plots..."<<std::endl;
-  TCanvas *temp_canvJet = new TCanvas("tempEvt", "temp Jet Canv withLog", 1000, 800); //This is for the Jet QA Evt plots without logs
+  TCanvas *temp_canvJet = new TCanvas("tempEvt", "temp Jet Canv withLog", CANVX, CANVY); //This is for the Jet QA Evt plots without logs
   temp_canvJet->cd();
   
-  
-  
-  
-  
   TPad *jetpad1 = new TPad("jetpad1", "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
-  jetpad1->SetLogy(1);
-  if(var[j]=="jtpt"      || var[j]=="rawpt"          ||
-     var[j]=="leadJetPt" || var[j]=="subleadJetPt"     )
-    jetpad1->SetLogx(1);  
-  
+  jetpad1->SetLogy(1); 
   jetpad1->SetGridx(1);
   jetpad1->SetGridy(1);
   jetpad1->SetBottomMargin(0);
-  jetpad1->Draw();
-
+  
+    
   TPad *jetpad2 = new TPad("jetpad2", "Ratio Pad"  , 0.0, 0.05, 1.0, 0.3);
-  jetpad2->SetLogy(0);
-  if(var[j]=="jtpt"      || var[j]=="rawpt"          ||
-     var[j]=="leadJetPt" || var[j]=="subleadJetPt"     )
-    jetpad2->SetLogx(1);  
   jetpad2->SetTopMargin(0);
   jetpad2->SetBottomMargin(0.3);
-  jetpad2->SetLogy(0);
-  jetpad2->Draw();  
- 
+  //jetpad2->SetLogy(0);
+  jetpad2->SetLogy(1);
   
-  jetpad1->cd();
+  
+  if(var[j]=="jtpt"      || var[j]=="rawpt"          ||
+     var[j]=="leadJetPt" || var[j]=="subleadJetPt"   ||
+     var[j]=="jtpt_forRes" ||     var[j]=="jtpt_L2Res" ||     var[j]=="jtpt_L3Res"      ) {
+    
+    jetpad1->SetLogx(1);  
+    jetpad2->SetLogx(1);  
+    
+    theJetIDHist->GetXaxis()->SetNoExponent(true);
+    theJetIDHist->GetXaxis()->SetMoreLogLabels(true);
+    
+    theNonJetIDHist->GetXaxis()->SetNoExponent(true);
+    theNonJetIDHist->GetXaxis()->SetMoreLogLabels(true);
+
+    theRatio->GetXaxis()->SetNoExponent(true);
+    theRatio->GetXaxis()->SetMoreLogLabels(true);
+  }
+ 
+  jetpad1->Draw();
+  jetpad2->Draw();    
+
+
   // variable specific draw orders, canv, etc.
-  if(var[j]=="jtpt"||var[j]=="rawpt") {
+  if(var[j]=="jtpt"||var[j]=="rawpt" ||
+     var[j]=="jtpt_forRes" ||     var[j]=="jtpt_L2Res" ||     var[j]=="jtpt_L3Res"      ) {
     
-    
+    jetpad1->cd();    
     theJetIDHist->Draw("HIST E"); 
-    theNonJetIDHist->Draw("E same");  
+    theNonJetIDHist->Draw("E SAME");  
     
     float t1Loc1=0.54, t1Loc2=0.82;
     TLatex *t1=makeTLatex(t1Loc1,t1Loc2,(sampleDescString).c_str());    t1->Draw();    
     TLatex *t2=makeTLatex((t1Loc1),(t1Loc2-.05),(fullJetType+"Jets").c_str());    t2->Draw();	    
     TLatex *t3=makeTLatex((t1Loc1),(t1Loc2-.10),(jetCutString).c_str());    t3->Draw();	    
     TLatex *t4=makeTLatex((t1Loc1),(t1Loc2-.15),(jetEtaCutString).c_str());    t4->Draw();	
-
+    
     float legx1=0.73, legx2=legx1+0.11;
     float legy1=0.76, legy2=legy1+0.09;
-
+    
     TLegend* theJetQALeg=new TLegend(legx1,legy1,legx2,legy2, NULL,"brNDC");	  
     theJetQALeg->SetFillStyle(0);
     theJetQALeg->AddEntry(theNonJetIDHist, "no JetID",   "lp");
     theJetQALeg->AddEntry(theJetIDHist,    "with JetID", "lp");
     theJetQALeg->Draw(); 
-
     
-
     jetpad2->cd();
     
+    theRatio->Divide(theNonJetIDHist); //jetid/nojetid
+    fracSubtracted(theRatio); //1-jetid/nojetid
 
-    
-    theRatio->Divide(theNonJetIDHist);
+
     theRatio->Draw("HIST E");
     
     
@@ -2237,7 +2307,7 @@ void printJetIDHist( TFile* fin , int j, bool isData,
 	  ( j>=jetConstits_varStart && j<dijet_varStart )){ 
     
     
-
+    jetpad1->cd();
     theJetIDHist->Draw("HIST E"); 
     theNonJetIDHist->Draw("E same");  
     
@@ -2261,6 +2331,7 @@ void printJetIDHist( TFile* fin , int j, bool isData,
     
     
     theRatio->Divide(theNonJetIDHist);
+    fracSubtracted(theRatio); //1-jetid/nojetid
     theRatio->Draw("HIST E");
     
     
@@ -2270,7 +2341,7 @@ void printJetIDHist( TFile* fin , int j, bool isData,
 	  var[j]=="xj"||
 	  var[j]=="dphi"){ 
     
-    
+    jetpad1->cd();
     theJetIDHist->Draw("HIST E"); 
     theNonJetIDHist->Draw("E SAME"); 
     
@@ -2299,14 +2370,15 @@ void printJetIDHist( TFile* fin , int j, bool isData,
 
     
     theRatio->Divide(theNonJetIDHist);
+    fracSubtracted(theRatio); //1-jetid/nojetid
     theRatio->Draw("E");
-	  
+    
     
   }
       
   else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt"){ 
     
-    
+    jetpad1->cd();    
     theJetIDHist->Draw("HIST E"); 
     theNonJetIDHist->Draw("E SAME"); 
     
@@ -2320,7 +2392,7 @@ void printJetIDHist( TFile* fin , int j, bool isData,
 
     float legx1=0.73, legx2=legx1+0.11;
     float legy1=0.76, legy2=legy1+0.09;
-
+    
     TLegend* theJetQALeg=new TLegend(legx1,legy1,legx2,legy2, NULL,"brNDC");	  
     theJetQALeg->SetFillStyle(0);
     theJetQALeg->AddEntry(theNonJetIDHist, "no JetID",   "lp");
@@ -2330,13 +2402,14 @@ void printJetIDHist( TFile* fin , int j, bool isData,
     //Ratio Plots
     
     jetpad2->cd();
-
+    
     theRatio->Divide(theNonJetIDHist);
+    fracSubtracted(theRatio); //1-jetid/nojetid
     theRatio->Draw("HIST E");
     
   }
   
-
+  
   //TLines for ratio plots
   float lowLim, highLim;
   lowLim=theRatio->GetBinLowEdge(1);
@@ -2349,18 +2422,28 @@ void printJetIDHist( TFile* fin , int j, bool isData,
   TLine* lineAtOneEtOneHalf = new TLine(lowLim,1.5,highLim,1.5); 
   lineAtOneEtOneHalf->SetLineColor(12); lineAtOneEtOneHalf->SetLineStyle(2);
   
-  lineAtOne->Draw("same");
-  lineAtOneHalf->Draw("same");
-  lineAtOneEtOneHalf->Draw("same");
-  
-
-
-
-
+  //lineAtOne->Draw("same");
+  //lineAtOneHalf->Draw("same");
+  //lineAtOneEtOneHalf->Draw("same");
 
   
   // print to PDF file
   temp_canvJet->Print( thePDFFileName.c_str() ); 
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvJet->DrawClone();
+    
+    std::string outcanvtitle="JetID Eff. "+var[j]+" Canvas";
+    if(isData)outcanvtitle="Data "+outcanvtitle;
+    else outcanvtitle="MC "+outcanvtitle;    
+    outcanv->SetTitle(outcanvtitle.c_str());
+    
+    std::string outcanvname="JetIDEff_"+var[j];
+    if(isData)outcanvname="Data_"+outcanvname;
+    else outcanvname="MC_"+outcanvname;
+    outcanv->Write(outcanvname.c_str());    
+  }
+  
   temp_canvJet->Close();  
   return;
 }

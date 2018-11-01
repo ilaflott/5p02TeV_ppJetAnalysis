@@ -18,7 +18,7 @@ const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBin
 //const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
 const std::string defMCOutputName="readForests_ppMC_defOut_JERS.root";
 
-int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile=0, int endfile=20,
+int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, int startfile=0, int endfile=9,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,

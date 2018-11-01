@@ -76,6 +76,8 @@ const std::string ppData_inHist=
   //"hTriggerVz_noWeights"; //triggered events (weight>0) but weight=1 always
   //"hTriggerVz_withWeights"; //triggered events (weight>0) with weights
 
+const std::string outfilename="Py8_vzEvtWeights_"+ppData_inHist+"_04_11_18.root";
+
 const std::string ppMC_inHist=
   //"hVz"; //vz w/ weights=1 always
   //"hvzWeightedVz";      //vz weights applied only
@@ -101,9 +103,11 @@ const std::string fitOptions="FRVM";
 
 const bool debugMode=true;
 
-
+const bool doRootFileOut=false;
 
 int main (int argc, char *argv[]){
+
+  TFile* fout=NULL;
 
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04); 
@@ -226,6 +230,9 @@ int main (int argc, char *argv[]){
   //theDataEvtQAHist->SetLineColor( theRatioLineColor );
   //theDataEvtQAHist->SetAxisRange(0.,1.5,"Y");
 
+
+
+  
   TCanvas* TCan = NULL;//general canvas
   TCanvas* TCanMC = NULL;
   TCanvas* TCanData = NULL;
@@ -364,8 +371,11 @@ int main (int argc, char *argv[]){
 
   }
 
+  if(doRootFileOut)
+    fout=new TFile(outfilename.c_str(),"RECREATE");
   
-
+  
+  
   //orig histos
   TCan->cd();
   TCan->SetLogy(1);
@@ -380,38 +390,75 @@ int main (int argc, char *argv[]){
   theMCEvtInputHist->Scale( 1./theMCEvtInputHist->GetBinWidth(1) );  
   theMCEvtInputHist->Scale( theDataEvtInputHist->Integral()/theMCEvtInputHist->Integral() );
   theMCEvtInputHist->Draw("HIST E SAME");
-  TCan->Print("MCDataVz.png","png");
 
+  if(fout){
+    fout->cd();
+    TCan->SetTitle("MC v. Data evt vz Canvas");
+    TCan->Write("MCDataVz_canv");
+  }
+  else
+    TCan->Print("MCDataVz.png","png");
+  
   //Compare fit to histogram
   TCanMC->cd();
   TCanMC->SetLogy(1);
   theMCEvtQAHist->SetTitle("Gaussian Fit of MC");
   theMCEvtQAHist->Draw();
   fgaussMC->Draw("same");
-  TCanMC->Print("gaussfitMC.png","png");
+  if(fout){
+    fout->cd();
+    TCanMC->SetTitle("MC evt vz Gauss Fit Canvas");
+    TCanMC->Write("gaussfitMC_canv");
+  }
+  else  
+    TCanMC->Print("gaussfitMC.png","png");
   
   TCanData->cd();
   TCanData->SetLogy(1);
   theDataEvtQAHist->SetTitle("Gaussian Fit of Data");
   theDataEvtQAHist->Draw();
   fgaussData->Draw("same");
-  TCanData->Print("gaussfitData.png","png");
+  if(fout){
+    fout->cd();
+    TCanData->SetTitle("Data evt vz Gauss Fit Canvas");
+    TCanData->Write("gaussfitData_canv");
+  }
+  else  
+    TCanData->Print("gaussfitData.png","png");
   
   
   
   
   TCanWeightfn->cd();
   fnWeight->Draw();
-  TCanWeightfn->Print("weightFn.png","png");
+  if(fout){
+    fout->cd();
+    TCanWeightfn->SetTitle("Data/MC Gauss Fit Weights Canvas");
+    TCanWeightfn->Write("weightFn_canv");
+  }
+  else  
+    TCanWeightfn->Print("weightFn.png","png");
   
   TCanWeightbin->cd();
   binWeight->Draw();
-  TCanWeightbin->Print("weightBin.png","png"); 
+  if(fout){
+    fout->cd();
+    TCanWeightbin->SetTitle("Data/MC Bin-by-Bin Weights Canvas");
+    TCanWeightbin->Write("weightBin_canv");
+  }
+  else  
+    TCanWeightbin->Print("weightBin.png","png"); 
   
   TCanWeightpoly->cd();
   tPolyweight->Draw();
-  TCanWeightpoly->Print("weightPoly.png","png");
-	  
+  if(fout){
+    fout->cd();
+    TCanWeightpoly->SetTitle("Data/MC Polynomial Fit Weights Canvas");
+    TCanWeightpoly->Write("weightPoly_canv");
+  }
+  else  
+    TCanWeightpoly->Print("weightPoly.png","png");
+  
   
   TH1F* BinOverGauss = (TH1F*)binWeight->Clone("tweightRatio");
   BinOverGauss->Divide(fnWeight);
@@ -419,7 +466,13 @@ int main (int argc, char *argv[]){
   BinOverGauss->SetAxisRange(.4,2.8,"Y");
   TCanWeightRat->cd();
   BinOverGauss->Draw();
-  TCanWeightRat->Print("binOvGaussWeightRatio.png","png");
+  if(fout){
+    fout->cd();
+    TCanWeightRat->SetTitle("Bin-by-Bin v. Gaussian Fit Weights Ratio Canvas");
+    TCanWeightRat->Write("BbB_v_GaussFit_wgtsRatio_canv");
+  }
+  else  
+    TCanWeightRat->Print("BbB_v_GaussFit_wgtsRatio.png","png");
   
   TH1F* BinOverPoly = (TH1F*)binWeight->Clone("tBinPolyRatio");
   BinOverPoly->Divide(tPolyweight);
@@ -427,24 +480,44 @@ int main (int argc, char *argv[]){
   BinOverPoly->SetAxisRange(.4,2.8,"Y");
   TCanBinPoly->cd();
   BinOverPoly->Draw();
-  TCanBinPoly->Print("binOvPolyWeightRatio.png","png");
+  if(fout){
+    fout->cd();
+    TCanBinPoly->SetTitle("Bin-by-Bin v. Polynomial Fit Weights Ratio Canvas");
+    TCanBinPoly->Write("BbB_v_Polynomial_wgtsRatio_canv");
+  }
+  else      
+    TCanBinPoly->Print("BbB_v_Polynomial_wgtsRatio.png","png");
   
-
+  
   TH1F* GaussOverPoly = (TH1F*)fnWeight->Clone("tGausPolyRatio");
   GaussOverPoly->Divide(tPolyweight);
   GaussOverPoly->SetTitle("Gaussian Weights Over Polynomial Weights");
   GaussOverPoly->SetAxisRange(.4,2.8,"Y");
   TCanGausPoly->cd();
   GaussOverPoly->Draw();
-  TCanGausPoly->Print("gaussOvPolyWeightRatio.png","png");
+  if(fout){
+    fout->cd();
+    TCanGausPoly->SetTitle("Gaussian Fit v. Polynomial Fit Weights Ratio Canvas");
+    TCanGausPoly->Write("Gauss_v_Polynomial_wgtsRatio_canv");
+  }
+  else      
+    TCanGausPoly->Print("Gauss_v_Polynomial_wgtsRatio.png","png");
   
   
   TCanDatMCRat->cd();
   tRatPoly->SetTitle("Polynomial Fit of Data/MC");
   tRatPoly->Draw();
   fpolyRat->Draw("same");
-  TCanDatMCRat->Print("polyfitDataOvMC.png","png");
+  if(fout){
+    fout->cd();
+    TCanDatMCRat->SetTitle("Poly Fit Data/MC evt vz Canvas");
+    TCanDatMCRat->Write("PolyFit_DataMC_evtvz_wgts_canv");
+  }
+  else      
+    TCanDatMCRat->Print("PolyFit_DataMC_evtvz_wgts_canv.png","png");
   
+  if(fout)
+    fout->Close();
   std::cout<<"program end"<<std::endl; 
   
   return 0 ;

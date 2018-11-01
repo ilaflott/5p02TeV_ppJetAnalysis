@@ -65,7 +65,9 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   
 
   //put together input file strings
-  const std::string input_ppData_Filename="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
+  //const std::string input_ppData_Filename="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
+  //const std::string input_ppData_Filename="HighPtJet80_" +fullJetType+ "-allFiles.root";
+  const std::string input_ppData_Filename="HighPtLowerJets_" +fullJetType+ "-allFiles.root";
   const std::string input_ppMC_Filename  ="Py8_CUETP8M1_QCDjetAllPtBins_" +fullJetType+ "-allFiles.root";
 
   const std::string ppData_fullFilename=inputDir+input_ppData_condorDir+input_ppData_Filename;
@@ -133,8 +135,12 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   if(doEventCounts){
     printDataEventCountReport((TFile*) finData);
     //getEventCounts( (TFile*)finData, true );
-    //getEventCounts( (TFile*)finMC,   false);
-    theLumi=computeEffLumi( (TFile*) finData);   }
+    theLumi=computeEffLumi( (TFile*) finData);   
+    getEventCounts( (TFile*)finMC,   false);
+    printJetCountReport( (TFile*)finData,true);
+    printJetCountReport( (TFile*)finMC,false);
+    //assert(false);
+  }
   else {
     std::cout<<"skipping evt/jet QA counts + plots..."<<std::endl<<std::endl;
     theLumi=intgrtdLumi;}
@@ -153,8 +159,13 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 		      (std::string) thePDFFileName , (TFile*) fout);
     
     printEvtVtxQAHist( (TFile*) finData , "hWeightedVz" , 
+		       (TFile*) finMC   , "hpthatWeightedVz" ,
+		       (int) 10, (std::string) thePDFFileName  , (long double) theLumi , (TFile*) fout ) ;
+
+    printEvtVtxQAHist( (TFile*) finData , "hWeightedVz" , 
 		       (TFile*) finMC   , "hWeightedVz" ,
 		       (int) 10, (std::string) thePDFFileName  , (long double) theLumi , (TFile*) fout ) ;
+    //assert(false);
     
     printEvtVtxQAHist( (TFile*) finData , "hWeightedVy" , 
 		       (TFile*) finMC   , "hWeightedVy" ,

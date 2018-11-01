@@ -25,6 +25,8 @@ function hadd_ppData_allInDir(){
     R=$1
     echo "in dir $PWD"
     hadd HighPtJetTrig_ak${R}PF-allFiles.root ./ppData*/*.root
+    hadd HighPtJet80_ak${R}PF-allFiles.root ./ppData_HighPtJet80*/*.root
+    hadd HighPtLowerJets_ak${R}PF-allFiles.root ./ppData_HighPtLowerJets*/*.root
     return
 }
 

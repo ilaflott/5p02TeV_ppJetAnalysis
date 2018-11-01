@@ -479,6 +479,45 @@ void printDataEventCountReport(TFile* fin){
 
 }
 
+void printJetCountReport(TFile* fin, bool isData){
+  //void printJetCountReport(TFile* fin){
+  if(isData){
+    std::cout<<std::endl;
+    std::cout<<"------------- DATA -----------"<<std::endl;
+    std::cout<<"--- Jet-Event Loop Summary ---"<<std::endl;
+    std::cout<<"------------------------------"<<std::endl;
+    std::cout<<std::endl;
+  }
+  else {
+    std::cout<<std::endl;
+    std::cout<<"-------------  MC  -----------"<<std::endl;
+    std::cout<<"--- Jet-Event Loop Summary ---"<<std::endl;
+    std::cout<<"------------------------------"<<std::endl;
+    std::cout<<std::endl;
+  }
+  TH1F* h_NJets           =(TH1F*)fin->Get("NJets");	    
+  std::cout<<"# jets read                   = / " << h_NJets->GetBinContent(1)           << " / " << h_NJets->GetBinContent(2) <<std::endl; 
+  if(isData){
+    TH1F* h_NJets_jtptCut   =(TH1F*)fin->Get("NJets_jtptCut");  
+    TH1F* h_NJets_jtetaCut1 =(TH1F*)fin->Get("NJets_jtetaCut1");
+    TH1F* h_NJets_jtetaCut2 =(TH1F*)fin->Get("NJets_jtetaCut2");
+    
+    std::cout<<"# jets w jtpt > jtptCut       = / " << h_NJets_jtptCut->GetBinContent(1)   << " / " << h_NJets_jtptCut->GetBinContent(2) <<std::endl;   
+    std::cout<<"# jets w |jteta|<4.7          = / " << h_NJets_jtetaCut1->GetBinContent(1) << " / " << h_NJets_jtetaCut1->GetBinContent(2) <<std::endl; 
+    std::cout<<"# jets w passing jtEtaCut(s)  = / " << h_NJets_jtetaCut2->GetBinContent(1) << " / " << h_NJets_jtetaCut2->GetBinContent(2) <<std::endl; 
+  }
+  else { //isMC
+    TH1F* h_NJets_kmatCut=(TH1F*)fin->Get("NJets_kmatCut");
+    std::cout<<"# jets passing kinematic cuts = / " << h_NJets_kmatCut->GetBinContent(1)   << " / " << h_NJets_kmatCut->GetBinContent(2) <<std::endl;   
+  }
+  
+  TH1F* h_NJets_JetIDCut =(TH1F*)fin->Get("NJets_JetIDCut");
+  if((bool)h_NJets_JetIDCut)
+    std::cout<<"# jets w jetIDCut             = / " << h_NJets_JetIDCut->GetBinContent(1) << " / " << h_NJets_JetIDCut->GetBinContent(2) <<std::endl; 
+  
+  return;
+}
+
 long double computeEffLumi(TFile* finData){
   bool funcDebug=false;
   if(funcDebug)std::cout<<"computeEffLumi called."<<std::endl;
@@ -697,8 +736,10 @@ void printEvtVtxQAHist( TFile* finData , std::string inDataHistName,
   if(fout){
     fout->cd();
     TCanvas* outcanv=(TCanvas*)temp_canvEvt->DrawClone();
-    outcanv->SetTitle(("Evt Vtx QA Plots Canvas "+inDataHistName).c_str());
-    outcanv->Write(("EvtVtxQAPlots_"+inDataHistName+"_canv").c_str());    
+    //outcanv->SetTitle(("Evt Vtx QA Plots Canvas "+inDataHistName).c_str());
+    //outcanv->Write(("EvtVtxQAPlots_"+inDataHistName+"_canv").c_str());    
+    outcanv->SetTitle(("Evt Vtx QA Plots Canvas "+inMCHistName).c_str());
+    outcanv->Write(("EvtVtxQAPlots_"+inMCHistName+"_canv").c_str());    
     
   }
   
@@ -2459,11 +2500,11 @@ void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID,
 
 void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
 			      std::string thePDFFileName , std::string fullJetType , 
-			      std::string trigType, std::string radius , bool usedHLTPF, bool didJetID){
+			      std::string trigType, std::string radius , bool usedHLTPF, bool didJetID , TFile* fout=NULL){
   
   if(!fin ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
-  bool funcDebug=false;
+  bool funcDebug=true;
   //bool analysisRebin=true;
   
   if(trigType=="excl")std::cout<<"drawing exclusive trigger spectra + ratios"<<std::endl;
@@ -2546,7 +2587,7 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
   
   TLegend* JetTrigLegend=new TLegend(0.70,0.66,0.85,0.86, NULL,"brNDC");
   JetTrigLegend->SetFillStyle(0);
-
+  
   for(int j=0; j<(N_trigs); j++){
     
     //open the hists + do scaling
@@ -2573,13 +2614,20 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(10, (inHistName+"_spec_rebin10").c_str() );
       theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");
     }
-
+    
     divideBinWidth(theJetTrigQAHist);
     
     
     
-    if(usedHLTPF)JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTPFName_Leg[j]).c_str(),"lp");
-    else JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTCaloName_Leg[j]).c_str(),"lp");
+    if(funcDebug)std::cout<<"setting legend entry titles"<<std::endl;
+    if(usedHLTPF){
+      if(funcDebug)std::cout<<"using HLTPF Trig titles"<<std::endl;
+      JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTPFName_Leg[j]).c_str(),"lp");
+    }
+    else {
+      if(funcDebug)std::cout<<"using HLTCalo Trig titles"<<std::endl;
+      JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTCaloName_Leg[j]).c_str(),"lp");
+    }
     
     if( j==0 ){
       
@@ -2590,9 +2638,8 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       theJetTrigQAHist->SetTitle (    h_Title.c_str() );
       
       std::string h_YAx_Title= AUAxTitle;
-      theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
+      theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );      
       
-
       trigSpectraHistStyle(theJetTrigQAHist, j);
       theJetTrigQAHist->Draw("E");
       
@@ -2723,6 +2770,20 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
   }//end loop over trigs for ratio
   
   temp_canvJetTrig->Print(thePDFFileName.c_str());
+  
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
+    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
+    if(usedHLT100)outcanvname+="40to100_";
+    else outcanvname+="40to80_";
+    if(usedHLT100)outcanvtitle+="40 to 100 ";
+    else outcanvtitle+="40 to 80 ";
+    outcanvname+=fullJetType+"Jets_";
+    outcanvtitle+=fullJetType+"Jets ";    
+    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+    outcanv->Write((outcanvname+"canv").c_str());    
+  }
 
   //jetpad_excsp->Close();
   //jetpad_excrat->Close();
@@ -3037,7 +3098,7 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
   
   void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
 			std::string thePDFFileName , std::string fullJetType ,
-			std::string trigType, std::string radius , bool usedHLTPF){
+			std::string trigType, std::string radius , bool usedHLTPF, TFile* fout=NULL){
   
   if(!fin ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
@@ -3214,7 +3275,19 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
   JetTrigLegend->Draw();
   
   temp_canvJetTrig->Print(thePDFFileName.c_str());
-  
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
+    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
+    if(usedHLT100)outcanvname+="40to100_";
+    else outcanvname+="40to80_";
+    if(usedHLT100)outcanvtitle+="40 to 100 ";
+    else outcanvtitle+="40 to 80 ";
+    outcanvname+=fullJetType+"Jets_";
+    outcanvtitle+=fullJetType+"Jets ";    
+    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+    outcanv->Write((outcanvname+"canv").c_str());    
+  }  
   temp_canvJetTrig->Close();
 
   return;
@@ -3227,8 +3300,8 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
 
 
 void printTrigEtaHist( TFile* fin , bool usedHLT100,
-		      std::string thePDFFileName , std::string fullJetType ,
-		      std::string trigType, std::string radius , bool usedHLTPF){
+		       std::string thePDFFileName , std::string fullJetType ,
+		       std::string trigType, std::string radius , bool usedHLTPF, TFile* fout=NULL){
   
   if(!fin ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
@@ -3365,7 +3438,19 @@ void printTrigEtaHist( TFile* fin , bool usedHLT100,
   JetTrigLegend->Draw();
   
   temp_canvJetTrig->Print(thePDFFileName.c_str());
-  
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
+    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
+    if(usedHLT100)outcanvname+="40to100_";
+    else outcanvname+="40to80_";
+    if(usedHLT100)outcanvtitle+="40 to 100 ";
+    else outcanvtitle+="40 to 80 ";
+    outcanvname+=fullJetType+"Jets_";
+    outcanvtitle+=fullJetType+"Jets ";    
+    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+    outcanv->Write((outcanvname+"canv").c_str());    
+  }
   temp_canvJetTrig->Close();
 
   return;
@@ -3375,7 +3460,7 @@ void printTrigEtaHist( TFile* fin , bool usedHLT100,
 
 
 
-TH1F* makeAsymmEtaHist(TH1F* theEtaHist) {
+TH1F* makeAsymmEtaHist(TH1F* theEtaHist,std::string trigType) {
   //  bool funcDebug=false;
   std::string hTitle=theEtaHist->GetName();
   int NBinsNewHist=theEtaHist->GetNbinsX()/2;
@@ -3386,7 +3471,7 @@ TH1F* makeAsymmEtaHist(TH1F* theEtaHist) {
   if(theEtaHist->GetNbinsX()%2 != 0) 
     std::cout<<std::endl<<"WARNING: AsymmEtaHist will have odd # of bins! Will not look good!"<<std::endl<<std::endl;
   
-  TH1F* newAsymmEtaHist= new TH1F( (hTitle+"_asymmHist").c_str(), "",   NBinsNewHist, min,max);
+  TH1F* newAsymmEtaHist= new TH1F( (hTitle+"_asymmHist_"+trigType).c_str(), "",   NBinsNewHist, min,max);
   //newAsymmEtaHist->Print("base");
   
   for(int i = 1; i<=NBinsNewHist; i++){
@@ -3437,8 +3522,8 @@ TH1F* makeAsymmEtaHist(TH1F* theEtaHist) {
 
 
 void printTrigEtaAsymmHist( TFile* fin , bool usedHLT100,
-		       std::string thePDFFileName , std::string fullJetType ,
-		       std::string trigType, std::string radius , bool usedHLTPF){
+			    std::string thePDFFileName , std::string fullJetType ,
+			    std::string trigType, std::string radius , bool usedHLTPF, TFile* fout=NULL){
   
   if(!fin ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
@@ -3534,7 +3619,7 @@ void printTrigEtaAsymmHist( TFile* fin , bool usedHLT100,
     
     
     
-    TH1F* theJetTrigAsymmQAHist= makeAsymmEtaHist(theJetTrigQAHist) ; //(TH1*)fin->Get(inHistName.c_str()) );
+    TH1F* theJetTrigAsymmQAHist= makeAsymmEtaHist(theJetTrigQAHist,trigType) ; //(TH1*)fin->Get(inHistName.c_str()) );
     if(funcDebug)theJetTrigAsymmQAHist->Print("base");
     trigEtaHistStyle(theJetTrigAsymmQAHist,j);    
     
@@ -3573,6 +3658,19 @@ void printTrigEtaAsymmHist( TFile* fin , bool usedHLT100,
   JetTrigLegend->Draw();  
 
   temp_canvJetTrig->Print(thePDFFileName.c_str());  
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
+    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
+    if(usedHLT100)outcanvname+="40to100_";
+    else outcanvname+="40to80_";
+    if(usedHLT100)outcanvtitle+="40 to 100 ";
+    else outcanvtitle+="40 to 80 ";
+    outcanvname+=fullJetType+"Jets_";
+    outcanvtitle+=fullJetType+"Jets ";    
+    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+    outcanv->Write((outcanvname+"canv").c_str());    
+  }
   temp_canvJetTrig->Close();
   return;
 

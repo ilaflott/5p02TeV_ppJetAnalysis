@@ -589,7 +589,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       else if( !(recpt < jtPtCut_Hi)   )      { jetsPerEvent--; /*jetsPerEventJetID--;*/ continue; }           
       
       
-      if( absreceta < jtEtaCutLo ) { jetsPerEvent--;	continue;}
+      if( absreceta  < jtEtaCutLo ) { jetsPerEvent--;	continue;}
       if( !(absreceta < jtEtaCutHi) ) { jetsPerEvent--;	continue;}
       
       if( gendrjt > 0.1 ){

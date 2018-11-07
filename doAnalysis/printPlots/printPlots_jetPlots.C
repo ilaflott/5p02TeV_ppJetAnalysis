@@ -65,9 +65,9 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   
 
   //put together input file strings
-  //const std::string input_ppData_Filename="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
+  const std::string input_ppData_Filename="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
   //const std::string input_ppData_Filename="HighPtJet80_" +fullJetType+ "-allFiles.root";
-  const std::string input_ppData_Filename="HighPtLowerJets_" +fullJetType+ "-allFiles.root";
+  //const std::string input_ppData_Filename="HighPtLowerJets_" +fullJetType+ "-allFiles.root";
   const std::string input_ppMC_Filename  ="Py8_CUETP8M1_QCDjetAllPtBins_" +fullJetType+ "-allFiles.root";
 
   const std::string ppData_fullFilename=inputDir+input_ppData_condorDir+input_ppData_Filename;

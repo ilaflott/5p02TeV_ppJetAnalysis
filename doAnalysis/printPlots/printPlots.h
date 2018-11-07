@@ -2774,17 +2774,29 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
   if(fout){
     fout->cd();
     TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
-    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
-    if(usedHLT100)outcanvname+="40to100_";
-    else outcanvname+="40to80_";
+    
+    std::string outcanvtitle = "HLTak4PF"; 
     if(usedHLT100)outcanvtitle+="40 to 100 ";
     else outcanvtitle+="40 to 80 ";
-    outcanvname+=fullJetType+"Jets_";
-    outcanvtitle+=fullJetType+"Jets ";    
-    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
-    outcanv->Write((outcanvname+"canv").c_str());    
-  }
+    outcanvtitle+=fullJetType+" Jet p_{T}";    
+    if(analysisRebin)outcanvtitle+=" Ana. Bins ";
+    else             outcanvtitle+=" Simp. Bins ";
+    outcanvtitle +=trigType;
 
+    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+    
+    std::string outcanvname  = "HLTak4PF";
+    if(usedHLT100)outcanvname+="40to100_";
+    else          outcanvname+="40to80_";
+    outcanvname+=fullJetType+"_jtpt_";
+    if(analysisRebin) outcanvname+="anabins_";
+    else              outcanvname+="simpbins_";
+    outcanvname +=trigType;
+  
+    outcanv->Write((outcanvname+"_canv").c_str());    
+
+  }
+  
   //jetpad_excsp->Close();
   //jetpad_excrat->Close();
   temp_canvJetTrig->Close();
@@ -3278,15 +3290,36 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
   if(fout){
     fout->cd();
     TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
-    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
-    if(usedHLT100)outcanvname+="40to100_";
-    else outcanvname+="40to80_";
+
+    std::string outcanvtitle = "HLTak4PF"; 
     if(usedHLT100)outcanvtitle+="40 to 100 ";
     else outcanvtitle+="40 to 80 ";
-    outcanvname+=fullJetType+"Jets_";
-    outcanvtitle+=fullJetType+"Jets ";    
+    outcanvtitle+=fullJetType+" Trig. Jet p_{T}";    
+    if(analysisRebin)outcanvtitle+=" Ana. Bins ";
+    else             outcanvtitle+=" Simp. Bins ";
+    outcanvtitle +=trigType;
+
     outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
-    outcanv->Write((outcanvname+"canv").c_str());    
+    
+    std::string outcanvname  = "HLTak4PF";
+    if(usedHLT100)outcanvname+="40to100_";
+    else          outcanvname+="40to80_";
+    outcanvname+=fullJetType+"_trgjtpt_";
+    if(analysisRebin) outcanvname+="anabins_";
+    else              outcanvname+="simpbins_";
+    outcanvname +=trigType;
+
+    outcanv->Write((outcanvname+"_canv").c_str());    
+
+    //std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
+    //if(usedHLT100)outcanvname+="40to100_";
+    //else outcanvname+="40to80_";
+    //if(usedHLT100)outcanvtitle+="40 to 100 ";
+    //else outcanvtitle+="40 to 80 ";
+    //outcanvname+=fullJetType+"Jets_";
+    //outcanvtitle+=fullJetType+"Jets ";    
+    //outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+    //outcanv->Write((outcanvname+"canv").c_str());    
   }  
   temp_canvJetTrig->Close();
 
@@ -3441,16 +3474,29 @@ void printTrigEtaHist( TFile* fin , bool usedHLT100,
   if(fout){
     fout->cd();
     TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
-    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
-    if(usedHLT100)outcanvname+="40to100_";
-    else outcanvname+="40to80_";
+    
+    std::string outcanvtitle = "HLTak4PF"; 
     if(usedHLT100)outcanvtitle+="40 to 100 ";
     else outcanvtitle+="40 to 80 ";
-    outcanvname+=fullJetType+"Jets_";
-    outcanvtitle+=fullJetType+"Jets ";    
+    outcanvtitle+=fullJetType+" Trig. Jet #eta ";    
+    //if(analysisRebin)outcanvtitle+=" Ana. Bins ";
+    //else             outcanvtitle+=" Simp. Bins ";
+    outcanvtitle +=trigType;
+
     outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
-    outcanv->Write((outcanvname+"canv").c_str());    
+    
+    std::string outcanvname  = "HLTak4PF";
+    if(usedHLT100)outcanvname+="40to100_";
+    else          outcanvname+="40to80_";
+    outcanvname+=fullJetType+"_trgjteta_";
+    //if(analysisRebin) outcanvname+="anabins_";
+    //else              outcanvname+="simpbins_";
+    outcanvname +=trigType;
+    
+    outcanv->Write((outcanvname+"_canv").c_str());    
+
   }
+
   temp_canvJetTrig->Close();
 
   return;
@@ -3661,15 +3707,37 @@ void printTrigEtaAsymmHist( TFile* fin , bool usedHLT100,
   if(fout){
     fout->cd();
     TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
-    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
-    if(usedHLT100)outcanvname+="40to100_";
-    else outcanvname+="40to80_";
+    
+    std::string outcanvtitle = "HLTak4PF"; 
     if(usedHLT100)outcanvtitle+="40 to 100 ";
     else outcanvtitle+="40 to 80 ";
-    outcanvname+=fullJetType+"Jets_";
-    outcanvtitle+=fullJetType+"Jets ";    
+    outcanvtitle+=fullJetType+" Trig. Jet #eta Asymm. ";    
+//    if(analysisRebin)outcanvtitle+=" Ana. Bins ";
+//    else             outcanvtitle+=" Simp. Bins ";
+    outcanvtitle +=trigType;
+
     outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
-    outcanv->Write((outcanvname+"canv").c_str());    
+    
+    std::string outcanvname  = "HLTak4PF";
+    if(usedHLT100)outcanvname+="40to100_";
+    else          outcanvname+="40to80_";
+    outcanvname+=fullJetType+"_trgjteta_asymm_";
+//    if(analysisRebin) outcanvname+="anabins_";
+//    else              outcanvname+="simpbins_";
+    outcanvname +=trigType;
+    
+    outcanv->Write((outcanvname+"_canv").c_str());    
+
+
+//    std::string outcanvtitle="HLTak4PFJet",outcanvname="HLTak4PFJet";//= "HLT"fullJetType+
+//    if(usedHLT100)outcanvname+="40to100_";
+//    else outcanvname+="40to80_";
+//    if(usedHLT100)outcanvtitle+="40 to 100 ";
+//    else outcanvtitle+="40 to 80 ";
+//    outcanvname+=fullJetType+"Jets_";
+//    outcanvtitle+=fullJetType+"Jets ";    
+//    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+//    outcanv->Write((outcanvname+"canv").c_str());    
   }
   temp_canvJetTrig->Close();
   return;

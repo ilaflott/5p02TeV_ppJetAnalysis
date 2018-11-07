@@ -25,7 +25,10 @@ const std::string defJetType="PF";
 const bool defDebugMode=true;//, fastDebugMode = true;
 const std::string defDataOutputName="readForests_ppData_defOut_jetPlots.root";
 const std::string defMCOutputName="readForests_ppMC_defOut_jetPlots.root";
-const float defEtaCutLo=0.0, defEtaCutHi=1.0;//really absetacut
+//const float defEtaCutLo=0.0, defEtaCutHi=2.4;//really absetacut
+//const float defEtaCutLo=2.4, defEtaCutHi=2.7;//really absetacut
+//const float defEtaCutLo=2.7, defEtaCutHi=3.0;//really absetacut
+const float defEtaCutLo=3.2, defEtaCutHi=4.7;//really absetacut
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
 				 int startfile=0, int endfile=4,
@@ -52,7 +55,7 @@ const float jtPtCut_Hi=1410.;
 
 const float jetQAPtCut=jtPtCut;
 
-const float genJetPtCut=43.; 
+const float genJetPtCut=49.; 
 const float genJetPtCut_Hi=jtPtCut_Hi; 
 
 

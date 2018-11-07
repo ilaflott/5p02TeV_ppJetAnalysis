@@ -950,43 +950,31 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
-      
+      float jetIDpt=recpt;
       
       
       
       // 13 TeV JetID criterion, loose or tight
       bool passesJetID=false;
       if(fillDataJetIDHists) 	{
-	if (absreceta<=2.4) 
-	  { 
-	    if( neSum_F[jet]/rawpt    < 0.99 &&
-		phSum_F[jet]/rawpt    < 0.99 &&
-		numConst              > 1    &&      
-		chSum_F[jet]/rawpt    > 0.00 && 
-		chMult                > 0    &&
-		eSum_F[jet]/rawpt     < 0.99    ) passesJetID=true;	      
-	  }
-	else if ( absreceta<=2.7 && absreceta>2.4 ) 
-	  {	  
-	    if( neSum_F[jet]/rawpt    < 0.99 &&
-		phSum_F[jet]/rawpt    < 0.99 &&
-		numConst              > 1       ) passesJetID=true;	      
-	  }		  
-	else if( absreceta<=3.0 && absreceta>2.7 ) 
-	  {                                                         // CMSSW [76,80]X criterion
-	    if(  true && //phSum_F[jet]/rawpt > 0.00 &&                       // else if(  phSum_F[jet]/rawpt [< 0.90 ] / [ > 0.01 &&]		     
-		 true && //neSum_F[jet]/rawpt < 1.00 &&                       //           neSum_F[jet]/rawpt [null   ] / [ < 0.98 &&]		     
-		 numConst            > 0       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
-	  }							      
-	else //( absreceta>3.0) 
-	  {                                                                                        // CMSSW 76X criterion
-	    if( phSum_F[jet] < 0.4 &&         //( phSum_F[jet]/rawpt > 0.                      // else if( phSum_F[jet]/rawpt < 0.90 &&
-		trkSum_F[jet] < 0.4 && //  neSum_F[jet]/rawpt > 0. ) &&                         //          neSum_F[jet]/rawpt < null &&
-		true       ) passesJetID=true;     //          neuMult            > 10
-	  }	  	  
+	if (!(absreceta > 2.4)) 
+	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
+					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet],
+					   numConst,  chMult);
+	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
+	  passesJetID=(bool) jetID_24eta27( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    numConst);
+	else if( !(absreceta>3.0) && absreceta>2.7 )
+	  passesJetID=(bool) jetID_27eta30( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    numConst);
+	else  
+	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
+					   phSum_F[jet]);
       }
       
-     
+      
       //fill jetspectraRapHists w/ passing jetID criterion
       if( fillDataJetSpectraRapHists ) { 
 	int theRapBin=-1;
@@ -1038,47 +1026,47 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 
 	  //tracks
 	  hJetQA[0][ind]->Fill(trkN_I[jet], weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(trkSum_F[jet]/rawpt, weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(trkMax_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(trkSum_F[jet]/jetIDpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(trkMax_F[jet]/jetIDpt, weight_eS); ind++;
 	  hJetQA[0][ind]->Fill(trkHardN_I[jet], weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(trkHardSum_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(trkHardSum_F[jet]/jetIDpt, weight_eS); ind++;
 
 	  //PF photons
 	  hJetQA[0][ind]->Fill(phN_I[jet], weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(phSum_F[jet]/rawpt, weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(phMax_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(phSum_F[jet]/jetIDpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(phMax_F[jet]/jetIDpt, weight_eS); ind++;
 	  hJetQA[0][ind]->Fill(phHardN_I[jet], weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(phHardSum_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(phHardSum_F[jet]/jetIDpt, weight_eS); ind++;
 
 	  //PF charged hadrons
 	  hJetQA[0][ind]->Fill(chN_I[jet], weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(chSum_F[jet]/rawpt, weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(chMax_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(chSum_F[jet]/jetIDpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(chMax_F[jet]/jetIDpt, weight_eS); ind++;
 	  hJetQA[0][ind]->Fill(chHardN_I[jet], weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(chHardSum_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(chHardSum_F[jet]/jetIDpt, weight_eS); ind++;
 
 	  //PF neutral hadons
 	  hJetQA[0][ind]->Fill(neN_I[jet], weight_eS); ind++;   
-	  hJetQA[0][ind]->Fill(neSum_F[jet]/rawpt, weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(neMax_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(neSum_F[jet]/jetIDpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(neMax_F[jet]/jetIDpt, weight_eS); ind++;
 
 	  //PF electrons
 	  hJetQA[0][ind]->Fill(eN_I[jet], weight_eS); ind++;   
-	  hJetQA[0][ind]->Fill(eSum_F[jet]/rawpt, weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(eMax_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(eSum_F[jet]/jetIDpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(eMax_F[jet]/jetIDpt, weight_eS); ind++;
 
 	  //PF muons
 	  hJetQA[0][ind]->Fill(muN_I[jet], weight_eS); ind++;   
-	  hJetQA[0][ind]->Fill(muSum_F[jet]/rawpt, weight_eS); ind++;
-	  hJetQA[0][ind]->Fill(muMax_F[jet]/rawpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(muSum_F[jet]/jetIDpt, weight_eS); ind++;
+	  hJetQA[0][ind]->Fill(muMax_F[jet]/jetIDpt, weight_eS); ind++;
 
 	  //PF particle sums
 	  hJetQA[0][ind]->Fill(neuMult, weight_eS); ind++;	  
 	  hJetQA[0][ind]->Fill(chMult, weight_eS); ind++;
 	  hJetQA[0][ind]->Fill(numConst, weight_eS); ind++;
 
-	  //hJetQA[0][ind]->Fill(hcalSum_F[jet]/rawpt, weight_eS); ind++;
-	  //hJetQA[0][ind]->Fill(ecalSum_F[jet]/rawpt, weight_eS); ind++;	
+	  //hJetQA[0][ind]->Fill(hcalSum_F[jet]/jetIDpt, weight_eS); ind++;
+	  //hJetQA[0][ind]->Fill(ecalSum_F[jet]/jetIDpt, weight_eS); ind++;	
 	}
 	
 	//looking for the first two good jets that meet the criteria specified
@@ -1167,39 +1155,39 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 
 	    //tracks
 	    hJetQA[1][ind]->Fill(trkN_I[jet], weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(trkSum_F[jet]/rawpt, weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(trkMax_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(trkSum_F[jet]/jetIDpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(trkMax_F[jet]/jetIDpt, weight_eS); ind++;
 	    hJetQA[1][ind]->Fill(trkHardN_I[jet], weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(trkHardSum_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(trkHardSum_F[jet]/jetIDpt, weight_eS); ind++;
 
 	    //PF photons
 	    hJetQA[1][ind]->Fill(phN_I[jet], weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(phSum_F[jet]/rawpt, weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(phMax_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(phSum_F[jet]/jetIDpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(phMax_F[jet]/jetIDpt, weight_eS); ind++;
 	    hJetQA[1][ind]->Fill(phHardN_I[jet], weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(phHardSum_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(phHardSum_F[jet]/jetIDpt, weight_eS); ind++;
 
 	    //PF charged hadrons
 	    hJetQA[1][ind]->Fill(chN_I[jet], weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(chSum_F[jet]/rawpt, weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(chMax_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(chSum_F[jet]/jetIDpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(chMax_F[jet]/jetIDpt, weight_eS); ind++;
 	    hJetQA[1][ind]->Fill(chHardN_I[jet], weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(chHardSum_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(chHardSum_F[jet]/jetIDpt, weight_eS); ind++;
 
 	    //PF neutral hadons
 	    hJetQA[1][ind]->Fill(neN_I[jet], weight_eS); ind++;   
-	    hJetQA[1][ind]->Fill(neSum_F[jet]/rawpt, weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(neMax_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(neSum_F[jet]/jetIDpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(neMax_F[jet]/jetIDpt, weight_eS); ind++;
 
 	    //PF electrons
 	    hJetQA[1][ind]->Fill(eN_I[jet], weight_eS); ind++;   
-	    hJetQA[1][ind]->Fill(eSum_F[jet]/rawpt, weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(eMax_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(eSum_F[jet]/jetIDpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(eMax_F[jet]/jetIDpt, weight_eS); ind++;
 
 	    //PF muons
 	    hJetQA[1][ind]->Fill(muN_I[jet], weight_eS); ind++;   
-	    hJetQA[1][ind]->Fill(muSum_F[jet]/rawpt, weight_eS); ind++;
-	    hJetQA[1][ind]->Fill(muMax_F[jet]/rawpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(muSum_F[jet]/jetIDpt, weight_eS); ind++;
+	    hJetQA[1][ind]->Fill(muMax_F[jet]/jetIDpt, weight_eS); ind++;
 
 	    //PF particle sums
 	    hJetQA[1][ind]->Fill(neuMult, weight_eS); ind++;	  

@@ -243,7 +243,7 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 //raghavs suggested genpt binning for JER
 const float ptbins[]={
   //  28.,
-  32., 
+  //  32., 
   37.,
   43., //garbage bins
   49., //typical gen pt cut
@@ -532,6 +532,82 @@ const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbin
 
 
 
+
+
+const bool jetIDDebug=true;
+bool jetID_00eta24(float jetIDpt, 
+		   float neSum, float phSum, float chSum, float eSum,
+		   int numConst, int chMult){
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_00eta24 called.";
+  bool passesJetID=false;
+  if( neSum/jetIDpt    < 0.99 &&
+      phSum/jetIDpt    < 0.99 &&
+      numConst         > 1    &&      
+      chSum/jetIDpt    > 0.   && 
+      chMult           > 0    &&
+      eSum/jetIDpt     < 0.99    ) passesJetID=true;	      
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_24eta27(float jetIDpt,
+		   float neSum, float phSum, 
+		   int numConst){
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_24eta27 called.";
+  bool passesJetID=false;
+  if( neSum/jetIDpt    < 0.99 &&
+      phSum/jetIDpt    < 0.99 &&
+      numConst         > 1       ) passesJetID=true;	      
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_27eta30(float jetIDpt,
+		   float neSum, float phSum, 
+		   int numConst){ // int numConst, int neuMult){//
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_27eta30 called.";
+  bool passesJetID=false;
+  if(  true && 
+       true &&
+       numConst            > 0       ) passesJetID=true;   
+  //diff versions         // CMSSW [76,80]X criterion
+  //  if(  phSum/jetIDpt > 0.00 && 
+  //       neSum/jetIDpt < 1.00 && 
+  //       numConst            > 0       ) passesJetID=true; 
+  //  if(  phSum/jetIDpt [< 0.90 ] / [ > 0.01 &&]	
+  //       neSum/jetIDpt [null   ] / [ < 0.98 &&]	   
+  //       neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_32eta47(float jetIDpt, 
+		   float phSum){// float phSum, float neSum, float trkSum, float neuMult){//
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_32eta47 called.";
+  bool passesJetID=false;
+  if( phSum < 0.4 &&
+      true               &&
+      true       ) passesJetID=true; 
+  //diff version
+//  if( phSum_F[jet]/jetIDpt > 0. &&                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
+//      trkSum_F[jet] < 0.4       && 
+//      neSum_F[jet]/jetIDpt > 0. &&                         //          neSum_F[jet]/jetIDpt < null &&
+//      true       ) passesJetID=true;     //          neuMult            > 10  
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
 
 
 

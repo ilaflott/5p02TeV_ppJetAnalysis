@@ -563,6 +563,38 @@ void makeToySpectra(TH1D* hthy,
   return;
 }
 
+double calc_spline3ext_y2(TH1D* hthy){
+  bool funcDebug=true;
+  int nbins=hthy->GetNbinsX();
+  if(funcDebug)std::cout<<"nbins="<< nbins<< std::endl;
+  double y_lastbin=hthy->GetBinContent(nbins);
+  double y_nxt2lastbin=hthy->GetBinContent(nbins-1);
+  if(funcDebug)std::cout<<"y_lastbin     ="<< y_lastbin     << std::endl;
+  if(funcDebug)std::cout<<"y_nxt2lastbin ="<< y_nxt2lastbin << std::endl;
+  
+  double log_y_lastbin=TMath::Log10(y_lastbin);
+  double log_y_nxt2lastbin=TMath::Log10(y_nxt2lastbin);
+  if(funcDebug)std::cout<<"log_y_lastbin     ="<< log_y_lastbin     << std::endl;
+  if(funcDebug)std::cout<<"log_y_nxt2lastbin ="<< log_y_nxt2lastbin << std::endl;
+
+  double binwidth_scalefact=hthy->GetBinWidth(nbins)/hthy->GetBinWidth(nbins-1);
+  double logdiff=log_y_nxt2lastbin-log_y_lastbin;
+  //double logdiff_ov2=logdiff/2.;
+  if(funcDebug)std::cout<<"logdiff     ="<< logdiff     << std::endl;
+  if(funcDebug)std::cout<<"binwidth_scalefact     ="<< binwidth_scalefact     << std::endl;
+  //if(funcDebug)std::cout<<"logdiff_ov2 ="<< logdiff_ov2 << std::endl;
+  
+  
+  //double y2_log=log_y_lastbin-logdiff_ov2;  
+  //double y2_log=log_y_lastbin-16.0*logdiff;  
+  double y2_log=log_y_lastbin-8.0*logdiff;  
+  //double y2_log=log_y_lastbin-(binwidth_scalefact*logdiff);  
+  double y2=TMath::Power(10., y2_log);
+  if(funcDebug)std::cout<<"y2_log ="<< y2_log<< std::endl;
+  if(funcDebug)std::cout<<"y2     ="<< y2<< std::endl;  
+  
+  return y2;
+}
 
 
 
@@ -619,12 +651,12 @@ void makeModLogFits(TH1D* hthy,
     std::cout<<"don't do this fit unless you plan on going to at least third order, bare minimum! exit."<<std::endl;
     assert(false);
   }
+
   
   bool funcDebug=false;
   std::string fitOpt="MRE";
   if(funcDebug)fitOpt+="V";
-  //void makeModLogFits(TH1D* hthy, std::vector<TF1*> logfitarr){
-  
+  //void makeModLogFits(TH1D* hthy, std::vector<TF1*> logfitarr){  
   // fit of real interest is; A(B/pt)^[C+ D Log(pt/B) + E(Log(pt/B))^2]
   
   const int nbins=hthy->GetNbinsX();
@@ -632,9 +664,6 @@ void makeModLogFits(TH1D* hthy,
   //const int startbin=1, endbin=hthy->GetNbinsX();
   //const float xlo=hthy->GetBinLowEdge(startbin);
   //const float xhi=hthy->GetBinLowEdge(endbin) + hthy->GetBinWidth(endbin);
-  
-  TVirtualFitter::SetDefaultFitter("Minuit2");
-  ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04);      
   
   TH1D* hthy_log    =(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_logfit").c_str());
   TH1D* hthy_modlog =(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_modlogfit").c_str());   
@@ -733,9 +762,6 @@ void makeModLogFits(TH1D* hthy,
     hthy_modlog5->Fit(modLog5Fit->GetName(),fitOpt.c_str());
     modLog5Fit->SetLineColor(kOrange);
   }
-  
-  
-  
   std::cout<<"    (bool)logFit = "<<    (bool)logFit<<std::endl;
   std::cout<<" (bool)modLogFit = "<< (bool)modLogFit<<std::endl;
   std::cout<<"(bool)modLog2Fit = "<<(bool)modLog2Fit<<std::endl;
@@ -743,6 +769,74 @@ void makeModLogFits(TH1D* hthy,
   std::cout<<"(bool)modLog4Fit = "<<(bool)modLog4Fit<<std::endl;
   std::cout<<"(bool)modLog5Fit = "<<(bool)modLog5Fit<<std::endl;
   
+
+
+  return;
+
+}
+
+
+
+
+
+
+void make7TeVFits(TH1D* hthy=NULL, 
+		  TF1* _FitA =NULL , 
+		  TF1* _FitB =NULL ,
+		  float norm=-1.
+		  ){
+  
+  if( !((bool)_FitA) || !((bool)_FitB) || !((bool)hthy)){
+    std::cout<<"Fits or hist not passed correclty to make7TeVFits, exit"<<std::endl;
+    assert(false);
+  }  
+  bool funcDebug=false;
+  std::string fitOpt="MRE";
+  if(funcDebug)fitOpt+="V";
+  
+  //const int nbins=hthy->GetNbinsX();
+ //const int parambin=nbins/2;
+  //const int startbin=1, endbin=hthy->GetNbinsX();
+  //const float xlo=hthy->GetBinLowEdge(startbin);
+  //const float xhi=hthy->GetBinLowEdge(endbin) + hthy->GetBinWidth(endbin);
+  
+  
+  TH1D* hthy_fitB=(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_7tevfitB").c_str());  
+  hthy_fitB->Fit(_FitB->GetName(),fitOpt.c_str());//do fitB first, it has 
+  _FitB->SetLineColor(kBlue);
+  
+
+  TH1D* hthy_fitA=(TH1D*)hthy->Clone( ( ((std::string)hthy->GetName())+"_7tevfitA").c_str());   
+  
+  float fitA_p0=_FitB->GetParameter(0);//take in the three param from fitB [norm isnt free param, preset] as suggestions
+  float fitA_p1=_FitB->GetParameter(1);
+  float fitA_p2=_FitB->GetParameter(2);
+  
+  _FitA->SetParameter(0,fitA_p0);//set the free params
+  _FitA->SetParameter(1,fitA_p1);
+  _FitA->SetParameter(2,fitA_p2);
+  if(norm>0.){    
+    _FitA->SetParameter(3,norm);
+    _FitA->SetParLimits(3,.5*norm,2.0*norm);
+  }
+  
+  hthy_fitA->Fit(_FitA->GetName(),fitOpt.c_str());
+  _FitA->SetLineColor(kMagenta);
+  
+  std::cout << "(bool) _FitA = " << (bool)_FitA            <<std::endl;
+  std::cout<<"_FitA par0 (alpha) ="<<_FitA->GetParameter(0)<<std::endl;
+  std::cout<<"_FitA par1 (beta)  ="<<_FitA->GetParameter(1)<<std::endl;
+  std::cout<<"_FitA par2 (gamma) ="<<_FitA->GetParameter(2)<<std::endl;
+  std::cout<<"_FitA par3 (N0)    ="<<_FitA->GetParameter(3)<<std::endl;
+  
+  std::cout << "(bool) _FitB = " << (bool)_FitB            <<std::endl;
+  std::cout<<"_FitA par0 (alpha) ="<<_FitB->GetParameter(0)<<std::endl;
+  std::cout<<"_FitA par1 (beta)  ="<<_FitB->GetParameter(1)<<std::endl;
+  std::cout<<"_FitA par2 (gamma) ="<<_FitB->GetParameter(2)<<std::endl;
+  std::cout<<"norm set to        ="<<norm                  <<std::endl;
+
+
+  //assert(false);
   return;
 
 }
@@ -860,35 +954,3 @@ void makeModLogFits(TH1D* hthy,
 //  return;
 //}
 
-double calc_spline3ext_y2(TH1D* hthy){
-  bool funcDebug=true;
-  int nbins=hthy->GetNbinsX();
-  if(funcDebug)std::cout<<"nbins="<< nbins<< std::endl;
-  double y_lastbin=hthy->GetBinContent(nbins);
-  double y_nxt2lastbin=hthy->GetBinContent(nbins-1);
-  if(funcDebug)std::cout<<"y_lastbin     ="<< y_lastbin     << std::endl;
-  if(funcDebug)std::cout<<"y_nxt2lastbin ="<< y_nxt2lastbin << std::endl;
-  
-  double log_y_lastbin=TMath::Log10(y_lastbin);
-  double log_y_nxt2lastbin=TMath::Log10(y_nxt2lastbin);
-  if(funcDebug)std::cout<<"log_y_lastbin     ="<< log_y_lastbin     << std::endl;
-  if(funcDebug)std::cout<<"log_y_nxt2lastbin ="<< log_y_nxt2lastbin << std::endl;
-
-  double binwidth_scalefact=hthy->GetBinWidth(nbins)/hthy->GetBinWidth(nbins-1);
-  double logdiff=log_y_nxt2lastbin-log_y_lastbin;
-  //double logdiff_ov2=logdiff/2.;
-  if(funcDebug)std::cout<<"logdiff     ="<< logdiff     << std::endl;
-  if(funcDebug)std::cout<<"binwidth_scalefact     ="<< binwidth_scalefact     << std::endl;
-  //if(funcDebug)std::cout<<"logdiff_ov2 ="<< logdiff_ov2 << std::endl;
-  
-  
-  //double y2_log=log_y_lastbin-logdiff_ov2;  
-  //double y2_log=log_y_lastbin-16.0*logdiff;  
-  double y2_log=log_y_lastbin-8.0*logdiff;  
-  //double y2_log=log_y_lastbin-(binwidth_scalefact*logdiff);  
-  double y2=TMath::Power(10., y2_log);
-  if(funcDebug)std::cout<<"y2_log ="<< y2_log<< std::endl;
-  if(funcDebug)std::cout<<"y2     ="<< y2<< std::endl;  
-  
-  return y2;
-}

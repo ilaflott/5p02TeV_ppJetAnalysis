@@ -4,7 +4,7 @@
 // ppData switches
 const bool fillDataEvtQAHists=true;
 const bool fillDataJetQAHists=true;
-const bool fillDataJetIDHists=false;//, tightJetID=false;
+const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 
 const bool fillDataDijetHists=false;
@@ -931,43 +931,29 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
 
       if(fillDataJetIDHists) 	{
-	//if (absreceta<2.4) 
 	if (!(absreceta > 2.4)) 
-	  { 
-	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
-		phSum_F[jet]/jetIDpt    < 0.99 &&
-		numConst              > 1    &&      
-		chSum_F[jet]/jetIDpt    > 0.00 && 
-		chMult                > 0    &&
-		eSum_F[jet]/jetIDpt     < 0.99    ) passesJetID=true;	      
-	  }
-	//else if ( absreceta<2.7 && absreceta>2.4 ) 
+	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
+					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet],
+					   numConst,  chMult);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
-	  {	  
-	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
-		phSum_F[jet]/jetIDpt    < 0.99 &&
-		numConst              > 1       ) passesJetID=true;	      
-	  }		  
-	//else if( absreceta<3.0 && absreceta>2.7 ) 
-	else if( !(absreceta>3.0) && absreceta>2.7 ) 
-	  {                                                         // CMSSW [76,80]X criterion
-	    if(  true && //phSum_F[jet]/jetIDpt > 0.00 &&                       // else if(  phSum_F[jet]/jetIDpt [< 0.90 ] / [ > 0.01 &&]		     
-		 true && //neSum_F[jet]/jetIDpt < 1.00 &&                       //           neSum_F[jet]/jetIDpt [null   ] / [ < 0.98 &&]		     
-		 numConst            > 0       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
-	  }							      
-	else //( absreceta>3.0) 
-	  {                                                                                        // CMSSW 76X criterion
-	    if( phSum_F[jet] < 0.4 &&         //( phSum_F[jet]/jetIDpt > 0.                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
-		true && //trkSum_F[jet] < 0.4 && //  neSum_F[jet]/jetIDpt > 0. ) &&                         //          neSum_F[jet]/jetIDpt < null &&
-		true       ) passesJetID=true;     //          neuMult            > 10
-	  }	  	  
-	
+	  passesJetID=(bool) jetID_24eta27( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    numConst);
+	else if( !(absreceta>3.0) && absreceta>2.7 )
+	  passesJetID=(bool) jetID_27eta30( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    numConst);
+	else  
+	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
+					   phSum_F[jet]);
 	if(!passesJetID) {
 	  jetsPerEvent--;
 	  continue; }
+	
 	if(!hNEvts_withJets_JetIDCut_Filled){ 
 	  h_NEvents_withJets_JetIDCut->Fill(0.);  	h_NEvents_withJets_JetIDCut->Fill(1.,weight_eS);  
-	  hNEvts_withJets_JetIDCut_Filled=true;}    			
+	  hNEvts_withJets_JetIDCut_Filled=true; }    			
+	
 	h_NJets_JetIDCut->Fill(0.);	h_NJets_JetIDCut->Fill(1.,weight_eS);
       }//end fillDataJetIDHists
       

@@ -8,8 +8,8 @@ const bool printBaseDebug=true;
 //const bool useFitWeights=!useSplineWeights;
 
 //const int nEvents=1e+09;  ///10x typical
-const int nEvents=1e+08;  ///typical
-//const int nEvents=1e+07;  /// debug nevents
+//const int nEvents=1e+08;  ///typical
+const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 
@@ -25,20 +25,35 @@ void debugcout(){
   return; 
 }
 
-int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSplineWeights=true //, std::string weightMode="spline" //"fit"// 
+int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSplineWeights=true, const std::string fitType="modLog" //, std::string weightMode="spline" //"fit"// 
 				     ){
   
   gStyle->SetOptStat(0);
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
+ 
+  TVirtualFitter::SetDefaultFitter("Minuit2");
+  //ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-02);      //default i think
+  //ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-03);      
+  ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04);      
   
   // Output File to write to
   const bool useFitWeights=!(useSplineWeights);
+  const bool useModLogFit=useFitWeights && (fitType=="modLog");
+  const bool use7TeVFit=useFitWeights && (fitType=="7TeV");
+  if(useModLogFit && use7TeVFit){
+    std::cout<<"something wrong"<<std::endl; assert(false);}
+
   std::string outputFile= infileString; 
   if(useSplineWeights)    outputFile +="_spl3wgts";
-  else if (useFitWeights) outputFile += "_fitwgts";
+  else if (useFitWeights) {
+    if(useModLogFit)
+      outputFile += "_modlogfitwgts";
+    else if(use7TeVFit)
+      outputFile += "_7tevfitwgts";
+  }
   outputFile+="_gaussSmear_00eta20.root";
-
+  
   std::cout<<"opening output:"<<outputFile<<std::endl<<std::endl;
   TFile *outf    = new TFile(outputFile.c_str(), "RECREATE" );
   
@@ -77,15 +92,18 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   /////////////// Create/Get JER fit function(s)
   std::cout<<"opening JER file + fits! " << std::endl;
   TFile* fin_JER=TFile::Open(JERCorrFile.c_str());
-
+  if(!fin_JER){
+    std::cout<<"error, JER file not found or not open."<<std::endl; assert(false); }
+  
   TF1 *fJER_default = new TF1("fJER_ynew",gJER_ynew_str.c_str(),thyBins_incl[0], thyBins_incl[n_thybins_incl]);  //for comparison only
   fJER_default->SetLineColor(kBlue);
   fJER_default->SetMinimum(0.); //do i need to set min/max really?
   fJER_default->SetMaximum(0.25);
-
-  TF1 *fJER_ynew = (TF1*)fin_JER->Get("hSigmaFit");
-  if(!fin_JER || !fJER_ynew)
-    {std::cout<<"error, JER file and/or fits not found."<<std::endl; assert(false);}
+  
+  TF1 *fJER_ynew = (TF1*)fin_JER->Get("SigmaFit_h");
+  //  TF1 *fJER_ynew = (TF1*)fin_JER->Get("SigmaFit_f");
+  if(!fJER_ynew){
+    std::cout<<"error, JER fit not open or not found!."<<std::endl; assert(false);}
   fJER_ynew->SetLineColor(kRed);
   fJER_ynew->SetMinimum(0.); //do i need to set min/max really?
   fJER_ynew->SetMaximum(0.25);
@@ -549,19 +567,24 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     leg_spline->AddEntry(spline3_NPynew_ext  , "Parabolic Spline Extension for NP+NLO #||{y} < 2.0" , "l");
     leg_spline->Draw();    
   }
+
+  // for fits
+  const int startbin=1, endbin=theory_ynew_clone->GetNbinsX();//ynew and NP ynew should always have the same binning
+  //const float xlo=theory_ynew_clone->GetBinLowEdge(startbin);
+  //const float xhi=theory_ynew_clone->GetBinLowEdge(endbin) + theory_ynew_clone->GetBinWidth(endbin);  
+  const float xlo=theory_ynew_clone->GetBinLowEdge(startbin);//trying out for the 7TeV style fit
+  const float xhi=theory_ynew_clone->GetBinCenter(endbin);// + theory_ynew_clone->GetBinWidth(endbin);  
   
   
+    
   ///Log fit: A(B/pt)^[C+ D Log(pt/B) + E(Log(pt/B))^2] using Cross sections; currently no known issues
   TF1 *logFit_ynew  =NULL, *modLogFit_ynew  =NULL, *modLog2Fit_ynew  =NULL, *modLog3Fit_ynew  =NULL, *modLog4Fit_ynew  =NULL,*modLog5Fit_ynew  =NULL;
   TF1 *logFit_NPynew=NULL, *modLogFit_NPynew=NULL, *modLog2Fit_NPynew=NULL, *modLog3Fit_NPynew=NULL, *modLog4Fit_NPynew=NULL,*modLog5Fit_NPynew=NULL;
   
-  const int startbin=1, endbin=theory_ynew_clone->GetNbinsX();//ynew and NP ynew should always have the same binning
-  const float xlo=theory_ynew_clone->GetBinLowEdge(startbin);
-  const float xhi=theory_ynew_clone->GetBinLowEdge(endbin) + theory_ynew_clone->GetBinWidth(endbin);  
-  
   TCanvas *plot_logfits_ynew=NULL,*plot_logfits_NPynew=NULL;
-  TLegend *leg_logfits_ynew=NULL,*leg_logfits_NPynew=NULL;
-  if(useFitWeights){
+  TLegend *leg_logfits_ynew=NULL,*leg_logfits_NPynew=NULL;  
+  //  if(useFitWeights){
+  if(useFitWeights && useModLogFit){
     
     // --- NLO --- //
     /// check spectra with fits
@@ -582,6 +605,9 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     makeModLogFits(theory_ynew_clone, logFit_ynew, modLogFit_ynew, modLog2Fit_ynew, modLog3Fit_ynew, modLog4Fit_ynew, modLog5Fit_ynew);
     
     
+
+
+
     //draw
     std::cout<<"drawing ynew fits and cross section on canvas"<<std::endl;
     theory_ynew_clone->SetTitle("Modified Logarithm Fits for NLO #||{y}<2.0;Jet p_{T};Smear Weight");    
@@ -654,6 +680,100 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     leg_logfits_NPynew->Draw();    
 
   }
+
+
+  ///7 TeV fit: two variations using Cross sections, each w/ 3 free parameters min. note; sqrt(s) should be in GeV
+  ///cite: CERN-PH-EP/2011-053, 2018/10/22, CMS-QCD-10-011, 
+  ///    : "Measurement of the Inclusive Jet Cross Section in pp Collisions at sqrt(s)=7 TeV"
+  ///    : arixiv:1106.0208v1 [hep-ex] 1 Jun 2011
+  ///    : Submitted to Physical Review Letters
+  /// A) ddxsec[p_T] = D * [(p_T/GeV)^A] * [(1.-(2.*p_T/sqrt(s)]*cosh(ymin))^B] * [exp(-1*C/(p_T/GeV))]
+  /// B) ddxsec[p_T] = [integral(ddxsec[p_T])] * [(p_T/GeV)^A] * [(1 - (2 * p_T / sqrt(s)]*cosh(ymin))^B] * [exp(-1*C/(p_T/GeV))]
+  TF1 *_7TeVFitA_ynew  =NULL, *_7TeVFitB_ynew  =NULL;
+  TF1 *_7TeVFitA_NPynew=NULL, *_7TeVFitB_NPynew=NULL;
+  
+  TCanvas *plot_7tevfits_ynew=NULL,*plot_7tevfits_NPynew=NULL;
+  TLegend  *leg_7tevfits_ynew=NULL, *leg_7tevfits_NPynew=NULL;  
+  if(useFitWeights && use7TeVFit){
+
+    std::cout<<"making 7tev fit strings"<<std::endl;
+    std::string _7tevfit_str="(TMath::Power(x,-1.*[0]))* (TMath::Power( (1.-(2.*x/(5.02*1000.) )),[1]))* (TMath::Exp(-1.*([2]/x)))";
+    std::cout<<"_7tevfit_str="<<_7tevfit_str<<std::endl;
+    
+    std::string _7tevfitA_str="([3])* "+_7tevfit_str;    //this string is same for ynew and NPynew
+    std::cout<<"_7tevfitA_str="<<_7tevfitA_str<<std::endl;
+    
+    // --- NLO --- //    
+    /// check spectra with fits
+    plot_7tevfits_ynew = new TCanvas("plot_7tevfits_ynew", "plot 7tevfits ynew",1200,800);
+    plot_7tevfits_ynew->cd()->SetLogx(1);
+    plot_7tevfits_ynew->cd()->SetLogy(1);
+    plot_7tevfits_ynew->cd();
+    
+    float norm_ynew=theory_ynew_clone->Integral("width")*4.;
+    std::cout<<"norm_ynew="<<norm_ynew<<std::endl;
+    std::string norm_ynew_str=std::to_string(norm_ynew);
+    std::cout<<"norm_ynew_str="<<norm_ynew_str<<std::endl;
+    std::string _7tevfitB_ynew_str="("+norm_ynew_str+")* "+_7tevfit_str;
+    std::cout<<"_7tevfitB_ynew_str="<<_7tevfitB_ynew_str<<std::endl;    
+    
+    _7TeVFitA_ynew =new TF1("_7tevfitA_ynew", (_7tevfitA_str     ).c_str() ,xlo,xhi);
+    _7TeVFitB_ynew =new TF1("_7tevfitB_ynew" , (_7tevfitB_ynew_str).c_str(),xlo,xhi);
+    make7TeVFits(theory_ynew_clone,  _7TeVFitA_ynew, _7TeVFitB_ynew, norm_ynew);
+    
+    //draw
+    std::cout<<"drawing ynew fits and cross section on canvas"<<std::endl;
+    theory_ynew_clone->SetTitle("7 TeV Fits for NLO #||{y}<2.0;Jet p_{T};Smear Weight");    
+    theory_ynew_clone->DrawClone("HIST E");        
+    _7TeVFitA_ynew->Draw("SAME");
+    _7TeVFitB_ynew->Draw("SAME");
+    
+    leg_7tevfits_ynew=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");    
+    leg_7tevfits_ynew->AddEntry(theory_ynew_clone , "Weighted NLO Jet Counts for #||{y} < 2.0" , "lp");//change desc TO DO
+    leg_7tevfits_ynew->AddEntry(_7TeVFitB_ynew   , "4 Param. 7 TeV Fit for NLO" , "l");
+    leg_7tevfits_ynew->AddEntry(_7TeVFitA_ynew   , "3 Param. 7 TeV Fit for NLO" , "l");    
+    leg_7tevfits_ynew->Draw();    
+    
+    
+    // --- NP+NLO --- //
+    /// check spectra with fits
+    plot_7tevfits_NPynew = new TCanvas("plot_7tevfits_NPynew", "plot 7tevfits NPynew",1200,800);
+    plot_7tevfits_NPynew->cd()->SetLogx(1);
+    plot_7tevfits_NPynew->cd()->SetLogy(1);
+    plot_7tevfits_NPynew->cd();
+    
+    float norm_NPynew=theory_NPynew_clone->Integral("width")*4.;
+    std::cout<<"norm_NPynew="<<norm_NPynew<<std::endl;
+    std::string norm_NPynew_str=std::to_string(norm_NPynew);
+    std::cout<<"norm_NPynew_str="<<norm_NPynew_str<<std::endl;
+    std::string _7tevfitB_NPynew_str="("+norm_NPynew_str+")* "+_7tevfit_str;
+    std::cout<<"_7tevfitB_NPynew_str="<<_7tevfitB_NPynew_str<<std::endl;        
+    
+    std::cout<<"fitting hist theory_NPynew_clone"<<std::endl;
+    _7TeVFitA_NPynew =new TF1("_7tevfitA_NPynew",(_7tevfitA_str       ).c_str(),xlo,xhi);
+    _7TeVFitB_NPynew=new TF1( "_7tevfitB_NPynew" ,(_7tevfitB_NPynew_str).c_str(),xlo,xhi);
+    make7TeVFits(theory_NPynew_clone, _7TeVFitA_NPynew, _7TeVFitB_NPynew, norm_NPynew);
+    
+    //draw
+
+
+    std::cout<<"drawing NPynew fits and cross section on canvas"<<std::endl;
+    theory_NPynew_clone->SetTitle("7 TeV Fits for NP+NLO #||{y}<2.0;Jet p_{T};Smear Weight");    
+    theory_NPynew_clone->DrawClone("HIST E");    
+    
+    _7TeVFitA_NPynew->Draw("SAME");
+    _7TeVFitB_NPynew->Draw("SAME");
+    
+    leg_7tevfits_NPynew=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
+    
+    leg_7tevfits_NPynew->AddEntry(theory_NPynew_clone , "Weighted NP+NLO Jet Counts for #||{y} < 2.0" , "lp");//change desc TO DO
+    leg_7tevfits_NPynew->AddEntry(_7TeVFitA_NPynew   ,  "3 Param. 7 TeV Fit for NP+NLO" , "l");
+    leg_7tevfits_NPynew->AddEntry(_7TeVFitB_NPynew   ,  "4 Param. 7 TeV Fit for NP+NLO" , "l");    
+    leg_7tevfits_NPynew->Draw();    
+    //assert(false);
+    
+  }
+  
   
   //-----------------------------------------------------------------------------------------//
   //////////////////////  START production of Smeared NLO spectra  ////////////////////////////
@@ -668,7 +788,7 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
 				   (Int_t)n_thybins_incl, (Double_t*)thyBins_incl);  
 
   //--------------------------------------------------------------------------------------------------------//
-  if(useSplineWeights){
+  if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
     makeToySpectra( (TH1D*)theory_ynew_clone, 
 		    (TSpline3*)spline3_ynew, 
 		    (TF1*)fJER_ynew, 
@@ -678,20 +798,30 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
 		    smeared_rnd_ynew_test, 
 		    (TH2D*)response_ynew_th2,
 		    (TF1*) spline3_ynew_ext); }
-  if(useFitWeights){
+  else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
     makeToySpectra( (TH1D*)theory_ynew_clone, 
-		    (TF1*)modLog4Fit_ynew, 
+		    (TF1*)modLog4Fit_ynew, // (TF1*)modLog3Fit_ynew, // 
 		    (TF1*)fJER_ynew, 
 		    nEvents, 
 		    theory_rnd_ynew, 
 		    smeared_rnd_ynew, 
 		    smeared_rnd_ynew_test, 
 		    (TH2D*)response_ynew_th2); }  
+  else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    makeToySpectra( (TH1D*)theory_ynew_clone, 
+		    (TF1*)_7TeVFitA_ynew,// (TF1*)_7TeVFitB_ynew, //
+		    (TF1*)fJER_ynew, 
+		    nEvents, 
+		    theory_rnd_ynew, 
+		    smeared_rnd_ynew, 
+		    smeared_rnd_ynew_test, 
+		    (TH2D*)response_ynew_th2); }  
+
   //--------------------------------------------------------------------------------------------------------//
 
   divideBinWidth(theory_rnd_ynew);  //for normalization only.
   theory_rnd_ynew->Scale(1./4.);//etabinwidth
-
+  
   divideBinWidth(smeared_rnd_ynew); 
   smeared_rnd_ynew->Scale(1./4.);
 
@@ -715,7 +845,7 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   
   divideBinWidth(theory_rnd_ynew);  //for normalization only.
   theory_rnd_ynew->Scale(1./4.);//etabinwidth
-
+  
   divideBinWidth(smeared_rnd_ynew); 
   smeared_rnd_ynew->Scale(1./4.);
   
@@ -855,10 +985,8 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
 		   smeared_rnd_NPynew, 
 		   smeared_rnd_NPynew_test, 
 		   (TH2D*) response_NPynew_th2, 
-		    //NULL ) ;}
-		    (TF1*) spline3_NPynew_ext); }
-
-  if(useFitWeights){
+		   (TF1*) spline3_NPynew_ext); }		    //NULL ) ;}//
+  else if(useFitWeights&&useModLogFit){
     makeToySpectra(theory_NPynew_clone, 
 		   (TF1*)modLog4Fit_NPynew,
 		   (TF1*)fJER_ynew, 
@@ -867,6 +995,16 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
 		   smeared_rnd_NPynew, 
 		   smeared_rnd_NPynew_test, 
 		   (TH2D*) response_NPynew_th2);}
+  else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    makeToySpectra( (TH1D*)theory_NPynew_clone, 
+		    (TF1*)_7TeVFitA_NPynew,// (TF1*)_7TeVFitB_NPynew, //
+		    (TF1*)fJER_ynew, 
+		    nEvents, 
+		    theory_rnd_NPynew, 
+		    smeared_rnd_NPynew, 
+		    smeared_rnd_NPynew_test, 
+		    (TH2D*)response_NPynew_th2); }  
+
   //----------------------------------------------------------------------------------------------------------------//
   
   divideBinWidth(theory_rnd_NPynew);  //for normalization only.
@@ -1093,18 +1231,14 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   theory_NPynew_clone->Write();
   
 
-  // SPLINES
-  if(useSplineWeights){
+  if(useSplineWeights){  // SPLINES
     spline3_ynew->Write();
     spline3_NPynew->Write();
     if((bool)spline3_ynew_ext)spline3_ynew_ext->Write();
     if((bool)spline3_NPynew_ext)spline3_NPynew_ext->Write();
     plot_splines->Write();  
   }
-  
-
-  // FITS
-  if(useFitWeights){
+  else if(useFitWeights && useModLogFit){//FITS
     logFit_ynew->Write();
     modLogFit_ynew->Write();
     modLog2Fit_ynew->Write();
@@ -1121,7 +1255,16 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
     modLog5Fit_NPynew->Write();
     plot_logfits_NPynew->Write();      
   }
-
+  else if(useFitWeights && use7TeVFit){//FITS
+    _7TeVFitA_ynew->Write();
+    _7TeVFitB_ynew->Write();
+    plot_7tevfits_ynew->Write();  
+    
+    _7TeVFitA_NPynew->Write();
+    _7TeVFitB_NPynew->Write();
+    plot_7tevfits_NPynew->Write();      
+  }
+  
   
   //TOY MC, JER SMEARED NLO SPECTRA
   theory_rnd_ynew->Write();
@@ -1173,6 +1316,9 @@ int main(int argc, char* argv[]){
   }
   else if(argc==3) {
     rStatus=smearTheorySpectra_gaussCoreJER( (std::string) argv[1] ,  ( (bool)std::atoi( argv[2]) ) )  ;      
+  }
+  else if(argc==4){
+    rStatus=smearTheorySpectra_gaussCoreJER( (std::string) argv[1] ,  ( (bool)std::atoi( argv[2]) ) , (std::string) argv[3])  ;      
   }
   
   std::cout<<"rStatus="<<rStatus<<std::endl;

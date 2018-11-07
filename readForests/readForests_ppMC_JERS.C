@@ -603,33 +603,21 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       // 13 TeV JetID criterion
       bool passesJetID=false; //int jtID=0;
       if(fillMCJetIDHists) 	{
-	if (!(absreceta>2.4)) 
-	  { 
-	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
-		phSum_F[jet]/jetIDpt    < 0.99 &&
-		numConst              > 1    &&      
-		chSum_F[jet]/jetIDpt    > 0.00 && 
-		chMult                > 0    &&
-		eSum_F[jet]/jetIDpt     < 0.99    ) passesJetID=true;	      
-	  }
+	if (!(absreceta > 2.4)) 
+	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
+					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet],
+					   numConst,  chMult);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
-	  {	  
-	    if( neSum_F[jet]/jetIDpt    < 0.99 &&
-		phSum_F[jet]/jetIDpt    < 0.99 &&
-		numConst              > 1       ) passesJetID=true;	      
-	  }		  
-	else if( !(absreceta>3.0) && absreceta>2.7 ) 
-	  {                                                         // CMSSW [76,80]X criterion
-	    if(  true && //phSum_F[jet]/jetIDpt > 0.00 &&                       // else if(  phSum_F[jet]/jetIDpt [< 0.90 ] / [ > 0.01 &&]		     
-		 true && //neSum_F[jet]/jetIDpt < 1.00 &&                       //           neSum_F[jet]/jetIDpt [null   ] / [ < 0.98 &&]		     
-		 numConst            > 0       ) passesJetID=true;   //           neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
-	  }							      
-	else //( absreceta>3.0) 
-	  {                                                                                        // CMSSW 76X criterion
-	    if( phSum_F[jet] < 0.4 &&         //( phSum_F[jet]/jetIDpt > 0.                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
-		trkSum_F[jet] < 0.4 && //  neSum_F[jet]/jetIDpt > 0. ) &&                         //          neSum_F[jet]/jetIDpt < null &&
-		true       ) passesJetID=true;     //          neuMult            > 10
-	  }	  	  
+	  passesJetID=(bool) jetID_24eta27( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    numConst);
+	else if( !(absreceta>3.0) && absreceta>2.7 )
+	  passesJetID=(bool) jetID_27eta30( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    numConst);
+	else  
+	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
+					   phSum_F[jet]);
       }
 
       int jetID=0;

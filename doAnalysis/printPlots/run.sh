@@ -43,9 +43,23 @@ echo "done compiling. Running!"
 echo ""
 
 
-source run_printPlots_jetPlots.sh "4" "10.29.18_outputCondor" "10-29-18" "0.0eta2.0" "10.29.18_outputCondor" "10-29-18" "0.0eta2.0" "00eta20_wJetID"
+#source run_printPlots_jetPlots.sh "4" "10.29.18_outputCondor" "10-29-18" "0.0eta2.0" "10.29.18_outputCondor" "10-29-18" "0.0eta2.0" "00eta20_wJetID"
 
-scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_wJetID_jetPlots.\*
+source run_printPlots_jetPlots.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta0.5" "11.06.18_outputCondor" "11-06-18" "0.0eta0.5" "00eta05_wJetID"
+source run_printPlots_jetPlots.sh "4" "11.06.18_outputCondor" "11-06-18" "0.5eta1.0" "11.06.18_outputCondor" "11-06-18" "0.5eta1.0" "05eta10_wJetID"
+source run_printPlots_jetPlots.sh "4" "11.06.18_outputCondor" "11-06-18" "1.0eta1.5" "11.06.18_outputCondor" "11-06-18" "1.0eta1.5" "10eta15_wJetID"
+source run_printPlots_jetPlots.sh "4" "11.06.18_outputCondor" "11-06-18" "1.5eta2.0" "11.06.18_outputCondor" "11-06-18" "1.5eta2.0" "15eta20_wJetID"
+
+
+
+
+
+
+
+
+
+
+#scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_wJetID_jetPlots.\*
 #scp2Serin output/\*.\*
 ##############################################
 
@@ -92,13 +106,21 @@ echo ""
 
 #source run_printPlots_jetTrig.sh "4" "10.11.17_outputCondor" "10-11-17" "0.0eta2.0_rec56_HLTCalo" "00eta20_APSDNP_10.17.17"
 
-source run_printPlots_jetTrig.sh "4" "10.29.18_outputCondor" "10-29-18" "0.0eta2.0" "00eta20"
+
+
+#source run_printPlots_jetTrig.sh "4" "10.29.18_outputCondor" "10-29-18" "0.0eta2.0" "00eta20"
+
+source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta0.5" "00eta05"
+source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "0.5eta1.0" "05eta10"
+source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "1.0eta1.5" "10eta15"
+source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "1.5eta2.0" "15eta20"
+
 ##############################################
 
 echo ""
 echo "done running jetTrig!"
 echo ""
-scp2Serin output/\*.\*
+#scp2Serin output/\*.\*
 ##############################################
 
 return

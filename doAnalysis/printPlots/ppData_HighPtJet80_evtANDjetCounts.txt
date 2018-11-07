@@ -1,0 +1,116 @@
+
+compiling printPlots_jetIDPlots.C
+
+
+done compiling. Running!
+
+
+done running jetIDPlots!
+
+
+compiling printPlots_jetPlots.C
+
+
+done compiling. Running!
+
+
+Running w/ Jet80+LowerJets PDs...
+
+
+printing QA Plots, now opening input files!!
+
+ now opening ppData: 
+HighPtJet80_ak4PF-allFiles.root
+ in directory: 10.29.18_outputCondor/ppData_HighPtJetTrig_ak4PFJets_10-29-18_jetPlots_0.0eta2.0/
+
+ now opening ppMC: 
+Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root
+ in directory: 10.29.18_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_10-29-18_jetPlots_0.0eta2.0/
+
+
+printDataEventCountReport Called
+
+--------------------------
+--- Event Loop Summary ---
+--------------------------
+# evts (description) = / count / pscl weighted count
+
+# evts in file(s) opened    = / 2.78237e+07 / 4.06645e+07
+# evts trigd in those files = / 1.36485e+07 / 2.64893e+07
+# evts w pscl==1           = / 1.1383e+07 / 1.1383e+07
+
+# evts passing is40  = / 0 / 0
+# evts passing is60  = / 2.44977e+06 / 1.52906e+07
+# evts passing is80  = / 1.11987e+07 / 1.11987e+07
+# evts passing is100 = / 0 / 0
+
+# evts in file(s) opened           = / 2.78237e+07 / 4.06645e+07
+# evts read from those file(s)     = / 2.25696e+07 / 9.07827e+06
+# evts skipped from those file(s)  = / 5.25414e+06 / 1.8095e+07
+# evts passing a trigger post-skip = / 9.0592e+06 / 9.0592e+06
+
+# evts passing skimCuts  = / 2.2513e+07 / 9.05991e+06
+# evts passing vzCuts    = / 2.25106e+07 / 9.0592e+06
+
+# evts passing trig  = / 9.0592e+06 / 9.0592e+06
+# evts passing is40  = / 0 / 0
+# evts passing is60  = / 0 / 0
+# evts passing is80  = / 9.0592e+06 / 9.0592e+06
+# evts passing is100 = / 0 / 0
+
+# evts passing each trigger with no exclusion
+# evts passing HLT40  = / 0 / 0
+# evts passing HLT60  = / 0 / 0
+# evts passing HLT80  = / 9.0592e+06 / 9.0592e+06
+# evts passing HLT100 = / 1.65625e+06 / 1.65625e+06
+
+------------------------------
+--- Jet-Event Loop Summary ---
+------------------------------
+# evts (desc) = / count / pscl weighted count
+
+# evts w min. 1 jet                   = / 9.05906e+06 / 9.05906e+06
+# evts w min. 1 jet w jtpt > jtPtCut = / 9.05483e+06 / 9.05483e+06
+# evts w min. 1 jet w |jteta| < 4.7  = / 9.05483e+06 / 9.05483e+06
+# evts w min. 1 jet w jtEtaCut(s)    = / 8.67817e+06 / 8.67817e+06
+# evts w min. 1 jet w JetIDCut       = / 8.67011e+06 / 8.67011e+06
+
+# jets read                   = / 5.85718e+07 / 5.85718e+07
+# jets w jtpt > jtptCut      = / 1.6976e+07 / 1.6976e+07
+# jets w |jteta|<4.7         = / 1.6976e+07 / 1.6976e+07
+# jets w passing jtEtaCut(s) = / 1.45114e+07 / 1.45114e+07
+# jets w jetIDCut            = / 1.44904e+07 / 1.44904e+07
+
+integrated luminosity     =27400
+lumi efficiency, vz cuts             =0.9979
+effective ingrtdLumi for dataset+cuts=27342.5
+ grabbing raw event counts 
+
+/// MC Evt-Count Summary ///
+
+Total Num of Events in file(s) opened       = 1.36996e+07
+Total Num of Events read from those file(s) = 1.36996e+07
+Total Num of Events read passing skimCuts   = 1.36832e+07
+Total Num of Events read passing vzCuts and skimCuts    = 1.36795e+07
+
+
+------------- DATA -----------
+--- Jet-Event Loop Summary ---
+------------------------------
+
+# jets read                   = / 5.85718e+07 / 5.85718e+07
+# jets w jtpt > jtptCut       = / 1.6976e+07 / 1.6976e+07
+# jets w |jteta|<4.7          = / 1.6976e+07 / 1.6976e+07
+# jets w passing jtEtaCut(s)  = / 1.45114e+07 / 1.45114e+07
+# jets w jetIDCut             = / 1.44904e+07 / 1.44904e+07
+
+-------------  MC  -----------
+--- Jet-Event Loop Summary ---
+------------------------------
+
+# jets read                   = / 6.29411e+07 / 0
+# jets passing kinematic cuts = / 2.58514e+07 / 0
+# jets w jetIDCut             = / 2.5822e+07 / 0
+
+done running jetPlots!
+

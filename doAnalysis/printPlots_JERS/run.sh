@@ -10,22 +10,14 @@ echo ""
 echo "done compiling. Running!"
 echo ""
 
-
-
 #source run_printPlots_ppMC_JERS.sh "4" "08.07.18_outputCondor" "08-07-18" "0.0eta2.0" "00eta20"
 
-source run_printPlots_ppMC_JERS.sh "4" "11.07.18_outputCondor" "11-07-18" "0.0eta0.5" "00eta05"
-source run_printPlots_ppMC_JERS.sh "4" "11.07.18_outputCondor" "11-07-18" "0.5eta1.0" "05eta10"
-source run_printPlots_ppMC_JERS.sh "4" "11.07.18_outputCondor" "11-07-18" "1.0eta1.5" "10eta15"
-source run_printPlots_ppMC_JERS.sh "4" "11.07.18_outputCondor" "11-07-18" "1.5eta2.0" "15eta20"
+source run_printPlots_ppMC_JERS.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta0.5" "00eta05"
+source run_printPlots_ppMC_JERS.sh "4" "11.06.18_outputCondor" "11-06-18" "0.5eta1.0" "05eta10"
+source run_printPlots_ppMC_JERS.sh "4" "11.06.18_outputCondor" "11-06-18" "1.0eta1.5" "10eta15"
+source run_printPlots_ppMC_JERS.sh "4" "11.06.18_outputCondor" "11-06-18" "1.5eta2.0" "15eta20"
 
-
-
-
-
-
-
-
+scp2Serin output/ak4PF\*
 echo ""
 echo "done running ppMC JERS!"
 echo ""

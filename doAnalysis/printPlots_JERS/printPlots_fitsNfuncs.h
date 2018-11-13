@@ -349,6 +349,7 @@ void MakeHistChi2NDF(TH1F * h1, float xmin, float xmax){
   MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("");
   h1->GetYaxis()->SetTitle("Gaussian JER #chi^{2}/NDF");
+  h1->SetAxisRange(1.e-1,1.e+2,"Y");
   h1->SetMarkerStyle(kOpenStar);
   h1->SetMarkerColor(kBlack);
   h1->SetLineColor(kMagenta);

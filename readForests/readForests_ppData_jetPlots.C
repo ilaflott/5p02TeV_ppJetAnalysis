@@ -10,7 +10,7 @@ const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataDijetHists=false;
 const bool fillDataJetSpectraRapHists=false; //other
 const bool useHLT100=false;
-
+const bool ResCorrTrigPtIfApp=false;
 const int jetIDint=(int)fillDataJetIDHists;
 
 //const bool fillDataVtxTrkQAHists=true; //in the works
@@ -102,8 +102,13 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if(debugMode)std::cout<<", "<<filename_Forest; 
     
     std::cout<<", to each TChain in array"<<std::endl;
-    for(int t = 0;t<N_dataTrees;++t) filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
-    lastFileAdded=filename_Forest;  }//end file loop
+    for(int t = 0;t<N_dataTrees;++t) {
+      filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
+      if(debugMode)
+	jetpp[t]->TChain::Lookup(true);
+    }
+    lastFileAdded=filename_Forest;  
+  }
   assert(filesAdded);//avoid segfault later
   
 
@@ -197,13 +202,13 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
           hWVz_BSshift = new TH1D(         "hWeightedVz_BSshift","vz-BS, trigd, with weights",  1000,-25.,25.);    
     hTrgVz_noW_BSshift = new TH1D("hTriggerVz_noWeights_BSshift","vz-BS, trigd, no weights  ",  1000,-25.,25.);  
 
-           hVz_baryshift_pos = new TH1D(                 "hVz_baryshift_pos","vz+barycenter, no trig, no weights",  1000,-25.,25.); 
-          hWVz_baryshift_pos = new TH1D(         "hWeightedVz_baryshift_pos","vz+barycenter, trigd, with weights",  1000,-25.,25.);    
-    hTrgVz_noW_baryshift_pos = new TH1D("hTriggerVz_noWeights_baryshift_pos","vz+barycenter, trigd, no weights  ",  1000,-25.,25.);  
-
-           hVz_baryshift_neg = new TH1D(                 "hVz_baryshift_neg","vz-barycenter, no trig, no weights",  1000,-25.,25.); 
-          hWVz_baryshift_neg = new TH1D(         "hWeightedVz_baryshift_neg","vz-barycenter, trigd, with weights",  1000,-25.,25.);    
-    hTrgVz_noW_baryshift_neg = new TH1D("hTriggerVz_noWeights_baryshift_neg","vz-barycenter, trigd, no weights  ",  1000,-25.,25.);  
+            hVz_baryshift_pos = new TH1D(                 "hVz_baryshift_pos","vz+barycenter, no trig, no weights",  1000,-25.,25.); 
+	   hWVz_baryshift_pos = new TH1D(         "hWeightedVz_baryshift_pos","vz+barycenter, trigd, with weights",  1000,-25.,25.);    
+     hTrgVz_noW_baryshift_pos = new TH1D("hTriggerVz_noWeights_baryshift_pos","vz+barycenter, trigd, no weights  ",  1000,-25.,25.);  
+    
+            hVz_baryshift_neg = new TH1D(                 "hVz_baryshift_neg","vz-barycenter, no trig, no weights",  1000,-25.,25.); 
+	   hWVz_baryshift_neg = new TH1D(         "hWeightedVz_baryshift_neg","vz-barycenter, trigd, with weights",  1000,-25.,25.);    
+     hTrgVz_noW_baryshift_neg = new TH1D("hTriggerVz_noWeights_baryshift_neg","vz-barycenter, trigd, no weights  ",  1000,-25.,25.);  
     
     hNref      = new TH1D("hNref","nref each evt",30,0,30);         
     hWNref     = new TH1D("hWNref","weighted nref each evt",30,0,30);
@@ -245,7 +250,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       hJetQA_jtpt = new TH1D( Form("hJetQA_%dwJetID_jtpt_forRes", k) , Form(";%s;", "jtpt_forRes") , 2500,0,2500);       
       hJetQA_jtpt_L2Res = new TH1D( Form("hJetQA_%dwJetID_jtpt_L2Res", k) , Form(";%s;", "jtpt_L2Res") , 2500,0,2500);       
       hJetQA_jtpt_L3Res = new TH1D( Form("hJetQA_%dwJetID_jtpt_L3Res", k) , Form(";%s;", "jtpt_L3Res") , 2500,0,2500);       
-
+      
       hJetQA_jtpt_v_L2Res = new TH2D( Form("hJetQA_%dwJetID_jtpt_v_L2Res", k) , Form("jtpt v. jetpt_L2Res" ) , 2500,0,2500 , 2500,0,2500);
       hJetQA_jtpt_v_L3Res = new TH2D( Form("hJetQA_%dwJetID_jtpt_v_L3Res", k) , Form("jtpt v. jetpt_L3Res" ) , 2500,0,2500 , 2500,0,2500);
       hJetQA_jtpt_L2Res_v_L3Res = new TH2D( Form("hJetQA_%dwJetID_jtpt_L2Res_v_L3Res", k) , Form("jtpt_L2Res v. jetpt_L3Res" ) , 2500,0,2500 , 2500,0,2500);
@@ -301,16 +306,17 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       } }
 
   // trigger (also jet) level
+  // plots for incl spectra under each trigger
   TH1D  *hpp_TrgObj40[2]={}, *hpp_TrgObj60[2]={}, *hpp_TrgObj80[2]={}, *hpp_TrgObj100[2]={};// plots for incl spectra for each individual trigger
   TH1D  *hpp_ExcTrgObj40[2]={}, *hpp_ExcTrgObj60[2]={}, *hpp_ExcTrgObj80[2]={}, *hpp_ExcTrgObj100[2]={};// plots for trigger-exclusive inclusive jet spectra
   TH1D *hpp_TrgObjComb[2]={};//combination of triggers w/ exclusion
   
+  // plots for the trigger jet pt spectra (THIS IS NOT THE INCL JET SPECTRA SIGNAL)
   TH1D  *hpp_IncHLT40trgPt =NULL ,   *hpp_IncHLT40trgEta =NULL;
   TH1D  *hpp_IncHLT60trgPt =NULL ,   *hpp_IncHLT60trgEta =NULL;
   TH1D  *hpp_IncHLT80trgPt =NULL ,   *hpp_IncHLT80trgEta =NULL;
-  TH1D *hpp_IncHLT100trgPt =NULL ,  *hpp_IncHLT100trgEta =NULL;
-
-
+  TH1D  *hpp_IncHLT100trgPt =NULL ,  *hpp_IncHLT100trgEta =NULL;
+  
   TH1D  *hpp_HLT40trgPt =NULL ,   *hpp_HLT40trgEta =NULL;
   TH1D  *hpp_HLT60trgPt =NULL ,   *hpp_HLT60trgEta =NULL;
   TH1D  *hpp_HLT80trgPt =NULL ,   *hpp_HLT80trgEta =NULL;
@@ -325,7 +331,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hpp_IncHLT60trgPt   = new TH1D( "IncHLT60_trgPt"  , "inc trgPt for HLT60   ", 2500, 0, 2500 ); 
     hpp_IncHLT80trgPt   = new TH1D( "IncHLT80_trgPt"  , "inc trgPt for HLT80   ", 2500, 0, 2500 ); 
     hpp_IncHLT100trgPt  = new TH1D( "IncHLT100_trgPt" , "inc trgPt for HLT100  ", 2500, 0, 2500 );       
-
+    
     //with exclusion trigger pt
     hpp_HLT40trgPt   = new TH1D( "isHLT40_trgPt"  , "exc trgPt for HLT40   ", 2500, 0, 2500 ); 
     hpp_HLT60trgPt   = new TH1D( "isHLT60_trgPt"  , "exc trgPt for HLT60   ", 2500, 0, 2500 ); 
@@ -356,7 +362,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     std::string hJetExcTrigQADescArray[]={ "ExcHLT40Jet","ExcHLT60Jet",  "ExcHLT80Jet", "ExcHLT100Jet"};
     const int nJetExcTrigQATitles=sizeof(hJetExcTrigQATitleArray)/sizeof(std::string);
     
-    for(int j=0;j<2;j++){      
+    for(int j=0;j<2;j++){      //this loop inits hists for the incl. jet *spectra* under each trigger path decision
       
       if(!fillDataJetIDHists && j==1) continue;    
       if(fillDataJetIDHists && j==0)continue;	
@@ -561,11 +567,20 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if(trgCombType=="PF") HLTthresh[i]=HLTPFthresh[i];	
     else if (trgCombType=="Calo")HLTthresh[i]=HLTCalothresh[i];
     else assert(false);
-    if(debugMode){std::cout<<std::endl;
+    if(debugMode){
+      std::cout<<std::endl;
+      std::cout<<"trgCombType            =="<<trgCombType<<std::endl;
+      std::cout<<"HLTthresh             [i="<<i<<"]= "<<HLTthresh[i]<<std::endl;
+      std::cout<<std::endl;
       std::cout<<"PF_HLTBranches        [i="<<i<<"]= "<<PF_HLTBranches[i]<<std::endl;
       std::cout<<"PF_HLTPresclBranches  [i="<<i<<"]= "<<PF_HLTPresclBranches[i]<<std::endl;
+      std::cout<<"HLTPFthresh           [i="<<i<<"]= "<<HLTPFthresh[i]<<std::endl;
+      std::cout<<std::endl;
       std::cout<<"Calo_HLTBranches      [i="<<i<<"]= "<<Calo_HLTBranches[i]<<std::endl;
-      std::cout<<"Calo_HLTPresclBranches[i="<<i<<"]= "<<Calo_HLTPresclBranches[i]<<std::endl<<std::endl; }    }
+      std::cout<<"Calo_HLTPresclBranches[i="<<i<<"]= "<<Calo_HLTPresclBranches[i]<<std::endl;
+      std::cout<<"HLTCalothresh         [i="<<i<<"]= "<<HLTCalothresh[i]<<std::endl;//<<std::endl; 
+      std::cout<<std::endl; }      
+  }
   
   int Jet40_I, Jet60_I, Jet80_I, Jet100_I;   //primary HLT bits, either Calo or PF
   int Jet40_p_I, Jet60_p_I, Jet80_p_I, Jet100_p_I;    //prescales
@@ -632,14 +647,24 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   L3ResidualJES* L3JES =NULL;//= new L3ResidualJES("pp5");
   bool doResidualCorr=false; 
   if(radius==3 || radius==4){
+    std::cout<<std::endl;
+    std::cout<<"***!!!Residual jet energy corrections will be applied to RECO Jet p_T!!!***"<<std::endl;
+    std::cout<<std::endl;
     doResidualCorr=true;
     L2JES = new L2ResidualJES(radius, etacutForResid, "pp5");
     L3JES = new L3ResidualJES("pp5");  }
-    
-  //float jetIDCut_neSum, jetIDCut_phSum;
-  //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
-  //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
-      
+  
+  bool ResidualCorrTrgPt=(doResidualCorr&&ResCorrTrigPtIfApp);
+  L2ResidualJES* L2JES_trgPt =NULL;
+  if(ResidualCorrTrgPt){
+    std::cout<<std::endl;
+    std::cout<<"***!!!Residual jet energy corrections will be applied to Trigger Jet p_T!!!***"<<std::endl;
+    std::cout<<"***!!!Trigger Decisions/Weights may be affected!!!***"<<std::endl;    
+    std::cout<<std::endl;
+    L2JES_trgPt= new L2ResidualJES(4,3,"pp5");//the radii of the trigger jets is always 4, so etacutForResid here is always 3.
+  }
+  //assert(false);
+  
   //begin event loop
   for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
     
@@ -657,30 +682,63 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     double maxTrgPt=0.,maxTrgEta=0.; 
     unsigned int trgObj40_size=trgObjpt_40->size(), trgObj60_size=trgObjpt_60->size();
     unsigned int trgObj80_size=trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();    
-    
+    //double trgpt_noresid, trigpt_L2Res, trgpt_L2L3Res;//TO DO; RESID CORRECTED TRG PT HISTOS
     if(trgDec[3]&&useHLT100)
-      for(unsigned int itt=0; itt<trgObj100_size; ++itt)
-    	if(trgObjpt_100->at(itt) > maxTrgPt) { 
-	  maxTrgEta = trgObjeta_100->at(itt);
-	  maxTrgPt = trgObjpt_100->at(itt); 	} 
+      for(unsigned int itt=0; itt<trgObj100_size; ++itt){
+	double trgpt=trgObjpt_100->at(itt);
+	double trgeta=trgObjeta_100->at(itt);
+	if(ResidualCorrTrgPt){
+	  trgpt=L2JES_trgPt->getCorrectedPt(trgpt,trgeta);
+	  trgpt=L3JES->getCorrectedPt(trgpt);
+	}
+    	if(trgpt > maxTrgPt) { 
+	  maxTrgEta = trgeta;
+	  maxTrgPt = trgpt;
+	}
+      }
     
     if(trgDec[2])
-      for(unsigned int itt=0; itt<trgObj80_size; ++itt)
-    	if(trgObjpt_80->at(itt) > maxTrgPt)  { 
-	  maxTrgEta = trgObjeta_80->at(itt);
-	  maxTrgPt = trgObjpt_80->at(itt); 	} 
+      for(unsigned int itt=0; itt<trgObj80_size; ++itt){
+	double trgpt=trgObjpt_80->at(itt);
+	double trgeta=trgObjeta_80->at(itt);
+	if(ResidualCorrTrgPt){
+	  trgpt=L2JES_trgPt->getCorrectedPt(trgpt,trgeta);
+	  trgpt=L3JES->getCorrectedPt(trgpt);
+	}
+    	if(trgpt > maxTrgPt) { 
+	  maxTrgEta = trgeta;
+	  maxTrgPt  = trgpt;
+	}	  	
+      }
     
     if(trgDec[1]) 
-      for(unsigned int itt=0; itt<trgObj60_size; ++itt)
-	if(trgObjpt_60->at(itt) > maxTrgPt)  { 
-	  maxTrgEta = trgObjeta_60->at(itt);
-	  maxTrgPt = trgObjpt_60->at(itt); 	} 
+      for(unsigned int itt=0; itt<trgObj60_size; ++itt){
+	double trgpt=trgObjpt_60->at(itt);
+	double trgeta=trgObjeta_60->at(itt);
+	if(ResidualCorrTrgPt){
+	  trgpt=L2JES_trgPt->getCorrectedPt(trgpt,trgeta);
+	  trgpt=L3JES->getCorrectedPt(trgpt);
+	}
+    	if(trgpt > maxTrgPt) { 
+	  maxTrgEta =trgeta;
+	  maxTrgPt  =trgpt;
+	}
+      }
+    
     
     if(trgDec[0])  
-      for(unsigned int itt=0; itt<trgObj40_size; ++itt)	
-	if(trgObjpt_40->at(itt) > maxTrgPt)  { 
-	  maxTrgEta = trgObjeta_40->at(itt);
-	  maxTrgPt = trgObjpt_40->at(itt); 	} 
+      for(unsigned int itt=0; itt<trgObj40_size; ++itt)	{
+	double trgpt=trgObjpt_40->at(itt);
+	double trgeta=trgObjeta_40->at(itt);
+	if(ResidualCorrTrgPt){
+	  trgpt=L2JES_trgPt->getCorrectedPt(trgpt,trgeta);
+	  trgpt=L3JES->getCorrectedPt(trgpt);
+	}
+    	if(trgpt > maxTrgPt) { 
+	  maxTrgEta = trgeta;
+	  maxTrgPt  = trgpt;
+	} 
+      }
     
     double trgPt=maxTrgPt; 
     double trgEta=maxTrgEta;
@@ -689,6 +747,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     double weight_eS=0.;
     //float weight_eS = trigComb(trgDec, trgPscl, trgPt); // trig comb function replicates the procedure below
     
+    //TO DO put this is40/60/80/100 stuff in a sep void function; feed it the is-flags, the trg pt, the trgDec array, and the trgPscl array
     bool is40  = false, is60  = false, is80  = false, is100 = false;
     if(useHLT100){
       if(      trgDec[3] && !(trgPt<HLTthresh[3])               ) 
@@ -707,7 +766,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       else if( trgDec[0] && !(trgPt<HLTthresh[0])  && trgPt<HLTthresh[1]  ) 
 	{ is40  = true;  weight_eS=(double)trgPscl[0]; }                             }
     
-    bool firedTrigger=(!((bool)weight_eS<1.) );//including exclusivity req. 
+    //if(debugMode) std::cout<<"weight_eS="<<weight_eS<<std::endl;    
+    bool firedTrigger=!((bool)(weight_eS<1.)) ;//including exclusivity req. 
     
     //event counts, pre-duplicate skip, pre-evt cuts, pre-trigger reqs.
     h_NEvents->Fill(0.);        
@@ -764,17 +824,17 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(weight_eS>0.)
 	hTrgVz_wW->Fill(vz_F, weight_eS); //         ''       trigger events w/o weights post-skim/vz Cut
     }
-
-
-    if( !firedTrigger ) continue;  //we didn't fire one of our triggers of interest. skip.
-    else{ //firedTrigger
-      h_NEvents_trigd_2->Fill(0.);   
-      h_NEvents_trigd_2->Fill(1.,weight_eS);    }
+    
+    
+    //if( !firedTrigger ) continue;  //we didn't fire one of our triggers of interest. skip.
+    //else{ //firedTrigger
+    if(weight_eS>0.){
+      h_NEvents_trigd_2->Fill(0.);
+      h_NEvents_trigd_2->Fill(1.,weight_eS);    
+    }
     
     if(fillDataJetTrigQAHists){ //only want to fill these trigger jet plots if they pass all our quality criteria
       
-      //make these trigger plots an array?
-      // trgPt
       if(trgDec[0]&&!(trgPt<HLTthresh[0]))   hpp_IncHLT40trgPt->Fill(  trgPt, (double)trgPscl[0] );
       if(trgDec[1]&&!(trgPt<HLTthresh[1]))   hpp_IncHLT60trgPt->Fill(  trgPt, (double)trgPscl[1] );
       if(trgDec[2]&&!(trgPt<HLTthresh[2]))   hpp_IncHLT80trgPt->Fill(  trgPt, (double)trgPscl[2] );
@@ -836,6 +896,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       //if(weight_eS>0.) hTrgNref_noW->Fill(nref_I);
     }
     
+    //if(!firedTrigger)continue;
+    
     // JET LOOP 
     // for Aj/xj computation
     bool firstGoodJetFound=false, secondGoodJetFound=false; 
@@ -883,11 +945,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(recpt>evt_leadJetPt){
 	evt_leadJetPt=recpt;      }
       
-//// kmatCuts      
-//if( recpt < jtPtCut ||
-//	  recpt > jtPtCut_Hi ){ 
-//	jetsPerEvent--;
-//	continue;}
       if( !(recpt > jtPtCut) ){ jetsPerEvent--; continue;} //paranoia about float comparisons
       else if( !(recpt < jtPtCut_Hi) ){ jetsPerEvent--; continue;}
       
@@ -918,7 +975,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
       //float rawpt  = rawpt_F[jet];
       float recphi = phi_F[jet];
-
+      
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
@@ -1286,4 +1343,8 @@ int main(int argc, char *argv[]){
 //  hpp_HLTAllInEff->Add(hpp_HLT100InEff);       
 //  
 //}
-  
+ 
+   //float jetIDCut_neSum, jetIDCut_phSum;
+  //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
+  //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
+      

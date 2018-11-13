@@ -92,10 +92,10 @@ const int jetSpectraRapBinning=20;
 
 // hist painting ------------------------
 
-const int theTrigOverlayLineColor[]  ={  1,  1,  1,  1,  1,  1 };
-const int theTrigOverlayMarkerColor[]={  1,  2,  3,  6,  7,  4 };
-const int theTrigOverlayMarker[]     ={ 20, 20, 20, 20, 20, 32 };
-const int theRapOverlayMarkerColor[] ={  2,  3,  6,  7,  1,  4 , 8, 9};
+const int   theTrigOverlayLineColor[] ={  1,  1,  1,  1,  1};//,  1 };
+const int theTrigOverlayMarkerColor[] ={  1,  2,  3,  6,  7};//,  4 };
+const int      theTrigOverlayMarker[] ={ 20, 20, 20, 20, 20};//, 32 };
+const int  theRapOverlayMarkerColor[] ={  2,  3,  6,  7,  1,  4 , 8, 9};
 
 
 
@@ -402,7 +402,7 @@ TLatex* makeTLatex(float x, float y, std::string inputString, float size){
 
 //void specialRatio(TH1F* theRatio){
 void fracSubtracted(TH1F* theRatio){
-  bool funcDebug=true;
+  bool funcDebug=false;
   int nbins=theRatio->GetNbinsX();
   for(int i=1; i<=nbins;i++){
     

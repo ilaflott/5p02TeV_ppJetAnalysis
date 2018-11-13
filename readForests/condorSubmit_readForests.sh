@@ -1,15 +1,22 @@
 #!/bin/bash
-
+##const##
+usetargdir=false
+##const##
 echo ""
 
 ## error conditions + I/O
-if [[ $# -ne 10 ]] # not enough arguments
+if [[ $# -eq 11 ]]
+then
+    echo "target directory specified."
+    usetargdir=true
+elif [[ $# -ne 10 ]] # not enough arguments
 then
     echo "Usage is... "
     echo "source condorSubmit_readForests.sh <readForestsCode> <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug> [<etaCutLo> <etaCutHi>]"
     echo "to run over all files with <NFilesPerJob>, set <NJobs> to -1"
     return 1
 fi
+
 
 ## input arguments to submit script
 readForestsCode=$1 
@@ -22,6 +29,8 @@ jetType=$7
 debug=$8
 etaCutLo=$9
 etaCutHi=${10}
+targdir=${11}
+
 
 echo "etaCutLo=$etaCutLo"
 echo "etaCutHi=$etaCutHi"
@@ -74,8 +83,7 @@ dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}_${etaCutLo}eta${etaCutH
 logFileDir="${PWD}/outputCondor/${dirName}"
 
 ## create output directory for condor job
-# uncomment me to run diff jobs w/ unique-but-similar dir names. 
-# if commented, will put all output into one directory (good for re-running pieces of large job set gone wrong)
+
 AltCounter=0
 while [[ -d "${logFileDir}"  ]]
 do
@@ -84,15 +92,17 @@ do
     dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}__${etaCutLo}eta${etaCutHi}_${AltCounter}"
     logFileDir="${PWD}/outputCondor/${dirName}"    
 done
+
+# if targdir specified exists and there's output in it already, condor will overwrite it with the new output
+if [[ "$usetargdir" = true ]]
+then
+    echo "target directory specified. "
+    dirName=${targdir}
+    logFileDir="${PWD}/outputCondor/${dirName}"
+fi
+
 echo "output in outputCondor/${dirName}"
-#/uncomment me
-
-## uncomment me to hard-code the directory name you want
-#dirName=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_10-29-18_jetPlots__0.0eta2.0_1
-#dirName=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_10-29-18_jetPlots_0.0eta2.0
-#logFileDir="${PWD}/outputCondor/${dirName}"    
-## /uncomment me
-
+#return ## DEBUG
 
 mkdir $logFileDir
 

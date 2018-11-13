@@ -2,16 +2,18 @@
 
 const bool debugMode=true;
 const bool draw_hJER=true;
-const bool draw_MCEff=false;
-const bool drawProfiles = false;
+const bool draw_MCEff=true;
+const bool drawProfiles = true;
 const bool rebinJER=true;
 
 
 const int CANVX=1200, CANVY=1200;
-const int fit_ptlo_bin=3, fit_pthi_bin=nbins_pt_debug-1;
+//const int fit_ptlo_bin=3, fit_pthi_bin=nbins_pt_debug-1;
+const int fit_ptlo_bin=1, fit_pthi_bin=nbins_pt_debug-6;
 const int rebinFactor=1;//5
-const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;
-const float fgaus_xlo=0.87, fgaus_xhi=1.13;
+//const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;
+const int N_JERfits=nbins_pt_debug;
+const float fgaus_xlo=0.89, fgaus_xhi=1.11;
 
 //other options
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
@@ -106,15 +108,14 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     // pt bin hJER-fit loop    
     if(debugMode)std::cout<<"nbins_pt="<<nbins_pt_debug<<std::endl;    
     //bool ptLoSet=false;
-
+    
     
     for(int ip=0; ip<nbins_pt_debug; ip++){    
       
       //// reco/gen pt in gen pt bins for fits
       int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
       if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
-      
-
+            
       // open the input hist    
       std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
       hrsp[ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
@@ -157,8 +158,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       hrsp[ip]->Write();
       
       //dont use the first few low pt bins for the fit; just write them to file for record keeping
-      if(ip<fit_ptlo_bin)continue;      
-      if(ip>=fit_pthi_bin)continue;
+      //      if(ip<fit_ptlo_bin)continue;      
+      //      if(ip>=fit_pthi_bin)continue;
       std::cout<<"fitting inputHist "<<inputHistName<<std::endl;   
       fgaus = new TF1("fgaus","gaus", fgaus_xlo,fgaus_xhi);  //what's been typicall used.      
       //fgaus->SetParLimits(0,0.98,1.02);    //normalization
@@ -219,14 +220,14 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     //gPad->Close();        
     
     // for mu v. gen pt and sigma/mu v. genpt hists_fit
-
+    
     std::cout<<std::endl<<"fitting JER v genpt hists ..."<<std::endl;        
     ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-02); 
      
     TF1 *SigmaFit_h=new TF1("SigmaFit_h","[0]+[1]/(pow(x,[2])+[3]*x)", 
-			   fit_ptlo,
-			   fit_pthi );       // I want this fit to end at 967 GeV (for entire range)    
-   
+			    fit_ptlo,
+			    fit_pthi );       // I want this fit to end at 967 GeV (for entire range)    
+    
     bool hsigmaFitStatus= true;
     std::cout<<std::endl<<"fitting JER width v. pt... init. sigmaFitStatus="<<hsigmaFitStatus<<std::endl<<std::endl; 
     //sigmaFitStatus=hSigma->Fit(SigmaFit_h,"MEVR");    //sigmaFitStatus=hSigma->Fit(SigmaFit_h,"MR");
@@ -266,9 +267,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     std::cout << "%err fitParam2 = " << (fitParam_2_err/fitParam_2)*100.    << std::endl;
     std::cout << "fitParam_3     = " << fitParam_3    << std::endl;
     std::cout << "fitParam_3_err =   " << fitParam_3_err<< std::endl;
-    std::cout << "%err fitParam3 = " << (fitParam_3_err/fitParam_3)*100.    << std::endl;
-    
-    
+    std::cout << "%err fitParam3 = " << (fitParam_3_err/fitParam_3)*100.    << std::endl;        
     
     
     TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", CANVX, CANVY);    
@@ -276,7 +275,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     pdfoutCanv_muSigma->Divide(1,3);
     pdfoutCanv_muSigma->cd();
     
-    float xmin=ptbins_debug[2], xmax=ptbins_debug[nbins_pt_debug];
+    //    float xmin=ptbins_debug[fit_ptlo_bin], xmax=ptbins_debug[fit_pthi_bin];
+    float xmin=ptbins_debug[0], xmax=ptbins_debug[nbins_pt_debug];
     
     TPad* p1=(TPad*)pdfoutCanv_muSigma->cd(1);        
     p1->SetLogx(1);    
@@ -290,6 +290,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     
     TPad* p3=(TPad*)pdfoutCanv_muSigma->cd(3);        
     p3->SetLogx(1);    	
+    p3->SetLogy(1);    	
     p3->SetGridx(0);
     p3->cd();        
 
@@ -340,6 +341,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     p3->cd();    
     MakeHistChi2NDF( (TH1F*)hChi2NDF,xmin,xmax);           
     hChi2NDF->DrawClone("HIST ][E");    
+    meanLine->Draw();            
+    hChi2NDF->DrawClone("HIST ][E SAME");    
     
     ////draw pad 4
     //p4->cd();    
@@ -375,13 +378,14 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
     
     
     
-    for(int j=fit_ptlo_bin;j<fit_pthi_bin;++j){       //if(j<3)continue;	
+    //for(int j=fit_ptlo_bin;j<fit_pthi_bin;++j){       //if(j<3)continue;	
+    for(int j=0;j<nbins_pt_debug;++j){       //if(j<3)continue;	
       
       int ptbin_j=(int)ptbins_debug[j];
       int ptbin_j1=(int)ptbins_debug[j+1];
       std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
       std::string hrsp_XAxTitle="reco p_{T}/gen p_{T}";  
-		     //      		     ( std::string ) thePDFFileName   ,      
+      //      		     ( std::string ) thePDFFileName   ,      
       makeJERSHists( ( TCanvas*    ) pdfoutCanv_wLogy ,  
 		     ( TH1F*       ) hrsp[j]          , 
 		     ( std::string ) hrspTitle        ,
@@ -406,12 +410,18 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
       std::cout<<"i="<<i<<std::endl;
       pdfoutCanv_3x3_arr[i]=new TCanvas(("JERfitCanv_3x3_"+std::to_string(i)).c_str(), ("Canv #"+std::to_string(i)+" for JERfits").c_str(), CANVX, CANVY);
       pdfoutCanv_3x3_arr[i]->Divide(3,3);
-      int fit_ptbin_start=fit_ptlo_bin+i*9;
+      //int fit_ptbin_start=fit_ptlo_bin+i*9;
+      //int fit_ptbin_end=fit_ptbin_start+9;
+      int fit_ptbin_start=i*9;
       int fit_ptbin_end=fit_ptbin_start+9;
-      if(fit_ptbin_end>fit_pthi_bin)fit_ptbin_end=fit_pthi_bin;
+      //if(fit_ptbin_end>fit_pthi_bin)fit_ptbin_end=fit_pthi_bin;
+      if(fit_ptbin_end>nbins_pt_debug)fit_ptbin_end=nbins_pt_debug;
       int drawcount=0;
+
       for(int j=fit_ptbin_start;j<fit_ptbin_end;++j){       //if(j<3)continue;	
+	//for(int j=0;j<nbins_pt_debug;++j){       //if(j<3)continue;	
 	std::cout<<"j="<<j<<std::endl;
+	std::cout<<"drawing pad for "<<ptbins_debug[j]<<" < jet p_T < "<<ptbins_debug[j+1]<<std::endl;
 	//if(drawcount>8)break;	
 	pdfoutCanv_3x3_arr[i]->cd(drawcount+1);
 	pdfoutCanv_3x3_arr[i]->cd(drawcount+1)->SetLogy(1);
@@ -500,7 +510,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	the2DMCEffQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");	
 	if(genVars_xAx[j]=="rawpt")	  the2DMCEffQAHist->SetAxisRange(0.5 , 1.5,"Y");	
       }
-      the2DMCEffQAHist->SetAxisRange(1.*pow(10.,-13.), 1.*pow(10.,-4.),"Z");	
+      //the2DMCEffQAHist->SetAxisRange(1.*pow(10.,-13.), 1.*pow(10.,-4.),"Z");	
       
       std::string h_Title   ="MC QA, TH2,"+genVars[j];
       if(doJetID=="1")h_Title+=", w/ JetIDCut";      
@@ -541,23 +551,29 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 	
 	std::cout<<"taking the profile of "<<inHistName << std::endl;
 	inHistName+="_TH2Prof";
+	the2DMCEffQAHist->Rebin2D(2,2, (inHistName+"_rebin2").c_str());
 	TH1F* theMCEffQAHist= (TH1F*)the2DMCEffQAHist->TH2::ProfileX( inHistName.c_str(), 1, -1, "o");
 	if(  genVars[j]=="pt" ||
-	       genVars[j]=="pt2" ||
+	     genVars[j]=="pt2" ||
 	     genVars[j]=="pt3" )  {
 	  theMCEffQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");	
 	  theMCEffQAHist->SetAxisRange( 0.90, 1.10,"Y");	 
 	}
 	else if (genVars[j]=="ptrat_phi" || 
-		 genVars[j]=="ptrat_eta" 	
+		 genVars[j]=="ptrat_eta" ||
+		 genVars[j]=="ptrat_drjt" 
 		 ) {
-	  theMCEffQAHist->SetAxisRange( 0.90, 1.10,"Y");	 }
-	
-	std::cout<<std::endl<<"rebinning TH2 Profile"<<std::endl;
-	
-	//inHistName+="_rebin2";
-	//theMCEffQAHist=(TH1F*)theMCEffQAHist->Rebin(2,  inHistName.c_str());
-	//theMCEffQAHist->Scale(0.5);
+	  theMCEffQAHist->SetAxisRange( 0.90, 1.15,"Y");	 
+	  std::cout<<std::endl<<"rebinning TH2 Profile"<<std::endl;
+	  
+	  inHistName+="_rebin2";
+	  //theMCEffQAHist=(TH1F*)theMCEffQAHist->Rebin(2,  inHistName.c_str());
+	  //theMCEffQAHist->Rebin(2,  inHistName.c_str());
+	  //theMCEffQAHist->Scale(0.5);
+	  if(genVars[j]=="ptrat_drjt")
+	    theMCEffQAHist->SetAxisRange(0.0,0.11,"X");
+	}
+
 	
 	h_Title+=" TH2Profile";
 	theMCEffQAHist->SetTitle (    h_Title.c_str() );

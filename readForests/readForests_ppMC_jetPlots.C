@@ -5,7 +5,7 @@
 const bool fillMCEvtQAHists=true;
 const bool fillMCJetQAHists=true;
 const bool fillgenJetQA=true&fillMCJetQAHists;
-const bool fillMCJetIDHists=true;//, tightJetID=false;
+const bool fillMCJetIDHists=false;//, tightJetID=false;
 const bool fillMCDijetHists=false;
 const bool fillMCJetSpectraRapHists=false; //other
 const bool fillgenJetRapHists=false&&fillMCJetSpectraRapHists;  //other switches

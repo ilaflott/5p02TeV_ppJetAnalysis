@@ -1206,7 +1206,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
   
   
   
-  
+  TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone(  ("MCJetHistClone4Ratio_"+var[j]).c_str());  
   
   
   if(funcDebug) std::cout<<"creating temporary canvas for printing Jet plots..."<<std::endl;
@@ -1288,7 +1288,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     
     jetpad2->cd();
     
-    TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone(  ("MCJetHistClone4Ratio_"+var[j]).c_str());
+    
     TH1F* theDenom=(TH1F*)theDataJetQAHist->Clone(("DataHistClone4Ratio_"+var[j]).c_str());
     
     theRatio->SetLineColor( theMCLineColor );
@@ -1371,7 +1371,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     
     jetpad2->cd();
 
-    TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("mcJetHistClone4Ratio");
+    //TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("mcJetHistClone4Ratio");
     //    theRatio->SetMarkerStyle( kMultiply );
     //    theRatio->SetMarkerSize(0.99 );
     //    theRatio->SetMarkerColor( theMCColor );
@@ -1446,7 +1446,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     
     jetpad2->cd();
 
-    TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("MCJetHistClone4Ratio");
+    //TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("MCJetHistClone4Ratio");
     //I need to redefine the axis titles here
     std::string h_XAx_ratTitle=var_xAx_Titles[j], h_YAx_ratTitle="Data/MC"    ;
     std::string h_ratTitle   ="JetQA, Data/MC";//, "+var[j];
@@ -1517,7 +1517,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     
     jetpad2->cd();
     
-    TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("MCJetHistClone4Ratio");
+    //TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("MCJetHistClone4Ratio");
     //theRatio->SetMarkerStyle( kMultiply );
     //theRatio->SetMarkerSize(0.99 );
     //theRatio->SetMarkerColor( theMCColor );
@@ -1565,6 +1565,10 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots,
     TCanvas* outcanv=(TCanvas*)temp_canvJet->DrawClone();
     outcanv->SetTitle((inHistName+" Canvas").c_str());
     outcanv->Write((inHistName+"_canv").c_str());    
+    
+    theDataJetQAHist->Write(("DATATH1_"+inHistName).c_str());
+    theMCJetQAHist  ->Write(("MCTH1_"+inHistName).c_str());    
+    theRatio        ->Write(("RATIOTH1_"+inHistName).c_str());
   }
   temp_canvJet->Close();  
   return;
@@ -2495,7 +2499,7 @@ void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID,
 
 
 
-
+const int rebinfactor=1;//for simpbins aka not-analysis-bins
 
 
 void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
@@ -2607,17 +2611,21 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
     
     TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
     if(funcDebug)theJetTrigQAHist->Print("base"); std::cout<<std::endl;
+    theJetTrigQAHist->GetXaxis()->SetMoreLogLabels(true);
+    theJetTrigQAHist->GetXaxis()->SetNoExponent(true);
     
-    if(analysisRebin) 
+    if(analysisRebin) {
       theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(nbins_pt_debug,(inHistName+"_spec_anabins").c_str(), ptbins_debug    );
-    else {
-      theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(10, (inHistName+"_spec_rebin10").c_str() );
-      theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");
+      divideBinWidth(theJetTrigQAHist);
     }
-    
-    divideBinWidth(theJetTrigQAHist);
-    
-    
+    else {
+      //theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(10, (inHistName+"_spec_rebin10").c_str() );
+      //theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(1, (inHistName+"_spec_rebin1").c_str() );
+      theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_spec_rebin1").c_str() );
+      theJetTrigQAHist->Scale(1./((float)rebinfactor));
+    }
+    theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");
+	  
     
     if(funcDebug)std::cout<<"setting legend entry titles"<<std::endl;
     if(usedHLTPF){
@@ -2694,7 +2702,7 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       if(analysisRebin) 
 	theDenominator=(TH1F*)theDenominator->TH1::Rebin(nbins_pt_debug,(inHistName+"_rat_anabins").c_str(), ptbins_debug    );
       else {
-	theDenominator=(TH1F*)theDenominator->TH1::Rebin(10, (inHistName+"_rat_rebin10").c_str() );
+	theDenominator=(TH1F*)theDenominator->TH1::Rebin(rebinfactor, (inHistName+"_rat_rebin10").c_str() );
 	theDenominator->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");
       }
       
@@ -2718,7 +2726,7 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       if(analysisRebin) 
 	theJetTrigQAHist= (TH1F*) theJetTrigQAHist->TH1::Rebin(nbins_pt_debug,(inHistName+"_rat_anabins").c_str(), ptbins_debug    );
       else {
-	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(10, (inHistName+"_rat_rebin10").c_str() );
+	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rat_rebin10").c_str() );
 	theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");}
       
       trigRatioHistStyle(theJetTrigQAHist, j);
@@ -3107,10 +3115,10 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
 
 
 
-  
-  void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
-			std::string thePDFFileName , std::string fullJetType ,
-			std::string trigType, std::string radius , bool usedHLTPF, TFile* fout=NULL){
+
+void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
+		      std::string thePDFFileName , std::string fullJetType ,
+		      std::string trigType, std::string radius , bool usedHLTPF, TFile* fout=NULL){
   
   if(!fin ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
@@ -3155,29 +3163,23 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
   std::cout<<"etaBinWidth="<<etaBinWidth<<std::endl;
   
   std::string sampleDescString=sqrts2k15ppString;
+
   
   if(funcDebug)std::cout<<std::endl<<"creating temporary canvas for printing JetTrig plots..."<<std::endl;
-  
-  
-  
-  
-  
   TCanvas *temp_canvJetTrig = new TCanvas(("tempJetTrigPt"+trigType).c_str(),("blahTrigPt"+trigType).c_str() , 1200, 1000);
   temp_canvJetTrig->SetLogx(1);
   temp_canvJetTrig->SetLogy(1);
   temp_canvJetTrig->SetGridx(1);
   temp_canvJetTrig->SetGridy(1);
   temp_canvJetTrig->cd();
-
   
-
   std::cout<<std::endl<<std::endl<<" ------------------------------------------------------------------- "<<std::endl;
   std::cout<<" --------------- DRAWING TRIGGER JET PT SPECTRA FOR TRIGGERS --------------- "<<std::endl;
   std::cout<<" ------------------------------------------------------------------- "<<std::endl<<std::endl<<std::endl;
   
   
   
-  
+  //TH1F* jettrigcomb_clone=NULL;
   
   TLegend* JetTrigLegend=new TLegend(0.70,0.70,0.85,0.86, NULL,"brNDC");
   JetTrigLegend->SetFillStyle(0);
@@ -3188,62 +3190,60 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
     
     //open the hists + do scaling
     if(HLTName[j]=="HLT100"&&!usedHLT100)continue;
+    //if(HLTName[j]=="HLT80")continue;//debug
+    //if(HLTName[j]=="HLT60")continue;//debug
     
     std::string inHistName;
     if(trigType=="excl") inHistName="is"+HLTName[j]+"_trgPt";
-    else if (trigType=="incl") inHistName="Inc"+HLTName[j]+"_trgPt";
-    if(j==0)inHistName=HLTName[j]+"_trgPt";
+    else if (trigType=="incl") inHistName="Inc"+HLTName[j]+"_trgPt";    
     
-    if(funcDebug)std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl;
+    if(HLTName[j]=="HLTComb")inHistName=HLTName[j]+"_trgPt";
+    
+    std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl;
     
     TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
-    if(funcDebug)theJetTrigQAHist->Print("base");
+    theJetTrigQAHist->GetXaxis()->SetNoExponent(true);
+    theJetTrigQAHist->GetXaxis()->SetMoreLogLabels(true);
+    theJetTrigQAHist->Print("base");
     std::cout<<std::endl<<std::endl;
     
-    //if(j!=4){
-    //  theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(5, (inHistName+"_rebin").c_str());
-    //  theJetTrigQAHist->Scale(1./5.);    }
-
     if(analysisRebin){
       theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(nbins_pt_debug,(inHistName+"_spec_anabins").c_str(), ptbins_debug    );
       divideBinWidth(theJetTrigQAHist);
     }
     else{
-      if(j==4){
-	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(10, (inHistName+"_rebin").c_str());
-	theJetTrigQAHist->Scale(1./10.);   }
-      else{
-	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(5, (inHistName+"_rebin").c_str());
-	theJetTrigQAHist->Scale(1./5.);   }
-    theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");    
-
+      theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rebin").c_str());
+      theJetTrigQAHist->Scale(1./((float)rebinfactor));
+      //theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");          
+      theJetTrigQAHist->SetAxisRange(40,1400,"X");          
     }
-
+    
     
     trigPtHistStyle(theJetTrigQAHist,j);
     
-    
     if(usedHLTPF) JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTPFName_Leg[j]).c_str(),"lp");
     else JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTCaloName_Leg[j]).c_str(),"lp");
-
-    if(j==0){
-
-      std::string h_Title;//   ="Exclusive Event Trigger Jet Pt";//, Data ONLY";
+    
+    //if(j==0){
+    if(HLTName[j]=="HLTComb"){
+      
+      std::string h_Title;
       if(trigType=="excl")h_Title="is[40,60,80] Event Trigger Jet Pt";
       else if(trigType=="incl")h_Title="Trigger Jet Pt for HLT[40,60,80]";
-
+      
       
       theJetTrigQAHist->SetTitle (    h_Title.c_str() );
       theJetTrigQAHist->SetYTitle( (AUAxTitle).c_str() );
       theJetTrigQAHist->SetXTitle( "trigger jet p_{T} (GeV)   ");
-
-      theJetTrigQAHist->SetAxisRange(0.1,100000000, "Y");
+      
+      //theJetTrigQAHist->SetAxisRange(0.1,100000000, "Y");
+      
       theJetTrigQAHist->Draw("E");
-
-
-
+      //jettrigcomb_clone=(TH1F*)theJetTrigQAHist->Clone("HLTComb_cloneHist");
+      
+      
       float t1Loc1=0.54, t1Loc2=0.82;
-
+      
       TLatex *t1=makeTLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());
       t1->SetTextFont(63);
       t1->SetTextColor(kBlack);
@@ -3268,24 +3268,30 @@ void printPFvCaloTrigHist_wRatio( TFile* fin , TFile* fin2, bool usedHLT100, boo
       pp1->SetLineWidth(1);
       pp1->SetNDC();
       pp1->Draw();
-
+      
       TLatex *pp2=makeTLatex(pp1x,(pp1y-0.04),intLumiString.c_str() );
       pp2->SetTextFont(63);
       pp2->SetTextColor(kBlack);
       pp2->SetTextSize(15);
       pp2->SetLineWidth(1);
       pp2->SetNDC();
-      pp2->Draw();  }
-    
-    else 
+      pp2->Draw();  
+    }//if HLTComb    
+    else {
       theJetTrigQAHist->Draw("E SAME");
+    }//if not HLTComb
     
     
     
   }//end loop over trigs for spectra
   
+  //jettrigcomb_clone->Draw("E SAME");
   JetTrigLegend->Draw();
   
+
+
+
+
   temp_canvJetTrig->Print(thePDFFileName.c_str());
   if(fout){
     fout->cd();

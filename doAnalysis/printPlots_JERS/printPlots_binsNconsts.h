@@ -56,8 +56,8 @@ const int Nbins_pthat=sizeof(pthat)/sizeof(double);
 // Error in <TAxis::TAxis::Set>: bins must be in increasing order
 const Double_t ptbins_debug[]={
   //15., 18., 21., 24.,
-  28.,
-  32.,
+  //  28.,
+  //32.,
   37.,
   43., //garbage bins
   49. , 56.,
@@ -69,12 +69,12 @@ const Double_t ptbins_debug[]={
   737., 790., 846.,
   905.,   
   967.,
-  1032.//, //generally, garbage bins
-  //1101.,
-  //1172.,
-  //1248.,
-  //1327.,
-  //1410.
+  1000.,//1032.//, //generally, garbage bins
+  1101.,
+  1172.,
+  1248.,
+  1327.,
+  1410.
   
   // BINS USED FOR APS DNP BELOW
   //  //5.,

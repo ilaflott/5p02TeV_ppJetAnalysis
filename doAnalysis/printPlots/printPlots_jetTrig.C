@@ -7,16 +7,16 @@ const bool drawJetTrigQAPlots=true, drawJetRapBinsPlot=false;
 
 const bool comparePFandCalo=false;
 const bool usedHLT100=false;
-const bool usedHLTPF=true;//if false, HLTCalo was used
+//const bool usedHLTPF=true;//if false, HLTCalo was used
 
 // the macro ------------------------
 int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std::string output_PDFname_base){
   
   globalTrigHistStyle();
   
-//  bool usedHLTPF=false;
-//  if( input_ppData_condorDir.find("HLTPF") != std::string::npos )
-//    usedHLTPF=true;
+  //  bool usedHLTPF=false;
+  //  if( input_ppData_condorDir.find("HLTPF") != std::string::npos )
+  //    usedHLTPF=true;
   
   // MAKE STRINGS
   
@@ -57,6 +57,7 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   std::cout<<" now opening ppData: "<<std::endl<<input_ppData_Filename<<std::endl;
   std::cout<<" in directory: "<<inputDir+input_ppData_condorDir<<std::endl<<std::endl;
   finData = new TFile(ppData_fullFilename.c_str());      
+  std::cout<<" ppData_fullFilename = "<<ppData_fullFilename	   <<std::endl;
   if(!finData){
     std::cout << " DATA file not found" << std::endl;
     std::cout << "inputDir               =" << inputDir << std::endl;
@@ -65,11 +66,28 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
     std::cout << "exiting." << std::endl;
     assert(false);
   }
-
-
-
-
-
+  bool usedHLTPF=false;
+  if(input_ppData_condorDir.find("HLTPF")!=std::string::npos || 
+     input_ppData_condorDir.find("HLTCalo")!=std::string::npos      ){//older condor output didn't have the TrigComb hist to signify which HLT combo was used. so use the condor directory name instead. 
+    if(input_ppData_condorDir.find("HLTPF")!=std::string::npos)
+      usedHLTPF=true;
+    else
+      usedHLTPF=false;
+  }
+  else{
+    TH1F* trigComboName_hist=(TH1F*)finData->Get("TrigComb");
+    std::string trigComboName=(std::string)trigComboName_hist->GetTitle();
+    if(trigComboName.find("PF")!=std::string::npos)
+      usedHLTPF=true;
+    else
+      usedHLTPF=false;  
+    std::cout<<"trgComboName="<<trigComboName<<std::endl;
+  }
+  
+  std::cout<<"usedHLTPF="<<usedHLTPF<<std::endl;
+  ///assert(false);
+  
+  
 
   // OPEN OPTIONAL INPUT SECTION
   TFile *finData2=NULL;
@@ -123,7 +141,7 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   std::string open_thePDFFileName=thePDFFileName+"[";    std::string close_thePDFFileName=thePDFFileName+"]";
   std::string theROOTFileName=outputDir+fullJetType+"_"+output_PDFname_base+"_jetTrig.root";
   TFile* fout = new TFile(theROOTFileName.c_str(), "RECREATE");
-  
+  std::cout<<"theROOTFileName="<<theROOTFileName<<std::endl;
   // just for opening the pdf
   TCanvas *temp_canvOpen = new TCanvas("temp", "temp", 1200, 1000);
   temp_canvOpen->Print( open_thePDFFileName.c_str() );  
@@ -181,47 +199,38 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
     std::cout<<std::endl<<"skipping jet trig QA plots..."<<std::endl<<std::endl;
   else {     
     
-    // ----------------------------------
-    
-    printJetTrigHist_wRatio(finData, usedHLT100, true,
-			    thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout );
-    //    assert(false);
-    printTrigPtHist(finData, usedHLT100, true,
-		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
-
+//    // ----------------------------------    
+//    printJetTrigHist_wRatio(finData, usedHLT100, true,
+//			    thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout );
+//    printJetTrigHist_wRatio(finData, usedHLT100, true,
+//			    thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);   
+//    // ----------------------------------    
+//    printTrigPtHist(finData, usedHLT100, true,
+//		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);    
+//    printTrigPtHist(finData, usedHLT100, true,
+//		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);
+    // ----------------------------------    
     printJetTrigHist_wRatio(finData, usedHLT100, false,
 			    thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
-    
-    printTrigPtHist(finData, usedHLT100, false,
-		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
-    
-    printTrigEtaHist(finData, usedHLT100,
-		     thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
-    
-    printTrigEtaAsymmHist(finData, usedHLT100,
-			  thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);        
-    
-    // ----------------------------------
-    
-    printJetTrigHist_wRatio(finData, usedHLT100, true,
-			    thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
-    
-    printTrigPtHist(finData, usedHLT100, true,
-		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);
-
     printJetTrigHist_wRatio(finData, usedHLT100, false,
 			    thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
-
+    // ----------------------------------    
     printTrigPtHist(finData, usedHLT100, false,
-		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);
-    
-    printTrigEtaHist(finData, usedHLT100, 
-		     thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);
-    
+		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
+    printTrigPtHist(finData, usedHLT100, false,
+		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
+    // ----------------------------------    
+    printTrigEtaHist(finData, usedHLT100,
+		     thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);    
     printTrigEtaAsymmHist(finData, usedHLT100,
-			  thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);
-    
+			  thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);            
+    // ----------------------------------    
+    printTrigEtaHist(finData, usedHLT100, 
+		     thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
+    printTrigEtaAsymmHist(finData, usedHLT100,
+			  thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
     // ----------------------------------
+    
     if(comparePFandCalo){      
       printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, true, false,
 				  thePDFFileName, fullJetType, "excl", radius,  doJetIDPlots);

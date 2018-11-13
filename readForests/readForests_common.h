@@ -170,7 +170,8 @@ const std::string Calo_HLTBitStrings[]={
 const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
 
 const double HLTPFthresh[]={
-  55., 75., 95., 135.   // thought HLT80 threshold was too strict for Calo, now looser
+  //55., 75., 95., 135.   // thought HLT80 threshold was too strict for Calo, now looser//DONT DO THIS
+  55., 75., 105., 135.   // thought HLT80 threshold was too strict for Calo, now looser//DONT DO THIS
 };
 const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
@@ -243,7 +244,7 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 //raghavs suggested genpt binning for JER
 const float ptbins[]={
   //  28.,
-  //  32., 
+  32., 
   37.,
   43., //garbage bins
   49., //typical gen pt cut
@@ -276,8 +277,8 @@ const float ptbins[]={
   846.,
   905.,
   967.,//,
-  1000.,
-  //1032., //generally, garbage bins
+  //1000.,
+  1032., //generally, garbage bins
   1101., 
   1172., 
   1248., 
@@ -534,7 +535,7 @@ const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbin
 
 
 
-const bool jetIDDebug=true;
+const bool jetIDDebug=false;
 bool jetID_00eta24(float jetIDpt, 
 		   float neSum, float phSum, float chSum, float eSum,
 		   int numConst, int chMult){

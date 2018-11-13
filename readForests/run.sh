@@ -4,14 +4,14 @@ echo ""
 echo "compiling code(s)"
 echo ""
 
-echo "...ppMC jetPlots..."
-rootcompile readForests_ppMC_jetPlots.C
+#echo "...ppMC jetPlots..."
+#rootcompile readForests_ppMC_jetPlots.C
 
-#echo "...ppMC JERS..."
-#rootcompile readForests_ppMC_JERS.C
+echo "...ppMC JERS..."
+rootcompile readForests_ppMC_JERS.C
 
-#echo "...ppData jetPlots..."
-#rootcompile readForests_ppData_jetPlots.C
+echo "...ppData jetPlots..."
+rootcompile readForests_ppData_jetPlots.C
 
 #echo "...ppData jetMult..."
 #rootcompile readForests_ppData_jetMult.C
@@ -24,77 +24,65 @@ echo "done compiling code(s), submitting."
 echo ""
 
 
+
 #source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
-#sleep 1m
-source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+#source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
+#askCondor 1 1
+#sleep 20m
 
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
-#sleep 1m
-source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
+#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
+askCondor 1 1
+sleep 20m
 
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
-#sleep 1m
-source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
+#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
+askCondor 1 1
+sleep 20m
 
-#source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
-#sleep 1m
-source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppMC"
-sleep 1m
+source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
+#source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppMC"
 askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+sleep 20m
 
-#source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
-#sleep 1m
-source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppMC"
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
+#source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppMC"
+askCondor 1 1
+sleep 20m
+
+#askCondor 100 100
+#sleep 30m
+
+#return
+
+
 
 ####################################################
 source run_readForests_JERS.sh 4 "0.0" "0.5" 
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+askCondor 1 1
+sleep 20m
 
 source run_readForests_JERS.sh 4 "0.5" "1.0" 
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+askCondor 1 1
+sleep 20m
 
 source run_readForests_JERS.sh 4 "1.0" "1.5" 
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
-sleep 30m
+askCondor 1 1
+sleep 20m
 
 source run_readForests_JERS.sh 4 "1.5" "2.0" 
-sleep 1m
-askCondor 1 1 
-echo "...sleeping 30 minutes..."
+askCondor 1 1
 sleep 30m
+
+source run_readForests_JERS.sh 4 "0.0" "2.0" 
+askCondor 1 1
+sleep 20m
 
 
 
 
 
 echo "done submitting. waiting for things to finish up. asking condor"
-#askCondor  100 30
 askCondor  100 100
 
 return

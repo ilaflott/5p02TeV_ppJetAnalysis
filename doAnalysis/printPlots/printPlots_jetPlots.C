@@ -134,9 +134,10 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   long double theLumi;
   if(doEventCounts){
     printDataEventCountReport((TFile*) finData);
-    //getEventCounts( (TFile*)finData, true );
-    theLumi=computeEffLumi( (TFile*) finData);   
+    theLumi=computeEffLumi( (TFile*) finData);  
+ 
     getEventCounts( (TFile*)finMC,   false);
+
     printJetCountReport( (TFile*)finData,true);
     printJetCountReport( (TFile*)finMC,false);
     //assert(false);
@@ -178,7 +179,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     printEvtVtxQAHist( (TFile*) finData , "hWeightedVr" , 
 		       (TFile*) finMC   , "hWeightedVr" ,
 		       (int) 20, (std::string) thePDFFileName  , (long double) theLumi , (TFile*) fout ) ;
-        
+    
     //printEvtNrefQAHist( (TFile*) finData , "hWNref" , 
     //			(TFile*) finMC   , "hWNref" ,
     //			(std::string) thePDFFileName  , (std::string) fullJetType, 

@@ -103,9 +103,15 @@ then
     #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_JERS_${etabin}
     sleep 1s
     
-    
-    cd  ${ppMCjetPlotsDir}
-    hadd_ppMC_allInDir ${R}
+    if [[ -d "${ppMCjetPlotsDir}" ]]
+    then
+	cd  ${ppMCjetPlotsDir}
+	hadd_ppMC_allInDir ${R}
+    else
+	echo "${ppMCjetPlotsDir} not found."
+	echo "exit."
+	return
+    fi
     
     echo ""
     echo "done hadding ppMC"
@@ -155,7 +161,26 @@ then
     #ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetMult_${etabin}/
 
     ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_${desc}/
+    if [[ -d "${ppDatajet80}" ]]
+    then
+	echo "${ppDatajet80} dir found."
+    else
+	echo "${ppDatajet80} not found."
+	echo "exit."
+	return
+    fi
     ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_${desc}/
+    if [[ -d "${ppDatalowJets}" ]]
+    then
+	echo "${ppDatalowJets} dir found."
+    else
+	echo "${ppDatalowJets} not found."
+	echo "exit."
+	return
+    fi
+
+
+
 
     mv ${ppDatajet80} ${ppDataHPtDir}
     mv ${ppDatalowJets} ${ppDataHPtDir}

@@ -1,264 +1,72 @@
 #!/bin/bash
 
-echo ""
-echo "compiling code(s)"
-echo ""
-
-#echo "...ppMC jetPlots..."
-#rootcompile readForests_ppMC_jetPlots.C
-
-echo "...ppMC JERS..."
-rootcompile readForests_ppMC_JERS.C
-
-echo "...ppData jetPlots..."
-rootcompile readForests_ppData_jetPlots.C
-
-#echo "...ppData jetMult..."
-#rootcompile readForests_ppData_jetMult.C
-
-#echo "...ppMC jetMult..."
-#rootcompile readForests_ppMC_jetMult.C
-
-echo ""
-echo "done compiling code(s), submitting."
-echo ""
-
-
-
-#source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
-#askCondor 1 1
-#sleep 20m
-
-source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
-askCondor 1 1
-sleep 20m
-
-source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
-askCondor 1 1
-sleep 20m
-
-source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
-#source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppMC"
-askCondor 1 1 
-sleep 20m
-
-source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
-#source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppMC"
-askCondor 1 1
-sleep 20m
-
-#askCondor 100 100
-#sleep 30m
-
-#return
-
-
-
-####################################################
-source run_readForests_JERS.sh 4 "0.0" "0.5" 
-askCondor 1 1
-sleep 20m
-
-source run_readForests_JERS.sh 4 "0.5" "1.0" 
-askCondor 1 1
-sleep 20m
-
-source run_readForests_JERS.sh 4 "1.0" "1.5" 
-askCondor 1 1
-sleep 20m
-
-source run_readForests_JERS.sh 4 "1.5" "2.0" 
-askCondor 1 1
-sleep 30m
-
-source run_readForests_JERS.sh 4 "0.0" "2.0" 
-askCondor 1 1
-sleep 20m
-
-
-
-
-
-echo "done submitting. waiting for things to finish up. asking condor"
-askCondor  100 100
-
-return
-
-
-
-
-
-#####################################################
-#
-#source run_readForests_JERS.sh 4 "0.0" "0.5" 
-#source run_readForests_JERS.sh 4 "0.5" "1.0" 
-##source run_readForests_JERS.sh 4 "1.0" "1.5" 
-##source run_readForests_JERS.sh 4 "1.5" "2.0" 
-#
-##source run_readForests_JERS.sh 4 "0.0" "1.0"
-##source run_readForests_JERS.sh 4 "1.0" "2.0"
-#
-##source run_readForests_JERS.sh 4 "0.0" "2.0"
-#
-#####################################################
-#
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
-##source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
-##source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
-#
-##source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
-##source run_readForests_jetPlots.sh 4 "1.0" "2.0" "ppData"
-#
-##source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
-#
-#####################################################
-#
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
-##source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppMC"
-##source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppMC"
-#
-##source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
-##source run_readForests_jetPlots.sh 4 "1.0" "2.0" "ppMC"
-#
-##source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
-#
-##askCondor  1 1
-##sleep 120s
-
-
-
-
-
-
-
-
-
-
-## INCL. JET SPECTRA, ENTIRE |y| RANGE
-#source run_readForests_jetPlots.sh 4 "0.0" "4.7"
-#source run_readForests_jetPlots.sh 4 "0.0" "2.0"
-
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
-
-#source run_readForests_jetPlots.sh 3 "0.0" "0.5" "ppData"
-#source run_readForests_jetPlots.sh 3 "0.5" "1.0" "ppData"
-
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
-#source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
-
-#source run_readForests_jetPlots.sh 3 "0.0" "0.5" "ppMC"
-#source run_readForests_jetPlots.sh 3 "0.5" "1.0" "ppMC"
-
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
-#source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
-
-#### INCL. JET SPECTRA |y| bins
-#source run_readForests_jetPlots.sh 4 "0.0" "0.5"
-#askCondor  1 1
-#sleep 120s
-#source run_readForests_jetPlots.sh 4 "0.5" "1.0"
-#askCondor  1 1
-#sleep 120s
-#source run_readForests_jetPlots.sh 4 "1.0" "1.5"
-#askCondor  1 1
-#sleep 120s
-#source run_readForests_jetPlots.sh 4 "1.5" "2.0"
-#askCondor  1 1
-#sleep 120s
-
-#source run_readForests_jetPlots.sh 4 "2.0" "2.5"
-#askCondor  1 1
-#sleep 60s
-#source run_readForests_jetPlots.sh 4 "2.5" "3.0"
-#askCondor  1 1
-#sleep 60s
-#source run_readForests_jetPlots.sh 4 "3.2" "4.7"
-#askCondor  1 1
-#sleep 60s
-
-
-### INCL. JET SPECTRA, LARGER |y| REGIONS
-#source run_readForests_jetPlots.sh 4 "0.0" "2.0"
-
-#source run_readForests_jetMult.sh 4 "0.0" "2.0"
-
-
-
-
-
-
-
-
-
-
-
-
-##temp
-source run_readForests_JERS.sh 4 "0.0" "2.0"
-askCondor  100 60
-return
-##temp
-
-
-
-
-#################################################
-###################### JERS #####################
-#################################################
-echo ""
-echo "compiling code(s)"
-echo ""
-
-echo "...ppMC JERS..."
-rootcompile readForests_ppMC_JERS.C
-
-##echo "...ppData JERS..."
-##rootcompile readForests_ppData_JERS.C
-
-echo ""
-echo "done compiling code(s), submitting."
-echo ""
-
-source run_readForests_JERS.sh 4 "0.0" "2.0"
-askCondor  1 1
-sleep 60s
-
-source run_readForests_JERS.sh 4 "0.0" "0.5"
-askCondor  1 1
-sleep 60s
-source run_readForests_JERS.sh 4 "0.5" "1.0"
-askCondor  1 1
-sleep 60s
-source run_readForests_JERS.sh 4 "1.0" "1.5"
-askCondor  1 1
-sleep 60s
-source run_readForests_JERS.sh 4 "1.5" "2.0"
-askCondor  1 1
-sleep 60s
-
-#source run_readForests_JERS.sh 4 "2.0" "2.5"
-#sleep 60s
-#source run_readForests_JERS.sh 4 "2.5" "3.0"
-#sleep 60s
-#source run_readForests_JERS.sh 4 "3.2" "4.7"
-#sleep 60s
+subm_ppData_jetPlots=0
+subm_ppMC_jetPlots=0
+subm_ppMC_JERS=1
+subm_ppData_jetMult=0
+subm_ppMC_jetMult=0
 
 
 echo ""
-echo "done running code(s)."
+echo "compiling code(s) + submitting jobs"
 echo ""
 
-askCondor  1 1
+if [[ $subm_ppData_jetPlots -eq 1 ]]
+then
+    echo "...ppData jetPlots..."
+    rootcompile readForests_ppData_jetPlots.C
+    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
+#    source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
+#    source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
+#    source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
+#    source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
+fi
+
+if [[ $subm_ppMC_jetPlots -eq 1 ]]
+then
+    echo "...ppMC jetPlots..."
+    rootcompile readForests_ppMC_jetPlots.C
+    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
+#    source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppMC"
+#    source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppMC"
+#    source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppMC"
+#    source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppMC"
+fi
+
+if [[ $subm_ppMC_JERS -eq 1 ]]
+then
+    echo "...ppMC JERS..."
+    rootcompile readForests_ppMC_JERS.C
+    source run_readForests_JERS.sh 4 "0.0" "2.0"
+#    source run_readForests_JERS.sh 4 "0.0" "0.5"
+#    source run_readForests_JERS.sh 4 "0.5" "1.0"
+#    source run_readForests_JERS.sh 4 "1.0" "1.5"
+#    source run_readForests_JERS.sh 4 "1.5" "2.0"
+fi
+
+if [[ $subm_ppData_jetMult -eq 1 ]]
+then
+    echo "...ppData jetMult..."
+    rootcompile readForests_ppData_jetMult.C
+    source run_readForests_jetMult.sh 4 "0.0" "2.0" "ppData"
+#    source run_readForests_jetMult.sh 4 "0.0" "0.5" "ppData"
+#    source run_readForests_jetMult.sh 4 "0.5" "1.0" "ppData"
+#    source run_readForests_jetMult.sh 4 "1.0" "1.5" "ppData"
+#    source run_readForests_jetMult.sh 4 "1.5" "2.0" "ppData"
+fi
+
+if [[ $subm_ppMC_jetMult -eq 1 ]]
+then
+    echo "...ppMC jetMult..."
+    rootcompile readForests_ppMC_jetMult.C
+    source run_readForests_jetMult.sh 4 "0.0" "2.0" "ppMC"
+#    source run_readForests_jetMult.sh 4 "0.0" "0.5" "ppMC"
+#    source run_readForests_jetMult.sh 4 "0.5" "1.0" "ppMC"
+#    source run_readForests_jetMult.sh 4 "1.0" "1.5" "ppMC"
+#    source run_readForests_jetMult.sh 4 "1.5" "2.0" "ppMC"
+fi
+
+askCondor 100 100
 
 
 return

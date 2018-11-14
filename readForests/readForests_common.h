@@ -63,37 +63,6 @@ float deltaphi(float phi1, float phi2){
 
 
 
-double cpuVzWeight_poly(float vz_F){
-  bool funcDebug=false;
-  if(funcDebug)
-    std::cout<<"vz_F="<<vz_F<<std::endl;
-  // new set using hVz w/ weight=1 and no trig req. / pthat weighted MC // older weights
-  double p0 = 1.165;//1.159;
-  double p1 = 0.009171;//0.008914;
-  double p2 = -0.003257;//-0.003057;
-  double p3 = -2.919e-05;//-2.287e-05;
-  double p4 = -4.647e-06;//-5.287e-06;
-  double p5 = 2.13e-08;//-1.582e-09;
-  double p6 = 2.399e-08;//2.569e-08;
-  double p7 = 4.267e-12;//2.782e-11;
-  double p8 = -2.078e-11;//-2.097e-11;
-  
-  double vzWeight=0;
-  vzWeight+=p0;
-  vzWeight+=p1*pow(vz_F,1);
-  vzWeight+=p2*pow(vz_F,2);
-  vzWeight+=p3*pow(vz_F,3);
-  vzWeight+=p4*pow(vz_F,4);
-  vzWeight+=p5*pow(vz_F,5);
-  vzWeight+=p6*pow(vz_F,6);
-  vzWeight+=p7*pow(vz_F,7);
-  vzWeight+=p8*pow(vz_F,8);  
-
-  if(funcDebug)
-    std::cout<<"vzWeight="<<vzWeight<<std::endl;
-
-  return vzWeight;
-}
 
 
 
@@ -121,7 +90,6 @@ float deltaphi_jettrk(float deltaphi){
 // ------------------------------------------------------------------------------------------------------------
 
 // eta width
-//const char *etaWidth=(char*)"20_eta_20";
 const std::string etaWidth="20_eta_20";
 
 // variable names for QA Plots
@@ -166,12 +134,12 @@ const std::string Calo_HLTBitStrings[]={
   "HLT_AK4CaloJet60_Eta5p1",
   "HLT_AK4CaloJet80_Eta5p1",
   "HLT_AK4CaloJet100_Eta5p1" 
-};
-const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
-
+};//const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
 const double HLTPFthresh[]={
-  //55., 75., 95., 135.   // thought HLT80 threshold was too strict for Calo, now looser//DONT DO THIS
-  55., 75., 105., 135.   // thought HLT80 threshold was too strict for Calo, now looser//DONT DO THIS
+  //55., 75., 95., 135.  //95 GeV as min/max for HLT80/60 too low
+  55., 75., 105., 135.   //55/75/105 is john's suggestion; i feel that 75 as min/max for HLT60/40 might be slightly too low. 
+  //55., 80., 110., 135.   //TODO/TRY
+  //55., 85., 110., 135.   //TODO/TRY
 };
 const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
@@ -179,7 +147,7 @@ const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet80_Eta5p1",
   "HLT_AK4PFJet100_Eta5p1" 
 };
-
+const int N_HLTBits=sizeof(PF_HLTBitStrings)/sizeof(std::string);
 
 // data tree name array
 const std::string dataTreeNames[]={
@@ -196,8 +164,7 @@ const std::string dataTreeNames[]={
 const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);
 
 
-
-// MC tree name array (NOT FINISHED, WILL ERROR IN CURRENT FORM)
+// MC tree name array (NOT FINISHED, WILL ERROR IN CURRENT FORM)... will it though?
 const std::string MCTreeNames[]={
   "GARBAGE ENTRY",
   "hiEvtAnalyzer/HiTree", 
@@ -211,12 +178,9 @@ const std::string MCTreeNames[]={
 };
 const int N_MCTrees=sizeof(MCTreeNames)/sizeof(std::string);
 
-
-
-
 // for 5 tev pp jets 2k17
 const float absetabins[]={
-  //  0.0, 0.5, 1.0, 1.5, 2.0, 2.4, 2.5, 2.7, 3.0, 3.2, 3.7, 4.2, 4.7, 5.1
+  //  0.0, 0.5, 1.0, 1.5, 2.0, 2.4, 2.5, 2.7, 3.0, 3.2, 3.7, 4.2, 4.7, 5.1 //alt binning i've seen before
   0.0, 0.5,
   1.0, 1.5,
   2.0, 2.5,
@@ -283,43 +247,13 @@ const float ptbins[]={
   1172., 
   1248., 
   1327.,
-  1410.
-  
-  //  //15., 18., 21., 24., 
-  //  //28., 
-//  32., 
-//  37.,
-//  43., //garbage bins
-//  49. , 56., 
-//  64., 74., 84., 97., 114., 
-//  133., 153., 174., 196., 
-//  220., 245., 272., 
-//  300., 330., 362., 395., 430., 468., 507., 
-//  548., 592., 638., 686., 
-//  737., 790., 846.,  
-//  905.,   967.,  
-//  1032., //generally, garbage bins
-//  1101., 
-//  1172., 
-//  1248., 
-//  1327.,
-//  1410.
-//  //, 1497., 1588., 1684., 1784., 1890., 2000., 2116.
+  1410.//,
+  //1497., 1588., 1684., 1784., 1890., 2000., 2116.
 };
 const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 // // my APSDNP Binning
-//  32.,   
-//  37., 
-//  43., 
-//  49., 
-//  56., 
-//  64., 
-//  74., 
-//  84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
-//  507., 548., 592., 638., 
-//  686., 737., 790., 
-//  846., 905., 967., //def junk bins after this or so
-//  1000., 1050. 
+//  32.,   37., 43., 49., 56., 64., 74., 84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
+//  507., 548., 592., 638., 686., 737., 790., 846., 905., 967., //def junk bins after this or so //  1000., 1050. 
 
 //binning used by john for multiplicity stuff
 const float ptbins2[]={
@@ -352,43 +286,6 @@ const int nbins_pt2=sizeof(ptbins2)/sizeof(float)-1;//above values define edges 
 
 
 
-
-
-
-
-
-//// for jet RECO meeting 2k17
-//const float absetabins[]={
-//  0.00, 0.25, 0.50,  0.75, 
-//  1.00, 1.25, 1.50, 1.75,
-//  2.10, 3.00, 4.00, 5.00,
-//};
-//const int nbins_abseta=sizeof(absetabins)/sizeof(float)-1;
-//
-//const float etabins[]={
-//  -5.00, 
-//  -4.00, 
-//  -3.00, -2.10,
-//  -1.75, -1.50, -1.25, -1.00,
-//  -0.75, -0.50, -0.25,
-//  0.00, 
-//  0.25, 0.50,  0.75, 
-//  1.00, 1.25, 1.50, 1.75,
-//  2.10, 3.00, 
-//  4.00, 
-//  5.00
-//};
-//const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
-//
-//// binning i'm using for jet RECO JER studies 2k17
-//const float ptbins[]={
-//  30., 35., 40., 45., 50., 55., 65., 70.
-//}; 
-//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
-
-//// WEIGHTS FOR MC
-// ------------------------------------------------------------------------------------------------------
-
 //pthat bins and weights for semi-private MC in millibarns
 const float pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 460., 540., 9999. };
 const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
@@ -405,8 +302,6 @@ const double pthatWeights[]={
   /*(pthat>=460)&&(pthat<540)  , n[9]=1558268  , xsDiff=2.215e-08 mb  , weight= */ 1.42145e-14,
   /*(pthat>=540)&&(pthat<9999) , n[10]=2597338 , xsDiff=1.001e-08 mb  , weight= */ 3.85395e-15
 };
-
-
 ////pthat bins and weights for official MC in millibarns
 //const float pthatbins[]={ 15., 30., 50., 80., 120., 170., 220., 280., 370., 9999. }; 
 //const int nbins_pthat=sizeof(pthatbins)/sizeof(int)-1;
@@ -423,10 +318,164 @@ const double pthatWeights[]={
 //};
 
 
+const bool jetIDDebug=false;
+bool jetID_00eta24(float jetIDpt, 
+		   float neSum, float phSum, float chSum, float eSum,
+		   int numConst, int chMult){
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_00eta24 called.";
+  bool passesJetID=false;
+  if( neSum/jetIDpt    < 0.99 &&
+      phSum/jetIDpt    < 0.99 &&
+      numConst         > 1    &&      
+      chSum/jetIDpt    > 0.   && 
+      chMult           > 0    &&
+      eSum/jetIDpt     < 0.99    ) passesJetID=true;	      
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_24eta27(float jetIDpt,
+		   float neSum, float phSum, 
+		   int numConst){
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_24eta27 called.";
+  bool passesJetID=false;
+  if( neSum/jetIDpt    < 0.99 &&
+      phSum/jetIDpt    < 0.99 &&
+      numConst         > 1       ) passesJetID=true;	      
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_27eta30(float jetIDpt,
+		   float neSum, float phSum, 
+		   int numConst){ // int numConst, int neuMult){//
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_27eta30 called.";
+  bool passesJetID=false;
+  if(  true && 
+       true &&
+       numConst            > 0       ) passesJetID=true;   
+  //diff versions         // CMSSW [76,80]X criterion
+  //  if(  phSum/jetIDpt > 0.00 && 
+  //       neSum/jetIDpt < 1.00 && 
+  //       numConst            > 0       ) passesJetID=true; 
+  //  if(  phSum/jetIDpt [< 0.90 ] / [ > 0.01 &&]	
+  //       neSum/jetIDpt [null   ] / [ < 0.98 &&]	   
+  //       neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_32eta47(float jetIDpt, 
+		   float phSum){// float phSum, float neSum, float trkSum, float neuMult){//
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_32eta47 called.";
+  bool passesJetID=false;
+  if( phSum < 0.4 &&
+      true               &&
+      true       ) passesJetID=true; 
+  //diff version
+//  if( phSum_F[jet]/jetIDpt > 0. &&                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
+//      trkSum_F[jet] < 0.4       && 
+//      neSum_F[jet]/jetIDpt > 0. &&                         //          neSum_F[jet]/jetIDpt < null &&
+//      true       ) passesJetID=true;     //          neuMult            > 10  
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+
+
+//void makeJetQAHists(TH1D** hJetQA, int jetIDint, bool fillDijetHists, int N_vars){
+//  
+//
+//  for(int j = 0; j<N_vars; ++j){    
+//    //jets
+//    if(var[j]=="jtpt"||var[j]=="rawpt")
+//      hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;", var[j].c_str()) , 2500,0,2500);
+//    else if(var[j]=="jteta")
+//      hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 100,-5,+5);
+//    else if(var[j]=="jtphi")
+//      hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 100,-4,+4);
+//    //jetconst. counts
+//    else if(var[j]=="trkN"|| var[j]=="phN"|| var[j]=="chN"|| var[j]=="neN"|| var[j]=="eN"|| var[j]=="muN")
+//      hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 60,0,60);
+//    else if(var[j]=="trkHardN"|| var[j]=="phHardN"|| var[j]=="chHardN")
+//      hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 60,0,60);
+//    else if(var[j]=="neuMult"|| var[j]=="chMult"|| var[j]=="numConst")
+//      hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 100,0,100);
+//    //dijets
+//    else if (fillDijetHists){
+//      if(var[j]=="dphi")
+//	hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 50,0,4);
+//      else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt")
+//	hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 2500,0,2500);
+//      else //xj and Aj binnings
+//	hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 200,0,2);
+//    }
+//    //consituent binnings
+//    else
+//      hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 200,0,2);
+//  }
+//  return;
+//}
+
+
+
+
+
+
+
+
+
 
 
 
 const bool doVzWeights=true;
+
+
+double cpuVzWeight_poly(float vz_F){
+  bool funcDebug=false;
+  if(funcDebug)
+    std::cout<<"vz_F="<<vz_F<<std::endl;
+  // new set using hVz w/ weight=1 and no trig req. / pthat weighted MC // older weights
+  double p0 = 1.165;//1.159;
+  double p1 = 0.009171;//0.008914;
+  double p2 = -0.003257;//-0.003057;
+  double p3 = -2.919e-05;//-2.287e-05;
+  double p4 = -4.647e-06;//-5.287e-06;
+  double p5 = 2.13e-08;//-1.582e-09;
+  double p6 = 2.399e-08;//2.569e-08;
+  double p7 = 4.267e-12;//2.782e-11;
+  double p8 = -2.078e-11;//-2.097e-11;
+  
+  double vzWeight=0;
+  vzWeight+=p0;
+  vzWeight+=p1*pow(vz_F,1);
+  vzWeight+=p2*pow(vz_F,2);
+  vzWeight+=p3*pow(vz_F,3);
+  vzWeight+=p4*pow(vz_F,4);
+  vzWeight+=p5*pow(vz_F,5);
+  vzWeight+=p6*pow(vz_F,6);
+  vzWeight+=p7*pow(vz_F,7);
+  vzWeight+=p8*pow(vz_F,8);  
+
+  if(funcDebug)
+    std::cout<<"vzWeight="<<vzWeight<<std::endl;
+
+  return vzWeight;
+}
+
+
 // non-event triggered vz weights
 const double vzWeights[]={           
 0.0579229 ,         // vzLow=-24
@@ -535,342 +584,3 @@ const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbin
 
 
 
-const bool jetIDDebug=false;
-bool jetID_00eta24(float jetIDpt, 
-		   float neSum, float phSum, float chSum, float eSum,
-		   int numConst, int chMult){
-  bool funcDebug=jetIDDebug;
-  if(funcDebug)
-    std::cout<<"jetID_00eta24 called.";
-  bool passesJetID=false;
-  if( neSum/jetIDpt    < 0.99 &&
-      phSum/jetIDpt    < 0.99 &&
-      numConst         > 1    &&      
-      chSum/jetIDpt    > 0.   && 
-      chMult           > 0    &&
-      eSum/jetIDpt     < 0.99    ) passesJetID=true;	      
-  if(funcDebug)
-    std::cout<<" passesJetID="<<passesJetID<<std::endl;
-  return passesJetID;
-}
-
-bool jetID_24eta27(float jetIDpt,
-		   float neSum, float phSum, 
-		   int numConst){
-  bool funcDebug=jetIDDebug;
-  if(funcDebug)
-    std::cout<<"jetID_24eta27 called.";
-  bool passesJetID=false;
-  if( neSum/jetIDpt    < 0.99 &&
-      phSum/jetIDpt    < 0.99 &&
-      numConst         > 1       ) passesJetID=true;	      
-  if(funcDebug)
-    std::cout<<" passesJetID="<<passesJetID<<std::endl;
-  return passesJetID;
-}
-
-bool jetID_27eta30(float jetIDpt,
-		   float neSum, float phSum, 
-		   int numConst){ // int numConst, int neuMult){//
-  bool funcDebug=jetIDDebug;
-  if(funcDebug)
-    std::cout<<"jetID_27eta30 called.";
-  bool passesJetID=false;
-  if(  true && 
-       true &&
-       numConst            > 0       ) passesJetID=true;   
-  //diff versions         // CMSSW [76,80]X criterion
-  //  if(  phSum/jetIDpt > 0.00 && 
-  //       neSum/jetIDpt < 1.00 && 
-  //       numConst            > 0       ) passesJetID=true; 
-  //  if(  phSum/jetIDpt [< 0.90 ] / [ > 0.01 &&]	
-  //       neSum/jetIDpt [null   ] / [ < 0.98 &&]	   
-  //       neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
-  if(funcDebug)
-    std::cout<<" passesJetID="<<passesJetID<<std::endl;
-  return passesJetID;
-}
-
-bool jetID_32eta47(float jetIDpt, 
-		   float phSum){// float phSum, float neSum, float trkSum, float neuMult){//
-  bool funcDebug=jetIDDebug;
-  if(funcDebug)
-    std::cout<<"jetID_32eta47 called.";
-  bool passesJetID=false;
-  if( phSum < 0.4 &&
-      true               &&
-      true       ) passesJetID=true; 
-  //diff version
-//  if( phSum_F[jet]/jetIDpt > 0. &&                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
-//      trkSum_F[jet] < 0.4       && 
-//      neSum_F[jet]/jetIDpt > 0. &&                         //          neSum_F[jet]/jetIDpt < null &&
-//      true       ) passesJetID=true;     //          neuMult            > 10  
-  if(funcDebug)
-    std::cout<<" passesJetID="<<passesJetID<<std::endl;
-  return passesJetID;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//random old binning i found in raghavs code, here for safe keeping
-//const float ptbins[]={
-//  3,   4,   5,   7,   9,  12,  15,   18,  21,  24,  28,
-//  28,  32,  37,  43,  49,  56,  64,   74,  84,  97, 114,
-//  133, 153, 174, 196, 220, 245, 272,  300, 330, 362, 395,
-//  430, 468, 507, 548, 592, 638, 686, 1000
-//};
-
-//float trigComb_sanityCheck(bool *trgDec, int *treePrescl, double triggerPt){
-//  std::cout<<"trigComb_sanityCheck Called..."<<std::endl<<std::endl;
-//
-//  float weight_eS=0.;
-//  std::cout<<"before if statements..."<<std::endl;
-//  for(int k=0;k<4;k++){if(trgDec[k]) {
-//      std::cout<<"trgDec["<<k<<"]="<<trgDec[k]<<std::endl;
-//      std::cout<<"treePrescl["<<k<<"]="<<treePrescl[k]<<std::endl;
-//      std::cout<<"triggerPt="<<triggerPt<<std::endl;
-//      std::cout<<"weight_eS=="<<weight_eS<<std::endl<<std::endl;
-//    }}
-//
-//  if(trgDec[0] && triggerPt>=40.  && triggerPt<60. ) weight_eS=treePrescl[0];
-//  if(trgDec[1] && triggerPt>=60.  && triggerPt<80. ) weight_eS=treePrescl[1];
-//  if(trgDec[2] && triggerPt>=80.  && triggerPt<100.) weight_eS=treePrescl[2];
-//  if(trgDec[3] && triggerPt>=100. )                  weight_eS=treePrescl[3];
-//
-//  std::cout<<"after if statements..."<<std::endl;
-//  for(int k=0;k<4;k++){if(trgDec[k]){
-//      std::cout<<"trgDec["<<k<<"]="<<trgDec[k]<<std::endl;
-//      std::cout<<"treePrescl["<<k<<"]="<<treePrescl[k]<<std::endl;
-//      std::cout<<"triggerPt="<<triggerPt<<std::endl;
-//      std::cout<<"weight_eS=="<<weight_eS<<std::endl<<std::endl;
-//    }}
-//
-//  std::cout<<"trigComb_sanityCheck exiting..."<<std::endl<<std::endl;
-//  return weight_eS;
-//}
-
-
-//const float rapbins[]={
-//  0.0, 0.5,
-//  1.0, 1.5,
-//  2.0, 2.5,
-//  3.0, 3.2,
-//  4.7
-//};
-//const int nbins_rap=sizeof(rapbins)/sizeof(float)-1;
-
-
-
-
-
-
-
-
-
-
-
-//const float JEC_ptbins[]={
-//  17., 22., 27.,    //15-30
-//  33., 39., 47.,    //30-50
-//  55., 64., 74.,    //50-80
-//  84., 97., 114.,   //80-120
-//  133., 153.,      //120-170
-//  174., 196.,      //170-220
-//  220., 245., 272., //220-300
-//  300., 350., 400., //300-500
-//  550., 790., 1000. //500-inf
-//};
-//const int nbins_JEC_ptbins=sizeof(JEC_ptbins)/sizeof(float)-1;
-//
-//const float ptbins2[]={
-//  //3., 4., 
-//  5., 7., 9., 12.,
-//  15., 18., 21., 24., 28.,
-//  32., 37., 43., 49., 
-//  56.,
-//  64., 74., 84., 97., 114.,
-//  133., 153., 174., 196.,
-//  220., 245., 272., 300.,
-//  330., 362., 395., 430.,
-//  468., 507., 548., 592.,
-//  638., 686., 1000.//, 1500
-//}; //raghavs suggested genpt binning for JER
-//const int nbins_pt2=sizeof(ptbins2)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
-
-
-
-
-
-
-
-
-//const float etabins[]={
-//  -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013,
-//  -3.839, -3.664, -3.489, -3.314, -3.139,
-//  -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -2.043,
-//  -1.930, -1.830, -1.740, -1.653, -1.566, -1.479, -1.392, -1.305, -1.218, -1.131, -1.044,
-//  -0.957, -0.879, -0.783, -0.696, -0.609, -0.522, -0.435, -0.348, -0.261, -0.174,
-//  -0.087, +0.000, +0.087,
-//  +0.174, +0.261, +0.348, +0.435, +0.522, +0.609, +0.696, +0.783, +0.879, +0.957,
-//  +1.044, +1.131, +1.218, +1.305, +1.392, +1.479, +1.566, +1.653, +1.740, +1.830, +1.930,
-//  +2.043, +2.172, +2.322, +2.500, +2.650, +2.853, +2.964,
-//  +3.139, +3.314, +3.489, +3.664, +3.839,
-//  +4.013, +4.191, +4.363, +4.538, +4.716, +4.889, +5.191
-//};
-//const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
-
-
-// original genpt JER binning i inherited from raghav
-//const float ptbins[]={
-//  15., 30., 50., 80.,
-//  120., 170., 220., 300.,
-//  500.
-//}; // original genpt JER binning i inherited from raghav
-//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//semiofficial MC/{no trig, HLTAK4CaloJets,HLTAK4PFJets}, official MC/HLTak4CaloJets
-  //1.0, //vz=-24cm
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //0.381083, /*  0.35749,   //for i=1 ,   1.8995   ,   	 vz=-15cm */
-  //0.420849, /*  0.400545,  //for i=2 ,   1.89802  ,   	 */
-  //0.457166, /*  0.433741,  //for i=3 ,   1.75632  ,   	 */
-  //0.489082, /*  0.469437,  //for i=4 ,   1.72277  ,   	 */
-  //0.526434, /*  0.512839,  //for i=5 ,   1.70519  ,   	 */
-  //0.568316, /*  0.556416,  //for i=6 ,   1.68102  ,   	 */
-  //0.631824, /*  0.612334,  //for i=7 ,   1.60677  ,   	 */
-  //0.627796, /*  0.622496,  //for i=8 ,   1.46807  ,   	 */
-  //0.690459, /*  0.672646,  //for i=9 ,   1.46982  ,   	 */
-  //0.714526, /*  0.706209,  //for i=10,   1.42762  ,   	 */
-  //0.750061, /*  0.740972,  //for i=11,   1.38758  ,   	 */
-  //0.799916, /*  0.792563,  //for i=12,   1.37528  ,   	 */
-  //0.816735, /*  0.815354,  //for i=13,   1.33446  ,   	 */
-  //0.85323 , /*  0.853215,  //for i=14,   1.29506  ,   	 */
-  //0.877455, /*  0.875179,  //for i=15,   1.27491  ,   	 */
-  //0.895425, /*  0.891705,  //for i=16,   1.18277  ,   	 */
-  //0.92577 , /*  0.921846,  //for i=17,   1.17951  ,   	 */
-  //0.960376, /*  0.958741,  //for i=18,   1.18097  ,   	 */
-  //1.00063 , /*  1.00373,   //for i=19,   1.1312   ,   	 */
-  //1.00567 , /*  1.00595,   //for i=20,   1.08347  ,   	 */
-  //1.01408 , /*  1.01643,   //for i=21,   1.05749  ,   	 */
-  //1.03837 , /*  1.04327,   //for i=22,   1.05493  ,   	 */
-  //1.05649 , /*  1.06326,   //for i=23,   1.00842  ,   	 */
-  //1.07153 , /*  1.07991,   //for i=24,   1.01667  ,   	 */
-  //1.07986 , /*  1.08791,   //for i=25,   0.968532 ,   	 */
-  //1.09942 , /*  1.10771,   //for i=26,   0.951276 ,   	 */
-  //1.1102  , /*  1.11622,   //for i=27,   0.943379 ,   	 */
-  //1.12039 , /*  1.12078,   //for i=28,   0.941838 ,   	 */
-  //1.116   , /*  1.12084,   //for i=29,   0.919547 ,   	 */
-  //1.1358  , /*  1.14016,   //for i=30,   0.921949 ,   	 */
-  //1.13279 , /*  1.14058,   //for i=31,   0.907791 ,   	 */
-  //1.1387  , /*  1.14684,   //for i=32,   0.898317 ,   	 */
-  //1.13261 , /*  1.14148,   //for i=33,   0.900794 ,   	 */
-  //1.14604 , /*  1.15419,   //for i=34,   0.897549 ,   	 */
-  //1.12861 , /*  1.1392,    //for i=35,   0.911964 ,   	 */
-  //1.14573 , /*  1.15569,   //for i=36,   0.898306 ,   	 */
-  //1.12039 , /*  1.13269,   //for i=37,   0.902429 ,   	 */
-  //1.11589 , /*  1.12478,   //for i=38,   0.899196 ,   	 */
-  //1.11258 , /*  1.11415,   //for i=39,   0.899973 ,   	 */
-  //1.10108 , /*  1.10534,   //for i=40,   0.930686 ,   	 */
-  //1.09245 , /*  1.09492,   //for i=41,   0.937519 ,   	 */
-  //1.08902 , /*  1.08401,   //for i=42,   0.931296 ,   	 */
-  //1.06721 , /*  1.06167,   //for i=43,   0.962955 ,   	 */
-  //1.0261  , /*  1.02492,   //for i=44,   0.978917 ,   	 */
-  //1.01827 , /*  1.01539,   //for i=45,   0.989318 ,   	 */
-  //0.989024, /*  0.985653,  //for i=46,   0.99599  ,   	 */
-  //0.962674, /*  0.952256,  //for i=47,   1.00077  ,   	 */
-  //0.936773, /*  0.930472,  //for i=48,   1.02948  ,   	 */
-  //0.907251, /*  0.894218,  //for i=49,   0.983398 ,   	 */
-  //0.891311, /*  0.875605,  //for i=50,   1.06389  ,   	 */
-  //0.864917, /*  0.847596,  //for i=51,   1.08784  ,   	 */
-  //0.807905, /*  0.78767,   //for i=52,   1.11999  ,   	 */
-  //0.787968, /*  0.768839,  //for i=53,   1.09857  ,   	 */
-  //0.725249, /*  0.700327,  //for i=54,   1.14199  ,   	 */
-  //0.709917, /*  0.687202,  //for i=55,   1.12368  ,   	 */
-  //0.661411, /*  0.629434,  //for i=56,   1.2143   ,   	 */
-  //0.628832, /*  0.597895,  //for i=57,   1.28173  ,   	 */
-  //0.580118, /*  0.555087,  //for i=58,   1.16107  ,   	 */
-  //0.550339, /*  0.523324,  //for i=59,   1.07179  ,   	 */
-  //0.479087,  /*  0.448861   //for i=60,   1.28413      	 vz=15cm */
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0,
-  //1.0//, vz=25cm

@@ -361,11 +361,11 @@ int printPlots_jetMultPlots(const std::string input_ppData_condorDir , const std
       else if(multClass_arr[i] < 100) std::cout<< "  :: " ;
       else std::cout<< " :: " ;
       
-      //std::cout<< frac_arr[i] ;
-      ////if(frac_arr[i] < 10.) std::cout<< "   :: " ;
-      ////else if(frac_arr[i] < 100.) std::cout<< "  :: " ;
-      ////else std::cout<< " :: " ;
-      //std::cout<< " :: " ;
+      std::cout<< frac_arr[i] ;
+      //if(frac_arr[i] < 10.) std::cout<< "   :: " ;
+      //else if(frac_arr[i] < 100.) std::cout<< "  :: " ;
+      //else std::cout<< " :: " ;
+      std::cout<< " :: " ;
       
       std::cout<< i ;
       if(i < 10) std::cout<< "   :: " ;
@@ -387,15 +387,15 @@ int printPlots_jetMultPlots(const std::string input_ppData_condorDir , const std
       else if(percHi_arr[i] < 100) std::cout<< "  :: " ;
       else std::cout<< " :: " ;
 
-      //std::cout<< firstBin_arr[i]  ;
-      //if(firstBin_arr[i] < 10) std::cout<< "   :: " ;
-      //else if(firstBin_arr[i] < 100) std::cout<< "  :: " ;
-      //else std::cout<< " :: " ;
+      std::cout<< firstBin_arr[i]  ;
+      if(firstBin_arr[i] < 10) std::cout<< "   :: " ;
+      else if(firstBin_arr[i] < 100) std::cout<< "  :: " ;
+      else std::cout<< " :: " ;
 
-      //std::cout<< secondBin_arr[i] ;
-      //if(secondBin_arr[i] < 10) std::cout<< "   :: " ;
-      //else if(secondBin_arr[i] < 100) std::cout<< "  :: " ;
-      //else std::cout<< " :: " ;
+      std::cout<< secondBin_arr[i] ;
+      if(secondBin_arr[i] < 10) std::cout<< "   :: " ;
+      else if(secondBin_arr[i] < 100) std::cout<< "  :: " ;
+      else std::cout<< " :: " ;
       
       std::cout<< nTrksLo_arr[i]   ;
       if(nTrksLo_arr[i] < 10) std::cout<< "   :: " ;

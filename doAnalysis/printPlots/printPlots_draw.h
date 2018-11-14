@@ -1,7 +1,7 @@
 const int var_xAx_reBin[]={                                   
   10, 10,     //reco/rawjtpt  
   10, 10, 10,    //no Res, L2Res, L3Res jtpt
-
+  
   5,  4,      //jteta, phi    
 
   1, 5, 5,    //trks	      
@@ -400,23 +400,3 @@ TLatex* makeTLatex(float x, float y, std::string inputString, float size){
   return t;
 }
 
-//void specialRatio(TH1F* theRatio){
-void fracSubtracted(TH1F* theRatio){
-  bool funcDebug=false;
-  int nbins=theRatio->GetNbinsX();
-  for(int i=1; i<=nbins;i++){
-    
-    float content=theRatio->GetBinContent(i);
-    
-    if(funcDebug)std::cout<<"before bin i="<<i<<" content="<<content<<std::endl;
-    content*=-1.;
-    content+=1.;
-    content*=100.;
-    if(content==100.)continue;//avoid weird scaling shit
-    //if(funcDebug)std::cout<<"now    bin i="<<i<<" content="<<content<<std::endl;
-    theRatio->SetBinContent( i,content);
-    if(funcDebug)std::cout<<"after  bin i="<<i<<" content="<<theRatio->GetBinContent(i)<<std::endl;
-  }
-  //  assert(false);
-  return;
-}

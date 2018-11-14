@@ -4,13 +4,13 @@
 // ppData switches
 const bool fillDataEvtQAHists=true;
 const bool fillDataJetQAHists=true;
-const bool fillDataJetIDHists=true;//, tightJetID=false;
+const bool fillDataJetIDHists=false;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 
 const bool fillDataDijetHists=false;
 const bool fillDataJetSpectraRapHists=false; //other
 const bool useHLT100=false;
-const bool ResCorrTrigPtIfApp=false;
+const bool ResCorrTrigPtIfApp=true;
 const int jetIDint=(int)fillDataJetIDHists;
 
 //const bool fillDataVtxTrkQAHists=true; //in the works
@@ -255,8 +255,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       hJetQA_jtpt_v_L3Res = new TH2D( Form("hJetQA_%dwJetID_jtpt_v_L3Res", k) , Form("jtpt v. jetpt_L3Res" ) , 2500,0,2500 , 2500,0,2500);
       hJetQA_jtpt_L2Res_v_L3Res = new TH2D( Form("hJetQA_%dwJetID_jtpt_L2Res_v_L3Res", k) , Form("jtpt_L2Res v. jetpt_L3Res" ) , 2500,0,2500 , 2500,0,2500);
       
-      for(int j = 0; j<N_vars; ++j){	
-	
+      
+      //make JetQA Hists //TODO
+      //makeJetQAHists((TH1D*)hJetQA, jetIDint)
+      for(int j = 0; j<N_vars; ++j){		
 	//jets
 	if(var[j]=="jtpt"||var[j]=="rawpt")
 	  hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;", var[j].c_str()) , 2500,0,2500);       
@@ -264,7 +266,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 100,-5,+5);
 	else if(var[j]=="jtphi") 
 	  hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 100,-4,+4);
-
 	//jetconst. counts
 	else if(var[j]=="trkN"|| var[j]=="phN"|| var[j]=="chN"|| var[j]=="neN"|| var[j]=="eN"|| var[j]=="muN")
 	  hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 60,0,60);         
@@ -272,21 +273,20 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 60,0,60);         
 	else if(var[j]=="neuMult"|| var[j]=="chMult"|| var[j]=="numConst")
 	  hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 100,0,100);         
-
 	//dijets
 	else if (fillDataDijetHists){
 	  if(var[j]=="dphi") 
-	    hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 50,0,+4);
+	    hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()) , Form(";%s;",var[j].c_str()) , 50,0,4);
 	  else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt")
 	    hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;", var[j].c_str()), 2500,0,2500);
 	  else //xj and Aj binnings
 	    hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 200,0,2);         
-	}
-
+	}//dijet hists
 	//consituent binnings
 	else 
 	  hJetQA[k][j] = new TH1D( Form("hJetQA_%dwJetID_%s", k,var[j].c_str()), Form(";%s;",var[j].c_str()), 200,0,2);         
-      } }
+      }//nvars loop 
+    }//jetid int loop
   
   TH1D *hJetSpectraRap[2][nbins_abseta]={};
   if(fillDataJetSpectraRapHists)
@@ -833,8 +833,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       h_NEvents_trigd_2->Fill(1.,weight_eS);    
     }
     
-    if(fillDataJetTrigQAHists){ //only want to fill these trigger jet plots if they pass all our quality criteria
-      
+    if(fillDataJetTrigQAHists){ //only want to fill these trigger jet plots if they pass all our quality criteria      
       if(trgDec[0]&&!(trgPt<HLTthresh[0]))   hpp_IncHLT40trgPt->Fill(  trgPt, (double)trgPscl[0] );
       if(trgDec[1]&&!(trgPt<HLTthresh[1]))   hpp_IncHLT60trgPt->Fill(  trgPt, (double)trgPscl[1] );
       if(trgDec[2]&&!(trgPt<HLTthresh[2]))   hpp_IncHLT80trgPt->Fill(  trgPt, (double)trgPscl[2] );

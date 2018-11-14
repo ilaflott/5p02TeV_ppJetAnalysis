@@ -24,8 +24,12 @@ const std::string trgCombType="PF";
 //const int targetRun=262163;
 //const int targetEvt=197246756;
 //const int targetRun=262271;
-const int targetEvt=1000276728;
+//const int targetEvt=1000276728;
+//const int targetRun=262274;
+const int targetEvt=190748136;
 const int targetRun=262274;
+const int maxEvtsToPrint=100;
+const bool onelinemode=true;
 
 
 //Run:262252, event: 112211851,
@@ -71,7 +75,7 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   // jet tree name+directory formation
   std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
   if(debugMode)std::cout<<"looking at jetTree "<<jetTreeName<<std::endl;
-
+  
   // initialize tree name array
   std::string trees[N_dataTrees];
   trees[0]=jetTreeName;
@@ -564,8 +568,9 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
   jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[1].c_str() , &CaloJet60_p_I);
   jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[2].c_str() , &CaloJet80_p_I);
   jetpp[4]->SetBranchAddress( Calo_HLTPresclBranches[3].c_str() , &CaloJet100_p_I);
-  
 
+  double HLTthresh[4]={55.,75.,105.,135.};//hard coded temporarily to answer john quickly
+  
 
 
 
@@ -616,17 +621,23 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     L3JES = new L3ResidualJES("pp5");  }
     
 
+  
 
+  
   //float jetIDCut_neSum, jetIDCut_phSum;
   //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
   //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
   
   //begin event loop
+  int numevtsprinted=0;
   bool targetEvtFound=false;
   for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
     //if(targetEvtFound)break;
-    if(targetEvtFound&&nEvt%100==0)continue;
-    
+    //if(targetEvtFound&&nEvt%100==0)continue;
+    if(numevtsprinted>maxEvtsToPrint){
+      std::cout<<"max # evts printed reached; maxEvts="<<maxEvtsToPrint<<std::endl;
+      break;
+    }
     //grab an entry
     if( debugMode && (nEvt%1000==0) ) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
     else if (nEvt%10000==0) std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;
@@ -651,28 +662,49 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     //if(true) { std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
     //    if(evt_I==targetEvt && run_I==targetRun && lumi_I==targetLumi) std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
     if((evt_I==targetEvt && run_I==targetRun) || targetEvtFound) { 
-
-      std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
-      std::cout<<"evt=="<<evt_I<<std::endl;
-      std::cout<<"run=="<<run_I<<std::endl;
-      std::cout<<"lumi=="<<lumi_I<<std::endl;
-
-      std::cout<<std::endl<<"HiEvtAnalyzer/EvtFilers:"<<std::endl;
-      std::cout<<"pHBHENoiseFilter_I     =="<< pHBHENoiseFilter_I     <<std::endl;
-      std::cout<<"pBeamScrapingFilter_I  =="<< pBeamScrapingFilter_I  <<std::endl;
-      std::cout<<"pprimaryvertexFilter_I =="<< pprimaryvertexFilter_I <<std::endl;
-      std::cout<<"vx_F =="<< vx_F <<std::endl;
-      std::cout<<"vy_F =="<< vy_F <<std::endl;
-      std::cout<<"vz_F =="<< vz_F <<std::endl;
       
-      std::cout<<std::endl<<"trackTree vtx info:"<<std::endl;
-      std::cout<<"nVtx="<<nVtx_I << std::endl;
-      std::cout<<"nTrkVtx="<<nTrkVtx_I[0] << std::endl;
-      std::cout<<"xVtx="<<xVtx_F[0] << std::endl;
-      std::cout<<"yVtx="<<yVtx_F[0] << std::endl;
-      std::cout<<"zVtx="<<zVtx_F[0] << std::endl;
+      if(evt_I==targetEvt && run_I==targetRun){
+	std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
+	if(onelinemode)std::cout<<"format for one-line is:"<<std::endl;
+	//if(onelinemode)std::cout<<"run lumi evt ";
+	if(onelinemode)std::cout<<"run evt ";
+	//if(onelinemode)std::cout<<"ak4PF40 ak4PF60 ak4PF80 ";
+	//	if(onelinemode)std::cout<<"ak4PF40_PS ak4PF60_PS ak4PF80_PS ";
+	//	if(onelinemode)std::cout<<"L1_SingleJet28_PS L1_SingleJet40_PS L1_SingleJet48_PS ";//<<std::endl;
+	//if(onelinemode)std::cout<<"trgObj_maxTrgPt trgObj_maxTrgEta ";//<<std::endl;
+	//if(onelinemode)std::cout<<"is40 is60 is80 ";//<<std::endl;
+	if(onelinemode)std::cout<<"nJets jet1 p_T jet2 p_T ... jet(nJets) p_T ";
+	if(onelinemode)std::cout<<"FinalPrescaleWeight ";
 
+	std::cout<<std::endl;
+      }
+      
+      if(!onelinemode){
+	std::cout<<"run=="<<run_I<<std::endl;
+	std::cout<<"lumi=="<<lumi_I<<std::endl;
+	std::cout<<"evt=="<<evt_I<<std::endl;
+	std::cout<<std::endl<<"HiEvtAnalyzer/EvtFilers:"<<std::endl;
+	std::cout<<"pHBHENoiseFilter_I     =="<< pHBHENoiseFilter_I     <<std::endl;
+	std::cout<<"pBeamScrapingFilter_I  =="<< pBeamScrapingFilter_I  <<std::endl;
+	std::cout<<"pprimaryvertexFilter_I =="<< pprimaryvertexFilter_I <<std::endl;
+	std::cout<<"vx_F =="<< vx_F <<std::endl;
+	std::cout<<"vy_F =="<< vy_F <<std::endl;
+	std::cout<<"vz_F =="<< vz_F <<std::endl;      
+	std::cout<<std::endl<<"trackTree vtx info:"<<std::endl;
+	std::cout<<"nVtx="<<nVtx_I << std::endl;
+	std::cout<<"nTrkVtx="<<nTrkVtx_I[0] << std::endl;
+	std::cout<<"xVtx="<<xVtx_F[0] << std::endl;
+	std::cout<<"yVtx="<<yVtx_F[0] << std::endl;
+	std::cout<<"zVtx="<<zVtx_F[0] << std::endl;
+      }
+      else if (onelinemode){
+	std::cout<<run_I<<" ";
+	//std::cout<<lumi_I<<" ";
+	std::cout<<evt_I<<" ";
+      }
+      
       targetEvtFound=true;
+      numevtsprinted++;
     }
     else{ 
       if(nEvt%10000==0){
@@ -681,8 +713,8 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 	std::cout<<"lumi=="<<lumi_I<<std::endl;
 	//std::cout<<"nvtxs="<<nvtx_I << std::endl;
       }
-      //targetEvtFound=false;      
-      continue;}
+      continue;
+    }
 
 
 
@@ -692,19 +724,33 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     bool PFtrgDec[N_HLTBits]   ={ (bool)PFJet40_I, (bool)PFJet60_I, (bool)PFJet80_I, (bool)PFJet100_I };
     int PFtrgPrescl[N_HLTBits] ={ PFJet40_p_I*jet40_l1s_ps_I , PFJet60_p_I*jet60_l1s_ps_I , 
 				  PFJet80_p_I*jet80_l1s_ps_I , PFJet100_p_I*jet100_l1s_ps_I };
-
+    
     bool CalotrgDec[N_HLTBits]   ={ (bool)CaloJet40_I, (bool)CaloJet60_I, (bool)CaloJet80_I, (bool)CaloJet100_I};
     int CalotrgPrescl[N_HLTBits] ={ CaloJet40_p_I*jet40_l1s_ps_I , CaloJet60_p_I*jet60_l1s_ps_I,
 				    CaloJet80_p_I*jet80_l1s_ps_I , CaloJet100_p_I*jet100_l1s_ps_I };     
     
     if(targetEvtFound ) {// std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
-      std::cout<<std::endl;
-      std::cout<<"HLT PF 40/60/80     == "<<PFJet40_I << "/"<<PFJet60_I << "/"<<PFJet80_I  <<std::endl;
-      std::cout<<"HLT PF 40/60/80 PSCL== "<< (PFJet40_p_I*jet40_l1s_ps_I) << "/"<< (PFJet60_p_I*jet60_l1s_ps_I)<< "/"<< (PFJet80_p_I*jet80_l1s_ps_I)  <<std::endl;
-
-      std::cout<<std::endl;
-      std::cout<<"HLT Calo 40/60/80     == "<<CaloJet40_I << "/"<<CaloJet60_I << "/"<<CaloJet80_I  <<std::endl;
-      std::cout<<"HLT Calo 40/60/80 PSCL== "<< (CaloJet40_p_I*jet40_l1s_ps_I) << "/"<< (CaloJet60_p_I*jet60_l1s_ps_I)<< "/"<< (CaloJet80_p_I*jet80_l1s_ps_I)  <<std::endl;
+      if(!onelinemode){
+	std::cout<<std::endl;
+	std::cout<<"HLT PF 40/60/80     == "<<PFJet40_I << "/"<<PFJet60_I << "/"<<PFJet80_I  <<std::endl;
+	std::cout<<"HLT PF 40/60/80 PSCL== "<< (PFJet40_p_I*jet40_l1s_ps_I) << "/"<< (PFJet60_p_I*jet60_l1s_ps_I)<< "/"<< (PFJet80_p_I*jet80_l1s_ps_I)  <<std::endl;
+	
+	std::cout<<std::endl;
+	std::cout<<"HLT Calo 40/60/80     == "<<CaloJet40_I << "/"<<CaloJet60_I << "/"<<CaloJet80_I  <<std::endl;
+	std::cout<<"HLT Calo 40/60/80 PSCL== "<< (CaloJet40_p_I*jet40_l1s_ps_I) << "/"<< (CaloJet60_p_I*jet60_l1s_ps_I)<< "/"<< (CaloJet80_p_I*jet80_l1s_ps_I)  <<std::endl;
+      }
+      else if(onelinemode){
+	//std::cout<< PFJet40_I <<" ";
+	//std::cout<< PFJet60_I <<" ";
+	//std::cout<< PFJet80_I <<" ";
+//	std::cout<< PFJet40_p_I <<" ";
+//	std::cout<< PFJet60_p_I <<" ";
+//	std::cout<< PFJet80_p_I <<" ";
+//	std::cout<< jet40_l1s_ps_I <<" ";
+//	std::cout<< jet60_l1s_ps_I <<" ";
+//	std::cout<< jet80_l1s_ps_I <<" ";
+	//assert(false);
+      }
     }
     
     bool *trgDec=NULL; int *trgPscl=NULL;
@@ -758,7 +804,7 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     // check trigger decisions for events + exclusivity between them, count events, assign prescale weight
     float weight_eS=0.;
     //float weight_eS = trigComb(trgDec, trgPscl, trgPt); // trig comb function replicates the procedure below
-
+    
     bool is40  = false, is60  = false, is80  = false, is100 = false;
     if(useHLT100){
       if(      trgDec[3] && trgPt>=HLTthresh[3]               ) 
@@ -771,8 +817,6 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 	{ is40  = true;  weight_eS=trgPscl[0]; }            
     }
     else {
-//      if(      trgDec[3] && trgPt>=HLTthresh[3]               ) 
-//	{ is100 = true;  weight_eS=trgPscl[3]; }
       if( trgDec[2] && trgPt>=HLTthresh[2]  ) 
 	{ is80  = true;  weight_eS=trgPscl[2]; }
       else if( trgDec[1] && trgPt>=HLTthresh[1]  && trgPt<HLTthresh[2]  ) 
@@ -782,16 +826,27 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     }
     
      if(targetEvtFound ) {// std::cout<<std::endl<<std::endl<<"target evt/run/lumi found"<<std::endl<<std::endl;
-      std::cout<<std::endl;
-      std::cout<<"trigComboType="<< trgCombType<<std::endl;
-      std::cout<<"HLT 40/60/80 thresholds== "<< HLTthresh[0] << "/"<< HLTthresh[1]<< "/"<< HLTthresh[2]  <<std::endl;
-      std::cout<<"TrgObj 40/60/80 pt/eta == "<< trgPt << "/"<< trgEta<< std::endl;
-      std::cout<<"is 40/60/80     == "<<is40 << "/"<<is60 << "/"<<is80  <<std::endl;
-      std::cout<<std::endl;
-    }
-    
-    
-    
+       if(!onelinemode){
+	 std::cout<<std::endl;
+	 std::cout<<"trigComboType="<< trgCombType<<std::endl;
+	 std::cout<<"HLT 40/60/80 thresholds== "<< HLTthresh[0] << "/"<< HLTthresh[1]<< "/"<< HLTthresh[2]  <<std::endl;
+	 std::cout<<"TrgObj 40/60/80 pt/eta == "<< trgPt << "/"<< trgEta<< std::endl;
+	 std::cout<<"is 40/60/80     == "<<is40 << "/"<<is60 << "/"<<is80  <<std::endl;
+	 std::cout<<std::endl;
+       }
+       else if(onelinemode){
+	 //	 std::cout << trgPt << " ";
+	 //	 std::cout << trgEta << " ";	 
+	 //std::cout << is40 <<" ";
+	 //std::cout << is60 <<" ";
+	 //std::cout << is80 <<" ";
+	 //	 std::cout << weight_eS <<" ";
+	 //assert(false);
+       }
+     }
+     
+     
+     
     if     ( is100 )  { NEvents_100++ ; h_NEvents_jet100->Fill(1)  ; }
     else if( is80  )  { NEvents_80++  ;  h_NEvents_jet80->Fill(1)  ; }
     else if( is60  )  { NEvents_60++  ;  h_NEvents_jet60->Fill(1)  ; }
@@ -831,9 +886,11 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
     //if(weight_eS!=0.) h_NEvents_trigd->Fill(1); //this will be # of triggered events w/o weights pre vz/skim cuts
     //else continue;
 
-    if(targetEvtFound) std::cout<<"prescale =="<<weight_eS<<std::endl;
-    if(targetEvtFound) std::cout<<"nref     =="<<nref_I<<std::endl;
-
+    if(targetEvtFound&&!onelinemode) std::cout<<"prescale =="<<weight_eS<<std::endl;
+    if(targetEvtFound&&!onelinemode) std::cout<<"nref     =="<<nref_I<<std::endl;
+    
+    if(targetEvtFound&&onelinemode) std::cout<<nref_I<<" ";//<<std::endl;
+    
     // fill evt vz histo
     if(fillDataEvtQAHists){
 
@@ -901,23 +958,26 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 
       if(doResidualCorr){
 	
-	if(targetEvtFound)std::cout<<"jet #"<<jet<<" , eta = "<<receta<<" , y = "<<recy<<std::endl;
-	if(targetEvtFound)std::cout<<"jet #"<<jet<<" , phi = "<<recphi<<std::endl;	
-	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , rawpt = "<<rawpt<<std::endl;	
-	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , recpt = "<<recpt<<std::endl;	
+	if(targetEvtFound&&!onelinemode)std::cout<<"jet #"<<jet<<" , eta = "<<receta<<" , y = "<<recy<<std::endl;
+	if(targetEvtFound&&!onelinemode)std::cout<<"jet #"<<jet<<" , phi = "<<recphi<<std::endl;	
+	if(targetEvtFound&&!onelinemode) std::cout<<"jet #"<<jet<< " , rawpt = "<<rawpt<<std::endl;	
+	if(targetEvtFound&&!onelinemode) std::cout<<"jet #"<<jet<< " , recpt = "<<recpt<<std::endl;	
 
       	recpt=L2JES->getCorrectedPt(recpt,receta);  
-	if(targetEvtFound) std::cout<<"jet #"<<jet<<" : recptL2 = "<<recpt<<std::endl;
+	if(targetEvtFound&&!onelinemode) std::cout<<"jet #"<<jet<<" : recptL2 = "<<recpt<<std::endl;
 
 	recpt=L3JES->getCorrectedPt(recpt);        
-	if(targetEvtFound) std::cout<<"jet #"<<jet<<" : recptL3 = "<<recpt<<std::endl;
+	if(targetEvtFound&&!onelinemode) std::cout<<"jet #"<<jet<<" : recptL3 = "<<recpt<<std::endl;
       }
       else{
-	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , y = "<<receta<<" , phi = "<<recphi<<std::endl;	
-	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , rawpt = "<<rawpt<<std::endl;	
-	if(targetEvtFound) std::cout<<"jet #"<<jet<< " , recpt = "<<recpt<<std::endl;	
+	if(targetEvtFound&&!onelinemode) std::cout<<"jet #"<<jet<< " , y = "<<receta<<" , phi = "<<recphi<<std::endl;	
+	if(targetEvtFound&&!onelinemode) std::cout<<"jet #"<<jet<< " , rawpt = "<<rawpt<<std::endl;	
+	if(targetEvtFound&&!onelinemode) std::cout<<"jet #"<<jet<< " , recpt = "<<recpt<<std::endl;	
       }
-      std::cout<<std::endl;
+      //std::cout<<std::endl;
+      
+      
+      if(targetEvtFound&&onelinemode) std::cout<< recpt << " ";
       
       
       // kmatCuts      
@@ -1243,9 +1303,15 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
 	  hNEvts_withJets_JetIDCut_Filled=true;   }
 	
       }//end fillDataAJetIDhists
-
+      
+      
     }//end jet loop
-
+    std::cout << weight_eS <<" ";
+    //if(onelinemode){ 
+    //std::cout<<endl;
+    //std::cout<<endl;
+    //assert(false);
+    //}
     if(fillDataEvtQAHists){
       if(fillDataJetIDHists){
 	//hLeadJetPt_wJetID->Fill(evt_leadJetPt_wJetID ,weight_eS);
@@ -1255,53 +1321,58 @@ int readForests_ppData_findEvt( std::string inFilelist , int startfile , int end
       hjetsPEvt ->Fill(jetsPerEvent,1.0);   
       hWjetsPEvt->Fill(jetsPerEvent,weight_eS); 
     }
+    std::cout<<std::endl;
   }//end event loop
 
-  std::cout<<std::endl;
-  
-  std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
-  std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
-  std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetEntries()<<std::endl;
-  std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl<<std::endl;
-  
-  std::cout<<"Total Num of Events passing jet40 = "  << h_NEvents_jet40->GetEntries()  << std::endl;
-  std::cout<<"Total Num of Events passing jet60 = "  << h_NEvents_jet60->GetEntries()  << std::endl;
-  std::cout<<"Total Num of Events passing jet80 = "  << h_NEvents_jet80->GetEntries()  << std::endl;
-  std::cout<<"Total Num of Events passing jet100 = " << h_NEvents_jet100->GetEntries() << std::endl;
-  std::cout<<"Total Num of Events passing a trigger = " << h_NEvents_trigd->GetEntries() << std::endl << std::endl;
-  
-  std::cout<<"Total Num of Events passing skimCuts  = " << h_NEvents_skimCut->GetEntries()<<std::endl;
-  std::cout<<"Total Num of Events passing vzCuts    = " << h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
-  
-  std::cout<<"Total Num of good Events w/ jets = " << h_NEvents_withJets->GetEntries()<<std::endl; //note, approximate, some events make it through with nref=0 for some reason
-  std::cout<<"Total Num of good Events, w/ jets, post kmatCuts = " << h_NEvents_withJets_kmatCut->GetEntries() << std::endl; 
-  if(fillDataJetIDHists) 
-    std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " << h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;        
 
-  std::cout<<std::endl<<"/// Job Jet-Loop Summary ///"<<std::endl<<std::endl;
-  std::cout<<"Total Num of Jets read from good events                          = " <<    h_NJets->GetEntries()<<std::endl;  
-  std::cout<<"Total Num of Jets read from good events post kinCut              = " <<    h_NJets_kmatCut->GetEntries()<<std::endl;
-  if(fillDataJetIDHists) 
-    std::cout<<"Total Num of Jets read from good events post kinCut AND JetIDCut = " << h_NJets_JetIDCut->GetEntries()<<std::endl;
-  std::cout<<std::endl;
-  
-  std::cout<<"writing output file... ";
+  if(!onelinemode){
+    std::cout<<std::endl;
+    
+    std::cout<<std::endl<<"/// Job Event-Loop Summary ///"<<std::endl<<std::endl;
+    std::cout<<"Total Num of Events in file(s) opened       = " <<h_NEvents->GetEntries()<<std::endl;
+    std::cout<<"Total Num of Events skipped from those file(s) = " <<h_NEvents_skipped->GetEntries()<<std::endl;
+    std::cout<<"Total Num of Events read from those file(s) = " <<h_NEvents_read->GetEntries()<<std::endl<<std::endl;
+    
+    std::cout<<"Total Num of Events passing jet40 = "  << h_NEvents_jet40->GetEntries()  << std::endl;
+    std::cout<<"Total Num of Events passing jet60 = "  << h_NEvents_jet60->GetEntries()  << std::endl;
+    std::cout<<"Total Num of Events passing jet80 = "  << h_NEvents_jet80->GetEntries()  << std::endl;
+    std::cout<<"Total Num of Events passing jet100 = " << h_NEvents_jet100->GetEntries() << std::endl;
+    std::cout<<"Total Num of Events passing a trigger = " << h_NEvents_trigd->GetEntries() << std::endl << std::endl;
+    
+    std::cout<<"Total Num of Events passing skimCuts  = " << h_NEvents_skimCut->GetEntries()<<std::endl;
+    std::cout<<"Total Num of Events passing vzCuts    = " << h_NEvents_vzCut->GetEntries()<<std::endl<<std::endl;
+    
+    std::cout<<"Total Num of good Events w/ jets = " << h_NEvents_withJets->GetEntries()<<std::endl; //note, approximate, some events make it through with nref=0 for some reason
+    std::cout<<"Total Num of good Events, w/ jets, post kmatCuts = " << h_NEvents_withJets_kmatCut->GetEntries() << std::endl; 
+    if(fillDataJetIDHists) 
+      std::cout<<"Total Num of good Events, w/ jets, post kmatCut AND JetIDCut = " << h_NEvents_withJets_JetIDCut->GetEntries()<<std::endl;        
+    
+    std::cout<<std::endl<<"/// Job Jet-Loop Summary ///"<<std::endl<<std::endl;
+    std::cout<<"Total Num of Jets read from good events                          = " <<    h_NJets->GetEntries()<<std::endl;  
+    std::cout<<"Total Num of Jets read from good events post kinCut              = " <<    h_NJets_kmatCut->GetEntries()<<std::endl;
+    if(fillDataJetIDHists) 
+      std::cout<<"Total Num of Jets read from good events post kinCut AND JetIDCut = " << h_NJets_JetIDCut->GetEntries()<<std::endl;
+    std::cout<<std::endl;
+    
+    std::cout<<"writing output file... ";
+  }
   fout->Write(); 
   
   trgObjpt_40->clear();
   trgObjpt_60->clear();
   trgObjpt_80->clear();
   trgObjpt_100->clear();
-
+  
   trgObjeta_40->clear();
   trgObjeta_60->clear();
   trgObjeta_80->clear();
   trgObjeta_100->clear();
   
-  std::cout<<std::endl<<"readForests_ppData_findEvt finished."<<std::endl;  timer.Stop();
-  std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
-  std::cout<<"Real tyime (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
-  std::cout<<"output file written is  "<<outfile<<std::endl<<std::endl;
+  if(!onelinemode)std::cout<<std::endl<<"readForests_ppData_findEvt finished."<<std::endl;  
+  timer.Stop();
+  if(!onelinemode)std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
+  if(!onelinemode)std::cout<<"Real tyime (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
+  if(!onelinemode)std::cout<<"output file written is  "<<outfile<<std::endl<<std::endl;
   return 0;
 }    // end readForests_ppData_findEvt
 

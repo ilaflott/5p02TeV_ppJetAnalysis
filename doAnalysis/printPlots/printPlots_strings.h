@@ -100,6 +100,121 @@ const std::string var_xAx_Titles[] = {
   "A_{j}",     "x_{j}" , "#Delta #phi", 
   "Jet p_{T,1}^{RECO} (GeV)", "Jet p_{T,2}^{RECO} (GeV)"
 };
-//const int N_vars_xAx_Titles = sizeof(var_xAx_Titles)/sizeof(std::string);
 
+// gen variable names for Th2 profiles//MCEff Ploits
+const std::string genVars[] = {   
+  "pt","eta","phi" //,"drjt"
+};
+const int N_genVars = sizeof(genVars)/sizeof(std::string);
+
+const std::string genVars_ptrat[] = {   
+  "eta","phi" ,"drjt"
+};
+const int N_genVars_ptrat = sizeof(genVars_ptrat)/sizeof(std::string);
+
+
+// trigs
+const std::string HLTName[] = {
+  "HLTComb","HLT40","HLT60","HLT80","HLT100"
+};
+// trigs
+const std::string HLTCaloName_Leg[] = {
+  "HLTak4CaloJetsCombo","HLTak4CaloJets40","HLTak4CaloJets60","HLTak4CaloJets80","HLTak4CaloJets100"
+};
+// trigs
+const std::string HLTPFName_Leg[] = {
+  "HLTPFJets Combo","HLTak4PFJets40","HLTak4PFJets60","HLTak4PFJets80","HLTak4PFJets100"
+};
+const int N_trigs=sizeof(HLTName)/sizeof(std::string);
+
+// string arrays
+//L1
+const std::string L1BitStrings[]={
+  "L1_SingleJet28_BptxAND",
+  "L1_SingleJet40_BptxAND",
+  "L1_SingleJet48_BptxAND",
+  "L1_SingleJet52_BptxAND"
+};
+const int N_L1Bits=sizeof(L1BitStrings)/sizeof(std::string);
+
+//HLT
+const std::string HLTBitStrings[N_L1Bits]={
+  "HLT_AK4CaloJet40_Eta5p1",
+  "HLT_AK4CaloJet60_Eta5p1",
+  "HLT_AK4CaloJet80_Eta5p1",
+  "HLT_AK4CaloJet100_Eta5p1"    
+};
+const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
+
+//// combos
+const std::string etaWidth = "20_eta_20";
+
+bool str_replace(std::string& str, const std::string& from, const std::string& to) {
+//bool str_replace(std::string str, const std::string from, const std::string to) {
+  size_t start_pos = str.find(from);
+  if(start_pos == std::string::npos)
+    return false;
+  str.replace(start_pos, from.length(), to);
+  return true;
+}
+
+bool findsubstr(std::string& str, const std::string& substr) {
+  //bool str_replace(std::string str, const std::string from, const std::string to) {
+  bool substrfound=false;
+  size_t substr_pos= str.find(substr);
+  //size_t start_pos = str.find(from);
+  if(substr_pos != std::string::npos)
+    substrfound=true;  
+  return substrfound;
+}
+
+
+
+
+
+
+
+
+
+// string arrays, etc.
+const char *cdir[]  = {"PP"};
+const char *ccent[] = {"PP"};
+const int ncen=1;
+
+const std::string algo ="ak";// strings of jet algo
+//const std::string algo[] ={"ak","akPu"};// strings of jet algo
+
+const std::string jetType="PF";// strings of jet type
+//const std::string jetType[]={"PF","Calo","Cs"};// strings of jet type
+
+const std::string srad[] ={"4"};// strings of jet radii
+const int Nrad =sizeof(srad)/sizeof(std::string);//wasn't in original code, 10 arbitrarily chosen
+
+const std::string PFCandType[] = {"unknown",
+				  "chargedHadron",
+				  "electron",  "muon", "photon",
+				  "neutralHadron",
+				  "HadEnergyinHF", "EMEnergyinHF"};  
+const int PFType = sizeof(PFCandType)/sizeof(std::string);
+
+
+//// tree names+directories
+//const std::string ppDataTrees[]={ 
+//  "GARBAGE ENTRY" , //use jet ana of choice later
+//  "hiEvtAnalyzer/HiTree" ,
+//  "skimanalysis/HltTree" ,
+//  "hltanalysis/HltTree" ,
+//  "hltobject/"+HLTBitStrings[0]+"_v" , 
+//  "hltobject/"+HLTBitStrings[1]+"_v" , 
+//  "hltobject/"+HLTBitStrings[2]+"_v" , 
+//  "hltobject/"+HLTBitStrings[3]+"_v"   
+//}; 
+//const int N_trees_ppData = sizeof(treeNames)/sizeof(std::string);
+
+
+
+//// other useful things
+//const std::string HLThNames[]={"HLT40_","HLT60_","HLT80_","HLT100_","HLTComb_","TrgCombTest_"};
+//const std::string HLThTitle[]={"HLT40 ","HLT60 ","HLT80 ","HLT100 ","HLTComb ","Kurt Meth. HLTComb "};
+//const int N_HLThNames=sizeof(HLThNames)/sizeof(std::string);
 

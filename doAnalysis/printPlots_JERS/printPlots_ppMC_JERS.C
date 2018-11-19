@@ -1,9 +1,7 @@
 #include "printPlots.h"
 
 const bool debugMode=true;
-const bool draw_hJER=true;
-const bool draw_MCEff=true;
-const bool drawProfiles = true;
+const bool drawProfiles = false;
 const bool rebinJER=true;
 
 
@@ -22,7 +20,12 @@ const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 const std::string didJetID="1";
 const std::string doJetID="1";
 
-int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
+//const bool draw_hJER=true;
+//const bool draw_MCEff=false;
+
+
+
+int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, const bool draw_hJER=true, const bool draw_MCEff=false){
   
   // root style settings.
   std::cout<<"forcing style"<<std::endl;
@@ -614,13 +617,13 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag){
 
 int main(int argc, char*argv[]){
   int rStatus=-1;
-  if(argc!=3){
+  if(argc!=5){
     std::cout<<"no defaults. Do...."<<std::endl;
     std::cout<<"./printPlots_ppMC_JERS.exe <target_ppMC_dir> <output tag>"<<std::endl<<std::endl;
     return rStatus;  }
   
   rStatus=1;
-  rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] );
+  rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] , (const bool)std::atoi(argv[3]), (const bool)std::atoi(argv[4]));
   return rStatus;
 }
 

@@ -102,12 +102,13 @@ class L2ResidualJES
      if( mode == "pPb5" ) correctionFile = new TFile(Form("JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d_July4_pPb_double_const.root",algoCorr.Data(),etacut,dopPb));
      else if( mode == "Pbp5" ) correctionFile = new TFile(Form("JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d_July4_Pbp_double_const.root",algoCorr.Data(),etacut,dopPb));
      else correctionFile = new TFile(Form("JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d.root",algoCorr.Data(),etacut,dopPb));
-     cout << Form("JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d.root",algoCorr.Data(),etacut,dopPb) << endl;
-   
+
+     //cout << Form("JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d.root",algoCorr.Data(),etacut,dopPb) << endl;
+     
      if(mode == "pPb5") fitInitial = new TF1("fitInitial","9.87174e-01+(-5.45335e-03)*x+(1.31839e-02)*x*x",-3,3);
      if(mode == "Pbp5") fitInitial = new TF1("fitInitial","9.87174e-01+(-5.45335e-03)*x+(1.31839e-02)*x*x",-3,3);
-   
-     cout << "neta = "<< neta <<  Form(" JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d.root",algoCorr.Data(),etacut,dopPb) << endl;
+     
+     //cout << "neta = "<< neta <<  Form(" JECDataDriven/L2L3VsPtEtaBinned_alphacut_high2_%s_etacut%d_dopPb%d.root",algoCorr.Data(),etacut,dopPb) << endl;
 
      for(int ieta = 0;ieta<neta;ieta++){
        fits[ieta] = (TF1*)correctionFile->Get(Form("fit%d",ieta));

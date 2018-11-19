@@ -4,7 +4,7 @@
 // code/job switches ------------------------
 
 //options
-const bool debugMode=false, doEventCounts=true, doJetIDPlots=true;
+const bool debugMode=false, doEventCounts=true;//, doJetIDPlots=true;
 
 //draw switches
 const bool drawEvtQAPlots=true;
@@ -76,8 +76,8 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   
 
 
-
-
+  
+  
   
   // OPEN INPUT SECTION
   std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;  
@@ -112,7 +112,16 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   
   
   
+  bool doJetIDPlots=false;
+  TH1F* testJetID_fin=(TH1F*)finData->Get("hJetQA_1wJetID_jtpt");
+  TH1F* testNOJetID_fin=(TH1F*)finData->Get("hJetQA_0wJetID_jtpt");
+  if( !testJetID_fin && testNOJetID_fin)
+    doJetIDPlots=false;
+  else if(testJetID_fin && !testNOJetID_fin)
+    doJetIDPlots=true;
   
+  std::cout<<"doJetIDPlots="<<doJetIDPlots<<std::endl;
+  //assert(false);
   
   
   

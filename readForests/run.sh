@@ -2,9 +2,10 @@
 
 subm_ppData_jetPlots=0
 subm_ppMC_jetPlots=0
-subm_ppMC_JERS=1
+subm_ppMC_JERS=0
 subm_ppData_jetMult=0
 subm_ppMC_jetMult=0
+subm_ppData_findEvt=1
 
 
 echo ""
@@ -65,8 +66,14 @@ then
 #    source run_readForests_jetMult.sh 4 "1.0" "1.5" "ppMC"
 #    source run_readForests_jetMult.sh 4 "1.5" "2.0" "ppMC"
 fi
+if [[ $subm_ppData_findEvt -eq 1 ]]
+then
+    echo "...ppData findEvt..."
+    rootcompile readForests_ppData_findEvt.C
+    source run_readForests_findEvt.sh 4 "0.0" "0.1"  # "ppData"
+fi
 
-askCondor 100 100
+askCondor 1000 10
 
 
 return

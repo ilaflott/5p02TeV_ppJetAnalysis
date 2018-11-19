@@ -57,7 +57,7 @@ const int Nbins_pthat=sizeof(pthat)/sizeof(double);
 const Double_t ptbins_debug[]={
   //15., 18., 21., 24.,
   //  28.,
-  //32.,
+  32.,
   37.,
   43., //garbage bins
   49. , 56.,
@@ -69,7 +69,7 @@ const Double_t ptbins_debug[]={
   737., 790., 846.,
   905.,   
   967.,
-  1000.,//1032.//, //generally, garbage bins
+  //1000.,//1032.//, //generally, garbage bins
   1101.,
   1172.,
   1248.,

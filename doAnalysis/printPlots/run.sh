@@ -1,9 +1,9 @@
 #!/bin/bash
 
 
-dojetIDQAPlots=1
+dojetIDQAPlots=0
 dojetQAPlots=1
-dojetTrigQAPlots=1
+dojetTrigQAPlots=0
 dojetMultPlots=0
 
 if [[ $dojetIDQAPlots -eq 1 ]]
@@ -32,13 +32,13 @@ then
 
     #source run_printPlots_jetIDPlots.sh "4" "11.06.18_outputCondor" "11-06-18"  "0.0eta2.0_wjetid"  "0.0eta2.0_NOjetid" "00eta20" "ppData"
     #source run_printPlots_jetIDPlots.sh "4" "11.06.18_outputCondor" "11-06-18"  "0.0eta2.0_wjetid"  "0.0eta2.0_NOjetid" "00eta20" "ppMC"
-
+    
     
     source run_printPlots_jetIDPlots.sh "4" "11.14.18_outputCondor" "11-14-18"  "0.0eta2.0_trgPtNoRes"  "0.0eta2.0_trgPtNoRes_NoJetID" "00eta20_trgPtNoRes" "ppData"
-    #source run_printPlots_jetIDPlots.sh "4" "11.14.18_outputCondor" "11-14-18"  "0.0eta2.0_trgPtL2L3Res"  "0.0eta2.0_trgPtL2L3Res_NoJetID" "00eta20_trgPtL2L3Res" "ppData"#not done yet 3.24pm 11/14/18
+    #source run_printPlots_jetIDPlots.sh "4" "11.14.18_outputCondor" "11-14-18"  "0.0eta2.0_trgPtL2L3Res"  "0.0eta2.0_trgPtL2L3Res_NoJetID" "00eta20_trgPtL2L3Res" "ppData"
     
     source run_printPlots_jetIDPlots.sh "4" "11.14.18_outputCondor" "11-14-18"  "0.0eta2.0"  "0.0eta2.0_NoJetID" "00eta20" "ppMC"
-
+    
     ##############################################
     
     echo ""
@@ -79,7 +79,7 @@ then
     #source run_printPlots_jetPlots.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta2.0_wjetid" "11.06.18_outputCondor" "11-06-18" "0.0eta2.0_wjetid" "00eta20_wJetID"
     
     source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes"   "11.14.18_outputCondor" "11-14-18" "0.0eta2.0" "00eta20_trgPtNoRes"
-    source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtL2L3Res" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0" "00eta20_trgPtL2L3Res"
+    source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes_NoJetID"   "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_NoJetID" "00eta20_trgPtNoRes_NoJetID"
     
     ##############################################
     
@@ -128,7 +128,8 @@ then
     #source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta2.0_wjetid" "00eta20"
     
     source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes" "00eta20_11.14.18_trgPtNoRes"  #goodHLTPFthresh
-    source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtL2L3Res" "00eta20_11.14.18_trgPtL2L3Res"  #goodHLTPFthresh
+    source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes_NoJetID" "00eta20_11.14.18_trgPtNoRes_NoJetID"  #goodHLTPFthresh
+    #source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtL2L3Res" "00eta20_11.14.18_trgPtL2L3Res"  #goodHLTPFthresh
     
     ##############################################
     

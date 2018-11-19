@@ -3,6 +3,24 @@
 
 list="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt"
 
+dir="ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_11-14-18_JERS_0.0eta2.0"
+R=4
+etaLo=0.0
+etaHi=2.0
+ARRAY=(6360 6720 6840)
+for i in ${ARRAY[@]}; do
+    echo "i=$i"
+    source condorSubmit_readForests.sh readForests_ppMC_JERS 1 120 $i $list  ${R} PF 0 ${etaLo} ${etaHi} ${dir}
+done
+
+
+
+
+
+
+return
+
+
 #dir="ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_11-06-18_JERS_0.0eta0.5"
 #R=4
 #etaLo=0.0

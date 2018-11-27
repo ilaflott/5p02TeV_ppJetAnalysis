@@ -143,17 +143,19 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   long double theLumi;
   if(doEventCounts){
     printDataEventCountReport((TFile*) finData);
-    theLumi=computeEffLumi( (TFile*) finData);  
- 
-    getEventCounts( (TFile*)finMC,   false);
+    printMCEventCountReport( (TFile*)finMC);
 
-    printJetCountReport( (TFile*)finData,true);
-    printJetCountReport( (TFile*)finMC,false);
-    //assert(false);
+    printDataJetCountReport( (TFile*)finData);
+    printMCJetCountReport( (TFile*)finMC);    
+
+    assert(false);
+
+    theLumi=computeEffLumi( (TFile*) finData);  	
   }
   else {
     std::cout<<"skipping evt/jet QA counts + plots..."<<std::endl<<std::endl;
-    theLumi=intgrtdLumi;}
+    theLumi=intgrtdLumi;
+  }
   
   
   

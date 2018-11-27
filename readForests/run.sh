@@ -1,11 +1,11 @@
 #!/bin/bash
 
-subm_ppData_jetPlots=0
-subm_ppMC_jetPlots=0
+subm_ppData_jetPlots=1
+subm_ppMC_jetPlots=1
 subm_ppMC_JERS=0
 subm_ppData_jetMult=0
 subm_ppMC_jetMult=0
-subm_ppData_findEvt=1
+subm_ppData_findEvt=0
 
 
 echo ""
@@ -21,6 +21,7 @@ then
 #    source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
 #    source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
 #    source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
+    sleep 10m
 fi
 
 if [[ $subm_ppMC_jetPlots -eq 1 ]]

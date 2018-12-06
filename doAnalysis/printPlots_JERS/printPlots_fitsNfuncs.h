@@ -205,7 +205,8 @@ void LoadStyle(){
   //gStyle->SetOptStat("emr");
   //gStyle->SetOptFit(1);
   //gStyle->SetOptFit(101);
-  gStyle->SetOptFit(1111);
+  //gStyle->SetOptFit(1111);
+  gStyle->SetOptFit(0);
   
   
   //color
@@ -320,7 +321,7 @@ void MakeHist(TH1F* h1, float xmin, float xmax){
   h1->GetXaxis()->SetNoExponent(true);
   h1->GetXaxis()->SetLabelSize(.045);//default is 0.4
   //h1->GetXaxis()->SetLabelOffset(.01); //default is 0.005
-  h1->GetXaxis()->SetTitleSize(0.045);
+  h1->GetXaxis()->SetTitleSize(0.045);  
 
   return;
 }
@@ -329,7 +330,8 @@ void MakeHist(TH1F* h1, float xmin, float xmax){
 
 void MakeHistMean(TH1F * h1, float xmin, float xmax){
   MakeHist((TH1F*)h1,xmin,xmax);
-  h1->SetTitle("mean, resolution, chi-square, v gen p_{T}");
+  //h1->SetTitle("mean, resolution, chi-square, v gen p_{T}");
+  h1->SetTitle("");
   h1->GetYaxis()->SetTitle("#mu");
   h1->GetYaxis()->SetDecimals(true);
   h1->SetAxisRange(0.98,1.03, "Y");    
@@ -348,7 +350,8 @@ void MakeHistRMS(TH1F * h1,float xmin,float xmax){
 void MakeHistChi2NDF(TH1F * h1, float xmin, float xmax){
   MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("");
-  h1->GetYaxis()->SetTitle("Gaussian JER #chi^{2}/NDF");
+  //  h1->GetYaxis()->SetTitle("Gaussian JER #chi^{2}/NDF");
+  h1->GetYaxis()->SetTitle("Gaussian Fit #chi^{2}/NDF");
   h1->SetAxisRange(1.e-1,1.e+2,"Y");
   h1->SetMarkerStyle(kOpenStar);
   h1->SetMarkerColor(kBlack);

@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-dojetQAPlots=1
-dojetTrigQAPlots=0
+dojetQAPlots=0
+dojetTrigQAPlots=1
 dojetIDQAPlots=0
 dojetMultPlots=0
-scpOutput=0
+scpOutput=1
 
 if [[ $dojetQAPlots -eq 1 ]]
 then
@@ -28,8 +28,10 @@ then
     #source run_printPlots_jetPlots.sh "4" "11.06.18_outputCondor" "11-06-18" "1.5eta2.0_wjetid" "11.06.18_outputCondor" "11-06-18" "1.5eta2.0_wjetid" "15eta20_wJetID"    
     #source run_printPlots_jetPlots.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta2.0_wjetid" "11.06.18_outputCondor" "11-06-18" "0.0eta2.0_wjetid" "00eta20_wJetID"
     
-    source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes"   "11.14.18_outputCondor" "11-14-18" "0.0eta2.0" "00eta20_trgPtNoRes"
+    #source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes"   "11.14.18_outputCondor" "11-14-18" "0.0eta2.0" "00eta20_trgPtNoRes"
     #source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes_NoJetID"   "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_NoJetID" "00eta20_trgPtNoRes_NoJetID"
+
+    source run_printPlots_jetPlots.sh "4" "11.27.18_outputCondor" "11-27-18" "0.0eta2.0"   "11.27.18_outputCondor" "11-27-18" "0.0eta2.0" "00eta20"
     
     ##############################################
     
@@ -78,7 +80,7 @@ then
     #source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta2.0_wjetid" "00eta20"
     
     source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes" "00eta20_11.14.18_trgPtNoRes"  #goodHLTPFthresh
-    source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes_NoJetID" "00eta20_11.14.18_trgPtNoRes_NoJetID"  #goodHLTPFthresh
+    #source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes_NoJetID" "00eta20_11.14.18_trgPtNoRes_NoJetID"  #goodHLTPFthresh
     #source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtL2L3Res" "00eta20_11.14.18_trgPtL2L3Res"  #goodHLTPFthresh
     
     ##############################################
@@ -208,7 +210,23 @@ fi
 
 if [[ $scpOutput -eq 1 ]]
 then
-    scp2Serin output/\*
+    #scp2Serin output/\*
+    if [[ $dojetQAPlots -eq 1 ]]
+    then
+	scp2Serin output/\*jetPlots\*
+    fi
+    if [[ $dojetTrigQAPlots -eq 1 ]]
+    then
+	scp2Serin output/\*jetTrig.\*
+    fi
+#    if [[ $dojetIDQAPlots -eq 1 ]]
+#    then
+#	scp2Serin output/
+#    fi
+#    if [[ $dojetMultPlots -eq 1 ]]
+#    then
+#	scp2Serin output/
+#    fi
 fi
 
 return

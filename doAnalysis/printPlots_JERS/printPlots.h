@@ -13,6 +13,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 // ROOTSYS
@@ -355,5 +356,26 @@ void makeJERSHists(TCanvas* pdfOutCanv, //std::string thePDFFileName,
     canv_fout->Write(  (((std::string)hrsp->GetName()) + "_canv").c_str());
   }
   
+  return;
+}
+
+std::string float2string_prec(float num, int precision){
+  std::stringstream stream;
+  stream << std::fixed << std::setprecision(precision) << num;
+  std::string floatstring = stream.str();
+  return floatstring;
+}
+
+void makeFitProbStr(TF1* fit, std::string* prob_str){
+  if(!fit)return;
+  if(!prob_str)return;  
+  //double prob=fit->GetProb();
+  *(prob_str)=float2string_prec(fit->GetProb(), 2);    
+  return;
+}
+void makeFitChi2Str(TF1* fit, std::string* chi2_str){
+  if(!fit)return;
+  if(!chi2_str)return;  
+  *(chi2_str)=float2string_prec(fit->GetChisquare(), 2);    
   return;
 }

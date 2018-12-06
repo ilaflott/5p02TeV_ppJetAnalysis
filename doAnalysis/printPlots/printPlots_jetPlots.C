@@ -13,25 +13,6 @@ const bool drawJetConstituentPlots=drawJetQAPlots&&true, drawDijetPlots=drawJetQ
 const bool drawJetRapBinsPlot=false;//, drawGENJetRapBinsPlot=true;  
 
 
-//// hist painting ------------------------
-//
-//// line colors
-//const int theDataOverlayLineColor=1, theMCOverlayLineColor=1;//, altOverlayLineColor=3; 
-//const int theRatioLineColor=1;//,altRatioLineColor1=8, altRatioLineColor2=7;
-//
-//// marker colors
-//const int theDataOverlayMarkerColor=2, theMCOverlayMarkerColor=4;//,theRatioMarkerColor=9;
-
-
-
-
-
-
-
-
-
-
-
 
 // the macro ------------------------
 int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::string input_ppMC_condorDir , 
@@ -39,14 +20,6 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   
 
   globalHistStyle();
-  
-  ////format of the filename is always HighPt{filelist}_ak{3,4}{PF,Calo}-allFiles.root
-  //std::size_t jobTypePos=input_ppMC_condorDir.find("__")+2;  
-  //std::string jobType;
-  //if(jobTypePos!=std::string::npos) jobType=input_ppMC_condorDir.substr( jobTypePos);
-  //else                              jobType="noJobType";
-  //if(debugMode)std::cout<<"jobType string is = "<<jobType<<std::endl;
-  
   
   //figure out what radius/jetcollection we are looking at using the ppData filename
   std::size_t radPos=input_ppData_condorDir.find("_ak")+3;  
@@ -62,7 +35,10 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   const std::string fullJetType="ak"+radiusInt+jetType;
   if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
-  
+
+
+
+
 
   //put together input file strings
   const std::string input_ppData_Filename="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
@@ -70,20 +46,11 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   //const std::string input_ppData_Filename="HighPtLowerJets_" +fullJetType+ "-allFiles.root";
   const std::string input_ppMC_Filename  ="Py8_CUETP8M1_QCDjetAllPtBins_" +fullJetType+ "-allFiles.root";
 
+  std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;  
   const std::string ppData_fullFilename=inputDir+input_ppData_condorDir+input_ppData_Filename;
   const std::string ppMC_fullFilename  =inputDir+input_ppMC_condorDir+input_ppMC_Filename;
   
-  
-
-
-  
-  
-  
-  // OPEN INPUT SECTION
-  std::cout<<std::endl<<"printing QA Plots, now opening input files!!"<<std::endl<<std::endl;  
-
-  
-  
+  // OPEN INPUT SECTION    
   TFile *finData=NULL;  
   std::cout<<" now opening ppData: "<<std::endl<<input_ppData_Filename<<std::endl;
   std::cout<<" in directory: "<<input_ppData_condorDir<<std::endl<<std::endl;
@@ -94,8 +61,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     std::cout << "input_ppData_condorDir =" << input_ppData_condorDir << std::endl;
     std::cout << "input_ppData_filename  =" << input_ppData_Filename << std::endl;
     std::cout << "exiting." << std::endl;
-    assert(false);    
-  }  
+    assert(false);      }  
   
   TFile *finMC=NULL;
   std::cout<<" now opening ppMC: "<<std::endl<<input_ppMC_Filename<<std::endl;
@@ -107,8 +73,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     std::cout << "input_ppMC_condorDir =" << input_ppMC_condorDir << std::endl;
     std::cout << "input_ppMC_filename  =" << input_ppMC_Filename << std::endl;
     std::cout << "exiting." << std::endl;
-    assert(false);    
-  }
+    assert(false);      }
   
   
   
@@ -142,15 +107,22 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
   // evtcounts/effective integrated luminosity ----------------------  
   long double theLumi;
   if(doEventCounts){
+    //old_printDataEventCountReport((TFile*) finData);//this + next 3 lines compatible w/ readForests samples pre 11-27-18, deprecated
+    //old_printMCEventCountReport( (TFile*)finMC);
+    //old_printDataJetCountReport( (TFile*)finData);
+    //old_printMCJetCountReport( (TFile*)finMC);    
+
+    theLumi=computeEffLumi( (TFile*) finData);  	    
     printDataEventCountReport((TFile*) finData);
-    printMCEventCountReport( (TFile*)finMC);
-
     printDataJetCountReport( (TFile*)finData);
+  
+    printMCEventCountReport( (TFile*)finMC);    
     printMCJetCountReport( (TFile*)finMC);    
-
     assert(false);
 
-    theLumi=computeEffLumi( (TFile*) finData);  	
+    //assert(false);    
+    
+
   }
   else {
     std::cout<<"skipping evt/jet QA counts + plots..."<<std::endl<<std::endl;

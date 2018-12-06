@@ -4,25 +4,20 @@ const bool debugMode=true;
 const bool drawProfiles = false;
 const bool rebinJER=true;
 
-
 const int CANVX=1200, CANVY=1200;
 //const int fit_ptlo_bin=3, fit_pthi_bin=nbins_pt_debug-1;
-const int fit_ptlo_bin=1, fit_pthi_bin=nbins_pt_debug-6;
+const int fit_ptlo_bin=1, fit_pthi_bin=nbins_pt_debug-5;
 const int rebinFactor=1;//5
-//const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;
-const int N_JERfits=nbins_pt_debug;
-const float fgaus_xlo=0.89, fgaus_xhi=1.11;
+//const int N_JERfits=nbins_pt_debug-fit_ptlo_bin;
+const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;
+const double fgaus_xlo=0.89, fgaus_xhi=1.11;
+const double defbinsize=0.01;
 
 //other options
 const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xsec bins, GenBins -> variable, depends on readForests
 const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
-//const std::string defOutFilename="printPlots_MCJEC_ppMC_defOut";
 const std::string didJetID="1";
 const std::string doJetID="1";
-
-//const bool draw_hJER=true;
-//const bool draw_MCEff=false;
-
 
 
 int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, const bool draw_hJER=true, const bool draw_MCEff=false){
@@ -30,6 +25,13 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
   // root style settings.
   std::cout<<"forcing style"<<std::endl;
   LoadStyle();
+  
+  float difffromone=1.-fgaus_xlo;
+  int rebin_hrsp_arr_N=( (int) (100.*( ( (fgaus_xhi+difffromone) - (fgaus_xlo-difffromone) ) ) )+ 1 );
+  if(debugMode)std::cout<<"rebin_hrsp_arr_N="<<rebin_hrsp_arr_N<<std::endl;
+  double rebin_hrsp_arr[rebin_hrsp_arr_N]={0.};
+  for(int i=0; i<rebin_hrsp_arr_N;i++) rebin_hrsp_arr[i]=(fgaus_xlo-difffromone)+i*defbinsize;
+  if(debugMode) for(int i=0; i<rebin_hrsp_arr_N;i++) std::cout<<"rebin_hrsp_arr["<<i<<"]="<<rebin_hrsp_arr[i]<<std::endl;
   
   //figure out what radius/jetcollection we are looking at using the ppData filename
   std::size_t radPos=inFile_MC_dir.find("_ak")+strlen("_ak");
@@ -67,12 +69,12 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
   TH1F *hrsp[nbins_pt_debug]={};  //input
   
   TH1F *hMean=NULL, *hSigma=NULL; //output     
-  TH1F *hMean_fit=NULL, *hSigma_fit=NULL; //output    
+  TH1F *hMean_fit=NULL, *hSigma_fit=NULL; 
   TH1F *hChi2NDF=NULL, *hChi2Prob=NULL;
-  //  Double_t fit_ptLo=-1.;//, fit_ptHi;
+
   Double_t fit_ptlo=ptbins_debug[fit_ptlo_bin];
   Double_t fit_pthi=ptbins_debug[fit_pthi_bin];
-  TF1 *fgaus=NULL;     //for later
+  TF1 *fgaus=NULL; 
   
   if(!draw_hJER)
     std::cout<<std::endl<<std::endl<<"skipping hJER hists"<<std::endl<<std::endl;
@@ -82,43 +84,28 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
     std::cout<<"making hists for algorithm "<< algname<<"..."<<std::endl;
     
     // initialize mean hist    
-    hMean = new TH1F( "hMean",    
-		      Form( "Mean %s", algname.c_str()),    
+    hMean = new TH1F( "hMean", Form( "Mean %s", algname.c_str()),    
 		      nbins_pt_debug, ptbins_debug);
     
-    hSigma = new TH1F( "hSigma",    
-		       Form( "Sigma %s", algname.c_str()),    
+    hSigma = new TH1F( "hSigma", Form( "Sigma %s", algname.c_str()),    
 		       nbins_pt_debug, ptbins_debug);
     
-    hMean_fit = new TH1F( "hMean_fit",    
-			  Form( "Fit Mean %s", algname.c_str()),    
+    hMean_fit = new TH1F( "hMean_fit", Form( "Fit Mean %s", algname.c_str()),    
 			  nbins_pt_debug, ptbins_debug);
     
-    hSigma_fit = new TH1F( "hSigma_fit",    
-			   Form( "Fit Sigma %s", algname.c_str()),    
+    hSigma_fit = new TH1F( "hSigma_fit", Form( "Fit Sigma %s", algname.c_str()),    
 			   nbins_pt_debug, ptbins_debug);
     
-    hChi2NDF = new TH1F("hChi2NDF",    
-			Form( "Fit Chi2NDF %s", algname.c_str()),    
+    hChi2NDF = new TH1F("hChi2NDF", Form( "Fit Chi2NDF %s", algname.c_str()),    
 			nbins_pt_debug, ptbins_debug); 
     
-    hChi2Prob = new TH1F("hChi2Prob",    
-			 Form( "Fit Chi2Prob %s", algname.c_str()),    
+    hChi2Prob = new TH1F("hChi2Prob", Form( "Fit Chi2Prob %s", algname.c_str()),    
 			 nbins_pt_debug, ptbins_debug); 
-    
-    
     
     // pt bin hJER-fit loop    
     if(debugMode)std::cout<<"nbins_pt="<<nbins_pt_debug<<std::endl;    
-    //bool ptLoSet=false;
-    
-    
     for(int ip=0; ip<nbins_pt_debug; ip++){    
       
-      //// reco/gen pt in gen pt bins for fits
-      int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
-      if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
-            
       // open the input hist    
       std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
       hrsp[ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
@@ -129,20 +116,34 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
       else if(hrsp[ip]->GetEntries()<3)
 	continue;	
       
+      int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
+      if(debugMode)std::cout<<std::endl;  
+      if(debugMode)std::cout<<"________________________________"<<std::endl;  
+      if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
+      if(debugMode)std::cout<<"hist title = "<<hrsp[ip]->GetTitle()<<std::endl;
+      hrsp[ip]->SetName(("hJER_1wJetID_genpt_"+std::to_string(ptbin_ip) + "_to_" + std::to_string(ptbin_ip1) ).c_str());
+      if(debugMode)hrsp[ip]->Print("base");    
+      if(debugMode)std::cout<<std::endl;  
+      
       if(rebinJER&&rebinFactor!=1)
 	hrsp[ip]= (TH1F*)hrsp[ip]->TH1::Rebin( rebinFactor, (inputHistName+"_rebin5").c_str());	
       
-      if(debugMode)std::cout<<std::endl;  
-      if(debugMode)hrsp[ip]->Print("base");    
       hrsp[ip]->Scale( 1./ hrsp[ip]->Integral() );    //scale to area of 1
       
       // get some quick stats    
-      //float norm  = hrsp[ip]->GetMaximumStored();    
-      float h_mean  = hrsp[ip]->GetMean();    
-      float h_emean = hrsp[ip]->GetMeanError();    
-      float h_sig   = hrsp[ip]->GetStdDev()/h_mean;    
+      TH1F* hrsp_ip_rebin=(TH1F*)hrsp[ip]->Clone();
+      hrsp_ip_rebin=(TH1F*)(hrsp_ip_rebin->TH1::Rebin( (rebin_hrsp_arr_N-1), 
+						       ((std::string)hrsp[ip]->GetName()+"_rebin").c_str() , 
+						       rebin_hrsp_arr));
+      hrsp_ip_rebin->TH1::ResetStats();
+      if(debugMode)hrsp_ip_rebin->Print("base");
+      
+      //float h_norm  = hrsp_ip_rebin->GetMaximumStored();          
+      float h_mean  = hrsp_ip_rebin->GetMean();    
+      float h_emean = hrsp_ip_rebin->GetMeanError();    
+      float h_sig   = hrsp_ip_rebin->GetStdDev()/h_mean;    
       float h_esig  = h_sig * sqrt (  
-				    pow( h_emean/h_mean,2) + pow( hrsp[ip]->GetStdDevError()/hrsp[ip]->GetStdDev(),2) ) ; 
+				    pow( h_emean/h_mean,2) + pow( hrsp_ip_rebin->GetStdDevError()/hrsp_ip_rebin->GetStdDev(),2) ) ; 
       
       // set contents+errors in specific bin    
       std::cout<<"setting bin content for hMean[ip]=["<< ip<<"] "<<std::endl;    
@@ -150,6 +151,21 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
       std::cout<<"h_emean ="  << h_emean<<std::endl;    
       std::cout<<"h_sig ="    << h_sig<<std::endl;    
       std::cout<<"h_esig ="   << h_esig<<std::endl;    
+      ////h_norm  = hrsp[ip]->GetMaximumStored();          
+      //h_mean  = hrsp[ip]->GetMean();    
+      //h_emean = hrsp[ip]->GetMeanError();    
+      //h_sig   = hrsp[ip]->GetStdDev()/h_mean;    
+      //h_esig  = h_sig * sqrt (  
+      //			      pow( h_emean/h_mean,2) + pow( hrsp[ip]->GetStdDevError()/hrsp[ip]->GetStdDev(),2) ) ; 
+      //std::cout<<"setting bin content for hMean[ip]=["<< ip<<"] "<<std::endl;    
+      //std::cout<<"h_mean ="   << h_mean<<std::endl;    
+      //std::cout<<"h_emean ="  << h_emean<<std::endl;    
+      //std::cout<<"h_sig ="    << h_sig<<std::endl;    
+      //std::cout<<"h_esig ="   << h_esig<<std::endl;    
+      
+      hrsp[ip]->Write();
+      if(ip<fit_ptlo_bin )continue;
+      if(ip>=fit_pthi_bin )continue;
       
       hMean->SetBinContent (ip+1, h_mean);    
       hMean->SetBinError   (ip+1, h_emean);    
@@ -158,19 +174,16 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
       hSigma->SetBinError   (ip+1, h_esig);    
       
       fout_ptbin_JER->cd();
-      hrsp[ip]->Write();
       
-      //dont use the first few low pt bins for the fit; just write them to file for record keeping
-      //      if(ip<fit_ptlo_bin)continue;      
-      //      if(ip>=fit_pthi_bin)continue;
-      std::cout<<"fitting inputHist "<<inputHistName<<std::endl;   
+      
+      std::cout<<std::endl;
+      std::cout<<"fitting gauss core for "<<hrsp[ip]->GetName()<<std::endl;   
       fgaus = new TF1("fgaus","gaus", fgaus_xlo,fgaus_xhi);  //what's been typicall used.      
       //fgaus->SetParLimits(0,0.98,1.02);    //normalization
       //fgaus->SetParLimits(1,0.95,1.05);   // mean
       //fgaus->SetParLimits(2,0.0,0.5);     // width
       
       bool fitfailed=true;
-      //fitstatus = hrsp[ip]->Fit(fgaus,"RQ");          //fitstatus = hrsp[ip]->Fit(fgaus,"RS");          //fitstatus = hrsp[ip]->Fit(fgaus);     
       fitfailed = ((bool)(hrsp[ip]->Fit(fgaus,"R")));    
       
       
@@ -213,17 +226,13 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
       hChi2NDF->SetBinContent (ip+1, chi2NDF );
       hChi2NDF->SetBinError (ip+1, 1. );
       
-      hChi2Prob->SetBinContent (ip+1, chi2prob );
-      //hChi2Prob->SetBinError (ip+1,  );
-      
+      hChi2Prob->SetBinContent (ip+1, chi2prob );      
     }// end fit-loop over ptbins    
+    
     rootfout->cd();//don't wanna be in directory anymore
     
-    //if(debugMode)std::cout<<"closing gPad..."<<std::endl<<std::endl;    
-    //gPad->Close();        
     
-    // for mu v. gen pt and sigma/mu v. genpt hists_fit
-    
+    // for mu v. gen pt and sigma/mu v. genpt hists_fit    
     std::cout<<std::endl<<"fitting JER v genpt hists ..."<<std::endl;        
     ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-02); 
      
@@ -274,27 +283,40 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
     
     
     TCanvas* pdfoutCanv_muSigma=new TCanvas("outputPdfwLog_muSigma","outputPdfwLog", CANVX, CANVY);    
-    //    pdfoutCanv_muSigma->Divide(1,4);
-    pdfoutCanv_muSigma->Divide(1,3);
+    pdfoutCanv_muSigma->Divide(1,3);    //    pdfoutCanv_muSigma->Divide(1,4);
     pdfoutCanv_muSigma->cd();
     
-    //    float xmin=ptbins_debug[fit_ptlo_bin], xmax=ptbins_debug[fit_pthi_bin];
-    float xmin=ptbins_debug[0], xmax=ptbins_debug[nbins_pt_debug];
+    float xmin=ptbins_debug[0], xmax=ptbins_debug[fit_pthi_bin];
+    if(debugMode){
+      std::cout<<"xmin="<<xmin<<std::endl;
+      std::cout<<"xmax="<<xmax<<std::endl;    }
+
+    TLine* lineAtOne=new TLine(xmin,1.,ptbins_debug[fit_pthi_bin+1],1.);    
+    lineAtOne->SetLineStyle(2);  
+    lineAtOne->SetLineColor(kBlack);
+    TLine* lineAtTen=new TLine(xmin,10.,ptbins_debug[fit_pthi_bin+1],10.);    
+    lineAtTen->SetLineStyle(2);  
+    lineAtTen->SetLineColor(kBlack);
+    
+
     
     TPad* p1=(TPad*)pdfoutCanv_muSigma->cd(1);        
     p1->SetLogx(1);    
     p1->SetGridx(0);    
+    p1->SetTopMargin(0.05);
     p1->cd();
     
     TPad* p2=(TPad*)pdfoutCanv_muSigma->cd(2);        
     p2->SetLogx(1);    	
     p2->SetGridx(0);    
+    p2->SetTopMargin(0.);
     p2->cd();   
     
     TPad* p3=(TPad*)pdfoutCanv_muSigma->cd(3);        
     p3->SetLogx(1);    	
     p3->SetLogy(1);    	
     p3->SetGridx(0);
+    p3->SetTopMargin(0.);
     p3->cd();        
 
 //    TPad* p4=(TPad*)pdfoutCanv_muSigma->cd(4);        
@@ -306,25 +328,29 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
     
     //draw pad 1
     p1->cd();    
-    MakeHistMean( (TH1F*)hMean,xmin,xmax);           //ptbins_debug[0],ptbins_debug[nbins_pt_debug]);     
+    MakeHistMean( (TH1F*)hMean,xmin,xmax);
     hMean->DrawClone("HIST ][E"); 
     
-    MakeHistMean( (TH1F*)hMean_fit, xmin,xmax);           //ptbins_debug[0],ptbins_debug[nbins_pt_debug]);     
+    MakeHistMean( (TH1F*)hMean_fit, xmin,xmax);   
     hMean_fit->SetMarkerStyle(kOpenStar);
     hMean_fit->SetMarkerColor(kBlack);
     hMean_fit->SetLineColor(kMagenta);
     hMean_fit->DrawClone("HIST ][E SAME");
-    
-    TLine* meanLine=new TLine(xmin,1.,xmax,1.);    
-    meanLine->SetLineStyle(2);  
-    meanLine->SetLineColor(kBlue);    
-    meanLine->Draw();            
+
+    TLegend* hMean_Leg=new TLegend( 0.73, 0.75 ,0.9 , 0.9, NULL,"brNDC");
+    hMean_Leg->SetBorderSize(0);
+    hMean_Leg->SetFillStyle(0);
+
+    hMean_Leg->AddEntry( hMean, "#mu from Hists", "lp");
+    hMean_Leg->AddEntry( hMean_fit, "#mu from Gauss Fits", "lp");
+    hMean_Leg->Draw();
+
+    lineAtOne->Draw();   
     
     //draw pad 2
     p2->cd();    
-
-    MakeHistRMS( (TH1F*) hSigma ,xmin,xmax);           //ptbins_debug[0],ptbins_debug[nbins_pt_debug]);   
-    //hSigma->Draw("HIST E1");
+    
+    MakeHistRMS( (TH1F*) hSigma ,xmin,xmax); 
     hSigma->DrawClone("HIST ][E");
     
     //this is a hist created from the gauss fits in each bin
@@ -332,20 +358,66 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
     hSigma_fit->SetMarkerColor(kBlack);
     hSigma_fit->SetLineColor(kMagenta);
     hSigma_fit->DrawClone("HIST ][E SAME");
-
+    
     //this is a TF1; this is the fit to hSigma_fit
-    SigmaFit_h->SetLineWidth(1);
+    //SigmaFit_h->SetLineWidth(1);
+    SigmaFit_h->SetLineColor(kBlue-7);
     SigmaFit_h->Draw("SAME");
-
-    SigmaFit_f->SetLineWidth(1);
+    
+    //SigmaFit_f->SetLineWidth(1);
+    SigmaFit_f->SetLineColor(kMagenta-2);
     SigmaFit_f->Draw("SAME");
+
+    TLegend* hSigma_Leg=new TLegend( 0.65, 0.50 , 0.95 , 0.97, NULL,"brNDC");
+
+    std::string SigmaFit_h_prob_str;
+    makeFitProbStr(SigmaFit_h, &SigmaFit_h_prob_str);
+    if(debugMode)std::cout<<"SigmaFit_h_prob_str="<<SigmaFit_h_prob_str<<std::endl;    
+    std::string SigmaFit_h_chi2_str;
+    makeFitChi2Str(SigmaFit_h, &SigmaFit_h_chi2_str);
+    if(debugMode)std::cout<<"SigmaFit_h_chi2_str="<<SigmaFit_h_chi2_str<<std::endl;    
+    std::string SigmaFit_h_ndf_str=std::to_string( SigmaFit_h->GetNDF() );
+    if(debugMode)std::cout<<"SigmaFit_h_ndf_str="<<SigmaFit_h_ndf_str<<std::endl;    
+    
+    hSigma_Leg->AddEntry( hSigma, "#sigma/#mu from Hists", "lp");
+    hSigma_Leg->AddEntry( SigmaFit_h, "Fit of #sigma/#mu from Hists", "l");   
+    hSigma_Leg->AddEntry( (TObject*)0, ("#chi^{2}/NDF="+SigmaFit_h_chi2_str+"/"+SigmaFit_h_ndf_str).c_str() , "");   
+    hSigma_Leg->AddEntry( (TObject*)0, ("Prob="+SigmaFit_h_prob_str).c_str() , "");   
+    
+    
+    std::string SigmaFit_f_prob_str;
+    makeFitProbStr(SigmaFit_f, &SigmaFit_f_prob_str);
+    if(debugMode)std::cout<<"SigmaFit_f_prob_str="<<SigmaFit_f_prob_str<<std::endl;    
+    std::string SigmaFit_f_chi2_str;
+    makeFitChi2Str(SigmaFit_f, &SigmaFit_f_chi2_str);
+    if(debugMode)std::cout<<"SigmaFit_f_chi2_str="<<SigmaFit_f_chi2_str<<std::endl;    
+    std::string SigmaFit_f_ndf_str=std::to_string( SigmaFit_f->GetNDF() );
+    if(debugMode)std::cout<<"SigmaFit_f_ndf_str="<<SigmaFit_f_ndf_str<<std::endl;    
+
+    hSigma_Leg->AddEntry( (TObject*)0, "" , "");   
+    hSigma_Leg->AddEntry( hSigma_fit, "#sigma/#mu from Gauss Fits", "lp");
+    hSigma_Leg->AddEntry( SigmaFit_f, "Fit of #sigma/#mu from Gauss Fits", "l");
+    hSigma_Leg->AddEntry( (TObject*)0, ("#chi^{2}/NDF="+SigmaFit_f_chi2_str+"/"+SigmaFit_f_ndf_str).c_str() , "");   
+    hSigma_Leg->AddEntry( (TObject*)0, ("Prob="+SigmaFit_f_prob_str).c_str() , "");   
+
+
+    hSigma_Leg->SetBorderSize(0);    
+    hSigma_Leg->SetFillStyle(0);        
+    hSigma_Leg->Draw();
     
     //draw pad 3
     p3->cd();    
     MakeHistChi2NDF( (TH1F*)hChi2NDF,xmin,xmax);           
     hChi2NDF->DrawClone("HIST ][E");    
-    meanLine->Draw();            
-    hChi2NDF->DrawClone("HIST ][E SAME");    
+    lineAtOne->Draw();                
+    lineAtTen->Draw();            
+    //hChi2NDF->DrawClone("HIST ][E SAME");    
+    
+    TLegend* hChi2NDF_Leg=new TLegend(0.65,0.85 ,0.89 , 1.0, NULL,"brNDC");
+    hChi2NDF_Leg->AddEntry(hChi2NDF,"#chi^{2}/NDF from Gauss Core Fits");
+    hChi2NDF_Leg->SetBorderSize(0);
+    hChi2NDF_Leg->SetFillStyle(0);
+    hChi2NDF_Leg->Draw();
     
     ////draw pad 4
     //p4->cd();    
@@ -386,8 +458,8 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
       
       int ptbin_j=(int)ptbins_debug[j];
       int ptbin_j1=(int)ptbins_debug[j+1];
-      std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
-      std::string hrsp_XAxTitle="reco p_{T}/gen p_{T}";  
+      std::string hrspTitle=std::to_string(ptbin_j)+" GeV < GEN Jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
+      std::string hrsp_XAxTitle="RECO p_{T}/GEN p_{T}";  
       //      		     ( std::string ) thePDFFileName   ,      
       makeJERSHists( ( TCanvas*    ) pdfoutCanv_wLogy ,  
 		     ( TH1F*       ) hrsp[j]          , 
@@ -396,7 +468,7 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
 		     ( TFile*      ) rootfout         ,
 		     ( TDirectory*  ) fout_ptbin_JER );
     }
-    //assert(false);         
+
     
     std::cout<<"N_JERfits="<<N_JERfits<<std::endl;
     int canv_count=(N_JERfits/9);
@@ -406,39 +478,39 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
     const int canv_count_const=canv_count;
     
     TCanvas* pdfoutCanv_3x3_arr[canv_count_const]={};
-    
-    //    TCanvas* pdfoutCanv_wLogy_3x3=new TCanvas("JERfitCanv_3x3", "Canv for JER fit 3x3", CANVX, CANVY);
-    //pdfoutCanv_wLogy_3x3->Divide(3,3);
     for(int i=0;i<canv_count_const;i++){
       std::cout<<"i="<<i<<std::endl;
       pdfoutCanv_3x3_arr[i]=new TCanvas(("JERfitCanv_3x3_"+std::to_string(i)).c_str(), ("Canv #"+std::to_string(i)+" for JERfits").c_str(), CANVX, CANVY);
       pdfoutCanv_3x3_arr[i]->Divide(3,3);
-      //int fit_ptbin_start=fit_ptlo_bin+i*9;
-      //int fit_ptbin_end=fit_ptbin_start+9;
-      int fit_ptbin_start=i*9;
+      int fit_ptbin_start=i*9+fit_ptlo_bin;
       int fit_ptbin_end=fit_ptbin_start+9;
-      //if(fit_ptbin_end>fit_pthi_bin)fit_ptbin_end=fit_pthi_bin;
-      if(fit_ptbin_end>nbins_pt_debug)fit_ptbin_end=nbins_pt_debug;
+      if(fit_ptbin_end>fit_pthi_bin)fit_ptbin_end=fit_pthi_bin;
+      //if(fit_ptbin_end>nbins_pt_debug)fit_ptbin_end=nbins_pt_debug;
       int drawcount=0;
-
-      for(int j=fit_ptbin_start;j<fit_ptbin_end;++j){       //if(j<3)continue;	
-	//for(int j=0;j<nbins_pt_debug;++j){       //if(j<3)continue;	
+      
+      for(int j=fit_ptbin_start;j<fit_ptbin_end;++j){    
 	std::cout<<"j="<<j<<std::endl;
 	std::cout<<"drawing pad for "<<ptbins_debug[j]<<" < jet p_T < "<<ptbins_debug[j+1]<<std::endl;
-	//if(drawcount>8)break;	
+	if(debugMode)hrsp[j]->Print("base");
 	pdfoutCanv_3x3_arr[i]->cd(drawcount+1);
 	pdfoutCanv_3x3_arr[i]->cd(drawcount+1)->SetLogy(1);
 	hrsp[j]->Draw("E1")    ;	
-	drawcount++;
-	
-      }
+	drawcount++;	
+      }//end loop over pads of one of the 3x3 canvases
       
       pdfoutCanv_3x3_arr[i]->Print(thePDFFileName.c_str());
       rootfout->cd();
-      pdfoutCanv_3x3_arr[i]->SetTitle(("3x3 JER fit canv for bin"+std::to_string(fit_ptbin_start) + "to bin"+std::to_string(fit_ptbin_end) ).c_str());
-      pdfoutCanv_3x3_arr[i]->Write(("JERfitCanv_3x3_bins_"+std::to_string(fit_ptbin_start) + "_to_"+std::to_string(fit_ptbin_end)).c_str());
-      
-    }
+      std::string fit_pt_start_str= std::to_string(((int) ptbins_debug[fit_ptbin_start]));
+      std::string fit_pt_end_str= std::to_string(((int) ptbins_debug[fit_ptbin_end]));
+      if(debugMode){
+	std::cout<<"fit_ptbin_start ="<< fit_ptbin_start     <<std::endl;
+	std::cout<<"fit_pt_start_str ="<< fit_pt_start_str <<std::endl;
+	std::cout<<"fit_ptbin_end   ="<< fit_ptbin_end       <<std::endl;
+	std::cout<<"fit_pt_end_str   ="<< fit_pt_end_str   <<std::endl;
+      }
+      pdfoutCanv_3x3_arr[i]->SetTitle(("3x3 JER fit canv for bin"+ fit_pt_start_str + "to bin"+fit_pt_end_str ).c_str());
+      pdfoutCanv_3x3_arr[i]->Write(("JERfitCanv_3x3_bins_"       + fit_pt_start_str + "_to_"  +fit_pt_end_str ).c_str());
+    }//end loop over 3x3canvases
 
     
 
@@ -626,65 +698,3 @@ int main(int argc, char*argv[]){
   rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] , (const bool)std::atoi(argv[3]), (const bool)std::atoi(argv[4]));
   return rStatus;
 }
-
-    //      TF1 *SigmaFit_h=new TF1("SigmaFit_h","[0]+[1]*pow(x,[2])", 
-    //			     ptbins_debug[2],                     // I want this fit to start at 56 GeV or so
-    //			     ptbins_debug[nbins_pt_debug]);       // I want this fit to end at 967 GeV (for entire range)
-
-
-
-    //TH1F *hrawrsp[nbins_pt_debug]={};  //input
-    //TH1F *hcorr[nbins_pt_debug]={};  //input
-
-
-
-
-      /*
-      // open + grab raw/gen hists
-      std::string inputHistNameRaw="hJER_raw_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
-      hrawrsp[ip] = (TH1F*)finPP->Get( inputHistNameRaw.c_str() );        
-      if(!hrawrsp[ip])
-      std::cout<<"WARNING, no input hist named " <<  inputHistNameRaw<< ", moving on..."<<std::endl;	
-      if(debugMode)std::cout<<std::endl;  
-      if(debugMode)hrawrsp[ip]->Print("base");    	
-      hrawrsp[ip]->Scale( 1./ hrawrsp[ip]->Integral() );    
-      
-      
-      // open + grab reco/raw 
-      std::string inputHistNameJES="hJES_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
-      hcorr[ip] = (TH1F*)finPP->Get( inputHistNameJES.c_str() );        
-      if(!hcorr[ip])
-      std::cout<<"WARNING, no input hist named " <<  inputHistNameJES<< ", moving on..."<<std::endl;
-      if(debugMode)std::cout<<std::endl;  
-      if(debugMode)hcorr[ip]->Print("base");    	
-      hcorr[ip]->Scale( 1./ hcorr[ip]->Integral() );    
-      */
-
-
-
-      /*
-      std::cout<<"printing JER raw/gen hists"<<std::endl;
-      for(int j=0;j<nbins_pt_debug;++j){    
-	
-	int ptbin_j=(int)ptbins_debug[j];
-	int ptbin_j1=(int)ptbins_debug[j+1];
-	std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
-	std::string hrsp_XAxTitle="raw p_{T}/gen p_{T}";	
-	makeJERSHists(  ( TCanvas*    ) pdfoutCanv_wLogy ,  
-		        ( std::string ) thePDFFileName	 ,  
-		        ( TH1F*       ) hrawrsp[j]    , 
- 		        ( std::string ) hrspTitle        ,
-	 	        ( std::string ) hrsp_XAxTitle      );      }          
-      std::cout<<"printing JES reco/gen hists"<<std::endl;
-      for(int j=0;j<nbins_pt_debug;++j){    
-	
-	int ptbin_j=(int)ptbins_debug[j];
-	int ptbin_j1=(int)ptbins_debug[j+1];
-	std::string hrspTitle=std::to_string(ptbin_j)+" GeV < gen jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
-	std::string hrsp_XAxTitle="reco p_{T}/raw p_{T}";
-	makeJERSHists(  ( TCanvas*    ) pdfoutCanv_wLogy ,  
-		        ( std::string ) thePDFFileName	 ,  
-		        ( TH1F*       ) hcorr[j]      , 
- 		        ( std::string ) hrspTitle        ,
-	 	        ( std::string ) hrsp_XAxTitle      );      }    
-      */      

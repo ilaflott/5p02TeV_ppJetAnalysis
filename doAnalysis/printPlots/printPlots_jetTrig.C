@@ -18,29 +18,11 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   //  if( input_ppData_condorDir.find("HLTPF") != std::string::npos )
   //    usedHLTPF=true;
   
-  // MAKE STRINGS
   
-  //figure out what radius/jetcollection we are looking at using the ppData filename
-  std::size_t radPos=input_ppData_condorDir.find("_ak")+3;  
-  const std::string radiusInt= input_ppData_condorDir.substr( radPos,1 );
-  const std::string radius="R"+radiusInt+"_";
-  if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
-  
-  std::size_t jetTypePos=radPos+1;
-  std::size_t jetsPos=input_ppData_condorDir.find("Jets");;
-  
-  //make final jetType strings
-  const std::string jetType=input_ppData_condorDir.substr( jetTypePos,(jetsPos-jetTypePos) );
-  const std::string fullJetType="ak"+radiusInt+jetType;
-  if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
+  std::string fullJetType, radius;
+  makeFullJetTypeString(&fullJetType, &radius, input_ppData_condorDir);
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
-  
-
-  
-  
-
-
-
+  if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
 
 
 
@@ -160,36 +142,6 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   
   
 
-  TH1F* jtptCut_h= (TH1F*)finData->Get( "hJetPtCut" );
-  std::string jtptCut_str = std::to_string( (int) jtptCut_h->GetMean() );
-  std::cout<<"jtptCut_str = "<<jtptCut_str<<std::endl;
-
-  
-  TH1F* jtetaLoCut_h= (TH1F*)finData->Get( "hJetEtaCutLo" );
-  std::stringstream etaLo; etaLo.precision(1);
-  float jtetaLoCut_F=jtetaLoCut_h->GetMean();
-  etaLo << std::fixed << jtetaLoCut_F;
-  std::string jtetaLoCut_str = etaLo.str();
-  std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;
-  
-  TH1F* jtetaHiCut_h= (TH1F*)finData->Get( "hJetEtaCutHi" );
-  std::stringstream etaHi; etaHi.precision(1);
-  float jtetaHiCut_F=jtetaHiCut_h->GetMean();
-  etaHi << std::fixed << jtetaHiCut_F;
-  std::string jtetaHiCut_str = etaHi.str();
-  std::cout<<"jtetaHiCut_str = "<<jtetaHiCut_str<<std::endl;
-  
-  std::string jetPtCutString="p_{T} ^{}>"+jtptCut_str+"  ^{}GeV";
-  std::cout<<"jetCutString="<<jetPtCutString<<std::endl;
-    
-  std::string jetEtaCutString=jtetaLoCut_str+" <  ^{}#||{y} < "+jtetaHiCut_str;
-  
-  float etaBinWidth=2.*(jtetaHiCut_F-jtetaLoCut_F);//factor of two, because abseta
-  std::cout<<"etaBinWidth="<<etaBinWidth<<std::endl;
-  
-
-
-
 
 
   
@@ -255,6 +207,40 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   
   
   
+  //std::string jetCutString, jetEtaCutString, jtptQACut_str;
+  //makeJetCutStrings(&jetCutString, &jetEtaCutString, &jtptQACut_str, fin);
+
+
+
+  TH1F* jtptCut_h= (TH1F*)finData->Get( "hJetPtCut" );
+  std::string jtptCut_str = std::to_string( (int) jtptCut_h->GetMean() );
+  std::cout<<"jtptCut_str = "<<jtptCut_str<<std::endl;
+
+  
+  TH1F* jtetaLoCut_h= (TH1F*)finData->Get( "hJetEtaCutLo" );
+  std::stringstream etaLo; etaLo.precision(1);
+  float jtetaLoCut_F=jtetaLoCut_h->GetMean();
+  etaLo << std::fixed << jtetaLoCut_F;
+  std::string jtetaLoCut_str = etaLo.str();
+  std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;
+  
+  TH1F* jtetaHiCut_h= (TH1F*)finData->Get( "hJetEtaCutHi" );
+  std::stringstream etaHi; etaHi.precision(1);
+  float jtetaHiCut_F=jtetaHiCut_h->GetMean();
+  etaHi << std::fixed << jtetaHiCut_F;
+  std::string jtetaHiCut_str = etaHi.str();
+  std::cout<<"jtetaHiCut_str = "<<jtetaHiCut_str<<std::endl;
+  
+  std::string jetPtCutString="p_{T} ^{}>"+jtptCut_str+"  ^{}GeV";
+  std::cout<<"jetCutString="<<jetPtCutString<<std::endl;
+    
+  std::string jetEtaCutString=jtetaLoCut_str+" <  ^{}#||{y} < "+jtetaHiCut_str;
+  
+  float etaBinWidth=2.*(jtetaHiCut_F-jtetaLoCut_F);//factor of two, because abseta
+  std::cout<<"etaBinWidth="<<etaBinWidth<<std::endl;
+  
+
+
 
 
 

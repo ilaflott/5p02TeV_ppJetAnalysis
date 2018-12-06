@@ -19,7 +19,7 @@ echo ""
 
 
 source run_printPlots_ppMC_JERS.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0" "00eta20" "1" "0"         #JER only
-source run_printPlots_ppMC_JERS.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_unf" "00eta20_unf" "0" "1" #MCEff only
+#source run_printPlots_ppMC_JERS.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_unf" "00eta20_unf" "0" "1" #MCEff only
 
 
 

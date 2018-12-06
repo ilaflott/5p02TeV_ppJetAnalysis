@@ -147,7 +147,7 @@ const std::string HLTBitStrings[N_L1Bits]={
 const int N_HLTBits=sizeof(HLTBitStrings)/sizeof(std::string);
 
 //// combos
-const std::string etaWidth = "20_eta_20";
+const std::string etaWidth = "20_eta_20";//why do i still have this
 
 bool str_replace(std::string& str, const std::string& from, const std::string& to) {
 //bool str_replace(std::string str, const std::string from, const std::string to) {
@@ -218,3 +218,67 @@ const int PFType = sizeof(PFCandType)/sizeof(std::string);
 //const std::string HLThTitle[]={"HLT40 ","HLT60 ","HLT80 ","HLT100 ","HLTComb ","Kurt Meth. HLTComb "};
 //const int N_HLThNames=sizeof(HLThNames)/sizeof(std::string);
 
+void makeFullJetTypeString(std::string* fullJetType, std::string* radius, std::string input_ppData_condorDir){
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<"in makeFullJetTypeString"<<std::endl;
+  
+  std::size_t radPos=input_ppData_condorDir.find("_ak")+3;  
+  const std::string radiusInt= input_ppData_condorDir.substr( radPos,1 );
+  
+  std::size_t jetTypePos=radPos+1;
+  std::size_t jetsPos=input_ppData_condorDir.find("Jets");;
+  
+  const std::string jetType=input_ppData_condorDir.substr( jetTypePos,(jetsPos-jetTypePos) );
+  if(funcDebug)std::cout<<"jetType string is = "<<jetType<<std::endl;
+  
+  (*radius)="R"+radiusInt+"_";
+  if(funcDebug)std::cout<<"radius string is = "<<*radius<<std::endl;
+  
+  (*fullJetType)=(std::string)("ak"+radiusInt+jetType);
+  if(funcDebug)std::cout<<"fullJetType string is = "<<*fullJetType<<std::endl;
+
+  return;
+}
+//put this in diff header TO DO
+void makeJetCutStrings( std::string* jetCutString, 
+		        std::string* jetEtaCutString, 
+		        std::string* jtptQACut_str, 
+			TFile* fin){
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<"in makeJetCutStrings"<<std::endl;
+  
+  //grab cut hists + relevant titles+#'s
+  TH1F* jtptCut_h= (TH1F*)fin->Get( "hJetPtCut" );
+  std::string jtptCut_str = std::to_string( (int) jtptCut_h->GetMean() );
+  if(funcDebug)std::cout<<"jtptCut_str = "<<jtptCut_str<<std::endl;  
+  
+  TH1F* jtptQACut_h= (TH1F*)fin->Get( "hJetQAPtCut" );
+  
+  TH1F* jtetaLoCut_h= (TH1F*)fin->Get( "hJetEtaCutLo" );
+  float jtetaLoCut_F=jtetaLoCut_h->GetMean();
+  std::stringstream etaLo; etaLo.precision(1);
+  etaLo << std::fixed << jtetaLoCut_F;
+  
+  TH1F* jtetaHiCut_h= (TH1F*)fin->Get( "hJetEtaCutHi" );
+  float jtetaHiCut_F=jtetaHiCut_h->GetMean();
+  std::stringstream etaHi; etaHi.precision(1);
+  etaHi << std::fixed << jtetaHiCut_F;
+  
+  //form the strings as desired
+  (*jetCutString)=(std::string)("p_{T}>"+jtptCut_str+" GeV");//, "+jtetaLoCut_str+"<|#eta|<"+jtetaHiCut_str;
+  if(funcDebug)  std::cout<<"jetCutString="<<*jetCutString<<std::endl;  
+  
+  (*jtptQACut_str) =(std::string)( std::to_string( (int) jtptQACut_h->GetMean() ));
+  if(funcDebug)  std::cout<<"jtptQACut_str = "<<*jtptQACut_str<<std::endl;  
+  
+  std::string jtetaLoCut_str = etaLo.str();
+  if(funcDebug)std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;    
+  
+  std::string jtetaHiCut_str = etaHi.str();
+  if(funcDebug)std::cout<<"jtetaHiCut_str = "<<jtetaHiCut_str<<std::endl;  
+  
+  (*jetEtaCutString)=(std::string)(jtetaLoCut_str+"<|y|<"+jtetaHiCut_str);
+  if(funcDebug)std::cout<<"jetEtaCutString="<<*jetEtaCutString<<std::endl;  
+  
+  return;
+}

@@ -322,7 +322,7 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins
   return;
 }
 
-void setupSpectraHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){  
+void setupSpectraHist(TH1* h, bool useSimpBins=false, double* boundaries=NULL, int nbins=1){  
   h->GetYaxis()->SetTitle("#frac{d^{2}#sigma}{d#eta dp_{T}} [nb/GeV]");
   //h->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
   //h->GetYaxis()->SetTitle("A.U.");
@@ -953,8 +953,376 @@ void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput)
 
 
 
+void applyFakeCorrection(TH1D* hrec_rebin_fakecorr         =NULL, 			 TH1D* hrec_sameside_rebin_fakecorr=NULL, 
+			 TH1D* hfold_fakecorr              =NULL, 			 TH1D* hfold_truth_fakecorr        =NULL,
+			 TH1D* hfak=NULL){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in applyFakeCorrection"<<std::endl;
+  
+  //fake correction
+  Double_t fac=(hrec_rebin_fakecorr->Integral()/hrec_sameside_rebin_fakecorr->Integral());
+  int nbins_fakcorr=hrec_rebin_fakecorr->GetNbinsX();
+  for(int i=1;i<=nbins_fakcorr; i++){
+    Double_t hfak_i     = hfak->GetBinContent(i); Double_t hfak_i_err = hfak->GetBinError(i);
+    
+    Double_t hrec_i     = hrec_rebin_fakecorr->GetBinContent(i); Double_t hrec_i_err = hrec_rebin_fakecorr->GetBinError(i);
+    hrec_rebin_fakecorr->SetBinContent( i, hrec_i-fac*hfak_i );
+    hrec_rebin_fakecorr->SetBinError(   i, sqrt(hrec_i_err*hrec_i_err + fac*hfak_i_err*fac*hfak_i_err));
+
+    Double_t hfold_i     = hfold_fakecorr->GetBinContent(i); Double_t hfold_i_err = hfold_fakecorr->GetBinError(i);
+    hfold_fakecorr->SetBinContent( i, hfold_i+fac*hfak_i );
+    hfold_fakecorr->SetBinError(   i, sqrt(hfold_i_err*hfold_i_err + fac*hfak_i_err*fac*hfak_i_err));
+
+    Double_t hrecss_i     = hrec_sameside_rebin_fakecorr->GetBinContent(i); Double_t hrecss_i_err = hrec_sameside_rebin_fakecorr->GetBinError(i);
+    hrec_sameside_rebin_fakecorr->SetBinContent( i, hrecss_i-hfak_i );
+    hrec_sameside_rebin_fakecorr->SetBinError(   i, sqrt(hrecss_i_err*hrecss_i_err + hfak_i_err*hfak_i_err));
+
+    Double_t hfold_truth_i     = hfold_truth_fakecorr->GetBinContent(i); Double_t hfold_truth_i_err = hfold_truth_fakecorr->GetBinError(i);
+    hfold_truth_fakecorr->SetBinContent( i, hfold_truth_i+hfak_i );
+    hfold_truth_fakecorr->SetBinError(   i, sqrt(hfold_truth_i_err*hfold_truth_i_err + hfak_i_err*hfak_i_err));
+  }
+
+  return;
+}
 
 
+
+
+
+//this funciton makes the ratios itself explicitly.
+void multiratioplot( TCanvas* c=NULL, TLegend * legend=NULL, 
+		     std::vector<TH1D*> hvect={0}, 
+		     TH1D* hdenom=NULL, std::string ratiotitle=""
+		     ) {
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in multiratio plot v1"<<std::endl;
+  if(!c)    return;
+  if(!hdenom)    return;
+  if(hvect.size()==0) return;
+  if(ratiotitle.length()==0)
+    ratiotitle="ratio with"+(std::string)hdenom->GetName();
+  
+
+  c->cd();
+  
+  //setup pads + draw on canvases
+  TPad *pad1 = new TPad("pad1", "pad1", 0, 0.3, 1, 1.0);
+  pad1->SetLogx(1);    pad1->SetLogy(1);
+  pad1->SetGridx(0);   pad1->SetGridy(0);       
+  pad1->SetBottomMargin(0); // Upper and lower plot are joined  
+  pad1->Draw();             // Draw the upper pad: pad1
+  
+  TPad *pad2 = new TPad("pad2", "pad2", 0, 0.05, 1, 0.3);
+  pad2->SetLogx(1);    pad2->SetLogy(0);  
+  pad2->SetGridx(0); pad2->SetGridy(0); 
+  pad2->SetTopMargin(0);  pad2->SetBottomMargin(0.2);
+  pad2->Draw();
+  
+  //draw spectra on pad1
+  pad1->cd();                 
+  for(unsigned int i=0;i<hvect.size();i++){
+    if(i==0)hvect[i]->DrawClone("P E");
+    else hvect[i]->DrawClone("P E SAME");    }  
+  hdenom->DrawClone("P E SAME");  
+  
+  if( ((bool)legend))legend->Draw();
+  
+  //draw ratio(s) on pad 2  
+  pad2->cd();       
+  std::vector<TH1D*> hvect_ratio;
+  for(unsigned int i=0;i<hvect.size(); i++){
+    hvect_ratio.push_back((TH1D*)hvect[i]->Clone());
+    hvect_ratio[i]->Divide(hdenom);
+    if(i!=0)
+      hvect_ratio[i]->DrawClone("P E SAME");  
+    else{ //if(i==0){
+      hvect_ratio[i]->Draw("P E");      
+      TLine* lineatone=new TLine ( hdenom->GetBinLowEdge(1),                                                             1.,
+				   hdenom->GetBinLowEdge(hdenom->GetNbinsX())+hdenom->GetBinWidth(hdenom->GetNbinsX()) , 1.);
+      lineatone->SetLineStyle(2);      lineatone->SetLineWidth(1);      lineatone->SetLineColor(36);
+      lineatone->Draw();  
+      TLine* lineA=(TLine*)(lineatone->Clone());
+      lineA->SetY1(1.25);  lineA->SetY2(1.25);      lineA->Draw();  
+      TLine* lineB=(TLine*)(lineatone->Clone());
+      lineB->SetY1(0.75);  lineB->SetY2(0.75);            lineB->Draw();  
+      hvect_ratio[i]->Draw("P E SAME");    
+    }  }
+  
+  // Ratio plot settings
+  hvect_ratio[0]->SetTitle(""); // Remove the ratio title
+  hvect_ratio[0]->SetAxisRange(0.6,1.4,"Y");
+  
+  // Y axis ratio plot settings
+  hvect_ratio[0]->GetYaxis()->SetTitle(ratiotitle.c_str());
+  hvect_ratio[0]->GetYaxis()->SetTitleSize(20);
+  hvect_ratio[0]->GetYaxis()->SetTitleFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetYaxis()->SetTitleOffset(1.55);
+  hvect_ratio[0]->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetYaxis()->SetLabelSize(15);
+  
+  // X axis ratio plot settings
+  hvect_ratio[0]->GetXaxis()->SetTitleSize(20);
+  hvect_ratio[0]->GetXaxis()->SetTitleFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetXaxis()->SetTitleOffset(4.);
+  hvect_ratio[0]->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetXaxis()->SetLabelSize(15);
+  
+  return;
+}
+
+
+////this function takes in a vector of ratio histograms already made. This may be desired because perhaps the ratios are between different histograms, rather than having a common denominator
+void multiratioplot( TCanvas* c=NULL, TLegend * legend=NULL, 
+		     std::vector<TH1D*> hvect={0}, 
+		     std::vector<TH1D*> hvect_ratio={0}, 
+		     std::string ratiotitle=""
+		     ) {
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in multiratio plot v2"<<std::endl;
+  if(!c)    return;
+  if(hvect.size()==0) return;
+  if(hvect_ratio.size()==0) return;
+  if(ratiotitle.length()==0)
+    ratiotitle="ratio";// with"+(std::string)hdenom->GetName();
+  
+  c->cd();
+  
+  //setup pads + draw on canvases
+  TPad *pad1 = new TPad("pad1", "pad1", 0, 0.3, 1, 1.0);
+  pad1->SetLogx(1);    pad1->SetLogy(1);
+  pad1->SetGridx(0);   pad1->SetGridy(0);       
+  pad1->SetBottomMargin(0); // Upper and lower plot are joined  
+  pad1->Draw();             // Draw the upper pad: pad1
+  
+  TPad *pad2 = new TPad("pad2", "pad2", 0, 0.05, 1, 0.3);
+  pad2->SetLogx(1);    pad2->SetLogy(0);  
+  pad2->SetGridx(0); pad2->SetGridy(0); 
+  pad2->SetTopMargin(0);  pad2->SetBottomMargin(0.2);
+  pad2->Draw();
+  
+  //draw spectra on pad1
+  pad1->cd();                 
+  for(unsigned int i=0;i<hvect.size();i++){
+    if(i==0)hvect[i]->DrawClone("P E");
+    else hvect[i]->DrawClone("P E SAME");    }  
+  if( ((bool)legend))legend->Draw();
+  
+  //draw ratio(s) on pad 2  
+  pad2->cd();       
+  for(unsigned int i=0;i<hvect_ratio.size(); i++){
+    if(i!=0)
+      hvect_ratio[i]->DrawClone("P E SAME");  
+    else{ //if(i==0){
+      hvect_ratio[i]->Draw("P E");      
+      TLine* lineatone=new TLine ( hvect_ratio[i]->GetBinLowEdge(1), 1.,
+				   hvect_ratio[i]->GetBinLowEdge(hvect_ratio[i]->GetNbinsX())+hvect_ratio[i]->GetBinWidth(hvect_ratio[i]->GetNbinsX()) , 1.);
+      lineatone->SetLineStyle(2);      lineatone->SetLineWidth(1);      lineatone->SetLineColor(36);
+      lineatone->Draw();  
+      TLine* lineA=(TLine*)(lineatone->Clone());
+      lineA->SetY1(1.25);  lineA->SetY2(1.25);      lineA->Draw();  
+      TLine* lineB=(TLine*)(lineatone->Clone());
+      lineB->SetY1(0.75);  lineB->SetY2(0.75);            lineB->Draw();  
+      hvect_ratio[i]->Draw("P E SAME");    
+    }  }
+  
+  // Ratio plot settings
+  hvect_ratio[0]->SetTitle(""); // Remove the ratio title
+  hvect_ratio[0]->SetAxisRange(0.6,1.4,"Y");
+  
+  // Y axis ratio plot settings
+  hvect_ratio[0]->GetYaxis()->SetTitle(ratiotitle.c_str());
+  hvect_ratio[0]->GetYaxis()->SetTitleSize(20);
+  hvect_ratio[0]->GetYaxis()->SetTitleFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetYaxis()->SetTitleOffset(1.55);
+  hvect_ratio[0]->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetYaxis()->SetLabelSize(15);
+  
+  // X axis ratio plot settings
+  hvect_ratio[0]->GetXaxis()->SetTitleSize(20);
+  hvect_ratio[0]->GetXaxis()->SetTitleFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetXaxis()->SetTitleOffset(4.);
+  hvect_ratio[0]->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+  hvect_ratio[0]->GetXaxis()->SetLabelSize(15);
+  
+  return;
+}
+
+
+
+
+
+//void makeCombinedPlots(TFile* fout, TCanvas* canvForPrint, std::string outPdfFile=""){
+void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, std::string outPdfFile=""){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"makeCombinedPlots"<<std::endl;
+  if(outRootFile.length()==0){std::cout<<"ERROR no outRootFile string. exit."<<std::endl;
+    return; }
+  if(!canvForPrint){std::cout<<"ERROR canvForPrint pointer not found. exit."<<std::endl;
+    return; }
+  if(outPdfFile.length()==0){std::cout<<"ERROR no outPdfFile string. exit."<<std::endl;
+    return; }
+  
+  TFile* fout= new TFile(outRootFile.c_str(), "UPDATE");
+  if(!fout){std::cout<<"ERROR output file pointer not found. exit."<<std::endl;
+    return; }
+
+  canvForPrint->Clear();
+
+
+  // combined plots, I/O spectra
+  TH1D* hrec_rebin	     = (TH1D*)fout->Get("Data_meas");
+  hrec_rebin->SetMarkerStyle(kOpenCircle);
+  hrec_rebin->SetMarkerColor(kBlue);     
+  hrec_rebin->SetLineColor(kBlue);     
+  hrec_rebin->SetMarkerSize(1.02); 
+
+  TH1D* hrec_sameside_rebin  = (TH1D*)fout->Get("MC_meas");
+  hrec_sameside_rebin->SetMarkerStyle(kOpenSquare);
+  hrec_sameside_rebin->SetMarkerColor(kBlue-3);     
+  hrec_sameside_rebin->SetLineColor(kBlue-3);     
+  hrec_sameside_rebin->SetMarkerSize(1.02);   
+
+  TH1D* hunf		     = (TH1D*)fout->Get("Data_unf");
+  hunf->SetMarkerStyle(kOpenCircle);
+  hunf->SetMarkerColor(kRed);
+  hunf->SetLineColor(kRed);
+  hunf->SetMarkerSize(1.02);     
+
+  TH1D* hgen_rebin	     = (TH1D*)fout->Get("MC_truth");
+  hgen_rebin->SetMarkerStyle(kOpenStar);
+  hgen_rebin->SetMarkerColor(kMagenta);
+  hgen_rebin->SetLineColor(kMagenta);
+  hgen_rebin->SetMarkerSize(1.02);     
+  
+  TLegend* legend_in1=new TLegend(0.7,0.7,0.9,0.9);
+  legend_in1->AddEntry(hrec_rebin	    , "Data Meas." , "lp");
+  legend_in1->AddEntry(hunf		    , "Data Unf." , "lp");
+  legend_in1->AddEntry(hrec_sameside_rebin   , "MC Meas." , "lp");
+  legend_in1->AddEntry(hgen_rebin	    , "MC Truth" , "lp");
+  legend_in1->SetFillStyle(0);
+  legend_in1->SetBorderSize(0);
+  
+  TCanvas* canv_spectra_genratio=NULL;
+  //  hrec_rebin->SetTitle("Bayesian, MC and Data Spectra");    
+  hrec_rebin->SetTitle("MC and Data Spectra");    
+  multiratioplot( canvForPrint, legend_in1,
+		  ((std::vector<TH1D*>){hrec_rebin,  hrec_sameside_rebin, hunf}),
+		  hgen_rebin, "Ratio w/ MC Truth");
+  canv_spectra_genratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Print(outPdfFile.c_str());      
+  canvForPrint->Clear();
+
+  TCanvas* canv_spectra_recratio=NULL;  
+  //  hgen_rebin->SetTitle("Bayesian, MC and Data Spectra");
+  hgen_rebin->SetTitle("MC and Data Spectra");
+  multiratioplot( canvForPrint, legend_in1,
+		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hunf}),
+		  hrec_rebin, "Ratio w/ Data Meas.");
+  canv_spectra_recratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Print(outPdfFile.c_str());      
+  canvForPrint->Clear();
+  
+  
+  TCanvas* canv_spectra_unfratio=NULL;
+  //  hgen_rebin->SetTitle("Bayesian, MC and Data Spectra");
+  hgen_rebin->SetTitle("MC and Data Spectra");
+  multiratioplot( canvForPrint, legend_in1,
+		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hrec_rebin}),
+		  hunf, "Ratio w/ Data Unf.");
+  canv_spectra_unfratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Print(outPdfFile.c_str());      
+  canvForPrint->Clear();
+
+  fout->cd();    
+  
+  canv_spectra_genratio->Write("canv_spectra_genratio");
+  canv_spectra_recratio->Write("canv_spectra_recratio");
+  canv_spectra_unfratio->Write("canv_spectra_unfratio");
+
+
+
+  // combined plots, folded spectra + fakes, folded ratios
+  TH1D* hfold_fakecorr       = (TH1D*)fout->Get("Data_foldfakcorr");
+  hfold_fakecorr->SetMarkerStyle(kOpenCircle);
+  hfold_fakecorr->SetMarkerColor(kGreen-5);
+  hfold_fakecorr->SetLineColor(  kGreen-5);
+  hfold_fakecorr->SetMarkerSize(1.02);
+
+  TH1D* h_foldratio_datafold = (TH1D*)fout->Get("ratio_Data_fold_Data_measfakcorr");
+  h_foldratio_datafold->SetMarkerStyle(kOpenCircle);
+  h_foldratio_datafold->SetMarkerColor(kGreen-5);
+  h_foldratio_datafold->SetLineColor(  kGreen-5);
+  h_foldratio_datafold->SetMarkerSize(1.02);
+
+  TH1D* hfold_truth_fakecorr = (TH1D*)fout->Get("MC_truth_foldfakcorr");
+  hfold_truth_fakecorr->SetMarkerStyle(kOpenStar);
+  hfold_truth_fakecorr->SetMarkerColor(kGreen+3);
+  hfold_truth_fakecorr->SetLineColor(  kGreen+3);
+  hfold_truth_fakecorr->SetMarkerSize(1.02);     
+
+  TH1D* h_foldratio_mcfold   = (TH1D*)fout->Get("ratio_MC_fold_MC_measfakcorr");
+  h_foldratio_mcfold->SetMarkerStyle(kOpenStar);
+  h_foldratio_mcfold->SetMarkerColor(kGreen+3);
+  h_foldratio_mcfold->SetLineColor(  kGreen+3);
+  h_foldratio_mcfold->SetMarkerSize(1.02);     
+
+  TLegend* legendfold2 = new TLegend( 0.7,0.7,0.9,0.9);
+  legendfold2->AddEntry(hfold_truth_fakecorr,"Fold(MC Truth) + Fakes",  "lp");
+  legendfold2->AddEntry(hrec_sameside_rebin, "MC Meas."  ,  "lp");
+  legendfold2->AddEntry(hfold_fakecorr ,     "Fold(Data Unf.) + Fakes" , "lp");
+  legendfold2->AddEntry(hrec_rebin, "Data Meas." , "lp");    
+  legendfold2->SetFillStyle(0);
+  legendfold2->SetBorderSize(0);    
+  
+  TCanvas* canv_spectra_foldratio=NULL;
+  hfold_truth_fakecorr->SetTitle("Folded Spectra, MC and Data");    setupSpectraHist(hfold_truth_fakecorr);
+  multiratioplot( canvForPrint, legendfold2,
+  		  ((std::vector<TH1D*>){hfold_truth_fakecorr, hrec_sameside_rebin, hfold_fakecorr,  hrec_rebin}),
+  		  ((std::vector<TH1D*>){h_foldratio_datafold, h_foldratio_mcfold}),
+  		  "Ratio w/ Meas. ");
+  canv_spectra_foldratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Print(outPdfFile.c_str());       
+  canvForPrint->Clear();
+  
+  fout->cd();
+  canv_spectra_foldratio->Write("canv_spectra_foldratio");
+  
+
+
+
+  TH1D* CT10nlo	 = (TH1D*)fout->Get("NLO_CT10_NLO_R04_jtpt")	 ;
+  CT10nlo->SetMarkerSize(0);
+  CT10nlo->SetLineColor(kBlack);  
+  TH1D* CT14nlo	 = (TH1D*)fout->Get("NLO_CT14_NLO_R04_jtpt")	 ;
+  CT14nlo->SetMarkerSize(0);
+  CT14nlo->SetLineColor(kGreen);
+  TH1D* NNPDFnnlo= (TH1D*)fout->Get("NLO_NNPDF_NLO_R04_jtpt")    ;
+  NNPDFnnlo->SetMarkerSize(0);
+  NNPDFnnlo->SetLineColor(kCyan-6);  
+ 
+  TLegend* legendThy1 =new TLegend( 0.7,0.7,0.9,0.9 );    
+  legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
+  legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
+  legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");
+  legendThy1->AddEntry(hunf,"Data Unf.","lp");
+  legendThy1->AddEntry(hgen_rebin,"MC Truth", "lp");
+  legendThy1->SetFillStyle(0);
+  legendThy1->SetBorderSize(0);    
+
+  TCanvas* canv_thy_spectra_1=NULL;  
+  CT10nlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
+  multiratioplot( canvForPrint, legendThy1,
+		  ((std::vector<TH1D*>){CT10nlo, CT14nlo, NNPDFnnlo, hgen_rebin}),
+		  hunf, "Ratio w/ Data Unf.");    
+  canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone(); 
+  canvForPrint->Print(outPdfFile.c_str()); 
+  canvForPrint->Clear();
+  
+  fout->cd();
+  canv_thy_spectra_1->Write("canv_thy_spectra_1");
+  
+  return;
+}
 
 
 
@@ -1102,3 +1470,13 @@ void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput)
 
 
 
+
+
+//void testwrite(TFile* fout){
+//  bool funcDebug=true;
+//  if(funcDebug)std::cout<<"test write hist"<<std::endl;
+//  TH1D* testHistWrite=(TH1D*)fout->Get("Data_meas");
+//  fout->cd();
+//  testHistWrite->Write("testHistWrite");
+//  return;
+//}

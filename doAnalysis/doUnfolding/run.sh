@@ -5,8 +5,8 @@
 dataHLTPF=1
 dataHLTCalo=0
 
-doBayes=1
-doSVD=0
+doBayes=0
+doSVD=1
 useSimpBins=0
 makeRooUnf=0
 
@@ -320,7 +320,8 @@ if [[ $doSVD -eq 1 ]]
 then
     if [[ $doDataUnfoldingwLO -eq 1 ]]
     then
-	rooUnfoldCompile SVDUnfoldDataSpectra.C
+	#rooUnfoldCompile SVDUnfoldDataSpectra.C
+	rooUnfoldCompile SVDUnfoldDataSpectra_v2.C
     fi
     if [[ $doDataUnfoldingwNLO -eq 1 ]]
     then

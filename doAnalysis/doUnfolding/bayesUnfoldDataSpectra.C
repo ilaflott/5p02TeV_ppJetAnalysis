@@ -215,15 +215,12 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   hgen_rebin->SetMarkerSize(1.02);     	
 
 
-
   
   // reco/gen response hist
-
   std::string histTitle3="hpp_rec_sameside_response_rebin"+RandEtaRange;
   TH1D* hrec_sameside_resp_rebin=NULL;  
   std::string histTitle3gen="hpp_gen_response_rebin"+RandEtaRange;
   TH1D* hgen_resp_rebin=NULL;
-
   if(fillRespHists) {
     //if(useTH2ProjRespHist){
     //  
@@ -407,8 +404,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   NNPDFnnlo->SetLineColor(kCyan-6); 
   NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
 
+  // ----- unfolding setup+use below here
 
-
+  // RooUnfold Response Matrix 
   std::cout<<"calling RooUnfoldResponse "<<std::endl;
   RooUnfoldResponse roo_resp( hrec_sameside_resp_rebin, hgen_resp_rebin, hmat_rebin, ("Response_matrix"+RandEtaRange).c_str()) ;
   roo_resp.UseOverflow(doOverUnderflows);    
@@ -493,6 +491,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   if(debugWrite)unfmat_TH2->Write();
   
 
+
+
+
   // --------- RATIOS WITH MC TRUTH ----------------
   TH1D *hgen_rebin_ratiobin=(TH1D*)hgen_rebin->Clone("ppData_Gen_Ratio_denom");
   if(debugMode)hgen_rebin_ratiobin->Print("base");
@@ -540,28 +541,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 		      hfold_fakecorr      ,  hfold_truth_fakecorr        ,
 		      hfak      );
   
-  //  //fake correction
-  //  int nbins_fakcorr=hrec_rebin_fakecorr->GetNbinsX();
-  //  for(int i=1;i<=nbins_fakcorr; i++){
-  //    Double_t hfak_i     = hfak->GetBinContent(i); Double_t hfak_i_err = hfak->GetBinError(i);
-  //
-  //    Double_t hrec_i     = hrec_rebin_fakecorr->GetBinContent(i); Double_t hrec_i_err = hrec_rebin_fakecorr->GetBinError(i);
-  //    hrec_rebin_fakecorr->SetBinContent( i, hrec_i-fac*hfak_i );     
-  //    hrec_rebin_fakecorr->SetBinError(   i, sqrt(hrec_i_err*hrec_i_err + fac*hfak_i_err*fac*hfak_i_err));  
-  //
-  //    Double_t hfold_i     = hfold_fakecorr->GetBinContent(i); Double_t hfold_i_err = hfold_fakecorr->GetBinError(i);
-  //    hfold_fakecorr->SetBinContent( i, hfold_i+fac*hfak_i );     
-  //    hfold_fakecorr->SetBinError(   i, sqrt(hfold_i_err*hfold_i_err + fac*hfak_i_err*fac*hfak_i_err));  
-  //
-  //    Double_t hrecss_i     = hrec_sameside_rebin_fakecorr->GetBinContent(i); Double_t hrecss_i_err = hrec_sameside_rebin_fakecorr->GetBinError(i);
-  //    hrec_sameside_rebin_fakecorr->SetBinContent( i, hrecss_i-hfak_i );     
-  //    hrec_sameside_rebin_fakecorr->SetBinError(   i, sqrt(hrecss_i_err*hrecss_i_err + hfak_i_err*hfak_i_err));    
-  //
-  //    Double_t hfold_truth_i     = hfold_truth_fakecorr->GetBinContent(i); Double_t hfold_truth_i_err = hfold_truth_fakecorr->GetBinError(i);
-  //    hfold_truth_fakecorr->SetBinContent( i, hfold_truth_i+hfak_i );     
-  //    hfold_truth_fakecorr->SetBinError(   i, sqrt(hfold_truth_i_err*hfold_truth_i_err + hfak_i_err*hfak_i_err));  
-  //  }
-  
+
   TH1D *h_recratio_oppunf = (TH1D*)hunf->Clone( "ppData_Meas_Ratio_OppUnf" );
   h_recratio_oppunf->SetTitle( "Unf. Data/RECO Data" );
   h_recratio_oppunf->Divide(hrec_rebin);

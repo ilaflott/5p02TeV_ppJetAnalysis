@@ -958,6 +958,11 @@ void applyFakeCorrection(TH1D* hrec_rebin_fakecorr         =NULL, 			 TH1D* hrec
 			 TH1D* hfak=NULL){
   bool funcDebug=true;
   if(funcDebug)std::cout<<"in applyFakeCorrection"<<std::endl;
+  if(!(hrec_rebin_fakecorr) ||
+     !(hrec_sameside_rebin_fakecorr) ||
+     !(hfak) ){
+    std::cout<<"not enough hists given for fake correction. exiting applyFakeCorrection"<<std::endl;
+    return;  }
   
   //fake correction
   Double_t fac=(hrec_rebin_fakecorr->Integral()/hrec_sameside_rebin_fakecorr->Integral());
@@ -968,18 +973,22 @@ void applyFakeCorrection(TH1D* hrec_rebin_fakecorr         =NULL, 			 TH1D* hrec
     Double_t hrec_i     = hrec_rebin_fakecorr->GetBinContent(i); Double_t hrec_i_err = hrec_rebin_fakecorr->GetBinError(i);
     hrec_rebin_fakecorr->SetBinContent( i, hrec_i-fac*hfak_i );
     hrec_rebin_fakecorr->SetBinError(   i, sqrt(hrec_i_err*hrec_i_err + fac*hfak_i_err*fac*hfak_i_err));
-
-    Double_t hfold_i     = hfold_fakecorr->GetBinContent(i); Double_t hfold_i_err = hfold_fakecorr->GetBinError(i);
-    hfold_fakecorr->SetBinContent( i, hfold_i+fac*hfak_i );
-    hfold_fakecorr->SetBinError(   i, sqrt(hfold_i_err*hfold_i_err + fac*hfak_i_err*fac*hfak_i_err));
-
+    
+    if(hfold_fakecorr){
+      Double_t hfold_i     = hfold_fakecorr->GetBinContent(i); Double_t hfold_i_err = hfold_fakecorr->GetBinError(i);
+      hfold_fakecorr->SetBinContent( i, hfold_i+fac*hfak_i );
+      hfold_fakecorr->SetBinError(   i, sqrt(hfold_i_err*hfold_i_err + fac*hfak_i_err*fac*hfak_i_err));
+    }
+    
     Double_t hrecss_i     = hrec_sameside_rebin_fakecorr->GetBinContent(i); Double_t hrecss_i_err = hrec_sameside_rebin_fakecorr->GetBinError(i);
     hrec_sameside_rebin_fakecorr->SetBinContent( i, hrecss_i-hfak_i );
     hrec_sameside_rebin_fakecorr->SetBinError(   i, sqrt(hrecss_i_err*hrecss_i_err + hfak_i_err*hfak_i_err));
-
-    Double_t hfold_truth_i     = hfold_truth_fakecorr->GetBinContent(i); Double_t hfold_truth_i_err = hfold_truth_fakecorr->GetBinError(i);
-    hfold_truth_fakecorr->SetBinContent( i, hfold_truth_i+hfak_i );
-    hfold_truth_fakecorr->SetBinError(   i, sqrt(hfold_truth_i_err*hfold_truth_i_err + hfak_i_err*hfak_i_err));
+    
+    if(hfold_truth_fakecorr){
+      Double_t hfold_truth_i     = hfold_truth_fakecorr->GetBinContent(i); Double_t hfold_truth_i_err = hfold_truth_fakecorr->GetBinError(i);
+      hfold_truth_fakecorr->SetBinContent( i, hfold_truth_i+hfak_i );
+      hfold_truth_fakecorr->SetBinError(   i, sqrt(hfold_truth_i_err*hfold_truth_i_err + hfak_i_err*hfak_i_err));
+    }
   }
 
   return;

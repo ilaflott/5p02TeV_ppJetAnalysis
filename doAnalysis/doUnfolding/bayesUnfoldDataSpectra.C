@@ -222,70 +222,6 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   std::string histTitle3gen="hpp_gen_response_rebin"+RandEtaRange;
   TH1D* hgen_resp_rebin=NULL;
   if(fillRespHists) {
-    //if(useTH2ProjRespHist){
-    //  
-    //  //reco response histo
-    //  if(debugMode)std::cout<<"boundaries_pt_gen[0]  = "<< ((int)boundaries_pt_gen[0]) << std::endl;
-    //  if(debugMode)std::cout<<"boudnaries_pt_gen["<<nbins_pt_gen<<"] = "<< (int)boundaries_pt_gen[nbins_pt_gen] <<std::endl;
-    //  if(debugMode)std::cout<<"bin 1 pt low = "<<
-    //		     (int)hmat->GetYaxis()->GetBinLowEdge((int)(boundaries_pt_gen[0]+1.))<<std::endl;
-    //  
-    //  if(debugMode)std::cout<<"bin "<<nbins_pt_gen<<" pt hi = "<<
-    //		     hmat->GetYaxis()->GetBinLowEdge(((int)boundaries_pt_gen[nbins_pt_gen]))
-    //		     + hmat->GetYaxis()->GetBinWidth(((int)boundaries_pt_gen[nbins_pt_gen]))<<std::endl;    
-    //
-    //  //profile error types; default(sum/sqrt(N)), s, i, *g*
-    //  hrec_sameside_resp_rebin = (TH1D*)hmat->TH2::ProjectionX( 
-    //							    (histTitle3+"_profile").c_str() , 
-    //							    (int)(boundaries_pt_gen[0]+1.), 
-    //							    ((int)boundaries_pt_gen[nbins_pt_gen]), 	"g");
-    //  hrec_sameside_resp_rebin=(TH1D*)hrec_sameside_resp_rebin->Rebin( nbins_pt_reco, (histTitle3+"_profile_rebin").c_str() , boundaries_pt_reco);
-    //  hrec_sameside_resp_rebin->Write( (histTitle3+"_profile_rebin").c_str());      
-    //  
-    //  //divideBinWidth(hrec_sameside_resp_rebin);    
-    //  hrec_sameside_resp_rebin->Write( (histTitle3+"_profile_rebin_divBinWidth").c_str());
-    //  if(debugMode)std::cout<<"profile bin #1 pt low = "<<
-    //		     (int)hrec_sameside_resp_rebin->GetBinLowEdge(1)<<std::endl;
-    //  if(debugMode)std::cout<<"profile bin #"<<nbins_pt_gen<<" pt hi = "<<
-    //		     hrec_sameside_resp_rebin->GetBinLowEdge(nbins_pt_reco)
-    //		     + hrec_sameside_resp_rebin->GetBinWidth(nbins_pt_reco)<<std::endl;    
-    //
-    //  if(clearOverUnderflows){
-    //	TH1clearOverUnderflows((TH1*)hrec_sameside_resp_rebin);
-    //	hrec_sameside_resp_rebin->Write((histTitle3+"_profile_rebin_divBinWidth_noOverUnderflow").c_str());
-    //	if(debugMode)hrec_sameside_resp_rebin->Print("base");    }
-    //  
-    //  //gen version here
-    //  if(debugMode)std::cout<<"boundaries_pt_reco[0]  = "<< ((int)boundaries_pt_reco[0]) << std::endl;
-    //  if(debugMode)std::cout<<"boudnaries_pt_reco["<<nbins_pt_reco<<"] = "<< (int)boundaries_pt_reco[nbins_pt_reco] <<std::endl;
-    //  if(debugMode)std::cout<<"bin 1 pt low = "<<
-    //		     (int)hmat->GetXaxis()->GetBinLowEdge((int)(boundaries_pt_reco[0]+1.))<<std::endl;
-    //  
-    //  if(debugMode)std::cout<<"bin "<<nbins_pt_reco<<" pt hi = "<<
-    //		     hmat->GetXaxis()->GetBinLowEdge(((int)boundaries_pt_reco[nbins_pt_reco]))
-    //		     + hmat->GetXaxis()->GetBinWidth(((int)boundaries_pt_reco[nbins_pt_reco]))<<std::endl;    
-    //  
-    //  //profile error types; default(sum/sqrt(N)), s, i, *g*
-    //  hgen_resp_rebin = (TH1D*)hmat->TH2::ProjectionY( 
-    //						   (histTitle3gen+"_profile").c_str() , 
-    //						   (int)(boundaries_pt_reco[0]+1.), 
-    //						   ((int)boundaries_pt_reco[nbins_pt_reco]), 	"g");
-    //  hgen_resp_rebin=(TH1D*)hgen_resp_rebin->Rebin( nbins_pt_gen, (histTitle3gen+"_profile_rebin").c_str() , boundaries_pt_gen);
-    //  hgen_resp_rebin->Write( (histTitle3gen+"_profile_rebin").c_str());      
-    //  
-    //  //divideBinWidth(hgen_resp_rebin);    
-    //  hgen_resp_rebin->Write( (histTitle3gen+"_profile_rebin_divBinWidth").c_str());
-    //  if(debugMode)std::cout<<"profile bin #1 pt low = "<<
-    //		     (int)hgen_resp_rebin->GetBinLowEdge(1)<<std::endl;
-    //  if(debugMode)std::cout<<"profile bin #"<<nbins_pt_gen<<" pt hi = "<<
-    //		     hgen_resp_rebin->GetBinLowEdge(nbins_pt_gen)
-    //		     + hgen_resp_rebin->GetBinWidth(nbins_pt_gen)<<std::endl;    
-    //
-    //  if(clearOverUnderflows){
-    //	TH1clearOverUnderflows((TH1*)hgen_resp_rebin);
-    //	hgen_resp_rebin->Write((histTitle3gen+"_profile_rebin_divBinWidth_noOverUnderflow").c_str());
-    //	if(debugMode)hgen_resp_rebin->Print("base");    }
-    //}
     
 
     //else{
@@ -433,7 +369,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   TH1D *hunf = (TH1D*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_BayesUnf_Spectra");
-  hunf->SetTitle("Unf. Data");
+  //  hunf->SetTitle("Unf. Data");
+  hunf->SetTitle( ("Unf. Data, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hunf->Print("base");
   
   //cosmetics
@@ -445,7 +382,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   std::cout<<"folding unfolded data histogram!!"<<std::endl;
   TH1D* hfold=(TH1D*)roo_resp.ApplyToTruth(hunf);          
   hfold->SetName("ppData_BayesFold_Spectra");
-  hfold->SetTitle("Fold. Data");
+  //  hfold->SetTitle("Fold. Data");
+  hfold->SetTitle(("Fold. Data, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hfold->Print("base");
   
   //cosmetics
@@ -457,7 +395,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   std::cout<<"folding MC Truth histogram!!"<<std::endl;
   TH1D* hfold_truth=(TH1D*)roo_resp.ApplyToTruth(hgen_rebin);          
   hfold_truth->SetName("ppMC_BayesFoldMCTruth_Spectra");
-  hfold_truth->SetTitle("Fold. MC Truth");
+  hfold_truth->SetTitle(("Fold. MC Truth, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hfold_truth->Print("base");
   
   //cosmetics
@@ -1304,8 +1242,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
 
   
-  // input data ------------------
-  hrec_rebin->SetTitle("Data Meas.");hrec_rebin->Write("Data_meas");
+// input data ------------------
+  hrec_rebin->SetTitle( "Data Meas.");
+  hrec_rebin->Write("Data_meas");
   if((bool)hJetQA_jtptEntries){ 
     hJetQA_jtptEntries->SetTitle("Data N_{Jets}");hJetQA_jtptEntries->Write("Data_njets");}
   
@@ -1327,13 +1266,13 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   NNPDFnnlo->SetTitle("NNPDF NNLO Spectra");	   NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt");       
   
   // output hists -------------
-  hunf->SetTitle("Data Unf."); hunf->Write("Data_unf");    
-  hfold->SetTitle("Data Fold(Unf.)"); hfold->Write("Data_fold");        
-  hfold_fakecorr->SetTitle("Data Fold(Unf.) + Fakes"); hfold->Write("Data_foldfakcorr");        
+  hunf->SetTitle(("Data Unf. kIter="+std::to_string(kIterInput)).c_str() );hunf->Write("Data_unf");    
+  hfold->SetTitle(("Data Fold(Unf.) kIter="+std::to_string(kIterInput)).c_str() ); hfold->Write("Data_fold");        
+  hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, kIter="+std::to_string(kIterInput)).c_str() ); hfold->Write("Data_foldfakcorr");        
   hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");
   
-  hfold_truth->SetTitle("MC Fold(Truth)");hfold_truth->Write("MC_truth_fold");
-  hfold_truth_fakecorr->SetTitle("MC Fold(Truth) + Fakes");hfold_truth->Write("MC_truth_foldfakcorr");
+  hfold_truth->SetTitle(("MC Fold(Truth), kIter="+std::to_string(kIterInput)).c_str() );hfold_truth->Write("MC_truth_fold");
+  hfold_truth_fakecorr->SetTitle(("MC Fold(Truth) + Fakes, kIter="+std::to_string(kIterInput)).c_str() );hfold_truth->Write("MC_truth_foldfakcorr");
   hfak->SetTitle("MC Meas. Fakes");hfak->Write("MC_meas_fakes");
   hrec_sameside_rebin_fakecorr->SetTitle("MC Fake Corr. Meas."); hrec_sameside_rebin_fakecorr->Write("MC_measfakcorr");
   
@@ -1368,14 +1307,16 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   h_thyratio_mctruth->Write("ratio_PY8_MCTruth_Data_unf");
   
   if(dokIterQA){
-    
+    hkiter_ratio->Write();
+
+    TDirectory* fout_kiter_dir=fout->mkdir("all_kiter_plots");
+    fout_kiter_dir->cd();
     for(int ki=0; ki<nKiterMax;ki++) hunf_bayes[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hfold_bayes[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hgen_unf_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hgen_fold_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hrec_unf_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hrec_fold_ratio[ki]->Write();
-    hkiter_ratio->Write();
     
   }
 
@@ -1490,3 +1431,68 @@ int main(int argc, char* argv[]){
     //    legend_in2->Draw();
     //    
     //    canvForPrint->Print(outPdfFile.c_str());      
+
+    //if(useTH2ProjRespHist){
+    //  
+    //  //reco response histo
+    //  if(debugMode)std::cout<<"boundaries_pt_gen[0]  = "<< ((int)boundaries_pt_gen[0]) << std::endl;
+    //  if(debugMode)std::cout<<"boudnaries_pt_gen["<<nbins_pt_gen<<"] = "<< (int)boundaries_pt_gen[nbins_pt_gen] <<std::endl;
+    //  if(debugMode)std::cout<<"bin 1 pt low = "<<
+    //		     (int)hmat->GetYaxis()->GetBinLowEdge((int)(boundaries_pt_gen[0]+1.))<<std::endl;
+    //  
+    //  if(debugMode)std::cout<<"bin "<<nbins_pt_gen<<" pt hi = "<<
+    //		     hmat->GetYaxis()->GetBinLowEdge(((int)boundaries_pt_gen[nbins_pt_gen]))
+    //		     + hmat->GetYaxis()->GetBinWidth(((int)boundaries_pt_gen[nbins_pt_gen]))<<std::endl;    
+    //
+    //  //profile error types; default(sum/sqrt(N)), s, i, *g*
+    //  hrec_sameside_resp_rebin = (TH1D*)hmat->TH2::ProjectionX( 
+    //							    (histTitle3+"_profile").c_str() , 
+    //							    (int)(boundaries_pt_gen[0]+1.), 
+    //							    ((int)boundaries_pt_gen[nbins_pt_gen]), 	"g");
+    //  hrec_sameside_resp_rebin=(TH1D*)hrec_sameside_resp_rebin->Rebin( nbins_pt_reco, (histTitle3+"_profile_rebin").c_str() , boundaries_pt_reco);
+    //  hrec_sameside_resp_rebin->Write( (histTitle3+"_profile_rebin").c_str());      
+    //  
+    //  //divideBinWidth(hrec_sameside_resp_rebin);    
+    //  hrec_sameside_resp_rebin->Write( (histTitle3+"_profile_rebin_divBinWidth").c_str());
+    //  if(debugMode)std::cout<<"profile bin #1 pt low = "<<
+    //		     (int)hrec_sameside_resp_rebin->GetBinLowEdge(1)<<std::endl;
+    //  if(debugMode)std::cout<<"profile bin #"<<nbins_pt_gen<<" pt hi = "<<
+    //		     hrec_sameside_resp_rebin->GetBinLowEdge(nbins_pt_reco)
+    //		     + hrec_sameside_resp_rebin->GetBinWidth(nbins_pt_reco)<<std::endl;    
+    //
+    //  if(clearOverUnderflows){
+    //	TH1clearOverUnderflows((TH1*)hrec_sameside_resp_rebin);
+    //	hrec_sameside_resp_rebin->Write((histTitle3+"_profile_rebin_divBinWidth_noOverUnderflow").c_str());
+    //	if(debugMode)hrec_sameside_resp_rebin->Print("base");    }
+    //  
+    //  //gen version here
+    //  if(debugMode)std::cout<<"boundaries_pt_reco[0]  = "<< ((int)boundaries_pt_reco[0]) << std::endl;
+    //  if(debugMode)std::cout<<"boudnaries_pt_reco["<<nbins_pt_reco<<"] = "<< (int)boundaries_pt_reco[nbins_pt_reco] <<std::endl;
+    //  if(debugMode)std::cout<<"bin 1 pt low = "<<
+    //		     (int)hmat->GetXaxis()->GetBinLowEdge((int)(boundaries_pt_reco[0]+1.))<<std::endl;
+    //  
+    //  if(debugMode)std::cout<<"bin "<<nbins_pt_reco<<" pt hi = "<<
+    //		     hmat->GetXaxis()->GetBinLowEdge(((int)boundaries_pt_reco[nbins_pt_reco]))
+    //		     + hmat->GetXaxis()->GetBinWidth(((int)boundaries_pt_reco[nbins_pt_reco]))<<std::endl;    
+    //  
+    //  //profile error types; default(sum/sqrt(N)), s, i, *g*
+    //  hgen_resp_rebin = (TH1D*)hmat->TH2::ProjectionY( 
+    //						   (histTitle3gen+"_profile").c_str() , 
+    //						   (int)(boundaries_pt_reco[0]+1.), 
+    //						   ((int)boundaries_pt_reco[nbins_pt_reco]), 	"g");
+    //  hgen_resp_rebin=(TH1D*)hgen_resp_rebin->Rebin( nbins_pt_gen, (histTitle3gen+"_profile_rebin").c_str() , boundaries_pt_gen);
+    //  hgen_resp_rebin->Write( (histTitle3gen+"_profile_rebin").c_str());      
+    //  
+    //  //divideBinWidth(hgen_resp_rebin);    
+    //  hgen_resp_rebin->Write( (histTitle3gen+"_profile_rebin_divBinWidth").c_str());
+    //  if(debugMode)std::cout<<"profile bin #1 pt low = "<<
+    //		     (int)hgen_resp_rebin->GetBinLowEdge(1)<<std::endl;
+    //  if(debugMode)std::cout<<"profile bin #"<<nbins_pt_gen<<" pt hi = "<<
+    //		     hgen_resp_rebin->GetBinLowEdge(nbins_pt_gen)
+    //		     + hgen_resp_rebin->GetBinWidth(nbins_pt_gen)<<std::endl;    
+    //
+    //  if(clearOverUnderflows){
+    //	TH1clearOverUnderflows((TH1*)hgen_resp_rebin);
+    //	hgen_resp_rebin->Write((histTitle3gen+"_profile_rebin_divBinWidth_noOverUnderflow").c_str());
+    //	if(debugMode)hgen_resp_rebin->Print("base");    }
+    //}

@@ -433,7 +433,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   
   TH1D *hunf = (TH1D*)unf_svd.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_SVDUnf_Spectra");
-  hunf->SetTitle("Unf. Data");
+  hunf->SetTitle(("Unf. Data"+std::to_string(kRegInput)).c_str());
   if(debugMode)hunf->Print("base");
   
   //cosmetics
@@ -445,7 +445,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   std::cout<<"folding unfolded data histogram!!"<<std::endl;
   TH1D* hfold=(TH1D*)roo_resp.ApplyToTruth(hunf);          
   hfold->SetName("ppData_SVDFold_Spectra");
-  hfold->SetTitle("Fold. Data");
+  hfold->SetTitle(("Fold. Data"+std::to_string(kRegInput)).c_str());
   if(debugMode)hfold->Print("base");
   
   //cosmetics
@@ -457,7 +457,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   std::cout<<"folding MC Truth histogram!!"<<std::endl;
   TH1D* hfold_truth=(TH1D*)roo_resp.ApplyToTruth(hgen_rebin);          
   hfold_truth->SetName("ppMC_SVDFoldMCTruth_Spectra");
-  hfold_truth->SetTitle("Fold. MC Truth");
+  hfold_truth->SetTitle(("Fold. MC Truth"+std::to_string(kRegInput)).c_str());
   if(debugMode)hfold_truth->Print("base");
   
   //cosmetics
@@ -609,6 +609,10 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   TH1D* hgen_fold_ratio[nKregMax]={};
   TH1D* hrec_fold_ratio[nKregMax]={};
   
+  TH2D* hcovmat_svd[nKregMax]={};
+  TH2D* hcovmatabsval_svd[nKregMax]={};
+  TH2D* hpearson_svd[nKregMax]={};
+  
   int kReg_start=kRegInput-kRegRange;
   int kReg_end=kRegInput+kRegRange;
   
@@ -669,6 +673,34 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       
       hfold_svd[ki]->Scale(1./etaBinWidth);
       divideBinWidth(hfold_svd[ki]);
+      
+      if(debugMode)std::cout<<"getting covariance matrix, kReg="<<current_kReg<<std::endl;
+      TMatrixD covmat = unf_svd_kRegQA.Ereco(errorTreatment);
+      hcovmat_svd[ki]=new TH2D(covmat);
+      hcovmat_svd[ki]->SetName( ("SVD_covmat_"+std::to_string(current_kReg)).c_str() );      
+      hcovmat_svd[ki]->SetTitle( ("SVD Covariance Matrix, kReg="+std::to_string(current_kReg)).c_str()  );
+      hcovmat_svd[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
+      hcovmat_svd[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
+      hcovmat_svd[ki]->GetZaxis()->SetLabelSize(0.035);
+
+      
+      if(debugMode)std::cout<<"calling absval_th2content"<<std::endl;
+      hcovmatabsval_svd[ki]=(TH2D*)absVal_TH2Content((TH2D*)hcovmat_svd[ki]);
+      hcovmatabsval_svd[ki]->SetName( ("SVD_covmatabsval_"+std::to_string(current_kReg)).c_str() );      
+      hcovmatabsval_svd[ki]->SetTitle( ("SVD |Covariance| Matrix, kReg="+std::to_string(current_kReg)).c_str()  );
+      hcovmatabsval_svd[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
+      hcovmatabsval_svd[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
+      hcovmatabsval_svd[ki]->GetZaxis()->SetLabelSize(0.035);
+      
+
+      if(debugMode)std::cout<<"calling CalculatePearsonCoefficients... getting pearson matrix"<<std::endl;
+      hpearson_svd[ki] = (TH2D*) CalculatePearsonCoefficients(&covmat, false, ("SVD_pearson_"+std::to_string(current_kReg)) );   
+      hpearson_svd[ki]->SetName( ("SVD_pearson_"+std::to_string(current_kReg)).c_str() );      
+      hpearson_svd[ki]->SetTitle( ("SVD Pearson Matrix, kReg="+std::to_string(current_kReg)).c_str()  );
+      hpearson_svd[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
+      hpearson_svd[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
+      hpearson_svd[ki]->GetZaxis()->SetLabelSize(0.035);
+      hpearson_svd[ki]->SetAxisRange(-1., 1., "Z");    
       
     }//end kRegLoop
   }//end if(dokRegQA)
@@ -1358,13 +1390,13 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   NNPDFnnlo->SetTitle("NNPDF NNLO Spectra");	   NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt");       
   
   // output hists -------------
-  hunf->SetTitle("Data Unf."); hunf->Write("Data_unf");    
-  hfold->SetTitle("Data Fold(Unf.)"); hfold->Write("Data_fold");        
-  hfold_fakecorr->SetTitle("Data Fold(Unf.) + Fakes"); hfold->Write("Data_foldfakcorr");        
+  hunf->SetTitle(("Data Unf., "+std::to_string(kRegInput)).c_str()); hunf->Write("Data_unf");    
+  hfold->SetTitle(("Data Fold(Unf.), "+std::to_string(kRegInput)).c_str()); hfold->Write("Data_fold");        
+  hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, "+std::to_string(kRegInput)).c_str()); hfold->Write("Data_foldfakcorr");        
   hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");
   
-  hfold_truth->SetTitle("MC Fold(Truth)");hfold_truth->Write("MC_truth_fold");
-  hfold_truth_fakecorr->SetTitle("MC Fold(Truth) + Fakes");hfold_truth->Write("MC_truth_foldfakcorr");
+  hfold_truth->SetTitle(("MC Fold(Truth), "+std::to_string(kRegInput)).c_str());hfold_truth->Write("MC_truth_fold");
+  hfold_truth_fakecorr->SetTitle(("MC Fold(Truth) + Fakes, " +std::to_string(kRegInput)).c_str());hfold_truth->Write("MC_truth_foldfakcorr");
   hfak->SetTitle("MC Meas. Fakes");hfak->Write("MC_meas_fakes");
   hrec_sameside_rebin_fakecorr->SetTitle("MC Fake Corr. Meas."); hrec_sameside_rebin_fakecorr->Write("MC_measfakcorr");
   
@@ -1399,17 +1431,23 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   h_thyratio_mctruth->Write("ratio_PY8_MCTruth_Data_unf");
   
   if(dokRegQA){
-    
+    hkreg_ratio->Write();
+
+    TDirectory* fout_kreg_dir=fout->mkdir("all_kreg_plots");
+    fout_kreg_dir->cd();
     for(int ki=0; ki<nKregMax;ki++) hunf_svd[ki]->Write();
     for(int ki=0; ki<nKregMax;ki++) hfold_svd[ki]->Write();
     for(int ki=0; ki<nKregMax;ki++) hgen_unf_ratio[ki]->Write();
     for(int ki=0; ki<nKregMax;ki++) hgen_fold_ratio[ki]->Write();
     for(int ki=0; ki<nKregMax;ki++) hrec_unf_ratio[ki]->Write();
     for(int ki=0; ki<nKregMax;ki++) hrec_fold_ratio[ki]->Write();
-    hkreg_ratio->Write();
+    for(int ki=0; ki<nKregMax;ki++) hcovmat_svd[ki]->Write();
+    for(int ki=0; ki<nKregMax;ki++) hcovmatabsval_svd[ki]->Write();
+    for(int ki=0; ki<nKregMax;ki++) hpearson_svd[ki]->Write();
     
   }
   
+
 
   //assert(false);
   

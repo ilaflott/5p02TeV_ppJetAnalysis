@@ -591,24 +591,24 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
       if(debugMode)std::cout<<"getting covariance matrix, kIter="<<current_kIter<<std::endl;
       TMatrixD covmat = unf_bayes_kIterQA.Ereco(errorTreatment);
       hcovmat_bayes[ki]=new TH2D(covmat);
-      hcovmat_bayes[ki]->SetName( ("SVD_covmat_"+std::to_string(current_kIter)).c_str() );      
-      hcovmat_bayes[ki]->SetTitle( ("SVD Covariance Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
+      hcovmat_bayes[ki]->SetName( ("Bayes_covmat_"+std::to_string(current_kIter)).c_str() );      
+      hcovmat_bayes[ki]->SetTitle( ("Bayes Covariance Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
       hcovmat_bayes[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
       hcovmat_bayes[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
       hcovmat_bayes[ki]->GetZaxis()->SetLabelSize(0.035);
        
       if(debugMode)std::cout<<"calling absval_th2content"<<std::endl;
       hcovmatabsval_bayes[ki]=(TH2D*)absVal_TH2Content((TH2D*)hcovmat_bayes[ki]);
-      hcovmatabsval_bayes[ki]->SetName( ("SVD_covmatabsval_"+std::to_string(current_kIter)).c_str() );      
-      hcovmatabsval_bayes[ki]->SetTitle( ("SVD |Covariance| Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
+      hcovmatabsval_bayes[ki]->SetName( ("Bayes_covmatabsval_"+std::to_string(current_kIter)).c_str() );      
+      hcovmatabsval_bayes[ki]->SetTitle( ("Bayes |Covariance| Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
       hcovmatabsval_bayes[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
       hcovmatabsval_bayes[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
       hcovmatabsval_bayes[ki]->GetZaxis()->SetLabelSize(0.035);
       
       if(debugMode)std::cout<<"calling CalculatePearsonCoefficients... getting pearson matrix"<<std::endl;
-      hpearson_bayes[ki] = (TH2D*) CalculatePearsonCoefficients(&covmat, false, ("SVD_pearson_"+std::to_string(current_kIter)) );   
-      hpearson_bayes[ki]->SetName( ("SVD_pearson_"+std::to_string(current_kIter)).c_str() );      
-      hpearson_bayes[ki]->SetTitle( ("SVD Pearson Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
+      hpearson_bayes[ki] = (TH2D*) CalculatePearsonCoefficients(&covmat, false, ("Bayes_pearson_"+std::to_string(current_kIter)) );   
+      hpearson_bayes[ki]->SetName( ("Bayes_pearson_"+std::to_string(current_kIter)).c_str() );      
+      hpearson_bayes[ki]->SetTitle( ("Bayes Pearson Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
       hpearson_bayes[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
       hpearson_bayes[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
       hpearson_bayes[ki]->GetZaxis()->SetLabelSize(0.035);

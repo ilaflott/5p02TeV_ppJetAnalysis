@@ -836,6 +836,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;//*canv_unfmat=NULL, 
   TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kRegRatio;
+  TCanvas *canv_3x3covmat=NULL, *canv_3x3covmatabsval=NULL, *canv_3x3pearson=NULL;
+
   TCanvas * di_sv_canv=NULL;
 
   TH2D* hmat_percenterrs=NULL;
@@ -1243,6 +1245,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       canv_3x3spectra  =new TCanvas("canv_3x3spectra","canv 3x3 spectra", 1500, 1500);   canv_3x3spectra ->Divide(3,3);
       canv_3x3genratio =new TCanvas("canv_3x3genratio","canv 3x3 genratio", 1500, 1500); canv_3x3genratio->Divide(3,3);
       canv_3x3recratio =new TCanvas("canv_3x3recratio","canv 3x3 recratio", 1500, 1500); canv_3x3recratio->Divide(3,3);                  
+      canv_3x3covmat       =new TCanvas("canv_3x3covmat","canv 3x3 covmat", 1500, 1500); canv_3x3covmat      ->Divide(3,3);                  
+      canv_3x3covmatabsval =new TCanvas("canv_3x3covmatabsval","canv 3x3 covmatabsval", 1500, 1500); canv_3x3covmatabsval->Divide(3,3);                  
+      canv_3x3pearson      =new TCanvas("canv_3x3pearson","canv 3x3 pearson", 1500, 1500); canv_3x3pearson     ->Divide(3,3);                
       TLegend* leg_3x3=new TLegend(0.62,0.75,0.9,0.9,NULL,"NBNDC");
       
       for(int ki=0; ki<nKregMax;ki++){
@@ -1307,6 +1312,29 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
 	leg_3x3->AddEntry(hrec_unf_ratio[ki] ,"Unf."      ,"lp");
 	//leg_3x3->AddEntry(hrec_fold_ratio[ki],"Fold(Unf.)","lp");
 	//leg_3x3->DrawClone();
+
+	//canv_3x3covmat      
+	canv_3x3covmat->cd(ki_canv)->SetLogx(0);
+	canv_3x3covmat->cd(ki_canv)->SetLogy(0);
+	canv_3x3covmat->cd(ki_canv)->SetLogz(1);
+	canv_3x3covmat->cd(ki_canv);
+	hcovmat_svd[ki]->Draw("COLZ");
+	
+	//canv_3x3covmatabsval
+	canv_3x3covmatabsval->cd(ki_canv)->SetLogx(0);
+	canv_3x3covmatabsval->cd(ki_canv)->SetLogy(0);
+	canv_3x3covmatabsval->cd(ki_canv)->SetLogz(1);
+	canv_3x3covmatabsval->cd(ki_canv);
+	hcovmatabsval_svd[ki]->Draw("COLZ");
+	//canv_3x3pearson     
+	canv_3x3pearson->cd(ki_canv)->SetLogx(0);
+	canv_3x3pearson->cd(ki_canv)->SetLogy(0);
+	canv_3x3pearson->cd(ki_canv)->SetLogz(0);
+	canv_3x3pearson->cd(ki_canv);
+	hpearson_svd[ki]->Draw("COLZ");
+	
+	
+	
 	
       }
       
@@ -1314,7 +1342,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       canv_3x3spectra ->Print(outPdfFile.c_str());
       canv_3x3genratio->Print(outPdfFile.c_str());
       canv_3x3recratio->Print(outPdfFile.c_str());
-      
+      canv_3x3covmat->Print(outPdfFile.c_str());
+      canv_3x3covmatabsval->Print(outPdfFile.c_str());
+      canv_3x3pearson->Print(outPdfFile.c_str());
 
 
       canv_kRegRatio=new TCanvas("canv_kreg_ratio","canv kreg ratio" , 1500, 1500);
@@ -1339,7 +1369,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
       theLineAtOne->Draw();
       theLineAt1p1->Draw();
       hkreg_ratio->DrawClone("HIST E SAME");
-
+      
       
       canv_kRegRatio->Print(outPdfFile.c_str());
       
@@ -1404,6 +1434,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   covmatabsval_TH2->Write("covmatabsval");
   PearsonSVD->Write("pearson");
   //  unfmat_TH2->Write("unfmat");
+  hdi->Write("divectors");
+  hSVal->Write("singular_values");  
   
   // output ratio comparisons -------------
   // gen ratios (denom=mc truth)
@@ -1453,6 +1485,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   
   // canvases ----------------
   if(drawPDFs){
+    //di_sv_canv->SetTitle("")
+    di_sv_canv->Write("di_sv_canv");
     canv_spectra          ->SetTitle("I/O Spectra Canvas");        canv_spectra           ->Write("canv_spectra");
     canv_mc_fakes_spectra ->SetTitle("MC Fakes Spectra Canvas");   canv_mc_fakes_spectra  ->Write("canv_mc_fakes_spectra");
     canv_thy_spectra_1    ->SetTitle("NLO Thy Spectra 1 Canvas");  canv_thy_spectra_1     ->Write("canv_thy_spectra_1");
@@ -1472,6 +1506,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     if(dokRegQA){ canv_3x3spectra->SetTitle("3x3 Unf. Spectra kReg QA Canvas");  canv_3x3spectra ->Write("canv_3x3spectra");}
     if(dokRegQA){ canv_3x3genratio->SetTitle("3x3 Gen Ratio kReg QA Canvas");    canv_3x3genratio->Write("canv_3x3genratio");}
     if(dokRegQA){ canv_3x3recratio->SetTitle("3x3 Rec Ratio kReg QA Canvas");    canv_3x3recratio->Write("canv_3x3recratio");}
+    if(dokRegQA){ canv_3x3covmat->SetTitle("3x3 Covariance Matrix kIter QA Canvas");    canv_3x3covmat->Write("canv_3x3covmat");}
+    if(dokRegQA){ canv_3x3covmatabsval->SetTitle("3x3 |Covariance| Matrix kIter QA Canvas");    canv_3x3covmatabsval->Write("canv_3x3covmatabsval");}
+    if(dokRegQA){ canv_3x3pearson->SetTitle("3x3 PearsonMatrix kIter QA Canvas");    canv_3x3pearson->Write("canv_3x3pearson");}
     if(dokRegQA) canv_kRegRatio->Write();
 
   }

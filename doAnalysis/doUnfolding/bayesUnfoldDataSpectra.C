@@ -522,6 +522,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   TH1D* hgen_fold_ratio[nKiterMax]={};
   TH1D* hrec_fold_ratio[nKiterMax]={};
+  TH2D* hcovmat_bayes[nKiterMax]={};
+  TH2D* hcovmatabsval_bayes[nKiterMax]={};
+  TH2D* hpearson_bayes[nKiterMax]={};
   
   int kIter_start=kIterInput-kIterRange;
   int kIter_end=kIterInput+kIterRange;
@@ -583,6 +586,33 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
       
       hfold_bayes[ki]->Scale(1./etaBinWidth);
       divideBinWidth(hfold_bayes[ki]);
+
+
+      if(debugMode)std::cout<<"getting covariance matrix, kIter="<<current_kIter<<std::endl;
+      TMatrixD covmat = unf_bayes_kIterQA.Ereco(errorTreatment);
+      hcovmat_bayes[ki]=new TH2D(covmat);
+      hcovmat_bayes[ki]->SetName( ("SVD_covmat_"+std::to_string(current_kIter)).c_str() );      
+      hcovmat_bayes[ki]->SetTitle( ("SVD Covariance Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
+      hcovmat_bayes[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
+      hcovmat_bayes[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
+      hcovmat_bayes[ki]->GetZaxis()->SetLabelSize(0.035);
+       
+      if(debugMode)std::cout<<"calling absval_th2content"<<std::endl;
+      hcovmatabsval_bayes[ki]=(TH2D*)absVal_TH2Content((TH2D*)hcovmat_bayes[ki]);
+      hcovmatabsval_bayes[ki]->SetName( ("SVD_covmatabsval_"+std::to_string(current_kIter)).c_str() );      
+      hcovmatabsval_bayes[ki]->SetTitle( ("SVD |Covariance| Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
+      hcovmatabsval_bayes[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
+      hcovmatabsval_bayes[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
+      hcovmatabsval_bayes[ki]->GetZaxis()->SetLabelSize(0.035);
+      
+      if(debugMode)std::cout<<"calling CalculatePearsonCoefficients... getting pearson matrix"<<std::endl;
+      hpearson_bayes[ki] = (TH2D*) CalculatePearsonCoefficients(&covmat, false, ("SVD_pearson_"+std::to_string(current_kIter)) );   
+      hpearson_bayes[ki]->SetName( ("SVD_pearson_"+std::to_string(current_kIter)).c_str() );      
+      hpearson_bayes[ki]->SetTitle( ("SVD Pearson Matrix, kIter="+std::to_string(current_kIter)).c_str()  );
+      hpearson_bayes[ki]->GetXaxis()->SetTitle("RECO Jet p_{T} Bin #");
+      hpearson_bayes[ki]->GetYaxis()->SetTitle("GEN Jet p_{T} Bin #");
+      hpearson_bayes[ki]->GetZaxis()->SetLabelSize(0.035);
+      hpearson_bayes[ki]->SetAxisRange(-1., 1., "Z");  
       
     }//end kIterLoop
   }//end if(dokIterQA)
@@ -718,6 +748,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_thy_ratio=NULL; 
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
   TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kIterRatio;
+  TCanvas *canv_3x3covmat=NULL, *canv_3x3covmatabsval=NULL, *canv_3x3pearson=NULL;
   
   TH2D* hmat_percenterrs=NULL;
   TH1D* hkiter_ratio=NULL;
@@ -1118,6 +1149,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
       canv_3x3spectra  =new TCanvas("canv_3x3spectra","canv 3x3 spectra", 1500, 1500);   canv_3x3spectra ->Divide(3,3);
       canv_3x3genratio =new TCanvas("canv_3x3genratio","canv 3x3 genratio", 1500, 1500); canv_3x3genratio->Divide(3,3);
       canv_3x3recratio =new TCanvas("canv_3x3recratio","canv 3x3 recratio", 1500, 1500); canv_3x3recratio->Divide(3,3);                  
+      canv_3x3covmat       =new TCanvas("canv_3x3covmat","canv 3x3 covmat", 1500, 1500); canv_3x3covmat      ->Divide(3,3);                  
+      canv_3x3covmatabsval =new TCanvas("canv_3x3covmatabsval","canv 3x3 covmatabsval", 1500, 1500); canv_3x3covmatabsval->Divide(3,3);                  
+      canv_3x3pearson      =new TCanvas("canv_3x3pearson","canv 3x3 pearson", 1500, 1500); canv_3x3pearson     ->Divide(3,3);                  
       TLegend* leg_3x3=new TLegend(0.62,0.75,0.9,0.9,NULL,"NBNDC");
       
       for(int ki=0; ki<nKiterMax;ki++){
@@ -1182,16 +1216,38 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 	leg_3x3->AddEntry(hrec_unf_ratio[ki] ,"Unf."      ,"lp");
 	//leg_3x3->AddEntry(hrec_fold_ratio[ki],"Fold(Unf.)","lp");
 	//leg_3x3->DrawClone();
+
+	//canv_3x3covmat      
+	canv_3x3covmat->cd(ki_canv)->SetLogx(0);
+	canv_3x3covmat->cd(ki_canv)->SetLogy(0);
+	canv_3x3covmat->cd(ki_canv)->SetLogz(1);
+	canv_3x3covmat->cd(ki_canv);	
+	hcovmat_bayes[ki]->Draw("COLZ");
 	
+	//canv_3x3covmatabsval
+	canv_3x3covmatabsval->cd(ki_canv)->SetLogx(0);
+	canv_3x3covmatabsval->cd(ki_canv)->SetLogy(0);
+	canv_3x3covmatabsval->cd(ki_canv)->SetLogz(1);
+	canv_3x3covmatabsval->cd(ki_canv);	
+	hcovmatabsval_bayes[ki]->Draw("COLZ");
+	//canv_3x3pearson     	
+	canv_3x3pearson->cd(ki_canv)->SetLogx(0);
+	canv_3x3pearson->cd(ki_canv)->SetLogy(0);
+	canv_3x3pearson->cd(ki_canv)->SetLogz(0);
+	canv_3x3pearson->cd(ki_canv);	
+	hpearson_bayes[ki]->Draw("COLZ");	
       }
       
       
       canv_3x3spectra ->Print(outPdfFile.c_str());
       canv_3x3genratio->Print(outPdfFile.c_str());
       canv_3x3recratio->Print(outPdfFile.c_str());
+      canv_3x3covmat->Print(outPdfFile.c_str());
+      canv_3x3covmatabsval->Print(outPdfFile.c_str());
+      canv_3x3pearson->Print(outPdfFile.c_str());
       
-
-
+      
+      
       canv_kIterRatio=new TCanvas("canv_kiter_ratio","canv kiter ratio" , 1500, 1500);
 
       canv_kIterRatio->SetName(("canv_hunf_ratio_kIter"+std::to_string(kIter_start)+"_v_kIter"+std::to_string(kIter_end)).c_str());
@@ -1308,7 +1364,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   if(dokIterQA){
     hkiter_ratio->Write();
-
+    
     TDirectory* fout_kiter_dir=fout->mkdir("all_kiter_plots");
     fout_kiter_dir->cd();
     for(int ki=0; ki<nKiterMax;ki++) hunf_bayes[ki]->Write();
@@ -1317,7 +1373,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     for(int ki=0; ki<nKiterMax;ki++) hgen_fold_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hrec_unf_ratio[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hrec_fold_ratio[ki]->Write();
-    
+    for(int ki=0; ki<nKiterMax;ki++) hcovmat_bayes[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hcovmatabsval_bayes[ki]->Write();
+    for(int ki=0; ki<nKiterMax;ki++) hpearson_bayes[ki]->Write();
   }
 
 
@@ -1344,6 +1402,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     if(dokIterQA){ canv_3x3spectra->SetTitle("3x3 Unf. Spectra kIter QA Canvas");  canv_3x3spectra ->Write("canv_3x3spectra");}
     if(dokIterQA){ canv_3x3genratio->SetTitle("3x3 Gen Ratio kIter QA Canvas");    canv_3x3genratio->Write("canv_3x3genratio");}
     if(dokIterQA){ canv_3x3recratio->SetTitle("3x3 Rec Ratio kIter QA Canvas");    canv_3x3recratio->Write("canv_3x3recratio");}
+    if(dokIterQA){ canv_3x3covmat->SetTitle("3x3 Covariance Matrix kIter QA Canvas");    canv_3x3covmat->Write("canv_3x3covmat");}
+    if(dokIterQA){ canv_3x3covmatabsval->SetTitle("3x3 |Covariance| Matrix kIter QA Canvas");    canv_3x3covmatabsval->Write("canv_3x3covmatabsval");}
+    if(dokIterQA){ canv_3x3pearson->SetTitle("3x3 PearsonMatrix kIter QA Canvas");    canv_3x3pearson->Write("canv_3x3pearson");}
     if(dokIterQA) canv_kIterRatio->Write();
 
   }

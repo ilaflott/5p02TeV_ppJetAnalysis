@@ -315,27 +315,28 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
 
   // thy spectra
-  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),true);
+  bool applyNPCorrs=true; std::string NPCorrString="";
+  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),applyNPCorrs,&NPCorrString);
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
   CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);
 
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),true);
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),applyNPCorrs,&NPCorrString);
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
   CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
 
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),true);
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),applyNPCorrs,&NPCorrString);
   HERAPDF->SetMarkerSize(0);
   HERAPDF->SetLineColor(kViolet-5);  
   HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
 
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),true);
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),applyNPCorrs,&NPCorrString);
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
   MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
 
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),true);
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),applyNPCorrs,&NPCorrString);
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6); 
   NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
@@ -369,10 +370,13 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   TH1D *hunf = (TH1D*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_BayesUnf_Spectra");
-  //  hunf->SetTitle("Unf. Data");
   hunf->SetTitle( ("Unf. Data, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hunf->Print("base");
-  
+
+  std::string descString="";
+  getUnfDetails(hunf,&descString);
+  std::string methodString=", Bayesian ";      
+
   //cosmetics
   hunf->SetMarkerStyle(kOpenCircle);
   hunf->SetMarkerColor(kRed);
@@ -382,7 +386,6 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   std::cout<<"folding unfolded data histogram!!"<<std::endl;
   TH1D* hfold=(TH1D*)roo_resp.ApplyToTruth(hunf);          
   hfold->SetName("ppData_BayesFold_Spectra");
-  //  hfold->SetTitle("Fold. Data");
   hfold->SetTitle(("Fold. Data, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hfold->Print("base");
   
@@ -774,8 +777,6 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     TLine* theLineAt1p1= (TLine*)theLineAtOne->Clone();
     theLineAt1p1->SetY1(1.1);    theLineAt1p1->SetY2(1.1);
 
-    
-
     // gen/meas/unf spectra hists ---------------    
     canvForPrint->cd();
     if(!useSimpBins)canvForPrint->SetLogx(1);
@@ -787,7 +788,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     setupSpectraHist(hunf		       , useSimpBins);    
     
     //hgen_rebin->SetTitle("MC, Data, and Bayes Unf. Spectra");
-    hrec_rebin->SetTitle("Bayesian, MC and Data Spectra");
+    //hrec_rebin->SetTitle("Bayesian, MC and Data Spectra");
+    hrec_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());
     
     
     hrec_rebin->DrawClone("P E");           
@@ -818,9 +820,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     setupRatioHist(h_genratio_ssmeas , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_genratio_oppfold, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    h_genratio_oppunf->SetTitle( "Bayesian, Ratios w/ MC Truth Spectra" );
+    h_genratio_oppunf->SetTitle(("MC Truth Ratio"+methodString+descString).c_str());
     h_genratio_oppunf->GetYaxis()->SetTitle("Ratio w/ MC Truth");    
-
+    
     h_genratio_oppunf->DrawClone("P E");            //data unf/mc truth
     h_genratio_oppmeas->DrawClone("P E SAME");      // data meas/mc truth
     h_genratio_ssmeas->DrawClone("P E SAME");       // mc meas/mc truth
@@ -852,7 +854,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     
     //h_recratio_oppunf->SetTitle("Bayesian, Ratios w/ Data Meas. Spectra");
     //h_recratio_oppunf->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
-    h_recratio_ssmeas->SetTitle("Bayesian, Ratios w/ Data Meas. Spectra");
+    h_recratio_ssmeas->SetTitle(("Data Meas. Ratio"+methodString+descString).c_str());
     h_recratio_ssmeas->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
     
     setupRatioHist(h_recratio_ssmeas , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
@@ -892,8 +894,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     setupRatioHist(h_foldratio_datafold, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
     setupRatioHist(h_foldratio_mcfold, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
     
-    h_foldratio_datafold->SetTitle( "Folded Ratios w/ (Corrected) Meas. Spectra" );
-    h_foldratio_datafold->GetYaxis()->SetTitle("Ratio w/ Meas.");
+    h_foldratio_datafold->SetTitle(("Folding Ratios"+methodString+descString).c_str());// "Folded Ratios w/ (Corrected) Meas. Spectra" );
+    h_foldratio_datafold->GetYaxis()->SetTitle("Ratio w/ (Meas. - Fakes)");
 
     h_foldratio_datafold->DrawClone("P E");
     h_foldratio_mcfold->DrawClone("P E SAME");
@@ -953,9 +955,11 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(1);                  
     
-    CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
-    CT10nlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
-
+    //CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
+    //CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());
+    if(applyNPCorrs)    CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());
+    else    CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());
+    
     CT10nlo  ->DrawClone("][HIST E");
     CT14nlo  ->DrawClone("][HIST E SAME");    
     NNPDFnnlo->DrawClone("][HIST E SAME");    
@@ -985,11 +989,11 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(1);                  
     
-    MMHTnlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
-    MMHTnlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
+    if(applyNPCorrs)    MMHTnlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());
+    else    MMHTnlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());        
     
-    HERAPDF  ->DrawClone("][HIST E");
-    MMHTnlo  ->DrawClone("][HIST E");
+    MMHTnlo  ->DrawClone("][HIST E");    
+    HERAPDF  ->DrawClone("][HIST E SAME");
     
     hgen_rebin->DrawClone("P E SAME");
     hunf->DrawClone("P E SAME");   //just for axis range
@@ -1017,11 +1021,11 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    //h_thyratio_mctruth->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
-    //h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
-    h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ Bayes Unf. Data" );
-    h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Unf. Data");
+    if(applyNPCorrs) h_thyratio_CT10nlo->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+    else h_thyratio_CT10nlo->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
     
+    h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Unf. Data");
+
     h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
     h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
     //h_thyratio_HERAPDF ->DrawClone( "][HIST E SAME"); 
@@ -1079,12 +1083,12 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     canvForPrint->SetLogy(0);
     canvForPrint->SetLogz(1);
         
-    matStylePrint( (TH2D*)covmat_TH2, "Bayesian Unfolding Covariance Matrix", canvForPrint, outPdfFile, true);        
+    matStylePrint( (TH2D*)covmat_TH2, ("Covariance Matrix"+methodString+descString), canvForPrint, outPdfFile, true);        
     canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
     
 
     
-    matStylePrint( (TH2D*)covmatabsval_TH2, "Bayesian Unfolding |Covariance Matrix|", canvForPrint, outPdfFile, true);
+    matStylePrint( (TH2D*)covmatabsval_TH2, ("|Covariance Matrix|"+methodString+descString), canvForPrint, outPdfFile, true);
     canv_absval_covmat=(TCanvas*)canvForPrint->DrawClone(); 
     
     // pearson matrix ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
@@ -1093,7 +1097,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     canvForPrint->SetLogy(0);
     canvForPrint->SetLogz(0);
     
-    matStylePrint( (TH2D*)PearsonBayes, "Bayesian Unfolding Pearson Matrix", canvForPrint, outPdfFile, true);
+    matStylePrint( (TH2D*)PearsonBayes, ("Pearson Matrix"+methodString+descString), canvForPrint, outPdfFile, true);
     canv_pearson=(TCanvas*)canvForPrint->DrawClone(); 
     
     // unfolding matrix ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
@@ -1102,7 +1106,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     canvForPrint->SetLogy(0);
     canvForPrint->SetLogz(1);
 
-    matStylePrint( (TH2D*)unfmat_TH2, "Bayesian Unfolding Matrix", canvForPrint, outPdfFile, true);
+    matStylePrint( (TH2D*)unfmat_TH2, ("Unfolding Matrix"+methodString+descString), canvForPrint, outPdfFile, true);
     canv_unfmat=(TCanvas*)canvForPrint->DrawClone(); 
 
 
@@ -1299,8 +1303,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
   
 // input data ------------------
-  hrec_rebin->SetTitle( "Data Meas.");
-  hrec_rebin->Write("Data_meas");
+  hrec_rebin->SetTitle( "Data Meas.");  hrec_rebin->Write("Data_meas");
   if((bool)hJetQA_jtptEntries){ 
     hJetQA_jtptEntries->SetTitle("Data N_{Jets}");hJetQA_jtptEntries->Write("Data_njets");}
   

@@ -378,28 +378,35 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   hrec_rebin->SetMarkerSize(1.02);     
 
 
-  // thy spectra
-  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),true);
+  // thy spectra  
+  bool applyNPCorrs=true; 
+
+  std::string CT10NPs="";
+  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),applyNPCorrs, &CT10NPs);
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
   CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);
 
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),true);
+  std::string CT14NPs="";
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),applyNPCorrs, &CT14NPs);
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
   CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
 
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),true);
+  std::string HERANPs="";
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),applyNPCorrs, &HERANPs);
   HERAPDF->SetMarkerSize(0);
   HERAPDF->SetLineColor(kViolet-5);  
   HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
-
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),true);
+  
+  std::string MMHTNPs="";
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),applyNPCorrs, &MMHTNPs);
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
   MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
-
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),true);
+  
+  std::string NNPDFNPs="";
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),applyNPCorrs, &NNPDFNPs);
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6); 
   NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
@@ -433,9 +440,13 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   
   TH1D *hunf = (TH1D*)unf_svd.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_SVDUnf_Spectra");
-  hunf->SetTitle(("Unf. Data"+std::to_string(kRegInput)).c_str());
+  hunf->SetTitle(("Unf. Data, kReg="+std::to_string(kRegInput)).c_str());
   if(debugMode)hunf->Print("base");
   
+  std::string descString="";
+  getUnfDetails(hunf,&descString);
+  std::string methodString=", SVD ";
+
   //cosmetics
   hunf->SetMarkerStyle(kOpenCircle);
   hunf->SetMarkerColor(kRed);
@@ -445,7 +456,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   std::cout<<"folding unfolded data histogram!!"<<std::endl;
   TH1D* hfold=(TH1D*)roo_resp.ApplyToTruth(hunf);          
   hfold->SetName("ppData_SVDFold_Spectra");
-  hfold->SetTitle(("Fold. Data"+std::to_string(kRegInput)).c_str());
+  hfold->SetTitle(("Fold. Data, kReg="+std::to_string(kRegInput)).c_str());
   if(debugMode)hfold->Print("base");
   
   //cosmetics
@@ -457,7 +468,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   std::cout<<"folding MC Truth histogram!!"<<std::endl;
   TH1D* hfold_truth=(TH1D*)roo_resp.ApplyToTruth(hgen_rebin);          
   hfold_truth->SetName("ppMC_SVDFoldMCTruth_Spectra");
-  hfold_truth->SetTitle(("Fold. MC Truth"+std::to_string(kRegInput)).c_str());
+  hfold_truth->SetTitle(("Fold. MC Truth, kReg="+std::to_string(kRegInput)).c_str());
   if(debugMode)hfold_truth->Print("base");
   
   //cosmetics
@@ -863,8 +874,6 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     
     TLine* theLineAt1p1= (TLine*)theLineAtOne->Clone();
     theLineAt1p1->SetY1(1.1);    theLineAt1p1->SetY2(1.1);
-    
-
 
     // divectors -----------
     di_sv_canv                = new TCanvas("di_sv_canv"," Singular Values and divectors", 1400, 1000);      
@@ -883,7 +892,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     setupSpectraHist(hunf		       , useSimpBins);    
     
     //hgen_rebin->SetTitle("MC, Data, and SVD Unf. Spectra");
-    hrec_rebin->SetTitle("SVD, MC and Data Spectra");
+    //hrec_rebin->SetTitle("SVD, MC and Data Spectra");
+    hrec_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());
     
     
     hrec_rebin->DrawClone("P E");           
@@ -914,7 +924,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     setupRatioHist(h_genratio_ssmeas , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_genratio_oppfold, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    h_genratio_oppunf->SetTitle( "SVD, Ratios w/ MC Truth Spectra" );
+    //    h_genratio_oppunf->SetTitle( "SVD, Ratios w/ MC Truth Spectra" );
+    h_genratio_oppunf->SetTitle(("MC Truth Ratio"+methodString+descString).c_str());
     h_genratio_oppunf->GetYaxis()->SetTitle("Ratio w/ MC Truth");    
 
     h_genratio_oppunf->DrawClone("P E");            //data unf/mc truth
@@ -948,7 +959,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     
     //h_recratio_oppunf->SetTitle("SVD, Ratios w/ Data Meas. Spectra");
     //h_recratio_oppunf->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
-    h_recratio_ssmeas->SetTitle("SVD, Ratios w/ Data Meas. Spectra");
+    //    h_recratio_ssmeas->SetTitle("SVD, Ratios w/ Data Meas. Spectra");
+    h_recratio_ssmeas->SetTitle(("Data Meas. Ratio"+methodString+descString).c_str());
     h_recratio_ssmeas->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
     
     setupRatioHist(h_recratio_ssmeas , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
@@ -988,8 +1000,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     setupRatioHist(h_foldratio_datafold, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
     setupRatioHist(h_foldratio_mcfold, useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);
     
-    h_foldratio_datafold->SetTitle( "Folded Ratios w/ (Corrected) Meas. Spectra" );
-    h_foldratio_datafold->GetYaxis()->SetTitle("Ratio w/ Meas.");
+
+    h_foldratio_datafold->SetTitle(("Folding Ratios"+methodString+descString).c_str());// "Folded Ratios w/ (Corrected) Meas. Spectra" );
+    h_foldratio_datafold->GetYaxis()->SetTitle("Ratio w/ (Meas. - Fakes)");
 
     h_foldratio_datafold->DrawClone("P E");
     h_foldratio_mcfold->DrawClone("P E SAME");
@@ -1035,7 +1048,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     
     
     // thy spectra CT10/14 NNPDF NLO---------------------------
-    TLegend* legendThy1 =new TLegend( 0.7,0.7,0.9,0.9 );    
+    TLegend* legendThy1 =new TLegend( 0.5,0.7,0.9,0.9 );    
 
     setupSpectraHist(CT10nlo  ,useSimpBins);
     if(debugWrite){fout->cd(); CT10nlo->Write("CT10_NLO_R04_jtpt");}    
@@ -1049,20 +1062,23 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(1);                  
     
-    CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
-    CT10nlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
-
+    //CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
+    if(applyNPCorrs)    CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());
+    else    CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());
+    
     CT10nlo  ->DrawClone("][HIST E");
     CT14nlo  ->DrawClone("][HIST E SAME");    
     NNPDFnnlo->DrawClone("][HIST E SAME");    
     hgen_rebin->DrawClone("P E SAME");
     hunf->DrawClone("P E SAME");   //just for axis range
     
-    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
-    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
-    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");
+    legendThy1->AddEntry(CT10nlo  ,(  "CT10 NLO"+CT10NPs).c_str(),"l");
+    legendThy1->AddEntry(CT14nlo  ,(  "CT14 NLO"+CT14NPs).c_str(),"l");
+    legendThy1->AddEntry(NNPDFnnlo,("NNPDF NNLO"+NNPDFNPs).c_str(),"l");
     legendThy1->AddEntry(hunf,"Data Unf.","lp");
     legendThy1->AddEntry(hgen_rebin,"MC Truth", "lp");
+    legendThy1->SetBorderSize(0);
+    legendThy1->SetFillStyle(0);
     legendThy1->Draw();
 
     canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone();
@@ -1081,20 +1097,22 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(1);                  
     
-    MMHTnlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
-    MMHTnlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
-    
-    HERAPDF  ->DrawClone("][HIST E");
+    if(applyNPCorrs)    MMHTnlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());
+    else    MMHTnlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
     MMHTnlo  ->DrawClone("][HIST E");
+    HERAPDF  ->DrawClone("][HIST E SAME");
+
     
     hgen_rebin->DrawClone("P E SAME");
     hunf->DrawClone("P E SAME");   //just for axis range
     
-    TLegend* legendThy =new TLegend( 0.7,0.7,0.9,0.9 );        
-    legendThy->AddEntry(HERAPDF  ,"HERAPDF 2015 NLO","l");
-    legendThy->AddEntry(MMHTnlo  ,"MMHT 2014 NLO   ","l");    
+    TLegend* legendThy =new TLegend( 0.5,0.7,0.9,0.9 );        
+    legendThy->AddEntry(MMHTnlo  ,(   "MMHT 2014 NLO"+MMHTNPs).c_str(),"l");    
+    legendThy->AddEntry(HERAPDF  ,("HERAPDF 2015 NLO"+HERANPs).c_str(),"l");
     legendThy->AddEntry(hunf,"Data Unf.","lp");
     legendThy->AddEntry(hgen_rebin,"MC Truth", "lp");    
+    legendThy->SetBorderSize(0);
+    legendThy->SetFillStyle(0);
     legendThy->Draw();
 
     canv_thy_spectra_2=(TCanvas*)canvForPrint->DrawClone();
@@ -1113,9 +1131,9 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    //h_thyratio_mctruth->SetTitle( "Thy Ratios w/ SVD Unf. Data" );
-    //h_thyratio_mctruth->GetYaxis()->SetTitle("Thy / Unf. Data");
-    h_thyratio_CT10nlo->SetTitle( "Thy Ratios w/ SVD Unf. Data" );
+    if(applyNPCorrs) h_thyratio_CT10nlo->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+    else h_thyratio_CT10nlo->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+
     h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Unf. Data");
     
     h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
@@ -1125,13 +1143,15 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
     h_thyratio_mctruth->DrawClone("P E SAME");     
     
-    TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
-    legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
-    legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
-    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
-    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
-    legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
+    TLegend* legendthyrat = new TLegend( 0.1,0.7,0.5,0.9 );
+    legendthyrat->AddEntry(h_thyratio_CT10nlo ,    ("CT10 PDF NLO"    +CT10NPs).c_str(),    "l");
+    legendthyrat->AddEntry(h_thyratio_CT14nlo ,    ("CT14 PDF NLO"    +CT14NPs).c_str(),    "l"); 
+    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  ("HERAPDF 2015 NLO"+HERANPs).c_str(), "l");
+    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  ("MMHT 2014 NLO"   +MMHTNPs).c_str(),    "l");
+    legendthyrat->AddEntry(h_thyratio_NNPDFnnlo,   ("NNPDF NNLO"      +NNPDFNPs).c_str(),       "l");
     legendthyrat->AddEntry(h_thyratio_mctruth, "PY8 MC Truth",       "lp");    
+    legendthyrat->SetBorderSize(0);
+    legendthyrat->SetFillStyle(0);
     legendthyrat->Draw();
     
     theLineAtp9 ->Draw();
@@ -1175,12 +1195,12 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     canvForPrint->SetLogy(0);
     canvForPrint->SetLogz(1);
         
-    matStylePrint( (TH2D*)covmat_TH2, "SVD Unfolding Covariance Matrix", canvForPrint, outPdfFile, true);        
+    matStylePrint( (TH2D*)covmat_TH2, ("Covariance Matrix"+methodString+descString) , canvForPrint, outPdfFile, true);        
     canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
     
 
     
-    matStylePrint( (TH2D*)covmatabsval_TH2, "SVD Unfolding |Covariance Matrix|", canvForPrint, outPdfFile, true);
+    matStylePrint( (TH2D*)covmatabsval_TH2, ("|Covariance Matrix|"+methodString+descString), canvForPrint, outPdfFile, true);
     canv_absval_covmat=(TCanvas*)canvForPrint->DrawClone(); 
     
     // pearson matrix ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
@@ -1189,7 +1209,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     canvForPrint->SetLogy(0);
     canvForPrint->SetLogz(0);
     
-    matStylePrint( (TH2D*)PearsonSVD, "SVD Unfolding Pearson Matrix", canvForPrint, outPdfFile, true);
+    matStylePrint( (TH2D*)PearsonSVD, ("Pearson Matrix"+methodString+descString), canvForPrint, outPdfFile, true);
     canv_pearson=(TCanvas*)canvForPrint->DrawClone(); 
     
     //// unfolding matrix ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
@@ -1420,13 +1440,13 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   NNPDFnnlo->SetTitle("NNPDF NNLO Spectra");	   NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt");       
   
   // output hists -------------
-  hunf->SetTitle(("Data Unf., "+std::to_string(kRegInput)).c_str()); hunf->Write("Data_unf");    
-  hfold->SetTitle(("Data Fold(Unf.), "+std::to_string(kRegInput)).c_str()); hfold->Write("Data_fold");        
-  hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, "+std::to_string(kRegInput)).c_str()); hfold->Write("Data_foldfakcorr");        
+  hunf->SetTitle(("Data Unf., kReg="+std::to_string(kRegInput)).c_str()); hunf->Write("Data_unf");    
+  hfold->SetTitle(("Data Fold(Unf.), kReg="+std::to_string(kRegInput)).c_str()); hfold->Write("Data_fold");        
+  hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, kReg="+std::to_string(kRegInput)).c_str()); hfold->Write("Data_foldfakcorr");        
   hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");
   
-  hfold_truth->SetTitle(("MC Fold(Truth), "+std::to_string(kRegInput)).c_str());hfold_truth->Write("MC_truth_fold");
-  hfold_truth_fakecorr->SetTitle(("MC Fold(Truth) + Fakes, " +std::to_string(kRegInput)).c_str());hfold_truth->Write("MC_truth_foldfakcorr");
+  hfold_truth->SetTitle(("MC Fold(Truth), kReg="+std::to_string(kRegInput)).c_str());hfold_truth->Write("MC_truth_fold");
+  hfold_truth_fakecorr->SetTitle(("MC Fold(Truth) + Fakes, kReg=" +std::to_string(kRegInput)).c_str());hfold_truth->Write("MC_truth_foldfakcorr");
   hfak->SetTitle("MC Meas. Fakes");hfak->Write("MC_meas_fakes");
   hrec_sameside_rebin_fakecorr->SetTitle("MC Fake Corr. Meas."); hrec_sameside_rebin_fakecorr->Write("MC_measfakcorr");
   

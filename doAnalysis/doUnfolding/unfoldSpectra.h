@@ -309,7 +309,7 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins
   //h->SetAxisRange(0.2, 1.8, "Y");
   //h->SetAxisRange(0.3, 1.7, "Y");
   //h->SetAxisRange(0.4, 1.6, "Y");
-  h->SetAxisRange(0.5, 1.6, "Y");
+  h->SetAxisRange(0.5, 1.5, "Y");
   h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
@@ -346,6 +346,43 @@ inline bool fileExists (const std::string& name) {
   struct stat buffer;   
   return (stat (name.c_str(), &buffer) == 0); 
 }
+
+//std::string getUnfDetails(TH1D* hunf){
+void getUnfDetails(TH1D* hunf, std::string* unfdetails_str){
+  (*unfdetails_str)="";
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in getUnfDetails"<<std::endl;
+  std::string hunf_title=(std::string)hunf->GetTitle();
+  if(funcDebug)std::cout<<"hunf_title="<<hunf_title<<std::endl;
+  bool SVDUnf=false, BayesUnf=false;
+  size_t details_pos;
+  if(hunf_title.find("kReg")!=std::string::npos){
+    SVDUnf=true; BayesUnf=false;
+    details_pos=hunf_title.find("kReg");
+  }
+  else if (hunf_title.find("kIter")!=std::string::npos){
+    SVDUnf=false; BayesUnf=true;
+    details_pos=hunf_title.find("kIter");
+  }
+  else {
+    if(funcDebug)std::cout<<"not bayesian nor SVD unfolding! exit!"<<std::endl;
+    return ;//unfdetails_str;    
+  }
+  if(!SVDUnf && !BayesUnf){
+    if(funcDebug)std::cout<<"not bayesian nor SVD unfolding! exit!"<<std::endl;
+    return ;//unfdetails_str;    
+  }
+  
+  //unsigned int title_length=hunf_title.length();
+  //(*unfdetails_str)=hunf_title;
+  std::string dummy_title=hunf_title;
+  if(funcDebug)std::cout<<"before replacement, dummy_title="<<dummy_title<<std::endl;
+  dummy_title.replace(0, details_pos, "");
+  if(funcDebug)std::cout<<"after replacement, dummy_title="<<dummy_title<<std::endl;
+  (*unfdetails_str)=dummy_title;
+  return;// unfdetails_str;
+}
+
 
 void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile, std::string *out3x3PdfFile=NULL){
   bool funcDebug=false;
@@ -588,7 +625,7 @@ TH1* makeThyHist_00eta20(std::string filename, bool applyNPCorrFactor=true){
 
 
 
-TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true){
+TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true, std::string* NPCorrString=NULL){
   bool funcDebug=false;
   
   TFile* thyFile=TFile::Open(filename.c_str());
@@ -627,16 +664,23 @@ TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true){
   
   if(applyNPCorrFactor){
     NPCorrFile=(TFile*)TFile::Open(NPCorr_filename.c_str());
-    if(NPCorr_filename.find("nnlo")!=std::string::npos){
+    //    if(NPCorr_filename.find("nnlo")!=std::string::npos){
+    if(filename.find("nnlo")!=std::string::npos){
       fNPCorr_00eta05=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin0");
       fNPCorr_05eta10=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin1");
       fNPCorr_10eta15=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin2");
-      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin3");    }
+      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_POWPY8_R4_etabin3");    
+      //if(NPCorrString)(*NPCorrString)=" #otimes POW+PY8 NPs";
+      if(NPCorrString)(*NPCorrString)=" #otimes POW+PY8";
+    }
     else{
       fNPCorr_00eta05=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin0");
       fNPCorr_05eta10=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin1");
       fNPCorr_10eta15=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin2");
-      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin3");    }
+      fNPCorr_15eta20=(TF1*)NPCorrFile->Get("fNPC_HerwigEE4C_R4_etabin3");    
+      //      if(NPCorrString)(*NPCorrString)=" #otimes HERWIG EE4C NPs";
+      if(NPCorrString)(*NPCorrString)=" #otimes HERWIG EE4C";
+    }
     if(!((bool)NPCorrFile)){
       std::cout<<"warning; want to open NP correction file + apply corrections but NP correction file not open nor present. Exit."<<std::endl;
       assert(false);
@@ -1179,6 +1223,25 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
 
 
   // combined plots, I/O spectra
+  TH1D* hunf		     = (TH1D*)fout->Get("Data_unf");
+  hunf->SetMarkerStyle(kOpenCircle);
+  hunf->SetMarkerColor(kRed);
+  hunf->SetLineColor(kRed);
+  hunf->SetMarkerSize(1.02);     
+
+  std::cout<<"hunf->GetTitle()="<<hunf->GetTitle()<<std::endl;
+  std::string descString="";
+  getUnfDetails(hunf, &descString);
+  std::string methodString="";
+  //bool SVDUnf=false, BayesUnf=false;
+  if(descString.find("kReg")!=std::string::npos){
+    methodString=", SVD ";
+  }
+  else if(descString.find("kIter")!=std::string::npos){
+    methodString=", Bayesian ";
+  }
+  
+  
   TH1D* hrec_rebin	     = (TH1D*)fout->Get("Data_meas");
   hrec_rebin->SetMarkerStyle(kOpenCircle);
   hrec_rebin->SetMarkerColor(kBlue);     
@@ -1190,12 +1253,6 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   hrec_sameside_rebin->SetMarkerColor(kBlue-3);     
   hrec_sameside_rebin->SetLineColor(kBlue-3);     
   hrec_sameside_rebin->SetMarkerSize(1.02);   
-
-  TH1D* hunf		     = (TH1D*)fout->Get("Data_unf");
-  hunf->SetMarkerStyle(kOpenCircle);
-  hunf->SetMarkerColor(kRed);
-  hunf->SetLineColor(kRed);
-  hunf->SetMarkerSize(1.02);     
 
   TH1D* hgen_rebin	     = (TH1D*)fout->Get("MC_truth");
   hgen_rebin->SetMarkerStyle(kOpenStar);
@@ -1213,17 +1270,18 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   
   TCanvas* canv_spectra_genratio=NULL;
   //  hrec_rebin->SetTitle("Bayesian, MC and Data Spectra");    
-  hrec_rebin->SetTitle("MC and Data Spectra");    
+  hrec_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
+  
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hrec_rebin,  hrec_sameside_rebin, hunf}),
 		  hgen_rebin, "Ratio w/ MC Truth");
   canv_spectra_genratio=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Print(outPdfFile.c_str());      
   canvForPrint->Clear();
-
+  
   TCanvas* canv_spectra_recratio=NULL;  
   //  hgen_rebin->SetTitle("Bayesian, MC and Data Spectra");
-  hgen_rebin->SetTitle("MC and Data Spectra");
+  hgen_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hunf}),
 		  hrec_rebin, "Ratio w/ Data Meas.");
@@ -1234,7 +1292,7 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   
   TCanvas* canv_spectra_unfratio=NULL;
   //  hgen_rebin->SetTitle("Bayesian, MC and Data Spectra");
-  hgen_rebin->SetTitle("MC and Data Spectra");
+  hgen_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hrec_rebin}),
 		  hunf, "Ratio w/ Data Unf.");
@@ -1284,7 +1342,8 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   legendfold2->SetBorderSize(0);    
   
   TCanvas* canv_spectra_foldratio=NULL;
-  hfold_truth_fakecorr->SetTitle("Folded Spectra, MC and Data");    setupSpectraHist(hfold_truth_fakecorr);
+  setupSpectraHist(hfold_truth_fakecorr);
+  hfold_truth_fakecorr->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legendfold2,
   		  ((std::vector<TH1D*>){hfold_truth_fakecorr, hrec_sameside_rebin, hfold_fakecorr,  hrec_rebin}),
   		  ((std::vector<TH1D*>){h_foldratio_datafold, h_foldratio_mcfold}),
@@ -1319,7 +1378,7 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   legendThy1->SetBorderSize(0);    
 
   TCanvas* canv_thy_spectra_1=NULL;  
-  CT10nlo->SetTitle("NLO Thy w/ Data Unf., MC Truth");
+  CT10nlo->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legendThy1,
 		  ((std::vector<TH1D*>){CT10nlo, CT14nlo, NNPDFnnlo, hgen_rebin}),
 		  hunf, "Ratio w/ Data Unf.");    
@@ -1489,3 +1548,5 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
 //  testHistWrite->Write("testHistWrite");
 //  return;
 //}
+
+

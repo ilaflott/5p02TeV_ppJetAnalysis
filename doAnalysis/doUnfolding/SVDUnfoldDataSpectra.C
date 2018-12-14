@@ -1105,7 +1105,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     
     hgen_rebin->DrawClone("P E SAME");
     hunf->DrawClone("P E SAME");   //just for axis range
-    
+
+
     TLegend* legendThy =new TLegend( 0.5,0.7,0.9,0.9 );        
     legendThy->AddEntry(MMHTnlo  ,(   "MMHT 2014 NLO"+MMHTNPs).c_str(),"l");    
     legendThy->AddEntry(HERAPDF  ,("HERAPDF 2015 NLO"+HERANPs).c_str(),"l");
@@ -1119,7 +1120,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     canvForPrint->Print(outPdfFile.c_str());
 
 
-    // thy ratios w hunf------------    
+    
+    // thy ratios w hunf ----------------------------------    
     canvForPrint->cd();
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(0);
@@ -1541,7 +1543,7 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   if(drawPDFs){
     //  testwrite(fout);
     //makeCombinedPlots(fout, canvForPrint, outPdfFile);  
-    makeCombinedPlots(outRootFile, canvForPrint, outPdfFile);  
+    makeCombinedPlots(outRootFile, canvForPrint, outPdfFile, applyNPCorrs);  
     canvForPrint->Print(close_outPdfFile.c_str());        
   }
   fpp_MC->Close();

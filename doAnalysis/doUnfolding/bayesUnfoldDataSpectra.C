@@ -314,35 +314,49 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   hrec_rebin->SetMarkerSize(1.02);     
 
 
-  // thy spectra
-  bool applyNPCorrs=true; std::string NPCorrString="";
-  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),applyNPCorrs,&NPCorrString);
+
+  // thy spectra  
+  bool applyNPCorrs=true; 
+
+  std::string CT10NPs="" ; // std::string CT10NPs_name="";
+  std::string CT14NPs="" ; // std::string CT14NPs_name="";
+  std::string HERANPs="" ; // std::string HERANPs_name="";
+  std::string MMHTNPs="" ; // std::string MMHTNPs_name="";
+  std::string NNPDFNPs=""; // std::string NNPDFNPs_name="";
+
+  TH1D* CT10nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT10nlo  ).c_str(),applyNPCorrs, &CT10NPs);
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
-  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);
+  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
 
-  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),applyNPCorrs,&NPCorrString);
+  TH1D* CT14nlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_CT14nlo  ).c_str(),applyNPCorrs, &CT14NPs);
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
   CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
 
-  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),applyNPCorrs,&NPCorrString);
+  TH1D* HERAPDF  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_HERAPDF  ).c_str(),applyNPCorrs, &HERANPs);
   HERAPDF->SetMarkerSize(0);
   HERAPDF->SetLineColor(kViolet-5);  
   HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
-
-  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),applyNPCorrs,&NPCorrString);
+  
+  TH1D* MMHTnlo  =(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_MMHTnlo  ).c_str(),applyNPCorrs, &MMHTNPs);
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
   MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
-
-  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),applyNPCorrs,&NPCorrString);
+  
+  TH1D* NNPDFnnlo=(TH1D*)makeThyHist_00eta20_v2((fNLOFile_R04_NNPDFnnlo).c_str(),applyNPCorrs, &NNPDFNPs);
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6); 
   NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
 
-  // ----- unfolding setup+use below here
+//  if(applyNPCorrs)makeNPCorrName(&CT10NPs, &CT10NPs_name);
+//  if(applyNPCorrs)makeNPCorrName(&CT14NPs, &CT14NPs_name);
+//  if(applyNPCorrs)makeNPCorrName(&HERANPs, &HERANPs_name);
+//  if(applyNPCorrs)makeNPCorrName(&MMHTNPs, &MMHTNPs_name);
+//  if(applyNPCorrs)makeNPCorrName(&NNPDFNPs, &NNPDFNPs_name);
+  //  assert(false);
 
+  // ----- unfolding setup+use below here
   // RooUnfold Response Matrix 
   std::cout<<"calling RooUnfoldResponse "<<std::endl;
   RooUnfoldResponse roo_resp( hrec_sameside_resp_rebin, hgen_resp_rebin, hmat_rebin, ("Response_matrix"+RandEtaRange).c_str()) ;
@@ -941,7 +955,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     
     
     // thy spectra CT10/14 NNPDF NLO---------------------------
-    TLegend* legendThy1 =new TLegend( 0.7,0.7,0.9,0.9 );    
+    TLegend* legendThy1 =new TLegend( 0.5,0.7,0.9,0.9 );    
 
     setupSpectraHist(CT10nlo  ,useSimpBins);
     if(debugWrite){fout->cd(); CT10nlo->Write("CT10_NLO_R04_jtpt");}    
@@ -955,8 +969,8 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     if(!useSimpBins)canvForPrint->SetLogx(1);
     canvForPrint->SetLogy(1);                  
     
+
     //CT10nlo->SetAxisRange(1e-07,1e+03,"Y");//for y axis in nanbarns
-    //CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());
     if(applyNPCorrs)    CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());
     else    CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());
     
@@ -966,17 +980,18 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     hgen_rebin->DrawClone("P E SAME");
     hunf->DrawClone("P E SAME");   //just for axis range
     
-    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
-    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
-    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");
+    legendThy1->AddEntry(CT10nlo  ,(  "CT10 NLO"+CT10NPs).c_str(),"l");
+    legendThy1->AddEntry(CT14nlo  ,(  "CT14 NLO"+CT14NPs).c_str(),"l");
+    legendThy1->AddEntry(NNPDFnnlo,("NNPDF NNLO"+NNPDFNPs).c_str(),"l");
     legendThy1->AddEntry(hunf,"Data Unf.","lp");
     legendThy1->AddEntry(hgen_rebin,"MC Truth", "lp");
+    legendThy1->SetBorderSize(0);
+    legendThy1->SetFillStyle(0);
     legendThy1->Draw();
 
     canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
 
-    
     // thy spectra HERA/MMHT/NNPDF ---------------------------
 
     setupSpectraHist(HERAPDF  ,useSimpBins);
@@ -990,24 +1005,25 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     canvForPrint->SetLogy(1);                  
     
     if(applyNPCorrs)    MMHTnlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());
-    else    MMHTnlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());        
-    
-    MMHTnlo  ->DrawClone("][HIST E");    
+    else    MMHTnlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
+    MMHTnlo  ->DrawClone("][HIST E");
     HERAPDF  ->DrawClone("][HIST E SAME");
+
     
     hgen_rebin->DrawClone("P E SAME");
     hunf->DrawClone("P E SAME");   //just for axis range
     
-    TLegend* legendThy =new TLegend( 0.7,0.7,0.9,0.9 );        
-    legendThy->AddEntry(HERAPDF  ,"HERAPDF 2015 NLO","l");
-    legendThy->AddEntry(MMHTnlo  ,"MMHT 2014 NLO   ","l");    
+    TLegend* legendThy =new TLegend( 0.5,0.7,0.9,0.9 );        
+    legendThy->AddEntry(MMHTnlo  ,(   "MMHT 2014 NLO"+MMHTNPs).c_str(),"l");    
+    legendThy->AddEntry(HERAPDF  ,("HERAPDF 2015 NLO"+HERANPs).c_str(),"l");
     legendThy->AddEntry(hunf,"Data Unf.","lp");
     legendThy->AddEntry(hgen_rebin,"MC Truth", "lp");    
+    legendThy->SetBorderSize(0);
+    legendThy->SetFillStyle(0);
     legendThy->Draw();
 
     canv_thy_spectra_2=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
-
 
     // thy ratios w hunf------------    
     canvForPrint->cd();
@@ -1033,13 +1049,15 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
     h_thyratio_mctruth->DrawClone("P E SAME");     
     
-    TLegend* legendthyrat = new TLegend( 0.1,0.7,0.3,0.9 );
-    legendthyrat->AddEntry(h_thyratio_CT10nlo ,  "CT10 PDF NLO" ,    "l");
-    legendthyrat->AddEntry(h_thyratio_CT14nlo ,  "CT14 PDF NLO" ,    "l"); 
-    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  "HERAPDF 2015 NLO", "l");
-    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  "MMHT 2014 NLO",    "l");
-    legendthyrat->AddEntry(h_thyratio_NNPDFnnlo, "NNPDF NNLO",       "l");
+    TLegend* legendthyrat = new TLegend( 0.1,0.7,0.5,0.9 );
+    legendthyrat->AddEntry(h_thyratio_CT10nlo ,    ("CT10 PDF NLO"    +CT10NPs).c_str(),    "l");
+    legendthyrat->AddEntry(h_thyratio_CT14nlo ,    ("CT14 PDF NLO"    +CT14NPs).c_str(),    "l"); 
+    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  ("HERAPDF 2015 NLO"+HERANPs).c_str(), "l");
+    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  ("MMHT 2014 NLO"   +MMHTNPs).c_str(),    "l");
+    legendthyrat->AddEntry(h_thyratio_NNPDFnnlo,   ("NNPDF NNLO"      +NNPDFNPs).c_str(),       "l");
     legendthyrat->AddEntry(h_thyratio_mctruth, "PY8 MC Truth",       "lp");    
+    legendthyrat->SetBorderSize(0);
+    legendthyrat->SetFillStyle(0);
     legendthyrat->Draw();
     
     theLineAtp9 ->Draw();
@@ -1318,11 +1336,30 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     hmat_percenterrs->SetTitle("MC Response Matrix Percent Errors");hmat_percenterrs->Write("MC_mat_rebin_percerrors");  }
   
   // input thy ----------------  
-  CT10nlo  ->SetTitle("CT10 NLO Spectra");         CT10nlo  ->Write("NLO_CT10_NLO_R04_jtpt");	      
-  CT14nlo  ->SetTitle("CT14 NLO Spectra");	   CT14nlo  ->Write("NLO_CT14_NLO_R04_jtpt");	      
-  HERAPDF  ->SetTitle("HERAPDF NLO Spectra");	   HERAPDF  ->Write("NLO_HERAPDF105_NLO_R04_jtpt");  
-  MMHTnlo  ->SetTitle("MMHT NLO Spectra");	   MMHTnlo  ->Write("NLO_MMHT2014_NLO_R04_jtpt");    
-  NNPDFnnlo->SetTitle("NNPDF NNLO Spectra");	   NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt");       
+//  CT10nlo  ->SetTitle(("CT10 NLO Spectra"   +  CT10NPs ).c_str());      
+//  CT14nlo  ->SetTitle(("CT14 NLO Spectra"   +  CT14NPs ).c_str());      
+//  HERAPDF  ->SetTitle(("HERAPDF NLO Spectra"+  HERANPs ).c_str());  
+//  MMHTnlo  ->SetTitle(("MMHT NLO Spectra"   +  MMHTNPs ).c_str());     
+//  NNPDFnnlo->SetTitle(("NNPDF NNLO Spectra" + NNPDFNPs ).c_str());   
+//  
+//  CT10nlo  ->Write(("NLO_CT10_NLO_R04_jtpt"      +  CT10NPs_name).c_str());	     
+//  CT14nlo  ->Write(("NLO_CT14_NLO_R04_jtpt"      +  CT14NPs_name).c_str());	     
+//  HERAPDF  ->Write(("NLO_HERAPDF105_NLO_R04_jtpt"+  HERANPs_name).c_str());  
+//  MMHTnlo  ->Write(("NLO_MMHT2014_NLO_R04_jtpt"  +  MMHTNPs_name).c_str());    
+//  NNPDFnnlo->Write(("NLO_NNPDF_NLO_R04_jtpt"     + NNPDFNPs_name).c_str());       
+  CT10nlo  ->SetTitle("CT10 NLO Spectra"   );      
+  CT14nlo  ->SetTitle("CT14 NLO Spectra"   );      
+  HERAPDF  ->SetTitle("HERAPDF NLO Spectra");  
+  MMHTnlo  ->SetTitle("MMHT NLO Spectra"   );     
+  NNPDFnnlo->SetTitle("NNPDF NNLO Spectra" );   
+  
+  CT10nlo  ->Write("NLO_CT10_NLO_R04_jtpt"      );	     
+  CT14nlo  ->Write("NLO_CT14_NLO_R04_jtpt"      );	     
+  HERAPDF  ->Write("NLO_HERAPDF105_NLO_R04_jtpt");  
+  MMHTnlo  ->Write("NLO_MMHT2014_NLO_R04_jtpt"  );    
+  NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt"     );       
+
+
   
   // output hists -------------
   hunf->SetTitle(("Data Unf. kIter="+std::to_string(kIterInput)).c_str() );hunf->Write("Data_unf");    
@@ -1418,7 +1455,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   if(drawPDFs){
     //  testwrite(fout);
     //makeCombinedPlots(fout, canvForPrint, outPdfFile);  
-    makeCombinedPlots(outRootFile, canvForPrint, outPdfFile);  
+    makeCombinedPlots(outRootFile, canvForPrint, outPdfFile,applyNPCorrs);  
     canvForPrint->Print(close_outPdfFile.c_str());        
   }
   fpp_MC->Close();

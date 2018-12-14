@@ -383,7 +383,23 @@ void getUnfDetails(TH1D* hunf, std::string* unfdetails_str){
   return;// unfdetails_str;
 }
 
+void makeNPCorrName(std::string* NPs, std::string* NPs_name){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in makeNPCorrName"<<std::endl;
+  std::string dummy=*NPs;
+  if(funcDebug)std::cout<<"NPs_name="<<dummy<<std::endl;
+  dummy=dummy.replace(0, (std::string(" #otimes ")).length(),"");
+  if(funcDebug)std::cout<<"NPs_name="<<dummy<<std::endl;
+  if(dummy.find("+")!=std::string::npos)    dummy=dummy.replace(dummy.find("+"), 1, "_");  
+  else                                      dummy=dummy.replace(dummy.find(" "), 1, "_");
+  if(funcDebug)std::cout<<"NPs_name="<<dummy<<std::endl;
+  *NPs_name=dummy;
+  return;
+}
 
+void makeNPs(std::string* NPTH1_name, std::string* NPs){
+  
+}
 void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile, std::string *out3x3PdfFile=NULL){
   bool funcDebug=false;
 
@@ -1205,7 +1221,7 @@ void multiratioplot( TCanvas* c=NULL, TLegend * legend=NULL,
 
 
 //void makeCombinedPlots(TFile* fout, TCanvas* canvForPrint, std::string outPdfFile=""){
-void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, std::string outPdfFile=""){
+void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, std::string outPdfFile="", bool applyNPCorrs=false){
   bool funcDebug=true;
   if(funcDebug)std::cout<<"makeCombinedPlots"<<std::endl;
   if(outRootFile.length()==0){std::cout<<"ERROR no outRootFile string. exit."<<std::endl;
@@ -1228,12 +1244,13 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   hunf->SetMarkerColor(kRed);
   hunf->SetLineColor(kRed);
   hunf->SetMarkerSize(1.02);     
-
+  
   std::cout<<"hunf->GetTitle()="<<hunf->GetTitle()<<std::endl;
   std::string descString="";
   getUnfDetails(hunf, &descString);
   std::string methodString="";
   //bool SVDUnf=false, BayesUnf=false;
+  
   if(descString.find("kReg")!=std::string::npos){
     methodString=", SVD ";
   }
@@ -1368,17 +1385,23 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6);  
  
-  TLegend* legendThy1 =new TLegend( 0.7,0.7,0.9,0.9 );    
-  legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
-  legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
-  legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");
+  TLegend* legendThy1 =new TLegend( 0.5,0.7,0.9,0.9 );    
+  if(applyNPCorrs){
+    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO #otimes HERWIG EE4C","l");
+    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO #otimes HERWIG EE4C","l");
+    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO #otimes POW+PY8","l");   }
+  else{
+    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
+    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
+    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");   }  
   legendThy1->AddEntry(hunf,"Data Unf.","lp");
   legendThy1->AddEntry(hgen_rebin,"MC Truth", "lp");
   legendThy1->SetFillStyle(0);
   legendThy1->SetBorderSize(0);    
 
   TCanvas* canv_thy_spectra_1=NULL;  
-  CT10nlo->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
+  if(!applyNPCorrs)CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
+  else CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legendThy1,
 		  ((std::vector<TH1D*>){CT10nlo, CT14nlo, NNPDFnnlo, hgen_rebin}),
 		  hunf, "Ratio w/ Data Unf.");    

@@ -812,6 +812,10 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     TLine* theLineAt1p1= (TLine*)theLineAtOne->Clone();
     theLineAt1p1->SetY1(1.1);    theLineAt1p1->SetY2(1.1);
 
+    std::vector<std::string> desclines={ "#sqrt{s} = 5.02 TeV",
+					 "ak4PF Jets",
+					 "#||{y} < 2.0"};
+    
     // gen/meas/unf spectra hists ---------------    
     canvForPrint->cd();
     if(!useSimpBins)canvForPrint->SetLogx(1);
@@ -837,8 +841,10 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     legend_in1->AddEntry(hrec_rebin,          "Data Meas." , "lp");	
     legend_in1->AddEntry(hunf,                "Data Unf." ,  "lp");
     legend_in1->AddEntry(hgen_rebin,          "PY8 Truth"   , "lp");
-    
-    legend_in1->Draw();
+    legend_in1->SetBorderSize(0);
+    legend_in1->SetFillStyle(0);
+    legend_in1->Draw();    
+    drawTLatex( 0.57, 0.82, 0.035, canvForPrint, desclines);
     
     canv_spectra=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());      
@@ -863,13 +869,15 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     h_genratio_ssmeas->DrawClone("P E SAME");       // mc meas/mc truth
     //h_genratio_oppfold->DrawClone("P E SAME");
     
-    TLegend* legend2 = new TLegend( 0.1,0.8,0.2,0.9 );
+    TLegend* legend2 = new TLegend( 0.7,0.75,0.9,0.9 );
     legend2->AddEntry(h_genratio_oppunf,  "Data Unf." ,  "lp");
     legend2->AddEntry(h_genratio_oppmeas, "Data Meas." , "lp"); 
     legend2->AddEntry(h_genratio_ssmeas, "PY8 Meas.", "lp");
     //legend2->AddEntry(h_genratio_oppfold, "Data Fold(Unf.)", "lp");
-    
-    legend2->Draw();
+    legend2->SetBorderSize(0);
+    legend2->SetFillStyle(0);
+    legend2->Draw();    
+    drawTLatex( 0.57, 0.84, 0.035, canvForPrint, desclines);
     
     theLineAtp9 ->Draw();
     theLineAtOne->Draw();
@@ -903,14 +911,18 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     //h_recratio_oppfold->DrawClone("P E SAME");  
     //h_recratio_ssfold->DrawClone("P E SAME");
     
-    TLegend* legend4 = new TLegend( 0.1,0.8,0.2,0.9 );
+    TLegend* legend4 = new TLegend( .7,.75,.9,.9);
     legend4->AddEntry(h_recratio_ssmeas, "PY8 Meas.", "lp");
     legend4->AddEntry(h_recratio_oppunf,  "Data Unf.", "lp");
     legend4->AddEntry(h_recratio_ssgen,   "PY8 Truth", "lp");
     ////legend4->AddEntry(h_recratio_ssunf, NULL, "p");
     //legend4->AddEntry(h_recratio_oppfold, "Data Fold(Unf.)", "lp");
     //legend4->AddEntry(h_recratio_ssfold, "PY8 Fold(Unf.)", "p");
-    legend4->Draw();
+    
+    legend4->SetBorderSize(0);
+    legend4->SetFillStyle(0);
+    legend4->Draw();    
+    drawTLatex( 0.57, 0.84, 0.035, canvForPrint, desclines);
 
     theLineAtp9->Draw();
     theLineAtOne->Draw();
@@ -935,10 +947,13 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     h_foldratio_datafold->DrawClone("P E");
     h_foldratio_mcfold->DrawClone("P E SAME");
     
-    TLegend* legendfold = new TLegend( 0.1,0.8,0.4,0.9 );    
+    TLegend* legendfold = new TLegend( 0.6,0.8,0.9,0.9);
     legendfold->AddEntry(h_foldratio_datafold ,  "Fold(Data Unf.) + Fakes/Data Meas." , "lp");
     legendfold->AddEntry(h_foldratio_mcfold  ,   "Fold(PY8 Truth) + Fakes/PY8 Meas.",  "lp");
-    legendfold->Draw();
+    legendfold->SetBorderSize(0);
+    legendfold->SetFillStyle(0);
+    legendfold->Draw();    
+    drawTLatex( 0.47, 0.85, 0.035, canvForPrint, desclines);
     
     theLineAtp9->Draw();
     theLineAtOne->Draw();
@@ -962,10 +977,13 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     h_recratio_oppfold->DrawClone("P E");
     h_recratio_truthfold->DrawClone("P E SAME");
     
-    TLegend* legendfold2 = new TLegend( 0.1,0.8,0.4,0.9 );    
+    TLegend* legendfold2 = new TLegend( .6,.8,.9,.9);
     legendfold2->AddEntry(h_recratio_oppfold ,  "Fold(Data Unf.)/(Data Meas. - Fakes)" , "lp");
     legendfold2->AddEntry(h_recratio_truthfold  ,   "Fold(PY8 Truth)/(PY8 Meas. - Fakes)",  "lp");
-    legendfold2->Draw();
+    legendfold2->SetBorderSize(0);
+    legendfold2->SetFillStyle(0);
+    legendfold2->Draw();    
+    drawTLatex( 0.47, 0.85, 0.035, canvForPrint, desclines);
     
     theLineAtp9->Draw();
     theLineAtOne->Draw();
@@ -992,19 +1010,22 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     hrec_sameside_resp_rebin->DrawClone("P E SAME");           
     hgen_resp_rebin->DrawClone("P E SAME");                 
 
-    TLegend* legend_resp = new TLegend( 0.6,0.7,0.9,0.9 );
+    TLegend* legend_resp = new TLegend( 0.65,0.75,0.9,0.9 );
     legend_resp->AddEntry(hfak,          "PY8 Kinematic Fakes" , "lp");    
     legend_resp->AddEntry(hgen_resp_rebin,          "PY8 Truth Response" , "lp");
     legend_resp->AddEntry(hrec_sameside_resp_rebin, "PY8 Meas. Response" , "lp");    
-    legend_resp->Draw();
+    legend_resp->SetBorderSize(0);
+    legend_resp->SetFillStyle(0);
+    legend_resp->Draw();    
+    drawTLatex( 0.54, 0.84, 0.035, canvForPrint, desclines);
     
     canv_mc_fakes_spectra=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());           
     
     
     // thy spectra CT10/14 NNPDF NLO---------------------------
-    TLegend* legendThy1 =new TLegend( 0.5,0.7,0.9,0.9 );    
-
+    TLegend* legendThy1 =new TLegend( 0.55,0.65,0.95,0.9 );    
+    
     setupSpectraHist(CT10nlo  ,useSimpBins);
     if(debugWrite){fout->cd(); CT10nlo->Write("CT10_NLO_R04_jtpt");}    
     setupSpectraHist(CT14nlo  ,useSimpBins);
@@ -1035,8 +1056,9 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     legendThy1->AddEntry(hgen_rebin,"PY8 Truth", "lp");
     legendThy1->SetBorderSize(0);
     legendThy1->SetFillStyle(0);
-    legendThy1->Draw();
-
+    legendThy1->Draw();    
+    drawTLatex( 0.45, 0.84, 0.035, canvForPrint, desclines);
+    
     canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
 
@@ -1061,14 +1083,16 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     hgen_rebin->DrawClone("P E SAME");
     hunf->DrawClone("P E SAME");   //just for axis range
     
-    TLegend* legendThy =new TLegend( 0.5,0.7,0.9,0.9 );        
+    TLegend* legendThy =new TLegend( 0.55,0.70,0.95,0.9 );        
     legendThy->AddEntry(MMHTnlo  ,(   "MMHT 2014 NLO"+MMHTNPs).c_str(),"l");    
     legendThy->AddEntry(HERAPDF  ,("HERAPDF 2015 NLO"+HERANPs).c_str(),"l");
     legendThy->AddEntry(hunf,"Data Unf.","lp");
     legendThy->AddEntry(hgen_rebin,"PY8 Truth", "lp");    
     legendThy->SetBorderSize(0);
     legendThy->SetFillStyle(0);
-    legendThy->Draw();
+    legendThy->Draw();    
+    drawTLatex( 0.45, 0.84, 0.035, canvForPrint, desclines);
+    
 
     canv_thy_spectra_2=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
@@ -1107,6 +1131,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     legendthyrat->SetBorderSize(0);
     legendthyrat->SetFillStyle(0);
     legendthyrat->Draw();
+    drawTLatex( 0.50, 0.84, 0.035, canvForPrint, desclines);    
     
     theLineAtp9 ->Draw();
     theLineAtOne->Draw();
@@ -1114,7 +1139,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     
     canv_thy_ratio=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
-
+    
     
     // NJets v. Jet p_T hist (all weight=1) ---------------------    
     if( (bool)hJetQA_jtptEntries )      {

@@ -182,6 +182,31 @@ void drawText(const char *text, double xp, double yp, int size){
   return;
 }
 
+
+void drawTLatex(float x=-1., float y=-1., float y_space=-1.,  TCanvas* canv=NULL, std::vector<std::string> input_strs={0}){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in drawTLatex"<<std::endl;
+  if( (x<0.) || (y<0.) || (y_space<0.))return;
+  if((!canv))return;
+  if(input_strs.size()==0) return;
+  
+  canv->cd();
+  
+  for(unsigned int i=0;i<input_strs.size(); i++){
+    TLatex *t=new TLatex(x, y, ((std::string)input_strs[i]).c_str());
+    t->SetTextFont(63);
+    t->SetTextColor(kBlack);
+    t->SetTextSize(26);
+    //t->SetLineWidth(1);
+    t->SetNDC();
+    t->Draw();
+    y-=y_space;
+  }
+  
+  return;  
+}
+
+
 void matStylePrint(TH2D * mat, std::string hTitle, TCanvas* canv, std::string outPdfFile, bool useSimpBins){
   //bool funcDebug=false;
   //canv->cd();  
@@ -1230,6 +1255,9 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
     return; }
   if(outPdfFile.length()==0){std::cout<<"ERROR no outPdfFile string. exit."<<std::endl;
     return; }
+  std::vector<std::string> desclines={ "#sqrt{s} = 5.02 TeV",
+				       "ak4PF Jets",
+				       "#||{y} < 2.0"};
   
   TFile* fout= new TFile(outRootFile.c_str(), "UPDATE");
   if(!fout){std::cout<<"ERROR output file pointer not found. exit."<<std::endl;
@@ -1277,7 +1305,7 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   hgen_rebin->SetLineColor(kMagenta);
   hgen_rebin->SetMarkerSize(1.02);     
   
-  TLegend* legend_in1=new TLegend(0.7,0.7,0.9,0.9);
+  TLegend* legend_in1=new TLegend(0.7,0.68,0.92,0.9);
   legend_in1->AddEntry(hrec_rebin	    , "Data Meas." , "lp");
   legend_in1->AddEntry(hunf		    , "Data Unf." , "lp");
   legend_in1->AddEntry(hrec_sameside_rebin   , "PY8 Meas." , "lp");
@@ -1292,8 +1320,9 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hrec_rebin,  hrec_sameside_rebin, hunf}),
 		  hgen_rebin, "Ratio w/ PY8 Truth");
-  canv_spectra_genratio=(TCanvas*)canvForPrint->DrawClone();
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
   canvForPrint->Print(outPdfFile.c_str());      
+  canv_spectra_genratio=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Clear();
   
   TCanvas* canv_spectra_recratio=NULL;  
@@ -1302,8 +1331,9 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hunf}),
 		  hrec_rebin, "Ratio w/ Data Meas.");
-  canv_spectra_recratio=(TCanvas*)canvForPrint->DrawClone();
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
   canvForPrint->Print(outPdfFile.c_str());      
+  canv_spectra_recratio=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Clear();
   
   
@@ -1313,8 +1343,9 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hrec_rebin}),
 		  hunf, "Ratio w/ Data Unf.");
-  canv_spectra_unfratio=(TCanvas*)canvForPrint->DrawClone();
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
   canvForPrint->Print(outPdfFile.c_str());      
+  canv_spectra_unfratio=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Clear();
 
   
@@ -1360,8 +1391,9 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   		  ((std::vector<TH1D*>){hrec_sameside_rebin, hfold_truth_fakecorr,  hfold_fakecorr,  hrec_rebin}),
   		  ((std::vector<TH1D*>){h_foldratio_datafold, h_foldratio_mcfold}),
   		  "Ratio w/ Meas. ");
-  canv_spectra_foldratio=(TCanvas*)canvForPrint->DrawClone();
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
   canvForPrint->Print(outPdfFile.c_str());       
+  canv_spectra_foldratio=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Clear();
   
 
@@ -1419,8 +1451,9 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   		  ((std::vector<TH1D*>){hrec_sameside_rebin_fakecorr, hfold_truth,  hfold,  hrec_rebin_fakecorr}),
   		  ((std::vector<TH1D*>){h_recratio_oppfold, h_recratio_truthfold}),
   		  "Ratio w/ (Meas. - Fakes) ");
-  canv_spectra_foldratio2=(TCanvas*)canvForPrint->DrawClone();
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
   canvForPrint->Print(outPdfFile.c_str());       
+  canv_spectra_foldratio2=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Clear();
   
 
@@ -1452,15 +1485,16 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   legendThy1->AddEntry(hgen_rebin,"PY8 Truth", "lp");
   legendThy1->SetFillStyle(0);
   legendThy1->SetBorderSize(0);    
-
+  
   TCanvas* canv_thy_spectra_1=NULL;  
   if(!applyNPCorrs)CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
   else CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legendThy1,
 		  ((std::vector<TH1D*>){CT10nlo, CT14nlo, NNPDFnnlo, hgen_rebin}),
 		  hunf, "Ratio w/ Data Unf.");    
-  canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone(); 
+  drawTLatex( 0.48, 0.88, 0.035, canvForPrint, desclines);
   canvForPrint->Print(outPdfFile.c_str()); 
+  canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone(); 
   canvForPrint->Clear();
   
   fout->cd();  
@@ -1473,8 +1507,6 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   
   return;
 }
-
-
 
 
 //void divideThyByUnf(TH1* hthyratio, TH1* hunf){

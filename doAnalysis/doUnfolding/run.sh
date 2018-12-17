@@ -6,7 +6,7 @@ dataHLTPF=1
 dataHLTCalo=0
 
 doBayes=1
-doSVD=0
+doSVD=1
 useSimpBins=0
 makeRooUnf=0
 

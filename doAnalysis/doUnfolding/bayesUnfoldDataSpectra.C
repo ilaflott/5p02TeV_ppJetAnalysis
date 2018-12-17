@@ -917,8 +917,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     legend4->AddEntry(h_recratio_ssgen,   "PY8 Truth", "lp");
     ////legend4->AddEntry(h_recratio_ssunf, NULL, "p");
     //legend4->AddEntry(h_recratio_oppfold, "Data Fold(Unf.)", "lp");
-    //legend4->AddEntry(h_recratio_ssfold, "PY8 Fold(Unf.)", "p");
-    
+    //legend4->AddEntry(h_recratio_ssfold, "PY8 Fold(Unf.)", "p");    
     legend4->SetBorderSize(0);
     legend4->SetFillStyle(0);
     legend4->Draw();    

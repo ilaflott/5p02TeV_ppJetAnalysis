@@ -1234,11 +1234,11 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   TFile* fout= new TFile(outRootFile.c_str(), "UPDATE");
   if(!fout){std::cout<<"ERROR output file pointer not found. exit."<<std::endl;
     return; }
-
+  
   canvForPrint->Clear();
 
 
-  // combined plots, I/O spectra
+  // combined plots, I/O spectra ----------------------------------------------
   TH1D* hunf		     = (TH1D*)fout->Get("Data_unf");
   hunf->SetMarkerStyle(kOpenCircle);
   hunf->SetMarkerColor(kRed);
@@ -1280,24 +1280,24 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   TLegend* legend_in1=new TLegend(0.7,0.7,0.9,0.9);
   legend_in1->AddEntry(hrec_rebin	    , "Data Meas." , "lp");
   legend_in1->AddEntry(hunf		    , "Data Unf." , "lp");
-  legend_in1->AddEntry(hrec_sameside_rebin   , "MC Meas." , "lp");
-  legend_in1->AddEntry(hgen_rebin	    , "MC Truth" , "lp");
+  legend_in1->AddEntry(hrec_sameside_rebin   , "PY8 Meas." , "lp");
+  legend_in1->AddEntry(hgen_rebin	    , "PY8 Truth" , "lp");
   legend_in1->SetFillStyle(0);
   legend_in1->SetBorderSize(0);
   
   TCanvas* canv_spectra_genratio=NULL;
-  //  hrec_rebin->SetTitle("Bayesian, MC and Data Spectra");    
+  //  hrec_rebin->SetTitle("Bayesian, PY8 and Data Spectra");    
   hrec_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
   
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hrec_rebin,  hrec_sameside_rebin, hunf}),
-		  hgen_rebin, "Ratio w/ MC Truth");
+		  hgen_rebin, "Ratio w/ PY8 Truth");
   canv_spectra_genratio=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Print(outPdfFile.c_str());      
   canvForPrint->Clear();
   
   TCanvas* canv_spectra_recratio=NULL;  
-  //  hgen_rebin->SetTitle("Bayesian, MC and Data Spectra");
+  //  hgen_rebin->SetTitle("Bayesian, PY8 and Data Spectra");
   hgen_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hunf}),
@@ -1308,7 +1308,7 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   
   
   TCanvas* canv_spectra_unfratio=NULL;
-  //  hgen_rebin->SetTitle("Bayesian, MC and Data Spectra");
+  //  hgen_rebin->SetTitle("Bayesian, PY8 and Data Spectra");
   hgen_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legend_in1,
 		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hrec_rebin}),
@@ -1317,32 +1317,25 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   canvForPrint->Print(outPdfFile.c_str());      
   canvForPrint->Clear();
 
-  fout->cd();    
   
-  canv_spectra_genratio->Write("canv_spectra_genratio");
-  canv_spectra_recratio->Write("canv_spectra_recratio");
-  canv_spectra_unfratio->Write("canv_spectra_unfratio");
-
-
-
-  // combined plots, folded spectra + fakes, folded ratios
+  // combined plots, meas. spectra, folded spectra + fakes, ratios ----------------------------------------------
   TH1D* hfold_fakecorr       = (TH1D*)fout->Get("Data_foldfakcorr");//check
   hfold_fakecorr->SetMarkerStyle(kOpenCircle);
   hfold_fakecorr->SetMarkerColor(kGreen-5);
   hfold_fakecorr->SetLineColor(  kGreen-5);
   hfold_fakecorr->SetMarkerSize(1.02);
+  
+  TH1D* hfold_truth_fakecorr = (TH1D*)fout->Get("MC_truth_foldfakcorr");//check
+  hfold_truth_fakecorr->SetMarkerStyle(kOpenStar);
+  hfold_truth_fakecorr->SetMarkerColor(kGreen+3);
+  hfold_truth_fakecorr->SetLineColor(  kGreen+3);
+  hfold_truth_fakecorr->SetMarkerSize(1.02);     
 
   TH1D* h_foldratio_datafold = (TH1D*)fout->Get("ppData_Meas_Ratio_DataFoldpFakes");//check
   h_foldratio_datafold->SetMarkerStyle(kOpenCircle);
   h_foldratio_datafold->SetMarkerColor(kGreen-5);
   h_foldratio_datafold->SetLineColor(  kGreen-5);
   h_foldratio_datafold->SetMarkerSize(1.02);
-
-  TH1D* hfold_truth_fakecorr = (TH1D*)fout->Get("MC_truth_foldfakcorr");//check
-  hfold_truth_fakecorr->SetMarkerStyle(kOpenStar);
-  hfold_truth_fakecorr->SetMarkerColor(kGreen+3);
-  hfold_truth_fakecorr->SetLineColor(  kGreen+3);
-  hfold_truth_fakecorr->SetMarkerSize(1.02);     
 
   TH1D* h_foldratio_mcfold   = (TH1D*)fout->Get("ppData_Meas_Ratio_TruthFoldpFakes");//check
   h_foldratio_mcfold->SetMarkerStyle(kOpenStar);
@@ -1351,30 +1344,91 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   h_foldratio_mcfold->SetMarkerSize(1.02);     
 
   TLegend* legendfold2 = new TLegend( 0.7,0.7,0.9,0.9);
-  legendfold2->AddEntry(hfold_truth_fakecorr,"Fold(MC Truth) + Fakes",  "lp");
-  legendfold2->AddEntry(hrec_sameside_rebin, "MC Meas."  ,  "lp");
+  legendfold2->AddEntry(hfold_truth_fakecorr,"Fold(PY8 Truth) + Fakes",  "lp");
+  legendfold2->AddEntry(hrec_sameside_rebin, "PY8 Meas."  ,  "lp");
   legendfold2->AddEntry(hfold_fakecorr ,     "Fold(Data Unf.) + Fakes" , "lp");
   legendfold2->AddEntry(hrec_rebin, "Data Meas." , "lp");    
   legendfold2->SetFillStyle(0);
   legendfold2->SetBorderSize(0);    
   
   TCanvas* canv_spectra_foldratio=NULL;
-  setupSpectraHist(hfold_truth_fakecorr);
-  hfold_truth_fakecorr->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
+  //setupSpectraHist(hfold_truth_fakecorr);
+  //hfold_truth_fakecorr->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
+  setupSpectraHist(hrec_sameside_rebin);
+  hrec_sameside_rebin->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
   multiratioplot( canvForPrint, legendfold2,
-  		  ((std::vector<TH1D*>){hfold_truth_fakecorr, hrec_sameside_rebin, hfold_fakecorr,  hrec_rebin}),
+  		  ((std::vector<TH1D*>){hrec_sameside_rebin, hfold_truth_fakecorr,  hfold_fakecorr,  hrec_rebin}),
   		  ((std::vector<TH1D*>){h_foldratio_datafold, h_foldratio_mcfold}),
   		  "Ratio w/ Meas. ");
   canv_spectra_foldratio=(TCanvas*)canvForPrint->DrawClone();
   canvForPrint->Print(outPdfFile.c_str());       
   canvForPrint->Clear();
   
-  fout->cd();
-  canv_spectra_foldratio->Write("canv_spectra_foldratio");
+
+  
+  
+  // combined plots, meas spectra - fakes, folded spectra, ratios ----------------------------------------------
+  TH1D* hfold       = (TH1D*)fout->Get("Data_fold");//check
+  hfold->SetMarkerStyle(kOpenCircle);
+  hfold->SetMarkerColor(kGreen-5);
+  hfold->SetLineColor(  kGreen-5);
+  hfold->SetMarkerSize(1.02);
+
+  TH1D* hrec_rebin_fakecorr = (TH1D*)fout->Get("Data_measfakcorr");//check
+  hrec_rebin_fakecorr->SetMarkerStyle(kOpenCircle);
+  hrec_rebin_fakecorr->SetMarkerColor(kBlue);     
+  hrec_rebin_fakecorr->SetLineColor(kBlue);     
+  hrec_rebin_fakecorr->SetMarkerSize(1.02);     
+  
+  TH1D* hfold_truth = (TH1D*)fout->Get("MC_truth_fold");//check
+  hfold_truth->SetMarkerStyle(kOpenStar);
+  hfold_truth->SetMarkerColor(kGreen+3);
+  hfold_truth->SetLineColor(  kGreen+3);
+  hfold_truth->SetMarkerSize(1.02);     
+  
+  TH1D* hrec_sameside_rebin_fakecorr = (TH1D*)fout->Get("MC_measfakcorr");//check
+  hrec_sameside_rebin_fakecorr->SetMarkerStyle(kOpenSquare);
+  hrec_sameside_rebin_fakecorr->SetMarkerColor(kBlue-3);     
+  hrec_sameside_rebin_fakecorr->SetLineColor(kBlue-3);     
+  hrec_sameside_rebin_fakecorr->SetMarkerSize(1.02);       
+  
+  TH1D* h_recratio_oppfold = (TH1D*)fout->Get("ppData_MeasmFakes_Ratio_DataFold");//check
+  h_recratio_oppfold->SetMarkerStyle(kOpenCircle);
+  h_recratio_oppfold->SetMarkerColor(kGreen-5);
+  h_recratio_oppfold->SetLineColor(  kGreen-5);
+  h_recratio_oppfold->SetMarkerSize(1.02);
+  
+  TH1D* h_recratio_truthfold   = (TH1D*)fout->Get("ppData_MeasmFakes_Ratio_TruthFold");//check
+  h_recratio_truthfold->SetMarkerStyle(kOpenStar);
+  h_recratio_truthfold->SetMarkerColor(kGreen+3);
+  h_recratio_truthfold->SetLineColor(  kGreen+3);
+  h_recratio_truthfold->SetMarkerSize(1.02);     
+  
+  TLegend* legendfold = new TLegend( 0.7,0.7,0.9,0.9);
+  legendfold->AddEntry(hfold_truth,"Fold(PY8 Truth)",  "lp");
+  legendfold->AddEntry(hrec_sameside_rebin_fakecorr, "PY8 Meas. - Fakes"  ,  "lp");
+  legendfold->AddEntry(hfold ,     "Fold(Data Unf.)" , "lp");
+  legendfold->AddEntry(hrec_rebin_fakecorr, "Data Meas. - Fakes" , "lp");    
+  legendfold->SetFillStyle(0);
+  legendfold->SetBorderSize(0);    
+  
+  TCanvas* canv_spectra_foldratio2=NULL;
+  setupSpectraHist(hrec_sameside_rebin_fakecorr);
+  hrec_sameside_rebin_fakecorr->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
+  multiratioplot( canvForPrint, legendfold,
+  		  ((std::vector<TH1D*>){hrec_sameside_rebin_fakecorr, hfold_truth,  hfold,  hrec_rebin_fakecorr}),
+  		  ((std::vector<TH1D*>){h_recratio_oppfold, h_recratio_truthfold}),
+  		  "Ratio w/ (Meas. - Fakes) ");
+  canv_spectra_foldratio2=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Print(outPdfFile.c_str());       
+  canvForPrint->Clear();
   
 
+  
 
-
+  
+  
+  // thy spectra, ratios etc. ----------------------------------------------  
   TH1D* CT10nlo	 = (TH1D*)fout->Get("NLO_CT10_NLO_R04_jtpt")	 ;
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
@@ -1384,8 +1438,8 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   TH1D* NNPDFnnlo= (TH1D*)fout->Get("NLO_NNPDF_NLO_R04_jtpt")    ;
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6);  
- 
-  TLegend* legendThy1 =new TLegend( 0.5,0.7,0.9,0.9 );    
+  
+  TLegend* legendThy1 =new TLegend( 0.6,0.7,1.0,0.9 );    
   if(applyNPCorrs){
     legendThy1->AddEntry(CT10nlo  ,"CT10 NLO #otimes HERWIG EE4C","l");
     legendThy1->AddEntry(CT14nlo  ,"CT14 NLO #otimes HERWIG EE4C","l");
@@ -1395,7 +1449,7 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
     legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
     legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");   }  
   legendThy1->AddEntry(hunf,"Data Unf.","lp");
-  legendThy1->AddEntry(hgen_rebin,"MC Truth", "lp");
+  legendThy1->AddEntry(hgen_rebin,"PY8 Truth", "lp");
   legendThy1->SetFillStyle(0);
   legendThy1->SetBorderSize(0);    
 
@@ -1409,8 +1463,13 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
   canvForPrint->Print(outPdfFile.c_str()); 
   canvForPrint->Clear();
   
-  fout->cd();
-  canv_thy_spectra_1->Write("canv_thy_spectra_1");
+  fout->cd();  
+  canv_spectra_genratio->SetTitle("PY8 Truth Ratios Combined Canvas");	      canv_spectra_genratio->Write("combcanv_spectra_genratio");		  
+  canv_spectra_recratio->SetTitle("Data Meas Ratios Combined Canvas");	      canv_spectra_recratio->Write("combcanv_spectra_recratio");		  
+  canv_spectra_unfratio->SetTitle("Data Unf. Ratios Combined Canvas");	      canv_spectra_unfratio->Write("combcanv_spectra_unfratio");		  
+  canv_spectra_foldratio->SetTitle("Folding Test Add Fakes Ratios Combined Canvas");        canv_spectra_foldratio->Write("combcanv_spectra_pfakes_foldratio");    
+  canv_spectra_foldratio2->SetTitle("Folding Test Minus Fakes Ratios Combiend Canvas");	    canv_spectra_foldratio2->Write("combcanv_spectra_mfakes_foldratio");	  
+  canv_thy_spectra_1->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_1->Write("combcanv_thy_spectra");                 
   
   return;
 }

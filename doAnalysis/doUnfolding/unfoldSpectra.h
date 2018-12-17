@@ -1326,25 +1326,25 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
 
 
   // combined plots, folded spectra + fakes, folded ratios
-  TH1D* hfold_fakecorr       = (TH1D*)fout->Get("Data_foldfakcorr");
+  TH1D* hfold_fakecorr       = (TH1D*)fout->Get("Data_foldfakcorr");//check
   hfold_fakecorr->SetMarkerStyle(kOpenCircle);
   hfold_fakecorr->SetMarkerColor(kGreen-5);
   hfold_fakecorr->SetLineColor(  kGreen-5);
   hfold_fakecorr->SetMarkerSize(1.02);
 
-  TH1D* h_foldratio_datafold = (TH1D*)fout->Get("ratio_Data_fold_Data_measfakcorr");
+  TH1D* h_foldratio_datafold = (TH1D*)fout->Get("ppData_Meas_Ratio_DataFoldpFakes");//check
   h_foldratio_datafold->SetMarkerStyle(kOpenCircle);
   h_foldratio_datafold->SetMarkerColor(kGreen-5);
   h_foldratio_datafold->SetLineColor(  kGreen-5);
   h_foldratio_datafold->SetMarkerSize(1.02);
 
-  TH1D* hfold_truth_fakecorr = (TH1D*)fout->Get("MC_truth_foldfakcorr");
+  TH1D* hfold_truth_fakecorr = (TH1D*)fout->Get("MC_truth_foldfakcorr");//check
   hfold_truth_fakecorr->SetMarkerStyle(kOpenStar);
   hfold_truth_fakecorr->SetMarkerColor(kGreen+3);
   hfold_truth_fakecorr->SetLineColor(  kGreen+3);
   hfold_truth_fakecorr->SetMarkerSize(1.02);     
 
-  TH1D* h_foldratio_mcfold   = (TH1D*)fout->Get("ratio_MC_fold_MC_measfakcorr");
+  TH1D* h_foldratio_mcfold   = (TH1D*)fout->Get("ppData_Meas_Ratio_TruthFoldpFakes");//check
   h_foldratio_mcfold->SetMarkerStyle(kOpenStar);
   h_foldratio_mcfold->SetMarkerColor(kGreen+3);
   h_foldratio_mcfold->SetLineColor(  kGreen+3);

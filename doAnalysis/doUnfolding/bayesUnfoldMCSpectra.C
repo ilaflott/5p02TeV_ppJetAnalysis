@@ -448,8 +448,7 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   hfold->SetLineColor(  kGreen-5);
   hfold->SetMarkerSize(1.02);     
   
-  // SS UNFOLDING ----------
-  
+  // SS UNFOLDING ----------  
   std::cout<<"calling RooUnfoldBayes FOR SAME SIDE..."<<std::endl;
   RooUnfoldBayes unf_ss_bayes( &roo_resp, hrec_sameside_rebin, kIterInput );
   unf_ss_bayes.SetVerbose(verbosity);
@@ -469,9 +468,7 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   hunf_ss->SetMarkerStyle(kOpenSquare);
   hunf_ss->SetMarkerColor(kRed);
   hunf_ss->SetLineColor(kRed);
-  hunf_ss->SetMarkerSize(1.02);
-     
-  
+  hunf_ss->SetMarkerSize(1.02);       
 
   std::cout<<"folding unfolded same side MC histogram!!"<<std::endl;
   TH1D* hfold_ss=(TH1D*)roo_resp.ApplyToTruth(hunf_ss);          

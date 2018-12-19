@@ -6,12 +6,12 @@ dataHLTPF=1
 dataHLTCalo=0
 
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
 #doMCUnfolding
-doLOMCUnfolding=0
+doLOMCUnfolding=1
 LOMCBayeskIter=6
 LOMCSVDkReg=10
 
@@ -20,7 +20,7 @@ NLOMCBayeskIter=6
 NLOMCSVDkReg=10
 
 #doDataUnfolding
-doDataUnfoldingwLO=1
+doDataUnfoldingwLO=0
 dataLOBayeskIter=6
 dataLOSVDkReg=10
 
@@ -308,7 +308,8 @@ then
     fi
     if [[ $doLOMCUnfolding -eq 1 ]]
     then
-	rooUnfoldCompile bayesUnfoldMCSpectra.C
+#	rooUnfoldCompile bayesUnfoldMCSpectra.C
+	rooUnfoldCompile bayesUnfoldMCSpectra_v2.C
     fi
     if [[ $doNLOMCUnfolding -eq 1 ]]
     then

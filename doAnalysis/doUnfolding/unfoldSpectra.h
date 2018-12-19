@@ -909,20 +909,28 @@ void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput)
   di_sv_canv->cd(1);
   di_sv_canv->cd(1)->SetLogy();  
   
-  hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
+  //hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()-1),"X");
+  //hSVal->SetAxisRange(1.,(double)(hSVal->GetNbinsX()),"X");
   hSVal->SetTitle("Singular Values (AC^{-1})");        
   hSVal->SetXTitle("index i");        
   hSVal->SetYTitle("s_{i}");        
   hSVal->DrawClone("HIST E");
   
-  double tau=hSVal->GetBinContent(kRegInput+1)*hSVal->GetBinContent(kRegInput+1);
-  printf("(orig)tau=%f\n",tau);
-  tau*=100.;
-  printf("tau=%f\n",tau);
-  tau=(int)tau;
-  printf("tau=%f\n",tau);
-  tau/=100;
-  printf("tau=%f\n",tau);
+  //double tau=hSVal->GetBinContent(kRegInput+1)*hSVal->GetBinContent(kRegInput+1);
+  double tau=hSVal->GetBinContent(kRegInput)*hSVal->GetBinContent(kRegInput);
+  std::cout<<"hSVal->GetBinContent("<<kRegInput<<")="<<hSVal->GetBinContent(kRegInput)<<std::endl;
+  std::cout<<"tau                     ="<<tau<<std::endl;
+  
+  if(funcDebug){
+    printf("(orig)tau=%f\n",tau);
+    tau*=100.;
+    printf("tau=%f\n",tau);
+    tau=(int)tau;
+    printf("tau=%f\n",tau);
+    tau/=100;
+    printf("tau=%f\n",tau);
+    std::cout<<std::endl;
+  }
   
   float x=0.550173, y=0.8459761;
   drawText( "5.02 TeV ak4PFJets",                                 x, y, 19);y-=0.03;
@@ -935,7 +943,8 @@ void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput)
   di_sv_canv->cd(2);
   di_sv_canv->cd(2)->SetLogy(1);    
   
-  hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
+  //hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()-1),"X");
+  //hdi->SetAxisRange(1.,(double)(hdi->GetNbinsX()),"X");
   hdi->SetTitle("Divector Values (#||{d_{i}}) ");
   hdi->SetXTitle("index i");
   hdi->SetYTitle("#||{d_{i}}");
@@ -951,15 +960,18 @@ void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput)
   di_sv_canv->cd(2);      
   hdi->DrawClone("HIST E"); 
   
-  double xcoord= ( ((double)kRegInput) + 1. );	
-  std::cout<<"ymax="<<ymax<<std::endl;
-  std::cout<<"ymin="<<ymin<<std::endl;
-
-  std::cout<<"kRegInput="<<kRegInput<<std::endl;
-  std::cout<<"((double)kRegInput) + 1. = "<< (((double)kRegInput) + 1.) <<std::endl;
-  std::cout<<"xcoord="<<xcoord<<std::endl;
+  double xcoord= ( ((double)kRegInput) - 0.5);	
+  if(funcDebug){std::cout<<"ymax="<<ymax<<std::endl;
+    std::cout<<"ymin="<<ymin<<std::endl;
+  std::cout<<std::endl;
   
-  TLine* theLineAtOne_hdi=new TLine(1., 1., (double)(hdi->GetNbinsX()), 1.);
+  std::cout<<"hdi->GetNbinsX()="<<hdi->GetNbinsX()<<std::endl;
+  std::cout<<"kRegInput="<<kRegInput<<std::endl;
+  //std::cout<<"((double)kRegInput) = "<< (((double)kRegInput)) <<std::endl;
+  std::cout<<"xcoord="<<xcoord<<std::endl;
+  }
+  
+  TLine* theLineAtOne_hdi=new TLine(0., 1., (double)(hdi->GetNbinsX()), 1.);
   theLineAtOne_hdi->SetLineWidth(1);
   theLineAtOne_hdi->SetLineStyle(2);
   theLineAtOne_hdi->SetLineColor(36);
@@ -983,18 +995,23 @@ void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput)
   float hdi_insignif_mean=0;
   int insignif_count=0;
   for(int k=1; k<= (hdi->GetNbinsX());k++){
+    if(funcDebug){
+      std::cout<<"k="<<k<<std::endl;
+      std::cout<<"x range is; "<<hdi->GetBinLowEdge(k)<<" to "<< hdi->GetBinLowEdge(k)+1<<std::endl;
+      std::cout<<"hdi->GetBinContent("<<k<<")="<<hdi->GetBinContent(k)<<std::endl;
+      std::cout<<"hSVal->GetBinContent("<<k<<")="<<hSVal->GetBinContent(k)<<std::endl;    }
     int lowedge = (int)hdi->GetBinLowEdge(k);
     if(lowedge<1){
-      std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
+      if(funcDebug)std::cout<<"k="<<k<<", GARBAGE!!!! SKIP!!!"<<std::endl;
       continue;
     }
     else if(lowedge>=1 && lowedge <= kRegInput){
-      std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
+      if(funcDebug)std::cout<<"k="<<k<<", SIGNIFICANT!!!!"<<std::endl;
       signif_count++;
       hdi_signif_mean+=hdi->GetBinContent(k);
     }
     else{
-      std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
+      if(funcDebug)std::cout<<"k="<<k<<", INSIGNIFICANT!!!!"<<std::endl;
       insignif_count++;
       hdi_insignif_mean+=hdi->GetBinContent(k);
     }

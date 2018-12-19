@@ -437,6 +437,8 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
     unf_svd.SetVerbose(1);
   }
   std::cout<<"RooUnfoldSvd Overflow Status: " << unf_svd.Overflow()<<std::endl;
+  //  std::cout<<"RooUnfoldSvd Reg Param = " << unf_svd.GetRegParm()<<std::endl;
+  std::cout<<"unf_svd.GetRegParm() = " << unf_svd.GetRegParm()<<std::endl;
   
   TH1D *hunf = (TH1D*)unf_svd.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_SVDUnf_Spectra");

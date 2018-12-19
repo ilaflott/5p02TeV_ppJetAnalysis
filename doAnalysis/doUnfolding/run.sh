@@ -328,8 +328,7 @@ then
     fi
     if [[ $doLOMCUnfolding -eq 1 ]]
     then
-	#rooUnfoldCompile SVDUnfoldMCSpectra.C
-	rooUnfoldCompile SVDUnfoldMCSpectra_v2.C
+	rooUnfoldCompile SVDUnfoldMCSpectra.C
     fi
     if [[ $doNLOMCUnfolding -eq 1 ]]
     then

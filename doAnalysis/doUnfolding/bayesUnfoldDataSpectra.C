@@ -5,6 +5,8 @@ const bool drawPDFs=true;
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
+const bool applyNPCorrs=true; 
+
 
 // CODE --------------------------------------------------
 int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir   , std::string baseName , 
@@ -316,8 +318,6 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
 
   // thy spectra  
-  bool applyNPCorrs=true; 
-
   std::string CT10NPs="" ; 
   std::string CT14NPs="" ; 
   std::string HERANPs="" ; 
@@ -783,7 +783,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
   
   //TCanvas pointers for writing canvs to file
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
-  TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_fold_ratio2=NULL, *canv_thy_ratio=NULL; 
+  TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_fold_ratio2=NULL, *canv_thy_ratio=NULL,*canv_thy_ratio2=NULL; 
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
   TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kIterRatio;
   TCanvas *canv_3x3covmat=NULL, *canv_3x3covmatabsval=NULL, *canv_3x3pearson=NULL;
@@ -1103,8 +1103,6 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     
     setupRatioHist(h_thyratio_CT10nlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_CT14nlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    setupRatioHist(h_thyratio_HERAPDF , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    setupRatioHist(h_thyratio_MMHTnlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
@@ -1115,16 +1113,12 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 
     h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
     h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
-    //h_thyratio_HERAPDF ->DrawClone( "][HIST E SAME"); 
-    //h_thyratio_MMHTnlo ->DrawClone( "][HIST E SAME"); 
     h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
     h_thyratio_mctruth->DrawClone("P E SAME");     
     
     TLegend* legendthyrat = new TLegend( 0.1,0.7,0.5,0.9 );
     legendthyrat->AddEntry(h_thyratio_CT10nlo ,    ("CT10 PDF NLO"    +CT10NPs).c_str(),    "l");
     legendthyrat->AddEntry(h_thyratio_CT14nlo ,    ("CT14 PDF NLO"    +CT14NPs).c_str(),    "l"); 
-    //legendthyrat->AddEntry(h_thyratio_HERAPDF ,  ("HERAPDF 2015 NLO"+HERANPs).c_str(), "l");
-    //legendthyrat->AddEntry(h_thyratio_MMHTnlo ,  ("MMHT 2014 NLO"   +MMHTNPs).c_str(),    "l");
     legendthyrat->AddEntry(h_thyratio_NNPDFnnlo,   ("NNPDF NNLO"      +NNPDFNPs).c_str(),       "l");
     legendthyrat->AddEntry(h_thyratio_mctruth, "PY8 Truth",       "lp");    
     legendthyrat->SetBorderSize(0);
@@ -1137,6 +1131,39 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     theLineAt1p1->Draw();
     
     canv_thy_ratio=(TCanvas*)canvForPrint->DrawClone();
+    canvForPrint->Print(outPdfFile.c_str());
+    
+    // thy ratios w hunf------------    
+    canvForPrint->cd();
+    if(!useSimpBins)canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(0);
+    
+    setupRatioHist(h_thyratio_HERAPDF , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    setupRatioHist(h_thyratio_MMHTnlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    
+    if(applyNPCorrs) h_thyratio_HERAPDF->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+    else h_thyratio_HERAPDF->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+    
+    h_thyratio_HERAPDF->GetYaxis()->SetTitle("Thy / Unf. Data");
+    
+    h_thyratio_HERAPDF ->DrawClone( "][HIST E"); 
+    h_thyratio_MMHTnlo ->DrawClone( "][HIST E SAME"); 
+    h_thyratio_mctruth->DrawClone("P E SAME");     
+    
+    TLegend* legendthyrat2 = new TLegend( 0.1,0.7,0.5,0.9 );
+    legendthyrat2->AddEntry(h_thyratio_HERAPDF ,  ("HERAPDF 2015 NLO"+HERANPs).c_str(), "l");
+    legendthyrat2->AddEntry(h_thyratio_MMHTnlo ,  ("MMHT 2014 NLO"   +MMHTNPs).c_str(),    "l");
+    legendthyrat2->AddEntry(h_thyratio_mctruth, "PY8 Truth",       "lp");    
+    legendthyrat2->SetBorderSize(0);
+    legendthyrat2->SetFillStyle(0);
+    legendthyrat2->Draw();
+    drawTLatex( 0.50, 0.84, 0.035, canvForPrint, desclines);    
+    
+    theLineAtp9 ->Draw();
+    theLineAtOne->Draw();
+    theLineAt1p1->Draw();
+    
+    canv_thy_ratio2=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
     
     
@@ -1489,6 +1516,7 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
     canv_fold_ratio       ->SetTitle("Fold Test Ratios Canvas");  canv_fold_ratio         ->Write("canv_fold_ratio");
     canv_fold_ratio2       ->SetTitle("Fold Test Ratios v2 Canvas");  canv_fold_ratio2         ->Write("canv_fold_ratio2");
     canv_thy_ratio        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio          ->Write("canv_thy_ratio");                                
+    canv_thy_ratio2        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio2          ->Write("canv_thy_ratio2");                                
     
     canv_covmat           ->SetTitle("Covariance Matrix Canvas");           canv_covmat        ->Write("canv_covmat");
     canv_absval_covmat    ->SetTitle("Abs Val. Covariance Matrix Canvas");  canv_absval_covmat ->Write("canv_covmatabsval");

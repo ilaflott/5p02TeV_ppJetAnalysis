@@ -4,7 +4,6 @@
 if [ $# -eq 10 ]
 then
     datadirTag=$1
-#    MCdirTag=$2
     MM=$2
     DD=$3
     YY=$4

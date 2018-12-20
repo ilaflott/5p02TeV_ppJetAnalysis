@@ -307,8 +307,7 @@ then
     fi
     if [[ $doDataUnfoldingwNLO -eq 1 ]]
     then
-#	rooUnfoldCompile bayesUnfoldDataSpectra_wNLO.C
-	rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_v2.C
+	rooUnfoldCompile bayesUnfoldDataSpectra_wNLO.C
     fi
     if [[ $doLOMCUnfolding -eq 1 ]]
     then

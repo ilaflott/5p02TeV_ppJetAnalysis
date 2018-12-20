@@ -12,16 +12,12 @@ then
     data_condorDir=$2
     data_date=$3
     dataetaBin=$4
-#    MC_condorDir=$5
-#    MC_date=$6
-#    MCetaBin=$7
-    etaBinOut=$5 #$8
-    useSimpleBinning=$6 #$9
-    BayeskIter=$7 #${10}
+    etaBinOut=$5 
+    useSimpleBinning=$6 
+    BayeskIter=$7 
     useNPCorr=$8
 else
     echo "usage:"
-#    echo "source run_bayesUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [useSimpleBinning] [BayeskIter]"
     echo "source run_bayesUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [datadirTag] [etaBinOut] [useSimpleBinning] [BayeskIter] [useNPCorr]"
     return
 fi
@@ -57,8 +53,7 @@ echo ""
 
 #### ./bayesUnfoldDataSpectra_wNLO.exe  <targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>
 #./bayesUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} ${NLOFileDir} /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_ptmax686_gaussSmear_00eta20.root unf_HPtJetTrig_spl3wgts_ptmax686_${etaBinOut}_NNPDF30nnlo  ${useNPCorr} ${jtID} ${useSimpleBinning} ${BayeskIter}
-echo "./bayesUnfoldDataSpectra_wNLO_v2.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} ${NLOFileDir} /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_ptmax686_gaussSmear_00eta20.root unf_HPtJetTrig_spl3wgts_ptmax686_${etaBinOut}_NNPDF30nnlo  ${useNPCorr} ${jtID} ${useSimpleBinning} ${BayeskIter}"
-./bayesUnfoldDataSpectra_wNLO_v2.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} ${NLOFileDir} /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_ptmax686_gaussSmear_00eta20.root unf_HPtJetTrig_spl3wgts_ptmax686_${etaBinOut}_NNPDF30nnlo  ${useNPCorr} ${jtID} ${useSimpleBinning} ${BayeskIter}
+./bayesUnfoldDataSpectra_wNLO.exe ${data_condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${data_date}_jetPlots_${dataetaBin} ${NLOFileDir} /fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC_spl3wgts_ptmax686_gaussSmear_00eta20.root unf_HPtJetTrig_spl3wgts_ptmax686_${etaBinOut}_NNPDF30nnlo  ${useNPCorr} ${jtID} ${useSimpleBinning} ${BayeskIter}
 return
 
 

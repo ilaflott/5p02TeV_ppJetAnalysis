@@ -1611,7 +1611,6 @@ int SVDUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_di
   
   // canvases ----------------
   if(drawPDFs){
-    //di_sv_canv->SetTitle("")
     di_sv_canv->Write("di_sv_canv");
     canv_spectra          ->SetTitle("I/O Spectra Canvas");        canv_spectra           ->Write("canv_spectra");
     canv_mc_fakes_spectra ->SetTitle("PY8 Fakes Spectra Canvas");   canv_mc_fakes_spectra  ->Write("canv_mc_fakes_spectra");

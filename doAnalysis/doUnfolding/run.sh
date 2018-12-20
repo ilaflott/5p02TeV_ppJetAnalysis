@@ -4,8 +4,8 @@
 #Data and SVD Unfolding settings
 dataHLTPF=1
 dataHLTCalo=0
-doBayes=1
-doSVD=0
+doBayes=0
+doSVD=1
 useSimpBins=0
 makeRooUnf=0
 
@@ -13,22 +13,22 @@ makeRooUnf=0
 #MC
 doLOMCUnfolding=0
 LOMCBayeskIter=6
-LOMCSVDkReg=5
+LOMCSVDkReg=6
 #Data
 doDataUnfoldingwLO=0
 dataLOBayeskIter=6
-dataLOSVDkReg=5
+dataLOSVDkReg=6
 
 ###NLO Unf###
 useNPCorr=1
 #MC
 doNLOMCUnfolding=0
 NLOMCBayeskIter=6
-NLOMCSVDkReg=5
+NLOMCSVDkReg=6
 #Data
 doDataUnfoldingwNLO=1
 dataNLOBayeskIter=6
-dataNLOSVDkReg=5
+dataNLOSVDkReg=6
 
 
 

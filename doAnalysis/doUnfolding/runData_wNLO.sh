@@ -34,10 +34,6 @@ then
     echo "kIter=${BayeskIter}"
     echo ""
     
-    #"source run_bayesUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [useSimpleBinning] [kIter]"        
-    #source run_bayesUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "Bayes_${condorDate}" "${simpbins}" "${BayeskIter}"
-    
-    #"source run_bayesUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [datadirTag] [etaBinOut] [useSimpleBinning] [BayeskIter] [useNPCorr]"
     source run_bayesUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "Bayes_${condorDate}" "${simpbins}" "${BayeskIter}" "${useNPCorr}"
     
     echo ""
@@ -50,10 +46,8 @@ fi
 if [ $runSVD -eq 1 ]
 then
     
-    echo "kReg=${SVDkReg}"
-    
-# "source run_SVDUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [dataEtaBin] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [kReg] [useSimpleBinning]"        
-    source run_SVDUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "SVD_${condorDate}_${MCdirTag}" "${SVDkReg}" "${simpbins}" 
+    echo "kReg=${SVDkReg}"    
+    source run_SVDUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "SVD_${condorDate}" "${SVDkReg}" "${simpbins}" "${useNPCorr}"
     
     
     echo ""

@@ -4,28 +4,30 @@
 #Data and SVD Unfolding settings
 dataHLTPF=1
 dataHLTCalo=0
-
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
-#doMCUnfolding
-doLOMCUnfolding=1
+###LO Unf ###
+#MC
+doLOMCUnfolding=0
 LOMCBayeskIter=6
 LOMCSVDkReg=5
-
-doNLOMCUnfolding=0
-NLOMCBayeskIter=6
-NLOMCSVDkReg=5
-
-#doDataUnfolding
-doDataUnfoldingwLO=1
+#Data
+doDataUnfoldingwLO=0
 dataLOBayeskIter=6
 dataLOSVDkReg=5
 
-doDataUnfoldingwNLO=0
-dataNLOBayeskIter=8
+###NLO Unf###
+useNPCorr=1
+#MC
+doNLOMCUnfolding=0
+NLOMCBayeskIter=6
+NLOMCSVDkReg=5
+#Data
+doDataUnfoldingwNLO=1
+dataNLOBayeskIter=6
 dataNLOSVDkReg=5
 
 
@@ -99,7 +101,8 @@ function unfoldData(){
 	if [[ doDataUnfoldingwNLO -eq 1 ]]
 	then
 	    #source runData_wNLO.sh "0.0eta2.0_L2L3recoJetID_HLTPF"  "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg $dataNLOBayeskIter
-	    source runData_wNLO.sh "0.0eta2.0_trgPtNoRes"  "0.0eta2.0_unf" "11" "14" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg $dataNLOBayeskIter
+	    #source runData_wNLO.sh "0.0eta2.0_trgPtNoRes"  "0.0eta2.0_unf" "11" "14" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg $dataNLOBayeskIter
+	    source runData_wNLO.sh "0.0eta2.0_trgPtNoRes"  "11" "14" "18"   $useSimpBins $doBayes $doSVD $dataNLOSVDkReg $dataNLOBayeskIter $useNPCorr
 	fi
 	
 	#echo ""
@@ -304,7 +307,8 @@ then
     fi
     if [[ $doDataUnfoldingwNLO -eq 1 ]]
     then
-	rooUnfoldCompile bayesUnfoldDataSpectra_wNLO.C
+#	rooUnfoldCompile bayesUnfoldDataSpectra_wNLO.C
+	rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_v2.C
     fi
     if [[ $doLOMCUnfolding -eq 1 ]]
     then

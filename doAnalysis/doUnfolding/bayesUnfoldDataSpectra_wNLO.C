@@ -5,12 +5,10 @@ const bool drawPDFs=true;
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
-//const bool useNPCorrSpectra=false;
-//const int verbosity=0;
 
 // CODE --------------------------------------------------
 int bayesUnfoldDataSpectra_wNLO( std::string inFile_Data_dir , std::string inFile_MC_dir   , std::string inFile_MC_name   , 
-			    std::string baseName , 
+				 std::string baseName , 
 				 const bool useNPCorrSpectra=false, const bool doJetID=true     , const bool useSimpBins=false, const int kIterInput=4 ){
   
   // BINNING -----------  

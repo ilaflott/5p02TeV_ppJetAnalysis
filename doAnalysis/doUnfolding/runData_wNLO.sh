@@ -4,18 +4,19 @@
 if [ $# -eq 10 ]
 then
     datadirTag=$1
-    MCdirTag=$2
-    MM=$3
-    DD=$4
-    YY=$5
-    simpbins=$6
-    runBayes=$7
-    runSVD=$8
-    SVDkReg=$9
-    BayeskIter=${10}
+#    MCdirTag=$2
+    MM=$2
+    DD=$3
+    YY=$4
+    simpbins=$5
+    runBayes=$6
+    runSVD=$7
+    SVDkReg=$8
+    BayeskIter=$9
+    useNPCorr=${10}
 else
     echo "usage:"
-    echo "source runData_wNLO.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg] [BayeskIter]"
+    echo "source runData_wNLO.sh [datadirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg] [BayeskIter] [useNPCorr]"
     return
 fi
 
@@ -29,13 +30,16 @@ sampleDate="${MM}-${DD}-${YY}"
 if [ $runBayes -eq 1 ]
 then
     
-
+    
     echo ""
     echo "kIter=${BayeskIter}"
     echo ""
-
+    
     #"source run_bayesUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [MCCondorDir] [MC_date] [MCetaBin] [etaBinOut] [useSimpleBinning] [kIter]"        
-    source run_bayesUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "Bayes_${condorDate}" "${simpbins}" "${BayeskIter}"
+    #source run_bayesUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "Bayes_${condorDate}" "${simpbins}" "${BayeskIter}"
+    
+    #"source run_bayesUnfoldDataSpectra_wNLO.sh [R=3,4] [dataCondorDir] [data_date] [datadirTag] [etaBinOut] [useSimpleBinning] [BayeskIter] [useNPCorr]"
+    source run_bayesUnfoldDataSpectra_wNLO.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "Bayes_${condorDate}" "${simpbins}" "${BayeskIter}" "${useNPCorr}"
     
     echo ""
     echo "Bayes Data Unfolding Done."

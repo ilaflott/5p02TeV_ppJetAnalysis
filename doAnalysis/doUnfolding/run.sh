@@ -4,8 +4,8 @@
 #Data and SVD Unfolding settings
 dataHLTPF=1
 dataHLTCalo=0
-doBayes=0
-doSVD=1
+doBayes=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
 
@@ -22,11 +22,11 @@ dataLOSVDkReg=6
 ###NLO Unf###
 useNPCorr=1
 #MC
-doNLOMCUnfolding=0
+doNLOMCUnfolding=1
 NLOMCBayeskIter=6
 NLOMCSVDkReg=6
 #Data
-doDataUnfoldingwNLO=1
+doDataUnfoldingwNLO=0
 dataNLOBayeskIter=6
 dataNLOSVDkReg=6
 
@@ -233,7 +233,7 @@ function unfoldMC(){
     if [[ doNLOMCUnfolding -eq 1 ]]
     then
 	#source runNLOMC.sh   "0.0eta2.0_gendr0p1_recoJetID" "07" "02" "18" $useSimpBins $doBayes $doSVD $NLOMCSVDkReg $NLOMCBayeskIter
-	source runNLOMC.sh   "0.0eta2.0_unf" "11" "14" "18" $useSimpBins $doBayes $doSVD $NLOMCSVDkReg $NLOMCBayeskIter
+	source runNLOMC.sh   "0.0eta2.0_unf" "11" "14" "18" $useSimpBins $doBayes $doSVD $NLOMCSVDkReg $NLOMCBayeskIter $useNPCorr
     fi
 
 
@@ -315,7 +315,8 @@ then
     fi
     if [[ $doNLOMCUnfolding -eq 1 ]]
     then
-	rooUnfoldCompile bayesUnfoldNLOMCSpectra.C
+#	rooUnfoldCompile bayesUnfoldNLOMCSpectra.C
+	rooUnfoldCompile bayesUnfoldNLOMCSpectra_v2.C
     fi
 fi
 

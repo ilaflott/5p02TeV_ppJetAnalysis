@@ -8,7 +8,7 @@ const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 
 const bool fillDataDijetHists=false;
-const bool fillDataJetSpectraRapHists=false; //other
+const bool fillDataJetSpectraRapHists=true; //other
 const bool useHLT100=false;
 const bool ResCorrTrigPtIfApp=false;
 const int jetIDint=(int)fillDataJetIDHists;

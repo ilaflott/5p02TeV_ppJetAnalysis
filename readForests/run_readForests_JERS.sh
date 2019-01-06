@@ -20,7 +20,8 @@ echo ""
 
 #source condorSubmit_readForests.sh     <readForestsCode>  <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug> [<etaCutLo> <etaCutHi>]
 #source  condorSubmit_readForests.sh readForests_ppMC_JERS -1 80 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
-source  condorSubmit_readForests.sh readForests_ppMC_JERS -1 120 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_JERS -1 120 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+source  condorSubmit_readForests.sh readForests_ppMC_JERS 1 120 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
 
 echo ""
 echo "done submitting JERS job(s)"

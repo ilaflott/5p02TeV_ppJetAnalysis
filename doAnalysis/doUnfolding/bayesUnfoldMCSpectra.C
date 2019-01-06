@@ -401,7 +401,7 @@ int bayesUnfoldMCSpectra(  std::string inFile_MC_dir , std::string baseName ,
   hfold_truth->SetMarkerSize(1.02);     
   
 
-    // SS UNFOLDING ----------  
+  // SS UNFOLDING ----------  
   std::cout<<"calling RooUnfoldBayes FOR SAME SIDE..."<<std::endl;
   RooUnfoldBayes unf_ss_bayes( &roo_resp, hrec_sameside_rebin, kIterInput );
   unf_ss_bayes.SetVerbose(verbosity);

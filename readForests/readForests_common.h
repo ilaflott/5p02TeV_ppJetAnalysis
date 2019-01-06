@@ -138,8 +138,10 @@ const std::string Calo_HLTBitStrings[]={
 const double HLTPFthresh[]={
   //55., 75., 95., 135.  //95 GeV as min/max for HLT80/60 too low
   55., 75., 105., 135.   //55/75/105 is john's suggestion; i feel that 75 as min/max for HLT60/40 might be slightly too low. 
-  //55., 80., 110., 135.   //TODO/TRY
-  //55., 85., 110., 135.   //TODO/TRY
+  //55., 80., 105., 135.   //TODO/TRY 1
+  //55., 85., 105., 135.   //TODO/TRY 2
+  //55., 80., 110., 135.   //TODO/TRY 3
+  //55., 85., 110., 135.   //TODO/TRY 4
 };
 const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",

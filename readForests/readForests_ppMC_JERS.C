@@ -5,7 +5,8 @@
 const bool fillMCEvtQAHists=true;
 const bool fillJERSHists=false;
 const bool fillMCUnfoldingHists=true;
-const bool fillMCEffHists=true;
+const bool fillMCUnfJetSpectraRapHists=true;
+const bool fillMCEffHists=false;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 //// readForests_ppMC_JERS
@@ -160,15 +161,25 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   TH1D *hpp_gen[2]={};    
   TH1D *hpp_reco[2]={}; 
   TH2D *hpp_matrix[2]={}; 
-
+  
   //to test MC sample consistency in unfolding
   TH1D *hpp_mcclosure_gen[2]={};      //the first three are for the "truth" response matrix
   TH1D *hpp_mcclosure_reco[2]={};         
   TH2D *hpp_mcclosure_matrix[2]={};       
   
-  //TH1D *hpp_mcclosure_gen_test[2]={};   //set of MC "data" to test "truth" response matrix on 
   TH1D *hpp_mcclosure_reco_test[2]={};   
-  //TH2D *hpp_mcclosure_matrix_test[2]={};       
+
+  //to unfold ppData 
+  TH1D *hpp_gen_rap[2][7]={};    
+  TH1D *hpp_reco_rap[2][7]={}; 
+  TH2D *hpp_matrix_rap[2][7]={}; 
+
+  //to test MC sample consistency in unfolding
+  TH1D *hpp_mcclosure_gen_rap[2][7]={};      //the first three are for the "truth" response matrix
+  TH1D *hpp_mcclosure_reco_rap[2][7]={};         
+  TH2D *hpp_mcclosure_matrix_rap[2][7]={};       
+  
+  TH1D *hpp_mcclosure_reco_test_rap[2][7]={};   
   
   if(fillMCUnfoldingHists){
     
@@ -188,28 +199,52 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if(jtID==1)hTitle+="_wJetID";
 	hTitle+="_R"+std::to_string(radius)+"_"+etaWidth;      
 	
-	if(hUnfTitleArray[k]=="gen")	
+	if(hUnfTitleArray[k]=="gen")	{
 	  hpp_gen[jtID]    = new TH1D( hTitle.c_str(), "MC genpt for unf data", 2500,0,2500);
-	else if(hUnfTitleArray[k]=="reco")	
+	  if(fillMCUnfJetSpectraRapHists)
+	    for(int j=0;j<7;j++)
+	      hpp_gen_rap[jtID][j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);
+	}
+	else if(hUnfTitleArray[k]=="reco")	{	  
 	  hpp_reco[jtID]    = new TH1D( hTitle.c_str(), "MC recopt for unf data", 2500,0,2500);
-	else if(hUnfTitleArray[k]=="matrix")	
+	  if(fillMCUnfJetSpectraRapHists)
+	    for(int j=0;j<7;j++)
+	      hpp_reco_rap[jtID][j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), ("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);  	  
+	}
+	else if(hUnfTitleArray[k]=="matrix")	{
 	  hpp_matrix[jtID]    = new TH2D( hTitle.c_str(), "MC gentpt v. recopt for unf data", 2500, 0,2500, 2500, 0,2500);
-	else if(hUnfTitleArray[k]=="mcclosure_gen")	
+	  if(fillMCUnfJetSpectraRapHists)
+	    for(int j=0;j<7;j++)
+	      hpp_matrix_rap[jtID][j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	}
+	else if(hUnfTitleArray[k]=="mcclosure_gen") {
 	  hpp_mcclosure_gen[jtID]    = new TH1D( hTitle.c_str(), "genpt for mcclosure same side", 2500,0,2500);
-	else if(hUnfTitleArray[k]=="mcclosure_reco")	
+	  if(fillMCUnfJetSpectraRapHists)
+	    for(int j=0;j<7;j++)
+	      hpp_mcclosure_gen_rap[jtID][j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), ("MC gen pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);
+	}
+	else if(hUnfTitleArray[k]=="mcclosure_reco")	{
 	  hpp_mcclosure_reco[jtID]    = new TH1D( hTitle.c_str(), "recopt for mcclosure same side", 2500,0,2500);
-	else if(hUnfTitleArray[k]=="mcclosure_matrix")	
+	  if(fillMCUnfJetSpectraRapHists)
+	    for(int j=0;j<7;j++)
+	      hpp_mcclosure_reco_rap[jtID][j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), ("MC reco pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);   
+	}
+	else if(hUnfTitleArray[k]=="mcclosure_matrix")	{
 	  hpp_mcclosure_matrix[jtID]    = new TH2D( hTitle.c_str(), "genpt v. recopt for mcclosure same side", 2500, 0,2500, 2500, 0,2500);
-	//	else if(hUnfTitleArray[k]=="mcclosure_gen_test")	
-	//	  hpp_mcclosure_gen_test[jtID]    = new TH1D( hTitle.c_str(), "genpt for mcclosure opp side test", 2500,0,2500);
-	else if(hUnfTitleArray[k]=="mcclosure_reco_test")	
+	  if(fillMCUnfJetSpectraRapHists)
+	    for(int j=0;j<7;j++)
+	      hpp_mcclosure_matrix_rap[jtID][j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), ("MC genpt v. recopt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	}
+	else if(hUnfTitleArray[k]=="mcclosure_reco_test")	{
 	  hpp_mcclosure_reco_test[jtID]    = new TH1D( hTitle.c_str(), "recopt for mcclosure opp side test", 2500,0,2500);
-	//	else if(hUnfTitleArray[k]=="mcclosure_matrix_test")	
-	//	  hpp_mcclosure_matrix_test[jtID]    = new TH2D( hTitle.c_str(), "genpt v. recopt for mcclosure opp side test", 2500, 0,2500, 2500, 0,2500);
+	  if(fillMCUnfJetSpectraRapHists)
+	    for(int j=0;j<7;j++)
+	      hpp_mcclosure_reco_test_rap[jtID][j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), ("MC reco pt for mcclosure opp side test bin"+std::to_string(j)).c_str(), 2500,0,2500);   
+	}
 	else continue;
-      }
-    }  
-  }
+      }//end loop over unf titles
+    }//end jet id 
+  }//end fill mc unfolding hists
   
   
   /////   GEN/RECO MATCHING   ///// 
@@ -741,8 +776,34 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	    hpp_mcclosure_gen[jetID]->Fill(genpt, weight_eS);
 	    hpp_mcclosure_reco[jetID]->Fill(recpt, weight_eS); 	
 	    hpp_mcclosure_matrix[jetID]->Fill(recpt, genpt, weight_eS);}	  
-	}      
-      }
+
+	  //fill jetspectraRapHists w/ passing jetID criterion
+	  if( fillMCUnfJetSpectraRapHists ) { 
+	    int theRapBin=-1;
+	    for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
+	      if( absetabins[rapbin]<=absreceta  && 
+		  absreceta<absetabins[rapbin+1]          ) {    
+		theRapBin=rapbin;
+
+		hpp_gen_rap[jetID][theRapBin]->Fill(genpt,weight_eS);
+		hpp_reco_rap[jetID][theRapBin]->Fill(recpt,weight_eS);
+                hpp_matrix_rap[jetID][theRapBin]->Fill(recpt, genpt, weight_eS);
+		if(mcclosureInt%2 == 0){
+		  //hpp_mcclosure_gen_test[jetID]->Fill(genpt, weight_eS);      	  
+		  hpp_mcclosure_reco_test_rap[jetID][theRapBin]->Fill(recpt, weight_eS);      
+		  //hpp_mcclosure_matrix_test[jetID]->Fill(recpt, genpt, weight_eS);	  
+		}
+		else {
+		  hpp_mcclosure_gen_rap[jetID][theRapBin]->Fill(genpt, weight_eS);
+		  hpp_mcclosure_reco_rap[jetID][theRapBin]->Fill(recpt, weight_eS); 	
+		  hpp_mcclosure_matrix_rap[jetID][theRapBin]->Fill(recpt, genpt, weight_eS);}	  
+
+		break;  }       
+	  }//end fillmcunfjetspectraraphists
+	  
+
+	}//end else for unf ptcuts      
+      }//end fillmcunfoldinghists
       
       
       

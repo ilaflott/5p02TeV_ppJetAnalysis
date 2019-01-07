@@ -15,14 +15,14 @@ doLOMCUnfolding=0
 LOMCBayeskIter=6
 LOMCSVDkReg=6
 #Data
-doDataUnfoldingwLO=0
+doDataUnfoldingwLO=1
 dataLOBayeskIter=6
 dataLOSVDkReg=6
 
 ###NLO Unf###
 useNPCorr=1
 #MC
-doNLOMCUnfolding=1
+doNLOMCUnfolding=0
 NLOMCBayeskIter=6
 NLOMCSVDkReg=6
 #Data
@@ -95,7 +95,8 @@ function unfoldData(){
 	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	    
 	    #source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
-	    source runData.sh    "0.0eta2.0_trgPtNoRes"      "0.0eta2.0_unf"   "11" "14" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
+	    #source runData.sh    "0.0eta2.0_trgPtNoRes"      "0.0eta2.0_unf"   "11" "14" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
+	    source runData.sh    "0.0eta2.0"      "0.0eta2.0_PY8unf"   "01" "06" "19"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
 	fi
 	
 	if [[ doDataUnfoldingwNLO -eq 1 ]]
@@ -226,7 +227,8 @@ function unfoldMC(){
         #source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
 	#source runMC.sh   "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18" $useSimpBins  $doBayes $doSVD $LOMCSVDkReg $LOMCBayeskIter
         #source runMC.sh   "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-	source runMC.sh   "0.0eta2.0_unf"   "11" "14" "18" $useSimpBins  $doBayes $doSVD $LOMCSVDkReg $LOMCBayeskIter
+	#source runMC.sh   "0.0eta2.0_unf"   "11" "14" "18" $useSimpBins  $doBayes $doSVD $LOMCSVDkReg $LOMCBayeskIter
+	source runMC.sh   "0.0eta2.0_PY8unf"   "01" "06" "19" $useSimpBins  $doBayes $doSVD $LOMCSVDkReg $LOMCBayeskIter
 
     fi
     
@@ -315,7 +317,7 @@ then
     fi
     if [[ $doNLOMCUnfolding -eq 1 ]]
     then
-#	rooUnfoldCompile bayesUnfoldNLOMCSpectra.C
+#	rooUnfoldCompile bayesUnfoldNLOMCSpectra.C #TODO
 	rooUnfoldCompile bayesUnfoldNLOMCSpectra_v2.C
     fi
 fi
@@ -337,6 +339,7 @@ then
     if [[ $doNLOMCUnfolding -eq 1 ]]
     then
 	rooUnfoldCompile SVDUnfoldNLOMCSpectra.C
+#	rooUnfoldCompile SVDUnfoldNLOMCSpectra_v2.C #TODO
     fi    
 fi
 

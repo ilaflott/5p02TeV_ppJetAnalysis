@@ -1262,7 +1262,8 @@ void multiratioplot( TCanvas* c=NULL, TLegend * legend=NULL,
 
 
 
-void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, std::string outPdfFile="", bool applyNPCorrs=false){
+//void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, std::string outPdfFile="", bool applyNPCorrs=false){
+void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, std::string outPdfFile="", bool compareToNLOThy=false, bool applyNPCorrs=false){
   bool funcDebug=true;
   if(funcDebug)std::cout<<"makeCombinedPlots"<<std::endl;
   if(outRootFile.length()==0){std::cout<<"ERROR no outRootFile string. exit."<<std::endl;
@@ -1475,84 +1476,89 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
 
   
 
-  
-  
-  // thy spectra, ratios #1 etc. ----------------------------------------------  
-  TH1D* CT10nlo	 = (TH1D*)fout->Get("NLO_CT10_NLO_R04_jtpt")	 ;
-  CT10nlo->SetMarkerSize(0);
-  CT10nlo->SetLineColor(kBlack);  
-  TH1D* CT14nlo	 = (TH1D*)fout->Get("NLO_CT14_NLO_R04_jtpt")	 ;
-  CT14nlo->SetMarkerSize(0);
-  CT14nlo->SetLineColor(kGreen);
-  TH1D* NNPDFnnlo= (TH1D*)fout->Get("NLO_NNPDF_NLO_R04_jtpt")    ;
-  NNPDFnnlo->SetMarkerSize(0);
-  NNPDFnnlo->SetLineColor(kCyan-6);  
-  
-  TLegend* legendThy1 =new TLegend( 0.6,0.7,1.0,0.9 );    
-  if(applyNPCorrs){
-    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO #otimes HERWIG EE4C","l");
-    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO #otimes HERWIG EE4C","l");
-    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO #otimes POW+PY8","l");   }
-  else{
-    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
-    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
-    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");   }  
-  legendThy1->AddEntry(hunf,"Data Unf.","lp");
-  legendThy1->AddEntry(hgen_rebin,"PY8 Truth", "lp");
-  legendThy1->SetFillStyle(0);
-  legendThy1->SetBorderSize(0);    
+  TCanvas* canv_thy_spectra_1=NULL;      TCanvas* canv_thy_spectra_2=NULL;    
+  if(compareToNLOThy){
+    // thy spectra, ratios #1 etc. ----------------------------------------------  
+    TH1D* CT10nlo	 = (TH1D*)fout->Get("NLO_CT10_NLO_R04_jtpt")	 ;
+    CT10nlo->SetMarkerSize(0);
+    CT10nlo->SetLineColor(kBlack);  
+    TH1D* CT14nlo	 = (TH1D*)fout->Get("NLO_CT14_NLO_R04_jtpt")	 ;
+    CT14nlo->SetMarkerSize(0);
+    CT14nlo->SetLineColor(kGreen);
+    TH1D* NNPDFnnlo= (TH1D*)fout->Get("NLO_NNPDF_NLO_R04_jtpt")    ;
+    NNPDFnnlo->SetMarkerSize(0);
+    NNPDFnnlo->SetLineColor(kCyan-6);  
+    
+    TLegend* legendThy1 =new TLegend( 0.6,0.7,1.0,0.9 );    
+    if(applyNPCorrs){
+      legendThy1->AddEntry(CT10nlo  ,"CT10 NLO #otimes HERWIG EE4C","l");
+      legendThy1->AddEntry(CT14nlo  ,"CT14 NLO #otimes HERWIG EE4C","l");
+      legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO #otimes POW+PY8","l");   }
+    else{
+      legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
+      legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
+      legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");   }  
+    legendThy1->AddEntry(hunf,"Data Unf.","lp");
+    legendThy1->AddEntry(hgen_rebin,"PY8 Truth", "lp");
+    legendThy1->SetFillStyle(0);
+    legendThy1->SetBorderSize(0);    
+    
 
-  TCanvas* canv_thy_spectra_1=NULL;  
-  if(!applyNPCorrs)CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
-  else CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
-  multiratioplot( canvForPrint, legendThy1,
-		  ((std::vector<TH1D*>){CT10nlo, CT14nlo, NNPDFnnlo, hgen_rebin}),
-		  hunf, "Ratio w/ Data Unf.");    
-  drawTLatex( 0.48, 0.88, 0.035, canvForPrint, desclines);
-  canvForPrint->Print(outPdfFile.c_str()); 
-  canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone(); 
-  canvForPrint->Clear();
-  
-  // thy spectra, ratios #2 etc. ----------------------------------------------  
-  TH1D* HERAPDF	 = (TH1D*)fout->Get("NLO_HERAPDF105_NLO_R04_jtpt")	 ;
-  HERAPDF->SetMarkerSize(0);
-  HERAPDF->SetLineColor(kViolet-5);  
-  
-  TH1D* MMHTnlo	 = (TH1D*)fout->Get("NLO_MMHT2014_NLO_R04_jtpt")	 ;
-  MMHTnlo->SetMarkerSize(0);
-  MMHTnlo->SetLineColor(kOrange+7);    
-  
-  TLegend* legendThy2 =new TLegend( 0.6,0.7,1.0,0.9 );    
-  if(applyNPCorrs){
-    legendThy2->AddEntry(HERAPDF  ,"HEARPDF NLO #otimes HERWIG EE4C","l");
-    legendThy2->AddEntry(MMHTnlo  ,"MMHT NLO #otimes HERWIG EE4C","l");}
-  else{
-    legendThy2->AddEntry(CT10nlo  ,"CT10 NLO","l");
-    legendThy2->AddEntry(CT14nlo  ,"CT14 NLO","l");}
-  legendThy2->AddEntry(hunf,"Data Unf.","lp");
-  legendThy2->AddEntry(hgen_rebin,"PY8 Truth", "lp");
-  legendThy2->SetFillStyle(0);
-  legendThy2->SetBorderSize(0);    
-  
-  TCanvas* canv_thy_spectra_2=NULL;  
-  if(!applyNPCorrs)MMHTnlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
-  else MMHTnlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
-  multiratioplot( canvForPrint, legendThy2,
-		  ((std::vector<TH1D*>){MMHTnlo, HERAPDF,  hgen_rebin}),
-		  hunf, "Ratio w/ Data Unf.");    
-  drawTLatex( 0.48, 0.88, 0.035, canvForPrint, desclines);
-  canvForPrint->Print(outPdfFile.c_str()); 
-  canv_thy_spectra_2=(TCanvas*)canvForPrint->DrawClone(); 
-  canvForPrint->Clear();
+    if(!applyNPCorrs)CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
+    else CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
+    multiratioplot( canvForPrint, legendThy1,
+		    ((std::vector<TH1D*>){CT10nlo, CT14nlo, NNPDFnnlo, hgen_rebin}),
+		    hunf, "Ratio w/ Data Unf.");    
+    drawTLatex( 0.48, 0.88, 0.035, canvForPrint, desclines);
+    canvForPrint->Print(outPdfFile.c_str()); 
+    canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone(); 
+    canvForPrint->Clear();
+    
+    // thy spectra, ratios #2 etc. ----------------------------------------------  
+    TH1D* HERAPDF	 = (TH1D*)fout->Get("NLO_HERAPDF105_NLO_R04_jtpt")	 ;
+    HERAPDF->SetMarkerSize(0);
+    HERAPDF->SetLineColor(kViolet-5);  
+    
+    TH1D* MMHTnlo	 = (TH1D*)fout->Get("NLO_MMHT2014_NLO_R04_jtpt")	 ;
+    MMHTnlo->SetMarkerSize(0);
+    MMHTnlo->SetLineColor(kOrange+7);    
+    
+    TLegend* legendThy2 =new TLegend( 0.6,0.7,1.0,0.9 );    
+    if(applyNPCorrs){
+      legendThy2->AddEntry(HERAPDF  ,"HEARPDF NLO #otimes HERWIG EE4C","l");
+      legendThy2->AddEntry(MMHTnlo  ,"MMHT NLO #otimes HERWIG EE4C","l");}
+    else{
+      legendThy2->AddEntry(CT10nlo  ,"CT10 NLO","l");
+      legendThy2->AddEntry(CT14nlo  ,"CT14 NLO","l");}
+    legendThy2->AddEntry(hunf,"Data Unf.","lp");
+    legendThy2->AddEntry(hgen_rebin,"PY8 Truth", "lp");
+    legendThy2->SetFillStyle(0);
+    legendThy2->SetBorderSize(0);    
+    
+
+    if(!applyNPCorrs)MMHTnlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
+    else MMHTnlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
+    multiratioplot( canvForPrint, legendThy2,
+		    ((std::vector<TH1D*>){MMHTnlo, HERAPDF,  hgen_rebin}),
+		    hunf, "Ratio w/ Data Unf.");    
+    drawTLatex( 0.48, 0.88, 0.035, canvForPrint, desclines);
+    canvForPrint->Print(outPdfFile.c_str()); 
+    canv_thy_spectra_2=(TCanvas*)canvForPrint->DrawClone(); 
+    canvForPrint->Clear();
+  }
+
   
   fout->cd();  
   canv_spectra_genratio->SetTitle("PY8 Truth Ratios Combined Canvas");	      canv_spectra_genratio->Write("combcanv_spectra_genratio");		  
   canv_spectra_recratio->SetTitle("Data Meas Ratios Combined Canvas");	      canv_spectra_recratio->Write("combcanv_spectra_recratio");		  
   canv_spectra_unfratio->SetTitle("Data Unf. Ratios Combined Canvas");	      canv_spectra_unfratio->Write("combcanv_spectra_unfratio");		  
   canv_spectra_foldratio->SetTitle("Folding Test Add Fakes Ratios Combined Canvas");        canv_spectra_foldratio->Write("combcanv_spectra_pfakes_foldratio");    
-  canv_spectra_foldratio2->SetTitle("Folding Test Minus Fakes Ratios Combiend Canvas");	    canv_spectra_foldratio2->Write("combcanv_spectra_mfakes_foldratio");	  
-  canv_thy_spectra_1->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_1->Write("combcanv_thy_spectra_1");                 
-  canv_thy_spectra_2->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_2->Write("combcanv_thy_spectra_2");                 
+  canv_spectra_foldratio2->SetTitle("Folding Test Minus Fakes Ratios Combiend Canvas");	    canv_spectra_foldratio2->Write("combcanv_spectra_mfakes_foldratio");
+
+  if(compareToNLOThy){
+    canv_thy_spectra_1->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_1->Write("combcanv_thy_spectra_1");     
+    canv_thy_spectra_2->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_2->Write("combcanv_thy_spectra_2");          
+  }
   
   return;
 }

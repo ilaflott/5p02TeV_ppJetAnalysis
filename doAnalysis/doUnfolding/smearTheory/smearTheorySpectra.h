@@ -156,6 +156,29 @@ double smearedBins_incl[]={
 }; 
 const int n_smearedbins_incl=sizeof(smearedBins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
 
+const double absetabins[]={
+  0.0,
+  0.5,
+  1.0,
+  1.5,
+  2.0//,
+//  2.5,
+//  3.0,
+//  3.2,
+//  4.7
+};
+const std::string absetabins_str[]={
+  "0.0",
+  "0.5",
+  "1.0",
+  "1.5",
+  "2.0"//,
+  //  "2.5",
+  //  "3.0",
+  //  "3.2",
+  //  "4.7"
+};
+const int n_absetabins=sizeof(absetabins)/sizeof(double)-1;
 
 ////////// NPs from Paolo 4/9/2015
 // THESE ARE LIKELY FOR R>0.4

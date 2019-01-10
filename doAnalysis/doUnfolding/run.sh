@@ -5,7 +5,7 @@
 dataHLTPF=1
 dataHLTCalo=0
 doBayes=1
-doSVD=0
+doSVD=1
 useSimpBins=0
 makeRooUnf=0
 
@@ -16,7 +16,7 @@ LOMCBayeskIter=6
 LOMCSVDkReg=6
 #Data
 doDataUnfoldingwLO=1
-dataLOBayeskIter=6
+dataLOBayeskIter=4
 dataLOSVDkReg=6
 
 ###NLO Unf###

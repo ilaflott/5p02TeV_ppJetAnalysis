@@ -16,7 +16,8 @@ const int nEvents=1e+07;  /// debug nevents
 std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [nb/GeV]";
 
 const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
-const std::string JERCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta20_08.07.18.root";
+//const std::string JERCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta20_08.07.18.root";
+const std::string in_JERFile_default="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta20_08.07.18.root";
 
 int debugInt=0;
 void debugcout(){
@@ -24,8 +25,8 @@ void debugcout(){
   debugInt++;
   return; 
 }
-
-int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSplineWeights=true, const std::string fitType="modLog" //, std::string weightMode="spline" //"fit"// 
+//, std::string weightMode="spline" //"fit"// 
+int smearTheorySpectra_gaussCoreJER( std::string in_NLOfileString, const bool useSplineWeights=true, const std::string fitType="modLog" , const std::string in_JERFile=in_JERFile_default
 				     ){
   
   gStyle->SetOptStat(0);
@@ -44,7 +45,7 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   if(useModLogFit && use7TeVFit){
     std::cout<<"something wrong"<<std::endl; assert(false);}
 
-  std::string outputFile= infileString; 
+  std::string outputFile= in_NLOfileString; 
   if(useSplineWeights)    outputFile +="_spl3wgts";
   else if (useFitWeights) {
     if(useModLogFit)
@@ -58,7 +59,7 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   TFile *outf    = new TFile(outputFile.c_str(), "RECREATE" );
   
   // Input, Theory spectrum
-  std::string inputFile = "fNLOJetsSpectra/R04/"+infileString+".root";
+  std::string inputFile = "fNLOJetsSpectra/R04/"+in_NLOfileString+".root";
   std::cout<<"opening input file:"<<inputFile<<std::endl<<std::endl;
   TFile* fin_NLO=TFile::Open(inputFile.c_str());
   
@@ -91,7 +92,7 @@ int smearTheorySpectra_gaussCoreJER( std::string infileString, const bool useSpl
   
   /////////////// Create/Get JER fit function(s)
   std::cout<<"opening JER file + fits! " << std::endl;
-  TFile* fin_JER=TFile::Open(JERCorrFile.c_str());
+  TFile* fin_JER=TFile::Open(in_JERFile.c_str());
   if(!fin_JER){
     std::cout<<"error, JER file not found or not open."<<std::endl; assert(false); }
   

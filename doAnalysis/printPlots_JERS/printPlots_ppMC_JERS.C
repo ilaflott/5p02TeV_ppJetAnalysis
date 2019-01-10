@@ -1,13 +1,13 @@
 #include "printPlots.h"
 
+
 const bool debugMode=true;
 const bool drawProfiles = false;
 const bool rebinJER=true;
+const int rebinFactor=1;//5
 
-const int CANVX=1200, CANVY=1200;
 //const int fit_ptlo_bin=3, fit_pthi_bin=nbins_pt_debug-1;
 const int fit_ptlo_bin=1, fit_pthi_bin=nbins_pt_debug-5;
-const int rebinFactor=1;//5
 //const int N_JERfits=nbins_pt_debug-fit_ptlo_bin;
 const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;
 const double fgaus_xlo=0.89, fgaus_xhi=1.11;
@@ -18,9 +18,11 @@ const bool draw_hJERRapBins=false, doGenBinsToo=false;//RapBins -> dual-diff xse
 const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 const std::string didJetID="1";
 const std::string doJetID="1";
-
-
-int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, const bool draw_hJER=true, const bool draw_MCEff=false){
+const int CANVX=1200, CANVY=1200;
+bool doabsetabinJER=false;
+int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, const bool draw_hJER=true, const bool draw_MCEff=false, const int absetabin=-1){
+  
+  if(absetabin!=-1) doabsetabinJER=true;
   
   // root style settings.
   std::cout<<"forcing style"<<std::endl;
@@ -107,9 +109,14 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
     for(int ip=0; ip<nbins_pt_debug; ip++){    
       
       // open the input hist    
-      std::string inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
+      std::string inputHistName="";
+      if(doabsetabinJER)
+	inputHistName="hJER_"+doJetID+"wJetID_etabin"+std::to_string(absetabin)+"_ptbin"+std::to_string(ip);      
+      else 
+	inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
+
       hrsp[ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
-      
+     
       if(!hrsp[ip]){ 
 	std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;
 	assert(false);}          
@@ -121,7 +128,12 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
       if(debugMode)std::cout<<"________________________________"<<std::endl;  
       if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
       if(debugMode)std::cout<<"hist title = "<<hrsp[ip]->GetTitle()<<std::endl;
-      hrsp[ip]->SetName(("hJER_1wJetID_genpt_"+std::to_string(ptbin_ip) + "_to_" + std::to_string(ptbin_ip1) ).c_str());
+      if(doabsetabinJER)
+	hrsp[ip]->SetName(("hJER_1wJetID_receta_"+
+			   absetabins_str[absetabin]+"_to_"+absetabins_str[absetabin+1]+
+			   "_genpt_"+std::to_string(ptbin_ip) + "_to_" + std::to_string(ptbin_ip1) ).c_str());
+      else
+	hrsp[ip]->SetName(("hJER_1wJetID_genpt_"+std::to_string(ptbin_ip) + "_to_" + std::to_string(ptbin_ip1) ).c_str());
       if(debugMode)hrsp[ip]->Print("base");    
       if(debugMode)std::cout<<std::endl;  
       
@@ -689,12 +701,15 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
 
 int main(int argc, char*argv[]){
   int rStatus=-1;
-  if(argc!=5){
+  if(argc<5){
     std::cout<<"no defaults. Do...."<<std::endl;
-    std::cout<<"./printPlots_ppMC_JERS.exe <target_ppMC_dir> <output tag>"<<std::endl<<std::endl;
+    std::cout<<"./printPlots_ppMC_JERS.exe <target_ppMC_dir> <output tag> <draw hJER> <draw MCEFf> <absetabin>"<<std::endl<<std::endl;
     return rStatus;  }
   
   rStatus=1;
-  rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] , (const bool)std::atoi(argv[3]), (const bool)std::atoi(argv[4]));
+  if(argc==6)
+    rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] , (const bool)std::atoi(argv[3]), (const bool)std::atoi(argv[4]), (const int) std::atoi(argv[5]) );
+  if(argc==5)
+    rStatus=printPlots_ppMC_JERS((const std::string)argv[1], (const std::string)argv[2] , (const bool)std::atoi(argv[3]), (const bool)std::atoi(argv[4]), -1);
   return rStatus;
 }

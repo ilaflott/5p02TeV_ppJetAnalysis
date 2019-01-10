@@ -99,12 +99,29 @@ const Double_t ptbins_debug[]={
 const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;
 
 // eta bins/boundaries
+
+
 const Double_t absetabins[]={
-  0.0, 0.5,  // 0.0, 0.5, 
-  1.0, 1.5,  // 1.0, 1.5, 
-  2.0, 2.5,  // 2.0, 2.5, 
-  3.0, 3.2,  // 3.0, 3.2, 
-  4.7
+  0.0,
+  0.5, 
+  1.0, 
+  1.5,
+  2.0//, 
+  //2.5, 
+  //3.0, 
+  //3.2,
+  //4.7
+};
+std::string absetabins_str[]={
+  "0.0", 
+  "0.5",  // 0.0, 0.5, 
+  "1.0", 
+  "1.5",  // 1.0, 1.5, 
+  "2.0"//,
+  //2.5,
+  //3.0, 
+  //3.2,
+  //4.7
 };
 //const double absetabins_lo[] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.2};
 //const double absetabins_hi[] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.7};

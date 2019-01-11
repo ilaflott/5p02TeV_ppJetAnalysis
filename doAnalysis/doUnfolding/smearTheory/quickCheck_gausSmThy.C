@@ -113,21 +113,21 @@ void print_gausSmThy(std::string rootFile){
 //-----------------------------------------------
 std::string plotnames_singleBin[]={
   //NPcorr
-  "plot_NP_y",
+  "plot_NP",
   //JER
   "plotJER",
   //NLOxsec
-  "plot_NLOxsec_y",
+  "plot_NLOxsec",
   //NPNLOxsec
-  "plot_NPNLOxsec_y",
+  "plot_NPNLOxsec",
   //TSplines  
-  "plot_splines_y",
+  "plot_splines",
   //NLOsmearing
-  "plot_response_th2_y",
-  "plot_true_smeared_rat_y",
+  "plot_response_th2",
+  "plot_true_smeared_rat",
   //NP+NLOsmearing
-  "plot_response_NP_th2_y",
-  "plot_NP_true_smeared_rat_y"  
+  "plot_response_NP_th2",
+  "plot_NP_true_smeared_rat"  
 };
 const int N_plotnames_singleBin=sizeof(plotnames_singleBin)/sizeof(std::string);
 //-----------------------------------------------
@@ -156,11 +156,6 @@ void print_gausSmThy_singleBin(int etaBin){
   return;
 }
 //-----------------------------------------------
-
-
-
-
-
 
 
 

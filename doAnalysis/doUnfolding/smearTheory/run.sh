@@ -30,7 +30,7 @@ nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
 nlofshortstr="NNPDF_NNLO"
 
 jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_"
-descstr="1.10.19_ptmax1000"
+descstr="01.10.19_ptmax1000"
 
 #fittypestr="modLog"
 #fittypestr="7TeV"

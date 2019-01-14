@@ -1,6 +1,6 @@
 #!/bin/bash
 
-subm_ppData_jetPlots=0
+subm_ppData_jetPlots=1
 subm_ppMC_jetPlots=0
 subm_ppMC_JERS=1
 subm_ppData_jetMult=0
@@ -16,12 +16,12 @@ if [[ $subm_ppData_jetPlots -eq 1 ]]
 then
     echo "...ppData jetPlots..."
     rootcompile readForests_ppData_jetPlots.C
-    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
+    source run_readForests_jetPlots.sh 4 "0.0" "3.0" "ppData"
 #    source run_readForests_jetPlots.sh 4 "0.0" "0.5" "ppData"
 #    source run_readForests_jetPlots.sh 4 "0.5" "1.0" "ppData"
 #    source run_readForests_jetPlots.sh 4 "1.0" "1.5" "ppData"
 #    source run_readForests_jetPlots.sh 4 "1.5" "2.0" "ppData"
-    sleep 10m
+#    sleep 10m
 fi
 
 if [[ $subm_ppMC_jetPlots -eq 1 ]]
@@ -39,7 +39,7 @@ if [[ $subm_ppMC_JERS -eq 1 ]]
 then
     echo "...ppMC JERS..."
     rootcompile readForests_ppMC_JERS.C
-    source run_readForests_JERS.sh 4 "0.0" "2.0"
+    source run_readForests_JERS.sh 4 "0.0" "3.0"
 #    source run_readForests_JERS.sh 4 "0.0" "0.5"
 #    source run_readForests_JERS.sh 4 "0.5" "1.0"
 #    source run_readForests_JERS.sh 4 "1.0" "1.5"

@@ -30,30 +30,34 @@ nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
 nlofshortstr="NNPDF_NNLO"
 
 jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_"
-descstr="01.10.19_ptmax1000"
+descstr="01.10.19" #_ptmax1000"
 
 #fittypestr="modLog"
 #fittypestr="7TeV"
-#fittypestr="spl3wgts"
-fittypestr="spl3wgts_extv2"
+fittypestr="spl3wgts"
+#fittypestr="spl3wgts_extv2"
 ##fittypestr="spl3wgts_extv1"
 ##fittypestr="spl3wgts_extv3"
 
 scpoutput=0
-etabin_i=0
-Netabins=4
+scpafterlast=1
+etabin_i=4
+Netabins=6
 #Netabins=1 ##debug; runs one bin only
-
 while [ $etabin_i -lt $Netabins ]
 do
-    if [[ $etabin_i -eq $(($Netabins - 1)) ]]
+    if [[ $scpafterlast -eq 1 ]]
     then
-	scpoutput=1
+	if [[ $etabin_i -eq $(($Netabins - 1)) ]]
+	then
+    	    scpoutput=1
+	fi
     fi
     
     echo "etabin_i=${etabin_i}"
     source run_smearTheory_etabin.sh $etabin_i   $nlofstr $nlofshortstr $jerfstr $descstr $fittypestr $scpoutput
     etabin_i=$(($etabin_i + 1))
+    
 done
 
 

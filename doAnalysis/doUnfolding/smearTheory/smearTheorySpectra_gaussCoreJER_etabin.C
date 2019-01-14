@@ -6,8 +6,8 @@ const int CANVX=1200, CANVY=1000;
 const bool printBaseDebug=true;
 
 //const int nEvents=1e+09;  ///10x typical
-//const int nEvents=1e+08;  ///typical
-const int nEvents=1e+07;  /// debug nevents
+const int nEvents=1e+08;  ///typical
+//const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 
@@ -385,6 +385,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     else if(etabin==1)logFit_4Toy=modLog2Fit;
     else if(etabin==2)logFit_4Toy=modLog4Fit;
     else if(etabin==3)logFit_4Toy=modLog2Fit;
+    else if(etabin==4)logFit_4Toy=modLog4Fit;
+    else if(etabin==5)logFit_4Toy=modLog4Fit;
     
 
 
@@ -434,6 +436,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     if(etabin==1)logFit_NP_4Toy=modLog5Fit_NP;
     if(etabin==2)logFit_NP_4Toy=modLog4Fit_NP;
     if(etabin==3)logFit_NP_4Toy=modLog2Fit_NP;
+    if(etabin==4)logFit_NP_4Toy=modLog4Fit_NP;
+    if(etabin==5)logFit_NP_4Toy=modLog4Fit_NP;
 
     
     
@@ -626,20 +630,11 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   divideBinWidth(smeared_rnd_test); 
   
   double norm_rnd=theory_clone->Integral()/theory_rnd->Integral();
-  response_th2->Scale(   norm_rnd);
+  response_th2->Scale(   norm_rnd);  
   
   theory_rnd->Scale( norm_rnd);
-  multiplyBinWidth(theory_rnd);  //for creating resp matrix
-  
   smeared_rnd->Scale(norm_rnd);  
-  multiplyBinWidth(smeared_rnd); 
-
   smeared_rnd_test->Scale(norm_rnd);  
-  multiplyBinWidth(smeared_rnd_test); 
-  
-  divideBinWidth(theory_rnd);  //for normalization only.
-  divideBinWidth(smeared_rnd); 
-  divideBinWidth(smeared_rnd_test); 
   
   //plotting smeared+theory toy mc xsection
   theory_rnd->SetLineColor(kRed); 
@@ -798,22 +793,14 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   divideBinWidth(theory_rnd_NP);  //for normalization only.
   divideBinWidth(smeared_rnd_NP); 
   divideBinWidth(smeared_rnd_NP_test); 
-
+  
   double norm_rnd_NP=theory_NP_clone->Integral()/theory_rnd_NP->Integral();
   response_NP_th2->Scale(   norm_rnd_NP); 
-
+  
   theory_rnd_NP->Scale( norm_rnd_NP);
   smeared_rnd_NP->Scale(norm_rnd_NP);
   smeared_rnd_NP_test->Scale(norm_rnd_NP);
   
-  multiplyBinWidth(theory_rnd_NP);  //for creating resp matrix
-  multiplyBinWidth(smeared_rnd_NP); 
-  multiplyBinWidth(smeared_rnd_NP_test); 
-  
-  divideBinWidth(theory_rnd_NP);  //for normalization only.
-  divideBinWidth(smeared_rnd_NP); 
-  divideBinWidth(smeared_rnd_NP_test); 
-
   theory_rnd_NP->SetLineColor(kRed);
   smeared_rnd_NP->SetLineColor(kBlue);    
   smeared_rnd_NP_test->SetLineColor(kBlue-5);    

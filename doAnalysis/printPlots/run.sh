@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-dojetQAPlots=0
-dojetTrigQAPlots=1
+dojetQAPlots=1
+dojetTrigQAPlots=0
 dojetIDQAPlots=0
 dojetMultPlots=0
-scpOutput=1
+scpOutput=0
 
 if [[ $dojetQAPlots -eq 1 ]]
 then
@@ -31,7 +31,9 @@ then
     #source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes"   "11.14.18_outputCondor" "11-14-18" "0.0eta2.0" "00eta20_trgPtNoRes"
     #source run_printPlots_jetPlots.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes_NoJetID"   "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_NoJetID" "00eta20_trgPtNoRes_NoJetID"
 
-    source run_printPlots_jetPlots.sh "4" "11.27.18_outputCondor" "11-27-18" "0.0eta2.0"   "11.27.18_outputCondor" "11-27-18" "0.0eta2.0" "00eta20"
+    #source run_printPlots_jetPlots.sh "4" "11.27.18_outputCondor" "11-27-18" "0.0eta2.0"   "11.27.18_outputCondor" "11-27-18" "0.0eta2.0" "00eta20"
+    source run_printPlots_jetPlots.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0"   "11.27.18_outputCondor" "11-27-18" "0.0eta2.0" "00eta20"
+
     
     ##############################################
     

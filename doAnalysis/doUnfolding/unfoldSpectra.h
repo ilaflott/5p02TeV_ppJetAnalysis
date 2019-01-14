@@ -107,9 +107,9 @@ const int verbosity=1;
 
 const double NLOMCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
 const double MCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
-const double etaBinWidth=4.;   // e.g. |y| < 2.0
+//const double etaBinWidth=4.;   // e.g. |y| < 2.0
 //const double etaBinWidth=2.; // e.g. |y| < 1.0
-//const double etaBinWidth=1.; // e.g. |y| < 0.5
+const double etaBinWidth=1.; // e.g. |y| < 0.5
 
 // for future way of dealing w/ mc response matrix th2
 //const float TH2ProjRecPtLoCut=49.;
@@ -303,6 +303,46 @@ double* setBinning ( bool useSimpBins, std::string type){
   return binarray;  
 }
 
+void setBinning_etabin(
+		       double* binarr1,//gen
+		       double* binarr2,//reco
+		       double* binarr3,//genmat
+		       double* binarr4,//recomat
+		       int arrlength, TH1D* nlohist   ){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"setting binning for unfolding single-etabin hist"<<std::endl;
+  int arrindex=0;  
+  int nbins_hist=nlohist->GetNbinsX();
+  if(funcDebug){
+    std::cout<<"arrlength="<<arrlength<<std::endl;
+    std::cout<<"nbins_hist="<<nbins_hist<<std::endl;  }
+  for(int i=1; i<=nbins_hist; i++){
+    if(funcDebug)std::cout<<"__________"<<std::endl;
+    if(funcDebug)std::cout<<"i="<<i<<std::endl;
+    if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
+    double binedge=-1.;
+    binedge=nlohist->GetBinLowEdge(i);        
+    if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
+    if(binedge<56.)continue;
+    binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
+    binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;    
+    if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;
+    arrindex++;
+    if(i==nbins_hist){//upper edge of last bin special case or else we run off the end of the array and/or hist. bad!
+      if(funcDebug)std::cout<<"i="<<i<<std::endl;
+      if(funcDebug)std::cout<<"(bool)(i==nbins_hist)="<<(i==nbins_hist)<<std::endl;
+      if(funcDebug)std::cout<<"hitting last bin!"<<std::endl;
+      binedge=nlohist->GetBinLowEdge(i)+nlohist->GetBinWidth(i);       
+      if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
+      if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
+      binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
+      binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;                 
+      if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;    }    
+  }
+  return;
+}
+
+
 int setNBins ( bool useSimpBins, std::string type){
   bool funcDebug=false;
   if(funcDebug)std::cout<<std::endl<<"in set/nBins"<<std::endl<<std::endl;
@@ -450,7 +490,7 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
 			std::string outRespMatPdfFile   , bool  useSimpBins, TFile* fpp_MC=NULL){
   bool funcDebug=true;
   std::cout<<std::endl<<"drawing input response matrices..."<<std::endl;    
-  
+  if(!hmat)assert(false);
   std::string open_outRespMatPdfFile=outRespMatPdfFile+"[";      
   std::string close_outRespMatPdfFile=outRespMatPdfFile+"]";    
   
@@ -471,7 +511,8 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
   
 
   // orig matrix ---------------          
-  bool isForNLOMC=(((std::string)hmat->GetName()).find("ynew")!=std::string::npos);
+  //bool isForNLOMC=(((std::string)hmat->GetName()).find("ynew")!=std::string::npos);
+  bool isForNLOMC=(((std::string)hmat->GetName()).find("_th2")!=std::string::npos);
   double xLow,xHi;//=boundaries_pt_reco_mat[0];
   double yLow, yHi;//=boundaries_pt_gen_mat[0];
   if( (bool)fpp_MC && !isForNLOMC){
@@ -486,12 +527,11 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
     hmat->SetAxisRange(xLow,xHi,"X");
     hmat->SetAxisRange(yLow,yHi,"Y");        
   }
-//  else{
-//    xLow=boundaries_pt_reco_mat[0];
-//    xHi=boundaries_pt_reco_mat[nbins_pt_reco_mat];
-//    yLow=boundaries_pt_gen_mat[0];
-//    yHi=boundaries_pt_gen_mat[nbins_pt_gen_mat]; }
-  
+  else{
+    xLow=boundaries_pt_reco_mat[0];
+    xHi=boundaries_pt_reco_mat[nbins_pt_reco_mat];
+    yLow=boundaries_pt_gen_mat[0];
+    yHi=boundaries_pt_gen_mat[nbins_pt_gen_mat]; }
   
   
   
@@ -509,42 +549,52 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
   
   
   // matrix rebinned ---------------    
-  if(funcDebug)std::cout<<"matStylePrint(hmat_rebin)"<<std::endl;
-  matStylePrint(hmat_rebin, "MC Response Matrix, Rebinned", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  if(hmat_rebin){
+    if(funcDebug)std::cout<<"matStylePrint(hmat_rebin)"<<std::endl;
+    matStylePrint(hmat_rebin, "MC Response Matrix, Rebinned", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  }
   
-  // error matrix in binning of interest ---------------    
-  if(funcDebug)std::cout<<"matStylePrint(hmat_errors)"<<std::endl;
-  matStylePrint(hmat_errors, "MC Response Matrix, Bin Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  if(hmat_errors){
+    // error matrix in binning of interest ---------------    
+    if(funcDebug)std::cout<<"matStylePrint(hmat_errors)"<<std::endl;
+    matStylePrint(hmat_errors, "MC Response Matrix, Bin Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  }
   
-  // percent error matrix in binning of interest ---------------    
-  if(funcDebug)std::cout<<"makeRespMatrixPercentErrs(hmat_errors, hmat_rebin)"<<std::endl;
-  TH2D* hmat_percenterrs= makeRespMatrixPercentErrs( (TH2D*) hmat_errors, (TH2D*) hmat_rebin,
-						     (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-						     (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
-  if(funcDebug) hmat_percenterrs->Print("base");
-  if(funcDebug)std::cout<<"matStylePrint(hmat_percenterrs)"<<std::endl;
-  matStylePrint(hmat_percenterrs, "MC Response Matrix, Bin % Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  TH2D* hmat_percenterrs=NULL;
+  if( (hmat_rebin) && (hmat_errors)){
+    // percent error matrix in binning of interest ---------------    
+    if(funcDebug)std::cout<<"makeRespMatrixPercentErrs(hmat_errors, hmat_rebin)"<<std::endl;
+    hmat_percenterrs= makeRespMatrixPercentErrs( (TH2D*) hmat_errors, (TH2D*) hmat_rebin,
+						 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );		     
+    if(funcDebug) hmat_percenterrs->Print("base");
+    if(funcDebug)std::cout<<"matStylePrint(hmat_percenterrs)"<<std::endl;
+    matStylePrint(hmat_percenterrs, "MC Response Matrix, Bin % Errors", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  }
   
-  
-  // col normd matrix in binning of interest  ---------------    
-  // POTENTIAL ISSUE: using the resp matrix post rebinning/divide bin width/clearing overflows... should i be using the original matrix?
-  if(funcDebug)std::cout<<"normalizeCol_RespMatrix(hmat_rebin)"<<std::endl;
-  TH2D* hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2D*)  hmat_rebin,
-						       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-						       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-  if(funcDebug)  hmat_rebin_colnormd->Print("base");  
-  
-  if(funcDebug)std::cout<<"matStylePrint(hmat_rebin_colnormd)"<<std::endl;
-  matStylePrint(hmat_rebin_colnormd, "MC Response Matrix, Columns Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
-  
-  // row normd matrix in binning of interest  ---------------    
-  if(funcDebug)std::cout<<"normalizeRow_RespMatrix(hmat_rebin)"<<std::endl;
-  TH2D*  hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2D*)  hmat_rebin,
-							(double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-							(double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
-  if(funcDebug)  hmat_rebin_rownormd->Print("base");
-  if(funcDebug)std::cout<<"matStylePrint(hmat_rebin_rownormd)"<<std::endl;
-  matStylePrint(hmat_rebin_rownormd, "MC Response Matrix, Rows Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  TH2D* hmat_rebin_colnormd=NULL, *hmat_rebin_rownormd=NULL;
+  if(hmat_rebin){
+    // col normd matrix in binning of interest  ---------------    
+    // POTENTIAL ISSUE: using the resp matrix post rebinning/divide bin width/clearing overflows... should i be using the original matrix?
+    if(funcDebug)std::cout<<"normalizeCol_RespMatrix(hmat_rebin)"<<std::endl;
+    hmat_rebin_colnormd = normalizeCol_RespMatrix( (TH2D*)  hmat_rebin,
+						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+    if(funcDebug)  hmat_rebin_colnormd->Print("base");  
+    
+    
+    if(funcDebug)std::cout<<"matStylePrint(hmat_rebin_colnormd)"<<std::endl;
+    matStylePrint(hmat_rebin_colnormd, "MC Response Matrix, Columns Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+    
+    // row normd matrix in binning of interest  ---------------    
+    if(funcDebug)std::cout<<"normalizeRow_RespMatrix(hmat_rebin)"<<std::endl;
+    hmat_rebin_rownormd = normalizeRow_RespMatrix( (TH2D*)  hmat_rebin,
+						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );
+    if(funcDebug)  hmat_rebin_rownormd->Print("base");
+    if(funcDebug)std::cout<<"matStylePrint(hmat_rebin_rownormd)"<<std::endl;
+    matStylePrint(hmat_rebin_rownormd, "MC Response Matrix, Rows Sum to 1", tempCanvForPdfPrint, outRespMatPdfFile, useSimpBins);
+  }
   
   // close file     
   if(funcDebug)std::cout<<"closing outRespMatPdfFile"<<std::endl;
@@ -795,33 +845,44 @@ TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true, s
     if(funcDebug)std::cout<<"thyHist BinConent="<<thyHist->GetBinContent(i)<<std::endl;
     if(funcDebug)std::cout<<"thyHist BinError=" <<thyHist->GetBinError(i)<<std::endl;          
   }
-  
 
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-  
   if(funcDebug)std::cout<<"end of makeThyHist_00eta20"<<std::endl;
   if(funcDebug)thyHist->Print("base");
   return thyHist;
+}
+
+void applyNPCorr_etabin(std::string nlofile_str="", TH1D* hnlo=NULL, std::string* NPsstr=NULL, int etabinint=0){
+  bool funcDebug=true;
+  
+  //open NP file
+  TFile* NPCorrFile=NULL;
+  NPCorrFile=(TFile*)TFile::Open(NPCorr_filename.c_str());
+  if(!NPCorrFile)assert(false);
+  
+  //set NP TF1 name + NP desc str if not null
+  std::string NPCorrName="";  
+  if(nlofile_str.find("nnlo")!=std::string::npos){    
+    NPCorrName="fNPC_POWPY8_R4_etabin";
+    if(NPsstr)(*NPsstr)=" #otimes POW+PY8";  }
+  else{    
+    NPCorrName="fNPC_HerwigEE4C_R4_etabin";
+    if(NPsstr)(*NPsstr)=" #otimes HERWIG EE4C";  }  
+  NPCorrName+=std::to_string(etabinint);
+
+  //grab the TF1
+  TF1* fNPCorr=(TF1*)NPCorrFile->Get(NPCorrName.c_str());
+  if(!fNPCorr)assert(false);
+  
+  //apply the NP to the vals+errs in hnlo
+  int nbins=hnlo->GetNbinsX();
+  for(int j=1;j<=nbins;j++){
+    double hnlo_NPcorrval=(hnlo->GetBinContent(j))*(fNPCorr->Eval(hnlo->GetBinCenter(j)));
+    double hnlo_NPcorrval_err=(hnlo->GetBinError(j))*(fNPCorr->Eval(hnlo->GetBinCenter(j)));
+    hnlo->SetBinContent(j, hnlo_NPcorrval);
+    hnlo->SetBinError(j, hnlo_NPcorrval_err);  }
+  
+  if(funcDebug)std::cout<<"done with applyNPCorr_etabin"<<std::endl;
+  return;
 }
 
 TH2D* absVal_TH2Content(TH2D* hist){
@@ -1559,6 +1620,323 @@ void makeCombinedPlots(std::string outRootFile="", TCanvas* canvForPrint=NULL, s
     canv_thy_spectra_1->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_1->Write("combcanv_thy_spectra_1");     
     canv_thy_spectra_2->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_2->Write("combcanv_thy_spectra_2");          
   }
+  
+  return;
+}
+
+void makeCombinedPlots_NLO_etabin(
+				  std::string outRootFile="", 
+				  TCanvas* canvForPrint=NULL,
+				  std::string outPdfFile="", 
+				  bool applyNPCorrs=false, 
+				  std::string NLOMCtitle="", 
+				  int etabinint=0){
+  
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"makeCombinedPlots"<<std::endl;
+  if(outRootFile.length()==0){std::cout<<"ERROR no outRootFile string. exit."<<std::endl;
+    return; }
+  if(!canvForPrint){std::cout<<"ERROR canvForPrint pointer not found. exit."<<std::endl;
+    return; }
+  if(outPdfFile.length()==0){std::cout<<"ERROR no outPdfFile string. exit."<<std::endl;
+    return; }
+  
+  
+  std::string etabindesc_str="#||{y}";
+  if(     etabinint==0)etabindesc_str="0.0 < "+etabindesc_str+" < 0.5";
+  else if(etabinint==1)etabindesc_str="0.5 < "+etabindesc_str+" < 1.0";
+  else if(etabinint==2)etabindesc_str="1.0 < "+etabindesc_str+" < 1.5";
+  else if(etabinint==3)etabindesc_str="1.5 < "+etabindesc_str+" < 2.0";
+  else if(etabinint==4)etabindesc_str="2.0 < "+etabindesc_str+" < 2.5";
+  else if(etabinint==5)etabindesc_str="2.5 < "+etabindesc_str+" < 3.0";
+  
+  
+  std::vector<std::string> desclines={ "#sqrt{s} = 5.02 TeV",
+				       "ak4PF Jets",
+				       etabindesc_str};
+  
+  TFile* fout= new TFile(outRootFile.c_str(), "UPDATE");
+  if(!fout){std::cout<<"ERROR output file pointer not found. exit."<<std::endl;
+    return; }
+  
+  canvForPrint->Clear();
+  
+  
+  // combined plots, I/O spectra ----------------------------------------------
+  TH1D* hunf		     = (TH1D*)fout->Get("Data_unf");
+  hunf->SetMarkerStyle(kOpenCircle);
+  hunf->SetMarkerColor(kRed);
+  hunf->SetLineColor(kRed);
+  hunf->SetMarkerSize(1.02);     
+  
+  std::cout<<"hunf->GetTitle()="<<hunf->GetTitle()<<std::endl;
+  std::string descString="";
+  getUnfDetails(hunf, &descString);
+  std::string methodString="";
+  //bool SVDUnf=false, BayesUnf=false;
+  
+  if(descString.find("kReg")!=std::string::npos){
+    methodString=", SVD ";
+  }
+  else if(descString.find("kIter")!=std::string::npos){
+    methodString=", Bayesian ";
+  }
+  
+  
+  TH1D* hrec_rebin	     = (TH1D*)fout->Get("Data_meas");
+  hrec_rebin->SetMarkerStyle(kOpenCircle);
+  hrec_rebin->SetMarkerColor(kBlue);     
+  hrec_rebin->SetLineColor(kBlue);     
+  hrec_rebin->SetMarkerSize(1.02); 
+  
+  TH1D* hrec_sameside_rebin  = (TH1D*)fout->Get("MC_meas");
+  hrec_sameside_rebin->SetMarkerStyle(kOpenSquare);
+  hrec_sameside_rebin->SetMarkerColor(kBlue-3);     
+  hrec_sameside_rebin->SetLineColor(kBlue-3);     
+  hrec_sameside_rebin->SetMarkerSize(1.02);   
+  
+  TH1D* hgen_rebin	     = (TH1D*)fout->Get("MC_truth");
+  hgen_rebin->SetMarkerStyle(kOpenStar);
+  hgen_rebin->SetMarkerColor(kMagenta);
+  hgen_rebin->SetLineColor(kMagenta);
+  hgen_rebin->SetMarkerSize(1.02);     
+  
+  TLegend* legend_in1=new TLegend(0.7,0.68,0.92,0.9);
+  legend_in1->AddEntry(hrec_rebin	    , "Data Meas." , "lp");
+  legend_in1->AddEntry(hunf		    , "Data Unf." , "lp");
+  legend_in1->AddEntry(hrec_sameside_rebin   , ("Smeared "+NLOMCtitle).c_str() , "lp");
+  legend_in1->AddEntry(hgen_rebin	    , (NLOMCtitle+" Toy Truth").c_str() , "lp");
+  legend_in1->SetFillStyle(0);
+  legend_in1->SetBorderSize(0);
+  
+  TCanvas* canv_spectra_genratio=NULL;
+  //  hrec_rebin->SetTitle("Bayesian, PY8 and Data Spectra");    
+  hrec_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
+  
+  multiratioplot( canvForPrint, legend_in1,
+		  ((std::vector<TH1D*>){hrec_rebin,  hrec_sameside_rebin, hunf}),
+		  hgen_rebin, "Ratio w/ "+NLOMCtitle+" Toy Truth");
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
+  canvForPrint->Print(outPdfFile.c_str());      
+  canv_spectra_genratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Clear();
+  
+  TCanvas* canv_spectra_recratio=NULL;  
+  //  hgen_rebin->SetTitle("Bayesian, PY8 and Data Spectra");
+  hgen_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
+  multiratioplot( canvForPrint, legend_in1,
+		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hunf}),
+		  hrec_rebin, "Ratio w/ Data Meas.");
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
+  canvForPrint->Print(outPdfFile.c_str());      
+  canv_spectra_recratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Clear();
+  
+  
+  TCanvas* canv_spectra_unfratio=NULL;
+  //  hgen_rebin->SetTitle("Bayesian, PY8 and Data Spectra");
+  hgen_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());    
+  multiratioplot( canvForPrint, legend_in1,
+		  ((std::vector<TH1D*>){hgen_rebin,  hrec_sameside_rebin, hrec_rebin}),
+		  hunf, "Ratio w/ Data Unf.");
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
+  canvForPrint->Print(outPdfFile.c_str());      
+  canv_spectra_unfratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Clear();
+  
+  
+  // combined plots, meas. spectra, folded spectra + fakes, ratios ----------------------------------------------
+  TH1D* hfold_fakecorr       = (TH1D*)fout->Get("Data_foldfakcorr");//check
+  hfold_fakecorr->SetMarkerStyle(kOpenCircle);
+  hfold_fakecorr->SetMarkerColor(kGreen-5);
+  hfold_fakecorr->SetLineColor(  kGreen-5);
+  hfold_fakecorr->SetMarkerSize(1.02);
+  
+  TH1D* hfold_truth_fakecorr = (TH1D*)fout->Get("MC_truth_foldfakcorr");//check
+  hfold_truth_fakecorr->SetMarkerStyle(kOpenStar);
+  hfold_truth_fakecorr->SetMarkerColor(kGreen+3);
+  hfold_truth_fakecorr->SetLineColor(  kGreen+3);
+  hfold_truth_fakecorr->SetMarkerSize(1.02);     
+
+  TH1D* h_foldratio_datafold = (TH1D*)fout->Get("ppData_Meas_Ratio_DataFoldpFakes");//check
+  h_foldratio_datafold->SetMarkerStyle(kOpenCircle);
+  h_foldratio_datafold->SetMarkerColor(kGreen-5);
+  h_foldratio_datafold->SetLineColor(  kGreen-5);
+  h_foldratio_datafold->SetMarkerSize(1.02);
+
+  TH1D* h_foldratio_mcfold   = (TH1D*)fout->Get("ppData_Meas_Ratio_TruthFoldpFakes");//check
+  h_foldratio_mcfold->SetMarkerStyle(kOpenStar);
+  h_foldratio_mcfold->SetMarkerColor(kGreen+3);
+  h_foldratio_mcfold->SetLineColor(  kGreen+3);
+  h_foldratio_mcfold->SetMarkerSize(1.02);     
+
+  TLegend* legendfold2 = new TLegend( 0.7,0.7,0.9,0.9);
+  legendfold2->AddEntry(hfold_truth_fakecorr,"Fold(NLO Toy Truth) + Fakes",  "lp");
+  legendfold2->AddEntry(hrec_sameside_rebin, "Smeared NLO"  ,  "lp");
+  legendfold2->AddEntry(hfold_fakecorr ,     "Fold(Data Unf.) + Fakes" , "lp");
+  legendfold2->AddEntry(hrec_rebin, "Data Meas." , "lp");    
+  legendfold2->SetFillStyle(0);
+  legendfold2->SetBorderSize(0);    
+  
+  TCanvas* canv_spectra_foldratio=NULL;
+  //setupSpectraHist(hfold_truth_fakecorr);
+  //hfold_truth_fakecorr->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
+  setupSpectraHist(hrec_sameside_rebin);
+  hrec_sameside_rebin->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
+  multiratioplot( canvForPrint, legendfold2,
+  		  ((std::vector<TH1D*>){hrec_sameside_rebin, hfold_truth_fakecorr,  hfold_fakecorr,  hrec_rebin}),
+  		  ((std::vector<TH1D*>){h_foldratio_datafold, h_foldratio_mcfold}),
+  		  "Ratio w/ Meas. ");
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
+  canvForPrint->Print(outPdfFile.c_str());       
+  canv_spectra_foldratio=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Clear();
+  
+
+  
+  
+  // combined plots, meas spectra - fakes, folded spectra, ratios ----------------------------------------------
+  TH1D* hfold       = (TH1D*)fout->Get("Data_fold");//check
+  hfold->SetMarkerStyle(kOpenCircle);
+  hfold->SetMarkerColor(kGreen-5);
+  hfold->SetLineColor(  kGreen-5);
+  hfold->SetMarkerSize(1.02);
+  
+  TH1D* hrec_rebin_fakecorr = (TH1D*)fout->Get("Data_measfakcorr");//check
+  hrec_rebin_fakecorr->SetMarkerStyle(kOpenCircle);
+  hrec_rebin_fakecorr->SetMarkerColor(kBlue);     
+  hrec_rebin_fakecorr->SetLineColor(kBlue);     
+  hrec_rebin_fakecorr->SetMarkerSize(1.02);     
+  
+  TH1D* hfold_truth = (TH1D*)fout->Get("MC_truth_fold");//check
+  hfold_truth->SetMarkerStyle(kOpenStar);
+  hfold_truth->SetMarkerColor(kGreen+3);
+  hfold_truth->SetLineColor(  kGreen+3);
+  hfold_truth->SetMarkerSize(1.02);     
+  
+  TH1D* hrec_sameside_rebin_fakecorr = (TH1D*)fout->Get("MC_measfakcorr");//check
+  hrec_sameside_rebin_fakecorr->SetMarkerStyle(kOpenSquare);
+  hrec_sameside_rebin_fakecorr->SetMarkerColor(kBlue-3);     
+  hrec_sameside_rebin_fakecorr->SetLineColor(kBlue-3);     
+  hrec_sameside_rebin_fakecorr->SetMarkerSize(1.02);       
+  
+  TH1D* h_recratio_oppfold = (TH1D*)fout->Get("ppData_MeasmFakes_Ratio_DataFold");//check
+  h_recratio_oppfold->SetMarkerStyle(kOpenCircle);
+  h_recratio_oppfold->SetMarkerColor(kGreen-5);
+  h_recratio_oppfold->SetLineColor(  kGreen-5);
+  h_recratio_oppfold->SetMarkerSize(1.02);
+  
+  TH1D* h_recratio_truthfold   = (TH1D*)fout->Get("ppData_MeasmFakes_Ratio_TruthFold");//check
+  h_recratio_truthfold->SetMarkerStyle(kOpenStar);
+  h_recratio_truthfold->SetMarkerColor(kGreen+3);
+  h_recratio_truthfold->SetLineColor(  kGreen+3);
+  h_recratio_truthfold->SetMarkerSize(1.02);     
+  
+  TLegend* legendfold = new TLegend( 0.7,0.7,0.9,0.9);
+  legendfold->AddEntry(hfold_truth,"Fold(Toy NLO Truth)",  "lp");
+  legendfold->AddEntry(hrec_sameside_rebin_fakecorr, "Smeared NLO - Fakes"  ,  "lp");
+  legendfold->AddEntry(hfold ,     "Fold(Data Unf.)" , "lp");
+  legendfold->AddEntry(hrec_rebin_fakecorr, "Data Meas. - Fakes" , "lp");    
+  legendfold->SetFillStyle(0);
+  legendfold->SetBorderSize(0);    
+  
+  TCanvas* canv_spectra_foldratio2=NULL;
+  setupSpectraHist(hrec_sameside_rebin_fakecorr);
+  hrec_sameside_rebin_fakecorr->SetTitle(("Folded Jet Spectra"+methodString+descString).c_str());    
+  multiratioplot( canvForPrint, legendfold,
+  		  ((std::vector<TH1D*>){hrec_sameside_rebin_fakecorr, hfold_truth,  hfold,  hrec_rebin_fakecorr}),
+  		  ((std::vector<TH1D*>){h_recratio_oppfold, h_recratio_truthfold}),
+  		  "Ratio w/ (Meas. - Fakes) ");
+  drawTLatex( 0.58, 0.88, 0.035, canvForPrint, desclines);
+  canvForPrint->Print(outPdfFile.c_str());       
+  canv_spectra_foldratio2=(TCanvas*)canvForPrint->DrawClone();
+  canvForPrint->Clear();
+  
+
+  
+
+  TCanvas* canv_thy_spectra_1=NULL;      TCanvas* canv_thy_spectra_2=NULL;    
+
+  // thy spectra, ratios #1 etc. ----------------------------------------------  
+  TH1D* CT10nlo	 = (TH1D*)fout->Get("NLO_CT10_NLO_R04_jtpt")	 ;
+  CT10nlo->SetMarkerSize(0);
+  CT10nlo->SetLineColor(kBlack);  
+  TH1D* CT14nlo	 = (TH1D*)fout->Get("NLO_CT14_NLO_R04_jtpt")	 ;
+  CT14nlo->SetMarkerSize(0);
+  CT14nlo->SetLineColor(kGreen);
+  TH1D* NNPDFnnlo= (TH1D*)fout->Get("NLO_NNPDF_NLO_R04_jtpt")    ;
+  NNPDFnnlo->SetMarkerSize(0);
+  NNPDFnnlo->SetLineColor(kCyan-6);  
+  
+  TLegend* legendThy1 =new TLegend( 0.6,0.7,1.0,0.9 );    
+  if(applyNPCorrs){
+    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO #otimes HERWIG EE4C","l");
+    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO #otimes HERWIG EE4C","l");
+    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO #otimes POW+PY8","l");   }
+  else{
+    legendThy1->AddEntry(CT10nlo  ,"CT10 NLO","l");
+    legendThy1->AddEntry(CT14nlo  ,"CT14 NLO","l");
+    legendThy1->AddEntry(NNPDFnnlo,"NNPDF NNLO","l");   }  
+  legendThy1->AddEntry(hunf,"Data Unf.","lp");
+  legendThy1->AddEntry(hgen_rebin,(NLOMCtitle+" Toy Truth").c_str(), "lp");
+  legendThy1->SetFillStyle(0);
+  legendThy1->SetBorderSize(0);    
+    
+  
+  if(!applyNPCorrs)CT10nlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
+  else CT10nlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
+  multiratioplot( canvForPrint, legendThy1,
+		  ((std::vector<TH1D*>){CT10nlo, CT14nlo, NNPDFnnlo, hgen_rebin}),
+		  hunf, "Ratio w/ Data Unf.");    
+  drawTLatex( 0.48, 0.88, 0.035, canvForPrint, desclines);
+  canvForPrint->Print(outPdfFile.c_str()); 
+  canv_thy_spectra_1=(TCanvas*)canvForPrint->DrawClone(); 
+  canvForPrint->Clear();
+  
+  // thy spectra, ratios #2 etc. ----------------------------------------------  
+  TH1D* HERAPDF	 = (TH1D*)fout->Get("NLO_HERAPDF105_NLO_R04_jtpt")	 ;
+  HERAPDF->SetMarkerSize(0);
+  HERAPDF->SetLineColor(kViolet-5);  
+  
+  TH1D* MMHTnlo	 = (TH1D*)fout->Get("NLO_MMHT2014_NLO_R04_jtpt")	 ;
+  MMHTnlo->SetMarkerSize(0);
+  MMHTnlo->SetLineColor(kOrange+7);    
+  
+  TLegend* legendThy2 =new TLegend( 0.6,0.7,1.0,0.9 );    
+  if(applyNPCorrs){
+    legendThy2->AddEntry(HERAPDF  ,"HERAPDF NLO #otimes HERWIG EE4C","l");
+    legendThy2->AddEntry(MMHTnlo  ,"MMHT NLO #otimes HERWIG EE4C","l");}
+  else{
+    legendThy2->AddEntry(CT10nlo  ,"CT10 NLO","l");
+    legendThy2->AddEntry(CT14nlo  ,"CT14 NLO","l");}
+  legendThy2->AddEntry(hunf,"Data Unf.","lp");
+  legendThy2->AddEntry(hgen_rebin,(NLOMCtitle+" Toy Truth").c_str(), "lp");
+  legendThy2->SetFillStyle(0);
+  legendThy2->SetBorderSize(0);    
+  
+  
+  if(!applyNPCorrs)MMHTnlo->SetTitle(("NLO Jet Spectra"+methodString+descString).c_str());    
+  else MMHTnlo->SetTitle(("NLO+NPs Jet Spectra"+methodString+descString).c_str());    
+  multiratioplot( canvForPrint, legendThy2,
+		    ((std::vector<TH1D*>){MMHTnlo, HERAPDF,  hgen_rebin}),
+		  hunf, "Ratio w/ Data Unf.");    
+  drawTLatex( 0.48, 0.88, 0.035, canvForPrint, desclines);
+  canvForPrint->Print(outPdfFile.c_str()); 
+  canv_thy_spectra_2=(TCanvas*)canvForPrint->DrawClone(); 
+  canvForPrint->Clear();
+  
+  
+  
+  fout->cd();  
+  canv_spectra_genratio->SetTitle((NLOMCtitle+" Toy Truth Ratios Combined Canvas").c_str());	      canv_spectra_genratio->Write("combcanv_spectra_genratio");		  
+  canv_spectra_recratio->SetTitle("Data Meas Ratios Combined Canvas");	      canv_spectra_recratio->Write("combcanv_spectra_recratio");		  
+  canv_spectra_unfratio->SetTitle("Data Unf. Ratios Combined Canvas");	      canv_spectra_unfratio->Write("combcanv_spectra_unfratio");		  
+  canv_spectra_foldratio->SetTitle("Folding Test Add Fakes Ratios Combined Canvas");        canv_spectra_foldratio->Write("combcanv_spectra_pfakes_foldratio");    
+  canv_spectra_foldratio2->SetTitle("Folding Test Minus Fakes Ratios Combiend Canvas");	    canv_spectra_foldratio2->Write("combcanv_spectra_mfakes_foldratio");
+  
+  canv_thy_spectra_1->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_1->Write("combcanv_thy_spectra_1");     
+  canv_thy_spectra_2->SetTitle("NLO Thy Spectra Combined Canvas");                          canv_thy_spectra_2->Write("combcanv_thy_spectra_2");          
+    
   
   return;
 }

@@ -187,9 +187,9 @@ const float absetabins[]={
   0.5,
   1.0, 
   1.5,
-  2.0//, 
-  //  2.5,
-  //  3.0, 
+  2.0, 
+  2.5,
+  3.0//, 
   //  3.2,
   //  4.7
 };
@@ -200,9 +200,9 @@ std::string absetabins_str[]={
   "0.5",
   "1.0", 
   "1.5",
-  "2.0"//, 
-  //"2.5",
-  //"3.0", 
+  "2.0", 
+  "2.5",
+  "3.0"//
   //"3.2",
   //"4.7"
 };
@@ -371,15 +371,18 @@ bool jetID_24eta27(float jetIDpt,
 }
 
 bool jetID_27eta30(float jetIDpt,
-		   float neSum, float phSum, 
-		   int numConst){ // int numConst, int neuMult){//
+		   float neSum, float phSum, int neuMult){
+  //int numConst){ // int numConst, int neuMult){//
   bool funcDebug=jetIDDebug;
   if(funcDebug)
     std::cout<<"jetID_27eta30 called.";
   bool passesJetID=false;
-  if(  true && 
-       true &&
-       numConst            > 0       ) passesJetID=true;   
+  if(  phSum/jetIDpt  < .99 && 
+       neSum/jetIDpt < .99 &&
+       neuMult > 0 )passesJetID=true;   
+  //  if(  true && 
+  //       true &&
+  //       numConst            > 0       ) passesJetID=true;   
   //diff versions         // CMSSW [76,80]X criterion
   //  if(  phSum/jetIDpt > 0.00 && 
   //       neSum/jetIDpt < 1.00 && 

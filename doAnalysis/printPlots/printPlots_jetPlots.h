@@ -1024,45 +1024,105 @@ void printJetSpectraRapHists( TFile* finData , TFile* finMC, bool doJetIDPlots,
 			      std::string thePDFFileName , std::string fullJetType, 
 			      long double theLumi  ) {
   bool funcDebug=true;
+  if(funcDebug)std::cout<<"drawing dual-differential cross section plot"<<std::endl;	
+  
   bool drawMC=(bool)finMC;
-  //if( ((bool)finData) && !((bool)finMC) )
-  //  std::cout<<"drawing data jetspectraraphists only"<<std::endl;
-  //else if( ((bool)finData) && ((bool)finMC) ) 
-  //  std::cout<<"drawing data + MC RECO jetspectraraphists only"<<std::endl;
-  //else if( !((bool)finData) && ((bool)finMC) )
-  //  std::cout<<"drawing MC RECO + GEN jetspectraraphists only"<<std::endl;
+  if(funcDebug && drawMC)std::cout<<"drawing dual-differential cross section plot w/ MC"<<std::endl;	
   
   
   if(funcDebug)std::cout<<std::endl<<"creating temporary canvas for printing Jet rapBins plots..."<<std::endl;
-  TCanvas *temp_canvJetRapBins = new TCanvas("tempJetRapBins", "tempJetRapBins", 2000, 1500);
+  TCanvas *temp_canvJetRapBins = new TCanvas("tempJetRapBins", "tempJetRapBins", 1600, 1200);
   temp_canvJetRapBins->SetLogy(1);    
   temp_canvJetRapBins->SetLogx(1);    
-  
-  float TLegx1=0.77 ,TLegx2=TLegx1+0.13;
-  float TLegy1=0.54, TLegy2=TLegy1+0.36;
-  TLegend* theJetRapHistLeg=new TLegend(TLegx1, TLegy1, TLegx2, TLegy2, NULL,"brNDC");
-  
   temp_canvJetRapBins->cd();
+
+  int latexsize=26;
+  float t1Loc1=0.30, t1Loc2=0.85, deltaLoc=0.027;//for text later
   
-  std::cout<<"drawing dual-differential cross section plot"<<std::endl;	
+  float TLegx2=0.88 ,TLegx1=TLegx2-.3;
+  float TLegy2=0.88, TLegy1=TLegy2-.25;
+
+  TLegend* theJetRapHistLeg=new TLegend(TLegx1, TLegy1, TLegx2, TLegy2, NULL,"brNDC");
+  theJetRapHistLeg->SetFillStyle(0);
+  theJetRapHistLeg->SetBorderSize(0);
+  
+  
+
   std::cout<<"looping over "<<nbins_abseta<<" rapidity bins"<<std::endl;      
   
-  float power=std::pow(10., 7.);//std::pow(10., 8.);
-  int bincounter=8;
+
   float totalIntXsec=0.0;
+  const int bincounter_perm=nbins_abseta-1;  
+  int bincounter=bincounter_perm;
+  float power=std::pow(10., ((float)bincounter)); 
   
-  for(int rapbin=0; rapbin<8; ++rapbin){	
+  
+  float min=-1., max=-1.;
+  //find min/max for making the range of the y axis appropriate
+  if(funcDebug)std::cout<<"finding min/max of hists"<<std::endl;
+  for(int rapbin=0; rapbin<nbins_abseta; ++rapbin){	
+
+    if(rapbin==6)
+      continue;  
+    
+    //only care about most central and most peripheral |y| bins
+    std::string rapbin_str=absetabins_str[rapbin]+" < |y| <"+absetabins_str[rapbin+1];
+    if(funcDebug)std::cout<<"rapbin="<<rapbin<<std::endl;
+    if(funcDebug)std::cout<<"rapbin_str="<<rapbin_str<<std::endl;
+    
+    //open the hists + rebin
+    std::string inHistName="hJetSpectraRap";	
+    if(doJetIDPlots) inHistName+="_wJetID"; 
+    inHistName+="_bin"+std::to_string(rapbin);
+    if(funcDebug)std::cout<<"inHistName="<<inHistName<<std::endl;	    
+    
+    TH1F* theJetSpectraRapHist= (TH1F*) finData->Get( inHistName.c_str() );
+    theJetSpectraRapHist=(TH1F*)theJetSpectraRapHist->
+      TH1::Rebin(nbins_pt_debug, (inHistName+"_rebin").c_str(), ptbins_debug);
+    //theJetSpectraRapHist->Scale(1./(1.e+6));//to nanobarns
+    
+    //rescaling
+    divideBinWidth(theJetSpectraRapHist);    
+    if(rapbin==7) theJetSpectraRapHist->Scale(1/3.); //3.2 - 4.7
+    theJetSpectraRapHist->Scale( 1./theLumi);
+    theJetSpectraRapHist->Scale( power );
     
     
-    if(rapbin!=6){
-      power/=10.;
-      bincounter=bincounter-1;
-      //if(rapbin>5)continue;
+    
+    power/=10.;
+    bincounter=bincounter-1;
+
+    
+    if(rapbin==0 || rapbin==(nbins_abseta-1))      {
+      if(funcDebug)std::cout<<"this is one of the bins i'm looking for!"<<std::endl;}
+    else{
+      if(funcDebug)std::cout<<"not the most central nor most peripheral bin; continue"<<std::endl;
+      continue;
     }
+
+    if(rapbin==0){
+      //theJetSpectraRapHist->Reset("M");//reset min/max
+      max=theJetSpectraRapHist->GetMaximum()*1000.;
+      min=1.e-7;
+    }
+    //else if(rapbin==(nbins_abseta-1))min=theJetSpectraRapHist->GetMaximum();///(1.e+8);//*(1.e-8);//because root thinks the minimum is 0 because empty bins
     
-    else{  std::cout<<"rapbin==6, continuing on..."<<std::endl;
+    if(funcDebug)std::cout<<"max="<<max<<std::endl;
+    if(funcDebug)std::cout<<"min="<<min<<std::endl;
+    
+    
+  }
+  if(min<0. || max<0.)assert(false);
+  //assert(false);
+  bincounter=bincounter_perm;  
+  power=std::pow(10., ((float)bincounter)); 
+  for(int rapbin=0; rapbin<nbins_abseta; ++rapbin){	
+    
+    
+    if(rapbin==6){  std::cout<<"rapbin==6, continuing on..."<<std::endl;
       continue;  }
     
+
     //open the hists + rebin
     std::string inHistName="hJetSpectraRap";	
     if(doJetIDPlots) inHistName+="_wJetID"; 
@@ -1070,20 +1130,22 @@ void printJetSpectraRapHists( TFile* finData , TFile* finMC, bool doJetIDPlots,
     if(funcDebug)std::cout<<"inHistName="<<inHistName<<std::endl;	
     
     
-    
     TH1F* theJetSpectraRapHist= (TH1F*) finData->Get( inHistName.c_str() );
     theJetSpectraRapHist=(TH1F*)theJetSpectraRapHist->
       TH1::Rebin(nbins_pt_debug, (inHistName+"_rebin").c_str(), ptbins_debug);
-    divideBinWidth(theJetSpectraRapHist);
+    //theJetSpectraRapHist->Scale(1./(1.e+6));//to nanobarns
+    //rescaling
+    divideBinWidth(theJetSpectraRapHist);    
     if(rapbin==7) theJetSpectraRapHist->Scale(1/3.); //3.2 - 4.7
     theJetSpectraRapHist->Scale( 1./theLumi);
+    std::cout<<"bincounter for power scaling=="<<bincounter<<std::endl;
     theJetSpectraRapHist->Scale( power );
     
+    //integrated xsec calculation
     float integral=theJetSpectraRapHist->Integral(); //correct this, integral doesnt account for bin width
     std::cout<<"integral="<<integral/power<<std::endl;
     totalIntXsec+=(integral/power);
-    std::cout<<"totalIntXsec="<<totalIntXsec<<std::endl;
-    
+    std::cout<<"totalIntXsec="<<totalIntXsec<<std::endl;    
     
     theJetSpectraRapHist->SetMarkerStyle( kFullDotLarge ) ;
     theJetSpectraRapHist->SetMarkerColor( theRapOverlayMarkerColor[rapbin] );
@@ -1091,14 +1153,12 @@ void printJetSpectraRapHists( TFile* finData , TFile* finMC, bool doJetIDPlots,
     
     
     // MC Hist
-    std::string inMCHistName="hJetSpectraRap";	
-    if(doJetIDPlots) inMCHistName+="_wJetID"; 
-    inMCHistName+="_bin"+std::to_string(rapbin);
-    if(funcDebug)std::cout<<"inMCHistName="<<inMCHistName<<std::endl;	
-    
-    
     TH1F* theMCJetSpectraRapHist=NULL;
     if(drawMC){
+      std::string inMCHistName="hJetSpectraRap";	
+      if(doJetIDPlots) inMCHistName+="_wJetID"; 
+      inMCHistName+="_bin"+std::to_string(rapbin);
+      if(funcDebug)std::cout<<"inMCHistName="<<inMCHistName<<std::endl;	          
       theMCJetSpectraRapHist= (TH1F*)finMC->Get(inMCHistName.c_str()) ;
       theMCJetSpectraRapHist=(TH1F*)theMCJetSpectraRapHist->
 	TH1::Rebin(nbins_pt_debug, (inMCHistName+"_rebin").c_str(), ptbins_debug);
@@ -1106,55 +1166,46 @@ void printJetSpectraRapHists( TFile* finData , TFile* finMC, bool doJetIDPlots,
       if(rapbin==7) theMCJetSpectraRapHist->Scale(1./3.); //3.2 - 4.7
       theMCJetSpectraRapHist->Scale( 1000. ); 
       theMCJetSpectraRapHist->Scale( power ); //i think the MC pthat weights are in units of nanobarns? multiply by 1000 
-      //theMCJetSpectraRapHist->Scale( theJetSpectraRapHist->Integral()/theMCJetSpectraRapHist->Integral() );
-      
-      theMCJetSpectraRapHist->SetLineColor( theRapOverlayMarkerColor[rapbin] );
-    }
+      //theMCJetSpectraRapHist->Scale( theJetSpectraRapHist->Integral()/theMCJetSpectraRapHist->Integral() );      
+      theMCJetSpectraRapHist->SetLineColor( theRapOverlayMarkerColor[rapbin] );    }
     
-    std::stringstream stream1, stream2;
-    stream1.precision(1); stream1 << std::fixed << absetabins[rapbin];
-    stream2.precision(1); stream2 << std::fixed << absetabins[rapbin+1];
+    std::string rapHistLegDesc="("+absetabins_str[rapbin]+" < #||{y} < "+absetabins_str[rapbin+1]+") x 10^{  "+std::to_string(bincounter)+"}";	
+    theJetRapHistLeg->AddEntry(theJetSpectraRapHist,(rapHistLegDesc).c_str(),"lp");
+    if(drawMC)theJetRapHistLeg->AddEntry(theMCJetSpectraRapHist,"PY8 QCD MC","l");
+
     
-    if(rapbin==0){
-      //      std::string rapHistLegDesc="(|y| < "+stream2.str()+") x 10^{"+std::to_string(bincounter)+"}";	
-      std::string rapHistLegDesc="(|y| < "+stream2.str()+") x 10^{"+std::to_string(bincounter-1)+"}";	
-      theJetRapHistLeg->AddEntry(theJetSpectraRapHist,(rapHistLegDesc).c_str(),"lp");
-      if(drawMC)theJetRapHistLeg->AddEntry(theMCJetSpectraRapHist,"PY8 QCD MC","l");
-    }
-    else{
-      //std::string rapHistLegDesc="("+stream1.str()+" < |y| <"+stream2.str()+") x10^{"+std::to_string(bincounter)+"}";	
-      std::string rapHistLegDesc="("+stream1.str()+" < |y| <"+stream2.str()+") x10^{"+std::to_string(bincounter-1)+"}";	
-      theJetRapHistLeg->AddEntry(theJetSpectraRapHist,(rapHistLegDesc).c_str(),"lp");
-      if(drawMC)theJetRapHistLeg->AddEntry(theMCJetSpectraRapHist,"PY8 QCD MC","l");
-    }
+    power/=10.;
+    bincounter=bincounter-1;
     
     if(rapbin==0){
       
-      std::string h_Title   ="Jet Pt in |y| bins";
-      if(doJetIDPlots) h_Title+=", w/ JetIDCut";
+      std::string h_Title   ="Detector Level Jet p_{  T}";
+      //if(doJetIDPlots) h_Title+=", w/ JetIDCut";
       theJetSpectraRapHist->SetTitle (    h_Title.c_str() );
       
-      std::string h_XAx_Title="Jet p^{RECO}_{T} (GeV)", h_YAx_Title="d^{2}#sigma / d|y| dp_{T} (#mu b)";//crossSectionAxTitle;
+      std::string h_XAx_Title="Jet p^{  RECO}_{T} (GeV)", h_YAx_Title="d^{2}#sigma/d#||{y}dp_{T} [nb/GeV]";//crossSectionAxTitle;
       theJetSpectraRapHist->SetXTitle( h_XAx_Title.c_str() );
       theJetSpectraRapHist->SetYTitle( h_YAx_Title.c_str() );
-      theJetSpectraRapHist->SetAxisRange(std::pow(10.,-10.),std::pow(10.,5.5),"Y");
+      theJetSpectraRapHist->SetAxisRange(min, max,"Y");
+      //theJetSpectraRapHist->SetAxisRange(std::pow(10.,-10.),std::pow(10.,5.5),"Y");
       //theJetSpectraRapHist->SetAxisRange(std::pow(10.,-9.),std::pow(10.,6.5),"Y");
       //theJetSpectraRapHist->SetAxisRange(60.,840.,"X");
       
       theJetSpectraRapHist->GetXaxis()->SetMoreLogLabels(true);
       theJetSpectraRapHist->GetXaxis()->SetNoExponent(true);
-      theJetSpectraRapHist->Draw("E");     	  
+      theJetSpectraRapHist->Draw("P E");     	  
       if(drawMC)theMCJetSpectraRapHist->Draw("HIST E SAME");     	  
-      theJetRapHistLeg->Draw(); 
     }
     else { 
-      theJetSpectraRapHist->Draw("E SAME");
+      theJetSpectraRapHist->Draw("P E SAME");
       if(drawMC)theMCJetSpectraRapHist->Draw("HIST E SAME");
-      }
+    }
     
   }//end rapbin hist loop
 
+  theJetRapHistLeg->Draw(); 
 
+  
 
   // STRINGS FOR HISTS
 
@@ -1165,14 +1216,16 @@ void printJetSpectraRapHists( TFile* finData , TFile* finMC, bool doJetIDPlots,
   std::string jetCutString="p_{T}^{RECO} > "+jtptCut_str+" GeV";
   std::cout<<"jetCutString="<<jetCutString<<std::endl;
 
-  
   std::cout<<"FINAL TOTAL INT JET XSEC="<<totalIntXsec<<std::endl;
-  float t1Loc1=0.582, t1Loc2=0.86, deltaLoc=0.025;
-  TLatex *pp1=makeTLatex(t1Loc1,t1Loc2,"pp 2015 promptReco, #sqrt{s} = 5.02 TeV");  pp1->Draw();  
-  TLatex *pp2=makeTLatex(t1Loc1,(t1Loc2-deltaLoc),"Jet80+LowerJets, L_{int} = 27.4 pb^{-1}");  pp2->Draw();
+  TLatex *pp1=makeTLatex(t1Loc1,t1Loc2,"2015 pp, #sqrt{s} = 5.02 TeV",latexsize);  
+  TLatex *pp2=makeTLatex(t1Loc1,(t1Loc2-deltaLoc),"Jet80+LowerJets, L_{   int} = 27.4 pb^{ -1}",latexsize);  
+  TLatex *t1=makeTLatex(t1Loc1,(t1Loc2-2*deltaLoc),(fullJetType+"Jets").c_str(),latexsize);   
+  TLatex *t2=makeTLatex(t1Loc1,(t1Loc2-3*deltaLoc),(jetCutString).c_str(),latexsize);    
+  pp1->Draw();  
+  pp2->Draw();
+  t1->Draw();
+  t2->Draw();
   
-  TLatex *t1=makeTLatex(t1Loc1,(t1Loc2-2*deltaLoc),(fullJetType+"Jets").c_str());    t1->Draw();
-  TLatex *t2=makeTLatex(t1Loc1,(t1Loc2-3*deltaLoc),(jetCutString).c_str());    t2->Draw();
   if(drawMC)    { 
     TH1F* genjtptCut_h= (TH1F*)finMC->Get( "hGenJetPtCut" );
     std::string genjtptCut_str = std::to_string( (int) genjtptCut_h->GetMean() );
@@ -1185,9 +1238,10 @@ void printJetSpectraRapHists( TFile* finData , TFile* finMC, bool doJetIDPlots,
     t3->Draw(); 
   }
   if(doJetIDPlots)    { 
-      TLatex *t4=makeTLatex(t1Loc1,(t1Loc2-5*deltaLoc),"Jet ID Applied");      t4->Draw();	  
+    TLatex *t4=makeTLatex(t1Loc1,(t1Loc2-4.5*deltaLoc),"Jet ID Applied",latexsize);      
+    t4->Draw();	  
   }
-
+  
   temp_canvJetRapBins->Print( thePDFFileName.c_str() );
   temp_canvJetRapBins->Close();  
   return;

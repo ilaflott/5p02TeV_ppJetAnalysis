@@ -25,11 +25,10 @@ const int jetTrigQABinning=10;
 
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 
 // Error in <TAxis::TAxis::Set>: bins must be in increasing order
-const Double_t ptbins_debug[]={
-  
+const Double_t ptbins_debug[]={  
   //32.,
   //37.,  //40., //this junk bin added in for cosmetics
-  43., 
+  //43., 
   49., //junk bins from here an above
   56.,   64.,   74.,   84., 97., 114., 
   133., 153., 174., 196., 220., 
@@ -38,24 +37,37 @@ const Double_t ptbins_debug[]={
   468., 507., 
   548., 592., 638., 
   686., 
-  //737., 
-  //790., 
-  //846., 
-  //905., 
-  //967 ., // end of SMP Official bin limits 
-  1000. //,  // to catch overflow or other entries?
+  737., 
+  790., 
+  846., 
+  905., 
+  967. //, // end of SMP Official bin limits 
+  //1000. //,  // to catch overflow or other entries?
   //1050. // junk bin, cosmetics only
 }; 
 const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;
 
 
-// eta bins/boundaries
+// eta bins/boundarie
 const Double_t absetabins[]={
-  0.0, 0.5,  
-  1.0, 1.5,  
-  2.0, 2.5,  
-  3.0, 3.2,  
-  4.7
+  0.0, 
+  0.5,  
+  1.0, 
+  1.5,  
+  2.0, 
+  2.5,  
+  3.0//, 3.2,  
+  //  4.7
+};
+std::string absetabins_str[]={
+  "0.0", 
+  "0.5",  
+  "1.0", 
+  "1.5",  
+  "2.0", 
+  "2.5",  
+  "3.0"//, 3.2,  
+  //  4.7
 };
 const int nbins_abseta = sizeof(absetabins)/sizeof(Double_t)-1;
 

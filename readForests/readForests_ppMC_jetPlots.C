@@ -569,7 +569,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	else if( !(absreceta>3.0) && absreceta>2.7 )
 	  passesJetID=(bool) jetID_27eta30( jetIDpt,
 					    neSum_F[jet],  phSum_F[jet], 
-					    numConst);
+					    neuMult);
 	else  
 	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
 					   phSum_F[jet]);

@@ -7,10 +7,10 @@
 const bool debugMode=false, doEventCounts=true;//, doJetIDPlots=true;
 
 //draw switches
-const bool drawEvtQAPlots=true;
-const bool drawJetQAPlots=true;
+const bool drawEvtQAPlots=false;
+const bool drawJetQAPlots=false;
 const bool drawJetConstituentPlots=drawJetQAPlots&&true, drawDijetPlots=drawJetQAPlots&&false;
-const bool drawJetRapBinsPlot=false;//, drawGENJetRapBinsPlot=true;  
+const bool drawJetRapBinsPlot=true;//, drawGENJetRapBinsPlot=true;  
 
 
 
@@ -19,7 +19,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 			const std::string output_PDFname_base){
   
 
-  globalHistStyle();
+  //  globalHistStyle();
   
   //figure out what radius/jetcollection we are looking at using the ppData filename
   std::size_t radPos=input_ppData_condorDir.find("_ak")+3;  
@@ -72,8 +72,9 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     std::cout << "inputDir               =" << inputDir << std::endl;
     std::cout << "input_ppMC_condorDir =" << input_ppMC_condorDir << std::endl;
     std::cout << "input_ppMC_filename  =" << input_ppMC_Filename << std::endl;
-    std::cout << "exiting." << std::endl;
-    assert(false);      }
+    //std::cout << "exiting." << std::endl;
+    //assert(false);      
+  }
   
   
   
@@ -116,9 +117,9 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     printDataEventCountReport((TFile*) finData);
     printDataJetCountReport( (TFile*)finData);
   
-    printMCEventCountReport( (TFile*)finMC);    
-    printMCJetCountReport( (TFile*)finMC);    
-    assert(false);
+    if((bool)finMC)printMCEventCountReport( (TFile*)finMC);    
+    if((bool)finMC)printMCJetCountReport( (TFile*)finMC);    
+    //assert(false);
 
     //assert(false);    
     
@@ -227,19 +228,19 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     std::cout<<" drawing dual-diff xsec plot(s)..."<<std::endl;
     
     //print dual diff xsec w/ data and MC (RECO)
-    printJetSpectraRapHists( (TFile*) finData , (TFile*) finMC   ,  (bool)doJetIDPlots, 
-			     (std::string) thePDFFileName  , (std::string) fullJetType, 
-			     (long double) theLumi  );   
+    //printJetSpectraRapHists( (TFile*) finData , (TFile*) finMC   ,  (bool)doJetIDPlots, 
+    //			     (std::string) thePDFFileName  , (std::string) fullJetType, 
+    //			     (long double) theLumi  );   
     
     //print dual diff xsec w/ data only (RECO)
     printJetSpectraRapHists( (TFile*) finData , NULL   ,  (bool)doJetIDPlots, 
     			     (std::string) thePDFFileName  , (std::string) fullJetType, 
 			     (long double) theLumi  );   
     
-    //print dual diff xsec w/ MC only (RECO v GEN)
-    printMCJetSpectraRapHists( (TFile*) finMC   ,  (bool)doJetIDPlots, 
-			       (std::string) thePDFFileName  , (std::string) fullJetType);
-
+    ////print dual diff xsec w/ MC only (RECO v GEN)
+    //printMCJetSpectraRapHists( (TFile*) finMC   ,  (bool)doJetIDPlots, 
+    //			       (std::string) thePDFFileName  , (std::string) fullJetType);
+    //assert(false);
   }
   
 

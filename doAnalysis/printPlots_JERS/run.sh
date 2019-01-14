@@ -23,11 +23,20 @@ echo ""
 
 ## usage
 ## source run_printPlots_ppMC_JERS.sh <radius> <condordir> <date input> <input etabin tag> <output etabin desc> <doJERplots> <doMCEffplots> <abs eta bin>
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "00eta20" "1" "0" "-1"        #JER 0-2only
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "00eta05" "1" "0" "0"        #JER 0-2only
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "05eta10" "1" "0" "1"        #JER 0-2only
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "10eta15" "1" "0" "2"        #JER 0-2only
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "15eta20" "1" "0" "3"        #JER 0-2only
+
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "00eta20" "1" "0" "-1"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "00eta05" "1" "0" "0"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "05eta10" "1" "0" "1"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "10eta15" "1" "0" "2"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "15eta20" "1" "0" "3"        #JER 0-2only
+
+
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "00eta05" "1" "0" "0"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "05eta10" "1" "0" "1"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "10eta15" "1" "0" "2"        #JER 0-2only
+source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "15eta20" "1" "0" "3"        #JER 0-2only
+source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "20eta25" "1" "0" "4"        #JER 0-2only
+source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "25eta30" "1" "0" "5"        #JER 0-2only
 
 
 scp2Serin output/ak4PF\*

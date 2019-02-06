@@ -267,7 +267,9 @@ void trigRatioHistStyle(TH1* h, int j){
   
   h->SetMarkerStyle( theTrigOverlayMarker[j]);
   h->SetMarkerColor( theTrigOverlayMarkerColor[j] );
-  h->SetMarkerSize( 0.90);
+  h->SetMarkerSize( 0.);//0.90);
+
+  h->SetLineColor(theTrigOverlayMarkerColor[j]);
   
   h->GetXaxis()->SetLabelSize(0.08);
   h->GetXaxis()->SetTitleSize(0.08);
@@ -277,8 +279,7 @@ void trigRatioHistStyle(TH1* h, int j){
   h->GetYaxis()->SetTitle("Combo/Indiv.");
   
   
-  
-  h->SetLineColor(   theTrigOverlayLineColor[j]   );
+  //h->SetLineColor(   theTrigOverlayLineColor[j]   );
   
   //h->SetAxisRange(40.,1000.,"X");
   

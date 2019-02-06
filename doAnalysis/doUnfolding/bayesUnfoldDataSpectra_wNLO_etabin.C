@@ -5,17 +5,18 @@ const bool drawPDFs=true;
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
+const bool doBiasTest=false;
 //const bool applyNPCorrs=true; 
 //double unfptlo=56.;
 //double unfpthi=
 
 // CODE --------------------------------------------------
-int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInput=5,
+int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-06-19_jetPlots_0.0eta2.0",  
 					std::string baseName="Bayes_test" , 
+				       const int etabinint=0,const int kIterInput=5,
 					std::string inFile_MC_dir  = "smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/", 
 					std::string inFile_MC_name ="NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
-					std::string inFile_Data_dir= "01.06.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-06-19_jetPlots_0.0eta2.0", 
-					const bool applyNPCorrs=true,
+				       const bool applyNPCorrs=true,
 					const bool doJetID=true     , 
 					const bool useSimpBins=false){//, 
   //const int kIterInput=5 ){//, //const int etabinint=0){
@@ -75,6 +76,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   else if(etabinint==3){
     etabin_str="15eta20";
     RandEtaRange+="_15_eta_20";  }
+  else if(etabinint==4){
+    etabin_str="20eta25";
+    RandEtaRange+="_20_eta_25";  }
+  else if(etabinint==5){
+    etabin_str="25eta30";
+    RandEtaRange+="_25_eta_30";  }
   RandEtaRange_plotTitle+=etabin_str;  
   if(debugMode)std::cout<<"etabin_str string is = "<<etabin_str<<std::endl;
   if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
@@ -109,6 +116,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   std::string outRespMatPdfFile =  outFileName+"_respMat.pdf";
   std::string outBayesPdfFile =  outFileName+".pdf";
   std::string outRootFile     =  outFileName+".root";  
+  if(doBiasTest){
+    std::cout<<"conducting bias test!"<<std::endl;
+    outRespMatPdfFile =  outFileName+"_respMat_biasTest3.pdf";
+    outBayesPdfFile =  outFileName +"_biasTest3.pdf";
+    outRootFile     =  outFileName +"_biasTest3.root";  
+  }
   
 //checkNRenameFiles ( (const std::string) outFileName, 
 //		      &outRespMatPdfFile, 
@@ -137,9 +150,14 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   hgen->Scale(1./NLOMCscaling);//05/09/18
   hgen->Scale(etaBinWidth);
   multiplyBinWidth(hgen);  
+  
   if(debugWrite)hgen->Write(genHistTitle.c_str());
   if(debugMode)hgen->Print("base");    
   
+  std::cout<<"           hgen->Integral()="<<hgen->Integral()<<std::endl;
+  std::cout<<"         hgen->GetEntries()="<<hgen->GetEntries()<<std::endl;
+  std::cout<<"hgen->GetEffectiveEntries()="<<hgen->GetEffectiveEntries()<<std::endl;  
+  std::cout<<std::endl;
 
   //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
   const int nbins_pt = hgen->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
@@ -182,6 +200,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   hgen_rebin->SetLineColor(kMagenta);
   hgen_rebin->SetMarkerSize(1.02);     	
 
+  std::cout<<"           hgen_rebin->Integral()="<<hgen_rebin->Integral()<<std::endl;
+  std::cout<<"         hgen_rebin->GetEntries()="<<hgen_rebin->GetEntries()<<std::endl;
+  std::cout<<"hgen_rebin->GetEffectiveEntries()="<<hgen_rebin->GetEffectiveEntries()<<std::endl;
+  std::cout<<std::endl;
 
   // ---------- open MC "response" matrix 
   std::string TH2_title="response";//"_ynew_th2"
@@ -193,6 +215,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   hmat->Scale(1./NLOMCscaling);//05/09/18
   if(debugWrite)hmat->Write(TH2_title.c_str());
   if(debugMode)hmat->Print("base");
+  std::cout<<"           hmat->Integral()="<<hmat->Integral()<<std::endl;
+  std::cout<<"         hmat->GetEntries()="<<hmat->GetEntries()<<std::endl;
+  std::cout<<"hmat->GetEffectiveEntries()="<<hmat->GetEffectiveEntries()<<std::endl;
   
   // rebinned matrix ---------------
   TH2_title+="_clone";
@@ -206,6 +231,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   			      (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
   if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
   if(debugMode)hmat_rebin->Print("base"); 
+  std::cout<<"           hmat_rebin->Integral()="<<hmat_rebin->Integral()<<std::endl;
+  std::cout<<"         hmat_rebin->GetEntries()="         <<hmat_rebin->GetEntries()<<std::endl;
+  std::cout<<"hmat_rebin->GetEffectiveEntries()="<<hmat_rebin->GetEffectiveEntries()<<std::endl;
   
   if(clearOverUnderflows){
     TH2_title+="_noOverUnderFlows";
@@ -246,6 +274,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   multiplyBinWidth(hrec_sameside);
   if(debugWrite)hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
+
+  std::cout<<"           hrec_sameside->Integral()="<<hrec_sameside->Integral()<<std::endl;
+  std::cout<<"         hrec_sameside->GetEntries()="<<hrec_sameside->GetEntries()<<std::endl;
+  std::cout<<"hrec_sameside->GetEffectiveEntries()="<<hrec_sameside->GetEffectiveEntries()<<std::endl;
+  std::cout<<std::endl;
   
   histTitle2+="_clone";
   TH1D *hrec_sameside_rebin = (TH1D*)hrec_sameside->Clone( (histTitle2).c_str() );
@@ -257,6 +290,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   hrec_sameside_rebin = (TH1D*)hrec_sameside_rebin->Rebin( nbins_pt_reco, (histTitle2).c_str() , boundaries_pt_reco);
   if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );   
   if(debugMode)hrec_sameside_rebin->Print("base");  
+
+  std::cout<<"           hrec_sameside_rebin->Integral()="<<hrec_sameside_rebin->Integral()<<std::endl;
+  std::cout<<"         hrec_sameside_rebin->GetEntries()="<<hrec_sameside_rebin->GetEntries()<<std::endl;
+  std::cout<<"hrec_sameside_rebin->GetEffectiveEntries()="<<hrec_sameside_rebin->GetEffectiveEntries()<<std::endl;
+  std::cout<<std::endl;
   
   if(clearOverUnderflows){
     histTitle2+="_noOverUnderFlows";
@@ -348,6 +386,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   if(debugWrite)hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");
   
+  std::cout<<"           hrec->Integral()="<<hrec->Integral()<<std::endl;
+  std::cout<<"         hrec->GetEntries()="<<hrec->GetEntries()<<std::endl;
+  std::cout<<"hrec->GetEffectiveEntries()="<<hrec->GetEffectiveEntries()<<std::endl;
+  
+  
   histTitle+="_clone";
   TH1D *hrec_rebin = (TH1D*)hrec->Clone( (histTitle).c_str() );
   if(debugWrite)hrec_rebin->Write(histTitle.c_str());
@@ -356,9 +399,19 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   std::cout<<"rebinning hrec..."<<std::endl;
   histTitle+="_rebins";
   hrec_rebin = (TH1D*)hrec_rebin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
+  if(doBiasTest)
+    addLinearBias((TH1F*) hrec_rebin);
+  //  assert(false);
+
   if(debugWrite)hrec_rebin->Write(histTitle.c_str());   
   if(debugMode)hrec_rebin->Print("base");  
-    
+
+  std::cout<<std::endl;
+  std::cout<<"           hrec_rebin->Integral()="<<hrec_rebin->Integral()<<std::endl;
+  std::cout<<"         hrec_rebin->GetEntries()="<<hrec_rebin->GetEntries()<<std::endl;
+  std::cout<<"hrec_rebin->GetEffectiveEntries()="<<hrec_rebin->GetEffectiveEntries()<<std::endl;
+  std::cout<<std::endl;
+
   if(clearOverUnderflows){
     histTitle+="_noOverUnderFlows";
     TH1clearOverUnderflows((TH1*)hrec_rebin);
@@ -444,13 +497,24 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   TH1D* hfak=  (TH1D*) roo_resp.Hfakes() ;
   hfak->Print("base");
 
+  std::cout<<std::endl;
+  std::cout<<"           hfak->Integral()="<<hfak->Integral()<<std::endl;
+  std::cout<<"         hfak->GetEntries()="<<hfak->GetEntries()<<std::endl;
+  std::cout<<"hfak->GetEffectiveEntries()="<<hfak->GetEffectiveEntries()<<std::endl;
+  std::cout<<std::endl;
+
   //cosmetics
   hfak->SetMarkerColor(kGreen);
   hfak->SetLineColor(kGreen);
+
+
+
+
+
   
   
   // Bayesian unfolding -------------------------   
-  std::cout<<"calling RooUnfoldBayes..."<<std::endl;  
+  std::cout<<"calling RooUnfoldBayes... kIterInput="<<kIterInput<<std::endl;  
   RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIterInput );
   unf_bayes.SetVerbose(verbosity);
   if(doToyErrs){
@@ -458,12 +522,21 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
     unf_bayes.SetNToys(10000);
     unf_bayes.SetVerbose(1);
   }
-  std::cout<<"RooUnfoldBayes Overflow Status: " << unf_bayes.Overflow()<<std::endl;
+  std::cout<<"Overflow Status: " << unf_bayes.Overflow()<<std::endl<<std::endl;
   
+  std::cout<<"unfolding hrec w/ Hreco func"<<std::endl;
   TH1D *hunf = (TH1D*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_BayesUnf_Spectra");
   hunf->SetTitle( ("Unf. Data, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hunf->Print("base");
+  
+  //  assert(false);
+
+  std::cout<<std::endl;  
+  std::cout<<"           hunf->Integral()="<<hunf->Integral()<<std::endl;
+  std::cout<<"         hunf->GetEntries()="<<hunf->GetEntries()<<std::endl;
+  std::cout<<"hunf->GetEffectiveEntries()="<<hunf->GetEffectiveEntries()<<std::endl;
+
 
   std::string descString="";
   getUnfDetails(hunf,&descString);
@@ -481,6 +554,14 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   hfold->SetTitle(("Fold. Data, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hfold->Print("base");
   
+
+  std::cout<<std::endl;
+
+  std::cout<<"           hfold->Integral()="<<hfold->Integral()<<std::endl;
+  std::cout<<"         hfold->GetEntries()="<<hfold->GetEntries()<<std::endl;
+  std::cout<<"hfold->GetEffectiveEntries()="<<hfold->GetEffectiveEntries()<<std::endl;
+  
+
   //cosmetics
   hfold->SetMarkerStyle(kOpenCircle);
   hfold->SetMarkerColor(kGreen-5);
@@ -492,6 +573,14 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   hfold_truth->SetName("ppMC_BayesFoldMCTruth_Spectra");
   hfold_truth->SetTitle(("Fold. Toy NLO Truth, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hfold_truth->Print("base");
+
+  std::cout<<std::endl;
+
+  std::cout<<"           hfold_truth->Integral()="<<hfold_truth->Integral()<<std::endl;
+  std::cout<<"         hfold_truth->GetEntries()="<<hfold_truth->GetEntries()<<std::endl;
+  std::cout<<"hfold_truth->GetEffectiveEntries()="<<hfold_truth->GetEffectiveEntries()<<std::endl;
+  
+
   
   //cosmetics
   hfold_truth->SetMarkerStyle(kOpenStar);
@@ -535,9 +624,16 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   unfmat_TH2->SetName("Bayes_unfoldingMatrix_TH2");  
   if(debugMode)unfmat_TH2->Print("base");
   if(debugWrite)unfmat_TH2->Write();
-  
 
 
+  std::cout<<std::endl;
+
+  std::cout<<"           unfmat_TH2->Integral()="<<unfmat_TH2->Integral()<<std::endl;
+  std::cout<<"         unfmat_TH2->GetEntries()="<<unfmat_TH2->GetEntries()<<std::endl;
+  std::cout<<"unfmat_TH2->GetEffectiveEntries()="<<unfmat_TH2->GetEffectiveEntries()<<std::endl;  
+
+
+  //assert(false);
 
 
   // --------- RATIOS WITH TOY NLO TRUTH ----------------
@@ -642,6 +738,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   
   int kIter_start=kIterInput-kIterRange;
   int kIter_end=kIterInput+kIterRange;
+  TH1D *hchi2iter=NULL;//(TH1D*)unf_bayes.getChi2iter();
   
   if(dokIterQA){
     if(debugMode)std::cout<<"unfolding across diff kIter values"<<std::endl;
@@ -660,7 +757,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
       hunf_bayes[ki]->SetMarkerColor(kRed);
       hunf_bayes[ki]->SetLineColor(kRed);
       hunf_bayes[ki]->SetMarkerSize(1.02);     
-
+      
+      if(ki==(nKiterMax-1))
+	hchi2iter=unf_bayes_kIterQA.getChi2iter();
+      
       if(debugMode)hunf_bayes[ki]->Print("base");
       
       hfold_bayes[ki]=(TH1D*)roo_resp.ApplyToTruth(hunf_bayes[ki]);
@@ -875,7 +975,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_fold_ratio2=NULL, *canv_thy_ratio=NULL,*canv_thy_ratio2=NULL; 
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
-  TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kIterRatio;
+  TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kIterRatio=NULL,  *canv_chi2iter=NULL;
   TCanvas *canv_3x3covmat=NULL, *canv_3x3covmatabsval=NULL, *canv_3x3pearson=NULL;
   
   TH2D* hmat_percenterrs=NULL;
@@ -1262,7 +1362,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
     
     canv_thy_ratio2=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
-    
+
+
     
     // NJets v. Jet p_T hist (all weight=1) ---------------------    
     if( (bool)hJetQA_jtptEntries )      {
@@ -1465,9 +1566,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
       canv_3x3pearson->Print(outPdfFile.c_str());
       
       
-      
+      // ratio of smallest kIter to largest kIter done -----------------------
       canv_kIterRatio=new TCanvas("canv_kiter_ratio","canv kiter ratio" , 1500, 1500);
-
+      
       canv_kIterRatio->SetName(("canv_hunf_ratio_kIter"+std::to_string(kIter_start)+"_v_kIter"+std::to_string(kIter_end)).c_str());
       canv_kIterRatio->SetTitle(("Unf. Ratio, kIter="+std::to_string(kIter_start)+"/kIter="+std::to_string(kIter_end)+" Canvas").c_str());
       canv_kIterRatio->cd()->SetLogx(1);
@@ -1491,7 +1592,24 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
 
       
       canv_kIterRatio->Print(outPdfFile.c_str());
+
+
+      // chi2 between iterations hist ------------
+      canv_chi2iter=new TCanvas("canv_chi2iter","canv chi2iter" , 1500, 1500);
+      canv_chi2iter->cd();
+      canv_chi2iter->SetLogy(1);
+      canv_chi2iter->SetLogx(0);
       
+      hchi2iter->DrawClone("][HIST");
+      
+      TLine* chi2cutoffline=new TLine( (float)hchi2iter->GetBinLowEdge(1),
+				      1.0e-2, 
+				      (float)hchi2iter->GetBinLowEdge(hchi2iter->GetNbinsX())+1,
+				      1.0e-2);
+      chi2cutoffline->SetLineStyle(5);
+      chi2cutoffline->Draw();
+      
+      canv_chi2iter->Print(outPdfFile.c_str());      
       
     }
     
@@ -1583,6 +1701,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
   
   if(dokIterQA){
     hkiter_ratio->Write();
+    hchi2iter->Write();
     
     TDirectory* fout_kiter_dir=fout->mkdir("all_kiter_plots");
     fout_kiter_dir->cd();
@@ -1628,6 +1747,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin( const int etabinint=0,const int kIterInp
     if(dokIterQA){ canv_3x3covmatabsval->SetTitle("3x3 |Covariance| Matrix kIter QA Canvas");    canv_3x3covmatabsval->Write("canv_3x3covmatabsval");}
     if(dokIterQA){ canv_3x3pearson->SetTitle("3x3 PearsonMatrix kIter QA Canvas");    canv_3x3pearson->Write("canv_3x3pearson");}
     if(dokIterQA) canv_kIterRatio->Write();
+    if(dokIterQA) canv_chi2iter->Write();
 
   }
   
@@ -1659,16 +1779,24 @@ int main(int argc, char* argv[]){
 //rStatus=bayesUnfoldDataSpectra_wNLO_etabin(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], 
 //						 (int)std::atoi(argv[5]),
 //						 (int)std::atoi(argv[6]) , (int)std::atoi(argv[7]), (const int)std::atoi(argv[8]) , (const int) std::atoi(argv[9]) );   
-  if(argc==2){
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-    
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//  if(argc==2){
+//     rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,15,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+  //}
+  if (argc==3){
+    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5);    
+    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
+    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
+    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
+    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
+    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
   }
   else {
     //std::cout<<"do ./bayesUnfoldDataSpectra_wNLO_etabin.exe <etabinint> <targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;

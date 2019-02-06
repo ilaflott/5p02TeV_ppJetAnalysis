@@ -2,7 +2,7 @@
 
 subm_ppData_jetPlots=1
 subm_ppMC_jetPlots=0
-subm_ppMC_JERS=1
+subm_ppMC_JERS=0
 subm_ppData_jetMult=0
 subm_ppMC_jetMult=0
 subm_ppData_findEvt=0

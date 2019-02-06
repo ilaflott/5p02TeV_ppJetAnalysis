@@ -5,11 +5,13 @@ const int canvy_trig=1000;
 void setupJetTrigSpectraRatioCanvas(TCanvas* canv, 
 				    TPad* specpad,  TPad* ratpad){  
   canv->cd();  
-  specpad->SetLogx(1);  specpad->SetLogy(1);
+  //specpad->SetLogx(1);  specpad->SetLogy(1);
+  specpad->SetLogx(0);  specpad->SetLogy(1);
   specpad->SetGridx(1);  specpad->SetGridy(1);  
   specpad->SetBottomMargin(0);
   specpad->Draw();  
-  ratpad->SetLogx(1);  ratpad->SetLogy(0);
+  //ratpad->SetLogx(1);  ratpad->SetLogy(0);
+  ratpad->SetLogx(0);  ratpad->SetLogy(0);
   ratpad->SetGridx(1);  ratpad->SetGridy(0);  
   ratpad->SetTopMargin(0);  ratpad->SetBottomMargin(0.3);  
   ratpad->Draw();  
@@ -263,7 +265,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
   TPad *jetpad_excrat = new TPad("jetpad_excrat", "Ratio Pad", 0.0, 0.05, 1.0, 0.3);  
   setupJetTrigSpectraRatioCanvas(temp_canvJetTrig, jetpad_excsp,  jetpad_excrat);
   jetpad_excsp->cd();
-
+  
   TLegend* JetTrigLegend=new TLegend(0.70,0.70,0.85,0.86, NULL,"brNDC");
   TH1F* theDenominator=NULL;//for later ratio drawing
   
@@ -294,7 +296,9 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       theJetTrigQAHist->Scale(1./((float)rebinfactor));
       //theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");          
       //theJetTrigQAHist->SetAxisRange(40,1400,"X");              }
-      theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");              }
+      //theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");              
+      theJetTrigQAHist->SetAxisRange(50,150,"X");              
+    }
     
     
     
@@ -315,7 +319,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       theJetTrigQAHist->SetXTitle( "trigger jet p_{T} (GeV)   ");
      
       trigPtHistStyle(theJetTrigQAHist,j);
-      theJetTrigQAHist->Draw("E");
+      theJetTrigQAHist->DrawClone("E");
       
       float t1Loc1=0.54, t1Loc2=0.82;      
       TLatex *t1=makeTLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());      t1->Draw();
@@ -327,22 +331,19 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
     }//if HLTComb    
     else {
       trigPtHistStyle(theJetTrigQAHist,j);
-      theJetTrigQAHist->Draw("E SAME");
+      theJetTrigQAHist->DrawClone("E SAME");
     }//if not HLTComb
     
   }//end loop over trigs for spectra
-  
-  JetTrigLegend->Draw();
+  JetTrigLegend->Draw(); //spectra legend
+
   
   if(funcDebug){
     std::cout<<std::endl<<std::endl<<" ------------------------------------------------------------------- "<<std::endl;
     std::cout<<" --------------- DRAWING TRIGGER JET PT RATIOS --------------- "<<std::endl;
-    std::cout<<" ------------------------------------------------------------------- "<<std::endl<<std::endl<<std::endl;}
-  
+    std::cout<<" ------------------------------------------------------------------- "<<std::endl<<std::endl<<std::endl;}  
   jetpad_excrat->cd();
-  //ratio loop
-
-  for(int j=0; j<N_trigs; j++){
+  for(int j=0; j<N_trigs; j++){  //ratio loop
     
     std::string inHistName;
     if(HLTName[j]=="HLT100"&&!usedHLT100)continue;    
@@ -368,14 +369,16 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
 	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rat_rebin"+std::to_string(rebinfactor)).c_str() );
 	theJetTrigQAHist->Scale(1./((float)rebinfactor));
 	//theJetTrigQAHist->SetAxisRange(40,1400,"X");	
-	theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");	
+	//theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");	
+	theJetTrigQAHist->SetAxisRange(50,150,"X");	
       }
       
       trigRatioHistStyle(theJetTrigQAHist, j);
       
       theJetTrigQAHist->Divide(theDenominator);
       
-      theJetTrigQAHist->SetAxisRange(0.0,1.5,"Y");
+      //theJetTrigQAHist->SetAxisRange(0.0,1.5,"Y");
+      theJetTrigQAHist->SetAxisRange(0.9,1.3,"Y");
       
       std::string h_XAx_Title="Trigger Jet p_{T} (GeV)     ";
       theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
@@ -387,8 +390,8 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       
       theJetTrigQAHist->SetTitle("");	
       
-      if(j==1)theJetTrigQAHist->Draw("E");
-      else theJetTrigQAHist->Draw("E SAME");
+      if(j==1)theJetTrigQAHist->DrawClone("][ HIST E");
+      else theJetTrigQAHist->DrawClone("][ HIST E SAME");
       
       
       if( j==1 )  {

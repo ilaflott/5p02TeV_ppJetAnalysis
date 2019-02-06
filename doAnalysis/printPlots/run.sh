@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-dojetQAPlots=1
-dojetTrigQAPlots=0
+dojetQAPlots=0
+dojetTrigQAPlots=1
 dojetIDQAPlots=0
 dojetMultPlots=0
 scpOutput=0
@@ -81,9 +81,17 @@ then
     #source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "1.5eta2.0_wjetid" "15eta20"    
     #source run_printPlots_jetTrig.sh "4" "11.06.18_outputCondor" "11-06-18" "0.0eta2.0_wjetid" "00eta20"
     
-    source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes" "00eta20_11.14.18_trgPtNoRes"  #goodHLTPFthresh
+    #source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes" "00eta20_11.14.18_trgPtNoRes"  #goodHLTPFthresh
     #source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtNoRes_NoJetID" "00eta20_11.14.18_trgPtNoRes_NoJetID"  #goodHLTPFthresh
     #source run_printPlots_jetTrig.sh "4" "11.14.18_outputCondor" "11-14-18" "0.0eta2.0_trgPtL2L3Res" "00eta20_11.14.18_trgPtL2L3Res"  #goodHLTPFthresh
+    
+    #source run_printPlots_jetTrig.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta2.0" "00eta20_01.06.19_HLT60Thresh75"  #john's recc, HLT60 turn on slow #OLD
+
+    #source run_printPlots_jetTrig.sh "4" "01.31.19_outputCondor" "01-31-19" "0.0eta3.0" "00eta30_01.31.19_HLT60Thresh75"  #john's recc, HLT60 turn on slow #NEW W |Y|<3.0
+    #source run_printPlots_jetTrig.sh "4" "01.28.19_outputCondor" "01-28-19" "0.0eta3.0" "00eta30_01.28.19_HLT60Thresh80"  #my guess, looks slightly better
+    #source run_printPlots_jetTrig.sh "4" "01.29.19_outputCondor" "01-29-19" "0.0eta3.0" "00eta30_01.29.19_HLT60Thresh85"  #my guess, looks 
+    #source run_printPlots_jetTrig.sh "4" "01.29.19_outputCondor" "01-29-19" "_0.0eta3.0_1" "00eta30_01.29.19_HLT60Thresh90"  #my guess, looks 
+    source run_printPlots_jetTrig.sh "4" "01.30.19_outputCondor" "01-30-19" "0.0eta3.0" "00eta30_01.30.19_HLT60Thresh90HLT80Thresh110"  #my guess, looks 
     
     ##############################################
     
@@ -94,6 +102,7 @@ then
     #scp2Serin output/\*jetTrig\*
     #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta20_11.06.18_good_jetTrig.pdf
     #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta20_11.14.18_trgPt\*.pdf
+    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta?0_01.??.19_HLT60Thresh??_jetTrig.pdf"
     ##############################################
     
     #return

@@ -6,6 +6,7 @@ const bool fillDataEvtQAHists=true;
 const bool fillDataJetQAHists=true;
 const bool fillDataJetIDHists=true;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
+const bool fillDataJetCovMatrix=true;
 
 const bool fillDataDijetHists=false;
 const bool fillDataJetSpectraRapHists=true; //other
@@ -410,7 +411,27 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	}
 	
       } } }
-
+  
+  //TH2D* hpp_covmat=NULL;
+  TH2D* hpp_covmat_eta_arr[nbins_abseta]={};
+  TH1D* hpp_covmat_eta_arr_helpers[nbins_abseta]={};
+  bool etabin_bool_helper[nbins_abseta]={0};
+  if(fillDataJetCovMatrix){
+    //    hpp_covmat=new TH2D( "hpp_covmat", "Data Jet covariance Matrix", nbins_pt, ptbins, nbins_pt, ptbins);
+    for(int i=0;i<nbins_abseta;i++){
+      std::string covmat_eta_title="Data Jet Covariance Matrix, "+absetabins_str[i]+" < #||{y} < "+absetabins_str[i+1];    
+      std::string covmat_eta_name="hpp_covmat_";
+      if(fillDataJetIDHists)covmat_eta_name+="wJetID_etabin_";
+      else covmat_eta_name+="etabin_";
+      covmat_eta_name+=std::to_string(i);
+      
+      if(debugMode)std::cout<<"covmat_eta_name  =" << covmat_eta_name << std::endl;
+      if(debugMode)std::cout<<"covmat_eta_title =" << covmat_eta_title<< std::endl;
+      hpp_covmat_eta_arr[i]=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+      hpp_covmat_eta_arr_helpers[i]=new TH1D(("covmat_helper_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);
+      
+    }  }
+  
   // EVENT LOOP + PREP
   // declare variables/arrays + set branch address for each input tree
   //JetAnalyzer, jets
@@ -981,15 +1002,26 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
       
       //fill jetspectraRapHists w/ passing jetID criterion
-      if( fillDataJetSpectraRapHists ) { 
-	int theRapBin=-1;
+      int theRapBin=-1;	
+      if(fillDataJetSpectraRapHists || fillDataJetCovMatrix){//find the |y| bin this jet belongs to
 	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
 	  if( absetabins[rapbin]<=absreceta  && 		
 	      absreceta<absetabins[rapbin+1]    	      ) {	    
 	    theRapBin=rapbin;
-	    hJetSpectraRap[jetIDint][theRapBin]->Fill(recpt,weight_eS);  	    
-	    break;	  }       
+	    
+	    if( fillDataJetSpectraRapHists ) 
+	      hJetSpectraRap[jetIDint][theRapBin]->Fill(recpt,weight_eS);  	    	    
+	    
+	    if(fillDataJetCovMatrix)
+	      hpp_covmat_eta_arr_helpers[theRapBin]->Fill(recpt);//,weight_eS);
+	    
+	    etabin_bool_helper[theRapBin]=true;
+	    
+	    break;
+	  }
       }
+      
+
       
       
       // trig plots
@@ -1125,7 +1157,14 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(evt_leadJetPt>0.) 	  hLeadJetPt->Fill(evt_leadJetPt ,weight_eS);
       if(evt_leadJetPt_wCuts>0.)  hLeadJetPt_wCuts->Fill(evt_leadJetPt_wCuts ,weight_eS);
     }
-        
+    
+    if(fillDataJetCovMatrix){      
+      for(int i=0; i<nbins_abseta; i++){
+	if(etabin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
+	  fillCovMatrix( (TH2D*)hpp_covmat_eta_arr[i], (TH1D*)hpp_covmat_eta_arr_helpers[i], nbins_pt , (double) weight_eS);
+	  hpp_covmat_eta_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....
+	  etabin_bool_helper[i]=false;	}      }      }
+    
   }//end event loop
 
   std::cout<<std::endl;  

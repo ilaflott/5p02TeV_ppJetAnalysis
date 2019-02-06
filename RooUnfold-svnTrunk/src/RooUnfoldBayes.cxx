@@ -180,6 +180,12 @@ void RooUnfoldBayes::setup()
   _P0C.ResizeTo(_nc);
   _UjInv.ResizeTo(_ne);
 #ifndef OLDERRS
+  cout<<endl;
+  cout<<"***********FYI**********"<<endl;
+  cout<<"RooUnfoldBayes::setup()"<<endl;
+  cout<<"#ifndef OLDERRS"<<endl;
+  cout<<"***********FYI**********"<<endl;
+  cout<<endl;
   if (_dosys!=2) _dnCidnEj.ResizeTo(_nc,_ne);
 #endif
   if (_dosys)    _dnCidPjk.ResizeTo(_nc,_ne*_nc);
@@ -214,7 +220,7 @@ void RooUnfoldBayes::unfold()
   }
   
   TVectorD PbarCi(_nc);
-
+  if(verbose()>=1) cout<<"# iterations is _niter="<<_niter<<endl;
   for (Int_t kiter = 0 ; kiter < _niter; kiter++) {
     
     if (verbose()>=1) cout << "Iteration : " << kiter << endl;
@@ -250,11 +256,25 @@ void RooUnfoldBayes::unfold()
     PbarCi *= 1.0/_nbartrue;
 
 #ifndef OLDERRS
+    if(kiter==0){
+      cout<<endl;
+      cout<<"***********FYI**********"<<endl;
+      cout<<"RooUnfoldBayes::unfold()"<<endl;
+      cout<<"#ifndef OLDERRS"<<endl;
+      cout<<"***********FYI**********"<<endl;
+      cout<<endl;}
     if (_dosys!=2) {
       if (kiter <= 0) {
         _dnCidnEj= _Mij;
       } else {
 #ifndef OLDMULT
+	if(kiter==1){
+	  cout<<endl;
+	  cout<<"***********FYI**********"<<endl;
+	  cout<<"RooUnfoldBayes::unfold()"<<endl;
+	  cout<<"#ifndef OLDMULT"<<endl;
+	  cout<<"***********FYI**********"<<endl;
+	  cout<<endl;}
         TVectorD en(_nc), nr(_nc);
         for (Int_t i = 0 ; i < _nc ; i++) {
           if (_P0C[i]<=0.0) continue;
@@ -272,6 +292,13 @@ void RooUnfoldBayes::unfold()
         _dnCidnEj += _Mij;
         _dnCidnEj += M1;
 #else /* OLDMULT */
+	if(kiter==1){
+	  cout<<endl;
+	  cout<<"***********FYI**********"<<endl;
+	  cout<<"RooUnfoldBayes::unfold()"<<endl;
+	  cout<<"#ifndef OLDMULT ELSE STATEMENT"<<endl;
+	  cout<<"***********FYI**********"<<endl;
+	  cout<<endl;}
         TVectorD ksum(_ne);
         for (Int_t j = 0 ; j < _ne ; j++) {
           for (Int_t k = 0 ; k < _ne ; k++) {
@@ -297,6 +324,13 @@ void RooUnfoldBayes::unfold()
 
     if (_dosys) {
 #ifndef OLDERRS2
+      if(kiter==1){
+	cout<<endl;
+	cout<<"***********FYI**********"<<endl;
+	cout<<"RooUnfoldBayes::unfold()"<<endl;
+	cout<<"#ifndef OLDERRS2"<<endl;
+	cout<<"***********FYI**********"<<endl;
+	cout<<endl;}
       if (kiter > 0) {
         TVectorD mbyu(_ne);
         for (Int_t j = 0 ; j < _ne ; j++) {
@@ -315,6 +349,13 @@ void RooUnfoldBayes::unfold()
         }
       }
 #else  /* OLDERRS2 */
+      if(kiter==0){
+	cout<<endl;
+	cout<<"***********FYI**********"<<endl;
+	cout<<"RooUnfoldBayes::unfold()"<<endl;
+	cout<<"#ifndef OLDERRS2 ELSE STATEMENT"<<endl;
+	cout<<"***********FYI**********"<<endl;
+	cout<<endl;}
       if (kiter == _niter-1)   // used to only calculate _dnCidPjk for the final iteration
 #endif
       for (Int_t j = 0 ; j < _ne ; j++) {
@@ -346,12 +387,24 @@ void RooUnfoldBayes::getCovariance()
 {
   if (_dosys!=2) {
     if (verbose()>=1) cout << "Calculating covariances due to number of measured events" << endl;
-
+    
     // Create the covariance matrix of result from that of the measured distribution
     _cov.ResizeTo (_nc, _nc);
 #ifdef OLDERRS
+    cout<<endl;
+    cout<<"***********FYI**********"<<endl;
+    cout<<"RooUnfoldBayes::getCovariance()"<<endl;
+    cout<<"#ifdef OLDERRS"<<endl;
+    cout<<"***********FYI**********"<<endl;
+    cout<<endl;
     const TMatrixD& Dprop= _Mij;
 #else
+    cout<<endl;
+    cout<<"***********FYI**********"<<endl;
+    cout<<"RooUnfoldBayes::getCovariance()"<<endl;
+    cout<<"#ifdef OLDERRS ELSE STATEMENT"<<endl;
+    cout<<"***********FYI**********"<<endl;
+    cout<<endl;
     const TMatrixD& Dprop= _dnCidnEj;
 #endif
     if (_haveCovMes) {
@@ -412,17 +465,37 @@ Double_t RooUnfoldBayes::getChi2(const TVectorD& prob1,
   // calculate the chi^2. prob1 and prob2 are the probabilities
   // and nevents is the number of events used to calculate the probabilities
   Double_t chi2= 0.0;
+  //Double_t chi2nu= 0.0;
   Int_t n= prob1.GetNrows();
-  if (verbose()>=2) cout << "chi2 " << n << " " << nevents << endl;
+  //if (verbose()>=1) cout << endl<<"nrows " << n << endl;
+  if (verbose()>=1) cout         << "nevents " << nevents << endl;
   for (Int_t i = 0 ; i < n ; i++) {
+    //if(verbose()>=1) cout<< "prob1["<<i<<"]="<<prob1[i]<<endl;
+    //if(verbose()>=1) cout<< "prob2["<<i<<"]="<<prob2[i]<<endl;
+    //if(verbose()>=1) cout<< "prob1+prob2="<<prob1[i]+prob2[i]<<endl;
+    //if(verbose()>=1) cout<< "prob1-prob2="<<prob1[i]-prob2[i]<<endl;
     Double_t psum  = (prob1[i] + prob2[i])*nevents;
     Double_t pdiff = (prob1[i] - prob2[i])*nevents;
+    //if(verbose()>=1) cout<< "psum["<<i<<"]="<<psum<<endl;
+    //if(verbose()>=1) cout<< "pdiff["<<i<<"]="<<pdiff<<endl;
+    // ORIGINAL
     if (psum > 1.0) {
+      //if(verbose()>=1)cout<<"pdiff*pdiff/psum="<<(pdiff*pdiff)/psum<<endl<<endl;
       chi2 = chi2 + (pdiff*pdiff)/psum;
     } else {
+      //if(verbose()>=1)cout<<"pdiff*pdiff="<<(pdiff*pdiff)<<endl<<endl;
       chi2 = chi2 + (pdiff*pdiff);
     }
+    //ORIGINAL
+    
+    //TEST 
+    //NOTE this way lines up with what i expect from a chi2 sig test. that being said, it's only different by 1e-06... very insignif.
+    //chi2nu = chi2nu + (pdiff*pdiff)/psum;
+    //TEST
   }
+  //cout << "    Chi^2 of change =" << chi2 << endl;
+  //  cout << "NEW Chi^2 of change =" << chi2nu << endl;
+  //  cout << " DIFF chi2 - chi2nu =" << chi2 - chi2nu << endl;
   return(chi2);
 }
 

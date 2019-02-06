@@ -137,11 +137,12 @@ const std::string Calo_HLTBitStrings[]={
 };//const int N_HLTBits=sizeof(Calo_HLTBitStrings)/sizeof(std::string);
 const double HLTPFthresh[]={
   //55., 75., 95., 135.  //95 GeV as min/max for HLT80/60 too low
-  55., 75., 105., 135.   //55/75/105 is john's suggestion; i feel that 75 as min/max for HLT60/40 might be slightly too low. 
-  //55., 80., 105., 135.   //TODO/TRY 1
-  //55., 85., 105., 135.   //TODO/TRY 2
-  //55., 80., 110., 135.   //TODO/TRY 3
-  //55., 85., 110., 135.   //TODO/TRY 4
+  //55., 75., 105., 135.   //55/75/105 is john's suggestion; i feel that 75 as min/max for HLT60/40 might be slightly too low. 
+  //55., 75., 105., 135.   //TODOAGAIN/JOHNS/W |Y|<3.0 FOR INCL SPECTRA COMPARISON 
+  //55., 80., 105., 135.   //TODO/TRY 1 -- DONE
+  //55., 85., 105., 135.   //TODO/TRY 2 -- DONE
+  //55., 90., 105., 135.   //TODO/TRY 3 -- DONE
+  55., 90., 110., 135.   //TODO/TRY 4 -- DONE
 };
 const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
@@ -494,6 +495,28 @@ double cpuVzWeight_poly(float vz_F){
     std::cout<<"vzWeight="<<vzWeight<<std::endl;
 
   return vzWeight;
+}
+
+//takes in a TH2, fills it with the contents of the TH1 according to the rules of an outerproduct
+//binning of a axes of TH2 assumed symmetric. binning of TH1 assumed equivalent to binning of each axis of TH2
+inline void fillCovMatrix(TH2D* covmat=NULL, TH1D* hist=NULL, int nbins=-1, double weight=0.){
+  //bool funcDebug=true;
+  for(int i=1; i<=nbins; i++){
+    double val_i=hist->GetBinContent(i);
+    if(!(val_i>0.))continue;
+    double center_i=hist->GetBinCenter(i);
+    for(int j=i; j<=nbins; j++) {
+      if(i!=j) { //if(i!=j){
+	double val_j=hist->GetBinContent(j);
+	if( !(val_j>0) ) continue;
+	double center_j=hist->GetBinCenter(j);
+	covmat->Fill(center_i, center_j, weight*val_i*val_j);
+	covmat->Fill(center_j, center_i, weight*val_i*val_j);      }      //covmat->SetBinContent(i,j,val_i*val_j);      }       
+      else{// (i==j){	
+	covmat->Fill(center_i, center_i, weight*val_i*val_i);}      //covmat->SetBinContent(i,j, val_i*val_i);            }      
+    }	
+  }
+  return;
 }
 
 

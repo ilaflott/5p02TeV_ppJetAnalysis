@@ -35,7 +35,8 @@ cmsenv
 export CMSSW_BASE=${PWD/%"/src"/}
 alias cdsrc="cd ${CMSSW_BASE}/src"
 
-export ROOUNFOLD_PATH=${CMSSW_BASE}/src/RooUnfold-svnTrunk
+#export ROOUNFOLD_PATH=${CMSSW_BASE}/src/RooUnfold-svnTrunk
+export ROOUNFOLD_PATH=${CMSSW_BASE}/src/RooUnfold-svnTrunk_master
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOUNFOLD_PATH
 
 

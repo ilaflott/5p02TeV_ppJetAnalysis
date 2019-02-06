@@ -161,16 +161,17 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
 //		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);    
 //    printTrigPtHist(finData, usedHLT100, true,
 //		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);
-    // ----------------------------------    
-    printJetTrigHist_wRatio(finData, usedHLT100, false,
-			    thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
-    printJetTrigHist_wRatio(finData, usedHLT100, false,
-			    thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
+
     // ----------------------------------    
     printTrigPtHist(finData, usedHLT100, false,
 		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
     printTrigPtHist(finData, usedHLT100, false,
 		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
+    // ----------------------------------    
+    printJetTrigHist_wRatio(finData, usedHLT100, false,
+			    thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
+    printJetTrigHist_wRatio(finData, usedHLT100, false,
+			    thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
     // ----------------------------------    
     printTrigEtaHist(finData, usedHLT100,
 		     thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);    

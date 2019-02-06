@@ -309,7 +309,7 @@ void setBinning_etabin(
 		       double* binarr3,//genmat
 		       double* binarr4,//recomat
 		       int arrlength, TH1D* nlohist   ){
-  bool funcDebug=true;
+  bool funcDebug=false;
   if(funcDebug)std::cout<<"setting binning for unfolding single-etabin hist"<<std::endl;
   int arrindex=0;  
   int nbins_hist=nlohist->GetNbinsX();
@@ -2244,6 +2244,43 @@ void makeCombinedPlots_closure(std::string outRootFile="", TCanvas* canvForPrint
 }
 
 
+//i want the ratio of bias/no bias to look like a pedestal at 1 w/ a mild linear rise, totaling 1%
+void addLinearBias(TH1* hrec){
+  bool funcDebug=true;
+  int nbinsx=hrec->GetNbinsX();
+  float pTmin=hrec->GetBinCenter(1);
+  float pTmax=hrec->GetBinCenter(nbinsx);
+  float maxperc=0.03;
+  float slope= -1.*maxperc/(pTmax-pTmin);
+  float yint=-1.*slope*pTmax;
+  
+  TF1* linbias= new TF1 ("linbias", "[0]+x*[1]");
+  linbias->SetParameter(0, yint);
+  linbias->SetParameter(1, slope);
+  
+  for(int i=1; i<=nbinsx; i++){
+    float x=hrec->GetBinCenter(i);
+    if(funcDebug)std::cout<<"bin center for i="<<i<<" is "<<x<<std::endl;
+    if(funcDebug)std::cout<<"bin width for i="<<i<<" is "<<hrec->GetBinWidth(i)<<std::endl;
+    float val=hrec->GetBinContent(i);
+    float valerr=hrec->GetBinError(i);
+    if(funcDebug)std::cout<<" old val is "<< val<<std::endl;
+    if(funcDebug)std::cout<<" old err is "<< valerr<<std::endl;
+    float fact=linbias->Eval(x)+1.;
+    if(funcDebug)std::cout<<" fact is "<< fact<<std::endl;    
+    val=(val)*(fact) ;
+    valerr=(valerr)*(fact) ;    
+    if(funcDebug)std::cout<<" new val is "<< val<<std::endl;
+    if(funcDebug)std::cout<<" new err is "<< valerr<<std::endl;    
+    hrec->SetBinContent(i, val);
+    hrec->SetBinError(i, valerr);
+    if(funcDebug)std::cout<<"sanity check; bin content is = "<< hrec->GetBinContent(i, val)   <<std::endl;
+    if(funcDebug)std::cout<<"sanity check; bin content is = "<< hrec->GetBinContent(i, valerr)<<std::endl;
+    if(funcDebug)std::cout<<std::endl;
+  }
+  
+  return;
+}
 //void divideThyByUnf(TH1* hthyratio, TH1* hunf){
 //    
 //  bool funcDebug=true;

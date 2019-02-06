@@ -2,10 +2,11 @@
 
 //other settings
 const bool drawPDFs=true; 
-const bool debugMode=false, debugWrite=false;
+const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
+const bool setDataCovMat=true;
 //const bool applyNPCorrs=true; 
 //double unfptlo=56.;
 //double unfpthi=
@@ -16,7 +17,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 				       const int etabinint=0,const int kIterInput=5,
 					std::string inFile_MC_dir  = "smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/", 
 					std::string inFile_MC_name ="NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
-				       const bool applyNPCorrs=true,
+					const bool applyNPCorrs=true,
 					const bool doJetID=true     , 
 					const bool useSimpBins=false){//, 
   //const int kIterInput=5 ){//, //const int etabinint=0){
@@ -36,8 +37,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
   // ERROR/WEIGHTS/STATS HANDLING ------------------
   RooUnfold::ErrorTreatment errorTreatment;
-  if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
-  else errorTreatment = RooUnfold::kCovToy; 
+  //if(doToyErrs) errorTreatment = RooUnfold::kCovToy; 
+  //else if(!doToyErrs) errorTreatment = RooUnfold::kNoError   ;
+  //if(doToyErrs) errorTreatment = RooUnfold::kCovToy; 
+  //else if(!doToyErrs) errorTreatment = RooUnfold::kErrors    ;
+  if(doToyErrs) errorTreatment = RooUnfold::kCovToy; 
+  else if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
+
   if(debugMode)std::cout<<"doToyErrs="<<doToyErrs<<std::endl; 
   
   if(debugMode)std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
@@ -131,7 +137,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   if(debugMode)std::cout<<"opening output file: "<<outRootFile<<std::endl;  
   TFile* fout = new TFile(outRootFile.c_str(),"RECREATE");   
-  if(debugMode)fout->cd();  
+  if(debugWrite)fout->cd();  
   
   
   // ppMC input histos -------------------------
@@ -494,6 +500,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   roo_resp.UseOverflow(doOverUnderflows);    
   if(debugWrite)roo_resp.Write();
   
+  
+
+
   TH1D* hfak=  (TH1D*) roo_resp.Hfakes() ;
   hfak->Print("base");
 
@@ -517,6 +526,39 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   std::cout<<"calling RooUnfoldBayes... kIterInput="<<kIterInput<<std::endl;  
   RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIterInput );
   unf_bayes.SetVerbose(verbosity);
+
+  TH2D* hrec_covmat=NULL;  TH2D* hrec_covmat_rebin=NULL;
+  TMatrixD* hrec_covmat_rebin_tmatrix=NULL;
+  if(setDataCovMat){
+    
+    if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
+    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
+    
+    hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
+    
+    if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
+    hrec_covmat_rebin=(TH2D*) reBinTH2(hrec_covmat_rebin, 
+				       ((std::string)hrec_covmat_rebin->GetName()+"_rebin").c_str(), 
+				       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+				       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+    
+    if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+    hrec_covmat_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
+    //hrec_covmat_rebin->Scale(1./sqrt(effIntgrtdLumi)); // lumi
+    if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
+    
+    
+    if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
+    hrec_covmat_rebin_tmatrix=(TMatrixD*)roo_resp.H2M(hrec_covmat_rebin, 
+						      nbins_pt_reco_mat,
+						      nbins_pt_gen_mat,
+						NULL, 0	);
+    
+    if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
+    unf_bayes.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );
+  }
+  //assert(false);
+  
   if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
     unf_bayes.SetNToys(10000);
@@ -524,14 +566,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   }
   std::cout<<"Overflow Status: " << unf_bayes.Overflow()<<std::endl<<std::endl;
   
+  
   std::cout<<"unfolding hrec w/ Hreco func"<<std::endl;
   TH1D *hunf = (TH1D*)unf_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
   hunf->SetName("ppData_BayesUnf_Spectra");
   hunf->SetTitle( ("Unf. Data, kIter="+std::to_string(kIterInput)).c_str());
   if(debugMode)hunf->Print("base");
   
-  //  assert(false);
-
   std::cout<<std::endl;  
   std::cout<<"           hunf->Integral()="<<hunf->Integral()<<std::endl;
   std::cout<<"         hunf->GetEntries()="<<hunf->GetEntries()<<std::endl;
@@ -738,7 +779,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   int kIter_start=kIterInput-kIterRange;
   int kIter_end=kIterInput+kIterRange;
-  TH1D *hchi2iter=NULL;//(TH1D*)unf_bayes.getChi2iter();
+  TH1D *hchi2iter=NULL;
   
   if(dokIterQA){
     if(debugMode)std::cout<<"unfolding across diff kIter values"<<std::endl;
@@ -747,7 +788,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       int current_kIter=kIter_start+ki;
       std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;      
       RooUnfoldBayes unf_bayes_kIterQA(&roo_resp, hrec_rebin, current_kIter);        
-      std::cout<<"unf Chi2="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)hgen_rebin)<<std::endl;
+      if(setDataCovMat) unf_bayes_kIterQA.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );
+      std::cout<<"unf Chi2 w/ toy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)hgen_rebin)<<std::endl;
+      std::cout<<"unf Chi2/d.o.f w/ toy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)hgen_rebin) / nbins_pt_gen<<std::endl;
       
       hunf_bayes[ki]=(TH1D*)unf_bayes_kIterQA.Hreco(errorTreatment);
       hunf_bayes[ki]->SetName(("Data_unf_kIter"+std::to_string(current_kIter)).c_str());
@@ -1391,17 +1434,38 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       
       canvForPrint->Print(outPdfFile.c_str());    }
     
+    if(setDataCovMat){
 
-    // covariance matrix ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
+      // rebinned covariance matrix from data readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
+      canvForPrint->cd();
+      canvForPrint->SetLogx(1);
+      canvForPrint->SetLogy(1);
+      canvForPrint->SetLogz(1);
+      
+      matStylePrint( (TH2D*)hrec_covmat, ("Data Covariance Matrix"), canvForPrint, outPdfFile, true);        
+      //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
+      
+      
+      // rebinned covariance matrix from data readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
+      canvForPrint->cd();
+      canvForPrint->SetLogx(1);
+      canvForPrint->SetLogy(1);
+      canvForPrint->SetLogz(1);
+      
+      matStylePrint( (TH2D*)hrec_covmat_rebin, ("Rebin+Scaled Data Covariance Matrix"), canvForPrint, outPdfFile, true);        
+      //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
+    }
+
+    // covariance matrix from bayes unf ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
     canvForPrint->cd();
     canvForPrint->SetLogx(0);
     canvForPrint->SetLogy(0);
     canvForPrint->SetLogz(1);
-        
+    
     matStylePrint( (TH2D*)covmat_TH2, ("Covariance Matrix"+methodString+descString), canvForPrint, outPdfFile, true);        
     canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
     
-
+    
     
     matStylePrint( (TH2D*)covmatabsval_TH2, ("|Covariance Matrix|"+methodString+descString), canvForPrint, outPdfFile, true);
     canv_absval_covmat=(TCanvas*)canvForPrint->DrawClone(); 
@@ -1541,6 +1605,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 	canv_3x3covmat->cd(ki_canv)->SetLogy(0);
 	canv_3x3covmat->cd(ki_canv)->SetLogz(1);
 	canv_3x3covmat->cd(ki_canv);	
+	hcovmat_bayes[ki]->SetAxisRange(1.e-15,1.e+02,"Z");
 	hcovmat_bayes[ki]->Draw("COLZ");
 	
 	//canv_3x3covmatabsval
@@ -1548,7 +1613,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 	canv_3x3covmatabsval->cd(ki_canv)->SetLogy(0);
 	canv_3x3covmatabsval->cd(ki_canv)->SetLogz(1);
 	canv_3x3covmatabsval->cd(ki_canv);	
+	hcovmatabsval_bayes[ki]->SetAxisRange(1.e-15,1.e+02,"Z");
 	hcovmatabsval_bayes[ki]->Draw("COLZ");
+
 	//canv_3x3pearson     	
 	canv_3x3pearson->cd(ki_canv)->SetLogx(0);
 	canv_3x3pearson->cd(ki_canv)->SetLogy(0);
@@ -1634,8 +1701,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
 
   
-// input data ------------------
+  // input data ------------------
   hrec_rebin->SetTitle( "Data Meas.");  hrec_rebin->Write("Data_meas");
+  if(setDataCovMat) hrec_covmat->SetTitle ( "Data Meas. Cov. Mat."); hrec_covmat->Write( "Data_covmat");
+  if(setDataCovMat) hrec_covmat_rebin->SetTitle ( "Data Meas. Cov. Mat. Rebinned"); hrec_covmat_rebin->Write( "Data_covmat_rebin");
   if((bool)hJetQA_jtptEntries){ 
     hJetQA_jtptEntries->SetTitle("Data N_{Jets}");hJetQA_jtptEntries->Write("Data_njets");}
   

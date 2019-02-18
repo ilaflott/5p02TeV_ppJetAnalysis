@@ -26,7 +26,7 @@ const std::string defMCOutputName="readForests_ppMC_defOut_jetPlots.root";
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true;//, fastDebugMode = true;
-const float defEtaCutLo=0.0, defEtaCutHi=2.0;//really absetacut
+const float defEtaCutLo=0.0, defEtaCutHi=3.0;//really absetacut
 //const float defEtaCutLo=0.0, defEtaCutHi=2.4;//really absetacut
 //const float defEtaCutLo=2.4, defEtaCutHi=2.7;//really absetacut
 //const float defEtaCutLo=2.7, defEtaCutHi=3.0;//really absetacut

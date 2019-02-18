@@ -102,9 +102,10 @@ then
 
     if [[ $cp2Serin -eq 1 ]]
     then
+	echo "OUTDIR=$OUTDIR"
 	scp2Serin ${OUTDIR}    
     fi
-
+    
 else 
     echo "bad input. see macro's insides."
 fi

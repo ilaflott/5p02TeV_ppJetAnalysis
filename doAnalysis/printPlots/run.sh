@@ -91,7 +91,9 @@ then
     #source run_printPlots_jetTrig.sh "4" "01.28.19_outputCondor" "01-28-19" "0.0eta3.0" "00eta30_01.28.19_HLT60Thresh80"  #my guess, looks slightly better
     #source run_printPlots_jetTrig.sh "4" "01.29.19_outputCondor" "01-29-19" "0.0eta3.0" "00eta30_01.29.19_HLT60Thresh85"  #my guess, looks 
     #source run_printPlots_jetTrig.sh "4" "01.29.19_outputCondor" "01-29-19" "_0.0eta3.0_1" "00eta30_01.29.19_HLT60Thresh90"  #my guess, looks 
-    source run_printPlots_jetTrig.sh "4" "01.30.19_outputCondor" "01-30-19" "0.0eta3.0" "00eta30_01.30.19_HLT60Thresh90HLT80Thresh110"  #my guess, looks 
+#    source run_printPlots_jetTrig.sh "4" "01.30.19_outputCondor" "01-30-19" "0.0eta3.0" "00eta30_01.30.19_HLT60Thresh90HLT80Thresh110"  #my guess, looks 
+ 
+    source run_printPlots_jetTrig.sh "4" "02.07.19_outputCondor" "02-07-19" "0.0eta3.0" "00eta30_02.07.19_HLT60Thresh90HLT80Thresh110"  #my guess, looks     
     
     ##############################################
     

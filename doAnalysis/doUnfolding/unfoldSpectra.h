@@ -246,14 +246,21 @@ void matStylePrint(TH2D * mat, std::string hTitle, TCanvas* canv, std::string ou
     mat->SetAxisRange(1.e-06,1.e+0,"Z");
   else if (hTitle.find("Row")  != std::string::npos)
     mat->SetAxisRange(1.e-06,1.e+0,"Z");
-  else if (hTitle.find("Covariance")  != std::string::npos)
-    mat->SetAxisRange(1.e-15,1.e+02,"Z");
+  else if (hTitle.find("Scaled Data Covariance")!= std::string::npos)
+    mat->SetAxisRange(1.e-10,1.e-01,"Z");
+  else if (hTitle.find("Data Covariance")!= std::string::npos)
+    mat->SetAxisRange(1.e+00,1.e+08,"Z");
+  else if (hTitle.find("Covariance")  != std::string::npos)//for set data covariance matrix input
+    mat->SetAxisRange(1.e-13,1.e-01,"Z");
   else if (hTitle.find("Pearson")  != std::string::npos)
     mat->SetAxisRange(-1.,1.,"Z");
   else if(hTitle.find("Unfolding")  != std::string::npos)
     mat->SetAxisRange(1.e-08,1.e+03,"Z");
   else
     mat->SetAxisRange(1.e-10,1.e+03,"Z");
+//  else if (hTitle.find("Covariance")  != std::string::npos)//works if there's no set covariance matrix
+//    mat->SetAxisRange(1.e-15,1.e+02,"Z");
+
   //mat->SetAxisRange(56.,1000.,"Y");
   //mat->SetAxisRange(56.,1000.,"X");
   
@@ -386,6 +393,22 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins
   //		   "X");             
   return;
 }
+void setupSystPercErrsHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins=1){  
+  //h->SetAxisRange(0.2, 1.8, "Y");
+  //h->SetAxisRange(0.3, 1.7, "Y");
+  //h->SetAxisRange(0.4, 1.6, "Y");
+  h->SetAxisRange(-50., 50., "Y");
+  h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
+  h->GetXaxis()->SetMoreLogLabels(true);
+  h->GetXaxis()->SetNoExponent(true);
+  //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
+  //if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
+  //h->SetAxisRange( boundaries[0] ,  
+  //		   boundaries[nbins] + 
+  //		   ( boundaries[nbins]-boundaries[nbins-1] ),
+  //		   "X");             
+  return;
+}
 
 void setupSpectraHist(TH1* h, bool useSimpBins=false, double* boundaries=NULL, int nbins=1){  
   h->GetYaxis()->SetTitle("#frac{d^{2}#sigma}{d#eta dp_{T}} [nb/GeV]");
@@ -462,9 +485,9 @@ void makeNPCorrName(std::string* NPs, std::string* NPs_name){
   return;
 }
 
-void makeNPs(std::string* NPTH1_name, std::string* NPs){
-  
-}
+//void makeNPs(std::string* NPTH1_name, std::string* NPs){
+//  
+//}
 void checkNRenameFiles (const std::string outFileName, std::string *outRespMatPdfFile, std::string *outPdfFile, std::string *outRootFile, std::string *out3x3PdfFile=NULL){
   bool funcDebug=false;
 
@@ -2281,6 +2304,143 @@ void addLinearBias(TH1* hrec){
   
   return;
 }
+
+
+void JERsystStyle(TH1D* JERsystHist=NULL){
+  if(!JERsystHist)return;
+  JERsystHist->SetFillStyle(1001);//1001-->Solid, 3ijk-->some kind of hatch pattern, 0--> hollow
+  JERsystHist->SetFillColorAlpha(kRed, 0.30);
+  JERsystHist->SetMarkerColorAlpha(kRed, 0.);//transparent
+  JERsystHist->SetLineColorAlpha(kRed,0.);    
+  return    ;
+}
+
+
+void makeJERsystSpectra(TH1D* JERsysterr=NULL, TFile* NLOfile=NULL, TH1D* histForError=NULL){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"making JER systematics spectra error"<<std::endl;
+  if(!NLOfile) {
+    std::cout<<"NLOfile not passed. exit."<<std::endl;
+    return;}
+  if(!JERsysterr){
+    std::cout<<"no hist for JER sys error. exit."<<std::endl;
+    return;}
+  if(! (NLOfile->TFile::IsOpen()) ){
+    std::cout<<"TFile not open. exit."<<std::endl;
+    return;}
+  if(!histForError){
+    std::cout<<"no spectra to make errors from. exit."<<std::endl;
+  }
+  TF1* JERsigmaFit=(TF1*)NLOfile->Get("SigmaFit_h");
+  if(!JERsigmaFit){
+    std::cout<<"TF1 for JER not found. exit"<<std::endl;
+    return;
+  }
+  
+  int nbinsx=JERsysterr->GetNbinsX();    
+  JERsystStyle(JERsysterr);
+  
+  for(int i=1; i<=nbinsx; i++){
+    double val=histForError->GetBinContent(i);
+    double center=histForError->GetBinCenter(i);
+    double JERerr=val*JERsigmaFit->Eval(center);//*1.079;    //JER scaling factor ?!? see makeToySpectra in smearTheory.h
+    //double JERerr=val*JERsigmaFit->Eval(center)*5.;    //debug
+    JERsysterr->SetBinContent(i,val);
+    JERsysterr->SetBinError(i, JERerr);
+    if(funcDebug)std::cout<<"i= "<<i<<"  bin content is = "<<val<<std::endl;
+    if(funcDebug)std::cout<<"             JERerr = "<<JERerr<<std::endl;
+    if(funcDebug)std::cout<<" hist stat error is = "<<histForError->GetBinError(i)<<std::endl;
+    
+  }
+  
+  
+  return;
+}
+
+
+void makeJERsystRatio(TH1D* JERsysterr=NULL, TFile* NLOfile=NULL){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"making JER systematic error ratio"<<std::endl;
+  if(!NLOfile) {
+    std::cout<<"NLOfile not passed. exit."<<std::endl;
+    return;}
+  if(!JERsysterr){
+    std::cout<<"no hist for JER sys error. exit."<<std::endl;
+    return;}
+  if(! (NLOfile->TFile::IsOpen()) ){
+    std::cout<<"TFile not open. exit."<<std::endl;
+    return;}
+  
+  TF1* JERsigmaFit=(TF1*)NLOfile->Get("SigmaFit_h");
+  if(!JERsigmaFit){
+    std::cout<<"TF1 for JER not found. exit"<<std::endl;
+    return;
+  }
+  
+  int nbinsx=JERsysterr->GetNbinsX();    
+  JERsystStyle(JERsysterr);
+  
+  for(int i=1; i<=nbinsx; i++){
+    double val=0.;//histForError->GetBinContent(i);
+    double center=JERsysterr->GetBinCenter(i);
+    //double JERerr=val*JERsigmaFit->Eval(center);//*1.079;    //JER scaling factor ?!? see makeToySpectra in smearTheory.h
+    double JERerr=JERsigmaFit->Eval(center);//*1.079;    //JER scaling factor ?!? see makeToySpectra in smearTheory.h
+    JERerr*=100.;//
+    //double JERerr=val*JERsigmaFit->Eval(center)*5.;    //debug
+    JERsysterr->SetBinContent(i,val);
+    JERsysterr->SetBinError(i, JERerr);
+    if(funcDebug)std::cout<<"i= "<<i<<"  bin content is = "<<val<<std::endl;
+    if(funcDebug)std::cout<<"             JERerr = "<<JERerr<<std::endl;
+    //if(funcDebug)std::cout<<" hist stat error is = "<<histForError->GetBinError(i)<<std::endl;
+    
+  }
+  
+  
+  return;
+}
+
+void StatErrStyle(TH1D* StatErrHist=NULL){
+  if(!StatErrHist)return;
+  StatErrHist->SetFillStyle(1001);//1001->Solid, 3ijk-->some kind of hatch pattern, 0--> hollow
+  StatErrHist->SetFillColorAlpha(  kBlack, 0.);
+  StatErrHist->SetMarkerStyle(kFullSquare);//transparent
+  
+  StatErrHist->SetMarkerColorAlpha(kBlack, 1.);//transparent
+  StatErrHist->SetLineColorAlpha(  kBlack,.8);    
+  return;
+}
+
+
+
+
+void makeStatErrRatio(TH1D* hratio=NULL, TH1D* hratio_staterr=NULL){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"making stat error ratio"<<std::endl;
+  if(!hratio) {
+    std::cout<<"ratio hist for stat err values not passed. exit."<<std::endl;
+    return;}
+  if(!hratio_staterr){
+    std::cout<<"ratio hist to DEPICT stat err values not passed. exiit."<<std::endl;
+    return;}
+  
+  int nbinsx=hratio_staterr->GetNbinsX();    
+  StatErrStyle(hratio_staterr);
+  
+  for(int i=1; i<=nbinsx; i++){
+    double val=0.;
+    double err=hratio->GetBinError(i);
+    hratio_staterr->SetBinContent(i,val);
+    hratio_staterr->SetBinError(i, err*100.);
+    if(funcDebug)std::cout<<"i= "<<i<<"  bin content is = "<<val<<std::endl;
+    if(funcDebug)std::cout<<"                err = "<<err<<std::endl;
+  
+    
+  }
+  
+  
+  return;
+}
+
 //void divideThyByUnf(TH1* hthyratio, TH1* hunf){
 //    
 //  bool funcDebug=true;

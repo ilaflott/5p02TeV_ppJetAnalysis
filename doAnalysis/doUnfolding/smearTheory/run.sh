@@ -30,7 +30,7 @@ nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
 nlofshortstr="NNPDF_NNLO"
 
 jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_"
-descstr="01.10.19" #_ptmax1000"
+descstr="02.14.19" #_ptmax1000"
 
 #fittypestr="modLog"
 #fittypestr="7TeV"
@@ -39,11 +39,12 @@ fittypestr="spl3wgts"
 ##fittypestr="spl3wgts_extv1"
 ##fittypestr="spl3wgts_extv3"
 
-scpoutput=0
+scpoutput=1
 scpafterlast=1
-etabin_i=4
-Netabins=6
-#Netabins=1 ##debug; runs one bin only
+#etabin_i=0
+#Netabins=6 ##full set of etabins 
+etabin_i=0 
+Netabins=1 ##debug; runs first etabin only
 while [ $etabin_i -lt $Netabins ]
 do
     if [[ $scpafterlast -eq 1 ]]

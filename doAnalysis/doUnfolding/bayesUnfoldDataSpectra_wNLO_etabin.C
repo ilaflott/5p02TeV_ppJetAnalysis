@@ -7,9 +7,21 @@ const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
 const bool setDataCovMat=true;
+
+const bool drawJERsyst=true;
+
+//const bool drawPDFsyst=true;
+//const bool drawNPsyst=true;//applyNPCorrs
+//const bool drawLumisyst=true;
+//const bool drawUnfsyst=true;
 //const bool applyNPCorrs=true; 
 //double unfptlo=56.;
 //double unfpthi=
+
+//RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true
+RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovariance;
+//RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kErrors;
+//RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kNoError;
 
 // CODE --------------------------------------------------
 int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-06-19_jetPlots_0.0eta2.0",  
@@ -34,17 +46,6 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //int     nbins_pt_gen_mat =   setNBins(  useSimpBins , "gen"  );
   //double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
   //int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
-
-  // ERROR/WEIGHTS/STATS HANDLING ------------------
-  RooUnfold::ErrorTreatment errorTreatment;
-  //if(doToyErrs) errorTreatment = RooUnfold::kCovToy; 
-  //else if(!doToyErrs) errorTreatment = RooUnfold::kNoError   ;
-  //if(doToyErrs) errorTreatment = RooUnfold::kCovToy; 
-  //else if(!doToyErrs) errorTreatment = RooUnfold::kErrors    ;
-  if(doToyErrs) errorTreatment = RooUnfold::kCovToy; 
-  else if(!doToyErrs) errorTreatment = RooUnfold::kCovariance;
-
-  if(debugMode)std::cout<<"doToyErrs="<<doToyErrs<<std::endl; 
   
   if(debugMode)std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
   if(debugMode)std::cout<<"setting TH2DefSumw2 to true..."<<std::endl; 
@@ -431,8 +432,28 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   hrec_rebin->SetLineColor(kBlue);     
   hrec_rebin->SetMarkerSize(1.02);     
 
-
-
+  TH2D* hrec_covmat=NULL;  TH2D* hrec_covmat_rebin=NULL;
+  if(setDataCovMat){
+    if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
+    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
+    
+    hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
+    
+    if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
+    hrec_covmat_rebin=(TH2D*) reBinTH2(hrec_covmat_rebin, 
+				       ((std::string)hrec_covmat_rebin->GetName()+"_rebin").c_str(), 
+				       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+				       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+    
+    if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+    hrec_covmat_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
+    if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
+    
+    //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+    for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+      hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );
+  }  
+  
   // thy spectra  
   std::string NLOMCtitle_str="";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top.
 
@@ -486,12 +507,24 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   NNPDFnnlo->SetLineColor(kCyan-6); 
   NNPDFnnlo->Scale(1./1000.);
   
-  if(     inFile_MC_name.find("CT10")!=std::string::npos)   NLOMCtitle_str="CT10 NLO"      + CT10NPs ;
-  else if(inFile_MC_name.find("CT14")!=std::string::npos)   NLOMCtitle_str="CT14 NLO"      + CT14NPs ;
-  else if(inFile_MC_name.find("HERAPDF")!=std::string::npos)NLOMCtitle_str="HERAPDF15 NLO" + HERANPs ;
-  else if(inFile_MC_name.find("MMHT")!=std::string::npos)   NLOMCtitle_str="MMHT2014 NLO"  + MMHTNPs ;
-  else if(inFile_MC_name.find("NNPDF")!=std::string::npos)  NLOMCtitle_str="NNPDF30 NNLO"  + NNPDFNPs;
-
+  TH1D* thyHistUsed=NULL;
+  if(     inFile_MC_name.find("CT10")!=std::string::npos)   {
+    NLOMCtitle_str="CT10 NLO"      + CT10NPs ;
+    thyHistUsed=(TH1D*)CT10nlo->Clone(((std::string)CT10nlo->GetName()+"_forchi2").c_str());}
+  else if(inFile_MC_name.find("CT14")!=std::string::npos)   {
+    NLOMCtitle_str="CT14 NLO"      + CT14NPs ;
+    thyHistUsed=(TH1D*)CT14nlo->Clone(((std::string)CT14nlo->GetName()+"_forchi2").c_str());}
+  else if(inFile_MC_name.find("HERAPDF")!=std::string::npos){
+    NLOMCtitle_str="HERAPDF15 NLO" + HERANPs ;
+    thyHistUsed=(TH1D*)HERAPDF->Clone(((std::string)HERAPDF->GetName()+"_forchi2").c_str());}
+  else if(inFile_MC_name.find("MMHT")!=std::string::npos)   {
+    NLOMCtitle_str="MMHT2014 NLO"  + MMHTNPs ;
+    thyHistUsed=(TH1D*)MMHTnlo->Clone(((std::string)MMHTnlo->GetName()+"_forchi2").c_str());}
+  else if(inFile_MC_name.find("NNPDF")!=std::string::npos)  {
+    NLOMCtitle_str="NNPDF30 NNLO"  + NNPDFNPs;
+    thyHistUsed=(TH1D*)NNPDFnnlo->Clone(((std::string)NNPDFnnlo->GetName()+"_forchi2").c_str());}
+  multiplyBinWidth(thyHistUsed);//for compatibility w/ unfolded hist; must be in units of nb i.e. no bin width division
+  
   // ----- unfolding setup+use below here
 
   // RooUnfold Response Matrix 
@@ -500,9 +533,6 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   roo_resp.UseOverflow(doOverUnderflows);    
   if(debugWrite)roo_resp.Write();
   
-  
-
-
   TH1D* hfak=  (TH1D*) roo_resp.Hfakes() ;
   hfak->Print("base");
 
@@ -515,55 +545,26 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //cosmetics
   hfak->SetMarkerColor(kGreen);
   hfak->SetLineColor(kGreen);
-
-
-
-
-
-  
   
   // Bayesian unfolding -------------------------   
   std::cout<<"calling RooUnfoldBayes... kIterInput="<<kIterInput<<std::endl;  
   RooUnfoldBayes unf_bayes( &roo_resp, hrec_rebin, kIterInput );
   unf_bayes.SetVerbose(verbosity);
 
-  TH2D* hrec_covmat=NULL;  TH2D* hrec_covmat_rebin=NULL;
   TMatrixD* hrec_covmat_rebin_tmatrix=NULL;
-  if(setDataCovMat){
-    
-    if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
-    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
-    
-    hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
-    
-    if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
-    hrec_covmat_rebin=(TH2D*) reBinTH2(hrec_covmat_rebin, 
-				       ((std::string)hrec_covmat_rebin->GetName()+"_rebin").c_str(), 
-				       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-				       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-    
-    if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
-    hrec_covmat_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
-    //hrec_covmat_rebin->Scale(1./sqrt(effIntgrtdLumi)); // lumi
-    if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
-    
-    
+  if(setDataCovMat){    
+    if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
     if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
     hrec_covmat_rebin_tmatrix=(TMatrixD*)roo_resp.H2M(hrec_covmat_rebin, 
 						      nbins_pt_reco_mat,
 						      nbins_pt_gen_mat,
-						NULL, 0	);
-    
-    if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
-    unf_bayes.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );
-  }
-  //assert(false);
-  
-  if(doToyErrs){
+						      NULL, 0	);    
+    unf_bayes.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );  }
+  else if(doToyErrs){
     std::cout<<"using toy errors, suppressing text output"<<std::endl;
     unf_bayes.SetNToys(10000);
-    unf_bayes.SetVerbose(1);
-  }
+    unf_bayes.SetVerbose(1);  }
+  
   std::cout<<"Overflow Status: " << unf_bayes.Overflow()<<std::endl<<std::endl;
   
   
@@ -628,6 +629,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   hfold_truth->SetMarkerColor(kGreen+3);
   hfold_truth->SetLineColor(  kGreen+3);
   hfold_truth->SetMarkerSize(1.02);     
+
+
+  
   
   //i should probably do this differently, but for now ignore
 //  std::cout<<"folding thy histogram!!"<<std::endl;
@@ -765,6 +769,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
 
 
+
+
   
   TH1D* hunf_bayes[nKiterMax]={};
   TH1D* hfold_bayes[nKiterMax]={};
@@ -789,8 +795,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;      
       RooUnfoldBayes unf_bayes_kIterQA(&roo_resp, hrec_rebin, current_kIter);        
       if(setDataCovMat) unf_bayes_kIterQA.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );
+      
       std::cout<<"unf Chi2 w/ toy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)hgen_rebin)<<std::endl;
       std::cout<<"unf Chi2/d.o.f w/ toy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)hgen_rebin) / nbins_pt_gen<<std::endl;
+      std::cout<<std::endl;
+      std::cout<<"unf Chi2 w/ thy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)thyHistUsed)<<std::endl;
+      std::cout<<"unf Chi2/d.o.f w/ thy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)thyHistUsed) / nbins_pt_gen<<std::endl;
       
       hunf_bayes[ki]=(TH1D*)unf_bayes_kIterQA.Hreco(errorTreatment);
       hunf_bayes[ki]->SetName(("Data_unf_kIter"+std::to_string(current_kIter)).c_str());
@@ -1004,6 +1014,31 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   
   
+  
+  //SYSTEMATICS
+  TH1D* h_genratio_JERsysterr=NULL, *h_genratio_staterr= NULL, *h_recratio_staterr=NULL;
+  TH1D* hunf_JERsysterr=NULL;
+  if(drawJERsyst){           
+    
+    hunf_JERsysterr = new TH1D ("hunf_JERsysterr","JER systematics Hist", nbins_pt_gen, boundaries_pt_gen);            
+    makeJERsystSpectra(		  hunf_JERsysterr, fpp_MC, hunf);           
+    
+    h_genratio_JERsysterr = new TH1D ("h_genratio_JERsysterr","JER systematics Ratio Hist", nbins_pt_gen, boundaries_pt_gen);            
+    makeJERsystRatio(		  h_genratio_JERsysterr, fpp_MC);           
+    
+    h_genratio_staterr= new TH1D ("h_genratio_staterr","Stat Error Gen Ratio Hist", nbins_pt_gen, boundaries_pt_gen);            
+    makeStatErrRatio( h_genratio_oppunf, h_genratio_staterr);
+
+    h_recratio_staterr= new TH1D ("h_recratio_staterr","Stat Error Meas Ratio Hist", nbins_pt_gen, boundaries_pt_gen);            
+    makeStatErrRatio( h_recratio_oppunf, h_recratio_staterr);
+    
+  }
+  
+  //  if(hunf_JERsysterr      )hunf_JERsysterr->DrawClone("][ P E2 SAME");//this looks like what i want!
+  
+  
+    
+  
     
 
   
@@ -1017,6 +1052,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //TCanvas pointers for writing canvs to file
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_fold_ratio2=NULL, *canv_thy_ratio=NULL,*canv_thy_ratio2=NULL; 
+  TCanvas * canv_systerrs_ratio=NULL;
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
   TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kIterRatio=NULL,  *canv_chi2iter=NULL;
   TCanvas *canv_3x3covmat=NULL, *canv_3x3covmatabsval=NULL, *canv_3x3pearson=NULL;
@@ -1069,17 +1105,21 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     
     hrec_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());
     
-    
     hrec_rebin->DrawClone("P E");           
     hgen_rebin->DrawClone("P E SAME");                 
-    hunf->DrawClone("P E SAME");               
+    hunf->DrawClone("P E SAME");     //          hunf->DrawClone("P E");               //debug
     hrec_sameside_rebin->DrawClone("P E SAME");           
+    
+    //assert(false);
+    
     
     TLegend* legend_in1 = new TLegend( 0.55,0.7,0.9,0.9 );
     legend_in1->AddEntry(hunf,                "Data Unf." ,  "lp");
     legend_in1->AddEntry(hrec_rebin,          "Data Meas." , "lp");	
     legend_in1->AddEntry(hrec_sameside_rebin, ("Smeared "+NLOMCtitle_str).c_str()  ,  "lp");	 
     legend_in1->AddEntry(hgen_rebin,          ("Toy "+NLOMCtitle_str+" Truth").c_str()   , "lp");
+    if(drawJERsyst)legend_in1->AddEntry(hunf_JERsysterr, "JER syst.", "f");
+
     legend_in1->SetBorderSize(0);
     legend_in1->SetFillStyle(0);
     legend_in1->Draw();    
@@ -1103,16 +1143,20 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     h_genratio_oppunf->SetTitle(("Toy NLO Truth Ratio"+methodString+descString).c_str());
     h_genratio_oppunf->GetYaxis()->SetTitle("Ratio w/ Toy NLO Truth");    
     
+
+    
+    // FIX ME
     h_genratio_oppunf->DrawClone("P E");            //data unf/mc truth
     h_genratio_oppmeas->DrawClone("P E SAME");      // data meas/mc truth
     h_genratio_ssmeas->DrawClone("P E SAME");       // mc meas/mc truth
     //h_genratio_oppfold->DrawClone("P E SAME");
     
+    // FIX ME
     TLegend* legend2 = new TLegend( 0.55,0.75,0.95,0.9 );
+    
     legend2->AddEntry(h_genratio_oppunf,  "Data Unf." ,  "lp");
     legend2->AddEntry(h_genratio_oppmeas, "Data Meas." , "lp"); 
     legend2->AddEntry(h_genratio_ssmeas, ("Smeared "+NLOMCtitle_str).c_str(), "lp");
-
     //legend2->AddEntry(h_genratio_oppfold, "Data Fold(Unf.)", "lp");
     legend2->SetBorderSize(0);
     legend2->SetFillStyle(0);
@@ -1124,10 +1168,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     theLineAt1p1->Draw();
     
     canv_gen_ratio=(TCanvas*)canvForPrint->DrawClone();
-    canvForPrint->Print(outPdfFile.c_str());
-
-
-
+    canvForPrint->Print(outPdfFile.c_str());    
 
 
     // ratio w/ data meas -------------------
@@ -1405,8 +1446,37 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     
     canv_thy_ratio2=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
-
-
+    
+    // systematic errors as % on hist ------------------------
+    if(drawJERsyst){
+      
+      canvForPrint->cd();
+      if(!useSimpBins)canvForPrint->SetLogx(1);
+      canvForPrint->SetLogy(0);
+      
+      setupSystPercErrsHist(h_genratio_JERsysterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      setupSystPercErrsHist(h_genratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      setupSystPercErrsHist(h_recratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      
+      h_genratio_JERsysterr->SetTitle("Sources of Systematic Error");
+      h_genratio_JERsysterr->GetYaxis()->SetTitle("% Error");
+      
+      h_genratio_JERsysterr->DrawClone("][ P E2");
+      h_genratio_staterr   ->DrawClone("][ P E SAME");    
+      
+      TLegend* legendsyst= new TLegend(0.55,0.75,0.90,0.9 );
+      legendsyst->AddEntry(h_genratio_JERsysterr, "JER Systematic Error", "f" );
+      //legendsyst->AddEntry(h_genratio_staterr, "Statistical Error", "lep");
+      legendsyst->AddEntry(h_recratio_staterr, "Statistical Error", "lep");
+      
+      legendsyst->SetBorderSize(0);
+      legendsyst->SetFillStyle(0);
+      legendsyst->Draw();
+      
+      canv_systerrs_ratio=(TCanvas*)canvForPrint->DrawClone();
+      canvForPrint->Print(outPdfFile.c_str());
+    }
+    
     
     // NJets v. Jet p_T hist (all weight=1) ---------------------    
     if( (bool)hJetQA_jtptEntries )      {
@@ -1600,22 +1670,24 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 	//leg_3x3->AddEntry(hrec_fold_ratio[ki],"Fold(Unf.)","lp");
 	//leg_3x3->DrawClone();
 
-	//canv_3x3covmat      
-	canv_3x3covmat->cd(ki_canv)->SetLogx(0);
-	canv_3x3covmat->cd(ki_canv)->SetLogy(0);
-	canv_3x3covmat->cd(ki_canv)->SetLogz(1);
-	canv_3x3covmat->cd(ki_canv);	
-	hcovmat_bayes[ki]->SetAxisRange(1.e-15,1.e+02,"Z");
-	hcovmat_bayes[ki]->Draw("COLZ");
-	
 	//canv_3x3covmatabsval
 	canv_3x3covmatabsval->cd(ki_canv)->SetLogx(0);
 	canv_3x3covmatabsval->cd(ki_canv)->SetLogy(0);
 	canv_3x3covmatabsval->cd(ki_canv)->SetLogz(1);
 	canv_3x3covmatabsval->cd(ki_canv);	
-	hcovmatabsval_bayes[ki]->SetAxisRange(1.e-15,1.e+02,"Z");
+	//hcovmatabsval_bayes[ki]->SetAxisRange(1.e-15,1.e+02,"Z");//if data covmat not set
+	hcovmatabsval_bayes[ki]->SetAxisRange(1.e-13,1.e-01,"Z");
 	hcovmatabsval_bayes[ki]->Draw("COLZ");
-
+	
+	//canv_3x3covmat      
+	canv_3x3covmat->cd(ki_canv)->SetLogx(0);
+	canv_3x3covmat->cd(ki_canv)->SetLogy(0);
+	canv_3x3covmat->cd(ki_canv)->SetLogz(1);
+	canv_3x3covmat->cd(ki_canv);	
+	//hcovmat_bayes[ki]->SetAxisRange(1.e-15,1.e+02,"Z");//if datacovmat not set
+	hcovmat_bayes[ki]->SetAxisRange(1.e-13,1.e-01,"Z");
+	hcovmat_bayes[ki]->Draw("COLZ");
+	
 	//canv_3x3pearson     	
 	canv_3x3pearson->cd(ki_canv)->SetLogx(0);
 	canv_3x3pearson->cd(ki_canv)->SetLogy(0);
@@ -1802,6 +1874,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     canv_fold_ratio2       ->SetTitle("Fold Test Ratios v2 Canvas");  canv_fold_ratio2         ->Write("canv_fold_ratio2");
     canv_thy_ratio        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio          ->Write("canv_thy_ratio");                                
     canv_thy_ratio2        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio2          ->Write("canv_thy_ratio2");                                
+    if(drawJERsyst)canv_systerrs_ratio   ->SetTitle("Systematics Ratios Canvas"); canv_systerrs_ratio->Write("canv_systerrs_ratio");
     
     canv_covmat           ->SetTitle("Covariance Matrix Canvas");           canv_covmat        ->Write("canv_covmat");
     canv_absval_covmat    ->SetTitle("Abs Val. Covariance Matrix Canvas");  canv_absval_covmat ->Write("canv_covmatabsval");
@@ -1859,8 +1932,16 @@ int main(int argc, char* argv[]){
 //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
 //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
   //}
-  if (argc==3){
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5);    
+  //if (argc==3){
+  //  rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5);    
+  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
+  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
+  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
+  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
+  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
+  //}
+  if (argc==5){
+    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
     //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
     //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
     //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    

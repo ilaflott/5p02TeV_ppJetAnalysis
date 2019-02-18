@@ -5,13 +5,13 @@ const int canvy_trig=1000;
 void setupJetTrigSpectraRatioCanvas(TCanvas* canv, 
 				    TPad* specpad,  TPad* ratpad){  
   canv->cd();  
-  //specpad->SetLogx(1);  specpad->SetLogy(1);
-  specpad->SetLogx(0);  specpad->SetLogy(1);
+  specpad->SetLogx(1);  specpad->SetLogy(1);
+  //specpad->SetLogx(0);  specpad->SetLogy(1);
   specpad->SetGridx(1);  specpad->SetGridy(1);  
   specpad->SetBottomMargin(0);
   specpad->Draw();  
-  //ratpad->SetLogx(1);  ratpad->SetLogy(0);
-  ratpad->SetLogx(0);  ratpad->SetLogy(0);
+  ratpad->SetLogx(1);  ratpad->SetLogy(0);
+  //ratpad->SetLogx(0);  ratpad->SetLogy(0);
   ratpad->SetGridx(1);  ratpad->SetGridy(0);  
   ratpad->SetTopMargin(0);  ratpad->SetBottomMargin(0.3);  
   ratpad->Draw();  
@@ -296,8 +296,8 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       theJetTrigQAHist->Scale(1./((float)rebinfactor));
       //theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");          
       //theJetTrigQAHist->SetAxisRange(40,1400,"X");              }
-      //theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");              
-      theJetTrigQAHist->SetAxisRange(50,150,"X");              
+      theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");              
+      //theJetTrigQAHist->SetAxisRange(50,150,"X");              
     }
     
     
@@ -369,8 +369,8 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
 	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rat_rebin"+std::to_string(rebinfactor)).c_str() );
 	theJetTrigQAHist->Scale(1./((float)rebinfactor));
 	//theJetTrigQAHist->SetAxisRange(40,1400,"X");	
-	//theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");	
-	theJetTrigQAHist->SetAxisRange(50,150,"X");	
+	theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");	
+	//theJetTrigQAHist->SetAxisRange(50,150,"X");	
       }
       
       trigRatioHistStyle(theJetTrigQAHist, j);

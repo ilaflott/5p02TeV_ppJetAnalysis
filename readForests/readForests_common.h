@@ -510,10 +510,10 @@ inline void fillCovMatrix(TH2D* covmat=NULL, TH1D* hist=NULL, int nbins=-1, doub
 	double val_j=hist->GetBinContent(j);
 	if( !(val_j>0) ) continue;
 	double center_j=hist->GetBinCenter(j);
-	covmat->Fill(center_i, center_j, weight*val_i*val_j);
-	covmat->Fill(center_j, center_i, weight*val_i*val_j);      }      //covmat->SetBinContent(i,j,val_i*val_j);      }       
+	covmat->Fill(center_i, center_j, weight*weight*val_i*val_j);
+	covmat->Fill(center_j, center_i, weight*weight*val_i*val_j);      }      //covmat->SetBinContent(i,j,val_i*val_j);      }       
       else{// (i==j){	
-	covmat->Fill(center_i, center_i, weight*val_i*val_i);}      //covmat->SetBinContent(i,j, val_i*val_i);            }      
+	covmat->Fill(center_i, center_i, weight*weight*val_i*val_i);}      //covmat->SetBinContent(i,j, val_i*val_i);            }      
     }	
   }
   return;

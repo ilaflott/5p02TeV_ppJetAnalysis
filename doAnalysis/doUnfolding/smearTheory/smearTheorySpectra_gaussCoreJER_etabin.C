@@ -3,6 +3,8 @@
 //const std::string SPLINE_STR="spline";
 //const std::string FIT_STR="fit";
 const int CANVX=1200, CANVY=1000;
+const int xsecorder=0;//0--> LO, 1--> NLO, 2--> NNLO... etc.
+
 const bool printBaseDebug=true;
 
 //const int nEvents=1e+09;  ///10x typical
@@ -31,8 +33,9 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 					    ){
   
   gStyle->SetOptStat(0);
-  TH1::SetDefaultSumw2();
-  TH2::SetDefaultSumw2();
+  gROOT->ForceStyle();
+  TH1::SetDefaultSumw2(true);
+  TH2::SetDefaultSumw2(true);
  
   TVirtualFitter::SetDefaultFitter("Minuit2");
   //ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-02);      //default i think
@@ -87,36 +90,85 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     std::cout<<"error, JER file not found or not open."<<std::endl; assert(false); }
 
   std::cout<<"etabin="<<etabin<<std::endl;  
-  std::string absetarange_str=absetabins_str[etabin]+" < #||{y} < "+absetabins_str[etabin+1];
-
-
-
+  std::string absetarange_str=absetabins_str[etabin]+" < #||{y} < "+absetabins_str[etabin+1];  
+  std::string thyname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"00";
+  
+  std::string orderstring="LO";
+  if(xsecorder==1)orderstring="N"+orderstring;
+  else if(xsecorder==2)orderstring=="NN"+orderstring;
+  
   //////////// NLO Thy calculation xsecions get from file ////////////////////////////////////////////////////////
   std::cout<<"plotting NLO xsecs!"<<  std::endl;  
-  TH1D *theory = (TH1D*)fin_NLO->Get(("h0100"+std::to_string(etabin+1)+"00").c_str());
+
+  TH1D *theory = (TH1D*)fin_NLO->Get(thyname.c_str());
   theory->Sumw2(true);
-  if(printBaseDebug)  theory->Print("Base");
   theory->Scale(1.e-03);//picobarns to nanobarns
-  theory->SetTitle(("NLO Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T};"+ddxsec_yax).c_str());
+  if(printBaseDebug)  theory->Print("Base"); 
+
+  theory->SetTitle((orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T};"+ddxsec_yax).c_str());
   theory->GetXaxis()->SetNoExponent(true);
   theory->GetXaxis()->SetMoreLogLabels(true);
   theory->SetLineColor(kTeal);
-  std::cout<<"done making NLO hist."<<std::endl;
   if(printBaseDebug)theory->Print("base");  
-  //-----------------------------------
 
+  //errors, PDF systematic
+  std::string thyPDFNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"01";//hOSPxRx2 == -1. * hOSPxRx1 (symm)  
+  TH1D *theoryPDFNegerr = (TH1D*)fin_NLO->Get(thyPDFNegerrname.c_str());
+  theoryPDFNegerr->Sumw2(true);
+  theoryPDFNegerr->Scale(1.e-03);//picobarns to nanobarns
+  if(printBaseDebug)  theoryPDFNegerr->Print("Base"); 
+  
+  std::string thyPDFPoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"02";//hOSPxRx2 == -1. * hOSPxRx1 (symm)  
+  TH1D *theoryPDFPoserr = (TH1D*)fin_NLO->Get(thyPDFPoserrname.c_str());
+  theoryPDFPoserr->Sumw2(true);
+  theoryPDFPoserr->Scale(1.e-03);//picobarns to nanobarns
+  if(printBaseDebug)  theoryPDFNegerr->Print("Base"); 
+  
+  //set theory calculation errors to that of the PDF errs
+  for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theoryPDFPoserr->GetBinContent(i));
+  
+  std::string thy2PtScaleNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"06";//2 PT SCALE UNCERTAINTY, ASYMMETRIC
+  TH1D *theory2PtScaleNegerr = (TH1D*)fin_NLO->Get(thy2PtScaleNegerrname.c_str());
+  theory2PtScaleNegerr->Sumw2(true);
+  theory2PtScaleNegerr->Scale(1.e-03);//picobarns to nanobarns
+  if(printBaseDebug)  theory2PtScaleNegerr->Print("Base"); 
+  
+  std::string thy2PtScalePoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"07";//07 IS BROKEN WARNING
+  TH1D *theory2PtScalePoserr = (TH1D*)fin_NLO->Get(thy2PtScalePoserrname.c_str());
+  theory2PtScalePoserr->Sumw2(true);
+  theory2PtScalePoserr->Scale(1.e-03);//picobarns to nanobarns
+  if(printBaseDebug)  theory2PtScalePoserr->Print("Base"); 
+  
+  std::string thy6PtScaleNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"08";//2 PT SCALE UNCERTAINTY, ASYMMETRIC
+  TH1D *theory6PtScaleNegerr = (TH1D*)fin_NLO->Get(thy6PtScaleNegerrname.c_str());
+  theory6PtScaleNegerr->Sumw2(true);
+  theory6PtScaleNegerr->Scale(1.e-03);//picobarns to nanobarns
+  if(printBaseDebug)  theory6PtScaleNegerr->Print("Base"); 
+  
+  std::string thy6PtScalePoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"09";//07 IS BROKEN WARNING
+  TH1D *theory6PtScalePoserr = (TH1D*)fin_NLO->Get(thy6PtScalePoserrname.c_str());
+  theory6PtScalePoserr->Sumw2(true);
+  theory6PtScalePoserr->Scale(1.e-03);//picobarns to nanobarns
+  if(printBaseDebug)  theory6PtScalePoserr->Print("Base"); 
+  
+  std::cout<<"done making "<<orderstring<<" hist."<<std::endl;
+  //assert(false);
+  //-----------------------------------
+  
   //////////// Apply NPs to theory + Plot////////////////////////////////////////////////////////
   std::cout<<"plotting NP+NLO xsecs!"<<  std::endl;  
   TH1D *theory_NP  = (TH1D*) applyNPtoxsec(theory, fNP);
   theory_NP->SetName(("h"+outputTag+"_wNP").c_str());
-  theory_NP->SetTitle(("NP+NLO Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T};"+ddxsec_yax).c_str());
+  
+  theory_NP->SetTitle(("NP+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
   theory_NP->GetXaxis()->SetNoExponent(true);
   theory_NP->GetXaxis()->SetMoreLogLabels(true);
   theory_NP->SetLineColor(kTeal);
-  std::cout<<"done making NLO+NPhist."<<std::endl;
   if(printBaseDebug)theory_NP->Print("base");  
+  
+  std::cout<<"done making NLO+NPhist."<<std::endl;
   //-----------------------------------
-
+  
   TH1D* theory_clone=NULL;
   TH1D* theory_NP_clone=NULL;
   if(etabin==0 || etabin==1){//get rid of last bin
@@ -130,7 +182,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   
   theory_clone->SetLineColor(kCyan+4);    
   theory_NP_clone->SetLineColor(kCyan+4);    
-
+  
   int n_thybins=theory_clone->GetNbinsX();
   std::cout<<"n_thybins="<<n_thybins<<std::endl;
   std::cout<<"n_thybins+1="<<n_thybins+1<<std::endl;
@@ -148,7 +200,6 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
       std::cout<<"thybins["<<i<<"]="<<thybins[i]<<std::endl;
   }
 
-
   
   TF1 *fJER_default = new TF1("fJER_def",gJER_ynew_str.c_str(),thybins[0], thybins[n_thybins]);  //for comparison only
   fJER_default->SetLineColor(kBlue);
@@ -160,7 +211,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     fJER=(TF1*)fin_JER->Get("SigmaFit_h");
   else
     fJER=(TF1*)fin_JER->Get("SigmaFit_f");
-
+  
   if(!fJER){
     std::cout<<"error, JER fit not open or not found!."<<std::endl; assert(false);}
   fJER->SetLineColor(kRed);
@@ -178,7 +229,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_NP->cd()->SetLogx(1);
   plot_NP->cd();
   TH1F *hNP = (TH1F*)( (TH1F*)fNP->GetHistogram()
-			  )->Clone( ("hNP_y"+std::to_string(etabin)).c_str());
+		       )->Clone( ("hNP_y"+std::to_string(etabin)).c_str());
   hNP->SetTitle( ("NP Corr Fit for "+absetarange_str+";Jet p_{T};NP Corr. Factor" ).c_str() );
   hNP->GetXaxis()->SetNoExponent(true);
   hNP->GetXaxis()->SetMoreLogLabels(true);
@@ -228,7 +279,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   
   
   
-
+  
   /////////////// draw xsec hists from file
   //2X2 CANV
   TCanvas *plot_NLOxsec = new TCanvas("plot_NLOxsec", "plot NLOxsec",1200,1000);
@@ -236,29 +287,95 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_NLOxsec->cd()->SetLogx(1);
   plot_NLOxsec->cd()->SetLogy(1);
   plot_NLOxsec->cd();
-  theory->SetTitle(("NLO #sigma_{jet}, "+absetarange_str+";Jet p_{T};"+ddxsec_yax).c_str());
+  theory->SetTitle((orderstring+" #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
   theory->GetXaxis()->SetNoExponent(true);
   theory->GetXaxis()->SetMoreLogLabels(true);
   theory->SetLineColor(kRed);
   theory->DrawClone("HIST E");    
   //--------------------------------------------
   
-  
-  
-  
-  
-  
-
-  
-
   //2X2 CANV THEORY NPNLO xsec
   TCanvas *plot_NPNLOxsec = new TCanvas("plot_NPNLOxsec", "plot NPNLOxsec",1200,1000);
   //--------------------------------------------
   plot_NPNLOxsec->cd()->SetLogx(1);
   plot_NPNLOxsec->cd()->SetLogy(1);
   plot_NPNLOxsec->cd();
-  theory_NP->DrawClone("HIST E");    
+  theory_NP->DrawClone("HIST E");      
   //--------------------------------------------
+  
+  TCanvas *plot_xsecPosErrs = new TCanvas("plot_xsecPosErrs", "plot xsec +Errors",1200,1000);
+  plot_xsecPosErrs->cd()->SetLogx(1);
+  plot_xsecPosErrs->cd()->SetLogy(1);
+  plot_xsecPosErrs->cd();
+  
+  theoryPDFPoserr->SetLineColor(kBlue);       
+  theory2PtScalePoserr->SetLineColor(kRed);
+  theory6PtScalePoserr->SetLineColor(kMagenta);
+  
+  theory6PtScalePoserr->SetTitle(("Theory "+orderstring+" #sigma_{Jet} (+) Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  
+  theory6PtScalePoserr->SetMinimum(1.e-06);
+  theory6PtScalePoserr->SetMaximum(1.e-02);
+  theory6PtScalePoserr->GetXaxis()->SetNoExponent(true);
+  theory6PtScalePoserr->GetXaxis()->SetMoreLogLabels(true);  
+
+  theory6PtScalePoserr->DrawClone("HIST");
+  theory2PtScalePoserr->DrawClone("HIST SAME");  
+  theoryPDFPoserr     ->DrawClone("HIST SAME");
+  
+  TLegend* poserrsleg=new TLegend(0.1,0.7,0.4,0.9);
+  poserrsleg->SetBorderSize(0.);
+  poserrsleg->SetFillStyle(0);  
+  poserrsleg->AddEntry( theory6PtScalePoserr, "6 Pt. Scale Error(Asymm.)" , "l");
+  poserrsleg->AddEntry( theory2PtScalePoserr, "2 Pt. Scale Error(Asymm.)" , "l");
+  poserrsleg->AddEntry( theoryPDFPoserr     , "PDF Error (Symm.)" , "l");
+  
+  poserrsleg->Draw();
+  
+  //--------------------------------------------
+  TCanvas *plot_xsecNegErrs = new TCanvas("plot_xsecNegErrs", "plot xsec +Errors",1200,1000);
+  plot_xsecNegErrs->cd()->SetLogx(1);
+  plot_xsecNegErrs->cd()->SetLogy(1);
+  plot_xsecNegErrs->cd();
+  
+  theoryPDFNegerr->SetLineColor(kBlue);       
+  theory2PtScaleNegerr->SetLineColor(kRed);
+  theory6PtScaleNegerr->SetLineColor(kMagenta);
+  
+  theory6PtScaleNegerr->SetTitle(("Theory "+orderstring+" #sigma_{Jet} (-) Errors;Jet p_{T}[GeV]; #||{(-) Error} [nb/GeV]").c_str());
+  
+  theory6PtScaleNegerr->Scale(-1.);
+  theory2PtScaleNegerr->Scale(-1.);
+  theoryPDFNegerr     ->Scale(-1.);
+  
+  theory6PtScaleNegerr->SetMinimum(1.e-06);
+  theory6PtScaleNegerr->SetMaximum(1.e-02);
+  theory6PtScaleNegerr->GetXaxis()->SetNoExponent(true);
+  theory6PtScaleNegerr->GetXaxis()->SetMoreLogLabels(true);
+  
+  
+  theory6PtScaleNegerr->DrawClone("HIST");
+  theory2PtScaleNegerr->DrawClone("HIST SAME");
+  theoryPDFNegerr     ->DrawClone("HIST SAME");
+  
+  TLegend* negerrsleg=new TLegend(0.1,0.7,0.4,0.9);
+  negerrsleg->SetBorderSize(0.);
+  negerrsleg->SetFillStyle(0);  
+  negerrsleg->AddEntry( theory6PtScaleNegerr, "6 Pt. Scale Error (Asymm.)" , "l");
+  negerrsleg->AddEntry( theory2PtScaleNegerr, "2 Pt. Scale Error (Asymm.)" , "l");
+  negerrsleg->AddEntry( theoryPDFNegerr     , "PDF Error (Symm.)" , "l");
+  
+  negerrsleg->Draw();
+  
+  
+  
+
+  
+  
+
+  
+
+
             
 
   
@@ -335,12 +452,14 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     if(useSplineExt)spline3_NP_ext->Draw("SAME");
     
     leg_spline=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-    leg_spline->AddEntry(theory_clone ,    ("Weighted NLO Jet Counts,"+absetarange_str           ).c_str() , "lp");
-    leg_spline->AddEntry(spline3   ,       ("Cubic Spline NLO,"+absetarange_str                  ).c_str() , "l");
-    if(useSplineExt)leg_spline->AddEntry(spline3_ext  ,    ("Parabolic Spline Extension NLO,"+absetarange_str    ).c_str() , "l");
-    leg_spline->AddEntry(theory_NP_clone , ("Weighted NP+NLO Jet Counts,"+absetarange_str        ).c_str() , "lp");
-    leg_spline->AddEntry(spline3_NP   ,    ("Cubic Spline NP+NLO,"+absetarange_str               ).c_str() , "l");
-    if(useSplineExt)leg_spline->AddEntry(spline3_NP_ext  , ("Parabolic Spline Extension NP+NLO,"+absetarange_str ).c_str() , "l");
+    leg_spline->AddEntry(theory_clone ,    ("Weighted "+orderstring+" Jet Counts,"+absetarange_str           ).c_str() , "lp");
+    leg_spline->AddEntry(spline3   ,       ("Cubic Spline "+orderstring+","+absetarange_str                  ).c_str() , "l");
+    //
+    if(useSplineExt)leg_spline->AddEntry(spline3_ext  ,    ("Parabolic Spline Extension "+orderstring+","+absetarange_str    ).c_str() , "l");
+    //
+    leg_spline->AddEntry(theory_NP_clone , ("Weighted NP+"+orderstring+" Jet Counts,"+absetarange_str        ).c_str() , "lp");
+    leg_spline->AddEntry(spline3_NP   ,    ("Cubic Spline NP+"+orderstring+","+absetarange_str               ).c_str() , "l");
+    if(useSplineExt)leg_spline->AddEntry(spline3_NP_ext  , ("Parabolic Spline Extension NP+"+orderstring+","+absetarange_str ).c_str() , "l");
     leg_spline->Draw();    
   }
 
@@ -392,7 +511,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
     //draw
     std::cout<<"drawing fits and cross section on canvas"<<std::endl;
-    theory_clone->SetTitle(("Modified Logarithm Fits for NLO, "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
+    theory_clone->SetTitle(("Modified Logarithm Fits for "+orderstring+", "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
     theory_clone->DrawClone("HIST E");    
     
     logFit->Draw("SAME");
@@ -404,7 +523,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     leg_logfits=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
     
-    leg_logfits->AddEntry(theory_clone , ("Weighted NLO Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_logfits->AddEntry(theory_clone , ("Weighted "+orderstring+" Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
     leg_logfits->AddEntry(logFit      , "Log Fit" , "l");//change desc TO DO
     leg_logfits->AddEntry(modLogFit   , "Mod. Log Fit" , "l");
     leg_logfits->AddEntry(modLog2Fit   , "2nd Order Mod. Log Fit" , "l");    
@@ -443,7 +562,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     //draw
     std::cout<<"drawing NP fits and cross section on canvas"<<std::endl;
-    theory_NP_clone->SetTitle( ("Modified Logarithm Fits for NLO+NP,"+absetarange_str+" ;Jet p_{T};Smear Weight").c_str());        
+    theory_NP_clone->SetTitle( ("Modified Logarithm Fits for "+orderstring+"+NP,"+absetarange_str+" ;Jet p_{T};Smear Weight").c_str());        
     theory_NP_clone->DrawClone("HIST E");        
     
     logFit_NP->Draw("SAME");
@@ -454,7 +573,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     modLog5Fit_NP->Draw("SAME");    
     
     leg_logfits_NP=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-    leg_logfits_NP->AddEntry(theory_NP_clone , ("Weighted NLO+NP Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_logfits_NP->AddEntry(theory_NP_clone , ("Weighted "+orderstring+"+NP Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
     //leg_logfits_NP->AddEntry(theory_NP , "Weighted NLO+NP Jet Counts for"+absetarange_str , "lp");//change desc TO DO
     leg_logfits_NP->AddEntry(logFit_NP      , "Log Fit" , "l");//change desc TO DO
     leg_logfits_NP->AddEntry(modLogFit_NP   , "Mod. Log Fit" , "l");
@@ -536,15 +655,15 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
     //draw
     std::cout<<"drawing fits and cross section on canvas"<<std::endl;
-    theory_clone->SetTitle(("7 TeV Fits for NLO, "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
+    theory_clone->SetTitle(("7 TeV Fits for "+orderstring+", "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
     theory_clone->DrawClone("HIST E");        
     _7TeVFitA->Draw("SAME");
     _7TeVFitB->Draw("SAME");
     
     leg_7tevfits=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");    
-    leg_7tevfits->AddEntry(theory_clone , ("Weighted NLO Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
-    leg_7tevfits->AddEntry(_7TeVFitB   , "4 Param. 7 TeV Fit for NLO" , "l");
-    leg_7tevfits->AddEntry(_7TeVFitA   , "3 Param. 7 TeV Fit for NLO" , "l");    
+    leg_7tevfits->AddEntry(theory_clone , ("Weighted "+orderstring+" Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_7tevfits->AddEntry(_7TeVFitB   , ("4 Param. 7 TeV Fit for "+orderstring+"").c_str() , "l");
+    leg_7tevfits->AddEntry(_7TeVFitA   , ("3 Param. 7 TeV Fit for "+orderstring+"").c_str() , "l");    
     leg_7tevfits->Draw();    
     
     
@@ -566,7 +685,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     //draw    
     std::cout<<"drawing NP fits and cross section on canvas"<<std::endl;
-    theory_NP_clone->SetTitle( ("7 TeV Fits for NP+NLO,"+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
+    theory_NP_clone->SetTitle( ("7 TeV Fits for NP+"+orderstring+","+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
     theory_NP_clone->DrawClone("HIST E");    
     
     _7TeVFitA_NP->Draw("SAME");
@@ -574,9 +693,9 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     leg_7tevfits_NP=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
     
-    leg_7tevfits_NP->AddEntry(theory_NP_clone , ("Weighted NP+NLO Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
-    leg_7tevfits_NP->AddEntry(_7TeVFitA_NP   ,  "3 Param. 7 TeV Fit for NP+NLO" , "l");
-    leg_7tevfits_NP->AddEntry(_7TeVFitB_NP   ,  "4 Param. 7 TeV Fit for NP+NLO" , "l");    
+    leg_7tevfits_NP->AddEntry(theory_NP_clone , ("Weighted NP+"+orderstring+" Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_7tevfits_NP->AddEntry(_7TeVFitA_NP   ,  ("3 Param. 7 TeV Fit for NP+"+orderstring).c_str() , "l");
+    leg_7tevfits_NP->AddEntry(_7TeVFitB_NP   ,  ("4 Param. 7 TeV Fit for NP+"+orderstring).c_str() , "l");    
     leg_7tevfits_NP->Draw();    
   }
   
@@ -646,7 +765,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   Float_t miny=smeared_rnd->GetMinimum();   std::cout<<"miny="<<miny<<std::endl;
   miny/=2.; std::cout<<"miny="<<miny<<std::endl;
   theory_rnd->SetAxisRange(miny,maxy,"Y");  
-  theory_rnd->SetTitle( ((std::string)("Toy MC Incl. NLO #sigma;;"+ddxsec_yax)).c_str() );
+  theory_rnd->SetTitle( ((std::string)("Toy MC Incl. "+orderstring+" #sigma;;"+ddxsec_yax)).c_str() );
   
   
   ///// check plots True/Smeared 
@@ -666,9 +785,9 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   smeared_rnd_test->DrawClone("HIST E SAME");
   
   TLegend* leg_smear=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-  leg_smear->AddEntry(theory_rnd  , "Truth Incl. NLO #sigma" , "lp" );
-  leg_smear->AddEntry(smeared_rnd , "Smeared Incl. NLO #sigma" , "lp" );
-  leg_smear->AddEntry(smeared_rnd_test , "Opp Side Smeared Incl. NLO #sigma" , "lp" );
+  leg_smear->AddEntry(theory_rnd  ,      ("Truth Incl. "+orderstring+" #sigma"            ).c_str(), "lp" );
+  leg_smear->AddEntry(smeared_rnd ,      ("Smeared Incl. "+orderstring+" #sigma"          ).c_str(), "lp" );
+  leg_smear->AddEntry(smeared_rnd_test , ("Opp Side Smeared Incl. "+orderstring+" #sigma" ).c_str(), "lp" );
   leg_smear->Draw();
   
   plot_true_smeared_rat->cd();//go back to main canvas before doing new pad
@@ -712,7 +831,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_response_th2->cd()->SetLogz(1);
   plot_response_th2->cd();
   
-  response_th2->SetTitle("Toy MC Response Matrix from JER Smeared NLO #sigma_{jet}");
+  response_th2->SetTitle(("Toy MC Response Matrix from JER Smeared "+orderstring+" #sigma_{jet}").c_str());
 
   response_th2->GetXaxis()->SetTitle("RECO Jet p_{T} [GeV]");
   response_th2->GetXaxis()->SetNoExponent(true);
@@ -749,7 +868,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   //-----------------------------------------------------------------------------------------//
   //////////////////////  START production of Smeared NLO+NP spectra  /////////////////////////
   //-----------------------------------------------------------------------------------------//
-  std::cout<<"creating TH1 for toy NP+NLO spectra generation"<<std::endl<<std::endl;
+  std::cout<<"creating TH1 for toy NP+"+orderstring+" spectra generation"<<std::endl<<std::endl;
   TH1D *theory_rnd_NP    = new TH1D("theory_rnd_NP","theory_rnd_NP", n_thybins, thybins);   
   TH1D *smeared_rnd_NP = new TH1D("smeared_rnd_NP","smeared_rnd_NP", n_thybins, thybins);     
   TH1D *smeared_rnd_NP_test = new TH1D("smeared_rnd_NP_test","smeared_rnd_NP_test", n_thybins, thybins);     
@@ -816,7 +935,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   Float_t NPminy=smeared_rnd_NP->GetMinimum();   std::cout<<"NPminy="<<NPminy<<std::endl;
   NPminy/=2.; std::cout<<"NPminy="<<NPminy<<std::endl;
   theory_rnd_NP->SetAxisRange(NPminy,NPmaxy,"Y");
-  theory_rnd_NP->SetTitle( ((std::string)("Toy MC Incl. NP+NLO #sigma;;"+ddxsec_yax)).c_str() );
+  theory_rnd_NP->SetTitle( ((std::string)("Toy MC Incl. NP+"+orderstring+" #sigma;;"+ddxsec_yax)).c_str() );
   
   ///// check plots True/Smeared 
   TCanvas *plot_NP_true_smeared_rat = new TCanvas("plot_NP_true_smeared_rat", "plot NP true smeared rat",1400,1200);  
@@ -833,8 +952,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   smeared_rnd_NP->DrawClone("HIST E SAME");
   
   TLegend* NPleg_smear=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-  NPleg_smear->AddEntry(theory_rnd_NP  , "Truth Incl. NP+NLO #sigma" , "lp" );
-  NPleg_smear->AddEntry(smeared_rnd_NP , "Smeared Incl. NP+NLO #sigma" , "lp" );
+  NPleg_smear->AddEntry(theory_rnd_NP  , ("Truth Incl. NP+"+orderstring+" #sigma"   ).c_str(), "lp" );
+  NPleg_smear->AddEntry(smeared_rnd_NP , ("Smeared Incl. NP+"+orderstring+" #sigma" ).c_str(), "lp" );
   NPleg_smear->Draw();
   
   plot_NP_true_smeared_rat->cd();//go back to main canvas before doing new pad
@@ -847,7 +966,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   NPratio_pad->Draw();//tell canvas there's a pad at the specified coordinates in the new constructor
   NPratio_pad->cd();
   
-  std::cout<<"creating ratio hist of true/smeared for NP+NLO"<<std::endl;
+  std::cout<<"creating ratio hist of true/smeared for NP+"+orderstring+""<<std::endl;
   TH1D *NP_true_smeared_rat=(TH1D*)theory_rnd_NP->Clone("NP_true_smeared_rat"); 
   if(printBaseDebug)NP_true_smeared_rat->Print("base");
   NP_true_smeared_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
@@ -856,7 +975,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   NP_true_smeared_rat->GetXaxis()->SetNoExponent(true);
   NP_true_smeared_rat->SetAxisRange(0.6,1.4,"Y");  
   
-  std::cout<<"creating ratio hist of true/opp side smeared for NP+NLO"<<std::endl;
+  std::cout<<"creating ratio hist of true/opp side smeared for NP+"+orderstring+""<<std::endl;
   TH1D *NP_true_smeared_test_rat=(TH1D*)theory_rnd_NP->Clone("NP_true_smeared_test_rat"); 
   if(printBaseDebug)NP_true_smeared_test_rat->Print("base");
   NP_true_smeared_test_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
@@ -878,7 +997,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_response_NP_th2->cd()->SetLogz(1);
   plot_response_NP_th2->cd();
   
-  response_NP_th2->SetTitle("Toy MC Response Matrix from JER Smeared NP+NLO #sigma_{jet}");
+  response_NP_th2->SetTitle(("Toy MC Response Matrix from JER Smeared NP+"+orderstring+" #sigma_{jet}").c_str());
   response_NP_th2->GetXaxis()->SetTitle("RECO Jet p_{T} [GeV]");
   response_NP_th2->GetXaxis()->SetNoExponent(true);
   response_NP_th2->GetXaxis()->SetMoreLogLabels(true);
@@ -913,7 +1032,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory_ratio_rnd->Divide(theory_rnd);
   theory_ratio_rnd->SetLineColor(kBlack);
   theory_ratio_rnd->SetTitle(thy_rnd_rat_title.c_str());
-
+  
   
   TH1D* theory_NP_ratio_rnd_NP=(TH1D*)theory_NP_clone->Clone ( 
 									  ( (std::string)theory_NP->GetName() +"_debughist") .c_str()
@@ -922,20 +1041,24 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory_NP_ratio_rnd_NP->SetLineColor(kGray+1);
   theory_NP_ratio_rnd_NP->SetTitle(thy_rnd_rat_title.c_str());
   
-  theory_ratio_rnd->SetAxisRange    (0.1,1.5,"Y");
-  theory_NP_ratio_rnd_NP->SetAxisRange(0.1,1.5,"Y");
+  theory_ratio_rnd->SetAxisRange    (0.5,1.5,"Y");
+  theory_NP_ratio_rnd_NP->SetAxisRange(0.5,1.5,"Y");
   
 
-  std::cout<<"NLO THY/RND THY LAST BIN CONTENT = "<<theory_ratio_rnd->GetBinContent(theory_ratio_rnd->GetNbinsX()) <<std::endl;
-  std::cout<<"NLO THY/RND THY LAST BIN CONTENT = "<<theory_NP_ratio_rnd_NP->GetBinContent(theory_NP_ratio_rnd_NP->GetNbinsX()) <<std::endl;
+  std::cout<<""+orderstring+" THY/RND THY LAST BIN CONTENT = "<<theory_ratio_rnd->GetBinContent(theory_ratio_rnd->GetNbinsX()) <<std::endl;
+  std::cout<<""+orderstring+" THY/RND THY LAST BIN CONTENT = "<<theory_NP_ratio_rnd_NP->GetBinContent(theory_NP_ratio_rnd_NP->GetNbinsX()) <<std::endl;
   
   
   theory_ratio_rnd->DrawClone("HIST E");
   theory_NP_ratio_rnd_NP->DrawClone("HIST E SAME");
   
+  lineatone->Draw();
+  
+  
+  
   TLegend* leg_tru_rnd_rat=new TLegend(0.10, 0.70, 0.35, 0.9, NULL,"BRNDC");
-  leg_tru_rnd_rat->AddEntry( theory_ratio_rnd, "NLO Spectra", "lp");
-  leg_tru_rnd_rat->AddEntry( theory_NP_ratio_rnd_NP, "NLO+NP Spectra", "lp");
+  leg_tru_rnd_rat->AddEntry( theory_ratio_rnd,       (orderstring+" Spectra"   ).c_str(), "lp");
+  leg_tru_rnd_rat->AddEntry( theory_NP_ratio_rnd_NP, (orderstring+"+NP Spectra").c_str(), "lp");
   leg_tru_rnd_rat->Draw();
   
   
@@ -961,11 +1084,23 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   // NLO HISTS
   theory->Write();
   plot_NLOxsec->Write();
+
+  // ERR HISTS
+  theoryPDFPoserr     ->Write();
+  theory2PtScalePoserr->Write();
+  theory6PtScalePoserr->Write();
+  plot_xsecPosErrs->Write();
+  
+  theoryPDFNegerr     ->Write();
+  theory2PtScaleNegerr->Write();
+  theory6PtScaleNegerr->Write();
+  plot_xsecNegErrs->Write();
   
   // NP+NLO HISTS
   theory_NP->Write();    
   plot_NPNLOxsec->Write();
   
+
   // CLONES 4 SMEARING+TOYMC
   theory_clone->Write();
   theory_NP_clone->Write();

@@ -7,7 +7,7 @@ echo ""
 #localDir=/Users/ilaflott/Working/Dropbox/localAnalysis/src/5p02TeV_ppJetAnalysis-master/doAnalysis/printPlots/outputCondor
 
 MM="02"
-DD="04"
+DD="07"
 YY="19"
 
 

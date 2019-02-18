@@ -21,7 +21,7 @@
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TLegend.h>
-
+#include <TROOT.h>
 #include <TSpline.h>
 #include <TLine.h>
 #include <TVirtualFitter.h>

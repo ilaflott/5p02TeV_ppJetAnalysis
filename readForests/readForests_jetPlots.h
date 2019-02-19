@@ -20,8 +20,8 @@ const std::string defDataOutputName="readForests_ppData_defOut_LowerJets_jetPlot
 //const std::string defDataOutputName="readForests_ppData_defOut_LowerJets_jetPlots_trgPtL2L3Res.root";
 //const std::string defDataOutputName="readForests_ppData_defOut_LowerJets_jetPlots_trgPtNoRes.root";
 
-//const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
-const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
+const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
+//const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
 const std::string defMCOutputName="readForests_ppMC_defOut_jetPlots.root";
 const int defRadius=4;
 const std::string defJetType="PF";
@@ -40,7 +40,7 @@ int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist,
 				 float jtEtaCutLo=defEtaCutLo, float jtEtaCutHi=defEtaCutHi      );
 
 int readForests_ppMC_jetPlots( std::string inFilelist=defMCInFilelist,
-			       int startfile=0, int endfile=10, 
+			       int startfile=0, int endfile=40, 
 			       int radius=defRadius, std::string jetType=defJetType, 
 			       bool debugMode=defDebugMode,			
 			       std::string outfile=(defMCOutputName),

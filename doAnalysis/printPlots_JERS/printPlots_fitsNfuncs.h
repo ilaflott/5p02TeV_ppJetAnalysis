@@ -304,7 +304,7 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
 
 //void MakeHist(TH1F *&histo,int istat,const char *xname, const char *yname){
 void MakeHist(TH1F* h1, float xmin, float xmax){
-  h1->SetLineColor(kBlue);  
+  //h1->SetLineColor(kBlue);  
 
   h1->SetMarkerColor(kBlack);
   h1->SetMarkerStyle(20);    
@@ -364,9 +364,9 @@ void MakeHistChi2Prob(TH1F * h1, float xmin, float xmax){
   MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("");
   h1->GetYaxis()->SetTitle("Gaussian JER #chi^{2} Probability");
-  h1->SetAxisRange(1e-10 , 1., "Y");
+  //h1->SetAxisRange(1e-10 , 1., "Y");
   h1->SetMarkerStyle(kOpenStar);
-    h1->SetMarkerColor(kBlack);
+  h1->SetMarkerColor(kBlack);
   h1->SetLineColor(kMagenta);
   return;
 }

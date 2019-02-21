@@ -4,7 +4,7 @@
 // ppData switches
 const bool fillDataEvtQAHists=true;
 const bool fillDataJetQAHists=true;
-const bool fillDataJetIDHists=true;//, tightJetID=false;
+const bool fillDataJetIDHists=false;//, tightJetID=false;
 const bool fillDataJetTrigQAHists=true; //data-specific
 const bool fillDataJetCovMatrix=true;
 

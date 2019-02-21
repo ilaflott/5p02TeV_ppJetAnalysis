@@ -226,7 +226,12 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 //raghavs suggested genpt binning for JER
 const float ptbins[]={
-  //  28.,
+  //1., 5., 6., 8., 10., 12., 
+  //15., 
+  //18., 
+  21., 
+  24., 
+  28.,
   32., 
   37.,
   43., //garbage bins

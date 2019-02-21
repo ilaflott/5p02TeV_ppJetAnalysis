@@ -19,10 +19,11 @@ const bool draw_JERgen150to200=false, draw_JERgen30to50=false;
 const std::string didJetID="1";
 const std::string doJetID="1";
 const int CANVX=1200, CANVY=1200;
-bool doabsetabinJER=false;
+const bool doabsetabinJER=true;
+
 int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, const bool draw_hJER=true, const bool draw_MCEff=false, const int absetabin=-1){
   
-  if(absetabin!=-1) doabsetabinJER=true;
+  //if(absetabin!=-1) doabsetabinJER=true;
   
   // root style settings.
   std::cout<<"forcing style"<<std::endl;
@@ -107,23 +108,26 @@ int printPlots_ppMC_JERS(std::string inFile_MC_dir,const std::string outputTag, 
     // pt bin hJER-fit loop    
     if(debugMode)std::cout<<"nbins_pt="<<nbins_pt_debug<<std::endl;    
     for(int ip=0; ip<nbins_pt_debug; ip++){    
+      int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
       
       // open the input hist    
       std::string inputHistName="";
       if(doabsetabinJER)
-	inputHistName="hJER_"+doJetID+"wJetID_etabin"+std::to_string(absetabin)+"_ptbin"+std::to_string(ip);      
+	inputHistName="hJER_"+doJetID+"wJetID_etabin"+std::to_string(absetabin)+"_"+std::to_string(ptbin_ip)+"ptbin"+std::to_string(ptbin_ip1);      
       else 
 	inputHistName="hJER_"+doJetID+"wJetID_ptbin"+std::to_string(ip);
 
       hrsp[ip] = (TH1F*)finPP->Get( inputHistName.c_str() );        
      
       if(!hrsp[ip]){ 
-	std::cout<<"no input hist named " <<  inputHistName<< ", exiting..."<<std::endl;
-	assert(false);}          
+	std::cout<<"no input hist named " <<  inputHistName<< ", continue..."<<std::endl;
+	continue;
+	//assert(false);
+      }          
       else if(hrsp[ip]->GetEntries()<3)
 	continue;	
       
-      int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];
+
       if(debugMode)std::cout<<std::endl;  
       if(debugMode)std::cout<<"________________________________"<<std::endl;  
       if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    

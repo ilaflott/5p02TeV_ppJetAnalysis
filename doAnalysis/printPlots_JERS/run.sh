@@ -1,14 +1,14 @@
 #!/bin/bash
 
-echo ""
-echo "compiling printPlots_ppMC_JERS.C"
-echo ""
-
-rootcompile printPlots_ppMC_JERS.C
-
-echo ""
-echo "done compiling. Running!"
-echo ""
+#echo ""
+#echo "compiling printPlots_ppMC_JERS.C"
+#echo ""
+#
+#rootcompile printPlots_ppMC_JERS.C
+#
+#echo ""
+#echo "done compiling. Running!"
+#echo ""
 
 #source run_printPlots_ppMC_JERS.sh "4" "08.07.18_outputCondor" "08-07-18" "0.0eta2.0" "00eta20"
 
@@ -34,15 +34,47 @@ echo ""
 #source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "00eta05" "1" "0" "0"        #JER 0-2only
 #source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "05eta10" "1" "0" "1"        #JER 0-2only
 #source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "10eta15" "1" "0" "2"        #JER 0-2only
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "15eta20" "1" "0" "3"        #JER 0-2only
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "20eta25" "1" "0" "4"        #JER 0-2only
-source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "25eta30" "1" "0" "5"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "15eta20" "1" "0" "3"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "20eta25" "1" "0" "4"        #JER 0-2only
+#source run_printPlots_ppMC_JERS.sh "4" "01.06.19_outputCondor" "01-06-19" "0.0eta3.0" "25eta30" "1" "0" "5"        #JER 0-2only
+
+#echo ""
+#echo "done running printPlots_ppMC_JERS"
+#echo ""
+
+#echo ""
+#echo "scp2Serin"
+#echo ""
+
+#scp2Serin output/ak4PF\*
 
 
-scp2Serin output/ak4PF\*
 echo ""
-echo "done running ppMC JERS!"
+echo "compiling printPlots_ppMC_JERS_etabin.C"
 echo ""
+
+rootcompile printPlots_ppMC_JERS_etabin.C
+
+echo ""
+echo "done compiling. Running!"
+echo ""
+
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "00eta05_test" "1" "0" "0"         #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "05eta10_test" "1" "0" "1"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "10eta15_test" "1" "0" "2"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "15eta20_test" "1" "0" "3"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "20eta25_test" "1" "0" "4"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "25eta30_test" "1" "0" "5"        #JER any |y|bin
+
+echo ""
+echo "done running printPlots_ppMC_JERS_etabin"
+echo ""
+
+#echo ""
+#echo "scp2Serin"
+#echo ""
+
+scp2Serin "output/ak4PF_PY8JER_??eta??_test.*"
 
 ##############################################
 return

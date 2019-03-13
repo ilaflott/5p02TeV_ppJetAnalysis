@@ -382,7 +382,7 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins
   //h->SetAxisRange(0.3, 1.7, "Y");
   //h->SetAxisRange(0.4, 1.6, "Y");
   h->SetAxisRange(0.5, 1.5, "Y");
-  h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
+  h->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
   //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
@@ -398,7 +398,7 @@ void setupSystPercErrsHist(TH1* h, bool useSimpBins, double* boundaries=NULL, in
   //h->SetAxisRange(0.3, 1.7, "Y");
   //h->SetAxisRange(0.4, 1.6, "Y");
   h->SetAxisRange(-50., 50., "Y");
-  h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
+  h->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
   //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
@@ -414,7 +414,7 @@ void setupSpectraHist(TH1* h, bool useSimpBins=false, double* boundaries=NULL, i
   h->GetYaxis()->SetTitle("#frac{d^{2}#sigma}{d#eta dp_{T}} [nb/GeV]");
   //h->GetYaxis()->SetTitle("N_{Jets}/L_{int}");
   //h->GetYaxis()->SetTitle("A.U.");
-  h->GetXaxis()->SetTitle("Jet p_{T} (GeV)");
+  h->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);  
   //  if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
@@ -884,19 +884,25 @@ void applyNPCorr_etabin(std::string nlofile_str="", TH1D* hnlo=NULL, std::string
   
   //set NP TF1 name + NP desc str if not null
   std::string NPCorrName="";  
-  if(nlofile_str.find("nnlo")!=std::string::npos){    
-    NPCorrName="fNPC_POWPY8_R4_etabin";
-    if(NPsstr)(*NPsstr)=" #otimes POW+PY8";  }
+  if(nlofile_str.find("nnlo")!=std::string::npos){    //if nnpdf nnlo, then use these nps
+    //    NPCorrName="fNPC_POWPY8_R4_etabin";
+    //if(NPsstr)(*NPsstr)=" #otimes POW+PY8";  
+    NPCorrName="fNPC_HerwigEE5C_R4_etabin";
+    if(NPsstr)(*NPsstr)=" #otimes HERWIG EE5C";  
+  }
   else{    
     NPCorrName="fNPC_HerwigEE4C_R4_etabin";
     if(NPsstr)(*NPsstr)=" #otimes HERWIG EE4C";  }  
   NPCorrName+=std::to_string(etabinint);
-
+  
   //grab the TF1
   TF1* fNPCorr=(TF1*)NPCorrFile->Get(NPCorrName.c_str());
   if(!fNPCorr)assert(false);
   
   //apply the NP to the vals+errs in hnlo
+  if(funcDebug)std::cout<<"NP Fit Obj Name is: " << fNPCorr->GetName()<<std::endl;
+  if(funcDebug)std::cout<<"hnlo Name is: " << hnlo->GetName()<<std::endl;
+
   int nbins=hnlo->GetNbinsX();
   for(int j=1;j<=nbins;j++){
     double hnlo_NPcorrval=(hnlo->GetBinContent(j))*(fNPCorr->Eval(hnlo->GetBinCenter(j)));
@@ -2316,7 +2322,7 @@ void JERsystStyle(TH1D* JERsystHist=NULL){
 }
 
 
-void makeJERsystSpectra(TH1D* JERsysterr=NULL, TFile* NLOfile=NULL, TH1D* histForError=NULL){
+void makeJERsystSpectra(TH1D* JERsysterr=NULL, TFile* NLOfile=NULL, TH1D* histForError=NULL, bool doJERsyst=false){
   bool funcDebug=true;
   if(funcDebug)std::cout<<"making JER systematics spectra error"<<std::endl;
   if(!NLOfile) {
@@ -2331,7 +2337,10 @@ void makeJERsystSpectra(TH1D* JERsysterr=NULL, TFile* NLOfile=NULL, TH1D* histFo
   if(!histForError){
     std::cout<<"no spectra to make errors from. exit."<<std::endl;
   }
-  TF1* JERsigmaFit=(TF1*)NLOfile->Get("SigmaFit_h");
+  //  TF1* JERsigmaFit=(TF1*)NLOfile->Get("SigmaFit_h");
+  std::string fitname="SigmaFit_f";
+  if(doJERsyst)fitname+="";//put fit string stuff here
+  TF1* JERsigmaFit=(TF1*)NLOfile->Get(fitname.c_str());
   if(!JERsigmaFit){
     std::cout<<"TF1 for JER not found. exit"<<std::endl;
     return;
@@ -2371,7 +2380,8 @@ void makeJERsystRatio(TH1D* JERsysterr=NULL, TFile* NLOfile=NULL){
     std::cout<<"TFile not open. exit."<<std::endl;
     return;}
   
-  TF1* JERsigmaFit=(TF1*)NLOfile->Get("SigmaFit_h");
+  std::string fitname="SigmaFit_f";//put jer sysfit up here
+  TF1* JERsigmaFit=(TF1*)NLOfile->Get(fitname.c_str());
   if(!JERsigmaFit){
     std::cout<<"TF1 for JER not found. exit"<<std::endl;
     return;

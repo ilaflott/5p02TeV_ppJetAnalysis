@@ -59,12 +59,12 @@ echo ""
 echo "done compiling. Running!"
 echo ""
 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "00eta05_test" "1" "0" "0"         #JER any |y|bin
-source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "05eta10_test" "1" "0" "1"        #JER any |y|bin
-source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "10eta15_test" "1" "0" "2"        #JER any |y|bin
-source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "15eta20_test" "1" "0" "3"        #JER any |y|bin
-source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "20eta25_test" "1" "0" "4"        #JER any |y|bin
-source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "25eta30_test" "1" "0" "5"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "00eta05_semifinal" "1" "0" "0"         #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "05eta10_semifinal" "1" "0" "1"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "10eta15_semifinal" "1" "0" "2"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "15eta20_semifinal" "1" "0" "3"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "20eta25_semifinal" "1" "0" "4"        #JER any |y|bin
+source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "25eta30_semifinal" "1" "0" "5"        #JER any |y|bin
 
 echo ""
 echo "done running printPlots_ppMC_JERS_etabin"
@@ -74,7 +74,7 @@ echo ""
 #echo "scp2Serin"
 #echo ""
 
-scp2Serin "output/ak4PF_PY8JER_??eta??_test.*"
+scp2Serin "output/ak4PF_PY8JER_??eta??_semifinal.*"
 
 ##############################################
 return

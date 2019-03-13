@@ -51,9 +51,9 @@ then
     echo "etabinstr=${etabinstr}"
     echo ""
     
-    OUTDIR=${NLOfileshortstr}_${descstr}_${Fittypestr}_gaussSmear_plots/
+    OUTDIR=${NLOfileshortstr}_${descstr}_${Fittypestr}_gaussSmear_NLO_plots/
     OUTFILE=${NLOfileshortstr}_${descstr}_${Fittypestr}_gaussSmear_${etabinstr}.root     
-    JERFILE=${JERfilestr}${etabinstr}.root
+    JERFILE=${JERfilestr}${etabinstr}_semifinal.root
     
     
     echo ""
@@ -62,7 +62,8 @@ then
     echo "JERFILE=${JERFILE}"
     echo ""    
     
-
+    #return     #DEBUG
+    
     echo ""
     echo "RUN NLO smearing"
     echo ""
@@ -71,11 +72,11 @@ then
     ## ./smearTheorySpectra_gaussCoreJER_etabin.exe <NLOfilestr> <useSplineWeights> <fitType_str> <JERFILE> <etabin> <outputfile>
     ./smearTheorySpectra_gaussCoreJER_etabin.exe "${NLOfilestr}"  "${Fittypestr}"  "${JERFILE}"  "${etaBin}"  "${OUTFILE}"    
     
-    #return
-
     echo "" 
     echo "DONE NLO smearing."
     echo ""
+
+    return    #DEBUG
     
     if [[ -d "${OUTDIR}" ]]
     then

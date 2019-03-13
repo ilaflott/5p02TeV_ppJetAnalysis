@@ -299,7 +299,7 @@ TH2D* normalizeRow_RespMatrix( TH2D* inputTH2,
 
 TH2D* makeRespMatrixErrors( TH2D* inputTH2,			    
 			    double* boundaries_pt_reco, int nbins_pt_reco,
-			    double* boundaries_pt_gen  , int nbins_pt_gen           ){
+			    double* boundaries_pt_gen  , int nbins_pt_gen , std::string respmat_errs_name="hmat_anabin_errors"          ){
 
 
   bool funcDebug=false;
@@ -317,7 +317,7 @@ TH2D* makeRespMatrixErrors( TH2D* inputTH2,
   int nbins_y = yaxis->GetNbins();
   int ybinstart=1;
 
-  TH2D *errorTH2 = new TH2D("hmat_anabin_errors", "response matrix errors",
+  TH2D *errorTH2 = new TH2D(respmat_errs_name.c_str(), "response matrix errors",
                                nbins_pt_reco, boundaries_pt_reco ,
                                nbins_pt_gen, boundaries_pt_gen );
 

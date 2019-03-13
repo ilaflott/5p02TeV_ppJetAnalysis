@@ -23,14 +23,14 @@ rooUnfoldCompile smearTheorySpectra_gaussCoreJER_etabin.C
 #nlofstr="fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS"
 nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
 
-#nlofshortstr="CT10_NLO"
-#nlofshortstr="CT14_NLO"
-#nlofshortstr="HERAPDF_NLO"
-#nlofshortstr="MMHT_NLO"
-nlofshortstr="NNPDF_NNLO"
+#nlofshortstr="CT10"
+#nlofshortstr="CT14"
+#nlofshortstr="HERAPDF"
+#nlofshortstr="MMHT"
+nlofshortstr="NNPDF"
 
-jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_"
-descstr="02.14.19" #_ptmax1000"
+jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
+descstr="02.18.19_semifinal_v2_w8TeVJERscales" #_ptmax1000"
 
 #fittypestr="modLog"
 #fittypestr="7TeV"

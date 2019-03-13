@@ -3,23 +3,35 @@
 //const std::string SPLINE_STR="spline";
 //const std::string FIT_STR="fit";
 const int CANVX=1200, CANVY=1000;
-const int xsecorder=0;//0--> LO, 1--> NLO, 2--> NNLO... etc.
+const int xsecorder=1;//0--> LO, 1--> NLO, 2--> NNLO... etc.
 
 const bool printBaseDebug=true;
 
 //const int nEvents=1e+09;  ///10x typical
-const int nEvents=1e+08;  ///typical
-//const int nEvents=1e+07;  /// debug nevents
+//const int nEvents=1e+08;  ///typical
+const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 
 std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [nb/GeV]";
 
 const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
-const std::string in_JERFile_default="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta05.root";
-const std::string in_NLOFile_default="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC";
 
-const bool useHistSigmaFit=true;
+const std::string in_JERFile_default="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta05.root";
+const bool useHistSigmaFit=false;
+const bool useJERscaleFactors=true;
+
+const std::string in_NLOFile_default="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC";
+const bool setThyPDFErrors=true;
+
+//SYSTEMATICS
+const bool doJERsys=false&&useJERscaleFactors;
+const bool doNPsys=true;//involves making a new thy hist, therefore, also a sep spline fit
+const bool doPDFsys=false; //involves making a new thy hist, therefore, also a sep spline fit
+
+//const bool doNPsysup=false;
+//const bool doNPsysdown=false&&!doNPsysup;
+
 int debugInt=0;
 void debugcout(){
   std::cout<<"location #"<<debugInt<<std::endl;
@@ -29,7 +41,7 @@ void debugcout(){
 //, std::string weightMode="spline" //"fit"// 
 //valid fitTypes; modLog, 7TeV, spl3wgts, spl3wgts + ext string
 int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOFile_default, std::string fitType="modLog" , 
-					    std::string in_JERFile=in_JERFile_default,  int etabin=0,  std::string outputFile="smearTheory_gaussCoreJER_etabin_defOut.root"
+					    std::string in_JERFile=in_JERFile_default,  int etabin=0,  std::string outputFile="smearTheory_gaussCoreJER_etabin_defOut.root" 
 					    ){
   
   gStyle->SetOptStat(0);
@@ -50,14 +62,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   const bool use7TeVFit=useFitWeights && ((bool)(fitType=="7TeV"));
   if(!useModLogFit && !use7TeVFit && !useSplineWeights){
     std::cout<<"fit type not recognized! Exit!"<<std::endl; assert(false);}
-  
-  std::string outputTag="";
-  if(etabin==0) outputTag="00eta05";
-  else if(etabin==1 ) outputTag="05eta10";
-  else if(etabin==2 ) outputTag="10eta15";
-  else if(etabin==3 ) outputTag="15eta20";
-  else if(etabin==4 ) outputTag="20eta25";
-  else if(etabin==5 ) outputTag="25eta30";
+    
+  std::string outputTag=(std::string)absetabins_tags[etabin];
   
   std::cout<<"opening output:"<<outputFile<<std::endl<<std::endl;
   TFile *outf    = new TFile(outputFile.c_str(), "RECREATE" );
@@ -71,24 +77,74 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   /////////////// NPs to NLO jet spectra ////////////////////////////////////////////////////////  
   std::cout<<"opening NP corr file " << NPCorrFile<<std::endl;
   TFile* fin_NP=TFile::Open(NPCorrFile.c_str());  
-  std::string NPCorrFits_str;
-  if(NPCorrFile.find("nnlo")!=std::string::npos)
-    NPCorrFits_str="fNPC_POWPY8_R4_etabin";
-  else//raghavs suggestion to use POWPY8 for NNLO thy.
-    NPCorrFits_str="fNPC_HerwigEE4C_R4_etabin";
-  std::cout<<"NPCorrFits_str = "<<NPCorrFits_str<<std::endl;  
+  if(!fin_NP){
+    std::cout<<"error, NP file not found. exit."<<std::endl; assert(false);  }
+
+  //LO NPs
+  //std::string NPCorrFits_str="NPC_HerwigEE4C_R4"; //reasonable par errs
+  //std::string NPCorrFits_text="HerwigEE4C R4";  
+  std::string NPCorrFits_str="NPC_HerwigEE5C_R4";//reasonable par errs
+  std::string NPCorrFits_text="HerwigEE5C R4";  
+  //std::string NPCorrFits_str="NPC_PYTHIA8_R4";//reasonable par errs
+  //std::string NPCorrFits_text="PY8 R4";  
+  
+  //NLO NPs
+  //std::string NPCorrFits_str="NPC_POWPY8_R4";//really bad par errs
+  //std::string NPCorrFits_text="POW+PY8 R4";  
+  //std::string NPCorrFits_str="NPC_POWPY8CTEQ_R4";//kind of bad par errs
+  //std::string NPCorrFits_text="POW+PY8 CTEQ R4";  
   
   /////////////// Get NP fit functions
-  TF1 *fNP = (TF1*)fin_NP->Get((NPCorrFits_str+std::to_string(etabin)).c_str());
-  if(!fin_NP || !fNP){
-    std::cout<<"error, NP file and/or fits not found."<<std::endl; assert(false);}
+  TF1 *fNP = (TF1*)fin_NP->Get(("f"+NPCorrFits_str+"_etabin"+std::to_string(etabin)).c_str());
+  if(!fNP){
+    std::cout<<"error, NP fit(s) not found."<<std::endl; assert(false);}
+  TH1F *NPDataPoints= (TH1F*)fin_NP->Get( (NPCorrFits_str+"_etabin"+std::to_string(etabin)).c_str() );
+  
+  TF1* fNP_sysup=NULL, *fNP_sysdown=NULL;
+  //TF1 *fNP_sys=NULL;
+  //TH1F* NPsys_DataPoints=NULL;
+  //std::string NPsys_CorrFits_str="NPC_PYTHIA8_R4";//reasonable par errs
+  //std::string NPsys_CorrFits_text="PY8 R4";  
+  if(doNPsys){
+  //  fNP_sys = (TF1*)fin_NP->Get(("f"+NPsys_CorrFits_str+"_etabin"+std::to_string(etabin)).c_str());
+  //  NPsys_DataPoints= (TH1F*)fin_NP->Get( (NPsys_CorrFits_str+"_etabin"+std::to_string(etabin)).c_str() );
+
+
+    //old np systemaics
+        std::cout<<"fNP parameters + errs are..."<<std::endl;
+        std::cout<<"Par 0="<<fNP->GetParameter(0)<<" +/- "<<fNP->GetParError(0)<<std::endl;
+        std::cout<<"Par 1="<<fNP->GetParameter(1)<<" +/- "<<fNP->GetParError(1)<<std::endl;
+        std::cout<<"Par 2="<<fNP->GetParameter(2)<<" +/- "<<fNP->GetParError(2)<<std::endl;
+        
+        fNP_sysup=(TF1*)fNP->Clone( ((std::string)fNP->GetName()+"_sysup").c_str());
+        fNP_sysup->SetParameter(0, fNP->GetParameter(0)+fNP->GetParError(0));
+        fNP_sysup->SetParameter(1, fNP->GetParameter(1)+fNP->GetParError(1));
+        fNP_sysup->SetParameter(2, fNP->GetParameter(2)-fNP->GetParError(2));
+    
+        std::cout<<"fNP_sysup parameters are..."<<std::endl;
+        std::cout<<"Par 0="<<fNP_sysup->GetParameter(0)<<std::endl;
+        std::cout<<"Par 1="<<fNP_sysup->GetParameter(1)<<std::endl;
+        std::cout<<"Par 2="<<fNP_sysup->GetParameter(2)<<std::endl;
+        
+        fNP_sysdown=(TF1*)fNP->Clone( ((std::string)fNP->GetName()+"_sysdown").c_str());
+        fNP_sysdown->SetParameter(0, fNP->GetParameter(0)-fNP->GetParError(0));
+        fNP_sysdown->SetParameter(1, fNP->GetParameter(1)-fNP->GetParError(1));
+        fNP_sysdown->SetParameter(2, fNP->GetParameter(2)+fNP->GetParError(2));  
+    
+        std::cout<<"fNP_sysdown parameters are..."<<std::endl;
+        std::cout<<"Par 0="<<fNP_sysdown->GetParameter(0)<<std::endl;
+        std::cout<<"Par 1="<<fNP_sysdown->GetParameter(1)<<std::endl;
+        std::cout<<"Par 2="<<fNP_sysdown->GetParameter(2)<<std::endl;
+
+  }
+  //assert(false);
   
   /////////////// Create/Get JER fit function(s)
   std::cout<<"opening JER file " << in_JERFile<<std::endl;
   TFile* fin_JER=TFile::Open(in_JERFile.c_str());
   if(!fin_JER){
     std::cout<<"error, JER file not found or not open."<<std::endl; assert(false); }
-
+  
   std::cout<<"etabin="<<etabin<<std::endl;  
   std::string absetarange_str=absetabins_str[etabin]+" < #||{y} < "+absetabins_str[etabin+1];  
   std::string thyname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"00";
@@ -114,43 +170,50 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   //errors, PDF systematic
   std::string thyPDFNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"01";//hOSPxRx2 == -1. * hOSPxRx1 (symm)  
   TH1D *theoryPDFNegerr = (TH1D*)fin_NLO->Get(thyPDFNegerrname.c_str());
+  theoryPDFNegerr->SetTitle("Lower PDF Unc");
   theoryPDFNegerr->Sumw2(true);
   theoryPDFNegerr->Scale(1.e-03);//picobarns to nanobarns
   if(printBaseDebug)  theoryPDFNegerr->Print("Base"); 
   
   std::string thyPDFPoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"02";//hOSPxRx2 == -1. * hOSPxRx1 (symm)  
   TH1D *theoryPDFPoserr = (TH1D*)fin_NLO->Get(thyPDFPoserrname.c_str());
+  theoryPDFPoserr->SetTitle("Upper PDF Unc");
   theoryPDFPoserr->Sumw2(true);
   theoryPDFPoserr->Scale(1.e-03);//picobarns to nanobarns
   if(printBaseDebug)  theoryPDFNegerr->Print("Base"); 
   
-  //set theory calculation errors to that of the PDF errs
-  for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theoryPDFPoserr->GetBinContent(i));
-  
   std::string thy2PtScaleNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"06";//2 PT SCALE UNCERTAINTY, ASYMMETRIC
   TH1D *theory2PtScaleNegerr = (TH1D*)fin_NLO->Get(thy2PtScaleNegerrname.c_str());
+  theory2PtScaleNegerr->SetTitle("Lower 2 Pt. Scale Unc");
   theory2PtScaleNegerr->Sumw2(true);
   theory2PtScaleNegerr->Scale(1.e-03);//picobarns to nanobarns
   if(printBaseDebug)  theory2PtScaleNegerr->Print("Base"); 
   
   std::string thy2PtScalePoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"07";//07 IS BROKEN WARNING
   TH1D *theory2PtScalePoserr = (TH1D*)fin_NLO->Get(thy2PtScalePoserrname.c_str());
+  theory2PtScalePoserr->SetTitle("Upper 2 Pt. Scale Unc");
   theory2PtScalePoserr->Sumw2(true);
   theory2PtScalePoserr->Scale(1.e-03);//picobarns to nanobarns
   if(printBaseDebug)  theory2PtScalePoserr->Print("Base"); 
   
   std::string thy6PtScaleNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"08";//2 PT SCALE UNCERTAINTY, ASYMMETRIC
   TH1D *theory6PtScaleNegerr = (TH1D*)fin_NLO->Get(thy6PtScaleNegerrname.c_str());
+  theory6PtScaleNegerr->SetTitle("Lower 6 Pt. Scale Unc");
   theory6PtScaleNegerr->Sumw2(true);
   theory6PtScaleNegerr->Scale(1.e-03);//picobarns to nanobarns
   if(printBaseDebug)  theory6PtScaleNegerr->Print("Base"); 
   
   std::string thy6PtScalePoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"09";//07 IS BROKEN WARNING
   TH1D *theory6PtScalePoserr = (TH1D*)fin_NLO->Get(thy6PtScalePoserrname.c_str());
+  theory6PtScalePoserr->SetTitle("Upper 6 Pt. Scale Unc");
   theory6PtScalePoserr->Sumw2(true);
   theory6PtScalePoserr->Scale(1.e-03);//picobarns to nanobarns
   if(printBaseDebug)  theory6PtScalePoserr->Print("Base"); 
   
+  //set theory calculation errors to that of the PDF errs
+  if(setThyPDFErrors)    
+    for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theoryPDFPoserr->GetBinContent(i));    
+
   std::cout<<"done making "<<orderstring<<" hist."<<std::endl;
   //assert(false);
   //-----------------------------------
@@ -158,7 +221,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   //////////// Apply NPs to theory + Plot////////////////////////////////////////////////////////
   std::cout<<"plotting NP+NLO xsecs!"<<  std::endl;  
   TH1D *theory_NP  = (TH1D*) applyNPtoxsec(theory, fNP);
-  theory_NP->SetName(("h"+outputTag+"_wNP").c_str());
+  theory_NP->SetName( ((std::string)theory->GetName()+"_wNP").c_str() );
   
   theory_NP->SetTitle(("NP+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
   theory_NP->GetXaxis()->SetNoExponent(true);
@@ -167,23 +230,23 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   if(printBaseDebug)theory_NP->Print("base");  
   
   std::cout<<"done making NLO+NPhist."<<std::endl;
-  //-----------------------------------
   
-  TH1D* theory_clone=NULL;
-  TH1D* theory_NP_clone=NULL;
+  TH1D* theory_rebin=NULL;
+  TH1D* theory_NP_rebin=NULL;
   if(etabin==0 || etabin==1){//get rid of last bin
-    theory_clone=(TH1D*)theory->TH1::Rebin(n_thybins_incl, 
+    theory_rebin=(TH1D*)theory->TH1::Rebin(n_thybins_incl, 
 					   ( ( (std::string) theory->GetName() ) +"_specialrebin").c_str() ,   thyBins_incl );    
-    theory_NP_clone=(TH1D*)theory_NP->TH1::Rebin(n_thybins_incl, 
+    theory_NP_rebin=(TH1D*)theory_NP->TH1::Rebin(n_thybins_incl, 
 						 ( ( (std::string) theory_NP->GetName() ) +"_specialrebin").c_str() ,     thyBins_incl ); }
   else{
-    theory_clone=(TH1D*)theory->Clone(( ( (std::string) theory->GetName() ) +"_0").c_str());
-    theory_NP_clone=(TH1D*)theory_NP->Clone(( ( (std::string) theory_NP->GetName() ) +"_0").c_str());}
+    theory_rebin=(TH1D*)theory->Clone(( ( (std::string) theory->GetName() ) +"_0").c_str());
+    theory_NP_rebin=(TH1D*)theory_NP->Clone(( ( (std::string) theory_NP->GetName() ) +"_0").c_str());}  
+  theory_rebin->SetLineColor(kCyan+4);    
+  theory_NP_rebin->SetLineColor(kCyan+4);    
   
-  theory_clone->SetLineColor(kCyan+4);    
-  theory_NP_clone->SetLineColor(kCyan+4);    
+
   
-  int n_thybins=theory_clone->GetNbinsX();
+  int n_thybins=theory_rebin->GetNbinsX();
   std::cout<<"n_thybins="<<n_thybins<<std::endl;
   std::cout<<"n_thybins+1="<<n_thybins+1<<std::endl;
   std::cout<<std::endl;
@@ -200,25 +263,217 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
       std::cout<<"thybins["<<i<<"]="<<thybins[i]<<std::endl;
   }
 
+  //----------------------------------- PDF SYSTEMATICS HISTS
+  TH1D* theory_PDFsysup=NULL, *theory_PDFsysdown=NULL; //NO NPCs
+  TH1D* theory_PDFsysup_rebin=NULL, *theory_PDFsysdown_rebin=NULL;
+  TH1D* theory_NP_PDFsysup=NULL, *theory_NP_PDFsysdown=NULL; //WITH NPCs
+  TH1D* theory_NP_PDFsysup_rebin=NULL, *theory_NP_PDFsysdown_rebin=NULL;
+  if(doPDFsys){
+    
+
+    std::cout<<"NOW making theory PDF sysup/down hists."<<std::endl;
+
+    theory_PDFsysup= (TH1D*) makePDFsys(theory, theory6PtScalePoserr, "sysup");
+    //theory_PDFsysup= (TH1D*) makePDFsys(theory, theory2PtScalePoserr);
+    theory_PDFsysup->SetName( ((std::string)theory->GetName()+"_wPDFsysup").c_str() );
+    
+    theory_PDFsysup->SetTitle(("PDFsysup+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+    theory_PDFsysup->GetXaxis()->SetNoExponent(true);
+    theory_PDFsysup->GetXaxis()->SetMoreLogLabels(true);
+    theory_PDFsysup->SetLineColor(kTeal);
+    if(printBaseDebug)theory_PDFsysup->Print("base");  
+    
+    theory_PDFsysdown  = (TH1D*) makePDFsys(theory, theory6PtScaleNegerr, "sysdown");
+    //theory_PDFsysdown  = (TH1D*) applyNPtoxsec(theory, theory2PtScaleNegerr);
+    theory_PDFsysdown->SetName( ((std::string)theory->GetName()+"_wPDFsysdown").c_str() );
+    
+    theory_PDFsysdown->SetTitle(("PDFsysdown+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+    theory_PDFsysdown->GetXaxis()->SetNoExponent(true);
+    theory_PDFsysdown->GetXaxis()->SetMoreLogLabels(true);
+    theory_PDFsysdown->SetLineColor(kTeal);
+    if(printBaseDebug)theory_PDFsysdown->Print("base");  
+    
+    if(etabin==0 || etabin==1){//get rid of last bin
+      theory_PDFsysup_rebin=(TH1D*)theory_PDFsysup->TH1::Rebin(n_thybins_incl, 
+							     ( ( (std::string) theory_PDFsysup->GetName() ) +"_specialrebin").c_str() ,     thyBins_incl ); 
+      theory_PDFsysdown_rebin=(TH1D*)theory_PDFsysdown->TH1::Rebin(n_thybins_incl, 
+								   ( ( (std::string) theory_PDFsysdown->GetName() ) +"_specialrebin").c_str() ,     thyBins_incl ); }
+    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    
+    std::cout<<"done making theory PDF sysup/down hists."<<std::endl;
+
+    // ------------------------------------------------------------- //
+
+    std::cout<<"NOW making theory_NP PDF sysup/down hists."<<std::endl;
+
+    theory_NP_PDFsysup= (TH1D*) makePDFsys(theory, theory6PtScalePoserr, "sysup");
+    //theory_NP_PDFsysup= (TH1D*) makePDFsys(theory, theory2PtScalePoserr, "sysup");
+    theory_NP_PDFsysup  = (TH1D*) applyNPtoxsec(theory_NP_PDFsysup, fNP);
+    theory_NP_PDFsysup->SetName( ((std::string)theory->GetName()+"_wPDFsysup").c_str() );
+    
+    theory_NP_PDFsysup->SetTitle(("PDFsysup+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+    theory_NP_PDFsysup->GetXaxis()->SetNoExponent(true);
+    theory_NP_PDFsysup->GetXaxis()->SetMoreLogLabels(true);
+    theory_NP_PDFsysup->SetLineColor(kTeal);
+    if(printBaseDebug)theory_NP_PDFsysup->Print("base");  
+    
+    theory_NP_PDFsysdown  = (TH1D*) makePDFsys(theory, theory6PtScaleNegerr, "sysdown");
+    //theory_NP_PDFsysdown  = (TH1D*) applyNPtoxsec(theory, theory2PtScaleNegerr, "sysdown");
+    theory_NP_PDFsysdown  = (TH1D*) applyNPtoxsec(theory_NP_PDFsysdown, fNP);
+    theory_NP_PDFsysdown->SetName( ((std::string)theory->GetName()+"_wPDFsysdown").c_str() );
+    
+    theory_NP_PDFsysdown->SetTitle(("PDFsysdown+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+    theory_NP_PDFsysdown->GetXaxis()->SetNoExponent(true);
+    theory_NP_PDFsysdown->GetXaxis()->SetMoreLogLabels(true);
+    theory_NP_PDFsysdown->SetLineColor(kTeal);
+    if(printBaseDebug)theory_NP_PDFsysdown->Print("base");  
+    
+    if(etabin==0 || etabin==1){//get rid of last bin
+      theory_NP_PDFsysup_rebin=(TH1D*)theory_NP_PDFsysup->TH1::Rebin(n_thybins_incl, 
+								     ( ( (std::string) theory_NP_PDFsysup->GetName() ) +"_specialrebin").c_str() ,     thyBins_incl ); 
+      theory_NP_PDFsysdown_rebin=(TH1D*)theory_NP_PDFsysdown->TH1::Rebin(n_thybins_incl, 
+									 ( ( (std::string) theory_NP_PDFsysdown->GetName() ) +"_specialrebin").c_str() ,     thyBins_incl ); }
+    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    
+    std::cout<<"done making theory_NP PDF sysup/down hists."<<std::endl; 
+    
+  }
   
-  TF1 *fJER_default = new TF1("fJER_def",gJER_ynew_str.c_str(),thybins[0], thybins[n_thybins]);  //for comparison only
-  fJER_default->SetLineColor(kBlue);
-  fJER_default->SetMinimum(0.); //do i need to set min/max really?
-  fJER_default->SetMaximum(0.25);
+
+
+
+  //----------------------------------- NP SYSTEMATICS HISTS
+  TH1D *theory_NPsysup=NULL, *theory_NPsysdown=NULL;
+  TH1D *theory_NPsysup_rebin=NULL, *theory_NPsysdown_rebin=NULL;
+  TH1D *theory_NPsysup_ratio=NULL, *theory_NPsysdown_ratio=NULL;//QA to ensure NPs are being applied correctly. 
+  TH1D * theory_NPsysup_ratio_NPsysdown;
+  if(doNPsys){
+
+    //UP
+    theory_NPsysup  = (TH1D*) applyNPtoxsec(theory, fNP_sysup);
+    theory_NPsysup->SetName( ((std::string)theory->GetName()+"_wNPsysup").c_str() );
+    
+    theory_NPsysup->SetTitle(("NPsysup+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+    theory_NPsysup->GetXaxis()->SetNoExponent(true);
+    theory_NPsysup->GetXaxis()->SetMoreLogLabels(true);
+    theory_NPsysup->SetLineColor(kTeal);
+    if(printBaseDebug)theory_NPsysup->Print("base");  
+
+    theory_NPsysup_ratio=(TH1D*)theory_NPsysup->Clone(((std::string)theory_NPsysup->GetName() + "_ratio").c_str());
+    theory_NPsysup_ratio->Divide(theory);
+    
+    //DOWN
+    theory_NPsysdown  = (TH1D*) applyNPtoxsec(theory, fNP_sysdown);
+    theory_NPsysdown->SetName( ((std::string)theory->GetName()+"_wNPsysdown").c_str() );
+    
+    theory_NPsysdown->SetTitle(("NPsysdown+"+orderstring+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+    theory_NPsysdown->GetXaxis()->SetNoExponent(true);
+    theory_NPsysdown->GetXaxis()->SetMoreLogLabels(true);
+    theory_NPsysdown->SetLineColor(kTeal);
+    if(printBaseDebug)theory_NPsysdown->Print("base");  
+    
+    theory_NPsysdown_ratio=(TH1D*)theory_NPsysdown->Clone(((std::string)theory_NPsysdown->GetName() + "_ratio").c_str());
+    theory_NPsysdown_ratio->Divide(theory);
+    
+    //REBIN UP/DOWN
+    if(etabin==0 || etabin==1){//get rid of last bin
+      theory_NPsysup_rebin=(TH1D*)theory_NPsysup->TH1::Rebin(n_thybins_incl, 
+							     ( ( (std::string) theory_NPsysup->GetName() ) +"_specialrebin").c_str() ,     thyBins_incl ); 
+      theory_NPsysdown_rebin=(TH1D*)theory_NPsysdown->TH1::Rebin(n_thybins_incl, 
+								 ( ( (std::string) theory_NPsysdown->GetName() ) +"_specialrebin").c_str() ,     thyBins_incl ); }
+    else {
+      std::cout<<"error; don't do systematics for |y| bins starting beyond 1.0 for now. It's on your to do list to add this Ian."<<std::endl;
+      assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    }
+    
+    //SYSUP+SYSDOWN QA
+    theory_NPsysup_ratio_NPsysdown=(TH1D*)theory_NPsysup->Clone("theory_NPsysup_ratio_NPsysdown");
+    theory_NPsysup_ratio_NPsysdown->Divide(theory_NPsysdown);
+    std::cout<<"done making theory NP sysup/down hists"<<std::endl;
+  }
+  
+  //TF1 *fJER_default = new TF1("fJER_def",gJER_ynew_str.c_str(),thybins[0], thybins[n_thybins]);  //for comparison only
+  //fJER_default->SetLineColor(kBlue);
+  //fJER_default->SetMinimum(0.); //do i need to set min/max really?
+  //fJER_default->SetMaximum(0.25);
   
   TF1 *fJER = NULL;
   if(useHistSigmaFit)
     fJER=(TF1*)fin_JER->Get("SigmaFit_h");
   else
     fJER=(TF1*)fin_JER->Get("SigmaFit_f");
-  
   if(!fJER){
     std::cout<<"error, JER fit not open or not found!."<<std::endl; assert(false);}
+
   fJER->SetLineColor(kRed);
   fJER->SetMinimum(0.); //do i need to set min/max really?
   fJER->SetMaximum(0.25);
   std::cout<<std::endl;
   
+  TF1* fJER_sysup=NULL, * fJER_sysdown=NULL;
+  if(doJERsys){
+    std::string jersysup_name="SigmaFit_sysup_";
+    if(useHistSigmaFit)jersysup_name+="h";
+    else jersysup_name+="f";    
+    //fJER_sysup=(TF1*)fin_JER->Get(jersysup_name.c_str()); //old way of JERsyst
+    fJER_sysup=(TF1*)fJER->Clone(jersysup_name.c_str());
+    std::string jersysdown_name="SigmaFit_sysdown_";
+    if(useHistSigmaFit)jersysdown_name+="h";
+    else jersysdown_name+="f";    
+    //fJER_sysdown=(TF1*)fin_JER->Get(jersysdown_name.c_str());    //old way of JERsyst
+    fJER_sysdown=(TF1*)fJER->Clone(jersysdown_name.c_str());
+  }
+  
+  if(useJERscaleFactors){
+    std::cout<<"using JER scale factors!!"<<std::endl;
+    fJER->SetParameter(0, fJER->GetParameter(0)*JERscaleFacts[etabin]);
+    fJER->SetParameter(1, fJER->GetParameter(1)*JERscaleFacts[etabin]);
+    if(doJERsys){
+      std::cout<<"doing JER systematics + using JER scale factors!!"<<std::endl;
+      fJER_sysup->SetParameter(  0,   fJER_sysup->GetParameter(0)*( JERscaleFacts[etabin]+JERscaleFactErrs[etabin] ) );            
+      fJER_sysup->SetParameter(  1,   fJER_sysup->GetParameter(1)*( JERscaleFacts[etabin]+JERscaleFactErrs[etabin] ) );
+      fJER_sysdown->SetParameter(0, fJER_sysdown->GetParameter(0)*( JERscaleFacts[etabin]-JERscaleFactErrs[etabin] ) );
+      fJER_sysdown->SetParameter(1, fJER_sysdown->GetParameter(1)*( JERscaleFacts[etabin]-JERscaleFactErrs[etabin] ) );
+    }
+  }
+  
+
+
+
+  /////////////// plot Core p_T Resolution ////////////////////////////////////////////////////////
+  std::cout<<"plotting JER!"<<  std::endl;  
+  //TF1 is irritating to set titles for+blah... so use this  
+  TH1D * hJER = (TH1D*)( (TH1D*)fJER->GetHistogram() )->Clone(("hJER_"+std::to_string(etabin)).c_str());
+  hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
+  hJER->GetXaxis()->SetNoExponent(true);
+  hJER->GetXaxis()->SetMoreLogLabels(true);
+  hJER->SetLineColor(kBlue);
+  
+  TH1D* hJER_sysup=NULL , *hJER_sysdown=NULL;
+  if(doJERsys) hJER_sysup   = (TH1D*)( (TH1D*)fJER_sysup->GetHistogram() )->Clone(("hJER_sysup_"+std::to_string(etabin)).c_str());
+  if(doJERsys) hJER_sysdown = (TH1D*)( (TH1D*)fJER_sysdown->GetHistogram() )->Clone(("hJER_sysdown_"+std::to_string(etabin)).c_str());  
+  
+  //-----------------------------------  
+  TCanvas *plotJER = new TCanvas("plotJER", "plot JER",900,600);
+  plotJER->cd()->SetLogx(1);
+  plotJER->cd();  
+  
+  hJER->DrawClone("HIST E ][");    
+  if(doJERsys)hJER_sysup->DrawClone("HIST E SAME ][");
+  if(doJERsys)hJER_sysdown->DrawClone("HIST E SAME ][");
+  //-----------------------------------
+
+  //TO DO REPLACE ME W/TEXT SAYING SAME THING
+  TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0.);
+  leg->AddEntry(hJER, "PY8 CUTP8M1 JER", "l");  
+  if(doJERsys)leg->AddEntry(hJER_sysup, "Upper/Lower Unc.", "l");  
+  leg->AddEntry((TObject*)0,"ak4PFJets", "");
+  //leg->AddEntry((TObject*)0,"0<|y|<2.0", "");   
+  leg->Draw();
+  //-----------------------------------
+
   
   /////////////// plots to to check NPs 
   // 2x2 canv of |y| bins
@@ -230,49 +485,47 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_NP->cd();
   TH1F *hNP = (TH1F*)( (TH1F*)fNP->GetHistogram()
 		       )->Clone( ("hNP_y"+std::to_string(etabin)).c_str());
-  hNP->SetTitle( ("NP Corr Fit for "+absetarange_str+";Jet p_{T};NP Corr. Factor" ).c_str() );
+  hNP->SetLineColor(kBlue);
+  
+  TH1F *hNP_sysup=NULL, *hNP_sysdown=NULL;
+  TH1F *hNP_sysup_ratio_sysdown=NULL;
+  if(doNPsys){
+    hNP_sysup = (TH1F*)( (TH1F*)fNP_sysup->GetHistogram()
+			 )->Clone( ("hNP_sysup_y"+std::to_string(etabin)).c_str());
+    hNP_sysup->SetLineColor(kRed);
+    hNP_sysdown = (TH1F*)( (TH1F*)fNP_sysdown->GetHistogram()
+			   )->Clone( ("hNP_sysdown_y"+std::to_string(etabin)).c_str());
+    hNP_sysdown->SetLineColor(kRed); 
+    //hNP->SetMaximum(hNP_sysup->GetMaximum()*1.2);
+    //hNP->SetMinimum(hNP_sysdown->GetMinimum()*0.8);    
+    
+    //SYSUP+SYSDOWN QA
+    hNP_sysup_ratio_sysdown=(TH1F*)hNP_sysup->Clone("hNP_sysup_ratio_sysdown");
+    hNP_sysup_ratio_sysdown->Divide(hNP_sysdown);
+  }
+  
+  hNP->SetTitle( (NPCorrFits_text+" NPs, "+absetarange_str+";Jet p_{T};NP Corr. Factor" ).c_str() );
   hNP->GetXaxis()->SetNoExponent(true);
   hNP->GetXaxis()->SetMoreLogLabels(true);
-  hNP->SetLineColor(kRed);
-  hNP->DrawClone();  
+  hNP->SetAxisRange(0.5, 1.5, "Y");
+  
+  hNP->DrawClone("HIST ][");  
+  NPDataPoints->DrawClone("E SAME");
+  if(doNPsys){
+    hNP_sysup->DrawClone("HIST ][ SAME");
+    hNP_sysdown->DrawClone("HIST ][ SAME");}
+  
+  TLegend* NPleg=new TLegend(0.15,0.75,0.45,0.85, "", "NDC");
+  NPleg->SetFillStyle(0); NPleg->SetBorderSize(0);
+  NPleg->AddEntry(NPDataPoints,(NPCorrFits_text).c_str(),"lp");
+  NPleg->AddEntry(hNP,(NPCorrFits_text+" NPC Fit").c_str(),"l");
+  if(doNPsys)NPleg->AddEntry(hNP_sysup,"Upper/Lower Fit Uncertainty","l");
+  NPleg->Draw();
   lineatone->SetX2( hNP->GetBinLowEdge(hNP->GetNbinsX())+ hNP->GetBinWidth(hNP->GetNbinsX()) );
   lineatone->DrawClone();
   //-----------------------------------  
   
   
-  /////////////// plot Core p_T Resolution ////////////////////////////////////////////////////////
-  std::cout<<"plotting JER!"<<  std::endl;  
-  //TF1 is irritating to set titles for+blah... so use this  
-  TH1D *hJER = (TH1D*)( (TH1D*)fJER->GetHistogram() )->Clone(("hJER_"+std::to_string(etabin)).c_str());
-  hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
-  hJER->GetXaxis()->SetNoExponent(true);
-  hJER->GetXaxis()->SetMoreLogLabels(true);
-  TH1D *hJER_default = (TH1D*)(
-			       (TH1D*)fJER_default->GetHistogram()
-			       )->Clone("hJER_default");//for comparison only
-  hJER_default->SetTitle( (" Gauss Core JER Fit,"+absetarange_str+
-			   " ; Jet p_{T} ; #sigma / #mu from Fit").c_str());//sets hist title+xaxis+yaxis title
-  hJER_default->GetXaxis()->SetNoExponent(true);
-  hJER_default->GetXaxis()->SetMoreLogLabels(true);
-  //-----------------------------------  
-  TCanvas *plotJER = new TCanvas("plotJER", "plot JER",900,600);
-  plotJER->cd()->SetLogx(1);
-  plotJER->cd();  
-  //hJER_default->DrawClone("HIST E"); basically for a debug
-  hJER->DrawClone("HIST E");    
-  //-----------------------------------
-
-  //TO DO REPLACE ME W/TEXT SAYING SAME THING
-  //TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
-  //leg->AddEntry(hJER_ynew, "PY8 MC CUETP8M1 JER Fits New");
-  //leg->AddEntry(hJER_default, "Default JER Fits from APS DNP 10/3/17");
-  //leg->AddEntry(fJER,"PYTHIA8 CUETP8M1 @ 5.02 TeV", "");
-  //leg->AddEntry(fJER,"ak4PFJets", "");
-  //leg->AddEntry(fJER,"0<|y|<2.0", "l"); 
-  //leg->SetTextFont(42);
-  //leg->SetFillColor(kWhite);
-  //leg->Draw();
-  //-----------------------------------
 
   
   
@@ -384,6 +637,9 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   TF1      *spline3_ext=NULL, *spline3_NP_ext=NULL;
   TCanvas *plot_splines=NULL;
   TLegend *leg_spline=NULL;
+  TSpline3 *spline3_NPsysup=NULL, *spline3_NPsysdown=NULL;
+  TSpline3 *spline3_PDFsysup=NULL, *spline3_PDFsysdown=NULL;
+  TSpline3 *spline3_NP_PDFsysup=NULL, *spline3_NP_PDFsysdown=NULL;
   if(useSplineWeights){
     std::cout<<"using spline weights!!!"<<std::endl;
     if(useSplineExt)std::cout<<"also adding spline weight extension!!!"<<std::endl;
@@ -398,25 +654,36 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     // NLO //
     std::cout<<"creating TSpline of cross section hist"<<std::endl;  
-    spline3 = new TSpline3( theory_clone);
-    spline3->SetName( ( (std::string)theory_clone->GetName() + "_spline3").c_str() );
+    spline3 = new TSpline3( theory_rebin);
+    spline3->SetName( ( (std::string)theory_rebin->GetName() + "_spline3").c_str() );
     spline3->SetLineColor(kAzure);  
 
-    double y2=calc_spline3ext_y2(theory_clone);//this is also used to help set range for the plot ; so it's outside of the 'usesplineext' flag
+    
+    if(doPDFsys){
+      spline3_PDFsysup = new TSpline3( theory_PDFsysup_rebin);
+      spline3_PDFsysup->SetName( ( (std::string)theory_PDFsysup_rebin->GetName() + "_spline3").c_str() );
+      spline3_PDFsysup->SetLineColor(kAzure-8);  
+      
+      spline3_PDFsysdown = new TSpline3( theory_PDFsysdown_rebin);
+      spline3_PDFsysdown->SetName( ( (std::string)theory_PDFsysdown_rebin->GetName() + "_spline3").c_str() );
+      spline3_PDFsysdown->SetLineColor(kAzure-8);      
+    }
+
+    double y2=calc_spline3ext_y2(theory_rebin);//this is also used to help set range for the plot ; so it's outside of the 'usesplineext' flag
     double x1=-1., x2=-1.;
-    //double y2=theory_clone->GetBinContent(theory_clone->GetNbinsX());
+    //double y2=theory_rebin->GetBinContent(theory_rebin->GetNbinsX());
     if(useSplineExt){
       //figure out starting values for parabolic extension of spline
-      //x1=theory_clone->GetBinCenter(theory_clone->GetNbinsX());// bad idea, spline3's val at x1 is approx the val of the last bin's height. 
-      if(fitType.find("v1")!=std::string::npos)x1=theory_clone->GetBinLowEdge(theory_clone->GetNbinsX()); //v1
-      else if(fitType.find("v2")!=std::string::npos)x1=theory_clone->GetBinCenter(theory_clone->GetNbinsX()-1);//v2
-      else if(fitType.find("v3")!=std::string::npos)x1=theory_clone->GetBinLowEdge(theory_clone->GetNbinsX()-1); //v3
+      //x1=theory_rebin->GetBinCenter(theory_rebin->GetNbinsX());// bad idea, spline3's val at x1 is approx the val of the last bin's height. 
+      if(fitType.find("v1")!=std::string::npos)x1=theory_rebin->GetBinLowEdge(theory_rebin->GetNbinsX()); //v1
+      else if(fitType.find("v2")!=std::string::npos)x1=theory_rebin->GetBinCenter(theory_rebin->GetNbinsX()-1);//v2
+      else if(fitType.find("v3")!=std::string::npos)x1=theory_rebin->GetBinLowEdge(theory_rebin->GetNbinsX()-1); //v3
       else assert(false);
-      x2=theory_clone->GetBinLowEdge(theory_clone->GetNbinsX()) + theory_clone->GetBinWidth(theory_clone->GetNbinsX());                    
+      x2=theory_rebin->GetBinLowEdge(theory_rebin->GetNbinsX()) + theory_rebin->GetBinWidth(theory_rebin->GetNbinsX());                    
       
-      //double xprime=theory_clone->GetBinCenter(theory_clone->GetNbinsX());
-      //double xprime=theory_clone->GetBinCenter(theory_clone->GetNbinsX()) - 0.25*theory_clone->GetBinWidth(theory_clone->GetNbinsX());
-      //double yprime=theory_clone->GetBinContent(theory_clone->GetNbinsX());
+      //double xprime=theory_rebin->GetBinCenter(theory_rebin->GetNbinsX());
+      //double xprime=theory_rebin->GetBinCenter(theory_rebin->GetNbinsX()) - 0.25*theory_rebin->GetBinWidth(theory_rebin->GetNbinsX());
+      //double yprime=theory_rebin->GetBinContent(theory_rebin->GetNbinsX());
       
       spline3_ext= new TF1( ((std::string)spline3->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
       make_spline3_ext(  (TSpline3*)spline3, (TF1*)spline3_ext , (double)x1, (double)x2, (double)y2);
@@ -425,14 +692,33 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     }
     
     // NLO+NP //      
-    spline3_NP = new TSpline3( theory_NP_clone);
-    spline3_NP->SetName( ( (std::string)theory_NP_clone->GetName() + "_spline3").c_str() );
+    spline3_NP = new TSpline3( theory_NP_rebin);
+    spline3_NP->SetName( ( (std::string)theory_NP_rebin->GetName() + "_spline3").c_str() );
     spline3_NP->SetLineColor(kAzure-8);  
     
+    if(doNPsys){
+      spline3_NPsysup = new TSpline3( theory_NPsysup_rebin);
+      spline3_NPsysup->SetName( ( (std::string)theory_NPsysup_rebin->GetName() + "_spline3").c_str() );
+      spline3_NPsysup->SetLineColor(kAzure-8);  
+
+      spline3_NPsysdown = new TSpline3( theory_NPsysdown_rebin);
+      spline3_NPsysdown->SetName( ( (std::string)theory_NPsysdown_rebin->GetName() + "_spline3").c_str() );
+      spline3_NPsysdown->SetLineColor(kAzure-8);      
+    }
     
+    if(doPDFsys){
+      spline3_NP_PDFsysup = new TSpline3( theory_NP_PDFsysup_rebin);
+      spline3_NP_PDFsysup->SetName( ( (std::string)theory_NP_PDFsysup_rebin->GetName() + "_spline3").c_str() );
+      spline3_NP_PDFsysup->SetLineColor(kAzure-8);  
+
+      spline3_NP_PDFsysdown = new TSpline3( theory_NP_PDFsysdown_rebin);
+      spline3_NP_PDFsysdown->SetName( ( (std::string)theory_NP_PDFsysdown_rebin->GetName() + "_spline3").c_str() );
+      spline3_NP_PDFsysdown->SetLineColor(kAzure-8);      
+    }
+
     if(useSplineExt){
-      //double NP_y2=theory_NP_clone->GetBinContent(theory_NP_clone->GetNbinsX());
-      double NP_y2=calc_spline3ext_y2(theory_NP_clone);    
+      //double NP_y2=theory_NP_rebin->GetBinContent(theory_NP_rebin->GetNbinsX());
+      double NP_y2=calc_spline3ext_y2(theory_NP_rebin);    
       
       spline3_NP_ext= new TF1( ((std::string)spline3_NP->GetName()+"_tf1ext").c_str(), "[0]*pow(x,2)+[1]*x+[2]", x1, x2);    
       make_spline3_ext(  (TSpline3*)spline3_NP, (TF1*)spline3_NP_ext , (double)x1, (double)x2, (double)NP_y2);    
@@ -440,33 +726,33 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     }
       
     //draw
-    theory_clone->SetTitle(("Cubic Splines for "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
-    theory_clone->SetAxisRange( y2/2., theory_clone->GetMaximum()*2., "Y");
+    theory_rebin->SetTitle(("Cubic Splines for "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
+    theory_rebin->SetAxisRange( y2/2., theory_rebin->GetMaximum()*2., "Y");
     
-    theory_clone->DrawClone("HIST E");
+    theory_rebin->DrawClone("HIST E");
     spline3->Draw("SAME");    
     if(useSplineExt)spline3_ext->Draw("SAME");
     
-    theory_NP_clone->DrawClone("HIST E SAME");  
+    theory_NP_rebin->DrawClone("HIST E SAME");  
     spline3_NP->Draw("SAME");
     if(useSplineExt)spline3_NP_ext->Draw("SAME");
     
     leg_spline=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-    leg_spline->AddEntry(theory_clone ,    ("Weighted "+orderstring+" Jet Counts,"+absetarange_str           ).c_str() , "lp");
+    leg_spline->AddEntry(theory_rebin ,    ("Weighted "+orderstring+" Jet Counts,"+absetarange_str           ).c_str() , "lp");
     leg_spline->AddEntry(spline3   ,       ("Cubic Spline "+orderstring+","+absetarange_str                  ).c_str() , "l");
     //
     if(useSplineExt)leg_spline->AddEntry(spline3_ext  ,    ("Parabolic Spline Extension "+orderstring+","+absetarange_str    ).c_str() , "l");
     //
-    leg_spline->AddEntry(theory_NP_clone , ("Weighted NP+"+orderstring+" Jet Counts,"+absetarange_str        ).c_str() , "lp");
+    leg_spline->AddEntry(theory_NP_rebin , ("Weighted NP+"+orderstring+" Jet Counts,"+absetarange_str        ).c_str() , "lp");
     leg_spline->AddEntry(spline3_NP   ,    ("Cubic Spline NP+"+orderstring+","+absetarange_str               ).c_str() , "l");
     if(useSplineExt)leg_spline->AddEntry(spline3_NP_ext  , ("Parabolic Spline Extension NP+"+orderstring+","+absetarange_str ).c_str() , "l");
     leg_spline->Draw();    
   }
 
   // for fits
-  const int startbin=1, endbin=theory_clone->GetNbinsX();//NP and nonNP hist should always have the same binning
-  const float xlo=theory_clone->GetBinLowEdge(startbin);
-  const float xhi=theory_clone->GetBinLowEdge(endbin) + theory_clone->GetBinWidth(endbin);  
+  const int startbin=1, endbin=theory_rebin->GetNbinsX();//NP and nonNP hist should always have the same binning
+  const float xlo=theory_rebin->GetBinLowEdge(startbin);
+  const float xhi=theory_rebin->GetBinLowEdge(endbin) + theory_rebin->GetBinWidth(endbin);  
   
   
   ///Log fit: A(B/pt)^[C+ D Log(pt/B) + E(Log(pt/B))^2] using Cross sections; currently no known issues
@@ -489,7 +775,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     plot_logfits->cd()->SetLogy(1);
     plot_logfits->cd();
     
-    std::cout<<"fitting hist theory_clone"<<std::endl;
+    std::cout<<"fitting hist theory_rebin"<<std::endl;
     logFit    =new TF1("logfit    ","[0] * ( TMath::Power( ( [1]/x ) ,   [2] ) )",xlo,xhi);
     modLogFit =new TF1("modlogfit ","[0] * ( TMath::Power( ( [1]/x ) ,   [2] + [3]*TMath::Log10( x/[1] ) ) )",xlo,xhi);
     modLog2Fit=new TF1("modlog2fit","[0] * ( TMath::Power( ( [1]/x ) , ( [2] + [3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 )  ) ) )",xlo,xhi);
@@ -498,7 +784,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     modLog5Fit=new TF1("modlog5fit","[0] * ( TMath::Power( ( [1]/x ) , ( [2] + [3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 )  + [5]*TMath::Power( TMath::Log10( x/[1] ), 3 ) + [6]*TMath::Power( TMath::Log10( x/[1] ), 4 ) + [7]*TMath::Power( TMath::Log10( x/[1] ), 5 ) )               ) )",xlo,xhi);
 
     
-    makeModLogFits(theory_clone, logFit, modLogFit, modLog2Fit, modLog3Fit, modLog4Fit, modLog5Fit);
+    makeModLogFits(theory_rebin, logFit, modLogFit, modLog2Fit, modLog3Fit, modLog4Fit, modLog5Fit);
     
     if(etabin==0)logFit_4Toy=modLog5Fit;
     else if(etabin==1)logFit_4Toy=modLog2Fit;
@@ -511,8 +797,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
     //draw
     std::cout<<"drawing fits and cross section on canvas"<<std::endl;
-    theory_clone->SetTitle(("Modified Logarithm Fits for "+orderstring+", "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
-    theory_clone->DrawClone("HIST E");    
+    theory_rebin->SetTitle(("Modified Logarithm Fits for "+orderstring+", "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
+    theory_rebin->DrawClone("HIST E");    
     
     logFit->Draw("SAME");
     modLogFit->Draw("SAME");
@@ -523,7 +809,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     leg_logfits=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
     
-    leg_logfits->AddEntry(theory_clone , ("Weighted "+orderstring+" Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_logfits->AddEntry(theory_rebin , ("Weighted "+orderstring+" Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
     leg_logfits->AddEntry(logFit      , "Log Fit" , "l");//change desc TO DO
     leg_logfits->AddEntry(modLogFit   , "Mod. Log Fit" , "l");
     leg_logfits->AddEntry(modLog2Fit   , "2nd Order Mod. Log Fit" , "l");    
@@ -540,7 +826,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     plot_logfits_NP->cd()->SetLogy(1);
     plot_logfits_NP->cd();
     
-    std::cout<<"fitting hist theory_NP_clone"<<std::endl;
+    std::cout<<"fitting hist theory_NP_rebin"<<std::endl;
     logFit_NP    =new TF1("logfit_NP    ","[0] * ( TMath::Power( ( [1]/x ) , ( [2]                                                                                                                         ) ) )",xlo,xhi);
     modLogFit_NP =new TF1("modlogfit_NP ","[0] * ( TMath::Power( ( [1]/x ) , ( [2]+[3]*TMath::Log10( x/[1] )                                                                                               ) ) )",xlo,xhi);
     modLog2Fit_NP=new TF1("modlog2fit_NP","[0] * ( TMath::Power( ( [1]/x ) , ( [2]+[3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 )                                                ) ) )",xlo,xhi);
@@ -549,7 +835,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     modLog5Fit_NP=new TF1("modlog5fit_NP","[0] * ( TMath::Power( ( [1]/x ) , ( [2]+[3]*TMath::Log10( x/[1] ) + [4]*TMath::Power( TMath::Log10( x/[1] ), 2 ) + [5]*TMath::Power( TMath::Log10( x/[1] ), 3 ) + [6]*TMath::Power( TMath::Log10( x/[1] ), 4 ) + [7]*TMath::Power( TMath::Log10( x/[1] ), 5 ) ) ) )",xlo,xhi); 
     
     
-    makeModLogFits(theory_NP_clone, logFit_NP, modLogFit_NP, modLog2Fit_NP, modLog3Fit_NP, modLog4Fit_NP, modLog5Fit_NP);
+    makeModLogFits(theory_NP_rebin, logFit_NP, modLogFit_NP, modLog2Fit_NP, modLog3Fit_NP, modLog4Fit_NP, modLog5Fit_NP);
 
     if(etabin==0)logFit_NP_4Toy=modLog5Fit_NP;
     if(etabin==1)logFit_NP_4Toy=modLog5Fit_NP;
@@ -562,8 +848,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     //draw
     std::cout<<"drawing NP fits and cross section on canvas"<<std::endl;
-    theory_NP_clone->SetTitle( ("Modified Logarithm Fits for "+orderstring+"+NP,"+absetarange_str+" ;Jet p_{T};Smear Weight").c_str());        
-    theory_NP_clone->DrawClone("HIST E");        
+    theory_NP_rebin->SetTitle( ("Modified Logarithm Fits for "+orderstring+"+NP,"+absetarange_str+" ;Jet p_{T};Smear Weight").c_str());        
+    theory_NP_rebin->DrawClone("HIST E");        
     
     logFit_NP->Draw("SAME");
     modLogFit_NP->Draw("SAME");
@@ -573,7 +859,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     modLog5Fit_NP->Draw("SAME");    
     
     leg_logfits_NP=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-    leg_logfits_NP->AddEntry(theory_NP_clone , ("Weighted "+orderstring+"+NP Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_logfits_NP->AddEntry(theory_NP_rebin , ("Weighted "+orderstring+"+NP Jet Counts for "+absetarange_str).c_str() , "lp");//change desc TO DO
     //leg_logfits_NP->AddEntry(theory_NP , "Weighted NLO+NP Jet Counts for"+absetarange_str , "lp");//change desc TO DO
     leg_logfits_NP->AddEntry(logFit_NP      , "Log Fit" , "l");//change desc TO DO
     leg_logfits_NP->AddEntry(modLogFit_NP   , "Mod. Log Fit" , "l");
@@ -599,8 +885,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   TCanvas *plot_7tevfits=NULL,*plot_7tevfits_NP=NULL;
   TLegend  *leg_7tevfits=NULL, *leg_7tevfits_NP=NULL;  
   
-  //const float xlo_7TeV=theory_clone->GetBinLowEdge(startbin);//trying out for the 7TeV style fit
-  //const float xhi_7TeV=theory_clone->GetBinCenter(endbin);// + theory_clone->GetBinWidth(endbin);  
+  //const float xlo_7TeV=theory_rebin->GetBinLowEdge(startbin);//trying out for the 7TeV style fit
+  //const float xhi_7TeV=theory_rebin->GetBinCenter(endbin);// + theory_rebin->GetBinWidth(endbin);  
   
   
 
@@ -612,13 +898,13 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     std::string _coshymin_str=std::to_string(_coshymin);
     std::cout<<"_coshymin_str="<<_coshymin_str<<std::endl;
     
-    float norm=theory_clone->Integral("width");
+    float norm=theory_rebin->Integral("width");
     std::cout<<"norm="<<norm<<std::endl;
 
     std::string norm_str=std::to_string(norm);
     std::cout<<"norm_str="<<norm_str<<std::endl;
 
-    float norm_NP=theory_NP_clone->Integral("width");
+    float norm_NP=theory_NP_rebin->Integral("width");
     std::cout<<"norm_NP="<<norm_NP<<std::endl;
     
     std::string norm_NP_str=std::to_string(norm_NP);
@@ -651,17 +937,17 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     std::cout<<std::endl<<"making _7TeVFitB TF1"<<std::endl;
     _7TeVFitB =new TF1("_7tevfitB" , (_7tevfitB_str).c_str(),xlo,xhi);
     
-    make7TeVFits(theory_clone,  _7TeVFitA, _7TeVFitB, norm);
+    make7TeVFits(theory_rebin,  _7TeVFitA, _7TeVFitB, norm);
 
     //draw
     std::cout<<"drawing fits and cross section on canvas"<<std::endl;
-    theory_clone->SetTitle(("7 TeV Fits for "+orderstring+", "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
-    theory_clone->DrawClone("HIST E");        
+    theory_rebin->SetTitle(("7 TeV Fits for "+orderstring+", "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
+    theory_rebin->DrawClone("HIST E");        
     _7TeVFitA->Draw("SAME");
     _7TeVFitB->Draw("SAME");
     
     leg_7tevfits=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");    
-    leg_7tevfits->AddEntry(theory_clone , ("Weighted "+orderstring+" Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_7tevfits->AddEntry(theory_rebin , ("Weighted "+orderstring+" Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
     leg_7tevfits->AddEntry(_7TeVFitB   , ("4 Param. 7 TeV Fit for "+orderstring+"").c_str() , "l");
     leg_7tevfits->AddEntry(_7TeVFitA   , ("3 Param. 7 TeV Fit for "+orderstring+"").c_str() , "l");    
     leg_7tevfits->Draw();    
@@ -678,27 +964,30 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     std::string _7tevfitB_NP_str="("+norm_NP_str+")* "+_7tevfit_str;
     std::cout<<"_7tevfitB_NP_str="<<_7tevfitB_NP_str<<std::endl;        
     
-    std::cout<<"fitting hist theory_NP_clone"<<std::endl;
+    std::cout<<"fitting hist theory_NP_rebin"<<std::endl;
     _7TeVFitA_NP =new TF1("_7tevfitA_NP",(_7tevfitA_str       ).c_str(),xlo,xhi);
     _7TeVFitB_NP=new TF1( "_7tevfitB_NP" ,(_7tevfitB_NP_str).c_str(),xlo,xhi);
-    make7TeVFits(theory_NP_clone, _7TeVFitA_NP, _7TeVFitB_NP, norm_NP);
+    make7TeVFits(theory_NP_rebin, _7TeVFitA_NP, _7TeVFitB_NP, norm_NP);
     
     //draw    
     std::cout<<"drawing NP fits and cross section on canvas"<<std::endl;
-    theory_NP_clone->SetTitle( ("7 TeV Fits for NP+"+orderstring+","+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
-    theory_NP_clone->DrawClone("HIST E");    
+    theory_NP_rebin->SetTitle( ("7 TeV Fits for NP+"+orderstring+","+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
+    theory_NP_rebin->DrawClone("HIST E");    
     
     _7TeVFitA_NP->Draw("SAME");
     _7TeVFitB_NP->Draw("SAME");
     
     leg_7tevfits_NP=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
     
-    leg_7tevfits_NP->AddEntry(theory_NP_clone , ("Weighted NP+"+orderstring+" Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
+    leg_7tevfits_NP->AddEntry(theory_NP_rebin , ("Weighted NP+"+orderstring+" Jet Counts for"+absetarange_str).c_str() , "lp");//change desc TO DO
     leg_7tevfits_NP->AddEntry(_7TeVFitA_NP   ,  ("3 Param. 7 TeV Fit for NP+"+orderstring).c_str() , "l");
     leg_7tevfits_NP->AddEntry(_7TeVFitB_NP   ,  ("4 Param. 7 TeV Fit for NP+"+orderstring).c_str() , "l");    
     leg_7tevfits_NP->Draw();    
   }
   
+
+
+
   
   //-----------------------------------------------------------------------------------------//
   //////////////////////  START production of Smeared NLO spectra  ////////////////////////////
@@ -706,15 +995,15 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   std::cout<<"creating TH1 for toy NLO spectra generation, RooUnfoldResponse class, etc."<<std::endl<<std::endl;
   TH1D *theory_rnd       = new TH1D("theory_rnd","theory_rnd",             n_thybins    , thybins);   
   TH1D *smeared_rnd      = new TH1D("smeared_rnd","smeared_rnd",           n_thybins, thybins);   
-  TH1D *smeared_rnd_test = new TH1D("smeared_rnd_test","smeared_rnd_test", n_thybins, thybins);   
-  
+  TH1D *smeared_rnd_test = new TH1D("smeared_rnd_test","smeared_rnd_test", n_thybins, thybins);     
   TH2D* response_th2=new TH2D("response_th2","response_th2",
 			      (Int_t)n_thybins, (Double_t*)thybins,
 			      (Int_t)n_thybins, (Double_t*)thybins);  
 
   //--------------------------------------------------------------------------------------------------------//
+  std::cout<<"making rnd toy MC hists"<<std::endl;        
   if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
-    makeToySpectra( (TH1D*)theory_clone, 
+    makeToySpectra( (TH1D*)theory_rebin, 
 		    (TSpline3*)spline3, 
 		    (TF1*)fJER, 
 		    nEvents, 
@@ -724,7 +1013,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 		    (TH2D*)response_th2,
 		    (TF1*) spline3_ext); }//		    NULL); }
   else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
-    makeToySpectra( (TH1D*)theory_clone, 
+    makeToySpectra( (TH1D*)theory_rebin, 
 		    (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
 		    (TF1*)fJER, 
 		    nEvents, 
@@ -733,7 +1022,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 		    smeared_rnd_test, 
 		    (TH2D*)response_th2); }  
   else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
-    makeToySpectra( (TH1D*)theory_clone, 
+    makeToySpectra( (TH1D*)theory_rebin, 
 		    (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
 		    (TF1*)fJER, 
 		    nEvents, 
@@ -742,15 +1031,12 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 		    smeared_rnd_test, 
 		    (TH2D*)response_th2); }  
 
-  //--------------------------------------------------------------------------------------------------------//
-
   divideBinWidth(theory_rnd);  //for normalization only.
   divideBinWidth(smeared_rnd); 
   divideBinWidth(smeared_rnd_test); 
   
-  double norm_rnd=theory_clone->Integral()/theory_rnd->Integral();
-  response_th2->Scale(   norm_rnd);  
-  
+  double norm_rnd=theory_rebin->Integral()/theory_rnd->Integral();
+  response_th2->Scale(   norm_rnd);    
   theory_rnd->Scale( norm_rnd);
   smeared_rnd->Scale(norm_rnd);  
   smeared_rnd_test->Scale(norm_rnd);  
@@ -759,93 +1045,395 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory_rnd->SetLineColor(kRed); 
   smeared_rnd->SetLineColor(kBlue);    
   smeared_rnd_test->SetLineColor(kBlue-5);    
-  
-  Float_t maxy=theory_rnd->GetMaximum();    std::cout<<"maxy="<<maxy<<std::endl;
-  maxy*=2.;  std::cout<<"maxy="<<maxy<<std::endl;
-  Float_t miny=smeared_rnd->GetMinimum();   std::cout<<"miny="<<miny<<std::endl;
-  miny/=2.; std::cout<<"miny="<<miny<<std::endl;
+
+
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  END production of Smeared NLO spectra  //////////////////////////////
+  //-----------------------------------------------------------------------------------------//  
+
+  //----------------------------START TOY NLO COSMETICS/PLOTS--------------------------------------------//  
+  Float_t maxy=theory_rnd->GetMaximum();//    std::cout<<"maxy="<<maxy<<std::endl;
+  maxy*=2.;  //std::cout<<"maxy="<<maxy<<std::endl;
+  Float_t miny=smeared_rnd->GetMinimum(); //  std::cout<<"miny="<<miny<<std::endl;
+  miny/=2.;// std::cout<<"miny="<<miny<<std::endl;
   theory_rnd->SetAxisRange(miny,maxy,"Y");  
   theory_rnd->SetTitle( ((std::string)("Toy MC Incl. "+orderstring+" #sigma;;"+ddxsec_yax)).c_str() );
   
   
   ///// check plots True/Smeared 
-  TCanvas *plot_true_smeared_rat = new TCanvas("plot_true_smeared_rat", "plot true smeared rat",1400,1200);  
+  TCanvas *plot_true_smeared_rat = new TCanvas("plot_true_smeared_rat", "plot true smeared rat",1600,1600);  
   plot_true_smeared_rat->cd();
-
   
-  TPad* overlay_pad=new TPad("overlay_pad","pad for spectra",0.0,0.3,1.0,1.0);
+  TPad* overlay_pad=new TPad("overlay_pad","pad for spectra",0.,0.3,1.0,1.0);
   overlay_pad->SetLogx(1);
   overlay_pad->SetLogy(1);
   overlay_pad->SetBottomMargin(0);
   overlay_pad->Draw();//tells the canvas theres a pad at the coordinates specified in the new constructor
-  overlay_pad->cd();
   
+  TPad* ratio_pad=new TPad("ratio_pad","pad for ratio",0.,0.,1.0,0.3);
+  ratio_pad->SetLogx(1);
+  ratio_pad->SetLogy(0);
+  ratio_pad->SetTopMargin(0);
+  ratio_pad->SetBottomMargin(0.20);
+  ratio_pad->Draw();//tell canvas there's a pad at the specified coordinates in the new constructor
+
+  // spectra pad
+  overlay_pad->cd();  
   theory_rnd->DrawClone("HIST E");  
   smeared_rnd->DrawClone("HIST E SAME");
   smeared_rnd_test->DrawClone("HIST E SAME");
   
-  TLegend* leg_smear=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
+  TLegend* leg_smear=new TLegend(0.60, 0.70, 0.9, 0.9, NULL,"BRNDC");
+  leg_smear->SetBorderSize(0.);
+  leg_smear->SetFillStyle(0.);
   leg_smear->AddEntry(theory_rnd  ,      ("Truth Incl. "+orderstring+" #sigma"            ).c_str(), "lp" );
   leg_smear->AddEntry(smeared_rnd ,      ("Smeared Incl. "+orderstring+" #sigma"          ).c_str(), "lp" );
   leg_smear->AddEntry(smeared_rnd_test , ("Opp Side Smeared Incl. "+orderstring+" #sigma" ).c_str(), "lp" );
-  leg_smear->Draw();
-  
-  plot_true_smeared_rat->cd();//go back to main canvas before doing new pad
-  
-  TPad* ratio_pad=new TPad("ratio_pad","pad for ratio",0.0,0.05,1.0,0.30);
-  ratio_pad->SetLogx(1);
-  ratio_pad->SetLogy(0);
-  ratio_pad->SetTopMargin(0);
-  //ratio_pad->SetBottomMargin(0.3);
-  ratio_pad->Draw();//tell canvas there's a pad at the specified coordinates in the new constructor
+  leg_smear->Draw();  
+
+  // ratio pad
   ratio_pad->cd();
   
-  std::cout<<"creating ratio hist of true/smeared"<<std::endl;
+  //make ratios
   TH1D *true_smeared_rat=(TH1D*)theory_rnd->Clone("true_smeared_rat");   
   if(printBaseDebug)true_smeared_rat->Print("base");
-  true_smeared_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
   true_smeared_rat->Divide(true_smeared_rat,smeared_rnd,1.,1.,"B");   
-  true_smeared_rat->GetXaxis()->SetMoreLogLabels(true);
-  true_smeared_rat->GetXaxis()->SetNoExponent(true);
-  true_smeared_rat->SetAxisRange(0.6,1.4,"Y");
-  std::cout<<"creating ratio hist of true/opp side smeared"<<std::endl;
 
   TH1D *true_smeared_test_rat=(TH1D*)theory_rnd->Clone("true_smeared_test_rat");   
   if(printBaseDebug)true_smeared_test_rat->Print("base");  
-  true_smeared_test_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
   true_smeared_test_rat->Divide(true_smeared_test_rat,smeared_rnd_test,1.,1.,"B");   
-  true_smeared_test_rat->GetXaxis()->SetMoreLogLabels(true);
-  true_smeared_test_rat->GetXaxis()->SetNoExponent(true);
-  true_smeared_test_rat->SetAxisRange(0.6,1.4,"Y");
-  true_smeared_test_rat->SetLineColor(kRed-2);
 
+  //set stuff and draw
+  true_smeared_rat->SetTitle("; Jet p_{T} [GeV]; True/Smeared");
+  true_smeared_rat->GetXaxis()->SetMoreLogLabels(true);
+  true_smeared_rat->GetXaxis()->SetNoExponent(true);
+  true_smeared_rat->GetXaxis()->SetLabelSize(0.05);
+  true_smeared_rat->GetXaxis()->SetTitleSize(0.055);
+
+  true_smeared_rat->GetYaxis()->SetLabelSize(0.05);
+  true_smeared_rat->GetYaxis()->SetTitleSize(0.05);
+  true_smeared_rat->GetYaxis()->SetTitleOffset(0.7);    
+  true_smeared_rat->GetYaxis()->CenterTitle(true);    
+  true_smeared_rat->SetAxisRange(0.85,1.15,"Y");  
+
+  true_smeared_rat->SetLineColor(smeared_rnd->GetLineColor());
+  
+  //true_smeared_test_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
+  //true_smeared_test_rat->GetXaxis()->SetMoreLogLabels(true);
+  //true_smeared_test_rat->GetXaxis()->SetNoExponent(true);
+  //true_smeared_test_rat->SetAxisRange(0.8,1.2,"Y");
+  true_smeared_test_rat->SetLineColor(smeared_rnd_test->GetLineColor());
+  
   true_smeared_rat->DrawClone("HIST E");        
   true_smeared_test_rat->DrawClone("HIST E SAME");        
   
   lineatone->SetX2(thybins[n_thybins]);
   lineatone->DrawClone();
 
+
+  // response matrix plot
   TCanvas* plot_response_th2=new TCanvas("plot_response_th2","plot response th2",1200, 1000);
   plot_response_th2->cd()->SetLogx(1);
   plot_response_th2->cd()->SetLogy(1);
   plot_response_th2->cd()->SetLogz(1);
   plot_response_th2->cd();
   
-  response_th2->SetTitle(("Toy MC Response Matrix from JER Smeared "+orderstring+" #sigma_{jet}").c_str());
-
+  response_th2->SetTitle(("Toy MC Response Matrix from JER Smeared "+orderstring+" #sigma_{jet}").c_str());  
   response_th2->GetXaxis()->SetTitle("RECO Jet p_{T} [GeV]");
   response_th2->GetXaxis()->SetNoExponent(true);
   response_th2->GetXaxis()->SetMoreLogLabels(true);
   response_th2->GetYaxis()->SetTitle("GEN Jet p_{T} [GeV]");
   response_th2->GetYaxis()->SetNoExponent(true);
-  response_th2->GetYaxis()->SetMoreLogLabels(true);
-  
+  response_th2->GetYaxis()->SetMoreLogLabels(true);  
   setTH2_ZAxisRange(response_th2);  
-  response_th2->Draw("COLZ");
-  //-----------------------------------------------------------------------------------------//
-  //////////////////////  END production of Smeared NLO spectra  ////////////////////////////
-  //-----------------------------------------------------------------------------------------//
 
+  response_th2->Draw("COLZ");
+  
+
+
+
+
+
+  //--------------------------------------------------------------------------------------------------------//
+
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  BEGIN production of Smeared NLO spectra for JER sys  ////////////////
+  //-----------------------------------------------------------------------------------------//  
+
+  TH1D * theory_rnd_JERsysup       = NULL  , * theory_rnd_JERsysdown       = NULL;    
+  TH1D *smeared_rnd_JERsysup      = NULL   , *smeared_rnd_JERsysdown      = NULL;
+  TH1D *smeared_rnd_JERsysup_test = NULL   , *smeared_rnd_JERsysdown_test = NULL;
+  TH2D *   response_JERsysup_th2     = NULL, *   response_JERsysdown_th2     = NULL;
+
+  if(doJERsys){
+    //shift JER up
+    theory_rnd_JERsysup       = new TH1D("theory_rnd_JERsysup","theory_rnd_JERsysup",             n_thybins    , thybins);   
+    smeared_rnd_JERsysup      = new TH1D("smeared_rnd_JERsysup","smeared_rnd_JERsysup",           n_thybins, thybins);   
+    smeared_rnd_JERsysup_test = new TH1D("smeared_rnd_JERsysup_test","smeared_rnd_JERsysup_test", n_thybins, thybins);       
+    response_JERsysup_th2=new TH2D("response_JERsysup_th2","response_JERsysup_th2",
+				(Int_t)n_thybins, (Double_t*)thybins,
+				(Int_t)n_thybins, (Double_t*)thybins);      
+    
+    std::cout<<"making rnd_JERsysup toy MC hists"<<std::endl;
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_rebin, 
+		      (TSpline3*)spline3, 
+		      (TF1*)fJER_sysup, 
+		      nEvents, 
+		      theory_rnd_JERsysup, 
+		      smeared_rnd_JERsysup, 
+		      smeared_rnd_JERsysup_test, 
+		      (TH2D*)response_JERsysup_th2,
+		      (TF1*) spline3_ext); }//		    NULL); }
+    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_JERsysup, 
+    //		      smeared_rnd_JERsysup, 
+    //		      smeared_rnd_JERsysup_test, 
+    //		      (TH2D*)response_JERsysup_th2); }  
+    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_JERsysup, 
+    //		      smeared_rnd_JERsysup, 
+    //		      smeared_rnd_JERsysup_test, 
+    //		      (TH2D*)response_JERsysup_th2); }  
+
+    divideBinWidth(theory_rnd_JERsysup);  //for normalization only.
+    divideBinWidth(smeared_rnd_JERsysup); 
+    divideBinWidth(smeared_rnd_JERsysup_test); 
+    
+    double norm_rnd_JERsysup=theory_rebin->Integral()/theory_rnd_JERsysup->Integral();
+    response_JERsysup_th2->Scale(   norm_rnd_JERsysup);      
+    theory_rnd_JERsysup->Scale( norm_rnd_JERsysup);
+    smeared_rnd_JERsysup->Scale(norm_rnd_JERsysup);  
+    smeared_rnd_JERsysup_test->Scale(norm_rnd_JERsysup);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_JERsysup->SetLineColor(kRed); 
+    smeared_rnd_JERsysup->SetLineColor(kBlue);    
+    smeared_rnd_JERsysup_test->SetLineColor(kBlue-5);    
+
+
+
+    //shift JER down
+    theory_rnd_JERsysdown       = new TH1D("theory_rnd_JERsysdown","theory_rnd_JERsysdown",             n_thybins    , thybins);   
+    smeared_rnd_JERsysdown      = new TH1D("smeared_rnd_JERsysdown","smeared_rnd_JERsysdown",           n_thybins, thybins);   
+    smeared_rnd_JERsysdown_test = new TH1D("smeared_rnd_JERsysdown_test","smeared_rnd_JERsysdown_test", n_thybins, thybins);       
+    response_JERsysdown_th2=new TH2D("response_JERsysdown_th2","response_JERsysdown_th2",
+				(Int_t)n_thybins, (Double_t*)thybins,
+				(Int_t)n_thybins, (Double_t*)thybins);      
+
+    std::cout<<"making rnd_JERsysdown toy MC hists"<<std::endl;
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_rebin, 
+		      (TSpline3*)spline3, 
+		      (TF1*)fJER_sysdown, 
+		      nEvents, 
+		      theory_rnd_JERsysdown, 
+		      smeared_rnd_JERsysdown, 
+		      smeared_rnd_JERsysdown_test, 
+		      (TH2D*)response_JERsysdown_th2,
+		    (TF1*) spline3_ext); }//		    NULL); }
+//else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+//  makeToySpectra( (TH1D*)theory_rebin, 
+//		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+//		      (TF1*)fJER_sysdown, 
+//		      nEvents, 
+//		      theory_rnd_JERsysdown, 
+//		      smeared_rnd_JERsysdown, 
+//		      smeared_rnd_JERsysdown_test, 
+//		      (TH2D*)response_JERsysdown_th2); }  
+//else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+//  makeToySpectra( (TH1D*)theory_rebin, 
+//		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+//		      (TF1*)fJER_sysdown, 
+//		      nEvents, 
+//		      theory_rnd_JERsysdown, 
+//		      smeared_rnd_JERsysdown, 
+//		      smeared_rnd_JERsysdown_test, 
+//		      (TH2D*)response_JERsysdown_th2); }  
+
+    divideBinWidth(theory_rnd_JERsysdown);  //for normalization only.
+    divideBinWidth(smeared_rnd_JERsysdown); 
+    divideBinWidth(smeared_rnd_JERsysdown_test); 
+    
+    double norm_rnd_JERsysdown=theory_rebin->Integral()/theory_rnd_JERsysdown->Integral();
+    response_JERsysdown_th2->Scale(   norm_rnd_JERsysdown);      
+    theory_rnd_JERsysdown->Scale( norm_rnd_JERsysdown);
+    smeared_rnd_JERsysdown->Scale(norm_rnd_JERsysdown);  
+    smeared_rnd_JERsysdown_test->Scale(norm_rnd_JERsysdown);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_JERsysdown->SetLineColor(kRed); 
+    smeared_rnd_JERsysdown->SetLineColor(kBlue);    
+    smeared_rnd_JERsysdown_test->SetLineColor(kBlue-5);    
+  }
+
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  END production of Smeared NLO spectra for JER sys////////////////////
+  //-----------------------------------------------------------------------------------------//  
+
+  //--------------------------------------------------------------------------------------------------------//
+
+  //-----------------------------------------------------------------------------------------//
+  //////////////////////  BEGIN production of Smeared NLO spectra for PDF sys  ////////////////
+  //-----------------------------------------------------------------------------------------//  
+
+
+  TH1D * theory_rnd_PDFsysup       = NULL  , * theory_rnd_PDFsysdown       = NULL;    
+  TH1D *smeared_rnd_PDFsysup      = NULL   , *smeared_rnd_PDFsysdown      = NULL;
+  TH1D *smeared_rnd_PDFsysup_test = NULL   , *smeared_rnd_PDFsysdown_test = NULL;
+  TH2D *   response_PDFsysup_th2     = NULL, *   response_PDFsysdown_th2     = NULL;
+  
+  if(doPDFsys){
+    //shift JER up
+    theory_rnd_PDFsysup       = new TH1D("theory_rnd_PDFsysup","theory_rnd_PDFsysup",             n_thybins    , thybins);   
+    smeared_rnd_PDFsysup      = new TH1D("smeared_rnd_PDFsysup","smeared_rnd_PDFsysup",           n_thybins, thybins);   
+    smeared_rnd_PDFsysup_test = new TH1D("smeared_rnd_PDFsysup_test","smeared_rnd_PDFsysup_test", n_thybins, thybins);       
+    response_PDFsysup_th2=new TH2D("response_PDFsysup_th2","response_PDFsysup_th2",
+				   (Int_t)n_thybins, (Double_t*)thybins,
+				   (Int_t)n_thybins, (Double_t*)thybins);      
+
+    std::cout<<"making rnd_PDFsysup toy MC hists"<<std::endl;        
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_PDFsysup_rebin, 
+		      (TSpline3*)spline3_PDFsysup, 
+		      (TF1*)fJER, 
+		      nEvents, 
+		      theory_rnd_PDFsysup, 
+		      smeared_rnd_PDFsysup, 
+		      smeared_rnd_PDFsysup_test, 
+		      (TH2D*)response_PDFsysup_th2,
+		      NULL); }//		    NULL); }
+    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER, 
+    //		      nEvents, 
+    //		      theory_rnd_PDFsysup, 
+    //		      smeared_rnd_PDFsysup, 
+    //		      smeared_rnd_PDFsysup_test, 
+    //		      (TH2D*)response_PDFsysup_th2); }  
+    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER, 
+    //		      nEvents, 
+    //		      theory_rnd_PDFsysup, 
+    //		      smeared_rnd_PDFsysup, 
+    //		      smeared_rnd_PDFsysup_test, 
+    //		      (TH2D*)response_PDFsysup_th2); }  
+
+    divideBinWidth(theory_rnd_PDFsysup);  //for normalization only.
+    divideBinWidth(smeared_rnd_PDFsysup); 
+    divideBinWidth(smeared_rnd_PDFsysup_test); 
+    
+    double norm_rnd_PDFsysup=theory_PDFsysup_rebin->Integral()/theory_rnd_PDFsysup->Integral();
+    response_PDFsysup_th2->Scale(   norm_rnd_PDFsysup);      
+    theory_rnd_PDFsysup->Scale( norm_rnd_PDFsysup);
+    smeared_rnd_PDFsysup->Scale(norm_rnd_PDFsysup);  
+    smeared_rnd_PDFsysup_test->Scale(norm_rnd_PDFsysup);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_PDFsysup->SetLineColor(kRed); 
+    smeared_rnd_PDFsysup->SetLineColor(kBlue);    
+    smeared_rnd_PDFsysup_test->SetLineColor(kBlue-5);    
+    
+
+    
+    //shift JER down
+    theory_rnd_PDFsysdown       = new TH1D("theory_rnd_PDFsysdown","theory_rnd_PDFsysdown",             n_thybins    , thybins);   
+    smeared_rnd_PDFsysdown      = new TH1D("smeared_rnd_PDFsysdown","smeared_rnd_PDFsysdown",           n_thybins, thybins);   
+    smeared_rnd_PDFsysdown_test = new TH1D("smeared_rnd_PDFsysdown_test","smeared_rnd_PDFsysdown_test", n_thybins, thybins);       
+    response_PDFsysdown_th2=new TH2D("response_PDFsysdown_th2","response_PDFsysdown_th2",
+				(Int_t)n_thybins, (Double_t*)thybins,
+				(Int_t)n_thybins, (Double_t*)thybins);      
+    
+    std::cout<<"making rnd_PDFsysdown toy MC hists"<<std::endl;        
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_PDFsysdown_rebin, 
+		      (TSpline3*)spline3_PDFsysdown, 
+		      (TF1*)fJER, 
+		      nEvents, 
+		      theory_rnd_PDFsysdown, 
+		      smeared_rnd_PDFsysdown, 
+		      smeared_rnd_PDFsysdown_test, 
+		      (TH2D*)response_PDFsysdown_th2,
+		      NULL); }//		    NULL); }
+    //else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //  makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_PDFsysdown, 
+    //		      smeared_rnd_PDFsysdown, 
+    //		      smeared_rnd_PDFsysdown_test, 
+    //		      (TH2D*)response_PDFsysdown_th2); }  
+    //else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //  makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_PDFsysdown, 
+    //		      smeared_rnd_PDFsysdown, 
+    //		      smeared_rnd_PDFsysdown_test, 
+    //		      (TH2D*)response_PDFsysdown_th2); }  
+    
+    divideBinWidth(theory_rnd_PDFsysdown);  //for normalization only.
+    divideBinWidth(smeared_rnd_PDFsysdown); 
+    divideBinWidth(smeared_rnd_PDFsysdown_test); 
+    
+    double norm_rnd_PDFsysdown=theory_PDFsysdown_rebin->Integral()/theory_rnd_PDFsysdown->Integral();
+    response_PDFsysdown_th2->Scale(   norm_rnd_PDFsysdown);      
+    theory_rnd_PDFsysdown->Scale( norm_rnd_PDFsysdown);
+    smeared_rnd_PDFsysdown->Scale(norm_rnd_PDFsysdown);  
+    smeared_rnd_PDFsysdown_test->Scale(norm_rnd_PDFsysdown);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_PDFsysdown->SetLineColor(kRed); 
+    smeared_rnd_PDFsysdown->SetLineColor(kBlue);    
+    smeared_rnd_PDFsysdown_test->SetLineColor(kBlue-5);    
+  }
+  
+  
+  
+  ////cosmetics for JER sysup response //PUT SOMEWHERE ELSE/REMOVE, TO DO
+  //if(doJERsys){
+  //
+  //  response_JERsysup_th2->SetTitle(("Toy MC Response Matrix from sysup-JER Smeared "+orderstring+" #sigma_{jet}").c_str());  
+  //  response_JERsysup_th2->GetXaxis()->SetTitle("RECO Jet p_{T} [GeV]");
+  //  response_JERsysup_th2->GetXaxis()->SetNoExponent(true);
+  //  response_JERsysup_th2->GetXaxis()->SetMoreLogLabels(true);
+  //  response_JERsysup_th2->GetYaxis()->SetTitle("GEN Jet p_{T} [GeV]");
+  //  response_JERsysup_th2->GetYaxis()->SetNoExponent(true);
+  //  response_JERsysup_th2->GetYaxis()->SetMoreLogLabels(true);  
+  //  setTH2_ZAxisRange(response_JERsysup_th2);  
+  //
+  //  //response_JERsysdown_th2->SetTitle(("Toy MC Response Matrix from sysdown-JER Smeared "+orderstring+" #sigma_{jet}").c_str());  
+  //  //response_JERsysdown_th2->GetXaxis()->SetTitle("RECO Jet p_{T} [GeV]");
+  //  //response_JERsysdown_th2->GetXaxis()->SetNoExponent(true);
+  //  //response_JERsysdown_th2->GetXaxis()->SetMoreLogLabels(true);
+  //  //response_JERsysdown_th2->GetYaxis()->SetTitle("GEN Jet p_{T} [GeV]");
+  //  //response_JERsysdown_th2->GetYaxis()->SetNoExponent(true);
+  //  //response_JERsysdown_th2->GetYaxis()->SetMoreLogLabels(true);  
+  //  //setTH2_ZAxisRange(response_JERsysdown_th2);  
+  //
+  //  response_JERsysdown_th2->SetTitle(("Toy MC Response Matrix from sysdown-JER Smeared "+orderstring+" #sigma_{jet}").c_str());  
+  //  response_JERsysdown_th2->GetXaxis()->SetTitle("RECO Jet p_{T} [GeV]");
+  //  response_JERsysdown_th2->GetXaxis()->SetNoExponent(true);
+  //  response_JERsysdown_th2->GetXaxis()->SetMoreLogLabels(true);
+  //  response_JERsysdown_th2->GetYaxis()->SetTitle("GEN Jet p_{T} [GeV]");
+  //  response_JERsysdown_th2->GetYaxis()->SetNoExponent(true);
+  //  response_JERsysdown_th2->GetYaxis()->SetMoreLogLabels(true);  
+  //  setTH2_ZAxisRange(response_JERsysdown_th2);  
+  //}
+  //----------------------------END TOY MC COSMETICS/PLOTS--------------------------------------------//    
 
   
 
@@ -863,8 +1451,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
 
 
-
-
+  
+  
   //-----------------------------------------------------------------------------------------//
   //////////////////////  START production of Smeared NLO+NP spectra  /////////////////////////
   //-----------------------------------------------------------------------------------------//
@@ -872,14 +1460,14 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   TH1D *theory_rnd_NP    = new TH1D("theory_rnd_NP","theory_rnd_NP", n_thybins, thybins);   
   TH1D *smeared_rnd_NP = new TH1D("smeared_rnd_NP","smeared_rnd_NP", n_thybins, thybins);     
   TH1D *smeared_rnd_NP_test = new TH1D("smeared_rnd_NP_test","smeared_rnd_NP_test", n_thybins, thybins);     
-
   TH2D* response_NP_th2=new TH2D("response_NP_th2","response_NP_th2",
 				     (Int_t)n_thybins, (Double_t*)thybins,
 				     (Int_t)n_thybins, (Double_t*)thybins);
   
   //----------------------------------------------------------------------------------------------------------------//
+  std::cout<<"making rnd_NP toy MC hists"<<std::endl;        
   if(useSplineWeights){
-    makeToySpectra(theory_NP_clone, 
+    makeToySpectra(theory_NP_rebin, 
 		   (TSpline3*)spline3_NP, 
 		   (TF1*)fJER, 
 		   nEvents, 
@@ -889,7 +1477,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 		   (TH2D*) response_NP_th2, 	
 		   (TF1*) spline3_NP_ext); }		    //
   else if(useFitWeights&&useModLogFit){
-    makeToySpectra(theory_NP_clone, 
+    makeToySpectra(theory_NP_rebin, 
 		   (TF1*) logFit_NP_4Toy,//(TF1*)modLog4Fit_NP,
 		   (TF1*)fJER, 
 		   nEvents, 
@@ -898,7 +1486,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 		   smeared_rnd_NP_test, 
 		   (TH2D*) response_NP_th2);}
   else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
-    makeToySpectra( (TH1D*)theory_NP_clone, 
+    makeToySpectra( (TH1D*)theory_NP_rebin, 
 		    (TF1*)_7TeVFitA_NP,// (TF1*)_7TeVFitB_NP, //
 		    (TF1*)fJER, 
 		    nEvents, 
@@ -913,9 +1501,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   divideBinWidth(smeared_rnd_NP); 
   divideBinWidth(smeared_rnd_NP_test); 
   
-  double norm_rnd_NP=theory_NP_clone->Integral()/theory_rnd_NP->Integral();
-  response_NP_th2->Scale(   norm_rnd_NP); 
-  
+  double norm_rnd_NP=theory_NP_rebin->Integral()/theory_rnd_NP->Integral();
+  response_NP_th2->Scale(   norm_rnd_NP);   
   theory_rnd_NP->Scale( norm_rnd_NP);
   smeared_rnd_NP->Scale(norm_rnd_NP);
   smeared_rnd_NP_test->Scale(norm_rnd_NP);
@@ -924,12 +1511,13 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   smeared_rnd_NP->SetLineColor(kBlue);    
   smeared_rnd_NP_test->SetLineColor(kBlue-5);    
   
-  if(theory_rnd_NP->GetBinContent(theory_rnd_NP->GetNbinsX() )<0.)
-    theory_rnd_NP->SetBinContent(theory_rnd_NP->GetNbinsX(),1.e-10);
-  if(smeared_rnd_NP->GetBinContent(smeared_rnd_NP->GetNbinsX() )<0.)
-    smeared_rnd_NP->SetBinContent(smeared_rnd_NP->GetNbinsX(),1.e-08);
-  
-  
+  //  if(theory_rnd_NP->GetBinContent(theory_rnd_NP->GetNbinsX() )<0.)
+  //    theory_rnd_NP->SetBinContent(theory_rnd_NP->GetNbinsX(),1.e-10);
+  //  if(smeared_rnd_NP->GetBinContent(smeared_rnd_NP->GetNbinsX() )<0.)
+  //    smeared_rnd_NP->SetBinContent(smeared_rnd_NP->GetNbinsX(),1.e-08);
+
+
+  //----------------------------START TOY NLO+NP COSMETICS/PLOTS--------------------------------------------//    
   Float_t NPmaxy=theory_rnd_NP->GetMaximum();    std::cout<<"NPmaxy="<<NPmaxy<<std::endl;
   NPmaxy*=2.;  std::cout<<"NPmaxy="<<NPmaxy<<std::endl;
   Float_t NPminy=smeared_rnd_NP->GetMinimum();   std::cout<<"NPminy="<<NPminy<<std::endl;
@@ -938,59 +1526,78 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory_rnd_NP->SetTitle( ((std::string)("Toy MC Incl. NP+"+orderstring+" #sigma;;"+ddxsec_yax)).c_str() );
   
   ///// check plots True/Smeared 
-  TCanvas *plot_NP_true_smeared_rat = new TCanvas("plot_NP_true_smeared_rat", "plot NP true smeared rat",1400,1200);  
+  TCanvas *plot_NP_true_smeared_rat = new TCanvas("plot_NP_true_smeared_rat", "plot NP true smeared rat",1600,1600);  
   plot_NP_true_smeared_rat->cd();
   
-  TPad* NPoverlay_pad=new TPad("NPoverlay_pad","pad for spectra",0.0,0.3,1.0,1.0);
+  TPad* NPoverlay_pad=new TPad("NPoverlay_pad","pad for spectra",0.,0.3,1.0,1.0);
   NPoverlay_pad->SetLogx(1);
   NPoverlay_pad->SetLogy(1);
   NPoverlay_pad->SetBottomMargin(0);
-  NPoverlay_pad->Draw();//tells the canvas theres a pad at the coordinates specified in the new constructor
-  NPoverlay_pad->cd();
+  NPoverlay_pad->Draw();//tells the canvas theres a pad at the coordinates specified in the new constructor  
   
-  theory_rnd_NP->DrawClone("HIST E");  
-  smeared_rnd_NP->DrawClone("HIST E SAME");
-  
-  TLegend* NPleg_smear=new TLegend(0.65, 0.70, 0.9, 0.9, NULL,"BRNDC");
-  NPleg_smear->AddEntry(theory_rnd_NP  , ("Truth Incl. NP+"+orderstring+" #sigma"   ).c_str(), "lp" );
-  NPleg_smear->AddEntry(smeared_rnd_NP , ("Smeared Incl. NP+"+orderstring+" #sigma" ).c_str(), "lp" );
-  NPleg_smear->Draw();
-  
-  plot_NP_true_smeared_rat->cd();//go back to main canvas before doing new pad
-  
-  TPad* NPratio_pad=new TPad("NPratio_pad","pad for ratio",0.0,0.05,1.0,0.30);
+  TPad* NPratio_pad=new TPad("NPratio_pad","pad for ratio",0.,0.,1.0,0.3);
   NPratio_pad->SetLogx(1);
   NPratio_pad->SetLogy(0);
   NPratio_pad->SetTopMargin(0);
-  //NPratio_pad->SetBottomMargin(0.3);
+  NPratio_pad->SetBottomMargin(0.20);
   NPratio_pad->Draw();//tell canvas there's a pad at the specified coordinates in the new constructor
+  
+  // spectra pad
+  NPoverlay_pad->cd();    
+  theory_rnd_NP->DrawClone("HIST E");  
+  smeared_rnd_NP->DrawClone("HIST E SAME");
+  smeared_rnd_NP_test->DrawClone("HIST E SAME");
+  
+  TLegend* NPleg_smear=new TLegend(0.60, 0.70, 0.9, 0.9, NULL,"BRNDC");
+  NPleg_smear->SetFillStyle(0);
+  NPleg_smear->SetBorderSize(0.);
+  NPleg_smear->AddEntry(theory_rnd_NP  , ("Truth Incl. NP+"+orderstring+" #sigma"   ).c_str(), "lp" );
+  NPleg_smear->AddEntry(smeared_rnd_NP , ("Smeared Incl. NP+"+orderstring+" #sigma" ).c_str(), "lp" );
+  NPleg_smear->AddEntry(smeared_rnd_NP_test , ("Opp Side Smeared Incl. NP+"+orderstring+" #sigma" ).c_str(), "lp" );
+  NPleg_smear->Draw();  
+      
+  // ratio pad
   NPratio_pad->cd();
   
-  std::cout<<"creating ratio hist of true/smeared for NP+"+orderstring+""<<std::endl;
+  std::cout<<"creating ratio hists for NP+"+orderstring+""<<std::endl;
   TH1D *NP_true_smeared_rat=(TH1D*)theory_rnd_NP->Clone("NP_true_smeared_rat"); 
   if(printBaseDebug)NP_true_smeared_rat->Print("base");
-  NP_true_smeared_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
   NP_true_smeared_rat->Divide(NP_true_smeared_rat,smeared_rnd_NP,1.,1.,"B");     
-  NP_true_smeared_rat->GetXaxis()->SetMoreLogLabels(true);
-  NP_true_smeared_rat->GetXaxis()->SetNoExponent(true);
-  NP_true_smeared_rat->SetAxisRange(0.6,1.4,"Y");  
   
-  std::cout<<"creating ratio hist of true/opp side smeared for NP+"+orderstring+""<<std::endl;
   TH1D *NP_true_smeared_test_rat=(TH1D*)theory_rnd_NP->Clone("NP_true_smeared_test_rat"); 
   if(printBaseDebug)NP_true_smeared_test_rat->Print("base");
-  NP_true_smeared_test_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
   NP_true_smeared_test_rat->Divide(NP_true_smeared_test_rat,smeared_rnd_NP_test,1.,1.,"B");     
-  NP_true_smeared_test_rat->GetXaxis()->SetMoreLogLabels(true);
-  NP_true_smeared_test_rat->GetXaxis()->SetNoExponent(true);
-  NP_true_smeared_test_rat->SetAxisRange(0.6,1.4,"Y");
-  NP_true_smeared_test_rat->SetLineColor(kRed-2);  
+  
+  NP_true_smeared_rat->SetTitle("; Jet p_{T} [GeV]; True/Smeared");
+  NP_true_smeared_rat->GetXaxis()->SetMoreLogLabels(true);
+  NP_true_smeared_rat->GetXaxis()->SetNoExponent(true);
+  NP_true_smeared_rat->GetXaxis()->SetLabelSize(0.05);
+  NP_true_smeared_rat->GetXaxis()->SetTitleSize(0.055);
 
+  NP_true_smeared_rat->GetYaxis()->SetLabelSize(0.05);
+  NP_true_smeared_rat->GetYaxis()->SetTitleSize(0.05);
+  NP_true_smeared_rat->GetYaxis()->SetTitleOffset(0.7);
+  NP_true_smeared_rat->GetYaxis()->CenterTitle(true);
+  NP_true_smeared_rat->SetAxisRange(0.85,1.15,"Y");  
+
+  NP_true_smeared_rat->SetLineColor(smeared_rnd_NP->GetLineColor());
+  
+  //NP_true_smeared_test_rat->SetTitle("; Jet p_T (GeV); True/Smeared");
+  //NP_true_smeared_test_rat->GetXaxis()->SetMoreLogLabels(true);
+  //NP_true_smeared_test_rat->GetXaxis()->SetNoExponent(true);
+  //NP_true_smeared_test_rat->SetAxisRange(0.8,1.2,"Y");
+  NP_true_smeared_test_rat->SetLineColor(smeared_rnd_NP_test->GetLineColor());
+  
   NP_true_smeared_rat->DrawClone("HIST E");        
   NP_true_smeared_test_rat->DrawClone("HIST E SAME");        
   
   lineatone->DrawClone();
   
   
+
+
+
+  // RESPONSE MATRIX PLOT
   TCanvas* plot_response_NP_th2=new TCanvas("plot_response_NP_th2","plot response NP th2",1200, 1000);
   plot_response_NP_th2->cd()->SetLogx(1);
   plot_response_NP_th2->cd()->SetLogy(1);
@@ -1009,9 +1616,387 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   setTH2_ZAxisRange(response_NP_th2);
   
   response_NP_th2->Draw("COLZ");
+  //----------------------------END NLO+NP COSMETICS/PLOTS--------------------------------------------//    
+
+
+  
+  //--------------------------------------------------------------------------------------------------------//
+  TH1D * theory_rnd_NP_JERsysup       = NULL  ,* theory_rnd_NP_JERsysdown       = NULL  ;
+  TH1D *smeared_rnd_NP_JERsysup      = NULL   ,*smeared_rnd_NP_JERsysdown      = NULL   ;
+  TH1D *smeared_rnd_NP_JERsysup_test = NULL   ,*smeared_rnd_NP_JERsysdown_test = NULL   ;
+  TH2D *   response_NP_JERsysup_th2     = NULL,*   response_NP_JERsysdown_th2     = NULL;
+				 
+  if(doJERsys){
+    //shift JER up
+    theory_rnd_NP_JERsysup       = new TH1D("theory_rnd_NP_JERsysup","theory_rnd_NP_JERsysup",             n_thybins    , thybins);   
+    smeared_rnd_NP_JERsysup      = new TH1D("smeared_rnd_NP_JERsysup","smeared_rnd_NP_JERsysup",           n_thybins, thybins);   
+    smeared_rnd_NP_JERsysup_test = new TH1D("smeared_rnd_NP_JERsysup_test","smeared_rnd_NP_JERsysup_test", n_thybins, thybins);       
+    response_NP_JERsysup_th2=new TH2D("response_NP_JERsysup_th2","response_NP_JERsysup_th2",
+				   (Int_t)n_thybins, (Double_t*)thybins,
+				   (Int_t)n_thybins, (Double_t*)thybins);  
+    
+    std::cout<<"making rnd_NP_JERsysup toy MC hists"<<std::endl;
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_NP_rebin, 
+		      (TSpline3*)spline3_NP, 
+		      (TF1*)fJER_sysup, 
+		      nEvents, 
+		      theory_rnd_NP_JERsysup, 
+		      smeared_rnd_NP_JERsysup, 
+		      smeared_rnd_NP_JERsysup_test, 
+		      (TH2D*)response_NP_JERsysup_th2,
+		      NULL); }//		    NULL); }
+    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_JERsysup, 
+    //		      smeared_rnd_NP_JERsysup, 
+    //		      smeared_rnd_NP_JERsysup_test, 
+    //		      (TH2D*)response_NP_JERsysup_th2); }  
+    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_JERsysup, 
+    //		      smeared_rnd_NP_JERsysup, 
+    //		      smeared_rnd_NP_JERsysup_test, 
+    //		      (TH2D*)response_NP_JERsysup_th2); }  
+  
+    divideBinWidth(theory_rnd_NP_JERsysup);  //for normalization only.
+    divideBinWidth(smeared_rnd_NP_JERsysup); 
+    divideBinWidth(smeared_rnd_NP_JERsysup_test); 
+    
+    double norm_rnd_NP_JERsysup=theory_NP_rebin->Integral()/theory_rnd_NP_JERsysup->Integral();
+    response_NP_JERsysup_th2->Scale(   norm_rnd_NP_JERsysup);      
+    theory_rnd_NP_JERsysup->Scale( norm_rnd_NP_JERsysup);
+    smeared_rnd_NP_JERsysup->Scale(norm_rnd_NP_JERsysup);  
+    smeared_rnd_NP_JERsysup_test->Scale(norm_rnd_NP_JERsysup);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_NP_JERsysup->SetLineColor(kRed); 
+    smeared_rnd_NP_JERsysup->SetLineColor(kBlue);    
+    smeared_rnd_NP_JERsysup_test->SetLineColor(kBlue-5);    
+
+
+    //shift JER down
+    theory_rnd_NP_JERsysdown       = new TH1D("theory_rnd_NP_JERsysdown","theory_rnd_NP_JERsysdown",             n_thybins    , thybins);   
+    smeared_rnd_NP_JERsysdown      = new TH1D("smeared_rnd_NP_JERsysdown","smeared_rnd_NP_JERsysdown",           n_thybins, thybins);   
+    smeared_rnd_NP_JERsysdown_test = new TH1D("smeared_rnd_NP_JERsysdown_test","smeared_rnd_NP_JERsysdown_test", n_thybins, thybins);       
+    response_NP_JERsysdown_th2=new TH2D("response_NP_JERsysdown_th2","response_NP_JERsysdown_th2",
+				   (Int_t)n_thybins, (Double_t*)thybins,
+				   (Int_t)n_thybins, (Double_t*)thybins);  
+    
+    std::cout<<"making rnd_NP_JERsysdown toy MC hists"<<std::endl;
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_NP_rebin, 
+		      (TSpline3*)spline3_NP, 
+		      (TF1*)fJER_sysdown, 
+		      nEvents, 
+		      theory_rnd_NP_JERsysdown, 
+		      smeared_rnd_NP_JERsysdown, 
+		      smeared_rnd_NP_JERsysdown_test, 
+		      (TH2D*)response_NP_JERsysdown_th2,
+		      NULL); }//		    NULL); }
+    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //      makeToySpectra( (TH1D*)theory_NP_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_JERsysdown, 
+    //		      smeared_rnd_NP_JERsysdown, 
+    //		      smeared_rnd_NP_JERsysdown_test, 
+    //		      (TH2D*)response_NP_JERsysdown_th2); }  
+    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //      makeToySpectra( (TH1D*)theory_NP_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_JERsysdown, 
+    //		      smeared_rnd_NP_JERsysdown, 
+    //		      smeared_rnd_NP_JERsysdown_test, 
+    //		      (TH2D*)response_NP_JERsysdown_th2); }  
+  
+    divideBinWidth(theory_rnd_NP_JERsysdown);  //for normalization only.
+    divideBinWidth(smeared_rnd_NP_JERsysdown); 
+    divideBinWidth(smeared_rnd_NP_JERsysdown_test); 
+    
+    double norm_rnd_NP_JERsysdown=theory_NP_rebin->Integral()/theory_rnd_NP_JERsysdown->Integral();
+    response_NP_JERsysdown_th2->Scale(   norm_rnd_NP_JERsysdown);      
+    theory_rnd_NP_JERsysdown->Scale( norm_rnd_NP_JERsysdown);
+    smeared_rnd_NP_JERsysdown->Scale(norm_rnd_NP_JERsysdown);  
+    smeared_rnd_NP_JERsysdown_test->Scale(norm_rnd_NP_JERsysdown);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_NP_JERsysdown->SetLineColor(kRed); 
+    smeared_rnd_NP_JERsysdown->SetLineColor(kBlue);    
+    smeared_rnd_NP_JERsysdown_test->SetLineColor(kBlue-5);    
+  }
+
+
+
+  //--------------------------------------------------------------------------------------------------------//
+  TH1D * theory_rnd_NP_PDFsysup       = NULL  ,* theory_rnd_NP_PDFsysdown       = NULL  ;
+  TH1D *smeared_rnd_NP_PDFsysup      = NULL   ,*smeared_rnd_NP_PDFsysdown      = NULL   ;
+  TH1D *smeared_rnd_NP_PDFsysup_test = NULL   ,*smeared_rnd_NP_PDFsysdown_test = NULL   ;
+  TH2D *   response_NP_PDFsysup_th2     = NULL,*   response_NP_PDFsysdown_th2     = NULL;
+  
+  if(doPDFsys){
+    //shift JER up
+    theory_rnd_NP_PDFsysup       = new TH1D("theory_rnd_NP_PDFsysup","theory_rnd_NP_PDFsysup",             n_thybins    , thybins);   
+    smeared_rnd_NP_PDFsysup      = new TH1D("smeared_rnd_NP_PDFsysup","smeared_rnd_NP_PDFsysup",           n_thybins, thybins);   
+    smeared_rnd_NP_PDFsysup_test = new TH1D("smeared_rnd_NP_PDFsysup_test","smeared_rnd_NP_PDFsysup_test", n_thybins, thybins);       
+    response_NP_PDFsysup_th2=new TH2D("response_NP_PDFsysup_th2","response_NP_PDFsysup_th2",
+				   (Int_t)n_thybins, (Double_t*)thybins,
+				   (Int_t)n_thybins, (Double_t*)thybins);  
+
+    std::cout<<"making rnd_NP_PDFsysup toy MC hists"<<std::endl;        
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_NP_PDFsysup_rebin, 
+		      (TSpline3*)spline3_NP_PDFsysup, 
+		      (TF1*)fJER, 
+		      nEvents, 
+		      theory_rnd_NP_PDFsysup, 
+		      smeared_rnd_NP_PDFsysup, 
+		      smeared_rnd_NP_PDFsysup_test, 
+		      (TH2D*)response_NP_PDFsysup_th2,
+		      NULL); }//		    NULL); }
+    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_PDFsysup, 
+    //		      smeared_rnd_NP_PDFsysup, 
+    //		      smeared_rnd_NP_PDFsysup_test, 
+    //		      (TH2D*)response_NP_PDFsysup_th2); }  
+    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_PDFsysup, 
+    //		      smeared_rnd_NP_PDFsysup, 
+    //		      smeared_rnd_NP_PDFsysup_test, 
+    //		      (TH2D*)response_NP_PDFsysup_th2); }  
+  
+    divideBinWidth(theory_rnd_NP_PDFsysup);  //for normalization only.
+    divideBinWidth(smeared_rnd_NP_PDFsysup); 
+    divideBinWidth(smeared_rnd_NP_PDFsysup_test); 
+    
+    double norm_rnd_NP_PDFsysup=theory_NP_PDFsysup_rebin->Integral()/theory_rnd_NP_PDFsysup->Integral();
+    response_NP_PDFsysup_th2->Scale(   norm_rnd_NP_PDFsysup);      
+    theory_rnd_NP_PDFsysup->Scale( norm_rnd_NP_PDFsysup);
+    smeared_rnd_NP_PDFsysup->Scale(norm_rnd_NP_PDFsysup);  
+    smeared_rnd_NP_PDFsysup_test->Scale(norm_rnd_NP_PDFsysup);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_NP_PDFsysup->SetLineColor(kRed); 
+    smeared_rnd_NP_PDFsysup->SetLineColor(kBlue);    
+    smeared_rnd_NP_PDFsysup_test->SetLineColor(kBlue-5);    
+
+
+    //shift JER down
+    theory_rnd_NP_PDFsysdown       = new TH1D("theory_rnd_NP_PDFsysdown","theory_rnd_NP_PDFsysdown",             n_thybins    , thybins);   
+    smeared_rnd_NP_PDFsysdown      = new TH1D("smeared_rnd_NP_PDFsysdown","smeared_rnd_NP_PDFsysdown",           n_thybins, thybins);   
+    smeared_rnd_NP_PDFsysdown_test = new TH1D("smeared_rnd_NP_PDFsysdown_test","smeared_rnd_NP_PDFsysdown_test", n_thybins, thybins);       
+    response_NP_PDFsysdown_th2=new TH2D("response_NP_PDFsysdown_th2","response_NP_PDFsysdown_th2",
+					(Int_t)n_thybins, (Double_t*)thybins,
+					(Int_t)n_thybins, (Double_t*)thybins);  
+
+    std::cout<<"making rnd_NP_PDFsysdown toy MC hists"<<std::endl;        
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_NP_PDFsysdown_rebin, 
+		      (TSpline3*)spline3_NP_PDFsysdown, 
+		      (TF1*)fJER, 
+		      nEvents, 
+		      theory_rnd_NP_PDFsysdown, 
+		      smeared_rnd_NP_PDFsysdown, 
+		      smeared_rnd_NP_PDFsysdown_test, 
+		      (TH2D*)response_NP_PDFsysdown_th2,
+		      NULL); }//		    NULL); }
+    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //      makeToySpectra( (TH1D*)theory_NP_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_PDFsysdown, 
+    //		      smeared_rnd_NP_PDFsysdown, 
+    //		      smeared_rnd_NP_PDFsysdown_test, 
+    //		      (TH2D*)response_NP_PDFsysdown_th2); }  
+    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //      makeToySpectra( (TH1D*)theory_NP_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_NP_PDFsysdown, 
+    //		      smeared_rnd_NP_PDFsysdown, 
+    //		      smeared_rnd_NP_PDFsysdown_test, 
+    //		      (TH2D*)response_NP_PDFsysdown_th2); }  
+  
+    divideBinWidth(theory_rnd_NP_PDFsysdown);  //for normalization only.
+    divideBinWidth(smeared_rnd_NP_PDFsysdown); 
+    divideBinWidth(smeared_rnd_NP_PDFsysdown_test); 
+    
+    double norm_rnd_NP_PDFsysdown=theory_NP_PDFsysdown_rebin->Integral()/theory_rnd_NP_PDFsysdown->Integral();
+    response_NP_PDFsysdown_th2->Scale(   norm_rnd_NP_PDFsysdown);      
+    theory_rnd_NP_PDFsysdown->Scale( norm_rnd_NP_PDFsysdown);
+    smeared_rnd_NP_PDFsysdown->Scale(norm_rnd_NP_PDFsysdown);  
+    smeared_rnd_NP_PDFsysdown_test->Scale(norm_rnd_NP_PDFsysdown);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_NP_PDFsysdown->SetLineColor(kRed); 
+    smeared_rnd_NP_PDFsysdown->SetLineColor(kBlue);    
+    smeared_rnd_NP_PDFsysdown_test->SetLineColor(kBlue-5);    
+  }
+
+
+
+  TH1D * theory_rnd_NPsysup       = NULL  ,* theory_rnd_NPsysdown       = NULL  ;
+  TH1D *smeared_rnd_NPsysup      = NULL   ,*smeared_rnd_NPsysdown      = NULL   ;
+  TH1D *smeared_rnd_NPsysup_test = NULL   ,*smeared_rnd_NPsysdown_test = NULL   ;
+  TH2D *   response_NPsysup_th2     = NULL,*   response_NPsysdown_th2     = NULL;
+  TH1D * theory_rnd_NPsysup_origthyratio       = NULL  ,* theory_rnd_NPsysdown_origthyratio       = NULL  ;//QA
+  TH1D * theory_rnd_NPsysup_NPsysupratio       = NULL  ,* theory_rnd_NPsysdown_NPsysdownratio       = NULL  ;//QA
+  TH1D * theory_rnd_NPsysup_ratio_rnd_NPsysdown=NULL;
+
+  if(doNPsys){
+    //shift JER up
+    theory_rnd_NPsysup       = new TH1D("theory_rnd_NPsysup","theory_rnd_NPsysup",             n_thybins    , thybins);   
+    smeared_rnd_NPsysup      = new TH1D("smeared_rnd_NPsysup","smeared_rnd_NPsysup",           n_thybins, thybins);   
+    smeared_rnd_NPsysup_test = new TH1D("smeared_rnd_NPsysup_test","smeared_rnd_NPsysup_test", n_thybins, thybins);       
+    response_NPsysup_th2=new TH2D("response_NPsysup_th2","response_NPsysup_th2",
+				   (Int_t)n_thybins, (Double_t*)thybins,
+				  (Int_t)n_thybins, (Double_t*)thybins);  
+
+    std::cout<<"making rnd_NPsysup toy MC hists"<<std::endl;    
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_NPsysup_rebin, 
+		      (TSpline3*)spline3_NPsysup, 
+		      (TF1*)fJER, 
+		      nEvents, 
+		      theory_rnd_NPsysup, 
+		      smeared_rnd_NPsysup, 
+		      smeared_rnd_NPsysup_test, 
+		      (TH2D*)response_NPsysup_th2,
+		      NULL); }//		    NULL); }
+    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_NPsysup, 
+    //		      smeared_rnd_NPsysup, 
+    //		      smeared_rnd_NPsysup_test, 
+    //		      (TH2D*)response_NPsysup_th2); }  
+    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //      makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysup, 
+    //		      nEvents, 
+    //		      theory_rnd_NPsysup, 
+    //		      smeared_rnd_NPsysup, 
+    //		      smeared_rnd_NPsysup_test, 
+    //		      (TH2D*)response_NPsysup_th2); }  
+    
+    divideBinWidth(theory_rnd_NPsysup);  //for normalization only.
+    divideBinWidth(smeared_rnd_NPsysup); 
+    divideBinWidth(smeared_rnd_NPsysup_test); 
+    
+    double norm_rnd_NPsysup=theory_NPsysup_rebin->Integral()/theory_rnd_NPsysup->Integral();
+    response_NPsysup_th2->Scale(   norm_rnd_NPsysup);      
+    theory_rnd_NPsysup->Scale( norm_rnd_NPsysup);
+    smeared_rnd_NPsysup->Scale(norm_rnd_NPsysup);  
+    smeared_rnd_NPsysup_test->Scale(norm_rnd_NPsysup);  
+    
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_NPsysup->SetLineColor(kRed); 
+    smeared_rnd_NPsysup->SetLineColor(kBlue);    
+    smeared_rnd_NPsysup_test->SetLineColor(kBlue-5);    
+    
+    //NP SYSUP QA
+    theory_rnd_NPsysup_origthyratio  = (TH1D*)theory_rnd_NPsysup->Clone(((std::string)theory_rnd_NPsysup->GetName()+"_origthyratio").c_str());
+    theory_rnd_NPsysup_origthyratio->Divide(theory_rebin);
+    theory_rnd_NPsysup_NPsysupratio  = (TH1D*)theory_rnd_NPsysup->Clone(((std::string)theory_rnd_NPsysup->GetName()+"_NPsysupratio").c_str());
+    theory_rnd_NPsysup_NPsysupratio->Divide(theory_NPsysup_rebin);
+    
+    //shift JER down
+    theory_rnd_NPsysdown       = new TH1D("theory_rnd_NPsysdown","theory_rnd_NPsysdown",             n_thybins    , thybins);   
+    smeared_rnd_NPsysdown      = new TH1D("smeared_rnd_NPsysdown","smeared_rnd_NPsysdown",           n_thybins, thybins);   
+    smeared_rnd_NPsysdown_test = new TH1D("smeared_rnd_NPsysdown_test","smeared_rnd_NPsysdown_test", n_thybins, thybins);       
+    response_NPsysdown_th2=new TH2D("response_NPsysdown_th2","response_NPsysdown_th2",
+				    (Int_t)n_thybins, (Double_t*)thybins,
+				    (Int_t)n_thybins, (Double_t*)thybins);  
+
+    std::cout<<"making rnd_NPsysdown toy MC hists"<<std::endl;        
+    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+      makeToySpectra( (TH1D*)theory_NPsysdown_rebin, 
+		      (TSpline3*)spline3_NPsysdown, 
+		      (TF1*)fJER, 
+		      nEvents, 
+		      theory_rnd_NPsysdown, 
+		      smeared_rnd_NPsysdown, 
+		      smeared_rnd_NPsysdown_test, 
+		      (TH2D*)response_NPsysdown_th2,
+		      NULL); }//		    NULL); }
+    //else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+    //  makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_NPsysdown, 
+    //		      smeared_rnd_NPsysdown, 
+    //		      smeared_rnd_NPsysdown_test, 
+    //		      (TH2D*)response_NPsysdown_th2); }  
+    //else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+    //  makeToySpectra( (TH1D*)theory_rebin, 
+    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+    //		      (TF1*)fJER_sysdown, 
+    //		      nEvents, 
+    //		      theory_rnd_NPsysdown, 
+    //		      smeared_rnd_NPsysdown, 
+    //		      smeared_rnd_NPsysdown_test, 
+    //		      (TH2D*)response_NPsysdown_th2); }  
+    
+    divideBinWidth(theory_rnd_NPsysdown);  //for normalization only.
+    divideBinWidth(smeared_rnd_NPsysdown); 
+    divideBinWidth(smeared_rnd_NPsysdown_test); 
+    
+    double norm_rnd_NPsysdown=theory_NPsysdown_rebin->Integral()/theory_rnd_NPsysdown->Integral();
+    response_NPsysdown_th2->Scale(   norm_rnd_NPsysdown);      
+    theory_rnd_NPsysdown->Scale( norm_rnd_NPsysdown);
+    smeared_rnd_NPsysdown->Scale(norm_rnd_NPsysdown);  
+    smeared_rnd_NPsysdown_test->Scale(norm_rnd_NPsysdown);  
+    
+
+    //plotting smeared+theory toy mc xsection
+    theory_rnd_NPsysdown->SetLineColor(kRed); 
+    smeared_rnd_NPsysdown->SetLineColor(kBlue);    
+    smeared_rnd_NPsysdown_test->SetLineColor(kBlue-5);    
+
+    //NP SYSDOWN QA
+    theory_rnd_NPsysdown_origthyratio  = (TH1D*)theory_rnd_NPsysdown->Clone(((std::string)theory_rnd_NPsysdown->GetName()+"_origthyratio").c_str());
+    theory_rnd_NPsysdown_origthyratio->Divide(theory_rebin);
+    theory_rnd_NPsysdown_NPsysdownratio  = (TH1D*)theory_rnd_NPsysdown->Clone(((std::string)theory_rnd_NPsysdown->GetName()+"_NPsysdownratio").c_str());
+    theory_rnd_NPsysdown_NPsysdownratio->Divide(theory_NPsysdown_rebin);
+
+
+    //SYSUP+SYSDOWN QA
+    theory_rnd_NPsysup_ratio_rnd_NPsysdown=(TH1D*)theory_rnd_NPsysup->Clone("theory_rnd_NPsysup_ratio_rnd_NPsysdown");
+    theory_rnd_NPsysup_ratio_rnd_NPsysdown->Divide(theory_rnd_NPsysdown);
+									    
+
+    
+  }
+
   //-----------------------------------------------------------------------------------------//
   //////////////////////  END production of Smeared NLO+NP spectra  ///////////////////////////
   //-----------------------------------------------------------------------------------------//
+  
+  
+
 
   
   
@@ -1020,29 +2005,29 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_true_rnd_rat->cd()->SetLogx(1);
   plot_true_rnd_rat->cd()->SetLogy(0);
   plot_true_rnd_rat->cd();
-  std::string thy_rnd_rat_title="Toy MC v. Orig. Spectra; Jet p_{T}; Orig./Toy Spectra";
+  std::string thy_rnd_rat_title="Toy MC Truth v. Thy. Spectra; Jet p_{T} [GeV]; Thy./Toy Truth";
   if(useSplineWeights)
     thy_rnd_rat_title="Spline Weighted "+thy_rnd_rat_title;
   if(useFitWeights)
     thy_rnd_rat_title="Fit Weighted "+thy_rnd_rat_title;
   
-  TH1D* theory_ratio_rnd=(TH1D*)theory_clone->Clone ( 
-							      ( (std::string)theory->GetName() +"_debughist") .c_str()
-							       );
+  TH1D* theory_ratio_rnd=(TH1D*)theory_rebin->Clone ( 
+						     ( (std::string)theory->GetName() +"_theory_rnd_rat") .c_str()
+						      );
   theory_ratio_rnd->Divide(theory_rnd);
   theory_ratio_rnd->SetLineColor(kBlack);
   theory_ratio_rnd->SetTitle(thy_rnd_rat_title.c_str());
   
   
-  TH1D* theory_NP_ratio_rnd_NP=(TH1D*)theory_NP_clone->Clone ( 
-									  ( (std::string)theory_NP->GetName() +"_debughist") .c_str()
-									   );
+  TH1D* theory_NP_ratio_rnd_NP=(TH1D*)theory_NP_rebin->Clone ( 
+							      ( (std::string)theory_NP->GetName() +"_theory_rnd_rat") .c_str()
+							       );
   theory_NP_ratio_rnd_NP->Divide(theory_rnd_NP);
   theory_NP_ratio_rnd_NP->SetLineColor(kGray+1);
   theory_NP_ratio_rnd_NP->SetTitle(thy_rnd_rat_title.c_str());
   
-  theory_ratio_rnd->SetAxisRange    (0.5,1.5,"Y");
-  theory_NP_ratio_rnd_NP->SetAxisRange(0.5,1.5,"Y");
+  theory_ratio_rnd->SetAxisRange    (0.6,1.4,"Y");
+  theory_NP_ratio_rnd_NP->SetAxisRange(0.6,1.4,"Y");
   
 
   std::cout<<""+orderstring+" THY/RND THY LAST BIN CONTENT = "<<theory_ratio_rnd->GetBinContent(theory_ratio_rnd->GetNbinsX()) <<std::endl;
@@ -1057,6 +2042,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   
   
   TLegend* leg_tru_rnd_rat=new TLegend(0.10, 0.70, 0.35, 0.9, NULL,"BRNDC");
+  leg_tru_rnd_rat->SetFillStyle(0);
+  leg_tru_rnd_rat->SetBorderSize(0.);
   leg_tru_rnd_rat->AddEntry( theory_ratio_rnd,       (orderstring+" Spectra"   ).c_str(), "lp");
   leg_tru_rnd_rat->AddEntry( theory_NP_ratio_rnd_NP, (orderstring+"+NP Spectra").c_str(), "lp");
   leg_tru_rnd_rat->Draw();
@@ -1068,51 +2055,38 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
   
 
-  ////// Write out histos
+
   outf->cd();
-  
-  // NP FITS 
-  fNP->Write();
 
-  // NP FIT CANV
-  plot_NP->Write();  
-  
-  //JET ENERGY RESOLUTION
-  fJER->Write();//FIT
-  plotJER->Write();//CANV
-  
-  // NLO HISTS
-  theory->Write();
+  // WRITE CANVASES
   plot_NLOxsec->Write();
-
-  // ERR HISTS
-  theoryPDFPoserr     ->Write();
-  theory2PtScalePoserr->Write();
-  theory6PtScalePoserr->Write();
   plot_xsecPosErrs->Write();
-  
-  theoryPDFNegerr     ->Write();
-  theory2PtScaleNegerr->Write();
-  theory6PtScaleNegerr->Write();
   plot_xsecNegErrs->Write();
+  plot_NP->Write(("plot_"+NPCorrFits_str).c_str());
+  plot_NPNLOxsec->Write();    
+  plot_true_smeared_rat->Write();
+  plot_response_th2->Write();  
+  plot_NP_true_smeared_rat->Write( );
+  plot_response_NP_th2->Write();    
+  plot_true_rnd_rat->Write();
+  plotJER->Write();//CANV
+  if(useSplineWeights)plot_splines->Write();  
+  else if(useFitWeights && useModLogFit) { 
+    plot_logfits->Write();  
+    plot_logfits_NP->Write();            }
+  else if (useFitWeights && use7TeVFit){
+    plot_7tevfits->Write();  
+    plot_7tevfits_NP->Write();      }    
   
-  // NP+NLO HISTS
-  theory_NP->Write();    
-  plot_NPNLOxsec->Write();
   
 
-  // CLONES 4 SMEARING+TOYMC
-  theory_clone->Write();
-  theory_NP_clone->Write();
-  
-  
+
+  // THY SPECTRA FITS/SPLINES
   if(useSplineWeights){  // SPLINES
     spline3->Write();
     spline3_NP->Write();
     if(useSplineExt)spline3_ext->Write();
-    if(useSplineExt)spline3_NP_ext->Write();
-    plot_splines->Write();  
-  }
+    if(useSplineExt)spline3_NP_ext->Write();  }
   else if(useFitWeights && useModLogFit){//FITS
     logFit->Write();
     modLogFit->Write();
@@ -1120,61 +2094,163 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     modLog3Fit->Write();
     modLog4Fit->Write();
     modLog5Fit->Write();
-    plot_logfits->Write();  
-    
+    //w/ NP
     logFit_NP->Write();
     modLogFit_NP->Write();
     modLog2Fit_NP->Write();
     modLog3Fit_NP->Write();
     modLog4Fit_NP->Write();
-    modLog5Fit_NP->Write();
-    plot_logfits_NP->Write();      
-  }
+    modLog5Fit_NP->Write();  }
   else if(useFitWeights && use7TeVFit){//FITS
     _7TeVFitA->Write();
     _7TeVFitB->Write();
-    plot_7tevfits->Write();  
-    
     _7TeVFitA_NP->Write();
-    _7TeVFitB_NP->Write();
-    plot_7tevfits_NP->Write();      
+    _7TeVFitB_NP->Write();  }
+  
+  
+  // JET ENERGY RESOLUTION FITs
+  fJER->Write();//FIT
+  if(doJERsys){
+    fJER_sysup->Write();
+    fJER_sysdown->Write();  }  
+  
+  // NP FITS 
+  fNP->Write();  
+  if(doNPsys){
+    fNP_sysup->Write();
+    fNP_sysdown->Write();     
+  }
+
+  // JET ENERGY RESOLUTION FITs AS HISTS
+  hJER->Write();//FIT
+  if(doJERsys){
+    hJER_sysup->Write();
+    hJER_sysdown->Write();  }  
+  
+  // NP FITS AS HISTS   
+  hNP->Write();
+  if(doNPsys){
+    hNP_sysup->Write();
+    hNP_sysdown->Write();
   }
   
-  
-  //TOY MC, JER SMEARED NLO SPECTRA
-  theory_rnd->Write();
-  theory_ratio_rnd->Write();
-  
-  smeared_rnd->Write(); 
-  smeared_rnd_test->Write(); 
+  // THY NLO w/ + w/o NP HISTS
+  theory->Write();  
+  theory_NP->Write();      
 
-  true_smeared_rat->Write();  //ratio
-  true_smeared_test_rat->Write();  //ratio
-  plot_true_smeared_rat->Write();
+  // PDF ERR HISTS
+  theoryPDFPoserr     ->Write();
+  theory2PtScalePoserr->Write();
+  theory6PtScalePoserr->Write();
   
-  response_th2->Write();
-  plot_response_th2->Write();  
+  theoryPDFNegerr     ->Write();
+  theory2PtScaleNegerr->Write();
+  theory6PtScaleNegerr->Write();      
+  
+  // REBINNED 
+  theory_rebin->Write(); 
+  theory_NP_rebin->Write();  
+  
+  // TOY MC, TRUE + SMEARED + RESPONSE, w/ RATIOS
+  theory_rnd->Write(); //truth spectra
+  smeared_rnd->Write(); //smeraed spectra
+  smeared_rnd_test->Write(); // test-side smeared spectra
+  response_th2->Write(); //response matrix
+  //ratios
+  theory_ratio_rnd->Write(); // thy/truth  
+  true_smeared_rat->Write();  // true/smeared
+  true_smeared_test_rat->Write();  // true/test-side smeared  
+  
+  // TOY MC, JER SMEARED NLO+NP SPECTRA
+  theory_rnd_NP->Write();//truth spectra
+  smeared_rnd_NP->Write(); //smeared spectra
+  smeared_rnd_NP_test->Write();  //test-side smeared spectra
+  response_NP_th2->Write(); //response matrix
+  //ratios
+  theory_NP_ratio_rnd_NP->Write(); // thy/truth  
+  NP_true_smeared_rat->Write();  // true/smeared
+  NP_true_smeared_test_rat->Write();  //true/test-side-smeared  
+
+  //JER syst toy mc
+  if(doJERsys){
+    theory_rnd_JERsysup->Write();
+    smeared_rnd_JERsysup->Write();
+    smeared_rnd_JERsysup_test->Write();
+    response_JERsysup_th2->Write();  
+    theory_rnd_JERsysdown->Write();
+    smeared_rnd_JERsysdown->Write();
+    smeared_rnd_JERsysdown_test->Write();
+    response_JERsysdown_th2->Write();  
+
+    theory_rnd_NP_JERsysup->Write();
+    smeared_rnd_NP_JERsysup->Write();
+    smeared_rnd_NP_JERsysup_test->Write();
+    response_NP_JERsysup_th2->Write();  
+    theory_rnd_NP_JERsysdown->Write();
+    smeared_rnd_NP_JERsysdown->Write();
+    smeared_rnd_NP_JERsysdown_test->Write();
+    response_NP_JERsysdown_th2->Write();  
+  }
+
+  //PDF syst toy mc
+  if(doPDFsys){
+    theory_rnd_PDFsysup->Write();
+    smeared_rnd_PDFsysup->Write();
+    smeared_rnd_PDFsysup_test->Write();
+    response_PDFsysup_th2->Write();  
+    theory_rnd_PDFsysdown->Write();
+    smeared_rnd_PDFsysdown->Write();
+    smeared_rnd_PDFsysdown_test->Write();
+    response_PDFsysdown_th2->Write();  
+
+    theory_rnd_NP_PDFsysup->Write();
+    smeared_rnd_NP_PDFsysup->Write();
+    smeared_rnd_NP_PDFsysup_test->Write();
+    response_NP_PDFsysup_th2->Write();  
+    theory_rnd_NP_PDFsysdown->Write();
+    smeared_rnd_NP_PDFsysdown->Write();
+    smeared_rnd_NP_PDFsysdown_test->Write();
+    response_NP_PDFsysdown_th2->Write();  
+  }
+  
+  //NP syst toy mc
+  if(doNPsys){
+    //up
+    theory_NPsysup->Write();
+    theory_NPsysup_rebin->Write();
+    spline3_NPsysup->Write();
     
+    theory_NPsysup_ratio->Write();//QA
 
+    theory_rnd_NPsysup->Write();
+    smeared_rnd_NPsysup->Write();
+    smeared_rnd_NPsysup_test->Write();
+    response_NPsysup_th2->Write();  
 
-  ////TOY MC NP+NLO SPECTRA, SMEARED+TRUE   
-  theory_rnd_NP->Write();
-  theory_NP_ratio_rnd_NP->Write();
-  
-  smeared_rnd_NP->Write(); 
-  smeared_rnd_NP_test->Write(); 
+    theory_rnd_NPsysup_origthyratio->Write();
+    theory_rnd_NPsysup_NPsysupratio->Write();
+    
+    //down
+    theory_NPsysdown->Write();
+    theory_NPsysdown_rebin->Write();
+    spline3_NPsysdown->Write();
 
-  NP_true_smeared_rat->Write();  //ratio
-  NP_true_smeared_test_rat->Write();  //ratio
-  plot_NP_true_smeared_rat->Write();
-  
-  response_NP_th2->Write();
-  plot_response_NP_th2->Write();    
+    theory_NPsysdown_ratio->Write(); //QA
 
+    theory_rnd_NPsysdown->Write();
+    smeared_rnd_NPsysdown->Write();
+    smeared_rnd_NPsysdown_test->Write();
+    response_NPsysdown_th2->Write();
 
-  // toy spectra comparison w/ orig calculation
-  plot_true_rnd_rat->Write();
-  
+    theory_rnd_NPsysdown_origthyratio->Write();
+    theory_rnd_NPsysdown_NPsysdownratio->Write();
+
+    //up+down QA
+    theory_NPsysup_ratio_NPsysdown->Write();
+    hNP_sysup_ratio_sysdown->Write();
+    theory_rnd_NPsysup_ratio_rnd_NPsysdown->Write();
+  }
+
   
   outf->Write();
   std::cout<<"output file "<<outf->GetName()<< " written!"<<std::endl;

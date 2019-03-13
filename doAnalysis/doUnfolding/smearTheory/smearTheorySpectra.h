@@ -47,7 +47,11 @@ TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
 		       ).c_str()
 		      );
   xsec_wNP->Sumw2(true);
-  int nbinsx=xsec->GetNbinsX();
+  
+  if(funcDebug)std::cout<<"NP Fit Obj Name is: " << fNP->GetName()<<std::endl;
+  if(funcDebug)std::cout<<"xsec Name is: " << xsec->GetName()<<std::endl;
+  if(funcDebug)std::cout<<"xsec_wNP Name is: " << xsec_wNP->GetName()<<std::endl;
+  int nbinsx=xsec->GetNbinsX();  
   for(int i=1; i<=nbinsx; ++i){
     Double_t bincent = xsec->GetBinCenter(i);
     Double_t NPval=fNP->Eval(bincent);    
@@ -201,6 +205,7 @@ const double absetabins[]={
   //  3.2,
   //  4.7
 };
+const int n_absetabins=sizeof(absetabins)/sizeof(double)-1;
 const std::string absetabins_str[]={
   "0.0",
   "0.5",
@@ -212,7 +217,36 @@ const std::string absetabins_str[]={
   //  "3.2",
   //  "4.7"
 };
-const int n_absetabins=sizeof(absetabins)/sizeof(double)-1;
+const std::string absetabins_tags[]={
+  "00eta05",
+  "05eta10",
+  "10eta15",
+  "15eta20",
+  "20eta25",
+  "25eta30",
+};
+
+
+
+//from 8TeV/2.76 TeV Incl Jets. analysis, AN-14-160, table 5
+//one scale factor per |y| bin. #'s only available up to |y| < 3.0
+const double JERscaleFacts[]={
+  1.079,
+  1.099,
+  1.121,
+  1.208,
+  1.254,
+  1.395  
+};
+const double JERscaleFactErrs[]={
+  0.026,
+  0.028,
+  0.029,
+  0.046,
+  0.062,
+  0.063
+};
+
 
 ////////// NPs from Paolo 4/9/2015
 // THESE ARE LIKELY FOR R>0.4
@@ -493,7 +527,10 @@ void makeToySpectra(TH1D* hthy,
 		    TF1* fJER, 
 		    int nevts, 
 		    TH1D* hthy_toyMC, TH1D* hsmeared_toyMC, TH1D* hsmeared_toyMC_test, 
-		    TH2D* resp , TF1* spline3ext=NULL){
+		    TH2D* resp , TF1* spline3ext=NULL
+		    //		    int etabin=-1, int JERsysdir=0
+		    ){
+  
   bool funcDebug=false;
   int tenth_nEvents=nevts/10;
   TSpline3* spl3weights=NULL;
@@ -541,15 +578,23 @@ void makeToySpectra(TH1D* hthy,
     if(spline3_ext_ptmin<0. || spline3_ext_ptmax<0.)assert(false);
   }
   
+  //bool doJERscalefact=(etabin>=0), doJERsys=(JERsysdir!=0);
+  //double JERscaleFactor=1.;
+  //if(doJERscalefact){    
+  //  JERscaleFactor=JERscaleFacts[etabin];    
+  //  if(doJERsys){
+  //    if(abs(JERsysdir)!=1){std::cout<<"err, JERsysdir = -1, 0, or 1 only."<<std::endl; assert(false);}
+  //    JERscaleFactor+=JERsysdir*JERscaleFactErrs[etabin];      }  }
+  
+  
   for(int i=0;i<nevts;++i){      
-    
-    
 
     if(i%tenth_nEvents==0)
       std::cout<<"throwing random #'s for event # "<<i<<std::endl;
     
     double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
     double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+    //sigma*=JERscaleFactor;
     double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
     
     double pt_w =0.;//     =  hthy_spline->Eval(ptTrue);
@@ -591,6 +636,7 @@ void makeToySpectra(TH1D* hthy,
     
     double    ptTrue_test = rnd_test->Uniform(ptmin_thy,ptmax_thy);
     double     sigma_test = fJER->Eval(ptTrue_test);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
+    //sigma_test*=JERscaleFactor;
     double ptSmeared_test =  rnd_test->Gaus(ptTrue_test,ptTrue_test*sigma_test);
     
     double      pt_w_test =  0.;//hthy_spline->Eval(ptTrue_test);
@@ -899,7 +945,21 @@ void make7TeVFits(TH1D* hthy=NULL,
 }
 
 
-
+TH1D* makePDFsys(TH1D* thy, TH1D* thyerrs, std::string updown_str="sysup"){
+  TH1D* thy_PDFsys=(TH1D*)thy->Clone("thy_PDFsyshist_tempname");
+  int nbinsx=thy->GetNbinsX();
+  int nbinsx_err=thyerrs->GetNbinsX();
+  if(nbinsx!=nbinsx_err){
+    std::cout<<"error, # of bins mismatched between thy and thyerrs hist. exit."<<std::endl;    assert(false);  }
+  
+  if(updown_str=="sysup" || updown_str=="sysdown"){
+    for(int i=1; i<=nbinsx;i++)
+      thy_PDFsys->SetBinContent(i, thy->GetBinContent(i)+thyerrs->GetBinContent(i));
+  }
+  else { 
+    std::cout<<"error, updown_str not recognized. exit." <<std::endl; assert(false);}
+  return (TH1D*)thy_PDFsys;
+}
 
 
 

@@ -8,8 +8,8 @@ const int xsecorder=1;//0--> LO, 1--> NLO, 2--> NNLO... etc.
 const bool printBaseDebug=true;
 
 //const int nEvents=1e+09;  ///10x typical
-//const int nEvents=1e+08;  ///typical
-const int nEvents=5e+07;  /// debug nevents
+const int nEvents=1e+08;  ///typical
+//const int nEvents=5e+07;  /// debug nevents
 //const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents

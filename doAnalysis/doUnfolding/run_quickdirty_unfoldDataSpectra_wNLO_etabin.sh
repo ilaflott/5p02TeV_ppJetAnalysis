@@ -59,11 +59,11 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 #scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_semifinal_v2_w8TeVJERscales_NPsys_NLOMC_wNP_00eta05.*"
 
 ##JER sys
-./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigma_JERsys" "smearTheory/NNPDF_ptLo28_drCut_geny_sigma_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigma_spl3wgts_gaussSmear_"  1 "JER"
-scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_sigma_JERsys_NLOMC_wNP_00eta05.*"
+#./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigma_JERsys" "smearTheory/NNPDF_ptLo28_drCut_geny_sigma_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigma_spl3wgts_gaussSmear_"  1 "JER"
+#scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_sigma_JERsys_NLOMC_wNP_00eta05.*"
 
-#./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigmu_JERsys" "smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigmu_spl3wgts_gaussSmear_"  1 "JER"
-#scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_sigmu_JERsys_NLOMC_wNP_00eta05.*"
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigmu_JERsys" "smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigmu_spl3wgts_gaussSmear_"  1 "JER"
+scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_sigmu_JERsys_NLOMC_wNP_00eta05.*"
 
 #./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_CT14_NLO_semifinal_v2_w8TeVJERscales_JERsys" "smearTheory/CT14_02.18.19_semifinal_v2_w8TeVJERscales_spl3wgts_gaussSmear_NLO_plots/" "CT14_02.18.19_semifinal_v2_w8TeVJERscales_spl3wgts_gaussSmear_"  1 "JER"
 #scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_CT14_NLO_semifinal_v2_w8TeVJERscales_JERsys_NLOMC_wNP_00eta05.*"

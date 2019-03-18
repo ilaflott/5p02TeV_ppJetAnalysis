@@ -53,13 +53,16 @@ then
     
     OUTDIR=${NLOfileshortstr}_${descstr}_${Fittypestr}_gaussSmear_NLO_plots/
     OUTFILE=${NLOfileshortstr}_${descstr}_${Fittypestr}_gaussSmear_${etabinstr}.root     
-    JERFILE=${JERfilestr}${etabinstr}_semifinal.root
-    
+    JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
+    JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf
+    #JERFILE=${JERfilestr}${etabinstr}_semifinal.root
+    #JERPDFFILE=${JERfilestr}${etabinstr}_semifinal.pdf
     
     echo ""
     echo "OUTDIR =${OUTDIR}"
     echo "OUTFILE=${OUTFILE}"
     echo "JERFILE=${JERFILE}"
+    echo "JERPDFFILE=${JERPDFFILE}"
     echo ""    
     
     #return     #DEBUG
@@ -76,9 +79,7 @@ then
     echo "DONE NLO smearing."
     echo ""
 
-    return    #DEBUG
-    
-    if [[ -d "${OUTDIR}" ]]
+        if [[ -d "${OUTDIR}" ]]
     then
 	echo "$OUTDIR exists!"
     else 
@@ -90,6 +91,9 @@ then
     echo ""
     
     cp $OUTFILE $OUTDIR/.
+    cp $JERFILE $OUTDIR/.
+    cp $JERPDFFILE $OUTDIR/.
+    #return    #DEBUG
     
     echo ""
     echo "writing plots in $OUTFILE to $OUTDIR"

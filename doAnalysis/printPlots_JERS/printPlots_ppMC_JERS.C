@@ -10,7 +10,7 @@ const int rebinFactor=1;//5
 const int fit_ptlo_bin=1, fit_pthi_bin=nbins_pt_debug-5;
 //const int N_JERfits=nbins_pt_debug-fit_ptlo_bin;
 const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;
-const double fgaus_xlo=0.89, fgaus_xhi=1.11;
+const double fgaus_xlo=0.80, fgaus_xhi=1.11;
 const double defbinsize=0.01;
 
 //other options

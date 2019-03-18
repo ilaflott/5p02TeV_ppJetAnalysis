@@ -154,6 +154,39 @@ std::string absetabins_str[]={
 const int nbins_abseta = 8; //sizeof(absetabins)/sizeof(Double_t)-1;
 
 
+const double fgaus_width_arr[]={
+  0.25,// gen pt low edge =43., //garbage bins
+  0.25,// gen pt low edge =49., //typical gen pt cut
+  0.25,// gen pt low edge =56., //typical recopt cut
+  0.25,// gen pt low edge =64.,
+  0.25,// gen pt low edge =74.,
+  0.25,// gen pt low edge =84.,
+  0.20,// gen pt low edge =97.,
+  0.20,// gen pt low edge =114.,
+  0.20,// gen pt low edge =133.,
+  0.15,// gen pt low edge =153.,
+  0.15,// gen pt low edge =174.,
+  0.15,// gen pt low edge =196.,
+  0.15,// gen pt low edge =220.,
+  0.15,// gen pt low edge =245.,
+  0.15,// gen pt low edge =272.,
+  0.15,// gen pt low edge =300.,
+  0.15,// gen pt low edge =330.,
+  0.15,// gen pt low edge =362.,
+  0.13,// gen pt low edge =395.,
+  0.13,// gen pt low edge =430.,
+  0.13,// gen pt low edge =468.,
+  0.12,// gen pt low edge =507.,
+  0.12,// gen pt low edge =548.,
+  0.12,// gen pt low edge =592.,
+  0.10,// gen pt low edge =638.,
+  0.10,// gen pt low edge =686.,
+  0.10,// gen pt low edge =737.,
+  0.10,// gen pt low edge =790.,
+  0.10,// gen pt low edge =846.,
+  0.10// gen pt low edge =905.,
+  
+};
 
 
 

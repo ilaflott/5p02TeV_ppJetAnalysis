@@ -10,7 +10,7 @@
 #include "TH2.h"
 #include "TCanvas.h"
 
-const bool DO_PNG=false, DO_PDF=true, DO_EPS=false, DO_C=false;
+const bool DO_PNG=true, DO_PDF=false, DO_EPS=false, DO_C=false;
 const bool debugMode=true;
 
 void safe_getNdraw(TFile* f=NULL, std::string dirname="", int etabin=0){  

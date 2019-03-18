@@ -169,10 +169,16 @@ void MakeHist( TH1F* ,
 	       float, float);
 
 
-void MakeHistMean(TH1F * , // mean 
+//void MakeHistMean(TH1F * , // mean 
+//		 float , float);// max, min 
+void MakeHistMu(TH1F * , // mean 
 		 float , float);// max, min 
-void MakeHistRMS(TH1F *  , // hRMS 
-		 float , float);// max, min 
+//void MakeHistRMS(TH1F *  , // hRMS 
+//		 float , float);// max, min 
+void MakeHistSigma(TH1F *  , // hRMS 
+		   float , float);// max, min 
+void MakeHistSigmaMu(TH1F *  , // hRMS 
+		     float , float);// max, min 
 void MakeHistChi2NDF(TH1F *  , // hRMS 
 		  float , float);// max, min 
 
@@ -328,7 +334,7 @@ void MakeHist(TH1F* h1, float xmin, float xmax){
 
 
 
-void MakeHistMean(TH1F * h1, float xmin, float xmax){
+void MakeHistMu(TH1F * h1, float xmin, float xmax){
   MakeHist((TH1F*)h1,xmin,xmax);
   //h1->SetTitle("mean, resolution, chi-square, v gen p_{T}");
   h1->SetTitle("");
@@ -338,12 +344,21 @@ void MakeHistMean(TH1F * h1, float xmin, float xmax){
   return;
 }
 
-void MakeHistRMS(TH1F * h1,float xmin,float xmax){
+void MakeHistSigma(TH1F * h1,float xmin,float xmax){
+  MakeHist((TH1F*)h1,xmin,xmax);
+  h1->SetTitle("");
+  h1->GetYaxis()->SetTitle("#sigma");
+  h1->GetYaxis()->SetDecimals(true);
+  h1->SetAxisRange(0.04,0.13, "Y");    
+
+  return;
+}
+void MakeHistSigmaMu(TH1F * h1,float xmin,float xmax){
   MakeHist((TH1F*)h1,xmin,xmax);
   h1->SetTitle("");
   h1->GetYaxis()->SetTitle("#sigma / #mu");
   h1->GetYaxis()->SetDecimals(true);
-  h1->SetAxisRange(0.03,0.15, "Y");    
+  h1->SetAxisRange(0.04,0.13, "Y");    
 
   return;
 }

@@ -338,7 +338,11 @@ void makeJERSHists(TCanvas* pdfOutCanv, //std::string thePDFFileName,
   hrsp->SetMarkerStyle(8);    
   hrsp->SetMarkerSize(1.0);    
   
+  hrsp->SetAxisRange(0.5, 1.5, "X");
   hrsp->GetXaxis()->SetTitle( hrsp_XAxTitle.c_str() );    
+  
+  hrsp->SetAxisRange(0.00001, hrsp->GetMaximum()*2., "Y");
+  //hrsp->SetAxisRange(0.0, hrsp->GetMaximum()*1.1, "Y");
   hrsp->GetYaxis()->SetTitle("A.U.");    
   
   hrsp->Draw("E1");    

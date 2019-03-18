@@ -16,24 +16,8 @@ RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovariance;
 
 //-----------------------------
 
-const bool doSystUnf=true;
-const std::string systUnfType="NP";
-
-//const std::string systUnfType="JER";
-//const std::string systUnfType="PDF";
-
-//const bool doJERsystUnf=true;
-//const bool JERsysup=false&&doJERsystUnf, JERsysdown=!JERsysup&&doJERsystUnf;
-//const bool drawJERsyst=true&&doJERsystUnf;
-//---------------------------
-//const bool doNPsysUnf=false;
-//---------------------------
-//const bool doPDFsysUnf=false;
-//const bool drawPDFsyst=true;
-//const bool drawNPsyst=true;//applyNPCorrs
 //const bool drawLumisyst=true;
-//const bool drawUnfsyst=true;
-//const bool applyNPCorrs=true; 
+
 
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kNoError;
@@ -44,6 +28,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 				       const int etabinint=0,const int kIterInput=5,
 					std::string inFile_MC_dir  = "smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/", 
 					std::string inFile_MC_name ="NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
+					const bool doSystUnf=false,
+					std::string systUnfType="",
 					const bool applyNPCorrs=true,
 					const bool doJetID=true     , 
 					const bool useSimpBins=false){//, 
@@ -806,8 +792,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D* hunf_one=(TH1D*)hunf->Clone("ppData_unf_one_forSys");
   hunf_one->Divide(hunf);
   for(int i=1; i<=hunf_one->GetNbinsX();i++)hunf_one->SetBinError(i, hunf_one->GetBinError(i)/(sqrt(2)));
-
-
+  int kIter_sys=kIterInput;//+10;
+  
   if(doSystUnf){
     
     //if(systUnfType=="NP" && applyNPCorrs){
@@ -816,13 +802,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       RooUnfoldResponse roo_resp_sysup( hrec_sameside_resp_sysup_rebin, hgen_resp_sysup_rebin, hmat_sysup_rebin, ("Response_matrix_"+systUnfType+"sysup"+RandEtaRange).c_str()) ;
       roo_resp_sysup.UseOverflow(doOverUnderflows);    
       
-      std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIterInput="<<kIterInput<<std::endl;  
-      RooUnfoldBayes unf_bayes_sysup( &roo_resp_sysup, hrec_rebin, kIterInput );
+      std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIter_sys="<<kIterInput<<std::endl;  
+      RooUnfoldBayes unf_bayes_sysup( &roo_resp_sysup, hrec_rebin, kIter_sys );
       unf_bayes_sysup.SetVerbose(verbosity);
       
       hunf_sysup = (TH1D*)unf_bayes_sysup.Hreco(errorTreatment);     std::cout<<std::endl; 
       hunf_sysup->SetName(("ppData_BayesUnf_"+systUnfType+"sysup_Spectra").c_str());
-      hunf_sysup->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Up, kIter="+std::to_string(kIterInput)).c_str());
+      hunf_sysup->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Up, kIter="+std::to_string(kIter_sys)).c_str());
       
       hunf_sysup_ratio=(TH1D*)      hunf_sysup->Clone(("ppData_BayesUnf_"+systUnfType+"sysup_Ratio").c_str());
       hunf_sysup_ratio->Divide(hunf);
@@ -845,13 +831,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       RooUnfoldResponse roo_resp_sysdown( hrec_sameside_resp_sysdown_rebin, hgen_resp_sysdown_rebin, hmat_sysdown_rebin, ("Response_matrix_"+systUnfType+"sysdown"+RandEtaRange).c_str()) ;
       roo_resp_sysdown.UseOverflow(doOverUnderflows);    
       
-      std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIterInput="<<kIterInput<<std::endl;  
-      RooUnfoldBayes unf_bayes_sysdown( &roo_resp_sysdown, hrec_rebin, kIterInput );
+      std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIter_sys="<<kIter_sys<<std::endl;  
+      RooUnfoldBayes unf_bayes_sysdown( &roo_resp_sysdown, hrec_rebin, kIter_sys );
       unf_bayes_sysdown.SetVerbose(verbosity);
       
       hunf_sysdown = (TH1D*)unf_bayes_sysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
       hunf_sysdown->SetName(("ppData_BayesUnf_"+systUnfType+"sysdown_Spectra").c_str());
-      hunf_sysdown->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Down, kIter="+std::to_string(kIterInput)).c_str());      
+      hunf_sysdown->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Down, kIter="+std::to_string(kIter_sys)).c_str());      
 
       hunf_sysdown_ratio=(TH1D*)      hunf_sysdown->Clone(("ppData_BayesUnf_"+systUnfType+"sysdown_Ratio").c_str());
       hunf_sysdown_ratio->Divide(hunf);
@@ -981,7 +967,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     if(debugMode)std::cout<<"unfolding across diff kIter values"<<std::endl;
     if(debugMode)std::cout<<kIter_start<<" <= kIter <= "<<kIter_end<<std::endl;
     for(int ki=0; ki<nKiterMax;ki++){
-      int current_kIter=kIter_start+ki;
+      //int current_kIter=kIter_start+ki;
+      int current_kIter=1;
       std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;      
       RooUnfoldBayes unf_bayes_kIterQA(&roo_resp, hrec_rebin, current_kIter);        
       if(setDataCovMat) unf_bayes_kIterQA.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );
@@ -2280,8 +2267,20 @@ int main(int argc, char* argv[]){
   //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
   //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
   //}
-  if (argc==5){
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
+  if (argc==7){
+    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
+    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
+					       (std::string)argv[1] ,
+					       (std::string)argv[2] , 
+					       0, 
+					       1, 
+					       (std::string)argv[3], 
+					       (std::string)argv[4], 
+					       (bool)((int)std::atoi(argv[5])),
+					       (std::string)argv[6]  );    
+  
+  
+
     //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
     //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
     //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    

@@ -3,10 +3,10 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true;
-const bool fillJERSHists=false;
-const bool fillMCUnfoldingHists=true;
+const bool fillJERSHists=true;
+const bool fillMCUnfoldingHists=false;
 const bool fillMCUnfJetSpectraRapHists=true&&fillMCUnfoldingHists;
-const bool fillMCEffHists=false;
+const bool fillMCEffHists=true;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 
 const int jetIDint=(int)fillMCJetIDHists;
@@ -631,7 +631,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       else if ( !(genpt < genJetPtCut_Hi) ) continue;   //high genpt cut
       else if ( absreceta < jtEtaCutLo ) continue; // lower abseta cut 
       else if (!(absreceta < jtEtaCutHi))continue; // higher abseta cut
-      else if ( gendrjt > 0.1 ) continue;       //delta-r cut, proxy for gen-reco matching quality
+      //else if ( gendrjt > 0.1 ) continue;       //delta-r cut, proxy for gen-reco matching quality
       
 //	if(      !(recpt > jtPtCut_unf_lo)     )continue;
 //	else if( !(recpt < jtPtCut_unf_hi)     )continue;

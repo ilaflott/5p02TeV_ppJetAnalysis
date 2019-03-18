@@ -201,6 +201,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       
       hgen_sysup_rebin = (TH1D*)hgen_sysup->Clone( ((std::string)hgen_sysup->GetName()+"_clone").c_str() );
       hgen_sysup_rebin = (TH1D*)hgen_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+
       
       hgen_sysdown=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysdown").c_str() );  
       hgen_sysdown->Scale(1./NLOMCscaling);//05/09/18
@@ -209,6 +210,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       
       hgen_sysdown_rebin = (TH1D*)hgen_sysdown->Clone( ((std::string)hgen_sysdown->GetName()+"_clone").c_str() );
       hgen_sysdown_rebin = (TH1D*)hgen_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+
     }
     if(systUnfType=="JER" && applyNPCorrs){//currently to do JER this has to pull the NP corrected hist; FIX ME/TO DO
       hgen_sysup=(TH1D*)fpp_MC->Get( ("theory_rnd_NP_"+systUnfType+"sysup").c_str() );
@@ -218,7 +220,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       
       hgen_sysup_rebin = (TH1D*)hgen_sysup->Clone( ((std::string)hgen_sysup->GetName()+"_clone").c_str() );
       hgen_sysup_rebin = (TH1D*)hgen_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
-      
+
       hgen_sysdown=(TH1D*)fpp_MC->Get( ("theory_rnd_NP_"+systUnfType+"sysdown").c_str() );  
       hgen_sysdown->Scale(1./NLOMCscaling);//05/09/18
       hgen_sysdown->Scale(etaBinWidth);
@@ -228,9 +230,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hgen_sysdown_rebin = (TH1D*)hgen_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
     }
 
+    if(clearOverUnderflows) TH1clearOverUnderflows((TH1*)hgen_sysup_rebin);     
     hgen_sysup_rebin->SetMarkerSize(0.);
     hgen_sysup_rebin->SetLineColor(hgen_rebin->GetLineColor()+2);    
 
+    if(clearOverUnderflows) TH1clearOverUnderflows((TH1*)hgen_sysdown_rebin);
     hgen_sysdown_rebin->SetMarkerSize(0.);
     hgen_sysdown_rebin->SetLineColor(hgen_rebin->GetLineColor()+2);
   }
@@ -347,6 +351,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 					  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 					  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  ); 
       setRespMatrixErrs( (TH2D*)hmat_sysdown_rebin, (TH2D*) hmat_sysdown_errors , (bool)zeroBins);         }
+
+    if(clearOverUnderflows) TH2clearOverUnderflows((TH2D*)hmat_sysup_rebin);
+    if(clearOverUnderflows) TH2clearOverUnderflows((TH2D*)hmat_sysdown_rebin);
   }
   
   
@@ -425,10 +432,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown->Clone( ((std::string)hrec_sameside_sysdown->GetName()+"_clone").c_str() );
       hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
     }
-    
+
+    if(clearOverUnderflows) TH1clearOverUnderflows((TH1*)hrec_sameside_sysup_rebin);
     hrec_sameside_sysup_rebin->SetLineColor(hrec_sameside_rebin->GetLineColor()-2);     
     hrec_sameside_sysup_rebin->SetMarkerSize(0.);     
-    
+
+    if(clearOverUnderflows) TH1clearOverUnderflows((TH1*)hrec_sameside_sysdown_rebin);
     hrec_sameside_sysdown_rebin->SetLineColor(hrec_sameside_rebin->GetLineColor()-2);     
     hrec_sameside_sysdown_rebin->SetMarkerSize(0.);     
   }
@@ -485,21 +494,20 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D* hrec_sameside_resp_sysup_rebin=NULL, *hrec_sameside_resp_sysdown_rebin=NULL;
   if(fillRespHists && doSystUnf) {        
     hrec_sameside_resp_sysup_rebin = (TH1D*)hrec_sameside_sysup_rebin->Clone( ((std::string)hrec_sameside_sysup_rebin->GetName()+"_resp").c_str() );      
-    hgen_resp_sysup_rebin = (TH1D*)hgen_sysup_rebin->Clone( ((std::string)hgen_sysup_rebin->GetName()+"_resp").c_str() );                
+    //hrec_sameside_resp_sysup_rebin->SetMarkerSize(0.);
+    //hrec_sameside_resp_sysup_rebin->SetLineColor(hrec_sameside_resp_rebin->GetLineColor()-2);
 
-    hrec_sameside_resp_sysup_rebin->SetMarkerSize(0.);
-    hrec_sameside_resp_sysup_rebin->SetLineColor(hrec_sameside_resp_rebin->GetLineColor()-2);
-    hgen_resp_sysup_rebin->SetMarkerSize(0.);
-    hgen_resp_sysup_rebin->SetLineColor(hgen_resp_rebin->GetLineColor()+2);
-    
+    hgen_resp_sysup_rebin = (TH1D*)hgen_sysup_rebin->Clone( ((std::string)hgen_sysup_rebin->GetName()+"_resp").c_str() );                
+    //hgen_resp_sysup_rebin->SetMarkerSize(0.);
+    //hgen_resp_sysup_rebin->SetLineColor(hgen_resp_rebin->GetLineColor()+2);
     
     hrec_sameside_resp_sysdown_rebin = (TH1D*)hrec_sameside_sysdown_rebin->Clone( ((std::string)hrec_sameside_sysdown_rebin->GetName()+"_resp").c_str() );      
+    //hrec_sameside_resp_sysdown_rebin->SetMarkerSize(0.);
+    //hrec_sameside_resp_sysdown_rebin->SetLineColor(hrec_sameside_resp_rebin->GetLineColor()-2);
+    
     hgen_resp_sysdown_rebin = (TH1D*)hgen_sysdown_rebin->Clone( ((std::string)hgen_sysdown_rebin->GetName()+"_resp").c_str() );       
-
-    hrec_sameside_resp_sysdown_rebin->SetMarkerSize(0.);
-    hrec_sameside_resp_sysdown_rebin->SetLineColor(hrec_sameside_resp_rebin->GetLineColor()-2);
-    hgen_resp_sysdown_rebin->SetMarkerSize(0.);
-    hgen_resp_sysdown_rebin->SetLineColor(hgen_resp_rebin->GetLineColor()+2);
+    //hgen_resp_sysdown_rebin->SetMarkerSize(0.);
+    //hgen_resp_sysdown_rebin->SetLineColor(hgen_resp_rebin->GetLineColor()+2);
   }
   
   
@@ -792,8 +800,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D* hunf_one=(TH1D*)hunf->Clone("ppData_unf_one_forSys");
   hunf_one->Divide(hunf);
   for(int i=1; i<=hunf_one->GetNbinsX();i++)hunf_one->SetBinError(i, hunf_one->GetBinError(i)/(sqrt(2)));
-  int kIter_sys=kIterInput;//+10;
-  
+  int kIter_sysup=kIterInput;//kIterInput;//+10;
+  int kIter_sysdown=kIterInput;
+
   if(doSystUnf){
     
     //if(systUnfType=="NP" && applyNPCorrs){
@@ -802,13 +811,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       RooUnfoldResponse roo_resp_sysup( hrec_sameside_resp_sysup_rebin, hgen_resp_sysup_rebin, hmat_sysup_rebin, ("Response_matrix_"+systUnfType+"sysup"+RandEtaRange).c_str()) ;
       roo_resp_sysup.UseOverflow(doOverUnderflows);    
       
-      std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIter_sys="<<kIterInput<<std::endl;  
-      RooUnfoldBayes unf_bayes_sysup( &roo_resp_sysup, hrec_rebin, kIter_sys );
+      std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIter_sysup="<<kIter_sysup<<std::endl;  
+      RooUnfoldBayes unf_bayes_sysup( &roo_resp_sysup, hrec_rebin, kIter_sysup );
       unf_bayes_sysup.SetVerbose(verbosity);
       
       hunf_sysup = (TH1D*)unf_bayes_sysup.Hreco(errorTreatment);     std::cout<<std::endl; 
       hunf_sysup->SetName(("ppData_BayesUnf_"+systUnfType+"sysup_Spectra").c_str());
-      hunf_sysup->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Up, kIter="+std::to_string(kIter_sys)).c_str());
+      hunf_sysup->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Up, kIter="+std::to_string(kIter_sysup)).c_str());
       
       hunf_sysup_ratio=(TH1D*)      hunf_sysup->Clone(("ppData_BayesUnf_"+systUnfType+"sysup_Ratio").c_str());
       hunf_sysup_ratio->Divide(hunf);
@@ -831,13 +840,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       RooUnfoldResponse roo_resp_sysdown( hrec_sameside_resp_sysdown_rebin, hgen_resp_sysdown_rebin, hmat_sysdown_rebin, ("Response_matrix_"+systUnfType+"sysdown"+RandEtaRange).c_str()) ;
       roo_resp_sysdown.UseOverflow(doOverUnderflows);    
       
-      std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIter_sys="<<kIter_sys<<std::endl;  
-      RooUnfoldBayes unf_bayes_sysdown( &roo_resp_sysdown, hrec_rebin, kIter_sys );
+      std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIter_sysdown="<<kIter_sysdown<<std::endl;  
+      RooUnfoldBayes unf_bayes_sysdown( &roo_resp_sysdown, hrec_rebin, kIter_sysdown );
       unf_bayes_sysdown.SetVerbose(verbosity);
       
       hunf_sysdown = (TH1D*)unf_bayes_sysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
       hunf_sysdown->SetName(("ppData_BayesUnf_"+systUnfType+"sysdown_Spectra").c_str());
-      hunf_sysdown->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Down, kIter="+std::to_string(kIter_sys)).c_str());      
+      hunf_sysdown->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Down, kIter="+std::to_string(kIter_sysdown)).c_str());      
 
       hunf_sysdown_ratio=(TH1D*)      hunf_sysdown->Clone(("ppData_BayesUnf_"+systUnfType+"sysdown_Ratio").c_str());
       hunf_sysdown_ratio->Divide(hunf);
@@ -959,16 +968,16 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH2D* hcovmatabsval_bayes[nKiterMax]={};
   TH2D* hpearson_bayes[nKiterMax]={};
   
-  int kIter_start=kIterInput-kIterRange;
-  int kIter_end=kIterInput+kIterRange;
+  int kIter_start=1;//kIterInput-kIterRange;
+  int kIter_end=kIter_start+8;//kIterInput+kIterRange;
   TH1D *hchi2iter=NULL;
   
   if(dokIterQA){
     if(debugMode)std::cout<<"unfolding across diff kIter values"<<std::endl;
     if(debugMode)std::cout<<kIter_start<<" <= kIter <= "<<kIter_end<<std::endl;
     for(int ki=0; ki<nKiterMax;ki++){
-      //int current_kIter=kIter_start+ki;
-      int current_kIter=1;
+      int current_kIter=kIter_start+ki;
+      //int current_kIter=1;
       std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;      
       RooUnfoldBayes unf_bayes_kIterQA(&roo_resp, hrec_rebin, current_kIter);        
       if(setDataCovMat) unf_bayes_kIterQA.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );
@@ -988,8 +997,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hunf_bayes[ki]->SetLineColor(kRed);
       hunf_bayes[ki]->SetMarkerSize(1.02);     
       
-      if(ki==(nKiterMax-1))
-	hchi2iter=unf_bayes_kIterQA.getChi2iter();
+      
+      hchi2iter=unf_bayes_kIterQA.getChi2iter();
       
       if(debugMode)hunf_bayes[ki]->Print("base");
       
@@ -1668,7 +1677,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       if(!useSimpBins)canvForPrint->SetLogx(1);
       canvForPrint->SetLogy(0);
       
-      setupRatioHist(hunf_one, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      setupRatioHist(hunf_one, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);     
       //setupSystPercErrsHist(h_genratio_JERsysterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
       //setupSystPercErrsHist(h_genratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
       //setupSystPercErrsHist(h_recratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
@@ -1678,6 +1687,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       //h_genratio_JERsysterr->DrawClone("][ P E2");
       //h_genratio_staterr   ->DrawClone("][ P E SAME");    
       hunf_one->GetYaxis()->SetTitle("Rel. Error");// w.r.t Unf. Data");
+      hunf_one->SetAxisRange(0.7,1.3,"Y");
 
       hunf_one->Draw("P E");
       hunf_sysup_ratio->Draw("HIST SAME ][");
@@ -2273,7 +2283,7 @@ int main(int argc, char* argv[]){
 					       (std::string)argv[1] ,
 					       (std::string)argv[2] , 
 					       0, 
-					       1, 
+					       4, 
 					       (std::string)argv[3], 
 					       (std::string)argv[4], 
 					       (bool)((int)std::atoi(argv[5])),

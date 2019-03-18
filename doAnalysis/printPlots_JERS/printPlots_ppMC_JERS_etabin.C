@@ -16,7 +16,7 @@ const bool useconstxrange=false;
 const double fgaus_xlo=0.80, fgaus_xhi=1.+(1.-fgaus_xlo);//test
 const double defbinsize=0.01;//dont touch
 //resolution v genpt fit options
-const bool fitsigma=false, fitsigmu=!fitsigma;//fit either sigma, or sigma/mu
+const bool fitsigma=true, fitsigmu=!fitsigma;//fit either sigma, or sigma/mu
 const double errfact=1.0;// test
 const int fit_ptlo_bin=5, fit_pthi_bin=nbins_pt_debug-6;//test
 const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;//dont touch

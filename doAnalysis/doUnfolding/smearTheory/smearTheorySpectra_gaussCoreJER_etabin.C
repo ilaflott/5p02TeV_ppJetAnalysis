@@ -20,19 +20,19 @@ const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/s
 //// LO NPs
 //const std::string NPCorrFits_str="NPC_HerwigEE4C_R4"; //reasonable par errs
 //const std::string NPCorrFits_text="HerwigEE4C R4";  
-//const std::string NPCorrFits_str="NPC_HerwigEE5C_R4";//reasonable par errs
-//const std::string NPCorrFits_text="HerwigEE5C R4";  
+const std::string NPCorrFits_str="NPC_HerwigEE5C_R4";//reasonable par errs
+const std::string NPCorrFits_text="HerwigEE5C R4";  
 //const std::string NPCorrFits_str="NPC_PYTHIA8_R4";//reasonable par errs
 //const std::string NPCorrFits_text="PY8 R4";  
 //// NLO NPs
-const std::string NPCorrFits_str="NPC_POWPY8_R4";//really bad par errs
-const std::string NPCorrFits_text="POW+PY8 R4";  
+//const std::string NPCorrFits_str="NPC_POWPY8_R4";//really bad par errs
+//const std::string NPCorrFits_text="POW+PY8 R4";  
 //const std::string NPCorrFits_str="NPC_POWPY8CTEQ_R4";//kind of bad par errs
 //const std::string NPCorrFits_text="POW+PY8 CTEQ R4";  
 
 const std::string in_JERFile_default="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta05.root";
 const bool useHistSigmaFit=false;
-const bool useJERscaleFactors=false;
+const bool useJERscaleFactors=true;
 
 const std::string in_NLOFile_default="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC";
 const bool setThyPDFErrors=true;

@@ -28,6 +28,7 @@
 #include <Minuit2/Minuit2Minimizer.h>
 #include <Math/Functor.h>
  //#include "RooUnfoldResponse.h"
+#include "smearTheorySpectra_strs.h"
 
  //TH1D *cross_section(TH1D *Spectra_);
 

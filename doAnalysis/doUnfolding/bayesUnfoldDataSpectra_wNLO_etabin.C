@@ -30,6 +30,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 					std::string inFile_MC_name ="NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
 					const bool doSystUnf=false,
 					std::string systUnfType="",
+					std::string systSubType="",
 					const bool applyNPCorrs=true,
 					const bool doJetID=true     , 
 					const bool useSimpBins=false){//, 
@@ -52,6 +53,16 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   
   // STRINGS -----------
+  std::string sysunfdir="";
+  if(doSystUnf){
+    if(systUnfType=="JER") sysunfdir="JERsysdir/";
+    else if(systUnfType=="NP")sysunfdir="NPsysdir/";
+    //else if(systUnfType=="NPupdown")sysunfdir="NPsysdir/";
+    else if(systUnfType=="PDF")sysunfdir="PDFsysdir/";
+    //else if(systUnfType=="PDFupdown")sysunfdir="PDFsysdir/";
+    else assert(false);
+  }
+  
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl; 
   inFile_Data_dir=SCRATCH_BASE+inFile_Data_dir;
   //inFile_MC_dir  =SCRATCH_BASE+inFile_MC_dir;
@@ -193,8 +204,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D* hgen_sysup=NULL, *hgen_sysdown=NULL;
   TH1D* hgen_sysup_rebin=NULL,  *hgen_sysdown_rebin=NULL;  
   if(doSystUnf){
+
     if(systUnfType=="NP" && applyNPCorrs){
-      hgen_sysup=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysup").c_str() );
+      //hgen_sysup=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysup").c_str() );
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+"theory_rnd_"+systUnfType+"sys1").c_str() , hgen_sysup);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"theory_rnd_"+systUnfType+"sysup").c_str() , hgen_sysup);    
+      else assert(false);
       hgen_sysup->Scale(1./NLOMCscaling);//05/09/18
       hgen_sysup->Scale(etaBinWidth);
       multiplyBinWidth(hgen_sysup);  
@@ -203,7 +218,35 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hgen_sysup_rebin = (TH1D*)hgen_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
 
       
-      hgen_sysdown=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysdown").c_str() );  
+      //hgen_sysdown=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysdown").c_str() );  
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+"theory_rnd_"+systUnfType+"sys2").c_str() , hgen_sysdown);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"theory_rnd_"+systUnfType+"sysdown").c_str() , hgen_sysdown);    
+      else assert(false);
+      hgen_sysdown->Scale(1./NLOMCscaling);//05/09/18
+      hgen_sysdown->Scale(etaBinWidth);
+      multiplyBinWidth(hgen_sysdown);  
+      
+      hgen_sysdown_rebin = (TH1D*)hgen_sysdown->Clone( ((std::string)hgen_sysdown->GetName()+"_clone").c_str() );
+      hgen_sysdown_rebin = (TH1D*)hgen_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+
+    }
+    if(systUnfType=="PDF" && applyNPCorrs){
+      //hgen_sysup=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysup").c_str() );
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+"theory_rnd_NP_"+systUnfType+"sys1").c_str() , hgen_sysup);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"theory_rnd_NP_"+systUnfType+"sysup").c_str() , hgen_sysup);    
+      else assert(false);
+      hgen_sysup->Scale(1./NLOMCscaling);//05/09/18
+      hgen_sysup->Scale(etaBinWidth);
+      multiplyBinWidth(hgen_sysup);  
+      
+      hgen_sysup_rebin = (TH1D*)hgen_sysup->Clone( ((std::string)hgen_sysup->GetName()+"_clone").c_str() );
+      hgen_sysup_rebin = (TH1D*)hgen_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+
+      
+      //hgen_sysdown=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysdown").c_str() );  
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+"theory_rnd_NP_"+systUnfType+"sys2").c_str() , hgen_sysdown);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"theory_rnd_NP_"+systUnfType+"sysdown").c_str() , hgen_sysdown);    
+      else assert(false);
       hgen_sysdown->Scale(1./NLOMCscaling);//05/09/18
       hgen_sysdown->Scale(etaBinWidth);
       multiplyBinWidth(hgen_sysdown);  
@@ -213,7 +256,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
     }
     if(systUnfType=="JER" && applyNPCorrs){//currently to do JER this has to pull the NP corrected hist; FIX ME/TO DO
-      hgen_sysup=(TH1D*)fpp_MC->Get( ("theory_rnd_NP_"+systUnfType+"sysup").c_str() );
+      
+      //hgen_sysup=(TH1D*)fpp_MC->Get( ("theory_rnd_NP_"+systUnfType+"sysup;1").c_str() );
+      fpp_MC->GetObject( (sysunfdir+"theory_rnd_NP_"+systUnfType+"sysup").c_str() , hgen_sysup);    
       hgen_sysup->Scale(1./NLOMCscaling);//05/09/18
       hgen_sysup->Scale(etaBinWidth);
       multiplyBinWidth(hgen_sysup);  
@@ -221,13 +266,15 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hgen_sysup_rebin = (TH1D*)hgen_sysup->Clone( ((std::string)hgen_sysup->GetName()+"_clone").c_str() );
       hgen_sysup_rebin = (TH1D*)hgen_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
 
-      hgen_sysdown=(TH1D*)fpp_MC->Get( ("theory_rnd_NP_"+systUnfType+"sysdown").c_str() );  
+      //hgen_sysdown=(TH1D*)fpp_MC->Get( (sysunfdir+"theory_rnd_NP_"+systUnfType+"sysdown").c_str() );
+      fpp_MC->GetObject( (sysunfdir+"theory_rnd_NP_"+systUnfType+"sysdown").c_str() , hgen_sysdown);      
       hgen_sysdown->Scale(1./NLOMCscaling);//05/09/18
       hgen_sysdown->Scale(etaBinWidth);
       multiplyBinWidth(hgen_sysdown);  
       
       hgen_sysdown_rebin = (TH1D*)hgen_sysdown->Clone( ((std::string)hgen_sysdown->GetName()+"_clone").c_str() );
       hgen_sysdown_rebin = (TH1D*)hgen_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hgen_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+
     }
 
     if(clearOverUnderflows) TH1clearOverUnderflows((TH1*)hgen_sysup_rebin);     
@@ -299,8 +346,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH2D* hmat_sysup_errors=NULL, *hmat_sysdown_errors=NULL;  
   TH2D* hmat_sysup_rebin=NULL, *hmat_sysdown_rebin=NULL;  //TO DO; SET HIST ERRS; I THINK THEYRE SET TO DEFAULT ROOT VALUES IF THEYRE NOT SET AND THEYRE NOT SET IN REBIN TH2
   if(doSystUnf){
+
     if(systUnfType=="NP" && applyNPCorrs){
-      hmat_sysup=(TH2D*)fpp_MC->Get(   (th2basetitle+"_"+systUnfType+"sysup_th2").c_str() );
+      //hmat_sysup=(TH2D*)fpp_MC->Get(   (""+th2basetitle+"_"+systUnfType+"sysup_th2").c_str() );
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_"+systUnfType+"sys1_th2").c_str() , hmat_sysup);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_"+systUnfType+"sysup_th2").c_str() , hmat_sysup);    
+      else assert(false);
       hmat_sysup->Scale(1./NLOMCscaling);      
 
       hmat_sysup_errors=makeRespMatrixErrors( (TH2D*) hmat_sysup,
@@ -313,7 +364,42 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 					(double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
       setRespMatrixErrs( (TH2D*)hmat_sysup_rebin, (TH2D*) hmat_sysup_errors , (bool)zeroBins);  
       
-      hmat_sysdown=(TH2D*)fpp_MC->Get( (th2basetitle+"_"+systUnfType+"sysdown_th2").c_str() );    
+      //hmat_sysdown=(TH2D*)fpp_MC->Get( (""+th2basetitle+"_"+systUnfType+"sysdown_th2").c_str() );    
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_"+systUnfType+"sys2_th2").c_str() , hmat_sysdown);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_"+systUnfType+"sysdown_th2").c_str() , hmat_sysdown);    
+      else assert(false);
+      hmat_sysdown->Scale(1./NLOMCscaling);
+
+      hmat_sysdown_errors=makeRespMatrixErrors( (TH2D*) hmat_sysdown,
+						(double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						(double*) boundaries_pt_gen_mat, nbins_pt_gen_mat,((std::string)hmat_sysdown->GetName()+"_errors")  );
+      
+      hmat_sysdown_rebin = (TH2D*)hmat_sysdown->Clone( ((std::string)hmat_sysdown->GetName()+"_clone").c_str() );
+      hmat_sysdown_rebin=(TH2D*) reBinTH2(hmat_sysdown_rebin, (((std::string)hmat_sysdown_rebin->GetName())+"_rebin").c_str(), 
+					  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+					  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  ); 
+      setRespMatrixErrs( (TH2D*)hmat_sysdown_rebin, (TH2D*) hmat_sysdown_errors , (bool)zeroBins);     }
+    if(systUnfType=="PDF" && applyNPCorrs){
+      //hmat_sysup=(TH2D*)fpp_MC->Get(   (""+th2basetitle+"_"+systUnfType+"sysup_th2").c_str() );
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_NP_"+systUnfType+"sys1_th2").c_str() , hmat_sysup);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_NP_"+systUnfType+"sysup_th2").c_str() , hmat_sysup);    
+      else assert(false);
+      hmat_sysup->Scale(1./NLOMCscaling);      
+
+      hmat_sysup_errors=makeRespMatrixErrors( (TH2D*) hmat_sysup,
+					      (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+					      (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat, ((std::string)hmat_sysup->GetName()+"_errors")  );
+      
+      hmat_sysup_rebin = (TH2D*)hmat_sysup->Clone( ((std::string)hmat_sysup->GetName()+"_clone").c_str() );
+      hmat_sysup_rebin=(TH2D*) reBinTH2(hmat_sysup_rebin, ( ((std::string)hmat_sysup_rebin->GetName())+"_rebin").c_str(), 
+					(double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+					(double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+      setRespMatrixErrs( (TH2D*)hmat_sysup_rebin, (TH2D*) hmat_sysup_errors , (bool)zeroBins);  
+      
+      //hmat_sysdown=(TH2D*)fpp_MC->Get( (""+th2basetitle+"_"+systUnfType+"sysdown_th2").c_str() );    
+      if(systSubType=="12")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_NP_"+systUnfType+"sys2_th2").c_str() , hmat_sysdown);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+th2basetitle+"_NP_"+systUnfType+"sysdown_th2").c_str() , hmat_sysdown);    
+      else assert(false);
       hmat_sysdown->Scale(1./NLOMCscaling);
 
       hmat_sysdown_errors=makeRespMatrixErrors( (TH2D*) hmat_sysdown,
@@ -326,7 +412,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 					  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  ); 
       setRespMatrixErrs( (TH2D*)hmat_sysdown_rebin, (TH2D*) hmat_sysdown_errors , (bool)zeroBins);     }
     if(systUnfType=="JER" && applyNPCorrs){
-      hmat_sysup=(TH2D*)fpp_MC->Get(   (th2basetitle+"_NP_"+systUnfType+"sysup_th2").c_str() );
+      //hmat_sysup=(TH2D*)fpp_MC->Get(   (th2basetitle+"_NP_"+systUnfType+"sysup_th2").c_str() );
+      fpp_MC->GetObject( (sysunfdir+th2basetitle+"_NP_"+systUnfType+"sysup_th2").c_str() , hmat_sysup);    
       hmat_sysup->Scale(1./NLOMCscaling);      
       
       hmat_sysup_errors=makeRespMatrixErrors( (TH2D*) hmat_sysup,
@@ -339,7 +426,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 					(double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
       setRespMatrixErrs( (TH2D*)hmat_sysup_rebin, (TH2D*) hmat_sysup_errors , (bool)zeroBins);  
       
-      hmat_sysdown=(TH2D*)fpp_MC->Get( (th2basetitle+"_NP_"+systUnfType+"sysdown_th2").c_str() );    
+      //hmat_sysdown=(TH2D*)fpp_MC->Get( (""+th2basetitle+"_NP_"+systUnfType+"sysdown_th2").c_str() );    
+      fpp_MC->GetObject( (sysunfdir+th2basetitle+"_NP_"+systUnfType+"sysdown_th2").c_str() , hmat_sysdown);    
       hmat_sysdown->Scale(1./NLOMCscaling);
       
       hmat_sysdown_errors=makeRespMatrixErrors( (TH2D*) hmat_sysdown,
@@ -399,7 +487,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D* hrec_sameside_sysup_rebin=NULL,  *hrec_sameside_sysdown_rebin=NULL;  
   if(doSystUnf){
     if(systUnfType=="NP" && applyNPCorrs){
-      hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysup").c_str() );
+      //hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysup").c_str() );
+      if(systSubType=="12")fpp_MC->GetObject(          (sysunfdir+"smeared_rnd_"+systUnfType+"sys1").c_str() , hrec_sameside_sysup);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"smeared_rnd_"+systUnfType+"sysup").c_str() , hrec_sameside_sysup);    
+      else assert(false);
       hrec_sameside_sysup->Scale(1./NLOMCscaling);//05/09/18
       hrec_sameside_sysup->Scale(etaBinWidth);
       multiplyBinWidth(hrec_sameside_sysup);  
@@ -407,7 +498,33 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup->Clone( ((std::string)hrec_sameside_sysup->GetName()+"_clone").c_str() );
       hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
       
-      hrec_sameside_sysdown=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysdown").c_str() );  
+      //hrec_sameside_sysdown=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysdown").c_str() );  
+      if(systSubType=="12")fpp_MC->GetObject(          (sysunfdir+"smeared_rnd_"+systUnfType+"sys2").c_str() , hrec_sameside_sysdown);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"smeared_rnd_"+systUnfType+"sysdown").c_str() , hrec_sameside_sysdown);    
+      else assert(false);
+      hrec_sameside_sysdown->Scale(1./NLOMCscaling);//05/09/18
+      hrec_sameside_sysdown->Scale(etaBinWidth);
+      multiplyBinWidth(hrec_sameside_sysdown);  
+      
+      hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown->Clone( ((std::string)hrec_sameside_sysdown->GetName()+"_clone").c_str() );
+      hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+    }
+    if(systUnfType=="PDF" && applyNPCorrs){
+      //hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysup").c_str() );
+      if(systSubType=="12")fpp_MC->GetObject(          (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sys1").c_str() , hrec_sameside_sysup);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sysup").c_str() , hrec_sameside_sysup);    
+      else assert(false);
+      hrec_sameside_sysup->Scale(1./NLOMCscaling);//05/09/18
+      hrec_sameside_sysup->Scale(etaBinWidth);
+      multiplyBinWidth(hrec_sameside_sysup);  
+      
+      hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup->Clone( ((std::string)hrec_sameside_sysup->GetName()+"_clone").c_str() );
+      hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+      
+      //hrec_sameside_sysdown=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysdown").c_str() );  
+      if(systSubType=="12")fpp_MC->GetObject(          (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sys2").c_str() , hrec_sameside_sysdown);    
+      else if(systSubType=="updown")fpp_MC->GetObject( (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sysdown").c_str() , hrec_sameside_sysdown);    
+      else assert(false);
       hrec_sameside_sysdown->Scale(1./NLOMCscaling);//05/09/18
       hrec_sameside_sysdown->Scale(etaBinWidth);
       multiplyBinWidth(hrec_sameside_sysdown);  
@@ -416,7 +533,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
     }
     if(systUnfType=="JER" && applyNPCorrs){
-      hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_NP_"+systUnfType+"sysup").c_str() );
+      //hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_NP_"+systUnfType+"sysup").c_str() );
+      fpp_MC->GetObject( (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sysup").c_str() , hrec_sameside_sysup);    
       hrec_sameside_sysup->Scale(1./NLOMCscaling);//05/09/18
       hrec_sameside_sysup->Scale(etaBinWidth);
       multiplyBinWidth(hrec_sameside_sysup);  
@@ -424,7 +542,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup->Clone( ((std::string)hrec_sameside_sysup->GetName()+"_clone").c_str() );
       hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
       
-      hrec_sameside_sysdown=(TH1D*)fpp_MC->Get( ("smeared_rnd_NP_"+systUnfType+"sysdown").c_str() );  
+      //hrec_sameside_sysdown=(TH1D*)fpp_MC->Get( ("smeared_rnd_NP_"+systUnfType+"sysdown").c_str() );  
+      fpp_MC->GetObject( (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sysdown").c_str() , hrec_sameside_sysdown);    
       hrec_sameside_sysdown->Scale(1./NLOMCscaling);//05/09/18
       hrec_sameside_sysdown->Scale(etaBinWidth);
       multiplyBinWidth(hrec_sameside_sysdown);  
@@ -441,7 +560,6 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     hrec_sameside_sysdown_rebin->SetLineColor(hrec_sameside_rebin->GetLineColor()-2);     
     hrec_sameside_sysdown_rebin->SetMarkerSize(0.);     
   }
-  
   
 
 
@@ -541,11 +659,6 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   if(debugWrite)hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");
   
-  std::cout<<"           hrec->Integral()="<<hrec->Integral()<<std::endl;
-  std::cout<<"         hrec->GetEntries()="<<hrec->GetEntries()<<std::endl;
-  std::cout<<"hrec->GetEffectiveEntries()="<<hrec->GetEffectiveEntries()<<std::endl;
-  
-  
   histTitle+="_clone";
   TH1D *hrec_rebin = (TH1D*)hrec->Clone( (histTitle).c_str() );
   if(debugWrite)hrec_rebin->Write(histTitle.c_str());
@@ -560,12 +673,6 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
   if(debugWrite)hrec_rebin->Write(histTitle.c_str());   
   if(debugMode)hrec_rebin->Print("base");  
-
-  std::cout<<std::endl;
-  std::cout<<"           hrec_rebin->Integral()="<<hrec_rebin->Integral()<<std::endl;
-  std::cout<<"         hrec_rebin->GetEntries()="<<hrec_rebin->GetEntries()<<std::endl;
-  std::cout<<"hrec_rebin->GetEffectiveEntries()="<<hrec_rebin->GetEffectiveEntries()<<std::endl;
-  std::cout<<std::endl;
 
   if(clearOverUnderflows){
     histTitle+="_noOverUnderFlows";
@@ -2277,7 +2384,7 @@ int main(int argc, char* argv[]){
   //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
   //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
   //}
-  if (argc==7){
+  if (argc==8){
     //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
     rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
 					       (std::string)argv[1] ,
@@ -2287,7 +2394,8 @@ int main(int argc, char* argv[]){
 					       (std::string)argv[3], 
 					       (std::string)argv[4], 
 					       (bool)((int)std::atoi(argv[5])),
-					       (std::string)argv[6]  );    
+					       (std::string)argv[6]  ,
+					       (std::string)argv[7] );    
   
   
 

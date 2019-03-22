@@ -6,6 +6,10 @@ const int CANVX=1200, CANVY=1000;
 const int xsecorder=1;//0--> LO, 1--> NLO, 2--> NNLO... etc.
 
 const bool printBaseDebug=true;
+const bool useHistSigmaFit=false;
+const bool useJERscaleFactors=true;//note; alters JER syst. as well.
+const bool setThyPDFErrors=true;
+
 
 //const int nEvents=1e+09;  ///10x typical
 const int nEvents=1e+08;  ///typical
@@ -14,53 +18,53 @@ const int nEvents=1e+08;  ///typical
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 
-std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [nb/GeV]";
-
-const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
 //// LO NPs
-//const std::string NPCorrFits_str="NPC_HerwigEE4C_R4"; //reasonable par errs
-//const std::string NPCorrFits_text="HerwigEE4C R4";  
-const std::string NPCorrFits_str="NPC_HerwigEE5C_R4";//reasonable par errs
-const std::string NPCorrFits_text="HerwigEE5C R4";  
-//const std::string NPCorrFits_str="NPC_PYTHIA8_R4";//reasonable par errs
-//const std::string NPCorrFits_text="PY8 R4";  
-//// NLO NPs
-//const std::string NPCorrFits_str="NPC_POWPY8_R4";//really bad par errs
-//const std::string NPCorrFits_text="POW+PY8 R4";  
-//const std::string NPCorrFits_str="NPC_POWPY8CTEQ_R4";//kind of bad par errs
-//const std::string NPCorrFits_text="POW+PY8 CTEQ R4";  
 
-const std::string in_JERFile_default="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta05.root";
-const bool useHistSigmaFit=false;
-const bool useJERscaleFactors=true;
-
-const std::string in_NLOFile_default="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC";
-const bool setThyPDFErrors=true;
+//const std::string NPCorrFits_str =HERWGEE4_NPS;    //LO, reasonable par errs
+//const std::string NPCorrFits_text=HERWGEE4_NPS_TXT;
+const std::string NPCorrFits_str =HERWGEE5_NPS;    //LO, reasonable par errs
+const std::string NPCorrFits_text=HERWGEE5_NPS_TXT;
+//const std::string NPCorrFits_str =_PYTHIA8_NPS;    //LO, reasonable par errs
+//const std::string NPCorrFits_text=_PYTHIA8_NPS_TXT;
+//const std::string NPCorrFits_str =_POW_PY8_NPS;    //NLO, unusable par errs
+//const std::string NPCorrFits_text=_POW_PY8_NPS_TXT;
+//const std::string NPCorrFits_str =POWPY8CT_NPS;    //NLO, bad par errs
+//const std::string NPCorrFits_text=POWPY8CT_NPS_TXT;
 
 //SYSTEMATICS
 //JER
 const bool doJERsys=true;
 //NPs
 const bool doNPsys=true;//involves making a new thy hist, therefore, also a sep spline fit
-const std::string NPsys1_CorrFits_str="NPC_PYTHIA8_R4";//reasonable par errs
-const std::string NPsys1_CorrFits_text="PY8 R4";  
-const std::string NPsys2_CorrFits_str="NPC_HerwigEE4C_R4";//reasonable par errs
-const std::string NPsys2_CorrFits_text="HerwigEE4C R4";  
+//NP systs v1, using HERWIG EE4C/PYTHIA8 NPs for unfolding, shifting NP fit params up/down by 1 sigma
+//const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
+//const std::string NPsys1_CorrFits_str =HERWGEE4_NPS;
+//const std::string NPsys1_CorrFits_text=HERWGEE4_NPS_TXT;
+//const std::string NPsys2_CorrFits_str =_PYTHIA8_NPS;
+//const std::string NPsys2_CorrFits_text=_PYTHIA8_NPS_TXT;
+//NP systs v1, using POW+PY8/POW+PY8 CTEQ NPs for unfolding, shifting NP fit params up/down by 2 sigma
+const float NPerrfact=2.0;//# sigma to shift NP fit params by. 
+const std::string NPsys1_CorrFits_str =_POW_PY8_NPS;
+const std::string NPsys1_CorrFits_text=_POW_PY8_NPS_TXT;
+const std::string NPsys2_CorrFits_str =POWPY8CT_NPS;
+const std::string NPsys2_CorrFits_text=POWPY8CT_NPS_TXT;
 //PDFs
 const bool doPDFsys=true; //involves making a new thy hist, therefore, also a sep spline fit
-//PDF systs type1; using diff pdfs for unfolding. Other type; using the 6 pt scale uncertainty
-const std::string in_NLOFile_PDFsys1="fnl5020_LO2_R04Jets_modify_CT14nlo_HS";
-std::string PDFsys1_text="CT14";
-const std::string in_NLOFile_PDFsys2="fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS";
-std::string PDFsys2_text="HERAPDF15";
+//PDF systs v1; using CT14/HERA pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 1
+//const float PDFerrfact=1.0;
+//const std::string in_NLOFile_PDFsys1=_CT14FILESTR;
+//std::string PDFsys1_text=_CT14DESCTXT;
+//const std::string in_NLOFile_PDFsys2=_HERAFILESTR;
+//std::string PDFsys2_text=_HERADESCTXT;
+//PDF systs v2; using CT10/MMHT pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 2
+const float PDFerrfact=2.0;
+const std::string in_NLOFile_PDFsys1=_CT10FILESTR;
+std::string PDFsys1_text=_CT10DESCTXT;
+const std::string in_NLOFile_PDFsys2=_MMHTFILESTR;
+std::string PDFsys2_text=_MMHTDESCTXT;
 
-int debugInt=0;
-void debugcout(){
-  std::cout<<"location #"<<debugInt<<std::endl;
-  debugInt++;
-  return; 
-}
-//, std::string weightMode="spline" //"fit"// 
+
+
 //valid fitTypes; modLog, 7TeV, spl3wgts, spl3wgts + ext string
 int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOFile_default, std::string fitType="modLog" , 
 					    std::string in_JERFile=in_JERFile_default,  int etabin=0,  std::string outputFile="smearTheory_gaussCoreJER_etabin_defOut.root" 
@@ -139,9 +143,9 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     std::cout<<"Par 2="<<fNP->GetParameter(2)<<" +/- "<<fNP->GetParError(2)<<std::endl;
     
     fNP_sysup=(TF1*)fNP->Clone( ((std::string)fNP->GetName()+"_sysup").c_str());
-    fNP_sysup->SetParameter(0, fNP->GetParameter(0)+fNP->GetParError(0));
-    fNP_sysup->SetParameter(1, fNP->GetParameter(1)+fNP->GetParError(1));
-    fNP_sysup->SetParameter(2, fNP->GetParameter(2)-fNP->GetParError(2));
+    fNP_sysup->SetParameter(0, fNP->GetParameter(0)+NPerrfact*fNP->GetParError(0));
+    fNP_sysup->SetParameter(1, fNP->GetParameter(1)+NPerrfact*fNP->GetParError(1));
+    fNP_sysup->SetParameter(2, fNP->GetParameter(2)-NPerrfact*fNP->GetParError(2));
     
     std::cout<<"fNP_sysup parameters are..."<<std::endl;
     std::cout<<"Par 0="<<fNP_sysup->GetParameter(0)<<std::endl;
@@ -149,9 +153,9 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     std::cout<<"Par 2="<<fNP_sysup->GetParameter(2)<<std::endl;
     
     fNP_sysdown=(TF1*)fNP->Clone( ((std::string)fNP->GetName()+"_sysdown").c_str());
-    fNP_sysdown->SetParameter(0, fNP->GetParameter(0)-fNP->GetParError(0));
-    fNP_sysdown->SetParameter(1, fNP->GetParameter(1)-fNP->GetParError(1));
-    fNP_sysdown->SetParameter(2, fNP->GetParameter(2)+fNP->GetParError(2));  
+    fNP_sysdown->SetParameter(0, fNP->GetParameter(0)-NPerrfact*fNP->GetParError(0));
+    fNP_sysdown->SetParameter(1, fNP->GetParameter(1)-NPerrfact*fNP->GetParError(1));
+    fNP_sysdown->SetParameter(2, fNP->GetParameter(2)+NPerrfact*fNP->GetParError(2));  
     
     std::cout<<"fNP_sysdown parameters are..."<<std::endl;
     std::cout<<"Par 0="<<fNP_sysdown->GetParameter(0)<<std::endl;
@@ -178,7 +182,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   
   //////////// NLO Thy calculation xsecions get from file ////////////////////////////////////////////////////////
   std::cout<<"plotting NLO xsecs!"<<  std::endl;  
-
+  
   TH1D *theory = (TH1D*)fin_NLO->Get(thyname.c_str());
   theory->SetTitle((PDF_text+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T};"+ddxsec_yax).c_str());
   theory->Sumw2(true);
@@ -188,53 +192,53 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory->SetLineColor(kTeal);
   if(printBaseDebug)theory->Print("base");  
 
-  //errors, PDF systematic
+  //RELATIVE errors, PDF systematic
   std::string thyPDFNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"01";//hOSPxRx2 == -1. * hOSPxRx1 (symm)  
   TH1D *theoryPDFNegerr = (TH1D*)fin_NLO->Get(thyPDFNegerrname.c_str());
-  theoryPDFNegerr->SetTitle((PDF_text+" #sigma_{Jet} (-) PDF Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  theoryPDFNegerr->SetTitle((PDF_text+" #sigma_{Jet} (-) PDF Errors;Jet p_{T} [GeV]; #||{(-) Errors} [%]").c_str());
   theoryPDFNegerr->Sumw2(true);
-  theoryPDFNegerr->Scale(1.e-03);//picobarns to nanobarns
+  theoryPDFNegerr->Scale(1.e+02);//rel. err. to % err.
   if(printBaseDebug)  theoryPDFNegerr->Print("Base"); 
   
   std::string thyPDFPoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"02";//hOSPxRx2 == -1. * hOSPxRx1 (symm)  
   TH1D *theoryPDFPoserr = (TH1D*)fin_NLO->Get(thyPDFPoserrname.c_str());
-  theoryPDFPoserr->SetTitle((PDF_text+" #sigma_{Jet} (+) PDF Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  theoryPDFPoserr->SetTitle((PDF_text+" #sigma_{Jet} (+) PDF Errors;Jet p_{T} [GeV]; (+) Errors [%]").c_str());
   theoryPDFPoserr->Sumw2(true);
-  theoryPDFPoserr->Scale(1.e-03);//picobarns to nanobarns
+  theoryPDFPoserr->Scale(1.e+02);//rel. err. to % err.
   if(printBaseDebug)  theoryPDFNegerr->Print("Base"); 
   
   std::string thy2PtScaleNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"06";//2 PT SCALE UNCERTAINTY, ASYMMETRIC
   TH1D *theory2PtScaleNegerr = (TH1D*)fin_NLO->Get(thy2PtScaleNegerrname.c_str());
-  theory2PtScaleNegerr->SetTitle((PDF_text+" #sigma_{Jet} (-) 2 Pt. Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  theory2PtScaleNegerr->SetTitle((PDF_text+" #sigma_{Jet} (-) 2 Pt. Errors;Jet p_{T} [GeV]; #||{(-) Errors} [%]").c_str());
   theory2PtScaleNegerr->Sumw2(true);
-  theory2PtScaleNegerr->Scale(1.e-03);//picobarns to nanobarns
+  theory2PtScaleNegerr->Scale(1.e+02);//rel. err. to % err.
   if(printBaseDebug)  theory2PtScaleNegerr->Print("Base"); 
   
   std::string thy2PtScalePoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"07";//07 IS BROKEN WARNING
   TH1D *theory2PtScalePoserr = (TH1D*)fin_NLO->Get(thy2PtScalePoserrname.c_str());
-  theory2PtScalePoserr->SetTitle((PDF_text+" #sigma_{Jet} (+) 2 Pt. Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  theory2PtScalePoserr->SetTitle((PDF_text+" #sigma_{Jet} (+) 2 Pt. Errors;Jet p_{T} [GeV]; (+) Errors [%]").c_str());
   theory2PtScalePoserr->Sumw2(true);
-  theory2PtScalePoserr->Scale(1.e-03);//picobarns to nanobarns
+  theory2PtScalePoserr->Scale(1.e+02);//rel. err. to % err.
   if(printBaseDebug)  theory2PtScalePoserr->Print("Base"); 
   
   std::string thy6PtScaleNegerrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"08";//2 PT SCALE UNCERTAINTY, ASYMMETRIC
   TH1D *theory6PtScaleNegerr = (TH1D*)fin_NLO->Get(thy6PtScaleNegerrname.c_str());
-  theory6PtScaleNegerr->SetTitle((PDF_text+" #sigma_{Jet} (-) 6 Pt. Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  theory6PtScaleNegerr->SetTitle((PDF_text+" #sigma_{Jet} (-) 6 Pt. Errors;Jet p_{T} [GeV]; #||{(-) Errors} [%]").c_str());
   theory6PtScaleNegerr->Sumw2(true);
-  theory6PtScaleNegerr->Scale(1.e-03);//picobarns to nanobarns
+  theory6PtScaleNegerr->Scale(1.e+02);//rel. err. to % err.
   if(printBaseDebug)  theory6PtScaleNegerr->Print("Base"); 
   
   std::string thy6PtScalePoserrname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"09";//07 IS BROKEN FOR LO HISTS IIRC
   TH1D *theory6PtScalePoserr = (TH1D*)fin_NLO->Get(thy6PtScalePoserrname.c_str());
-  theory6PtScalePoserr->SetTitle((PDF_text+" #sigma_{Jet} (+) 6 Pt. Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  theory6PtScalePoserr->SetTitle((PDF_text+" #sigma_{Jet} (+) 6 Pt. Errors;Jet p_{T} [GeV]; (+) Errors [%]").c_str());
   theory6PtScalePoserr->Sumw2(true);
-  theory6PtScalePoserr->Scale(1.e-03);//picobarns to nanobarns
+  theory6PtScalePoserr->Scale(1.e+02);//rel. err. to % err.
   if(printBaseDebug)  theory6PtScalePoserr->Print("Base"); 
   
   //set theory calculation errors to that of the PDF errs
   if(setThyPDFErrors)    
-    for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theoryPDFPoserr->GetBinContent(i));    
-
+    for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theory->GetBinContent(i)*(theoryPDFPoserr->GetBinContent(i))/100.);    
+  
   std::cout<<"done making "<<orderstring<<" hist."<<std::endl;
   //assert(false);
   //-----------------------------------
@@ -316,9 +320,10 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     //set the PDF errs, 
     theory_PDFsys1_PDFerrs=(TH1D*)fin_PDFsys1->Get(thyPDFPoserrname.c_str());
-    theory_PDFsys1_PDFerrs->SetName( ((std::string)theory->GetName()+"_PDFsys1_Poserr").c_str() );    
-    for(int i=1; i<=(theory_PDFsys1->GetNbinsX());i++ )
-      theory_PDFsys1->SetBinError(i, theory_PDFsys1_PDFerrs->GetBinContent(i));
+    theory_PDFsys1_PDFerrs->Scale(1.e+02);//rel. err --> % err
+    theory_PDFsys1_PDFerrs->SetName( ((std::string)theory->GetName()+"_PDFsys1_Poserr").c_str() );   
+     for(int i=1; i<=(theory_PDFsys1->GetNbinsX());i++ )
+      theory_PDFsys1->SetBinError(i, theory_PDFsys1->GetBinContent(i)*(theory_PDFsys1_PDFerrs->GetBinContent(i))/100.);
     
     
     std::cout<<"opening PDFsys2 file"<<std::endl;
@@ -337,9 +342,12 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     
     //set the PDF errs, 
     theory_PDFsys2_PDFerrs=(TH1D*)fin_PDFsys2->Get(thyPDFPoserrname.c_str());
+    theory_PDFsys2_PDFerrs->Scale(1.e+02);//rel. err --> % err
     theory_PDFsys2_PDFerrs->SetName( ((std::string)theory->GetName()+"_PDFsys2_Poserr").c_str() );    
     for(int i=1; i<=(theory_PDFsys2->GetNbinsX());i++ )
-      theory_PDFsys2->SetBinError(i, theory_PDFsys2_PDFerrs->GetBinContent(i));
+      theory_PDFsys2->SetBinError(i, theory_PDFsys2->GetBinContent(i)*(theory_PDFsys2_PDFerrs->GetBinContent(i))/100.);
+    //    for(int i=1; i<=(theory_PDFsys2->GetNbinsX());i++ )
+    //theory_PDFsys2->SetBinError(i, theory_PDFsys2_PDFerrs->GetBinContent(i));
     
     if(etabin==0 || etabin==1){//get rid of last bin
       theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->TH1::Rebin(n_thybins_incl, 
@@ -354,7 +362,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
     std::cout<<"NOW making theory PDF sysup/down hists."<<std::endl;
     theory_PDFsysup=(TH1D*)theory->Clone(((std::string)theory->GetName()+"_PDFsysup").c_str());
-    theory_PDFsysup= (TH1D*) makePDFsys(theory, theory6PtScalePoserr, "sysup");//v2 PDF systematics
+    //theory_PDFsysup= (TH1D*) makePDFsys(theory, theory6PtScalePoserr, "sysup", PDFerrfact);//add/subtract 6pt scale unc only
+    theory_PDFsysup= (TH1D*) makePDFsys_wPDFerr(theory, theory6PtScalePoserr, "sysup", PDFerrfact);//add/subtract 6pt scale unc w/ PDF unc in quad. "v2"
     theory_PDFsysup->SetTitle((PDF_text+" sysup Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
     theory_PDFsysup->GetXaxis()->SetNoExponent(true);
     theory_PDFsysup->GetXaxis()->SetMoreLogLabels(true);
@@ -362,7 +371,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     if(printBaseDebug)theory_PDFsysup->Print("base");  
     
     theory_PDFsysdown=(TH1D*)theory->Clone(((std::string)theory->GetName()+"_PDFsysdown").c_str());
-    theory_PDFsysdown  = (TH1D*) makePDFsys(theory, theory6PtScaleNegerr, "sysdown");//v2 PDF systematics
+    //theory_PDFsysdown  = (TH1D*) makePDFsys(theory, theory6PtScaleNegerr, "sysdown", PDFerrfact);// add/subtract 6pt scale unc only
+    theory_PDFsysdown  = (TH1D*) makePDFsys_wPDFerr(theory, theory6PtScaleNegerr, "sysdown", PDFerrfact);//add/subtract 6pt scale unc w/ PDF unc in quad. "v2"
     theory_PDFsysdown->SetTitle((PDF_text+" sysdown Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
     theory_PDFsysdown->GetXaxis()->SetNoExponent(true);
     theory_PDFsysdown->GetXaxis()->SetMoreLogLabels(true);
@@ -727,10 +737,10 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory6PtScalePoserr->SetLineColor(kMagenta);
   
   std::string _6ptposerrs_oldtitle=(std::string)theory6PtScalePoserr->GetTitle();
-  theory6PtScalePoserr->SetTitle(("Theory "+orderstring+" #sigma_{Jet} (+) Errors;Jet p_{T} [GeV]; (+) Errors [nb/GeV]").c_str());
+  theory6PtScalePoserr->SetTitle(("Theory "+orderstring+" #sigma_{Jet} (+) Errors;Jet p_{T} [GeV]; (+) Errors [%]").c_str());
   
-  theory6PtScalePoserr->SetMinimum(1.e-06);
-  theory6PtScalePoserr->SetMaximum(1.e-02);
+  theory6PtScalePoserr->SetMinimum(1.e-01);
+  theory6PtScalePoserr->SetMaximum(1.e+02);
   theory6PtScalePoserr->GetXaxis()->SetNoExponent(true);
   theory6PtScalePoserr->GetXaxis()->SetMoreLogLabels(true);  
   
@@ -760,14 +770,14 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory6PtScaleNegerr->SetLineColor(kMagenta);
   
   std::string _6ptnegerrs_oldtitle=(std::string)theory6PtScalePoserr->GetTitle();
-  theory6PtScaleNegerr->SetTitle(("Theory "+orderstring+" #sigma_{Jet} (-) Errors;Jet p_{T}[GeV]; #||{(-) Error} [nb/GeV]").c_str());
+  theory6PtScaleNegerr->SetTitle(("Theory "+orderstring+" #sigma_{Jet} (-) Errors;Jet p_{T}[GeV]; #||{(-) Errors} [%]").c_str());
   
   theory6PtScaleNegerr->Scale(-1.);
   theory2PtScaleNegerr->Scale(-1.);
   theoryPDFNegerr     ->Scale(-1.);
   
-  theory6PtScaleNegerr->SetMinimum(1.e-06);
-  theory6PtScaleNegerr->SetMaximum(1.e-02);
+  theory6PtScaleNegerr->SetMinimum(1.e-01);
+  theory6PtScaleNegerr->SetMaximum(1.e+02);
   theory6PtScaleNegerr->GetXaxis()->SetNoExponent(true);
   theory6PtScaleNegerr->GetXaxis()->SetMoreLogLabels(true);
   

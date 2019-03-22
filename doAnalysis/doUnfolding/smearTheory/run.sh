@@ -31,8 +31,8 @@ nlofshortstr="NNPDF"
 
 jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
 #descstr="02.18.19_semifinal_v2_w8TeVJERscales" #_ptmax1000"
-descstr="ptLo28_drCut_geny_sigma"
-#descstr="ptLo28_drCut_geny_sigmu"
+#descstr="ptLo28_drCut_geny_sigma"
+descstr="ptLo28_drCut_geny_sigmu"
 
 #fittypestr="modLog"
 #fittypestr="7TeV"

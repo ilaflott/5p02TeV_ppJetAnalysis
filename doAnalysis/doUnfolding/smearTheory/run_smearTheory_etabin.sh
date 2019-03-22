@@ -79,9 +79,13 @@ then
     echo "DONE NLO smearing."
     echo ""
 
-        if [[ -d "${OUTDIR}" ]]
-    then
+    if [[ -d "${OUTDIR}" ]]
+    then	
 	echo "$OUTDIR exists!"
+	echo "removing directory!"
+	rm -rf $OUTDIR
+	echo "recreating directory!"
+	mkdir $OUTDIR
     else 
 	mkdir  $OUTDIR
     fi
@@ -90,6 +94,8 @@ then
     echo "moving $OUTFILE to $OUTDIR"
     echo ""
     
+    cp smearTheorySpectra_gaussCoreJER_etabin.C $OUTDIR/.
+    cp smearTheorySpectra.h $OUTDIR/.
     cp $OUTFILE $OUTDIR/.
     cp $JERFILE $OUTDIR/.
     cp $JERPDFFILE $OUTDIR/.

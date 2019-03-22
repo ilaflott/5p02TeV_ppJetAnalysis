@@ -32,6 +32,13 @@
 
  //TH1D *cross_section(TH1D *Spectra_);
 
+void debugcout(int debugInt=0){
+  std::cout<<"location #"<<debugInt<<std::endl;
+  debugInt++;
+  return; 
+}
+
+
 TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
   const bool funcDebug=true;
   
@@ -946,16 +953,52 @@ void make7TeVFits(TH1D* hthy=NULL,
 }
 
 
-TH1D* makePDFsys(TH1D* thy, TH1D* thyerrs, std::string updown_str="sysup"){
-  TH1D* thy_PDFsys=(TH1D*)thy->Clone("thy_PDFsyshist_tempname");
+//shift PDF spectra up/down by 6or2 pt scale only
+TH1D* makePDFsys(TH1D* thy, TH1D* thyerrs, std::string updown_str="sysup", double errfact=1.0){
+  TH1D* thy_PDFsys=(TH1D*)thy->Clone(("thy_PDFsyshist_NPterr_"+updown_str).c_str()); 
   int nbinsx=thy->GetNbinsX();
   int nbinsx_err=thyerrs->GetNbinsX();
   if(nbinsx!=nbinsx_err){
     std::cout<<"error, # of bins mismatched between thy and thyerrs hist. exit."<<std::endl;    assert(false);  }
   
   if(updown_str=="sysup" || updown_str=="sysdown"){
-    for(int i=1; i<=nbinsx;i++)
-      thy_PDFsys->SetBinContent(i, thy->GetBinContent(i)+thyerrs->GetBinContent(i));
+    for(int i=1; i<=nbinsx;i++){
+      double err=thy->GetBinContent(i)*(thyerrs->GetBinContent(i)/100.);
+      //thy_PDFsys->SetBinContent(i, thy->GetBinContent(i)+thyerrs->GetBinContent(i));//WRONG; errors are RELATIVE in fastNLO files           
+      //thy_PDFsys->SetBinContent(i, thy->GetBinContent(i)+errfact*thy->GetBinContent(i)*(thyerrs->GetBinContent(i)/100.) );//scaled to PERCENT in my code now
+      thy_PDFsys->SetBinContent( i, thy->GetBinContent(i) + errfact*err );//scaled to PERCENT in my code now
+    }      
+  }
+  else { 
+    std::cout<<"error, updown_str not recognized. exit." <<std::endl; assert(false);}
+  return (TH1D*)thy_PDFsys;
+}
+
+
+//shit PDF spectra up/down by 6or2 pt scale unc + PDF unc added in quad.
+TH1D* makePDFsys_wPDFerr(TH1D* thy, TH1D* thyerrs, std::string updown_str="sysup", double errfact=1.0){
+  TH1D* thy_PDFsys=(TH1D*)thy->Clone(("thy_PDFsyshist_NPterr_wPDFerr_"+updown_str).c_str()); // PDF errs on thy hist set CORRECTLY now
+  int nbinsx=thy->GetNbinsX();
+  int nbinsx_err=thyerrs->GetNbinsX();
+  if(nbinsx!=nbinsx_err){
+    std::cout<<"error, # of bins mismatched between thy and thyerrs hist. exit."<<std::endl;    assert(false);  }
+  
+  if(updown_str=="sysup" || updown_str=="sysdown"){
+    for(int i=1; i<=nbinsx;i++){
+      double err=sqrt( 
+		      thy->GetBinError(i)*thy->GetBinError(i) +  ( 
+								  (thy->GetBinContent(i)*
+								   thyerrs->GetBinContent(i)/
+								   1.e+02) *
+								  (thy->GetBinContent(i)*								   
+								   thyerrs->GetBinContent(i)/
+								   1.e+02  )
+								   )
+		       );
+      if(      updown_str== "sysup" ) thy_PDFsys->SetBinContent(i, thy->GetBinContent(i)+errfact*err);//cause error will be positive due to squaring
+      else if( updown_str=="sysdown") thy_PDFsys->SetBinContent(i, thy->GetBinContent(i)-errfact*err);
+      else assert(false);
+    }
   }
   else { 
     std::cout<<"error, updown_str not recognized. exit." <<std::endl; assert(false);}

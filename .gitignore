@@ -1,4 +1,7 @@
 *.d
+*.o
+*.sty
+*.svn-base
 *.so
 *.pcm
 *.exe
@@ -8,6 +11,7 @@
 *.out
 *.pdf
 *.png
+*.eps
 *.tar
 *.tar.gz
 *~
@@ -38,3 +42,19 @@ doAnalysis/printPlots_JERS/code_snips_reference
 doAnalysis/printPlots_JERS/code_snips_reference/*
 doAnalysis/printPlots_JERS/output
 doAnalysis/printPlots_JERS/output/*
+RooUnfold-svnTrunk/
+doAnalysis/deprecated/
+doAnalysis/doUnfolding/SVDUnfoldNLOMCSpectra_v2.C
+doAnalysis/doUnfolding/bayesUnfoldNLOMCSpectra_v2.C
+doAnalysis/doUnfolding/smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_w8TeVscales_spl3wgts_gaussSmear_NLO_plots/
+doAnalysis/doUnfolding/smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_w8TeVscales_v2_fullstat_spl3wgts_gaussSmear_NLO_plots/
+doAnalysis/doUnfolding/smearTheory/PY8_ptLo28_drCut_geny_sigmu_w5TeVscales_spl3wgts_gaussSmear_NLO_plots/
+doAnalysis/doUnfolding/smearTheory/rename.sh
+doAnalysis/doUnfolding_TUnfold/
+doAnalysis/printPlots/compare_spectra_HLTPFThresh_01.2019/
+doAnalysis/printPlots/jet80_PD_EvtJetCounts_11_27_18.txt
+doAnalysis/printPlots/lowerJets_PD_EvtJetCounts_11_27_18.txt
+doAnalysis/printPlots/lowerJets_and_jet80_and_MC_PD_EvtJetCounts_11_27_18.txt
+readForests/eventOutput_ppData_LowerJets_toJohn.txt
+readForests/outputCondor/README_2.18.19
+doAnalysis/doUnfolding/smearTheory/.quickCheck_gausSmThy_C_ACLiC_dict.cxx_tmp

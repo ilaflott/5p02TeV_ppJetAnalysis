@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ### ----------------------------------------------------------------------------------
-if [ $# -eq 10 ]
+if [ $# -eq 11 ]
 then
     datadirTag=$1
     MCdirTag=$2
@@ -13,9 +13,10 @@ then
     runSVD=$8
     SVDkReg=$9
     BayeskIter=${10}
+    etabinint=${11}
 else
     echo "usage:"
-    echo "source runData.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg] [BayeskIter]"
+    echo "source runData.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg] [BayeskIter] [etabinint]"
     return
 fi
 
@@ -32,7 +33,8 @@ then
     echo "kIter=${BayeskIter}"
     echo ""
     
-    source run_bayesUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "Bayes_${condorDate}_${MCdirTag}" "${simpbins}" "${BayeskIter}"
+    ## echo "source run_bayesUnfoldDataSpectra.sh [R=3,4] [dataCondorDir] [data_date] [MCCondorDir] [MC_date] [MCetaBin] [tagOut] [useSimpleBinning] [BayeskIter] [etabinint]"
+    source run_bayesUnfoldDataSpectra.sh  "4" "${condorDate}_outputCondor" "${sampleDate}" "${datadirTag}" "${condorDate}_outputCondor" "${sampleDate}" "${MCdirTag}" "Bayes_${condorDate}_${MCdirTag}" "${simpbins}" "${BayeskIter}" "${etabinint}"
     
     echo ""
     echo "Bayes Data Unfolding Done."

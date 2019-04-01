@@ -5,9 +5,10 @@
 dataHLTPF=1
 dataHLTCalo=0
 doBayes=1
-doSVD=1
+doSVD=0
 useSimpBins=0
 makeRooUnf=0
+etabinint=-1 ##-1 for full eta range of output, 0,1,2,3... for |y| in steps of 0.5
 
 ###LO Unf ###
 #MC
@@ -81,22 +82,28 @@ function unfoldData(){
 	
 	if [[ doDataUnfoldingwLO -eq 1 ]]
 	then
-        ### 07.02.18 --> TH1D's, eta bins of 0.5, two ppMC JER's w/ diff gendrjt cuts (0.1, 0.2)    
-        #source runData.sh    "0.0eta0.5_L2L3recoJetID_HLTPF"      "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-        #source runData.sh    "0.5eta1.0_L2L3recoJetID_HLTPF"      "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-        #source runData.sh    "1.0eta1.5_L2L3recoJetID_HLTPF"      "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
-        #source runData.sh    "1.5eta2.0_L2L3recoJetID_HLTPF"      "1.5eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-    	    
-        #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTPF"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
-        #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTPF"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+	    ##echo "source runData.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg] [BayeskIter]"
+            ### 07.02.18 --> TH1D's, eta bins of 0.5, two ppMC JER's w/ diff gendrjt cuts (0.1, 0.2)    
+            #source runData.sh    "0.0eta0.5_L2L3recoJetID_HLTPF"      "0.0eta0.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+            #source runData.sh    "0.5eta1.0_L2L3recoJetID_HLTPF"      "0.5eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+            #source runData.sh    "1.0eta1.5_L2L3recoJetID_HLTPF"      "1.0eta1.5_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins 
+            #source runData.sh    "1.5eta2.0_L2L3recoJetID_HLTPF"      "1.5eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+    	        
+            #source runData.sh    "0.0eta1.0_L2L3recoJetID_HLTPF"      "0.0eta1.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+            #source runData.sh    "1.0eta2.0_L2L3recoJetID_HLTPF"      "1.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins     
+	        
+	    #source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
+	    #source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
+	    #source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
 	    
-	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins         
-	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
-	#source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p4_genPtLo43_recoJetID"   "07" "02" "18"   $doBayes $doSVD $useSimpBins  
-	    
+
 	    #source runData.sh    "0.0eta2.0_L2L3recoJetID_HLTPF"      "0.0eta2.0_gendr0p1_recoJetID"   "07" "02" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
-	    #source runData.sh    "0.0eta2.0_trgPtNoRes"      "0.0eta2.0_unf"   "11" "14" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
-	    source runData.sh    "0.0eta2.0"      "0.0eta2.0_PY8unf"   "01" "06" "19"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
+	    #source runData.sh    "0.0eta2.0_trgPtNoRes"      "0.0eta2.0_unf"   "11" "14" "18"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter	    
+	    #source runData.sh    "0.0eta2.0"   "0.0eta2.0_PY8unf"   "01" "06" "19"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter
+
+	    ##echo "source runData.sh [datadirTag] [MCdirTag] [MM] [DD] [YY] [useSimpBins] [runBayes] [runSVD] [SVDkReg] [BayeskIter] [etabinint]"
+	    source runData.sh    "0.0eta3.0"    "0.0eta3.0_unf"   "02" "18" "19"   $useSimpBins $doBayes $doSVD $dataLOSVDkReg $dataLOBayeskIter   $etabinint
+	    
 	fi
 	
 	if [[ doDataUnfoldingwNLO -eq 1 ]]

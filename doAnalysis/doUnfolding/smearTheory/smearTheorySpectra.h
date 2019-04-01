@@ -27,6 +27,8 @@
 #include <TVirtualFitter.h>
 #include <Minuit2/Minuit2Minimizer.h>
 #include <Math/Functor.h>
+#include <TStopwatch.h>
+
  //#include "RooUnfoldResponse.h"
 #include "smearTheorySpectra_strs.h"
 
@@ -129,6 +131,80 @@ void multiplyBinWidth(TH1D* h){
 }
 
 /////////////// Inclusive jets Binning form Ksenia ////////////////////////////////////////////////////////
+double py8Bins_incl[]={
+  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
+  //  32., 37., //junk bins above 
+  //43., 49., 
+  //37.,
+  //43., 
+  49.,
+  56., 
+  64., 
+  74., 
+  84., 
+  97., 
+  114.,
+  133., 
+  153., 
+  174., 
+  196., 
+  220., 
+  245.,
+  272., 
+  300.,
+  330.,
+  362., 
+  395., 
+  430., 
+  468.,
+  507., 
+  548., 
+  592., 
+  638., 
+  686.//,
+  //1000.//,//967.//1032. 
+  //1500.
+  //  1032., 1101. //junk from here down
+}; 
+const int n_py8bins_incl=sizeof(py8Bins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
+
+double py8smearedBins_incl[]={
+  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
+  //37.,
+  //43.,
+  49.,
+  56.,
+  64., 
+  74., 
+  84., 
+  97., 
+  114., 
+  133., 
+  153., 
+  174.,
+  196., 
+  220., 
+  245., 
+  272., 
+  300., 
+  330., 
+  362.,
+  395., 
+  430., 
+  468.,
+  507.,
+  548.,
+  592., 
+  638., 
+  686.//, 
+  //  1000.//,
+  //1500.//967.//1032.
+  //,1500.
+  //  1032., 1101. //junk from here down
+}; 
+const int n_py8smearedbins_incl=sizeof(py8smearedBins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
+
+
 double thyBins_incl[]={
   //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
   //  32., 37., //junk bins above 
@@ -159,7 +235,7 @@ double thyBins_incl[]={
   548., 
   592., 
   638., 
-  686., 
+  686.//,
   //1000.//,//967.//1032. 
   //1500.
   //  1032., 1101. //junk from here down
@@ -236,23 +312,24 @@ const std::string absetabins_tags[]={
 
 
 
-//from 8TeV/2.76 TeV Incl Jets. analysis, AN-14-160, table 5
+// 1.079 etc. --- > from 8TeV/2.76 TeV Incl Jets. analysis, AN-14-160, table 5
+// 1.01 etc.  --- > from 5 TeV HIN studies showing excellent MC/Data JER closure
 //one scale factor per |y| bin. #'s only available up to |y| < 3.0
 const double JERscaleFacts[]={
-  1.079,
-  1.099,
-  1.121,
-  1.208,
-  1.254,
-  1.395  
+1.01,//  1.079,
+1.02,//  1.099,
+1.03,//  1.121,
+1.04,//  1.208,
+1.05,//  1.254,
+1.06//  1.395  
 };
 const double JERscaleFactErrs[]={
-  0.026,
-  0.028,
-  0.029,
-  0.046,
-  0.062,
-  0.063
+0.01,//  0.026,
+0.02,//  0.028,
+0.03,//  0.029,
+0.04,//  0.046,
+0.05,//  0.062,
+0.06//  0.063
 };
 
 

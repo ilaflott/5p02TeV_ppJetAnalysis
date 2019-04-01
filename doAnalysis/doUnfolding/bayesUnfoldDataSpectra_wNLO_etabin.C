@@ -31,7 +31,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 					const bool doSystUnf=false,
 					std::string systUnfType="",
 					std::string systSubType="",
-					const bool applyNPCorrs=true,
+					const bool applyNPCorrs=false,
 					const bool doJetID=true     , 
 					const bool useSimpBins=false){//, 
   //const int kIterInput=5 ){//, //const int etabinint=0){
@@ -763,6 +763,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   NNPDFnnlo->SetLineColor(kCyan-6); 
   NNPDFnnlo->Scale(1./1000.);
   
+  bool nlothyused=true;
   TH1D* thyHistUsed=NULL;
   if(     inFile_MC_name.find("CT10")!=std::string::npos)   {
     NLOMCtitle_str="CT10 NLO"      + CT10NPs ;
@@ -779,7 +780,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   else if(inFile_MC_name.find("NNPDF")!=std::string::npos)  {
     NLOMCtitle_str="NNPDF30 NNLO"  + NNPDFNPs;
     thyHistUsed=(TH1D*)NNPDFnnlo->Clone(((std::string)NNPDFnnlo->GetName()+"_forchi2").c_str());}
-  multiplyBinWidth(thyHistUsed);//for compatibility w/ unfolded hist; must be in units of nb i.e. no bin width division
+  else { nlothyused=false; }  
+  if(nlothyused) multiplyBinWidth(thyHistUsed);//for compatibility w/ unfolded hist; must be in units of nb i.e. no bin width division
   
   // ----- unfolding setup+use below here
 
@@ -1075,16 +1077,18 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH2D* hcovmatabsval_bayes[nKiterMax]={};
   TH2D* hpearson_bayes[nKiterMax]={};
   
+  int kIter_step=5;
   int kIter_start=1;//kIterInput-kIterRange;
-  int kIter_end=kIter_start+8;//kIterInput+kIterRange;
+  int kIter_end=kIter_start+kIter_step*8;//kIterInput+kIterRange;
   TH1D *hchi2iter=NULL;
   
   if(dokIterQA){
     if(debugMode)std::cout<<"unfolding across diff kIter values"<<std::endl;
     if(debugMode)std::cout<<kIter_start<<" <= kIter <= "<<kIter_end<<std::endl;
+
     for(int ki=0; ki<nKiterMax;ki++){
-      int current_kIter=kIter_start+ki;
-      //int current_kIter=1;
+      int current_kIter=kIter_start+ki*kIter_step;
+      
       std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;      
       RooUnfoldBayes unf_bayes_kIterQA(&roo_resp, hrec_rebin, current_kIter);        
       if(setDataCovMat) unf_bayes_kIterQA.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );
@@ -1092,8 +1096,14 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       std::cout<<"unf Chi2 w/ toy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)hgen_rebin)<<std::endl;
       std::cout<<"unf Chi2/d.o.f w/ toy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)hgen_rebin) / nbins_pt_gen<<std::endl;
       std::cout<<std::endl;
-      std::cout<<"unf Chi2 w/ thy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)thyHistUsed)<<std::endl;
-      std::cout<<"unf Chi2/d.o.f w/ thy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)thyHistUsed) / nbins_pt_gen<<std::endl;
+      if(nlothyused)std::cout<<"unf Chi2 w/ thy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)thyHistUsed)<<std::endl;
+      if(nlothyused)std::cout<<"unf Chi2/d.o.f w/ thy MC="<<unf_bayes_kIterQA.RooUnfold::Chi2((const TH1*)thyHistUsed) / nbins_pt_gen<<std::endl;
+
+      if(ki==(nKiterMax-1)) 
+	hchi2iter=unf_bayes_kIterQA.getChi2iter();
+      
+      
+
       
       hunf_bayes[ki]=(TH1D*)unf_bayes_kIterQA.Hreco(errorTreatment);
       hunf_bayes[ki]->SetName(("Data_unf_kIter"+std::to_string(current_kIter)).c_str());
@@ -1105,7 +1115,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hunf_bayes[ki]->SetMarkerSize(1.02);     
       
       
-      hchi2iter=unf_bayes_kIterQA.getChi2iter();
+
       
       if(debugMode)hunf_bayes[ki]->Print("base");
       
@@ -1350,7 +1360,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TCanvas *canv_3x3covmat=NULL, *canv_3x3covmatabsval=NULL, *canv_3x3pearson=NULL;
   
   TH2D* hmat_percenterrs=NULL;
-  TH1D* hkiter_ratio=NULL;
+  TH1D* hkiter_hiratio=NULL;
+  TH1D* hkiter_loratio=NULL;
   if(!drawPDFs)std::cout<<std::endl<<"NOT drawing PDFs for Bayesian Unfolding!"<<std::endl<<std::endl;
   else{ std::cout<<std::endl<<"drawing output PDFs for Bayesian Unfolding..."<<std::endl;
     
@@ -2115,21 +2126,45 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       canv_kIterRatio->cd();
       
 
-      hkiter_ratio=(TH1D*)hunf_bayes[0]->Clone();
-      hkiter_ratio->Divide(hunf_bayes[nKiterMax-1]);
-      hkiter_ratio->SetName(("hunf_ratio_kIter"+std::to_string(kIter_start)+"_v_"+std::to_string(kIter_end)).c_str());
-      hkiter_ratio->SetTitle(("Unf. Ratio, kIter="+std::to_string(kIter_start)+"/kIter="+std::to_string(kIter_end)+";Jet p_{T};ratio").c_str());
-      hkiter_ratio->GetXaxis()->SetNoExponent(true);
-      hkiter_ratio->GetXaxis()->SetMoreLogLabels(true);
-      hkiter_ratio->SetAxisRange(0.5,1.5,"Y");
+      hkiter_hiratio=(TH1D*)hunf_bayes[nKiterMax-1]->Clone();
+      hkiter_hiratio->Divide(hunf);
+      hkiter_hiratio->SetName(("hunf_ratio_kIter"+std::to_string(kIterInput)+"_v_"+std::to_string(kIter_end)).c_str());
+      hkiter_hiratio->SetTitle(("Unf. Ratio, kIter="+std::to_string(kIter_end)+"/kIter="+std::to_string(kIterInput)+";Jet p_{T};ratio").c_str());
+      hkiter_hiratio->SetLineColor(kRed+1);
+      hkiter_hiratio->GetXaxis()->SetNoExponent(true);
+      hkiter_hiratio->GetXaxis()->SetMoreLogLabels(true);
+      hkiter_hiratio->SetAxisRange(0.5,1.5,"Y");
       
-      hkiter_ratio->DrawClone("HIST E");
+      
+      hkiter_loratio=(TH1D*)hunf_bayes[0]->Clone();
+      hkiter_loratio->Divide(hunf);
+      hkiter_loratio->SetName(("hunf_ratio_kIter"+std::to_string(kIterInput)+"_v_"+std::to_string(kIter_start)).c_str());
+      hkiter_loratio->SetTitle(("Unf. Ratio, kIter="+std::to_string(kIter_start)+"/kIter="+std::to_string(kIterInput)+";Jet p_{T};ratio").c_str());
+      hkiter_loratio->SetLineColor(kRed-1);
+      hkiter_loratio->GetXaxis()->SetNoExponent(true);
+      hkiter_loratio->GetXaxis()->SetMoreLogLabels(true);
+      hkiter_loratio->SetAxisRange(0.5,1.5,"Y");
+      
+      //title for canvas only
+      hkiter_hiratio->SetTitle("Unf. Ratios w/ Diff. # of Iterations");
+
+      hkiter_hiratio->DrawClone("HIST E");
+      hkiter_loratio->DrawClone("HIST E SAME");
+      
+      TLegend * kIterQAleg=new TLegend(0.6,0.7,0.9,0.9);
+      kIterQAleg->SetFillStyle(0.);
+      kIterQAleg->SetBorderSize(0.);
+      kIterQAleg->AddEntry(hkiter_hiratio,("kIter="+std::to_string(kIter_end)+"/kIter="+std::to_string(kIterInput)).c_str(),"l");
+      kIterQAleg->AddEntry(hkiter_loratio,("kIter="+std::to_string(kIter_start)+"/kIter="+std::to_string(kIterInput)).c_str(),"l");
+      
+      kIterQAleg->Draw();
+
       theLineAtp9 ->Draw();
       theLineAtOne->Draw();
-      theLineAt1p1->Draw();
-      hkiter_ratio->DrawClone("HIST E SAME");
+      theLineAt1p1->Draw();      
 
-      
+      hkiter_hiratio->SetTitle(("Unf. Ratio, kIter="+std::to_string(kIter_end)+"/kIter="+std::to_string(kIterInput)+";Jet p_{T};ratio").c_str());//def title  
+
       canv_kIterRatio->Print(outPdfFile.c_str());
 
 
@@ -2272,7 +2307,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   }
   
   if(dokIterQA){
-    hkiter_ratio->Write();
+    hkiter_hiratio->Write();
+    hkiter_loratio->Write();
     hchi2iter->Write();
     
     TDirectory* fout_kiter_dir=fout->mkdir("all_kiter_plots");

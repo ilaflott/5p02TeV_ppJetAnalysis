@@ -5,12 +5,22 @@ const bool drawPDFs=true;
 const bool debugMode=false, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
+
+const bool useSimpBins=false;
+const bool doJetID=true;
+
+const bool setDataCovMat=true;
+
 const bool compareToNLOThy=false;//unless the last bin in the pt spectra is 638-686 GeV, or 686-1000 GeV, this should be false
 const bool applyNPCorrs=true&&compareToNLOThy; 
 
+
+
+
 // CODE --------------------------------------------------
 int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_dir   , std::string baseName , 
-			    const bool doJetID=true     , const bool useSimpBins=false, const int kIterInput=4 ){
+			    const int kIterInput=4 , const int etabin=0){
+			    //    const bool doJetID=true     , const bool useSimpBins=false, const int kIterInput=4 ){
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
@@ -1564,12 +1574,14 @@ int bayesUnfoldDataSpectra( std::string inFile_Data_dir , std::string inFile_MC_
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
-  if( argc!=7 ){
-    std::cout<<"do ./bayesUnfoldDataSpectra.exe <targDataDir> <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
+  if( argc!=6 ){
+    //std::cout<<"do ./bayesUnfoldDataSpectra.exe <targDataDir> <targMCDir> <baseOutputName> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
+    std::cout<<"do ./bayesUnfoldDataSpectra.exe <targDataDir> <targMCDir> <baseOutputName> <kIterInput> <eatbinint>"<<std::endl;
     std::cout<<"actually... just open the damn code and look"<<std::endl;    
     return rStatus;  }  
   rStatus=bayesUnfoldDataSpectra(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], 
-				   (int)std::atoi(argv[4]) , (int)std::atoi(argv[5]), (const int)std::atoi(argv[6]) 				   
+				   (const int)std::atoi(argv[4]) 				   ,
+				   (int)std::atoi(argv[5])
 				   );   
   std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
   return rStatus;

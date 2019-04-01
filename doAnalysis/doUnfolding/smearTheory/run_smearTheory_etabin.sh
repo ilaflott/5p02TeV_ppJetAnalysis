@@ -99,7 +99,7 @@ then
     cp $OUTFILE $OUTDIR/.
     cp $JERFILE $OUTDIR/.
     cp $JERPDFFILE $OUTDIR/.
-    #return    #DEBUG
+    return    #DEBUG
     
     echo ""
     echo "writing plots in $OUTFILE to $OUTDIR"

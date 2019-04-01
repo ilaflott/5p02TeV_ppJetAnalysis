@@ -47,7 +47,8 @@ RooUnfold-svnTrunk_master/.svn/*
 RooUnfold-svnTrunk_master/doc
 RooUnfold-svnTrunk_master/doc/*
 
-RooUnfold-svnTrunk/
+RooUnfold-svnTrunk
+RooUnfold-svnTrunk/*
 doAnalysis/deprecated/
 doAnalysis/doUnfolding/SVDUnfoldNLOMCSpectra_v2.C
 doAnalysis/doUnfolding/bayesUnfoldNLOMCSpectra_v2.C

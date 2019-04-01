@@ -1,6 +1,6 @@
 *.d
 *.o
-*.sty
+*.sty	
 *.svn-base
 *.so
 *.pcm
@@ -42,6 +42,11 @@ doAnalysis/printPlots_JERS/code_snips_reference
 doAnalysis/printPlots_JERS/code_snips_reference/*
 doAnalysis/printPlots_JERS/output
 doAnalysis/printPlots_JERS/output/*
+RooUnfold-svnTrunk_master/.svn
+RooUnfold-svnTrunk_master/.svn/*
+RooUnfold-svnTrunk_master/doc
+RooUnfold-svnTrunk_master/doc/*
+
 RooUnfold-svnTrunk/
 doAnalysis/deprecated/
 doAnalysis/doUnfolding/SVDUnfoldNLOMCSpectra_v2.C

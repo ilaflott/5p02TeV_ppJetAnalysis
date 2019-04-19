@@ -16,6 +16,7 @@ void printDataEventCountReport(TFile* fin){
 
 
   //  TH1F *h_NEvents_jet100=(TH1F*)fin->Get("NEvents_jet100Trigd"),    *h_NEvents_jet80=(TH1F*)fin->Get("NEvents_jet80Trigd"),    *h_NEvents_jet60=(TH1F*)fin->Get("NEvents_jet60Trigd"),    *h_NEvents_jet40=(TH1F*)fin->Get("NEvents_jet40Trigd");
+  TH1F *h_NEvents_HLTMB  = (TH1F*)fin->Get("NEvents_HLTMB");
   TH1F *h_NEvents_HLT40  = (TH1F*)fin->Get("NEvents_HLT40");
   TH1F *h_NEvents_HLT60  = (TH1F*)fin->Get("NEvents_HLT60");
   TH1F *h_NEvents_HLT80  = (TH1F*)fin->Get("NEvents_HLT80");
@@ -26,6 +27,7 @@ void printDataEventCountReport(TFile* fin){
   TH1F *h_NEvents_HLT80thresh  = (TH1F*)fin->Get("NEvents_HLT80thresh");
   TH1F *h_NEvents_HLT100thresh = (TH1F*)fin->Get("NEvents_HLT100thresh");
 
+  TH1F *h_NEvents_isMB  = (TH1F*)fin->Get("NEvents_isMB");
   TH1F *h_NEvents_is40  = (TH1F*)fin->Get("NEvents_is40");
   TH1F *h_NEvents_is60  = (TH1F*)fin->Get("NEvents_is60");
   TH1F *h_NEvents_is80  = (TH1F*)fin->Get("NEvents_is80");
@@ -42,8 +44,8 @@ void printDataEventCountReport(TFile* fin){
 
   std::cout<<"--- EVENT LOOP ---"<<std::endl;
   std::cout<<"# evts (description) = count / pscl weighted count" <<std::endl<<std::endl;
-  std::cout<<"skipped                      = " << h_NEvents_skipped->GetBinContent(1) << " / " << h_NEvents_skipped->GetBinContent(2)<<std::endl;
   std::cout<<"in file(s) opened            = " << h_NEvents->GetBinContent(1)          << " / " << h_NEvents->GetBinContent(2)<<std::endl; 
+  std::cout<<"skipped                      = " << h_NEvents_skipped->GetBinContent(1) << " / " << h_NEvents_skipped->GetBinContent(2)<<std::endl;
   std::cout<<"read = in files - skipped    = " << h_NEvents_read->GetBinContent(1)    << " / " << h_NEvents_read->GetBinContent(2)<<std::endl;  
   std::cout<<"skimCuts  = read - !skim     = " << h_NEvents_skimCut->GetBinContent(1) << " / " << h_NEvents_skimCut->GetBinContent(2) << std::endl;//same
   std::cout<<"vzCuts    = skimCuts - !vz   = " << h_NEvents_vzCut->GetBinContent(1)   << " / " << h_NEvents_vzCut->GetBinContent(2)   << std::endl; //same
@@ -56,6 +58,7 @@ void printDataEventCountReport(TFile* fin){
   std::cout<<"Trigger Combination type = " << hTrigComb->GetTitle() << std::endl;
   std::cout<<std::endl;
   std::cout<<"Pass Trigger Inclusively; Evt Counts"<<std::endl;
+  std::cout<<"# evts passing HLTMB      = " << h_NEvents_HLTMB ->GetBinContent(1) << " / " << h_NEvents_HLTMB ->GetBinContent(2) <<std::endl;
   std::cout<<"# evts passing HLT40      = " << h_NEvents_HLT40 ->GetBinContent(1) << " / " << h_NEvents_HLT40 ->GetBinContent(2) <<std::endl;
   std::cout<<"# evts passing HLT60      = " << h_NEvents_HLT60 ->GetBinContent(1) << " / " << h_NEvents_HLT60 ->GetBinContent(2) <<std::endl;
   std::cout<<"# evts passing HLT80      = " << h_NEvents_HLT80 ->GetBinContent(1) << " / " << h_NEvents_HLT80 ->GetBinContent(2) <<std::endl;
@@ -71,6 +74,7 @@ void printDataEventCountReport(TFile* fin){
   std::cout<<"Pass Trigger Exclusively; Evt Counts"<<std::endl;
   std::cout<<"excl trigd w/o quality   = " << h_NEvents_trigd_1->GetBinContent(1) << " / " << h_NEvents_trigd_1->GetBinContent(2)<<std::endl;//non-duplicates
   std::cout<<"excl trigd w/ quality    = " << h_NEvents_trigd_2->GetBinContent(1) << " / " << h_NEvents_trigd_2->GetBinContent(2)<<std::endl;//same
+  std::cout<<"# evts passing isMB      = " << h_NEvents_isMB->GetBinContent(1)  << " / " << h_NEvents_isMB->GetBinContent(2)  <<std::endl;
   std::cout<<"# evts passing is40      = " << h_NEvents_is40->GetBinContent(1)  << " / " << h_NEvents_is40->GetBinContent(2)  <<std::endl;
   std::cout<<"# evts passing is60      = " << h_NEvents_is60->GetBinContent(1)  << " / " << h_NEvents_is60->GetBinContent(2)  <<std::endl;
   std::cout<<"# evts passing is80      = " << h_NEvents_is80->GetBinContent(1)  << " / " << h_NEvents_is80->GetBinContent(2)  <<std::endl;
@@ -198,12 +202,12 @@ long double computeEffLumi(TFile* finData){
 
   std::cout<<std::endl<<"integrated luminosity     ="<<intgrtdLumi<<std::endl;               
   
-  //if(funcDebug)std::cout<<"total # evts post vzCut = " << h_NEvents_vzCut->GetEntries() << std::endl;
-  //if(funcDebug)std::cout<<"total # evts post vzCut = " << h_NEvents_vzCut->GetBinContent(1) << std::endl;
-  if(funcDebug)std::cout<<"total # (weighted) evts post vzCut = " << h_NEvents_vzCut->GetBinContent(2) << std::endl;     
-  //if(funcDebug)std::cout<<"total # evts read = " << h_NEvents_read->GetEntries() << std::endl;
-  //if(funcDebug)std::cout<<"total # evts read = " << h_NEvents_read->GetBinContent(1) << std::endl;
-  if(funcDebug)std::cout<<"total # (weighted) evts read = " << h_NEvents_read->GetBinContent(2) << std::endl;     
+
+  std::cout<<"total # evts post vzCut = " << h_NEvents_vzCut->GetBinContent(1) << std::endl;
+  std::cout<<"total # evts read = " << h_NEvents_read->GetBinContent(1) << std::endl;
+
+  std::cout<<"total # (weighted) evts post vzCut = " << h_NEvents_vzCut->GetBinContent(2) << std::endl;     
+  std::cout<<"total # (weighted) evts read = " << h_NEvents_read->GetBinContent(2) << std::endl;     
   
   LumiEff_vz = h_NEvents_vzCut->GetBinContent(2)/h_NEvents_read->GetBinContent(2);                                    
   //LumiEff_vz = h_NEvents_vzCut->GetBinContent(1)/h_NEvents_read->GetBinContent(1);                                    

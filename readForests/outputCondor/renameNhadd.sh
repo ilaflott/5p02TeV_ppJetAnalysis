@@ -16,17 +16,37 @@ function hadd_ppMC_allInDir(){
 }
 
 function hadd_ppData_allInDir(){
-    if [[ $# -ne 1 ]]
+    R=$1
+    jet80dir=$2
+    lowjetsdir=$3    
+    
+    if [[ $# -eq 4 ]]
     then
-        echo "usage is ..."
-        echo "hadd_ppData_allInDir <radiusInt> "
+	minbiasdir=$4	
+	echo "hadd'ing MinBias, Jet80, and LowerJets output"
+	#return
+	hadd MinBias_ak${R}PF-allFiles.root         ./${minbiasdir}*.root
+	hadd HighPtJet80_ak${R}PF-allFiles.root     ./${jet80dir}*.root
+	hadd HighPtLowerJets_ak${R}PF-allFiles.root ./${lowjetsdir}*.root
+	hadd HighPtJetTrig_noMB_ak${R}PF-allFiles.root HighPtJet80_ak${R}PF-allFiles.root HighPtLowerJets_ak${R}PF-allFiles.root
+	hadd HighPtJetTrig_ak${R}PF-allFiles.root MinBias_ak${R}PF-allFiles.root HighPtLowerJets_ak${R}PF-allFiles.root HighPtJet80_ak${R}PF-allFiles.root
+    elif [[ $# -eq 3 ]] 
+    then
+	echo "hadd'ing Jet80 and LowerJets output"
+	#return
+	hadd HighPtJet80_ak${R}PF-allFiles.root     ./${jet80dir}*.root
+	hadd HighPtLowerJets_ak${R}PF-allFiles.root ./${lowjetsdir}*.root
+	hadd HighPtJetTrig_noMB_ak${R}PF-allFiles.root HighPtJet80_ak${R}PF-allFiles.root HighPtLowerJets_ak${R}PF-allFiles.root
+    else
+        echo "error. usage is ..."
+        echo "hadd_ppData_allInDir <radiusInt> <jet80dir> <lowjetsdir> <[opt]minbiasdir>"
+	echo "exit."
         return
     fi
-    R=$1
+    echo ""
+    echo "done hadd'ing output."
     echo "in dir $PWD"
-    hadd HighPtJetTrig_ak${R}PF-allFiles.root ./ppData*/*.root
-    hadd HighPtJet80_ak${R}PF-allFiles.root ./ppData_HighPtJet80*/*.root
-    hadd HighPtLowerJets_ak${R}PF-allFiles.root ./ppData_HighPtLowerJets*/*.root
+
     return
 }
 
@@ -142,48 +162,46 @@ then
     echo ""
     sleep 1s
     
-    #ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetPlots_${etabin}/    
-    #ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_jetMult_${etabin}/    
     ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_${desc}
     mkdir ${ppDataHPtDir}
     sleep 1s
-
+    
     echo ""
     echo "moving ppData folders"
     echo ""
     sleep 1s
     
-    #ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
-    #ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
-
-    
-    #ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_jetMult_${etabin}/
-    #ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_jetMult_${etabin}/
-
     ppDatajet80=ppData_HighPtJet80_ak${R}PFJets_${date_output}_${desc}/
     if [[ -d "${ppDatajet80}" ]]
     then
 	echo "${ppDatajet80} dir found."
+	mv ${ppDatajet80} ${ppDataHPtDir}
     else
 	echo "${ppDatajet80} not found."
-	echo "exit."
-	return
+	#echo "exit."
+	#return
     fi
     ppDatalowJets=ppData_HighPtLowerJets_ak${R}PFJets_${date_output}_${desc}/
     if [[ -d "${ppDatalowJets}" ]]
     then
 	echo "${ppDatalowJets} dir found."
+	mv ${ppDatalowJets} ${ppDataHPtDir}
     else
 	echo "${ppDatalowJets} not found."
-	echo "exit."
-	return
+	#echo "exit."
+	#return
+    fi
+    ppDataMinBias=ppData_MinBias6_758p3_ak${R}PFJets_${date_output}_${desc}/
+    if [[ -d "${ppDataMinBias}" ]]
+    then
+	echo "${ppDataMinBias} dir found."
+	mv ${ppDataMinBias} ${ppDataHPtDir}
+    else
+	echo "${ppDataMinBias} not found."
+	#echo "exit."
+	#return
     fi
 
-
-
-
-    mv ${ppDatajet80} ${ppDataHPtDir}
-    mv ${ppDatalowJets} ${ppDataHPtDir}
     cd ${ppDataHPtDir}
     sleep 1s
     
@@ -191,18 +209,19 @@ then
     echo "hadding ppData"
     echo ""
     sleep 1s
-    
-    hadd_ppData_allInDir ${R}
-    sleep 1s
-    
-    echo ""
-    echo "done hadd'ing ppData"
-    echo ""
+
+    if [[ -d "${ppDataMinBias}" && -d "${ppDatalowJets}" && -d "${ppDatajet80}" ]]
+    then	
+	hadd_ppData_allInDir ${R} ${ppDatajet80} ${ppDatalowJets} ${ppDataMinBias}
+    elif [[ -d "${ppDatalowJets}" && -d "${ppDatajet80}" ]]
+    then
+	hadd_ppData_allInDir ${R} ${ppDatajet80} ${ppDatalowJets} ${ppDataMinBias}
+    fi
+	
     cd ${workingDir}
     sleep 1s
     
-    #cp --parents $ppDataHPtDir/*allFiles*.root 4scp/
-    
+    #cp --parents $ppDataHPtDir/*allFiles*.root 4scp/    
     
     echo ""
     echo "moving to SCRATCH space"

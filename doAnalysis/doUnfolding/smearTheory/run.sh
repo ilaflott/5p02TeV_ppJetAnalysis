@@ -45,12 +45,12 @@ then
     ##fittypestr="spl3wgts_extv1"
     ##fittypestr="spl3wgts_extv3"
     
-    scpoutput=1
+    scpoutput=0
     scpafterlast=1
     #etabin_i=0
     #Netabins=6 ##full set of etabins 
     etabin_i=0 
-    Netabins=1 ##debug; runs first etabin only
+    Netabins=4 ##debug; runs first etabin only
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]
@@ -111,12 +111,12 @@ then
     ##fittypestr="spl3wgts_extv1"
     ##fittypestr="spl3wgts_extv3"
     
-    scpoutput=1
+    scpoutput=0
     scpafterlast=1
     #etabin_i=0
     #Netabins=6 ##full set of etabins 
     etabin_i=0 
-    Netabins=1 ##debug; runs first etabin only
+    Netabins=4 ##debug; runs first etabin only
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]

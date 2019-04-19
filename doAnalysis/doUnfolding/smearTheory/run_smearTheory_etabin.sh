@@ -51,8 +51,8 @@ then
     echo "etabinstr=${etabinstr}"
     echo ""
     
-    OUTDIR=${NLOfileshortstr}_${descstr}_w8TeVscales_${Fittypestr}_gaussSmear_NLO_plots/
-    OUTFILE=${NLOfileshortstr}_${descstr}_w8TeVscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
+    OUTDIR=${NLOfileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_plots/
+    OUTFILE=${NLOfileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
     JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
     JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf
     #JERFILE=${JERfilestr}${etabinstr}_semifinal.root
@@ -82,10 +82,10 @@ then
     if [[ -d "${OUTDIR}" ]]
     then	
 	echo "$OUTDIR exists!"
-	echo "removing directory!"
-	rm -rf $OUTDIR
-	echo "recreating directory!"
-	mkdir $OUTDIR
+	#echo "removing directory!"
+	#rm -rf $OUTDIR
+	#echo "recreating directory!"
+	#mkdir $OUTDIR
     else 
 	mkdir  $OUTDIR
     fi
@@ -99,7 +99,8 @@ then
     cp $OUTFILE $OUTDIR/.
     cp $JERFILE $OUTDIR/.
     cp $JERPDFFILE $OUTDIR/.
-    return    #DEBUG
+
+    #return    #DEBUG
     
     echo ""
     echo "writing plots in $OUTFILE to $OUTDIR"

@@ -36,19 +36,107 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 					){
   
   //const int kIterInput=5 ){//, //const int etabinint=0){
+
+  // thy spectra  
+  std::string NLOMCtitle_str="";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top.
+
+  std::string CT10NPs ="" ; 
+  TFile*fNLO_CT10nlo=TFile::Open(fNLOFile_R04_CT10nlo.c_str());
+  TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=CT10nlo->GetNbinsX(); i++)CT10nlo->SetBinError(i, CT10nlo->GetBinContent(i)*(fabs(CT10nloerr->GetBinContent(i)))); 
+  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT10nlo,   
+					 CT10nlo, &CT10NPs, etabinint);
+  CT10nlo->SetMarkerSize(0);
+  CT10nlo->SetLineColor(kBlack);  
+  CT10nlo->Scale(1./1000.);
+  
+  std::string CT14NPs ="" ; 
+  TFile*fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
+  TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(fabs(CT14nloerr->GetBinContent(i)))); 
+  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
+					 CT14nlo, &CT14NPs, etabinint);
+  CT14nlo->SetMarkerSize(0);
+  CT14nlo->SetLineColor(kGreen);  
+  CT14nlo->Scale(1./1000.);
+  
+  std::string HERANPs ="" ; 
+  TFile*fNLO_HERAPDF=TFile::Open(fNLOFile_R04_HERAPDF.c_str());
+  TH1D* HERAPDF  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* HERAPDFerr  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=HERAPDF->GetNbinsX(); i++)HERAPDF->SetBinError(i, HERAPDF->GetBinContent(i)*(fabs(HERAPDFerr->GetBinContent(i)))); 
+  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_HERAPDF,
+					 HERAPDF, &HERANPs, etabinint);
+  HERAPDF->SetMarkerSize(0);
+  HERAPDF->SetLineColor(kViolet-5);  
+  HERAPDF->Scale(1./1000.);
+  
+  std::string MMHTNPs ="" ; 
+  TFile*fNLO_MMHTnlo=TFile::Open(fNLOFile_R04_MMHTnlo.c_str());
+  TH1D* MMHTnlo  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* MMHTnloerr  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=MMHTnlo->GetNbinsX(); i++)MMHTnlo->SetBinError(i, MMHTnlo->GetBinContent(i)*(fabs(MMHTnloerr->GetBinContent(i)))); 
+  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_MMHTnlo,
+					 MMHTnlo, &MMHTNPs, etabinint);
+  MMHTnlo->SetMarkerSize(0);
+  MMHTnlo->SetLineColor(kOrange+7);  
+  MMHTnlo->Scale(1./1000.);
+  
+  std::string NNPDFNPs="" ; 
+  TFile*fNLO_NNPDFnnlo=TFile::Open(fNLOFile_R04_NNPDFnnlo.c_str());
+  TH1D* NNPDFnnlo=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* NNPDFnnloerr=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=NNPDFnnloerr->GetNbinsX(); i++)NNPDFnnloerr->SetBinError(i, NNPDFnnlo->GetBinContent(i)*(fabs(NNPDFnnloerr->GetBinContent(i)))); 
+  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_NNPDFnnlo,
+					 NNPDFnnlo, &NNPDFNPs, etabinint);
+  //assert(false);
+  NNPDFnnlo->SetMarkerSize(0);
+  NNPDFnnlo->SetLineColor(kCyan-6); 
+  NNPDFnnlo->Scale(1./1000.);
+
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
   else std::cout<<"using simple pt bins"<<std::endl<<std::endl;
   
-  double* boundaries_pt_gen=setBinning(  useSimpBins , "gen"  );
-  int     nbins_pt_gen=setNBins(  useSimpBins , "gen"  );
-  double* boundaries_pt_reco      = setBinning( useSimpBins , "reco" );
-  int     nbins_pt_reco =   setNBins(  useSimpBins , "reco"  );
-  double* boundaries_pt_gen_mat   = setBinning( useSimpBins , "gen"  );
-  int     nbins_pt_gen_mat =   setNBins(  useSimpBins , "gen"  );
-  double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
-  int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
+//  double* boundaries_pt_gen=setBinning(  useSimpBins , "gen"  );
+//  int     nbins_pt_gen=setNBins(  useSimpBins , "gen"  );
+//  double* boundaries_pt_reco      = setBinning( useSimpBins , "reco" );
+//  int     nbins_pt_reco =   setNBins(  useSimpBins , "reco"  );
+//  double* boundaries_pt_gen_mat   = setBinning( useSimpBins , "gen"  );
+//  int     nbins_pt_gen_mat =   setNBins(  useSimpBins , "gen"  );
+//  double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
+//  int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
+
+  //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
+  int nbins_pt = HERAPDF->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
+  if(etabinint==0 || etabinint==1)nbins_pt--;//subtract 1 more for last giant bin from 686 GeV to 1000 GeV
+  const int     nbins_pt_gen           = nbins_pt;
+  const int     nbins_pt_reco          = nbins_pt;
+  const int     nbins_pt_gen_mat       = nbins_pt;
+  const int     nbins_pt_reco_mat      = nbins_pt;
+  
+  //length of array is nbins_pt+1 because the array contains the bin boundaries. so one more than # of bins
+  double      boundaries_pt_gen[nbins_pt+1] = {0.};
+  double     boundaries_pt_reco[nbins_pt+1] = {0.};
+  double  boundaries_pt_gen_mat[nbins_pt+1] = {0.};
+  double boundaries_pt_reco_mat[nbins_pt+1] = {0.};
+  
+  setBinning_etabin_forPY8( (double*)      boundaries_pt_gen,
+		     (double*)     boundaries_pt_reco,
+		     (double*)  boundaries_pt_gen_mat,
+		     (double*) boundaries_pt_reco_mat,
+			    nbins_pt+1, (TH1D*)HERAPDF, etabinint);
+  //assert(false);
+
+  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
+  CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
+  HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
+  MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
+  NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
+
 
   
   if(debugMode)std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;
@@ -406,69 +494,6 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );
   }  
   
-  // thy spectra  
-  std::string NLOMCtitle_str="";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top.
-
-  std::string CT10NPs ="" ; 
-  TFile*fNLO_CT10nlo=TFile::Open(fNLOFile_R04_CT10nlo.c_str());
-  TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=CT10nlo->GetNbinsX(); i++)CT10nlo->SetBinError(i, CT10nlo->GetBinContent(i)*(fabs(CT10nloerr->GetBinContent(i)))); 
-  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
-  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT10nlo,   
-					 CT10nlo, &CT10NPs, etabinint);
-  CT10nlo->SetMarkerSize(0);
-  CT10nlo->SetLineColor(kBlack);  
-  CT10nlo->Scale(1./1000.);
-  
-  std::string CT14NPs ="" ; 
-  TFile*fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
-  TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(fabs(CT14nloerr->GetBinContent(i)))); 
-  CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
-  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
-					 CT14nlo, &CT14NPs, etabinint);
-  CT14nlo->SetMarkerSize(0);
-  CT14nlo->SetLineColor(kGreen);  
-  CT14nlo->Scale(1./1000.);
-  
-  std::string HERANPs ="" ; 
-  TFile*fNLO_HERAPDF=TFile::Open(fNLOFile_R04_HERAPDF.c_str());
-  TH1D* HERAPDF  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* HERAPDFerr  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=HERAPDF->GetNbinsX(); i++)HERAPDF->SetBinError(i, HERAPDF->GetBinContent(i)*(fabs(HERAPDFerr->GetBinContent(i)))); 
-  HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
-  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_HERAPDF,
-					 HERAPDF, &HERANPs, etabinint);
-  HERAPDF->SetMarkerSize(0);
-  HERAPDF->SetLineColor(kViolet-5);  
-  HERAPDF->Scale(1./1000.);
-  
-  std::string MMHTNPs ="" ; 
-  TFile*fNLO_MMHTnlo=TFile::Open(fNLOFile_R04_MMHTnlo.c_str());
-  TH1D* MMHTnlo  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* MMHTnloerr  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=MMHTnlo->GetNbinsX(); i++)MMHTnlo->SetBinError(i, MMHTnlo->GetBinContent(i)*(fabs(MMHTnloerr->GetBinContent(i)))); 
-  MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
-  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_MMHTnlo,
-					 MMHTnlo, &MMHTNPs, etabinint);
-  MMHTnlo->SetMarkerSize(0);
-  MMHTnlo->SetLineColor(kOrange+7);  
-  MMHTnlo->Scale(1./1000.);
-  
-  std::string NNPDFNPs="" ; 
-  TFile*fNLO_NNPDFnnlo=TFile::Open(fNLOFile_R04_NNPDFnnlo.c_str());
-  TH1D* NNPDFnnlo=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* NNPDFnnloerr=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=NNPDFnnloerr->GetNbinsX(); i++)NNPDFnnloerr->SetBinError(i, NNPDFnnlo->GetBinContent(i)*(fabs(NNPDFnnloerr->GetBinContent(i)))); 
-  NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
-  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_NNPDFnnlo,
-					 NNPDFnnlo, &NNPDFNPs, etabinint);
-  //assert(false);
-  NNPDFnnlo->SetMarkerSize(0);
-  NNPDFnnlo->SetLineColor(kCyan-6); 
-  NNPDFnnlo->Scale(1./1000.);
   
 //  TH1D* thyHistUsed=NULL;
 //  if(     inFile_MC_name.find("CT10")!=std::string::npos)   {
@@ -1819,7 +1844,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
 
-  if (argc!=5){
+  if (argc!=6){
     std::cout<<"error!"<<std::endl;
     std::cout<<" do ./bayesUnfoldDataSpectra_etbina.exe <inFile_Data_dir> <baseName> <inFile_MC_dir> <inFile_MC_name>"<<std::endl;
     return rStatus;
@@ -1829,10 +1854,10 @@ int main(int argc, char* argv[]){
     rStatus=bayesUnfoldDataSpectra_etabin( 
 					  (std::string)argv[1] ,
 					  (std::string)argv[2] , 
-					  0, 
+					  (const int)std::atoi(argv[3]),//0, 
 					  4, 
-					  (std::string)argv[3], 
-					  (std::string)argv[4] );
+					  (std::string)argv[4], 
+					  (std::string)argv[5] );
     //      (bool)((int)std::atoi(argv[5])),
     //	(std::string)argv[6]  ,
     //	(std::string)argv[7] );    

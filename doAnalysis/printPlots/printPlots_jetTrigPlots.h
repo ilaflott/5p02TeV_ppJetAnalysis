@@ -18,10 +18,10 @@ void setupJetTrigSpectraRatioCanvas(TCanvas* canv,
   return;
 }
 
-void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
+void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool usedMinBias, bool analysisRebin, int etabin,
 			      std::string thePDFFileName , std::string fullJetType , 
 			      std::string trigType, std::string radius , bool usedHLTPF, bool didJetID , TFile* fout=NULL){
-  bool funcDebug=false;
+  bool funcDebug=true;
   if(funcDebug){
   std::cout<<std::endl<<std::endl<<" ------------------------------------------------------------------- "<<std::endl;
   std::cout<<" --------------- DRAWING JET SPECTRA BY TRIGGER --------------- "<<std::endl;
@@ -39,6 +39,12 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
   std::string jetCutString, jetEtaCutString, jtptQACut_str;
   makeJetCutStrings(&jetCutString, &jetEtaCutString, &jtptQACut_str, fin);  
   std::string sampleDescString=sqrts2k15ppString;  
+  if(etabin==0)jetEtaCutString="0.0 < #||{y} < 0.5";
+  if(etabin==1)jetEtaCutString="0.5 < #||{y} < 1.0";
+  if(etabin==2)jetEtaCutString="1.0 < #||{y} < 1.5";
+  if(etabin==3)jetEtaCutString="1.5 < #||{y} < 2.0";
+  if(etabin==4)jetEtaCutString="2.0 < #||{y} < 2.5";
+  if(etabin==5)jetEtaCutString="2.5 < #||{y} < 3.0";
   
   if(funcDebug)std::cout<<std::endl<<"creating temporary canvas for printing JetTrig plots..."<<std::endl;
   TCanvas *temp_canvJetTrig = new TCanvas(("tempJetTrigSpec"+trigType).c_str(), ("blahTrigPt"+trigType).c_str(), canvx_trig, canvy_trig);
@@ -62,12 +68,14 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       else if(trigType=="incl")inHistName="hpp_"+HLTName[j];    
     }    
     if(didJetID)inHistName+="_wJetID";
-    inHistName+="_"+radius+etaWidth;    
+    //inHistName+="_"+radius+etaWidth;    
+    inHistName+="_"+radius+"etabin"+std::to_string(etabin);    
     if(HLTName[j]=="HLT100"&&!usedHLT100)continue;
+    if(HLTName[j]=="HLTMB"&&!usedMinBias)continue;
     
     if(funcDebug)std::cout<<"inHistName="<<inHistName<<std::endl;
-
-
+    //assert(false);
+    
     //get hist
     TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
     if(funcDebug)theJetTrigQAHist->Print("base"); std::cout<<std::endl;
@@ -109,7 +117,7 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       
       //style
       trigSpectraHistStyle(theJetTrigQAHist, j);
-      theJetTrigQAHist->Draw("E");      
+      theJetTrigQAHist->Draw("");      
       
       //descriptive text on plot
       float t1Loc1=0.54, t1Loc2=0.82;
@@ -120,10 +128,22 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       float pp1x=t1Loc1,pp1y=t1Loc2-0.12;
       TLatex *pp1=makeTLatex(pp1x,pp1y,sqrts2k15ppString.c_str() );      pp1->Draw();
       TLatex *pp2=makeTLatex(pp1x,(pp1y-0.04),intLumiString.c_str() );    pp2->Draw();      
+      if(fout){
+	fout->cd();
+	theJetTrigQAHist->Write();
+	jetpad_excsp->cd();
+      }
+
     }
     else{//rest of HLT spectra
       trigSpectraHistStyle(theJetTrigQAHist, j);
-      theJetTrigQAHist->Draw("E SAME");}
+      theJetTrigQAHist->Draw(" SAME");
+      if(fout){
+	fout->cd();
+	theJetTrigQAHist->Write();
+	jetpad_excsp->cd();
+      }
+    }
     
   }//end loop over trigs for spectra
   
@@ -142,13 +162,14 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
     
     std::string inHistName;
     if(HLTName[j]=="HLT100"&&!usedHLT100)continue;    
+    if(HLTName[j]=="HLTMB"&&!usedMinBias)continue;
     
     if(j>0){//individial hlt paths, numerators, combohist setup by now
       
       if(trigType=="excl")      inHistName="hpp_exc"+HLTName[j];//+"_"+radius+etaWidth;
       else if(trigType=="incl") inHistName="hpp_"+HLTName[j];//+"_"+radius+etaWidth;
       if(didJetID)inHistName+="_wJetID";
-      inHistName+="_"+radius+etaWidth;      
+      inHistName+="_"+radius+"etabin"+std::to_string(etabin);//etaWidth;      
       if(funcDebug)std::cout<<"inHistName="<<inHistName<<std::endl<<std::endl;
       
       TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
@@ -176,8 +197,8 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
       
       theJetTrigQAHist->SetTitle("");	
       
-      if(j==1)theJetTrigQAHist->Draw("E");
-      else theJetTrigQAHist->Draw("E SAME");
+      if(j==1)theJetTrigQAHist->Draw("");
+      else theJetTrigQAHist->Draw(" SAME");
       
       
       if( j==1 )  {
@@ -191,6 +212,12 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
 	lineAtOne->Draw("same");
 	
       }//end j=1 specific
+      
+      if(fout){
+	fout->cd();
+	theJetTrigQAHist->Write();
+	jetpad_excrat->cd();
+      }
     }//end j>0 
     
   }//end loop over trigs for ratio
@@ -216,8 +243,11 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool analysisRebin,
     outcanvname+=fullJetType+"_jtpt_";
     if(analysisRebin) outcanvname+="anabins_";
     else              outcanvname+="simpbins_";
-    outcanvname +=trigType;  
-    outcanv->Write((outcanvname+"_canv").c_str());      }//end fout
+    outcanvname +=trigType+"_etabin"+std::to_string(etabin);  
+    outcanv->Write((outcanvname+"_canv").c_str());   
+    
+    
+   }//end fout
   
   temp_canvJetTrig->Close();
   
@@ -233,7 +263,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
 		      std::string thePDFFileName , std::string fullJetType ,
 		      std::string trigType, std::string radius , bool usedHLTPF, TFile* fout=NULL){
   
-  bool funcDebug=false;
+  bool funcDebug=true;
   if(funcDebug){
     std::cout<<std::endl<<std::endl<<" ------------------------------------------------------------------- "<<std::endl;
     std::cout<<" --------------- DRAWING TRIGGER JET PT SPECTRA FOR TRIGGERS --------------- "<<std::endl;
@@ -278,6 +308,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       else if (trigType=="incl") inHistName="Inc"+HLTName[j]+"_trgPt";    
     }    
     if(HLTName[j]=="HLT100"&&!usedHLT100)continue;
+    if(HLTName[j]=="HLTMB")continue;//no HLTMB trigger jet objects exist.
     
     if(funcDebug)std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl;
 
@@ -319,7 +350,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       theJetTrigQAHist->SetXTitle( "trigger jet p_{T} (GeV)   ");
      
       trigPtHistStyle(theJetTrigQAHist,j);
-      theJetTrigQAHist->DrawClone("E");
+      theJetTrigQAHist->DrawClone("");
       
       float t1Loc1=0.54, t1Loc2=0.82;      
       TLatex *t1=makeTLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());      t1->Draw();
@@ -357,6 +388,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
 	else if (trigType=="incl") inHistName="Inc"+HLTName[j]+"_trgPt";    
       }    
       if(HLTName[j]=="HLT100"&&!usedHLT100)continue;
+      if(HLTName[j]=="HLTMB")continue;
       
       if(funcDebug)std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl;
       
@@ -390,8 +422,8 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       
       theJetTrigQAHist->SetTitle("");	
       
-      if(j==1)theJetTrigQAHist->DrawClone("][ HIST E");
-      else theJetTrigQAHist->DrawClone("][ HIST E SAME");
+      if(j==1)theJetTrigQAHist->DrawClone("][ HIST ");
+      else theJetTrigQAHist->DrawClone("][ HIST  SAME");
       
       
       if( j==1 )  {

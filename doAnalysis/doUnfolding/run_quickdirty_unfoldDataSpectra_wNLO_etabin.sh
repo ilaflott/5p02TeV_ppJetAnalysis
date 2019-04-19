@@ -9,20 +9,19 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 
 ####use sigma/mu JER fit ---------------
 
-#vanilla no sys
-./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_PY8_LO_sigmu_5TeVscales_nosys"                 "smearTheory/PY8_ptLo28_drCut_geny_sigmu_w5TeVscales_spl3wgts_gaussSmear_NLO_plots/" "PY8_ptLo28_drCut_geny_sigmu_w5TeVscales_spl3wgts_gaussSmear_"  0  "" ""
-scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_PY8_LO_sigmu_5TeVscales_nosys_NLOMC_wNP_00eta05.*"
+##JER sys
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_PY8_LO_sigmu_noJERscales_JERsys"       0          "smearTheory/PY8_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "PY8_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1  "JER" ""
+
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_PY8_LO_sigmu_noJERscales_JERsys"       1          "smearTheory/PY8_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "PY8_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1  "JER" ""
+
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_PY8_LO_sigmu_noJERscales_JERsys"       2          "smearTheory/PY8_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "PY8_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1  "JER" ""
+
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_PY8_LO_sigmu_noJERscales_JERsys"       3          "smearTheory/PY8_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "PY8_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1  "JER" ""
+
+
+scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_PY8_LO_sigmu_noJERscales_JERsys_NLOMC_wNP_??eta??.*"
 
 return
-
-##JER sys
-./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_PY8_LO_sigmu_5TeVscales_JERsys"                 "smearTheory/PY8_ptLo28_drCut_geny_sigmu_w5TeVscales_spl3wgts_gaussSmear_NLO_plots/" "PY8_ptLo28_drCut_geny_sigmu_w5TeVscales_spl3wgts_gaussSmear_"  1  "JER" ""
-scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_PY8_LO_sigmu_5TeVscales_JERsys_NLOMC_wNP_00eta05.*"
-
-##PDF sys12, alt PDF choices, CT14/NNPDF
-./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_PY8_LO_sigmu_5TeVscales_PDFsys12"                 "smearTheory/PY8_ptLo28_drCut_geny_sigmu_w5TeVscales_spl3wgts_gaussSmear_NLO_plots/" "PY8_ptLo28_drCut_geny_sigmu_w5TeVscales_spl3wgts_gaussSmear_"  1  "PDF" "12"
-scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_PY8_LO_sigmu_5TeVscales_PDFsys12_NLOMC_wNP_00eta05.*"
-
 
 
 
@@ -37,9 +36,12 @@ scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_PY8_LO_sigmu_5
 #scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_sigmu_nosys_NLOMC_wNP_00eta05.*"
 
 
-##JER sys
-#./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigmu_8TeVscales_JERsys"     "smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_w8TeVscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigmu_w8TeVscales_spl3wgts_gaussSmear_"  1 "JER" ""
-#scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_sigmu_8TeVscales_JERsys_NLOMC_wNP_00eta05.*"
+#JER sys
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigmu_noJERscales_JERsys" 0    "smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1 "JER" ""
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigmu_noJERscales_JERsys" 1    "smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1 "JER" ""
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigmu_noJERscales_JERsys" 2    "smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1 "JER" ""
+./bayesUnfoldDataSpectra_wNLO_etabin.exe "02.18.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_02-18-19_jetPlots_0.0eta3.0" "Bayes_NNPDF_NLO_sigmu_noJERscales_JERsys" 3    "smearTheory/NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_fullstat_spl3wgts_gaussSmear_NLO_plots/" "NNPDF_ptLo28_drCut_geny_sigmu_noJERscales_spl3wgts_gaussSmear_"  1 "JER" ""
+scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_Bayes_NNPDF_NLO_sigmu_noJERscales_JERsys_NLOMC_wNP_??eta??.*"
 #return
 
 

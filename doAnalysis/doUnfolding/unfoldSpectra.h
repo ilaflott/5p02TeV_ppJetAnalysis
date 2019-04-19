@@ -349,6 +349,54 @@ void setBinning_etabin(
   return;
 }
 
+void setBinning_etabin_forPY8(
+			      double* binarr1,//gen
+			      double* binarr2,//reco
+			      double* binarr3,//genmat
+			      double* binarr4,//recomat
+			      int arrlength, TH1D* nlohist   , int etabinint){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"setting binning for unfolding single-etabin hist"<<std::endl;
+  int arrindex=0;  
+  int nbins_hist=nlohist->GetNbinsX();
+  //int nbins_hist=arrlength;//nlohist->GetNbinsX();
+  if(funcDebug){
+    std::cout<<"arrlength="<<arrlength<<std::endl;
+    std::cout<<"nbins_hist="<<nbins_hist<<std::endl;  }
+  for(int i=1; i<=nbins_hist; i++){
+    
+    if(funcDebug)std::cout<<"__________"<<std::endl;
+    if(funcDebug)std::cout<<"i="<<i<<std::endl;
+    if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
+    double binedge=-1.;
+    binedge=nlohist->GetBinLowEdge(i);        
+    if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
+    if(binedge<56.)continue;
+    binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
+    binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;    
+    if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;
+    arrindex++;
+    if(i==nbins_hist){//upper edge of last bin special case or else we run off the end of the array and/or hist. bad!
+      if(etabinint==0 || etabinint==1) {
+	std::cout<<"not using last bin for etabin==0 or 1"<<std::endl; continue;
+      }
+      else {
+	
+	
+	if(funcDebug)std::cout<<"i="<<i<<std::endl;
+	if(funcDebug)std::cout<<"(bool)(i==nbins_hist)="<<(i==nbins_hist)<<std::endl;
+	if(funcDebug)std::cout<<"hitting last bin!"<<std::endl;
+	binedge=nlohist->GetBinLowEdge(i)+nlohist->GetBinWidth(i);       
+	if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
+	if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
+	binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
+	binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;                 
+	if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;    }
+    }    
+  }
+  return;
+}
+
 
 int setNBins ( bool useSimpBins, std::string type){
   bool funcDebug=false;

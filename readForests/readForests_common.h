@@ -8,6 +8,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
+
 // ROOTSYS
 #include <TSystem.h>
 #include <TProfile.h>
@@ -92,7 +94,7 @@ float deltaphi_jettrk(float deltaphi){
 // eta width
 const std::string etaWidth="20_eta_20";
 
-// variable names for QA Plots
+// variable names for QA Plots, based on names in ak4PFJetAnalyzer
 const std::string var[]={
   //jets, 0-3=4 vars
   "jtpt"  , "rawpt" ,
@@ -114,6 +116,85 @@ const std::string var[]={
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
 const int jtInd=0, jtConInd=4, dijtInd=31;
+
+const std::string tupelvar[]={
+  "Pt",
+  "Eta",
+  "Phi",
+  "E",
+  "Id",
+  "RawPt",
+  "RawE",
+  "HfHadE",
+  "HfEmE",
+  "ChHadFrac",
+  "NeutralHadAnHfFrac",
+  "ChEmFrac",
+  "NeutralEmFrac",
+  "ChMult",
+  "ConstCnt",
+  "NeuMult"
+};
+const int N_tupelvars=sizeof(tupelvar)/sizeof(std::string);
+
+const int tupel_nbins[N_tupelvars]={
+2000  ,//  "Pt",
+517*2,//  "Eta",
+315*2,//  "Phi",
+2000,//  "E",
+4,//  "Id",
+2000,//  "RawPt",
+2000,//  "RawE",
+2000,//  "HfHadE",
+2000,//  "HfEmE",
+200,//  "ChHadFrac",
+200,//  "NeutralHadAnHfFrac",
+200,//  "ChEmFrac",
+200,//  "NeutralEmFrac",
+100,//  "ChMult",
+100,//  "ConstCnt"  
+100 //"NeuMult"
+};
+const float tupel_xlo[N_tupelvars]={
+0.,//  "Pt",
+-5.17,//  "Eta",
+-3.15,//  "Phi",
+0.,//  "E",
+0.,//  "Id",
+0.,//  "RawPt",
+0.,//  "RawE",
+0.,//  "HfHadE",
+0.,//  "HfEmE",
+0.,//  "ChHadFrac",
+0.,//  "NeutralHadAnHfFrac",
+0.,//  "ChEmFrac",
+0.,//  "NeutralEmFrac",
+0.,//  "ChMult",
+0.,//  "ConstCnt"  
+0.// "NeuMult"
+};
+const float tupel_xhi[N_tupelvars]={
+2000.,//  "Pt",
+5.17,//  "Eta",
+3.15,//  "Phi",
+2000.,//  "E",
+4.,//  "Id",
+2000.,//  "RawPt",
+2000.,//  "RawE",
+2000.,//  "HfHadE",
+2000.,//  "HfEmE",
+2.,//  "ChHadFrac",
+2.,//  "NeutralHadAnHfFrac",
+2.,//  "ChEmFrac",
+2.,//  "NeutralEmFrac",
+100.,//  "ChMult",
+100.,//  "ConstCnt"    
+100.//"NeuMult"
+};
+  
+
+const int tupel_jtInd=0, tupel_jetID=7;
+
 
 //L1
 const std::string L1BitStrings[]={//this array is a good idea
@@ -159,10 +240,11 @@ const std::string dataTreeNames[]={
   "skimanalysis/HltTree",   
   "ppTrack/trackTree",
   "hltanalysis/HltTree",
+  "tupel/EventTree",  
   "hltobject/", 
   "hltobject/", 
   "hltobject/", 
-  "hltobject/"  
+  "hltobject/"
 };
 const int N_dataTrees=sizeof(dataTreeNames)/sizeof(std::string);
 
@@ -172,7 +254,8 @@ const std::string MCTreeNames[]={
   "GARBAGE ENTRY",
   "hiEvtAnalyzer/HiTree", 
   "skimanalysis/HltTree",
-  "ppTrack/trackTree"//,
+  "ppTrack/trackTree",
+  "tupel/EventTree"
   // "hltanalysis/HltTree",
   // "hltobject/"+Calo_HLTBitStrings[0]+"_v" ,
   // "hltobject/"+Calo_HLTBitStrings[1]+"_v" ,
@@ -226,9 +309,14 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 //raghavs suggested genpt binning for JER
 const float ptbins[]={
-  //1., 5., 6., 8., 10., 12., 
-  //15., 
-  //18., 
+  //1., 
+  5., 
+  6., 
+  8., 
+  10., 
+  12., 
+  15., 
+  18., 
   21., 
   24., 
   28.,
@@ -415,6 +503,71 @@ bool jetID_32eta47(float jetIDpt,
 //      trkSum_F[jet] < 0.4       && 
 //      neSum_F[jet]/jetIDpt > 0. &&                         //          neSum_F[jet]/jetIDpt < null &&
 //      true       ) passesJetID=true;     //          neuMult            > 10  
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+
+
+//v2 jet ID is currently based on loose criteria of 13 TeV
+bool jetID_00eta24_v2( float jetNeutralHadAndHfFrac ,
+		       float jetNeutalEmFrac        ,
+		       float jetConstCnt            ,
+		       float jetChHadFrac           ,
+		       float jetChMult              ,
+		       float jetChEmFrac              ){
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_00eta24_v2 called.";
+  bool passesJetID=false;
+  if(  jetNeutralHadAndHfFrac   < 0.99 &&
+       jetNeutalEmFrac          < 0.99 &&
+       jetConstCnt              > 1.    &&      
+       jetChHadFrac             > 0.   && 
+       jetChMult                > 0.   &&
+       jetChEmFrac              < 0.99    ) passesJetID=true;	      
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_24eta27_v2( float jetNeutralHadAndHfFrac ,	   
+		       float jetNeutalEmFrac        ,		   
+  		       float jetConstCnt            )          {
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_24eta27_v2 called.";
+  bool passesJetID=false;
+  if(   jetNeutralHadAndHfFrac    < 0.99 &&
+        jetNeutalEmFrac           < 0.99 &&
+        jetConstCnt               > 1.       ) passesJetID=true;	      
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_27eta30_v2 ( float jetNeutralEmFrac,
+		        float jetNeuMult    ){  
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_27eta30 called.";
+  bool passesJetID=false;
+  if(   jetNeutralEmFrac   < 0.90 &&
+	jetNeuMult   > 2.)passesJetID=true;
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
+bool jetID_32eta47_v2(float jetNeutralEmFrac,
+		      float jetNeuMult    ){
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_32eta47 called.";
+  bool passesJetID=false;
+  if( jetNeutralEmFrac <0.9 &&
+      jetNeuMult >10. )passesJetID=true;
   if(funcDebug)
     std::cout<<" passesJetID="<<passesJetID<<std::endl;
   return passesJetID;

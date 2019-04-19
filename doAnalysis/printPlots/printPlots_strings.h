@@ -44,7 +44,7 @@ const std::string PDStatsString_2="#bf{CMS} #it{Work In Progress}               
 const std::string var[]={
   //jets, 0-6, 7 vars tot
   "jtpt"  , "rawpt" ,
-  "jtpt_forRes", "jtpt_L2Res", "jtpt_L3Res",
+  //"jtpt_forRes", "jtpt_L2Res", "jtpt_L3Res",
   "jteta" , "jtphi" ,
 
   //jet constituents, 7-33, 27 vars tot
@@ -69,17 +69,77 @@ const std::string var[]={
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
 const int jetQA_varStart=0;
-const int jetQA_Nvars=7;
+//const int jetQA_Nvars=7;
+const int jetQA_Nvars=4;
 const int jetConstits_varStart=jetQA_varStart+jetQA_Nvars;
 const int jetConstits_Nvars=27;
 const int dijet_varStart=jetConstits_varStart+jetConstits_Nvars;
 
 // variable names, string array
+const std::string tupelvar[]={
+  "Pt",
+  "Eta",
+  "Phi",
+  "E",
+  "Id",
+  "RawPt",
+  "RawE",
+  "HfHadE",
+  "HfEmE",
+  "ChHadFrac",
+  "NeutralHadAnHfFrac",
+  "ChEmFrac",
+  "NeutralEmFrac",
+  "ChMult",
+  "ConstCnt",
+  "NeuMult"
+};
+const int N_tupelvars=sizeof(tupelvar)/sizeof(std::string);
+
+const std::string tupelvar_xAx_Titles[N_tupelvars]={
+  "Jet p_{T}^{RECO} [GeV]",//"Pt",
+  "Jet y^{RECO}",//"Eta",
+  "Jet #phi^{RECO}",//"Phi",
+  "Jet E^{RECO} [GeV]",//"E",
+  "SMP Jet ID [0/1/2/3]=[!Pass/PassTight/PassMed/PassLoose]",//"Id",
+  "Jet p_{T}^{Raw} [GeV]",//"RawPt",
+  "Jet E^{RAW} [GeV]",//"RawE",
+  "HF Calo Hadronic Energy [GeV]",//"HfHadE",
+  "HF Calo Electromagnetic Energy[GeV]",//"HfEmE",
+  "Charged Hadron Energy/Jet E^{RAW} (PF Charged Hadrons)",//"ChHadFrac",
+  "Neutral Hadron Energy/Jet E^{RAW} (PF Neutral Hadrons)",//"NeutralHadAnHfFrac",
+  "Charged EM Energy/Jet E^{RAW} (PF Electrons)",//"ChEmFrac",
+  "Neutral EM Energy/Jet E^{RAW} (PF Photons)",//"NeutralEmFrac",
+  "Charged Multiplicity (PF Charged Hadrons + Electrons + Muons)",//"ChMult",
+  "Constituent Count (All PF Particles)",//"ConstCnt",
+  "Neutral Multiplicity (PF Neutral Hadrons + Photons)"//"NeuMult"
+};
+
+const std::string tupelvar_incjetanaequiv[]={
+"jtpt",//  "Pt",
+"jteta",//  "Eta",
+"jtphi",//  "Phi",
+"NULL",//  "E",
+"NULL",//  "Id",
+"rawpt",//  "RawPt",
+"NULL",//  "RawE",
+"NULL",//  "HfHadE",
+"NULL",//  "HfEmE",
+"chSum",//  "ChHadFrac",
+"neSum",//  "NeutralHadAnHfFrac",
+"eSum",//  "ChEmFrac",
+"phSum",//  "NeutralEmFrac",
+"chMult",//  "ChMult",
+"numConst",//  "ConstCnt",
+"neuMult"//  "NeuMult"
+};
+
+
 const std::string var_xAx_Titles[] = {   
   "Jet p_{T}^{RECO} (GeV)" ,  "Jet p_{T}^{RAW} (GeV)",  
-  "Jet p_{T}^{RECO} (GeV) no Residuals" , 
-  "Jet p_{T}^{RECO} (GeV) L2 Residuals" , 
-  "Jet p_{T}^{RECO} (GeV) L2+L3 Residuals"  ,
+//  "Jet p_{T}^{RECO} (GeV) no Residuals" , 
+//  "Jet p_{T}^{RECO} (GeV) L2 Residuals" , 
+//  "Jet p_{T}^{RECO} (GeV) L2+L3 Residuals"  ,
   "#eta_{Jet}", "#phi_{Jet}", //"y_{jet}" ,
   
   "N^{Trks}",   "#Sigma p_{T}^{Trk}/p_{T}^{RECO}", "Max p_{T}^{Trk}/p_{T}^{RECO}", 
@@ -115,15 +175,15 @@ const int N_genVars_ptrat = sizeof(genVars_ptrat)/sizeof(std::string);
 
 // trigs
 const std::string HLTName[] = {
-  "HLTComb","HLT40","HLT60","HLT80","HLT100"
+  "HLTComb","HLT40","HLT60","HLT80","HLT100", "HLTMB"
 };
 // trigs
 const std::string HLTCaloName_Leg[] = {
-  "HLTak4CaloJetsCombo","HLTak4CaloJets40","HLTak4CaloJets60","HLTak4CaloJets80","HLTak4CaloJets100"
+  "HLT ak4CaloJet Combo","HLT ak4CaloJet40","HLT ak4CaloJet60","HLT ak4CaloJet80","HLT ak4CaloJet100", "HLT MinimumBias HF1OR"
 };
 // trigs
 const std::string HLTPFName_Leg[] = {
-  "HLTPFJets Combo","HLTak4PFJets40","HLTak4PFJets60","HLTak4PFJets80","HLTak4PFJets100"
+  "HLT ak4PFJet Combo","HLT ak4PFJet40","HLT ak4PFJet60","HLT ak4PFJet80","HLT ak4PFJet100", "HLT MinimumBias HF1OR"
 };
 const int N_trigs=sizeof(HLTName)/sizeof(std::string);
 
@@ -167,6 +227,16 @@ bool findsubstr(std::string& str, const std::string& substr) {
     substrfound=true;  
   return substrfound;
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

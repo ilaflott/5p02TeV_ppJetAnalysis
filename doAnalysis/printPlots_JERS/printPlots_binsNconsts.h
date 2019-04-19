@@ -53,7 +53,6 @@ const double pthat[]={ 15, 30, 50, 80, 120, 170,
 const int Nbins_pthat=sizeof(pthat)/sizeof(double);
 
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 
-// Error in <TAxis::TAxis::Set>: bins must be in increasing order
 const Double_t ptbins_debug[]={
   //1., 5., 6., 8., 10., 12., 
   //15., 
@@ -103,24 +102,6 @@ const Double_t ptbins_debug[]={
   1410.//,
   //1497., 1588., 1684., 1784., 1890., 2000., 2116.
 
-  // BINS USED FOR APS DNP BELOW
-  //  //5.,
-  //  //15., 18., 21., 24., 28.,
-  //  32., 
-  //  37., 
-  //  43., 
-  //  49., 
-  //  56., 
-  //  64., 
-  //  74., 
-  //  84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
-  //  507., 548., 592., 638., 686., // junk bins below
-  //  1000.,
-  //  1500.
-  //  //  1050.
-  //  //  737, 790, 
-  //  //  846, 905, 
-  //  //  967
 }; 
 const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;
 
@@ -151,10 +132,16 @@ std::string absetabins_str[]={
 };
 //const double absetabins_lo[] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.2};
 //const double absetabins_hi[] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.7};
-const int nbins_abseta = 8; //sizeof(absetabins)/sizeof(Double_t)-1;
+const int nbins_abseta = 6; //sizeof(absetabins)/sizeof(Double_t)-1;
 
 
-const double fgaus_width_arr[]={
+
+
+
+
+
+const int fit_ptlo_bin_00y05=5, fit_pthi_bin_00y05=nbins_pt_debug-7;
+const double fgaus_width_arr_00y05[]={
   0.27,// gen pt low edge =43., //garbage bins
   0.26,// gen pt low edge =49., //typical gen pt cut
   0.25,// gen pt low edge =56., //typical recopt cut
@@ -179,17 +166,175 @@ const double fgaus_width_arr[]={
   0.12,// gen pt low edge =507.,
   0.12,// gen pt low edge =548.,
   0.12,// gen pt low edge =592.,
-  0.10,// gen pt low edge =638.,
+  0.10,// gen pt low edge =638.,//fit must reach at least here for this |y| range
   0.10,// gen pt low edge =686.,
   0.10,// gen pt low edge =737.,
   0.10,// gen pt low edge =790.,
-  0.10,// gen pt low edge =846.,
-  0.10// gen pt low edge =905.,
+  0.10// gen pt low edge =846.,
+  //0.10// gen pt low edge =905.,
   
 };
+const int n_00y05_widths=sizeof(fgaus_width_arr_00y05)/sizeof(double);
 
 
 
+
+
+
+
+const int fit_ptlo_bin_05y10=5, fit_pthi_bin_05y10=nbins_pt_debug-9;
+const double fgaus_width_arr_05y10[]={
+  0.27,// gen pt low edge =43., //garbage bins
+  0.26,// gen pt low edge =49., //typical gen pt cut
+  0.25,// gen pt low edge =56., //typical recopt cut
+  0.24,// gen pt low edge =64.,
+  0.23,// gen pt low edge =74.,
+  0.22,// gen pt low edge =84.,
+  0.21,// gen pt low edge =97.,
+  0.21,// gen pt low edge =114.,
+  0.20,// gen pt low edge =133.,
+  0.18,// gen pt low edge =153.,
+  0.18,// gen pt low edge =174.,
+  0.18,// gen pt low edge =196.,
+  0.17,// gen pt low edge =220.,
+  0.17,// gen pt low edge =245.,
+  0.17,// gen pt low edge =272.,
+  0.15,// gen pt low edge =300.,
+  0.15,// gen pt low edge =330.,
+  0.15,// gen pt low edge =362.,
+  0.13,// gen pt low edge =395.,
+  0.13,// gen pt low edge =430.,
+  0.13,// gen pt low edge =468.,
+  0.12,// gen pt low edge =507.,
+  0.12,// gen pt low edge =548.,
+  0.12,// gen pt low edge =592.,
+  0.10,// gen pt low edge =638.,//fit must reach at least here for this |y| range
+  0.10,// gen pt low edge =686.,
+  0.10// gen pt low edge =737.,
+  //0.10,// gen pt low edge =790.,
+  //0.10 // gen pt low edge =846.,
+  //0.10// gen pt low edge =905.,
+  
+};
+const int n_05y10_widths=sizeof(fgaus_width_arr_05y10)/sizeof(double);
+
+
+
+
+
+
+
+
+const int fit_ptlo_bin_10y15=5, fit_pthi_bin_10y15=nbins_pt_debug-10;
+const double fgaus_width_arr_10y15[]={
+  0.20,//0.25,// gen pt low edge =43., //garbage bins
+  0.20,//0.24,// gen pt low edge =49., //typical gen pt cut
+  0.20,//0.23,// gen pt low edge =56., //typical recopt cut
+  0.20,//0.22,// gen pt low edge =64.,
+  0.20,//0.21,// gen pt low edge =74.,
+  0.20,//0.21,// gen pt low edge =84.,
+  0.20,//0.19,// gen pt low edge =97.,
+  0.20,//0.19,// gen pt low edge =114.,
+  0.20,//0.19,// gen pt low edge =133.,
+  0.20,//0.18,// gen pt low edge =153.,
+  0.20,//0.18,// gen pt low edge =174.,
+  0.20,//0.18,// gen pt low edge =196.,
+  0.20,//0.17,// gen pt low edge =220.,
+  0.20,//0.17,// gen pt low edge =245.,
+  0.20,//0.17,// gen pt low edge =272.,
+  0.20,//0.17,// gen pt low edge =300.,
+  0.20,//0.16,// gen pt low edge =330.,
+  0.20,//0.16,// gen pt low edge =362.,
+  0.20,//0.16,// gen pt low edge =395.,
+  0.20,//0.15,// gen pt low edge =430.,
+  0.19,//0.15,// gen pt low edge =468.,
+  0.18,//0.15,// gen pt low edge =507.,
+  0.18,//0.14,// gen pt low edge =548.,
+  0.18,//0.12,// gen pt low edge =592.,//fit must reach at least here for this |y| range
+  0.14,//0.11,// gen pt low edge =638.,
+  0.14//0.11//,// gen pt low edge =686.,
+  //0.10// gen pt low edge =737.,
+  //0.10,// gen pt low edge =790.,
+  //0.10,// gen pt low edge =846.,
+  //0.10// gen pt low edge =905.,
+  
+};
+const int n_10y15_widths=sizeof(fgaus_width_arr_10y15)/sizeof(double);
+
+
+
+
+
+
+
+
+const int fit_ptlo_bin_15y20=5, fit_pthi_bin_15y20=nbins_pt_debug-13;
+const double fgaus_width_arr_15y20[]={
+  0.27,// gen pt low edge =43., //garbage bins
+  0.26,// gen pt low edge =49., //typical gen pt cut
+  0.25,// gen pt low edge =56., //typical recopt cut
+  0.24,// gen pt low edge =64.,
+  0.23,// gen pt low edge =74.,
+  0.22,// gen pt low edge =84.,
+  0.21,// gen pt low edge =97.,
+  0.21,// gen pt low edge =114.,
+  0.20,// gen pt low edge =133.,
+  0.18,// gen pt low edge =153.,
+  0.18,// gen pt low edge =174.,
+  0.18,// gen pt low edge =196.,
+  0.15,// gen pt low edge =220.,
+  0.15,// gen pt low edge =245.,
+  0.15,// gen pt low edge =272.,
+  0.13,// gen pt low edge =300.,
+  0.13,// gen pt low edge =330.,
+  0.13,// gen pt low edge =362.,
+  0.11,// gen pt low edge =395.,
+  0.11,// gen pt low edge =430.,
+  0.11,// gen pt low edge =468.,
+  0.11,// gen pt low edge =507.,//fit must reach at least here for this |y| range
+  0.11,// gen pt low edge =548.,
+  //0.12,// gen pt low edge =592.,
+  //0.10// gen pt low edge =638.,
+  //0.10,// gen pt low edge =686.,
+  //0.10,// gen pt low edge =737.,
+  //0.10,// gen pt low edge =790.,
+  //0.10,// gen pt low edge =846.,
+  //0.10// gen pt low edge =905.,
+  
+};
+const int n_15y20_widths=sizeof(fgaus_width_arr_15y20)/sizeof(double);
+
+double* setWidthArr(int absetabin=0, int *nwidths=NULL){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in setWidthArr"<<std::endl;
+  double* widtharr=NULL;
+  if(!nwidths)assert(false);
+  if(absetabin==0){
+    widtharr=(double*) fgaus_width_arr_00y05;
+    *nwidths= n_00y05_widths;
+  }
+  else if(absetabin==1){
+    widtharr=(double*) fgaus_width_arr_05y10;
+    *nwidths= n_05y10_widths;
+  }
+  else if(absetabin==2){
+    widtharr=(double*) fgaus_width_arr_10y15;
+    *nwidths= n_10y15_widths;
+  }
+  else if(absetabin==3){
+    widtharr=(double*) fgaus_width_arr_05y10;
+    *nwidths= n_15y20_widths;
+  }
+  else{
+    std::cout<<"ERROR! setWidthArr absetabin not valid. exit."<<std::endl;
+    assert(false);
+  }
+  
+  if(funcDebug)std::cout<<"*nwidths="<<*nwidths<<std::endl;
+  if(funcDebug)for(int i=0; i<(*nwidths);i++)std::cout<<"widtharr[i="<<i<<"]="<<widtharr[i]<<std::endl;
+  if(funcDebug)std::cout<<std::endl<<"exiting setWidthArr"<<std::endl<<std::endl;
+  return widtharr;
+}
 
 
 

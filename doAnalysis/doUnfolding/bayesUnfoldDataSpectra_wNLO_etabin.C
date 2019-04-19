@@ -31,7 +31,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 					const bool doSystUnf=false,
 					std::string systUnfType="",
 					std::string systSubType="",
-					const bool applyNPCorrs=false,
+					const bool applyNPCorrs=true,
 					const bool doJetID=true     , 
 					const bool useSimpBins=false){//, 
   //const int kIterInput=5 ){//, //const int etabinint=0){
@@ -2420,18 +2420,20 @@ int main(int argc, char* argv[]){
   //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
   //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
   //}
-  if (argc==8){
-    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
+  //  if (argc==8){
+  if (argc==9){
+    
+    //   //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
     rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
 					       (std::string)argv[1] ,
 					       (std::string)argv[2] , 
-					       0, 
+					       (const int)(std::atoi(argv[3])), 					       //0, 
 					       4, 
-					       (std::string)argv[3], 
 					       (std::string)argv[4], 
-					       (bool)((int)std::atoi(argv[5])),
-					       (std::string)argv[6]  ,
-					       (std::string)argv[7] );    
+					       (std::string)argv[5], 
+					       (bool)((int)std::atoi(argv[6])),
+					       (std::string)argv[7]  ,
+					       (std::string)argv[8] );    
   
   
 

@@ -19,24 +19,28 @@ if [[ $datatype == "ppData" ]]
 then
 ##### Jet80, then LowerJets
     echo ""
-    echo "submitting jet80/lowerJets ppData job(s)"
+    echo "submitting jet80/lowerJets/MinBias ppData job(s)"
     echo ""
-#    source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
-    #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
-    source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 20 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
+    #source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 1 ${etaLo} ${etaHi} ## DEBUG
+    #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 25 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 50 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
     
     echo ""
     echo "done submitting ppData jetPlots Jet80 job(s)"
     echo ""
     
-#    source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
-    #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
-    source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 20 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+    #source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 1 ${etaLo} ${etaHi} ## DEBUG
+    #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 25 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 50 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
     
     echo ""
     echo "done submitting ppData jetPlots LowerJets job(s)"
+    echo ""
+    #source condorSubmit_readForests.sh readForests_ppData_jetPlots 1 1 0 filelists/5p02TeV_MinBias6_758p3_forests.txt ${R} PF 1 ${etaLo} ${etaHi} ## DEBUG
+    source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 1 0 filelists/5p02TeV_MinBias6_758p3_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+    
+    echo ""
+    echo "done submitting ppData jetPlots MinBias job(s)"
     echo ""
 
 elif [[ $datatype == "ppMC" ]]

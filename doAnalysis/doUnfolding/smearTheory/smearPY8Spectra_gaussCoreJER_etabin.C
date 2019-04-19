@@ -7,7 +7,7 @@ const int xsecorder=1;//0--> LO, 1--> NLO, 2--> NNLO... etc.
 
 const bool printBaseDebug=true;
 const bool useHistSigmaFit=false;
-const bool useJERscaleFactors=true;//note; alters JER syst. as well.
+const bool useJERscaleFactors=false;//note; alters JER syst. as well.
 const bool setThyPDFErrors=true;
 
 
@@ -35,7 +35,7 @@ const std::string NPCorrFits_text=HERWGEE5_NPS_TXT;
 //JER
 const bool doJERsys=true;
 //NPCs
-const bool doNPsys=true;//involves making a new thy hist, therefore, also a sep spline fit
+const bool doNPsys=false;//involves making a new thy hist, therefore, also a sep spline fit
 //NP systs v1, using HERWIG EE4C/PYTHIA8 NPs for unfolding, shifting NP fit params up/down by 1 sigma
 const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
 const std::string NPsys1_CorrFits_str =HERWGEE4_NPS;
@@ -96,6 +96,15 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     std::cout<<"fit type not recognized! Exit!"<<std::endl; assert(false);}
     
   std::string outputTag=(std::string)absetabins_tags[etabin];
+
+  std::string thyname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"00";
+  std::string orderstring="LO";
+  if(xsecorder==1)orderstring="N"+orderstring;
+  else if(xsecorder==2)orderstring=="NN"+orderstring;
+
+  std::cout<<"etabin="<<etabin<<std::endl;  
+  std::string absetarange_str=absetabins_str[etabin]+" < #||{y} < "+absetabins_str[etabin+1];  
+
   
   std::cout<<"opening output:"<<outputFile<<std::endl<<std::endl;
   TFile *outf    = new TFile(outputFile.c_str(), "RECREATE" );
@@ -115,7 +124,70 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   if(!fin_NP){
     std::cout<<"error, NP file not found. exit."<<std::endl; assert(false);  }
 
+  ////////// USE PDF SYS1/2 HISTS TO GET APPROPRIATE BINNING
 
+  //v1 HISTS - using different PDFs to evaluate unc due to PDF choice    
+  // another use; setting the binning on the toy PYTHIA8 correctly
+  TFile* fin_PDFsys1=NULL, * fin_PDFsys2=NULL;
+  TH1D* theory_PDFsys1=NULL, *theory_PDFsys2=NULL; //NO NPCs
+  std::cout<<"opening PDFsys1 file"<<std::endl;
+  fin_PDFsys1=TFile::Open( ("fNLOJetsSpectra/R04/"+in_NLOFile_PDFsys1+".root").c_str());
+  if(!fin_PDFsys1)assert(false);
+  PDFsys1_text+=" "+orderstring;  
+  theory_PDFsys1=(TH1D*)fin_PDFsys1->Get(thyname.c_str());
+  //
+  //theory_PDFsys1->SetName( ((std::string)theory->GetName()+"_PDFsys1").c_str() );    
+  theory_PDFsys1->SetName( (thyname+"_PDFsys1").c_str() );    
+  theory_PDFsys1->SetTitle((PDFsys1_text+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+  theory_PDFsys1->GetXaxis()->SetNoExponent(true);
+  theory_PDFsys1->GetXaxis()->SetMoreLogLabels(true);
+  theory_PDFsys1->SetLineColor(kTeal);
+  if(printBaseDebug)theory_PDFsys1->Print("base");  
+  
+  std::cout<<"opening PDFsys2 file"<<std::endl;
+  fin_PDFsys2=TFile::Open( ("fNLOJetsSpectra/R04/"+in_NLOFile_PDFsys2+".root").c_str());
+  if(!fin_PDFsys2)assert(false);
+  PDFsys2_text+=" "+orderstring;  
+  theory_PDFsys2=(TH1D*)fin_PDFsys2->Get(thyname.c_str());
+  //
+  //theory_PDFsys2->SetName( ((std::string)theory->GetName()+"_PDFsys2").c_str() );    
+  theory_PDFsys2->SetName( (thyname+"_PDFsys2").c_str() );    
+  theory_PDFsys2->SetTitle((PDFsys2_text+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
+  theory_PDFsys2->GetXaxis()->SetNoExponent(true);
+  theory_PDFsys2->GetXaxis()->SetMoreLogLabels(true);
+  theory_PDFsys2->SetLineColor(kTeal);
+  if(printBaseDebug)theory_PDFsys2->Print("base");  
+
+  TH1D* theory_PDFsys1_rebin=NULL, *theory_PDFsys2_rebin=NULL; //NO NPCs  
+  if(etabin==0 || etabin==1){//get rid of last bin
+    theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->TH1::Rebin(n_thybins_incl, 
+							   ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
+    theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->TH1::Rebin(n_thybins_incl, 
+							   ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
+  else {
+    theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->Clone(  ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str());
+    theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->Clone(  ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str());
+  }
+  
+  for(int i=1; i<=theory_PDFsys1_rebin->GetNbinsX(); i++) 
+    std::cout<<"theory_PDFsys1_rebin->GetBinLowEdge("<<i<<")="<<theory_PDFsys1_rebin->GetBinLowEdge(i)<<std::endl;
+  
+  // rebin in the bins of |y|=0 - 1.0 hists to get rid of last bin, then use the next few lines to assign the correct higher pt bins for the given |y| bin.
+  // TO DO
+  int n_thybins=theory_PDFsys1_rebin->GetNbinsX();
+  std::cout<<"n_thybins="<<n_thybins<<std::endl;
+  std::cout<<"n_thybins+1="<<n_thybins+1<<std::endl;
+  std::cout<<std::endl;
+  double thybins[n_thybins+1]={0.};//+1 because this array represents the bin edges, not the bins themselves
+  for(int i=0; i<(n_thybins+1); i++){
+    if(i==n_thybins)
+      thybins[n_thybins]=theory_PDFsys1_rebin->GetBinLowEdge(i)+theory_PDFsys1_rebin->GetBinWidth(i);
+    else{
+      thybins[i]=theory_PDFsys1_rebin->GetBinLowEdge(i+1);      
+    }
+    std::cout<<"thybins["<<i<<"]="<<thybins[i]<<std::endl;
+  }
+  //assert(false);
   
   /////////////// Get NP fit functions
   TF1 *fNP = (TF1*)fin_NP->Get(("f"+NPCorrFits_str+"_etabin"+std::to_string(etabin)).c_str());
@@ -171,16 +243,11 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   if(!fin_JER){
     std::cout<<"error, JER file not found or not open."<<std::endl; assert(false); }
   
-  std::cout<<"etabin="<<etabin<<std::endl;  
-  std::string absetarange_str=absetabins_str[etabin]+" < #||{y} < "+absetabins_str[etabin+1];  
+
   std::string PY8name="hpp_gen_wJetID_R4_20_eta_20_bin"+std::to_string(etabin);
   std::string PY8orderstring="LO";
   PY8_text+=" "+PY8orderstring;
 
-  std::string thyname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"00";
-  std::string orderstring="LO";
-  if(xsecorder==1)orderstring="N"+orderstring;
-  else if(xsecorder==2)orderstring=="NN"+orderstring;
 
   
   //////////// NLO Thy calculation xsecions get from file ////////////////////////////////////////////////////////
@@ -263,22 +330,23 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   //rebinned theory hists
   TH1D* theory_rebin=NULL;
   TH1D* theory_NP_rebin=NULL;
-  if(etabin==0 || etabin==1){//get rid of last bin
-    theory_rebin=(TH1D*)theory->TH1::Rebin(n_thybins_incl, 
-					   ( ( (std::string) theory->GetName() ) +"_rebin").c_str() ,   thyBins_incl );    
-    theory_NP_rebin=(TH1D*)theory_NP->TH1::Rebin(n_thybins_incl, 
-						 ( ( (std::string) theory_NP->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-  else{
-    theory_rebin=(TH1D*)theory->Clone(( ( (std::string) theory->GetName() ) +"_0").c_str());
-    theory_NP_rebin=(TH1D*)theory_NP->Clone(( ( (std::string) theory_NP->GetName() ) +"_0").c_str());}  
-
+  //if(etabin==0 || etabin==1){//get rid of last bin
+  theory_rebin=(TH1D*)theory->TH1::Rebin(n_thybins, 
+					 ( ( (std::string) theory->GetName() ) +"_rebin").c_str() ,   thybins );    
+  theory_NP_rebin=(TH1D*)theory_NP->TH1::Rebin(n_thybins, 
+					       ( ( (std::string) theory_NP->GetName() ) +"_rebin").c_str() ,     thybins ); 
+  //}
+  //else{
+  //theory_rebin=(TH1D*)theory->Clone(( ( (std::string) theory->GetName() ) +"_0").c_str());
+  //theory_NP_rebin=(TH1D*)theory_NP->Clone(( ( (std::string) theory_NP->GetName() ) +"_0").c_str());}  
+  
   theory_rebin->SetLineColor(kCyan+4);    
   theory_NP_rebin->SetLineColor(kCyan+4);    
 
   for(int i=1; i<=theory_rebin->GetNbinsX(); i++) 
     std::cout<<"theory_rebin->GetBinLowEdge("<<i<<")="<<theory_rebin->GetBinLowEdge(i)<<std::endl;
 
-
+  //assert(false);
   //remember, PY8 is done in bins of 1 GeV
   divideBinWidth(theory_rebin);
   divideBinWidth(theory_NP_rebin); 
@@ -287,34 +355,34 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   
   
   //why do i have this separate bin array again...?
-  int n_thybins=theory_rebin->GetNbinsX();
-  std::cout<<"n_thybins="<<n_thybins<<std::endl;
-  std::cout<<"n_thybins+1="<<n_thybins+1<<std::endl;
-  std::cout<<std::endl;
-  double thybins[n_thybins+1]={0.};//+1 because this array represents the bin edges, not the bins themselves
-  for(int i=0; i<(n_thybins+1); i++){    
-
-    //    if(i==n_thybins)
-    //      thybins[n_thybins]=theory->GetBinLowEdge(i)+theory->GetBinWidth(i);
-    //    else
-    //      thybins[i]=theory->GetBinLowEdge(i+1);      
-
-    if(i==n_thybins)
-      thybins[n_thybins]=theory_rebin->GetBinLowEdge(i)+theory_rebin->GetBinWidth(i);
-    else
-      thybins[i]=theory_rebin->GetBinLowEdge(i+1);      
-    
-    std::cout<<"thybins["<<i<<"]="<<thybins[i]<<std::endl;
-  }
+  //int n_thybins=theory_rebin->GetNbinsX();
+  //std::cout<<"n_thybins="<<n_thybins<<std::endl;
+  //std::cout<<"n_thybins+1="<<n_thybins+1<<std::endl;
+  //std::cout<<std::endl;
+  //double thybins[n_thybins+1]={0.};//+1 because this array represents the bin edges, not the bins themselves
+  //for(int i=0; i<(n_thybins+1); i++){    
+  //
+  //  //    if(i==n_thybins)
+  //  //      thybins[n_thybins]=theory->GetBinLowEdge(i)+theory->GetBinWidth(i);
+  //  //    else
+  //  //      thybins[i]=theory->GetBinLowEdge(i+1);      
+  //
+  //  if(i==n_thybins)
+  //    thybins[n_thybins]=theory_rebin->GetBinLowEdge(i)+theory_rebin->GetBinWidth(i);
+  //  else
+  //    thybins[i]=theory_rebin->GetBinLowEdge(i+1);      
+  //  
+  //  std::cout<<"thybins["<<i<<"]="<<thybins[i]<<std::endl;
+  //}
 
   //  assert(false);
 
   //----------------------------------- PDF SYSTEMATICS 
-  //v1 HISTS - using different PDFs to evaluate unc due to PDF choice
-  TFile* fin_PDFsys1=NULL, * fin_PDFsys2=NULL;
+
+
+
+
   TH1D* theory_PDFsys1_PDFerrs=NULL, *theory_PDFsys2_PDFerrs=NULL; //FOR SETTING ERRS ON HIST
-  TH1D* theory_PDFsys1=NULL, *theory_PDFsys2=NULL; //NO NPCs
-  TH1D* theory_PDFsys1_rebin=NULL, *theory_PDFsys2_rebin=NULL; //NO NPCs
   TH1D* theory_NP_PDFsys1=NULL, *theory_NP_PDFsys2=NULL; //WITH NPCs
   TH1D* theory_NP_PDFsys1_rebin=NULL, *theory_NP_PDFsys2_rebin=NULL; //WITH NPCs
   //v2 HISTS - using 6 pt scale errors to evaluate unc due to PDF calculation
@@ -324,41 +392,19 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
 //  TH1D* theory_NP_PDFsysup_rebin=NULL, *theory_NP_PDFsysdown_rebin=NULL; //WITH NPCs
   if(doPDFsys){
     std::cout<<"NOW making theory PDF sys1/2 hists."<<std::endl;
-    
-    std::cout<<"opening PDFsys1 file"<<std::endl;
-    fin_PDFsys1=TFile::Open( ("fNLOJetsSpectra/R04/"+in_NLOFile_PDFsys1+".root").c_str());
-    if(!fin_PDFsys1)assert(false);
-    PDFsys1_text+=" "+orderstring;
-    
-    theory_PDFsys1=(TH1D*)fin_PDFsys1->Get(thyname.c_str());
-    theory_PDFsys1->SetName( ((std::string)theory->GetName()+"_PDFsys1").c_str() );    
-    theory_PDFsys1->SetTitle((PDFsys1_text+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
-    theory_PDFsys1->GetXaxis()->SetNoExponent(true);
-    theory_PDFsys1->GetXaxis()->SetMoreLogLabels(true);
-    theory_PDFsys1->SetLineColor(kTeal);
-    if(printBaseDebug)theory_PDFsys1->Print("base");  
+
+
+
     
     //set the PDF errs, 
     theory_PDFsys1_PDFerrs=(TH1D*)fin_PDFsys1->Get(thyPDFPoserrname.c_str());
     theory_PDFsys1_PDFerrs->Scale(1.e+02);//rel. err --> % err
     theory_PDFsys1_PDFerrs->SetName( ((std::string)theory->GetName()+"_PDFsys1_Poserr").c_str() );   
-     for(int i=1; i<=(theory_PDFsys1->GetNbinsX());i++ )
+    for(int i=1; i<=(theory_PDFsys1->GetNbinsX());i++ )
       theory_PDFsys1->SetBinError(i, theory_PDFsys1->GetBinContent(i)*(theory_PDFsys1_PDFerrs->GetBinContent(i))/100.);
     
     
-    std::cout<<"opening PDFsys2 file"<<std::endl;
-    fin_PDFsys2=TFile::Open( ("fNLOJetsSpectra/R04/"+in_NLOFile_PDFsys2+".root").c_str());
-    if(!fin_PDFsys2)assert(false);
-    PDFsys2_text+=" "+orderstring;
-    
-    theory_PDFsys2=(TH1D*)fin_PDFsys2->Get(thyname.c_str());
-    theory_PDFsys2->SetName( ((std::string)theory->GetName()+"_PDFsys2").c_str() );
-    
-    theory_PDFsys2->SetTitle((PDFsys2_text+" Inclusive #sigma_{jet}, "+absetarange_str+";Jet p_{T} [GeV];"+ddxsec_yax).c_str());
-    theory_PDFsys2->GetXaxis()->SetNoExponent(true);
-    theory_PDFsys2->GetXaxis()->SetMoreLogLabels(true);
-    theory_PDFsys2->SetLineColor(kTeal);
-    if(printBaseDebug)theory_PDFsys2->Print("base");  
+
     
     //set the PDF errs, 
     theory_PDFsys2_PDFerrs=(TH1D*)fin_PDFsys2->Get(thyPDFPoserrname.c_str());
@@ -369,12 +415,12 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     //    for(int i=1; i<=(theory_PDFsys2->GetNbinsX());i++ )
     //theory_PDFsys2->SetBinError(i, theory_PDFsys2_PDFerrs->GetBinContent(i));
     
-    if(etabin==0 || etabin==1){//get rid of last bin
-      theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->TH1::Rebin(n_thybins_incl, 
-							     ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
-      theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->TH1::Rebin(n_thybins_incl, 
-							     ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    //if(etabin==0 || etabin==1){//get rid of last bin
+    //  theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->TH1::Rebin(n_thybins, 
+    //							     ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str() ,     thybins ); 
+    //  theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->TH1::Rebin(n_thybins, 
+    //							     ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str() ,     thybins ); }
+    //else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
     
     std::cout<<"done making theory PDF sys1/2 hists."<<std::endl;
     
@@ -397,10 +443,10 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     //    theory_PDFsysdown->SetLineColor(kTeal);
     //    if(printBaseDebug)theory_PDFsysdown->Print("base");  
     //    if(etabin==0 || etabin==1){//get rid of last bin
-    //      theory_PDFsysup_rebin=(TH1D*)theory_PDFsysup->TH1::Rebin(n_thybins_incl, 
-    //							       ( ( (std::string) theory_PDFsysup->GetName() ) +"_rebin").c_str() ,     thyBins_incl );
-    //      theory_PDFsysdown_rebin=(TH1D*)theory_PDFsysdown->TH1::Rebin(n_thybins_incl, 
-    //								   ( ( (std::string) theory_PDFsysdown->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
+    //      theory_PDFsysup_rebin=(TH1D*)theory_PDFsysup->TH1::Rebin(n_thybins, 
+    //							       ( ( (std::string) theory_PDFsysup->GetName() ) +"_rebin").c_str() ,     thybins );
+    //      theory_PDFsysdown_rebin=(TH1D*)theory_PDFsysdown->TH1::Rebin(n_thybins, 
+    //								   ( ( (std::string) theory_PDFsysdown->GetName() ) +"_rebin").c_str() ,     thybins ); }
     //    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO    
     //    std::cout<<"done making theory PDF sysup/down hists."<<std::endl;    
     //    // ------------------------------------------------------------- //
@@ -421,12 +467,12 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     theory_NP_PDFsys2->SetLineColor(kTeal);
     if(printBaseDebug)theory_NP_PDFsys2->Print("base");  
     
-    if(etabin==0 || etabin==1){//get rid of last bin
-      theory_NP_PDFsys1_rebin=(TH1D*)theory_NP_PDFsys1->TH1::Rebin(n_thybins_incl, 
-								   ( ( (std::string) theory_NP_PDFsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
-      theory_NP_PDFsys2_rebin=(TH1D*)theory_NP_PDFsys2->TH1::Rebin(n_thybins_incl, 
-								   ( ( (std::string) theory_NP_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    //if(etabin==0 || etabin==1){//get rid of last bin
+    theory_NP_PDFsys1_rebin=(TH1D*)theory_NP_PDFsys1->TH1::Rebin(n_thybins, 
+								 ( ( (std::string) theory_NP_PDFsys1->GetName() ) +"_rebin").c_str() ,     thybins ); 
+    theory_NP_PDFsys2_rebin=(TH1D*)theory_NP_PDFsys2->TH1::Rebin(n_thybins, 
+								 ( ( (std::string) theory_NP_PDFsys2->GetName() ) +"_rebin").c_str() ,     thybins ); //}
+  //else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
     
     std::cout<<"done making theory_NP PDF sys1/2 hists."<<std::endl; 
     
@@ -445,10 +491,10 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     //    theory_NP_PDFsysdown->SetLineColor(kTeal);
     //    if(printBaseDebug)theory_NP_PDFsysdown->Print("base");     
     //    if(etabin==0 || etabin==1){//get rid of last bin
-    //      theory_NP_PDFsysup_rebin=(TH1D*)theory_NP_PDFsysup->TH1::Rebin(n_thybins_incl, 
-    //								     ( ( (std::string) theory_NP_PDFsysup->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
-    //      theory_NP_PDFsysdown_rebin=(TH1D*)theory_NP_PDFsysdown->TH1::Rebin(n_thybins_incl, 
-    //									 ( ( (std::string) theory_NP_PDFsysdown->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
+    //      theory_NP_PDFsysup_rebin=(TH1D*)theory_NP_PDFsysup->TH1::Rebin(n_thybins, 
+    //								     ( ( (std::string) theory_NP_PDFsysup->GetName() ) +"_rebin").c_str() ,     thybins ); 
+    //      theory_NP_PDFsysdown_rebin=(TH1D*)theory_NP_PDFsysdown->TH1::Rebin(n_thybins, 
+    //									 ( ( (std::string) theory_NP_PDFsysdown->GetName() ) +"_rebin").c_str() ,     thybins ); }
     //    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO    
     //    std::cout<<"done making theory_NP PDF sysup/down hists."<<std::endl;     
     //    // ------------------------------------------------------------- //
@@ -496,10 +542,10 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     
     //REBIN ALT CHOICEs 1/2
     if(etabin==0 || etabin==1){//get rid of last bin
-      theory_NPsys1_rebin=(TH1D*)theory_NPsys1->TH1::Rebin(n_thybins_incl, 
-							   ( ( (std::string) theory_NPsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
-      theory_NPsys2_rebin=(TH1D*)theory_NPsys2->TH1::Rebin(n_thybins_incl, 
-							   ( ( (std::string) theory_NPsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
+      theory_NPsys1_rebin=(TH1D*)theory_NPsys1->TH1::Rebin(n_thybins, 
+							   ( ( (std::string) theory_NPsys1->GetName() ) +"_rebin").c_str() ,     thybins ); 
+      theory_NPsys2_rebin=(TH1D*)theory_NPsys2->TH1::Rebin(n_thybins, 
+							   ( ( (std::string) theory_NPsys2->GetName() ) +"_rebin").c_str() ,     thybins ); }
     else {
       std::cout<<"error; don't do systematics for |y| bins starting beyond 1.0 for now. It's on your to do list to add this Ian."<<std::endl;
       assert(false);//can't do np sysup/down for more forward bins yet; TO DO
@@ -534,10 +580,10 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     
     //REBIN ALT CHOICEs 1/2
     if(etabin==0 || etabin==1){//get rid of last bin
-      theory_NPsysup_rebin=(TH1D*)theory_NPsysup->TH1::Rebin(n_thybins_incl, 
-							     ( ( (std::string) theory_NPsysup->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
-      theory_NPsysdown_rebin=(TH1D*)theory_NPsysdown->TH1::Rebin(n_thybins_incl, 
-								 ( ( (std::string) theory_NPsysdown->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
+      theory_NPsysup_rebin=(TH1D*)theory_NPsysup->TH1::Rebin(n_thybins, 
+							     ( ( (std::string) theory_NPsysup->GetName() ) +"_rebin").c_str() ,     thybins ); 
+      theory_NPsysdown_rebin=(TH1D*)theory_NPsysdown->TH1::Rebin(n_thybins, 
+								 ( ( (std::string) theory_NPsysdown->GetName() ) +"_rebin").c_str() ,     thybins ); }
     else {
       std::cout<<"error; don't do systematics for |y| bins starting beyond 1.0 for now. It's on your to do list to add this Ian."<<std::endl;
       assert(false);//can't do np sysup/down for more forward bins yet; TO DO

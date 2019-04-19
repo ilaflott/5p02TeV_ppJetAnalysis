@@ -16,10 +16,9 @@ const bool useconstxrange=false;
 const double fgaus_xlo=0.80, fgaus_xhi=1.+(1.-fgaus_xlo);//test
 const double defbinsize=0.01;//dont touch
 //resolution v genpt fit options
-const bool fitsigma=true, fitsigmu=!fitsigma;//fit either sigma, or sigma/mu
 const double errfact=1.0;// test
-const int fit_ptlo_bin=5, fit_pthi_bin=nbins_pt_debug-6;//test
-const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;//dont touch
+
+
 
 //MCEff settings
 const bool drawProfiles = false;//rarely used
@@ -27,14 +26,44 @@ const bool drawProfiles = false;//rarely used
 
 
 
-int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outputTag, const bool draw_hJER=true, const bool draw_MCEff=false, const int absetabin=0){
+int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outputTag, const bool draw_hJER=true, const bool draw_MCEff=false, const int absetabin=0, const std::string fitquantity="sigma"){
   
   //if(absetabin!=-1) doabsetabinJER=true;
   
   // root style settings.
   std::cout<<"forcing style"<<std::endl;
   LoadStyle();
+
+  bool fitsigma=false, fitsigmu=false;
+  if(fitquantity=="sigma"){
+    fitsigma=true; fitsigmu=false;}
+  else if(fitquantity=="sigmu"){
+    fitsigma=false; fitsigmu=true;}
+  else assert(false);
+  //const bool fitsigma=false, fitsigmu=!fitsigma;//fit either sigma, or sigma/mu
+
+
+  int fit_ptlo_bin=-1, fit_pthi_bin=nbins_pt_debug+1;//test
+  if(absetabin==0)      fit_ptlo_bin=fit_ptlo_bin_00y05;
+  else if(absetabin==1) fit_ptlo_bin=fit_ptlo_bin_05y10;
+  else if(absetabin==2) fit_ptlo_bin=fit_ptlo_bin_10y15;
+  else if(absetabin==3) fit_ptlo_bin=fit_ptlo_bin_15y20;
   
+  if(absetabin==0)      fit_pthi_bin=fit_pthi_bin_00y05;
+  else if(absetabin==1) fit_pthi_bin=fit_pthi_bin_05y10;
+  else if(absetabin==2) fit_pthi_bin=fit_pthi_bin_10y15;
+  else if(absetabin==3) fit_pthi_bin=fit_pthi_bin_15y20;
+    
+  const int N_JERfits=fit_pthi_bin-fit_ptlo_bin;//dont touch  
+
+  double* fgaus_width_arr=NULL;
+  int nwidths=-1;
+  if(!useconstxrange){
+    fgaus_width_arr=setWidthArr(absetabin, &nwidths);
+    assert(N_JERfits==nwidths);
+  }
+
+
 
   //int rebin_hrsp_arr_N=( (int) (100.*( ( (hgaus_xhi+difffromone) - (hgaus_xlo-difffromone) ) ) )+ 1 );//2x size of fit range.
   int rebin_hrsp_arr_N=( (int) (100.*( ( (hgaus_xhi) - (hgaus_xlo) ) ) )+ 1 );// size of fit range; resolution is way too confident
@@ -174,6 +203,7 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
 	hrsp[ip]= (TH1F*)hrsp[ip]->TH1::Rebin( rebinFactor, (inputHistName+"_rebin5").c_str());	
       
       //scaling
+      std::cout<<"h_integral ="   << hrsp[ip]->Integral()<<std::endl;    
       hrsp[ip]->Scale( 1./ hrsp[ip]->Integral() );    //scale to area of 1
       
       
@@ -186,7 +216,8 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
       if(debugMode)hrsp_ip_rebin->Print("base");
       
       //get some numbers
-      //float h_norm  = hrsp_ip_rebin->GetMaximumStored();          
+      float h_norm  = hrsp_ip_rebin->GetBinContent(hrsp_ip_rebin->GetMaximumBin());
+      float h_enorm = hrsp_ip_rebin->GetBinError(hrsp_ip_rebin->GetMaximumBin());
       float h_mean  = hrsp_ip_rebin->GetMean();    //mu
       float h_emean = hrsp_ip_rebin->GetMeanError()*errfact;    //mu err 
       float h_sig   = hrsp_ip_rebin->GetStdDev();     // sigma
@@ -194,16 +225,18 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
       float h_sigmu   = h_sig/h_mean;     // sigma/mu
       float h_esigmu  = h_sigmu * sqrt (  
 					pow( h_emean/h_mean,2) + pow( h_esig/h_sig,2) ) ; //sigma/mu err
-
       
-      // set contents+errors in specific bin    
-      std::cout<<"setting bin content for hMean[ip]=["<< ip<<"] "<<std::endl;    
+      std::cout<<"h_norm ="   << h_norm<<std::endl;    
+      std::cout<<"h_enorm ="  << h_enorm<<std::endl;    
       std::cout<<"h_mean ="   << h_mean<<std::endl;    
       std::cout<<"h_emean ="  << h_emean<<std::endl;    
       std::cout<<"h_sig ="    << h_sig<<std::endl;    
       std::cout<<"h_esig ="   << h_esig<<std::endl;    
       std::cout<<"h_sigmu ="    << h_sigmu<<std::endl;    
       std::cout<<"h_esigmu ="   << h_esigmu<<std::endl;    
+      //      std::cout<<"h_integral ="   << hrsp[ip]->Integral()<<std::endl;    
+      std::cout<<"h_integral ="   << hrsp_ip_rebin->Integral()<<std::endl;    
+
       
       //why write here...? where does this write to??!
       hrsp[ip]->Write();
@@ -211,6 +244,7 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
       if(ip>=fit_pthi_bin )continue;
       
       //set mu, sig/mu as calc form histogram bin content
+      std::cout<<"setting bin content for hMean[ip]=["<< ip<<"] "<<std::endl;    
       hMean->SetBinContent (ip+1, h_mean);    
       hMean->SetBinError   (ip+1, h_emean);          
       hSigma->SetBinContent (ip+1, h_sig);    
@@ -244,6 +278,8 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
       else 
 	std::cout<<std::endl<<"fit success"<<std::endl<<std::endl;
       
+      float f_norm  = -1.;
+      float f_enorm = -1.;
       float f_mean  = -1.;
       float f_emean = -1.;
       float f_sig   = -1.;
@@ -253,6 +289,8 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
       float chi2NDF = -1.;
       float chi2prob= -1.;      
       
+      f_norm  = (fitfailed)  ? -1. : fgaus->GetParameter(0); // z = if(condition) then(?) <do this> else(:) <do this>   
+      f_enorm = (fitfailed)  ? -1. : fgaus->GetParError(0)*errfact ; 
       f_mean  = (fitfailed)  ? -1. : fgaus->GetParameter(1); // z = if(condition) then(?) <do this> else(:) <do this>   
       f_emean = (fitfailed)  ? -1. : fgaus->GetParError(1)*errfact ; 
       f_sig   = (fitfailed)  ? -1. : fgaus->GetParameter(2);
@@ -261,6 +299,17 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
       f_esigmu  = (fitfailed)  ? -1. : f_sigmu * sqrt( pow( (f_emean/f_mean), 2) + 
 						       pow( (f_esig/f_sig  ), 2) 
 						       )   ;
+
+      std::cout<<"f_norm ="   << f_norm<<std::endl;    
+      std::cout<<"f_enorm ="  << f_enorm<<std::endl;    
+      std::cout<<"f_mean ="   << f_mean<<std::endl;    
+      std::cout<<"f_emean ="  << f_emean<<std::endl;    
+      std::cout<<"f_sig ="    << f_sig<<std::endl;    
+      std::cout<<"f_esig ="   << f_esig<<std::endl;    
+      std::cout<<"f_sigmu ="  << f_sigmu<<std::endl;    
+      std::cout<<"f_esigmu =" << f_esigmu<<std::endl;    
+      if(!useconstxrange)std::cout<<"TF1->Integral="<<fgaus->Integral(1.-fgaus_width_arr[width_arr_ind],1.+fgaus_width_arr[width_arr_ind],1.e-9)<<std::endl;
+      
       chi2NDF = (fitfailed)  ? -1. : fgaus->GetChisquare()/((float)fgaus->GetNDF());
       chi2prob = (fitfailed) ? -1. : fgaus->GetProb();
       
@@ -271,14 +320,12 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
 	    (chi2NDF<0.)||
 	    (chi2prob<0.) ) std::cout<<"WARNING mu and/or sigma/mu are negative because FIT FAILED!!!!"<<std::endl;
       
-      std::cout<<"setting bin content for fit hists ip="<< ip<<" "<<std::endl;    
-      std::cout<<"f_mean ="   << f_mean<<std::endl;    
-      std::cout<<"f_emean ="  << f_emean<<std::endl;    
-      std::cout<<"f_sig ="    << f_sig<<std::endl;    
-      std::cout<<"f_esig ="   << f_esig<<std::endl;    
+
+
       std::cout<<"Chi2NDF ="   << chi2NDF<<std::endl;    
       std::cout<<"Chi2Prob ="   << chi2prob<<std::endl;          
       
+      std::cout<<"setting bin content for fit hists ip="<< ip<<" "<<std::endl;    
       hMean_fit->SetBinContent (ip+1, f_mean);    
       hMean_fit->SetBinError   (ip+1, f_emean);    
       
@@ -773,7 +820,7 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
     fits_wSystCanv->cd(2);
     
     MakeHistSigma(SigmaFit_sysup_f_hist, xmin, xmax);
-    SigmaFit_sysup_f_hist->SetAxisRange(0.04, 0.16,"Y");
+    SigmaFit_sysup_f_hist->SetAxisRange(0.04, 0.20,"Y");
     if(fitsigma)SigmaFit_sysup_f_hist->SetTitle("#sigma [Gauss Core] v. GEN Jet p_{T} Fit");
     else if(fitsigmu)SigmaFit_sysup_f_hist->SetTitle("(#sigma/#mu) [Gauss Core] v. GEN Jet p_{T} Fit");
     SigmaFit_sysup_f_hist->GetYaxis()->SetLabelSize(0.04);
@@ -1102,6 +1149,8 @@ int main(int argc, char*argv[]){
     return rStatus;  }
   
   rStatus=1;
+  if(argc==7)
+    rStatus=printPlots_ppMC_JERS_etabin((const std::string)argv[1], (const std::string)argv[2] , (const bool)std::atoi(argv[3]), (const bool)std::atoi(argv[4]), (const int) std::atoi(argv[5]) , (const std::string)argv[6] );
   if(argc==6)
     rStatus=printPlots_ppMC_JERS_etabin((const std::string)argv[1], (const std::string)argv[2] , (const bool)std::atoi(argv[3]), (const bool)std::atoi(argv[4]), (const int) std::atoi(argv[5]) );
   if(argc==5)

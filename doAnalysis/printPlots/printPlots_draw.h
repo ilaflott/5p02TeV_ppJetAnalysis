@@ -1,6 +1,64 @@
+
+const int tupelvar_xAx_reBin[N_tupelvars]={
+10,//  "Pt",
+5,//  "Eta",
+5,//  "Phi",
+10,//  "E",
+1,//  "Id",
+10,//  "RawPt",
+10,//  "RawE",
+10,//  "HfHadE",
+10,//  "HfEmE",
+5,//  "ChHadFrac",
+5,//  "NeutralHadAnHfFrac",
+5,//  "ChEmFrac",
+5,//  "NeutralEmFrac",
+2,//  "ChMult",
+2,//  "ConstCnt",
+2//  "NeuMult"
+};
+
+const float tupeljetQAxmin[N_tupelvars]={
+30.,//  "Pt",
+-5.16,//  "Eta",
+-3.15,//  "Phi",
+30.,//  "E",
+0.,//  "Id",
+30.,//  "RawPt",
+30.,//  "RawE",
+0.,//  "HfHadE",
+0.,//  "HfEmE",
+0.,//  "ChHadFrac",
+0.,//  "NeutralHadAnHfFrac",
+0.,//  "ChEmFrac",
+0.,//  "NeutralEmFrac",
+0.,//  "ChMult",
+0.,//  "ConstCnt",
+0.//  "NeuMult"
+};
+
+const float tupeljetQAxmax[N_tupelvars]={
+100.,//  "Pt",
+5.16,//  "Eta",
+3.15,//  "Phi",
+1000.,//  "E",
+5,//  "Id",
+1000,//  "RawPt",
+1000.,//  "RawE",
+1000.,//  "HfHadE",
+1000.,//  "HfEmE",
+2.,//  "ChHadFrac",
+2.,//  "NeutralHadAnHfFrac",
+2.,//  "ChEmFrac",
+2.,//  "NeutralEmFrac",
+100.,//  "ChMult",
+100.,//  "ConstCnt",
+100.//  "NeuMult"
+};
+
 const int var_xAx_reBin[]={                                   
   10, 10,     //reco/rawjtpt  
-  10, 10, 10,    //no Res, L2Res, L3Res jtpt
+  //  10, 10, 10,    //no Res, L2Res, L3Res jtpt
   
   5,  4,      //jteta, phi    
 
@@ -25,7 +83,7 @@ const int var_xAx_reBin[]={
 
 const float jetQAxmax[]={
   (1000. ), (1000.),             //reco/rawjtpt  
-  (1000. ), (1000.), (1000.), //jtpt forRes, L2Res, L3Res
+  //  (1000. ), (1000.), (1000.), //jtpt forRes, L2Res, L3Res
 
   (5.   ), (3.2  ),  		 //jteta, phi    
 
@@ -51,7 +109,7 @@ const float jetQAxmax[]={
 
 const float jetQAxmin[]={
   (50. ), (50.  ) ,           //reco/rawjtpt  
-  (50. ), (50.  ) ,         (50.  ) ,        //jtpt forRes, L2Res, L3 Res
+  //  (50. ), (50.  ) ,         (50.  ) ,        //jtpt forRes, L2Res, L3 Res
 
   (-5. ), (-3.2 ) , 	      //jteta, phi    
 
@@ -92,9 +150,9 @@ const int jetSpectraRapBinning=20;
 
 // hist painting ------------------------
 
-const int   theTrigOverlayLineColor[] ={  1,  1,  1,  1,  1};//,  1 };
-const int theTrigOverlayMarkerColor[] ={  1,  2,  3,  6,  7};//,  4 };
-const int      theTrigOverlayMarker[] ={ 20, 20, 20, 20, 20};//, 32 };
+const int   theTrigOverlayLineColor[] ={  1,  1,  1,  1,  1, 1};//,  1 };
+const int theTrigOverlayMarkerColor[] ={  1,  2,  3,  6,  7, 8};//,  4 };
+const int      theTrigOverlayMarker[] ={ 20, 20, 20, 20, 20, 20};//, 32 };
 const int  theRapOverlayMarkerColor[] ={  2,  3,  6,  7,  1,  4 , 8, 9};
 
 

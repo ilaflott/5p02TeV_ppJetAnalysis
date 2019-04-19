@@ -51,8 +51,8 @@ then
     echo "etabinstr=${etabinstr}"
     echo ""
     
-    OUTDIR=${PY8fileshortstr}_${descstr}_w5TeVscales_${Fittypestr}_gaussSmear_NLO_plots/
-    OUTFILE=${PY8fileshortstr}_${descstr}_w5TeVscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
+    OUTDIR=${PY8fileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_plots/
+    OUTFILE=${PY8fileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
     JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
     JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf
     #JERFILE=${JERfilestr}${etabinstr}_semifinal.root
@@ -82,10 +82,10 @@ then
     if [[ -d "${OUTDIR}" ]]
     then	
 	echo "$OUTDIR exists!"
-	echo "removing directory!"
-	rm -rf $OUTDIR
-	echo "recreating directory!"
-	mkdir $OUTDIR
+	#echo "removing directory!"
+	#rm -rf $OUTDIR
+	#echo "recreating directory!"
+	#mkdir $OUTDIR
     else 
 	mkdir  $OUTDIR
     fi

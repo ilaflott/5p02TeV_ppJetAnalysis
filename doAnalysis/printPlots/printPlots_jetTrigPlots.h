@@ -2,6 +2,19 @@ const int rebinfactor=1;//for simpbins aka not-analysis-bins
 const int canvx_trig=1200;
 const int canvy_trig=1000;
 
+void TH1Sub_correrrs(TH1* hbigger, TH1* hsmaller){
+  int nbinsx=hbigger->GetNbinsX();
+  for(int i=1; i<=nbinsx; i++){
+    float newval=hbigger->GetBinContent(i)-hsmaller->GetBinContent(i);
+    float newerr=hbigger->GetBinError(i)*hbigger->GetBinError(i) - hsmaller->GetBinError(i)*hsmaller->GetBinError(i);
+    newerr=sqrt(newerr);
+    hbigger->SetBinContent(i,newval);
+    hbigger->SetBinError(i,newerr);    
+  }
+  return;
+}
+
+
 void setupJetTrigSpectraRatioCanvas(TCanvas* canv, 
 				    TPad* specpad,  TPad* ratpad){  
   canv->cd();  
@@ -81,6 +94,48 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool usedMinBias, bo
     if(funcDebug)theJetTrigQAHist->Print("base"); std::cout<<std::endl;
     theJetTrigQAHist->GetXaxis()->SetMoreLogLabels(true);
     theJetTrigQAHist->GetXaxis()->SetNoExponent(true);
+
+    if(!usedMinBias && HLTName[j]=="HLTComb"&&trigType=="excl"){
+      std::string inMBHistName;
+      if(trigType=="excl")inMBHistName="hpp_excHLTMB";
+      else if(trigType=="incl")inMBHistName="hpp_HLTMB";
+      else assert(false);
+      if(didJetID)inMBHistName+="_wJetID";
+      inMBHistName+="_"+radius+"etabin"+std::to_string(etabin);
+      TH1D* HLTMBexcl_toSubtract=(TH1D*)fin->Get(inMBHistName.c_str());
+      if((bool)HLTMBexcl_toSubtract)
+	TH1Sub_correrrs(theJetTrigQAHist, HLTMBexcl_toSubtract);
+    }
+    
+    //if((HLTName[j]=="HLTMB" || HLTName[j]=="HLTComb") && trigType=="excl"&&etabin==0){
+    //  //      TH1D* MB_toSubtract_l1jet68=(TH1D*)fin->Get("excHLTMB_AND_l1jet68"); //subtract just this one first
+    //  //      TH1D* MB_toSubtract_l1jet60=(TH1D*)fin->Get("excHLTMB_AND_l1jet60"); //then also subtract this one...
+    //  //      TH1D* MB_toSubtract_l1jet52=(TH1D*)fin->Get("excHLTMB_AND_l1jet52"); //then subtract this one too...
+    //  //      //  TH1D* MB_toSubtract_l1jet48=(TH1D*)fin->Get("excHLTMB_AND_l1jet48"); //etc...
+    //  //      //  TH1D* MB_toSubtract_l1jet48=(TH1D*)fin->Get("excHLTMB_AND_l1jet44"); //etc...
+    //  //      //  TH1D* MB_toSubtract_l1jet40=(TH1D*)fin->Get("excHLTMB_AND_l1jet40");
+    //  //      //  TH1D* MB_toSubtract_l1jet28=(TH1D*)fin->Get("excHLTMB_AND_l1jet28");
+    //  //      //  TH1D* MB_toSubtract_l1jet24=(TH1D*)fin->Get("excHLTMB_AND_l1jet24");
+    //  //        
+    //  //      TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet68);
+    //  //      TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet60);
+    //  //      TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet52);
+    //  //      //  TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet48);
+    //  //      //  TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet44);
+    //  //      
+    //  //      
+    //  //      //TH1D* MB_toSubtract_HLTjet80=(TH1D*)fin->Get("excHLTMB_AND_HLTjet80"); //subtract just this one first
+    //  //      //TH1D* MB_toSubtract_HLTjet60=(TH1D*)fin->Get("excHLTMB_AND_HLTjet60"); //then also subtract this one...
+    //  //      //TH1D* MB_toSubtract_HLTjet40=(TH1D*)fin->Get("excHLTMB_AND_HLTjet40"); //then subtract this one too...
+    //  //      
+    //  //      //TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_HLTjet80);
+    //  //      //TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_HLTjet60);
+    //  //      //TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_HLTjet40);
+    //  TH1D* MB_toSubtract_NOTHFcoinc=(TH1D*)fin->Get("excHLTMB_NOT_HFcoincidence");
+    //  TH1Sub_correrrs(theJetTrigQAHist, MB_toSubtract_NOTHFcoinc);      
+    //}
+	
+
     
     //rebin
     if(analysisRebin) {
@@ -88,7 +143,8 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool usedMinBias, bo
       divideBinWidth(theJetTrigQAHist);    }
     else {
       theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_spec_rebin"+std::to_string(rebinfactor)).c_str() );
-      theJetTrigQAHist->Scale(1./((float)rebinfactor));    }
+      theJetTrigQAHist->Scale(1./((float)rebinfactor));    
+    }
     theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");
     
     
@@ -136,6 +192,8 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool usedMinBias, bo
 
     }
     else{//rest of HLT spectra
+
+
       trigSpectraHistStyle(theJetTrigQAHist, j);
       theJetTrigQAHist->Draw(" SAME");
       if(fout){
@@ -164,6 +222,7 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool usedMinBias, bo
     if(HLTName[j]=="HLT100"&&!usedHLT100)continue;    
     if(HLTName[j]=="HLTMB"&&!usedMinBias)continue;
     
+
     if(j>0){//individial hlt paths, numerators, combohist setup by now
       
       if(trigType=="excl")      inHistName="hpp_exc"+HLTName[j];//+"_"+radius+etaWidth;
@@ -174,15 +233,48 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool usedMinBias, bo
       
       TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
       if(funcDebug)theJetTrigQAHist->Print("base");
-      
+      //if((HLTName[j]=="HLTMB" || HLTName[j]=="HLTComb") && trigType=="excl"&&etabin==0){
+      //	//TH1D* MB_toSubtract_l1jet68=(TH1D*)fin->Get("excHLTMB_AND_l1jet68"); //subtract just this one first
+      //	//TH1D* MB_toSubtract_l1jet60=(TH1D*)fin->Get("excHLTMB_AND_l1jet60"); //then also subtract this one...
+      //	//TH1D* MB_toSubtract_l1jet52=(TH1D*)fin->Get("excHLTMB_AND_l1jet52"); //then subtract this one too...
+      //	//  TH1D* MB_toSubtract_l1jet48=(TH1D*)fin->Get("excHLTMB_AND_l1jet48"); //etc...
+      //	//  TH1D* MB_toSubtract_l1jet40=(TH1D*)fin->Get("excHLTMB_AND_l1jet40");
+      //	//  TH1D* MB_toSubtract_l1jet28=(TH1D*)fin->Get("excHLTMB_AND_l1jet28");
+      //	//  TH1D* MB_toSubtract_l1jet24=(TH1D*)fin->Get("excHLTMB_AND_l1jet24");
+      //	
+      //	//TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet68);
+      //	//TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet60);
+      //	//TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet52);
+      //	//  TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_l1jet48);
+      //	  
+      //	  
+      //	//TH1D* MB_toSubtract_HLTjet80=(TH1D*)fin->Get("excHLTMB_AND_HLTjet80"); //subtract just this one first
+      //	//TH1D* MB_toSubtract_HLTjet60=(TH1D*)fin->Get("excHLTMB_AND_HLTjet60"); //then also subtract this one...
+      //	//TH1D* MB_toSubtract_HLTjet40=(TH1D*)fin->Get("excHLTMB_AND_HLTjet40"); //then subtract this one too...
+      //	  
+      //	//TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_HLTjet80);
+      //	//TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_HLTjet60);
+      //	//TH1Sub_correrrs(theJetTrigQAHist,MB_toSubtract_HLTjet40);
+      //
+      //	TH1D* MB_toSubtract_NOTHFcoinc=(TH1D*)fin->Get("excHLTMB_NOT_HFcoincidence");
+      //	TH1Sub_correrrs(theJetTrigQAHist, MB_toSubtract_NOTHFcoinc);
+      //	
+      //}      
+
       if(analysisRebin) 
 	theJetTrigQAHist= (TH1F*) theJetTrigQAHist->TH1::Rebin(nbins_pt_debug,(inHistName+"_rat_anabins").c_str(), ptbins_debug    );
       else {
 	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rat_rebin"+std::to_string(rebinfactor)).c_str() );
-	theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");}
+	theJetTrigQAHist->Scale(1./((float)rebinfactor));    
+      }
+
+      theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X"); 
       
       trigRatioHistStyle(theJetTrigQAHist, j);
       
+      
+
+
       theJetTrigQAHist->Divide(theDenominator);
       
       theJetTrigQAHist->SetAxisRange(0.0,1.5,"Y");
@@ -259,7 +351,7 @@ void printJetTrigHist_wRatio( TFile* fin , bool usedHLT100, bool usedMinBias, bo
 
 
 
-void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
+void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin, bool usedMinBias,
 		      std::string thePDFFileName , std::string fullJetType ,
 		      std::string trigType, std::string radius , bool usedHLTPF, TFile* fout=NULL){
   
@@ -308,7 +400,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       else if (trigType=="incl") inHistName="Inc"+HLTName[j]+"_trgPt";    
     }    
     if(HLTName[j]=="HLT100"&&!usedHLT100)continue;
-    if(HLTName[j]=="HLTMB")continue;//no HLTMB trigger jet objects exist.
+    if(HLTName[j]=="HLTMB" && !usedMinBias)continue;//no HLTMB trigger jet objects exist.
     
     if(funcDebug)std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl;
 
@@ -325,9 +417,9 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
     else{
       theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rebin").c_str());
       theJetTrigQAHist->Scale(1./((float)rebinfactor));
-      //theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");          
+      theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");          
       //theJetTrigQAHist->SetAxisRange(40,1400,"X");              }
-      theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");              
+      //theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");              
       //theJetTrigQAHist->SetAxisRange(50,150,"X");              
     }
     
@@ -388,7 +480,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
 	else if (trigType=="incl") inHistName="Inc"+HLTName[j]+"_trgPt";    
       }    
       if(HLTName[j]=="HLT100"&&!usedHLT100)continue;
-      if(HLTName[j]=="HLTMB")continue;
+      if(HLTName[j]=="HLTMB"&&!usedMinBias)continue;
       
       if(funcDebug)std::cout<<std::endl<<"inHistName="<<inHistName<<std::endl;
       
@@ -400,8 +492,9 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       else {
 	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rat_rebin"+std::to_string(rebinfactor)).c_str() );
 	theJetTrigQAHist->Scale(1./((float)rebinfactor));
+	theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");          
 	//theJetTrigQAHist->SetAxisRange(40,1400,"X");	
-	theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");	
+	//theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");	
 	//theJetTrigQAHist->SetAxisRange(50,150,"X");	
       }
       
@@ -428,7 +521,7 @@ void printTrigPtHist( TFile* fin , bool usedHLT100, bool analysisRebin,
       
       if( j==1 )  {
 	
-	float min = 40.;//theJetTrigQAHist->GetBinLowEdge(1);
+	float min = ptbins_debug[0];//1400.;////40.;//theJetTrigQAHist->GetBinLowEdge(1);
 	float max = ptbins_debug[nbins_pt_debug];//1400.;//
 	
 	TLine* lineAtOne          = new TLine(min,1.0,max,1.0);

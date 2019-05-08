@@ -9,6 +9,7 @@ const bool comparePFandCalo=false;
 const bool usedHLT100=false;
 //const bool usedMinBias=true;
 //const bool usedHLTPF=true;//if false, HLTCalo was used
+const int N_etabins=4;
 
 // the macro ------------------------
 int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std::string output_PDFname_base){
@@ -39,6 +40,9 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   else if(output_PDFname_base.find("noMB")!=std::string::npos)
     usedMinBias=false;
   else assert(false);
+  
+  if(usedMinBias)std::cout<<"running plots for LowJets+Jet80+MinBias PDs"<<std::endl;
+  else std::cout<<"running plots for LowJets+Jet80+MinBias PDs"<<std::endl;
   
   std::string input_ppData_Filename;//="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
   if(usedMinBias)input_ppData_Filename="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
@@ -178,15 +182,15 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
 //		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);
     
     // ----------------------------------    
-    printTrigPtHist(finData, usedHLT100, false,
+    printTrigPtHist(finData, usedHLT100, false, usedMinBias, 
     		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
-    printTrigPtHist(finData, usedHLT100, false,
+    printTrigPtHist(finData, usedHLT100, false, usedMinBias, 
     		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
     // ----------------------------------    
-    for(int etabin=0;etabin<1;etabin++)
+    for(int etabin=0;etabin<N_etabins;etabin++)
       printJetTrigHist_wRatio(finData, usedHLT100, usedMinBias, false, etabin,
 			      thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
-    for(int etabin=0;etabin<1;etabin++)
+    for(int etabin=0;etabin<N_etabins;etabin++)
       printJetTrigHist_wRatio(finData, usedHLT100, usedMinBias, false, etabin,
 			      thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
     // ----------------------------------    

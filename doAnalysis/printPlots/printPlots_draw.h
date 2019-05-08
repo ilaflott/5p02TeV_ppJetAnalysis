@@ -150,9 +150,9 @@ const int jetSpectraRapBinning=20;
 
 // hist painting ------------------------
 
-const int   theTrigOverlayLineColor[] ={  1,  1,  1,  1,  1, 1};//,  1 };
-const int theTrigOverlayMarkerColor[] ={  1,  2,  3,  6,  7, 8};//,  4 };
-const int      theTrigOverlayMarker[] ={ 20, 20, 20, 20, 20, 20};//, 32 };
+const int   theTrigOverlayLineColor[] ={  1,  1,  1,  1,  1, 1        };//,  1 };
+const int theTrigOverlayMarkerColor[] ={  1,  2,  3,  6,  7, 8        };//,  4 };
+const int      theTrigOverlayMarker[] ={ 20, 20, 20, 20, 20, 20       };//, 32 };
 const int  theRapOverlayMarkerColor[] ={  2,  3,  6,  7,  1,  4 , 8, 9};
 
 

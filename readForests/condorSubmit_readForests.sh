@@ -127,6 +127,10 @@ fi
 #rootcompile ${readForestsCode}.C
 cp ${readForestsCode}.* "${logFileDir}"
 cp readForests_*.h "${logFileDir}"
+#cp L2L3ResidualWFits.h "${logFileDir}"
+#cp MCTruthResidual.h "${logFileDir}"
+cp readForests_JEC_v12_ak4PF_74X_dataRun2_HLT_ppAt5TeV_v0.h "${logFileDir}"
+cp readForests_JEC_v12_ak4PF_75X_data_Run2_v13.h "${logFileDir}"
 cp condorRun_readForests.sh "${logFileDir}"
 cp ${filelistIn} "${logFileDir}"
 
@@ -137,13 +141,14 @@ readForestsCode2=${readForestsCode#*_}
 #echo "readForestsCode2 = $readForestsCode2"
 readForestsCode3=${readForestsCode2%_*}
 #echo "readForestsCode3 = $readForestsCode3"
-if [[ "$readForestsCode3" == "ppData" ]]
-then
-    transferInputFileList="${filelist},${readForestsExe},JECDataDriven.tar.gz"
-    cp JECDataDriven.tar.gz "${logFileDir}"    
-else
-    transferInputFileList="${filelist},${readForestsExe}"
-fi
+#if [[ "$readForestsCode3" == "ppData" ]]
+#then
+#    transferInputFileList="${filelist},${readForestsExe},JECDataDriven.tar.gz,residualMCTruth.tar.gz"
+#    cp JECDataDriven.tar.gz "${logFileDir}"   
+#    cp residualMCTruth.tar.gz "${logFileDir}"   
+#else
+transferInputFileList="${filelist},${readForestsExe}"
+#fi
 #echo "transferInputFileList=$transferInputFileList"
 cd ${logFileDir}
 

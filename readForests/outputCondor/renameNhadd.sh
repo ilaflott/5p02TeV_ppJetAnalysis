@@ -52,19 +52,38 @@ function hadd_ppData_allInDir(){
 
 
 
-
-
-if [ $# -ne 5 ]
+if [ $# -eq 5 ]
 then
+    R=$1
+    date_output=$2
+    date_scratch=$3
+#etabin=$4
+#desc argument *typically* of form; jetPlots_0.0eta2.0
+    desc=$4
+    type=$5
+elif [ $# -eq 6 ]
+then
+    R=$1
+    date_output=$2
+    date_scratch=$3
+    desc=$4
+    type=$5
+    addtag=$6
+    echo "adding descriptive tag \"${addtag}\" to output directory"
+    #return
+else
+     # [ $# -ne 5 ]
     echo ""
-    echo "Useage is..."
+    echo "Usage is..."
     #echo "source renameNhadd.sh [R=3,4...] [date_output=\"MM-DD-YY\"] [date_scratch=\"MM.DD.YY\"] [etabin=\"?.?eta?.?\"] [type=\"ppType\"]"
-    echo "source renameNhadd.sh [R=3,4...] [date_output=\"MM-DD-YY\"] [date_scratch=\"MM.DD.YY\"] [desc=\"jobtype_?.?eta?.?\"] [type=\"ppType\"]"
+    echo "source renameNhadd.sh [R=3,4...] [date_output=\"MM-DD-YY\"] [date_scratch=\"MM.DD.YY\"] [desc=\"jobtype_?.?eta?.?\"] [type=\"ppType\"] [<OPT>addedTag=\"ptCut999\"]"
     echo ""
     
     echo ""
     echo "e.g."
     echo "source renameNhadd.sh 4 01-01-17 1.01.17 0.0eta0.5 ppData"
+    echo "OR"
+    echo "source renameNhadd.sh 4 01-01-17 1.01.17 0.0eta0.5 ppData someDescTest"
     echo ""
     
     echo ""
@@ -77,14 +96,6 @@ then
     echo "" 
     return
 fi
-
-R=$1
-date_output=$2
-date_scratch=$3
-#etabin=$4
-#desc argument *typically* of form; jetPlots_0.0eta2.0
-desc=$4
-type=$5
 
 
 
@@ -112,15 +123,24 @@ fi
 ##########################################################################################
 if [ $type == "ppMC" ]
 then
+
     echo ""
     echo "hadding ppMC job outputs for desc=${desc} and date=${date_output}"
     echo ""
     sleep 1s
     
-    ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_${desc}/
-    #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_jetMult_${etabin}/
-    #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_jetPlots_${etabin}/
-    #ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_JERS_${etabin}
+    ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_${desc}
+    
+    if [ $# -eq 6 ]
+    then
+	mv ${ppMCjetPlotsDir} ${ppMCjetPlotsDir}_${addtag}
+	ppMCjetPlotsDir=ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${date_output}_${desc}_${addtag}
+
+    fi
+
+    #add backslash here to make sure the directory move above makes sense
+    ppMCjetPlotsDir=${ppMCjetPlotsDir}/
+    
     sleep 1s
     
     if [[ -d "${ppMCjetPlotsDir}" ]]
@@ -162,7 +182,14 @@ then
     echo ""
     sleep 1s
     
-    ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_${desc}
+    if [ $# -eq 5 ]
+    then
+	ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_${desc}
+    elif [ $# -eq 6 ]
+    then
+	ppDataHPtDir=ppData_HighPtJetTrig_ak${R}PFJets_${date_output}_${desc}_${addtag}
+    fi
+    
     mkdir ${ppDataHPtDir}
     sleep 1s
     

@@ -21,6 +21,7 @@
 // utilities
 #include <TMath.h>
 #include <TStopwatch.h>
+#include <TF1.h>
 //#include <TClonesArray.h>
 // histos
 #include <TH1.h>
@@ -224,6 +225,7 @@ const double HLTPFthresh[]={
   //55., 85., 105., 135.   //TODO/TRY 2 -- DONE
   //55., 90., 105., 135.   //TODO/TRY 3 -- DONE
   55., 90., 110., 135.   //TODO/TRY 4 -- DONE
+  //60., 90., 110., 135.   //TODO/TRY 4 -- NOT DONE
 };
 const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
@@ -432,7 +434,7 @@ const double pthatWeights[]={
 
 const bool jetIDDebug=false;
 bool jetID_00eta24(float jetIDpt, 
-		   float neSum, float phSum, float chSum, float eSum,
+		   float neSum, float phSum, float chSum, float eSum, float muSum,
 		   int numConst, int chMult){
   bool funcDebug=jetIDDebug;
   if(funcDebug)
@@ -441,6 +443,7 @@ bool jetID_00eta24(float jetIDpt,
   if( neSum/jetIDpt    < 0.99 &&
       phSum/jetIDpt    < 0.99 &&
       numConst         > 1    &&      
+      muSum/jetIDpt    < 0.80 &&
       chSum/jetIDpt    > 0.   && 
       chMult           > 0    &&
       eSum/jetIDpt     < 0.99    ) passesJetID=true;	      
@@ -450,7 +453,7 @@ bool jetID_00eta24(float jetIDpt,
 }
 
 bool jetID_24eta27(float jetIDpt,
-		   float neSum, float phSum, 
+		   float neSum, float phSum, float muSum, 
 		   int numConst){
   bool funcDebug=jetIDDebug;
   if(funcDebug)
@@ -458,7 +461,8 @@ bool jetID_24eta27(float jetIDpt,
   bool passesJetID=false;
   if( neSum/jetIDpt    < 0.99 &&
       phSum/jetIDpt    < 0.99 &&
-      numConst         > 1       ) passesJetID=true;	      
+      numConst         > 1    &&
+      muSum/jetIDpt    < 0.80    ) passesJetID=true;	      
   if(funcDebug)
     std::cout<<" passesJetID="<<passesJetID<<std::endl;
   return passesJetID;
@@ -786,3 +790,31 @@ const float binsize_vzWeights=(maxbinValue_vzWeights-minbinValue_vzWeights)/nbin
 
 
 
+const UInt_t runarray[]={
+  262163,
+  262165,
+  262167,
+  262173,
+  262174,
+  262204,
+  262205,
+  262235,
+  262248,
+  262250,
+  262252,
+  262253,
+  262254,
+  262270,
+  262271,
+  262272,
+  262273,
+  262274,
+  262275,
+  262277,
+  262325,
+  262326,
+  262327,
+  262328,
+  999999
+};
+const int Nruns=sizeof(runarray)/sizeof(UInt_t);

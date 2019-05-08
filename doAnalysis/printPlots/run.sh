@@ -80,7 +80,7 @@ then
     echo ""
     echo "compiling printPlots_jetTrig.C"
     echo ""
-    
+    JETTRIGOUTDIR=/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output
     rootcompile printPlots_jetTrig.C
     
     ##############################################
@@ -123,6 +123,9 @@ then
 #    source run_printPlots_jetTrig.sh "4" "04.12.19_outputCondor" "04-12-19" "0.0eta3.0_wJetID"           "00eta30_04.12.19_wJetID_wMB"
 #    source run_printPlots_jetTrig.sh "4" "04.12.19_outputCondor" "04-12-19" "0.0eta3.0_wJetID_noMinBias" "00eta30_04.12.19_wJetID_noMB"  
 
+
+
+
     #source run_printPlots_jetTrig.sh "4" "04.16.19_outputCondor" "04-16-19" "0.0eta3.0_tupel"           "00eta30_04.16.19_wJetID_tupel_wMB"
     #source run_printPlots_jetTrig.sh "4" "04.16.19_outputCondor" "04-16-19" "0.0eta3.0_tupel"           "00eta30_04.16.19_wJetID_tupel_noMB"
     #source run_printPlots_jetTrig.sh "4" "04.16.19_outputCondor" "04-16-19" "0.0eta3.0_incjetana"       "00eta30_04.16.19_wJetID_incjetana_wMB"
@@ -131,38 +134,181 @@ then
     #source run_printPlots_jetTrig.sh "4" "04.16.19_outputCondor" "04-16-19" "0.0eta3.0_incjetana"       "00eta30_04.16.19_wJetID_incjetana_noMB_jet80Only"
     #source run_printPlots_jetTrig.sh "4" "04.16.19_outputCondor" "04-16-19" "0.0eta3.0_incjetana"       "00eta30_04.16.19_wJetID_incjetana_noMB_lowjetsOnly"
 
-    #source run_printPlots_jetTrig.sh "4" "04.18.19_outputCondor" "04-18-19" "0.0eta3.0"       "00eta30_04.18.19_wJetID_incjetana_noMB"
-    #source run_printPlots_jetTrig.sh "4" "04.18.19_outputCondor" "04-18-19" "0.0eta3.0"       "00eta30_04.18.19_wJetID_incjetana_wMB"
 
-    source run_printPlots_jetTrig.sh "4" "04.18.19_outputCondor" "04-18-19" "0.0eta3.0_noMissedHLT40_pt55"       "00eta30_04.18.19_wJetID_incjetana_wMB_noMissedHLT40_pt55"
-    source run_printPlots_jetTrig.sh "4" "04.18.19_outputCondor" "04-18-19" "0.0eta3.0_noMissedHLT40_pt40"       "00eta30_04.18.19_wJetID_incjetana_wMB_noMissedHLT40_pt40"
-    
-    
+    #source run_printPlots_jetTrig.sh "4" "04.18.19_outputCondor" "04-18-19" "0.0eta3.0"       "00eta30_04.18.19_wJetID_incjetana_noMB"
+    #source run_printPlots_jetTrig.sh "4" "04.18.19_outputCondor" "04-18-19" "0.0eta3.0"       "00eta30_04.18.19_wJetID_incjetana_wMB_wExclusionIssue"
+
     #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.16.19_wJetID_*_*MB_jetTrig.pdf"
-    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.16.19_wJetID_incjetana_noMB_jet80Only_jetTrig.pdf"
-    
-    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.18.19_wJetID_incjetana_*MB_jetTrig.*"
-    
+    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.16.19_wJetID_incjetana_noMB_jet80Only_jetTrig.pdf"    
+    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.18.19_wJetID_incjetana_*MB_jetTrig.*"    
 #    scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.18.19_wJetID_incjetana_wMB_noMissedHLT40_jetTrig_pt55.*"
-    scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.18.19_wJetID_incjetana_wMB_noMissedHLT40_pt??_jetTrig.*"
+    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.18.19_wJetID_incjetana_wMB_noMissedHLT40_pt??_jetTrig.*"
+
+
+
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_noL1JetsMB"        "00eta30_04.19.19_wJetID_incjetana_wMB_nolepveto_noL1JetsMB"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_noL1JetsMB"       "00eta30_04.19.19_wJetID_incjetana_noMB_nolepveto_noL1JetsMB"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_noL1JetsMB"       "00eta30_04.19.19_wJetID_incjetana_wMB_nolepveto_noL1JetsMB_noJetID"
+
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto"        "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_noL1JetsMB"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto"       "00eta30_04.19.19_wJetID_incjetana_noMB_lepveto_noL1JetsMB"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto"       "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_noL1JetsMB_noJetID"
     
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT40L1seed"        "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT40L1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT40L1seed"       "00eta30_04.19.19_wJetID_incjetana_noMB_lepveto_MBwHLT40L1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT40L1seed"       "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT40L1seed_noJetID"
+
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT4060L1seed"        "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT4060L1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT4060L1seed"       "00eta30_04.19.19_wJetID_incjetana_noMB_lepveto_MBwHLT4060L1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT4060L1seed"       "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT4060L1seed_noJetID"
+
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT406080L1seed"        "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT406080L1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT406080L1seed"       "00eta30_04.19.19_wJetID_incjetana_noMB_lepveto_MBwHLT406080L1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwHLT406080L1seed"       "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT406080L1seed_noJetID"
+
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwAllL1seed"        "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwAllL1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwAllL1seed"       "00eta30_04.19.19_wJetID_incjetana_noMB_lepveto_MBwAllL1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.19.19_outputCondor" "04-19-19" "0.0eta3.0_lepveto_MBwAllL1seed"       "00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwAllL1seed_noJetID"
+
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.18.19_wJetID_incjetana_wMB_wExclusionIssue_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_nolepveto_noL1JetsMB_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_noL1JetsMB_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT40L1seed_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT4060L1seed_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwHLT406080L1seed_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_MBwAllL1seed_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_*_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_nolepveto_noL1JetsMB_noJetID_jetTrig.*"
+    #scp2Serin "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.19.19_wJetID_incjetana_wMB_lepveto_*_noJetID_jetTrig.*"
+
+    ### SKIPS HLTPF AND HLTCALO EVTS FOR MB DECISION
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed"       "00eta30_04.23.19_wJetID_incjetana_noMB_lepveto_MBwAllL1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed"        "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_MBwAllL1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed"        "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_noL1Jet68"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed"        "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_noL1Jet60"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed"        "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_noL1Jet52"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed"        "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_noL1Jet48"
+    
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_MBwAllL1seed_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_noL1Jet68_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_noL1Jet60_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_noL1Jet52_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_noL1Jet48_jetTrig.*"
+    
+
+    ### SKIPS ONLY HLTPF EVTS FOR MB DECISION
+
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed_skipHLTPFOnly"      "00eta30_04.23.19_wJetID_incjetana_noMB_lepveto_skipHLTPFOnly_MBwAllL1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed_skipHLTPFOnly"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_skipHLTPFOnly_MBwAllL1seed"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed_skipHLTPFOnly"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_skipHLTPFOnly_noL1Jet68"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed_skipHLTPFOnly"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_skipHLTPFOnly_noL1Jet60"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed_skipHLTPFOnly"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_skipHLTPFOnly_noL1Jet52"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBwAllL1seed_skipHLTPFOnly"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_skipHLTPFOnly_noL1Jet48"
+
+    
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_skipHLTPFOnly_MBwAllL1seed_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_skipHLTPFOnly_noL1Jet68_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_skipHLTPFOnly_noL1Jet60_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_skipHLTPFOnly_noL1Jet52_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_skipHLTPFOnly_noL1Jet48_jetTrig.*"
+
+
+
+    ### SKIPS NO EVTS FOR MB DECISION
+
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"      "00eta30_04.23.19_wJetID_incjetana_noMB_lepveto_MBallHLTPF"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"      "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_MBallHLTPF"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_MBallHLTPF_jetTrig.*"
+
+    ##subtract HLTJet && isMB one by one
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_noHLTJet80"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_noHLTJet60"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_noHLTJet40"
+
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_noHLTJet80_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_noHLTJet60_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_noHLTJet40_jetTrig.*"
+
+    ##subtract L1Jet && isMBt one by one
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_allHLT_noL1Jet68"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_allHLT_noL1Jet60"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_allHLT_noL1Jet52"
+    #source run_printPlots_jetTrig.sh "4" "04.23.19_outputCondor" "04-23-19" "0.0eta3.0_lepveto_MBallHLTPF"       "00eta30_04.23.19_wJetID_incjetana_wMB_lepveto_allHLT_noL1Jet48"
+
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_allHLT_noL1Jet68_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_allHLT_noL1Jet60_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_allHLT_noL1Jet52_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.23.19_wJetID_incjetana_*MB_lepveto_allHLT_noL1Jet48_jetTrig.*"
+
+
+
+    ### SIMPLE TRIGPT EXCLUSION W/ HLT40's LOWER THRESHOLD (IF NO TRIGGER JET OBJECT FROM OTHERS, TRGPT==0)
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"      "00eta30_04.24.19_wJetID_incjetana_noMB_lepveto_MBexc_wTrgPt"
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"       "00eta30_04.24.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.24.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_jetTrig.*"
+
+    ##subtract HLTJet && isMB one by one
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"       "00eta30_04.24.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt_noHLTJet80"
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"       "00eta30_04.24.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt_noHLTJet60"
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"       "00eta30_04.24.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt_noHLTJet40"
+
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.24.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_noHLTJet80_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.24.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_noHLTJet60_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.24.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_noHLTJet40_jetTrig.*"
+
+    ##subtract L1Jet && isMB one by one
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"       "00eta30_04.24.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt_noL1Jet68"
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"       "00eta30_04.24.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt_noL1Jet60"
+    #source run_printPlots_jetTrig.sh "4" "04.24.19_outputCondor" "04-24-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"       "00eta30_04.24.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt_noL1Jet52"
+
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.24.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_noL1Jet68_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.24.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_noL1Jet60_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.24.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_noL1Jet52_jetTrig.*"
+
+
+    ### SIMPLE TRIGPT EXCLUSION W/ HLT40's LOWER THRESHOLD (IF NO TRIGGER JET OBJECT FROM OTHERS, TRGPT==0), W/ is/HLT40 && NOT HLTMB plots, w/ isMB && NOT L1_HF_COINCIDENCE plots
+    #source run_printPlots_jetTrig.sh "4" "04.25.19_outputCondor" "04-25-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"      "00eta30_04.25.19_wJetID_incjetana_noMB_lepveto_MBexc_wTrgPt"
+    #source run_printPlots_jetTrig.sh "4" "04.25.19_outputCondor" "04-25-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"      "00eta30_04.25.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt"
+    #source run_printPlots_jetTrig.sh "4" "04.25.19_outputCondor" "04-25-19" "0.0eta3.0_lepveto_MBexc_wTrgPt"      "00eta30_04.25.19_wJetID_incjetana_wMB_lepveto_MBexc_wTrgPt_wL1HFcoinc"
+
+
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.25.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_jetTrig.*"
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.25.19_wJetID_incjetana_*MB_lepveto_MBexc_wTrgPt_wL1HFcoinc_jetTrig.*"
+
+
+
+    ### 
+    #source run_printPlots_jetTrig.sh "4" "04.29.19_outputCondor" "04-29-19" "0.0eta3.0_L1MBforexclu"      "00eta30_04.29.19_wJetID_incjetana_noMB_isMBexc_wTrgPt_L1MBexclu"
+    #source run_printPlots_jetTrig.sh "4" "04.29.19_outputCondor" "04-29-19" "0.0eta3.0_L1MBforexclu"       "00eta30_04.29.19_wJetID_incjetana_wMB_isMBexc_wTrgPt_L1MBexclu"
+    #
+    #source run_printPlots_jetTrig.sh "4" "04.29.19_outputCondor" "04-29-19" "0.0eta3.0_HLTMBforexclu"      "00eta30_04.29.19_wJetID_incjetana_noMB_isMBexc_wTrgPt_HLTMBexclu"
+    #source run_printPlots_jetTrig.sh "4" "04.29.19_outputCondor" "04-29-19" "0.0eta3.0_HLTMBforexclu"       "00eta30_04.29.19_wJetID_incjetana_wMB_isMBexc_wTrgPt_HLTMBexclu"
+    #
+    #source run_printPlots_jetTrig.sh "4" "04.29.19_outputCondor" "04-29-19" "0.0eta3.0_HLTMBforexclu_johnHLTthresh"      "00eta30_04.29.19_wJetID_incjetana_noMB_isMBexc_wTrgPt_HLTMBexclu_johnHLTthresh"
+    #source run_printPlots_jetTrig.sh "4" "04.29.19_outputCondor" "04-29-19" "0.0eta3.0_HLTMBforexclu_johnHLTthresh"       "00eta30_04.29.19_wJetID_incjetana_wMB_isMBexc_wTrgPt_HLTMBexclu_johnHLTthresh"
+    #
+    #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_04.29.19_wJetID_incjetana_*MB_isMBexc_wTrgPt_*MBexclu*_jetTrig.*"
+
+
+
+    ###
+    source run_printPlots_jetTrig.sh "4" "05.01.19_outputCondor" "05-01-19" "0.0eta3.0_isHLTforDupeSkip"      "00eta30_05.01.19_wJetID_incjetana_noMB_isHLTforDupeSkip_wTrgPt_HLTMBexclu"
+    source run_printPlots_jetTrig.sh "4" "05.01.19_outputCondor" "05-01-19" "0.0eta3.0_isHLTforDupeSkip"       "00eta30_05.01.19_wJetID_incjetana_wMB_isHLTforDupeSkip_wTrgPt_HLTMBexclu"
+    
+    scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_05.01.19_wJetID_incjetana_*MB_isHLTforDupeSkip_wTrgPt_HLTMBexclu_jetTrig.*"
+
+
     ##############################################
     
     echo ""
     echo "done running jetTrig!"
     echo ""
+
+    return
     
-    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_wMB_jetTrig.pdf
-    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_noMB_jetTrig.pdf
-    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_wJetID_wMB_jetTrig.pdf
-    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_wJetID_noMB_jetTrig.pdf
-    #scp2Serin output/\*jetTrig\*
-    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta20_11.06.18_good_jetTrig.pdf
-    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta20_11.14.18_trgPt\*.pdf
-    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta?0_01.??.19_HLT60Thresh??_jetTrig.pdf"
-    ##############################################
+
     
-    #return
+
 fi
 
 
@@ -314,6 +460,27 @@ return
 
 
 
+
+
+
+
+
+
+
+
+
+
+    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_wMB_jetTrig.pdf
+    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_noMB_jetTrig.pdf
+    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_wJetID_wMB_jetTrig.pdf
+    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta30_04.12.19_wJetID_noMB_jetTrig.pdf
+    #scp2Serin output/\*jetTrig\*
+    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta20_11.06.18_good_jetTrig.pdf
+    #scp2Serin /home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta20_11.14.18_trgPt\*.pdf
+    #scp2Serin "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots/output/ak4PF_HPtJetTrig_00eta?0_01.??.19_HLT60Thresh??_jetTrig.pdf"
+    ##############################################
+    
+    #return
 
 
 

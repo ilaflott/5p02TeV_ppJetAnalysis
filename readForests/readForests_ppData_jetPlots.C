@@ -5,23 +5,22 @@
 const bool fillDataEvtQAHists=true;
 
 const bool useIncJetAnalyzer=true;
-const bool useTupel=false;//&&!useIncJetAnalyzer&&fillDataTupelJetQAHists;
+const bool useTupel=false;
 
 const bool fillDataJetQAHists=true;
 const bool fillDataTupelJetQAHists=false&&useTupel;
 
 const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetCovMatrix=false;
-const bool fillDataJetSpectraRapHists=false; //other
+const bool fillDataJetCovMatrix=true;
 
 const bool fillDataDijetHists=false;//hardly used options
 
-//const bool fillDataJetIDHists=true;//, tightJetID=false;
-//const int jetIDint=(int)fillDataJetIDHists;
+const bool fillDataJetJECQAHists=false;
+const bool fillDataJetJECUncHists=true&&fillDataJetQAHists;
 
-const bool fillDataJetJECQAHists=true;
 const bool useHLT100=false;
-//const bool ResCorrTrigPtIfApp=false;
+const bool useMBevts=false;
+const bool doRunExclStudy=false;
 //const bool fillDataVtxTrkQAHists=true; //in the works
 
 
@@ -29,6 +28,7 @@ const bool useHLT100=false;
 //const std::string trgCombType="Calo";
 const std::string trgCombType="PF";
 
+const bool deepDebug=false;
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -385,15 +385,77 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     }
   }
   
+  //  //temp check JEC Unc Hists
+  //  std::cout<<std::endl;
+  //  std::cout<<"n_jecunc_etabins="<<n_jecunc_etabins<<std::endl;
+  //  for(int i=0; i<n_jecunc_etabins; i++){
+  //    std::cout<<"jecunc_etabins["<<i<<"]="<<jecunc_etabins[i]<<std::endl;
+  //  }
+  //  std::cout<<std::endl;
+  //  std::cout<<"n_jecunc_ptbins="<<n_jecunc_ptbins<<std::endl;
+  //  for(int i=0; i<n_jecunc_ptbins; i++){
+  //    std::cout<<"jecunc_ptbins["<<i<<"]="<<jecunc_ptbins[i]<<std::endl;
+  //  }
+  //  std::cout<<std::endl;
+  //  for(int i=0; i<n_jecunc_etabins;i++){
+  //    for(int j=0; j<n_jecunc_ptbins;j++){
+  //      if(j!=n_jecunc_ptbins-1)std::cout<<"jecunc["<<i<<"]["<<j<<"]="<<jecunc[i][j]<<", ";
+  //      else                    std::cout<<"jecunc["<<i<<"]["<<j<<"]="<<jecunc[i][j]<<"////////////////////"<<std::endl<<std::endl;
+  //    }
+  //  }
+  //  assert(false);
+  //temp
+
+  //speed up bin searching by starting at spot in array that reflects the cuts being used to run
+  int jecunc_eta_start=-1;
+  if(fillDataJetJECUncHists)  for(int i=0; i<n_jecunc_etabins; i++){
+      if( (-1.*jtEtaCutHi) >= jecunc_etabins[i] && (-1.*jtEtaCutHi) < jecunc_etabins[i+1]){
+	jecunc_eta_start=i;       std::cout<<"jecunc_etabins["<<jecunc_eta_start<<"]="<<jecunc_etabins[i]<<std::endl;
+	break;}
+      else continue;
+    }
+  int jecunc_eta_end=-1;
+  if(fillDataJetJECUncHists)  for(int i=0; i<n_jecunc_etabins; i++){
+      if( (jtEtaCutHi) >= jecunc_etabins[i] && (jtEtaCutHi) < jecunc_etabins[i+1]){ 
+	jecunc_eta_end=i;  std::cout<<"jecunc_etabins["<<jecunc_eta_end<<"]="<<jecunc_etabins[i]<<std::endl;     
+	break;}
+      else continue;
+    }
+  int jecunc_pt_start=-1;
+  if(fillDataJetJECUncHists)  for(int i=0; i<n_jecunc_ptbins; i++){
+      if( jtPtCut >= jecunc_ptbins[i] && jtPtCut < jecunc_ptbins[i+1]){
+	jecunc_pt_start=i; std::cout<<"jecunc_ptbins["<<jecunc_pt_start<<"]="<<jecunc_ptbins[i]<<std::endl;      
+	break;}
+      else continue;
+    }
+  int jecunc_pt_end=-1;
+  if(fillDataJetJECUncHists)  for(int i=0; i<n_jecunc_ptbins; i++){
+      if( (jtPtCut_Hi) >= jecunc_ptbins[i] && (jtPtCut_Hi) < jecunc_ptbins[i+1]){
+	jecunc_pt_end=i;      std::cout<<"jecunc_ptbins["<<jecunc_pt_end<<"]="<<jecunc_ptbins[i]<<std::endl;
+	break;}
+      else continue;
+  }
+  //assert(false);
+
+  
+  
+  
   //jet QA, i.e. hists filled once per jet
   TH1D *hJetQA[nbins_abseta][N_vars][2]={};    
+  TH1D *hJetQA_jtpt_JEC_sysup[nbins_abseta]={};    
+  TH1D *hJetQA_jtpt_JEC_sysdown[nbins_abseta]={};    
   if(fillDataJetQAHists){        
     for(int j = 0; j<N_vars; ++j){		      
       for(int k = 0; k<nbins_abseta; ++k){      
 	for(int i=0; i<2; i++){
 	  //jets
-	  if(var[j]=="jtpt"||var[j]=="rawpt")
+	  if(var[j]=="jtpt"||var[j]=="rawpt"){
 	    hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k) , Form(";%s;", var[j].c_str()) , 2500,0,2500);       
+	    if(i==1 && fillDataJetJECUncHists && var[j]=="jtpt"){
+	      hJetQA_jtpt_JEC_sysup[k]   = new TH1D( Form("hJetQA_%dwJetID_%s_JEC_sysup_etabin%d"  , i,var[j].c_str(),k) , Form("JEC sysup Jet p_{T};%s;"  , var[j].c_str()) , 2500,0,2500);       
+	      hJetQA_jtpt_JEC_sysdown[k] = new TH1D( Form("hJetQA_%dwJetID_%s_JEC_sysdown_etabin%d", i,var[j].c_str(),k) , Form("JEC sysdown Jet p_{T};%s;", var[j].c_str()) , 2500,0,2500);       
+	    }
+	  }
 	  else if(var[j]=="jteta") 
 	    hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k) , Form(";%s;",var[j].c_str()) , 100,-5,+5);
 	  else if(var[j]=="jtphi") 
@@ -422,19 +484,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     }//nbins_abseta loop        
   }//fill datajetqa hists
   
-  TH1D *hJetSpectraRap[nbins_abseta][2]={};
-  if(fillDataJetSpectraRapHists)
-    for(int j = 0; j<nbins_abseta; ++j){
-      for(int i=0; i<2; i++){
-	std::string h_Title="hJetSpectraRap_";
-	//if(fillDataJetIDHists)h_Title+="wJetID_";
-	if(i==1)h_Title+="wJetID_";
-	h_Title+="bin"+std::to_string(j);
-	std::string h_Desc;	
-	h_Desc="JetPt Spectra for "+absetabins_str[j]+ "< #||{y} <"+absetabins_str[j+1];
-	hJetSpectraRap[j][i]=new TH1D(h_Title.c_str(),h_Desc.c_str(), 2000,0,2000);  
-      } 
-    }
   
   //jet QA, i.e. hists filled once per jet
   TH1D *hTupelJetQA[nbins_abseta][N_tupelvars][2]={};    
@@ -453,40 +502,29 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   
   // //these get filled 
   // // // post cuts and post skips 
+  // // // if the given HLT path fires AND max trig pt across all fired HLT bits meets the given LOWER threshold 
   // // // with the max trig pt across all fired triggger objects
-  // // // if the given HLT path fires AND max trig pt meets the given threshold 
   // // // weighted by the given HLT objects prescale
   TH1D *hpp_IncHLTMBtrgPt=NULL;
   TH1D  *hpp_IncHLT40trgPt =NULL ,   *hpp_IncHLT40trgEta =NULL;
   TH1D  *hpp_IncHLT60trgPt =NULL ,   *hpp_IncHLT60trgEta =NULL;
   TH1D  *hpp_IncHLT80trgPt =NULL ,   *hpp_IncHLT80trgEta =NULL;
-  TH1D  *hpp_IncHLT100trgPt =NULL ,  *hpp_IncHLT100trgEta =NULL;
-
-
+  TH1D  *hpp_IncHLT100trgPt =NULL ,  *hpp_IncHLT100trgEta =NULL;  
+  
   // //these get filled 
   // // // post cuts and post skips 
-  // // // with the max trig pt across the given 
-  // // // if the max trig pt meets the given threshold 
+  // // // POST EXCLUSION CRITERIA
+  // // // with the max trig pt across all fired HLT bits
   // // // weighted by the given HLT objects prescale
-  TH1D  *hpp_IncHLT40trgPt_2 =NULL ;
-  TH1D  *hpp_IncHLT60trgPt_2 =NULL ;
-  TH1D  *hpp_IncHLT80trgPt_2 =NULL ;
-  TH1D  *hpp_IncHLT100trgPt_2 =NULL;
-  
   TH1D *hpp_HLTMBtrgPt=NULL;
   TH1D  *hpp_HLT40trgPt =NULL ,   *hpp_HLT40trgEta =NULL;
   TH1D  *hpp_HLT60trgPt =NULL ,   *hpp_HLT60trgEta =NULL;
   TH1D  *hpp_HLT80trgPt =NULL ,   *hpp_HLT80trgEta =NULL;
-  TH1D *hpp_HLT100trgPt =NULL ,  *hpp_HLT100trgEta =NULL;
-  
+  TH1D *hpp_HLT100trgPt =NULL ,  *hpp_HLT100trgEta =NULL;  
   TH1D *hpp_HLTCombtrgPt=NULL, *hpp_HLTCombtrgEta=NULL;
+
+  
   if(fillDataJetTrigQAHists){    
-    
-    //no exclusion, looking at each indiv. path on its own
-    hpp_IncHLT40trgPt_2   = new TH1D(  "IncHLT40_trgPt_2"  , "inc trgPt for HLT40 , from HLT40's trgObj only  ", 2500, 0, 2500 ); 
-    hpp_IncHLT60trgPt_2   = new TH1D(  "IncHLT60_trgPt_2"  , "inc trgPt for HLT60 , from HLT60's trgObj only  ", 2500, 0, 2500 ); 
-    hpp_IncHLT80trgPt_2   = new TH1D(  "IncHLT80_trgPt_2"  , "inc trgPt for HLT80 , from HLT80's trgObj only  ", 2500, 0, 2500 ); 
-    hpp_IncHLT100trgPt_2  = new TH1D( "IncHLT100_trgPt_2" , "inc trgPt for HLT100, from HLT100's trgObj only  ", 2500, 0, 2500 );       
     
     //semi excluded, looks at lower threshold but only respective trigger path's decision + pscl
     hpp_IncHLTMBtrgPt   = new TH1D( "IncHLTMB_trgPt"  , "inc trgPt for HLTMB   ", 2500, 0, 2500 ); 
@@ -522,6 +560,91 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hpp_HLTCombtrgEta = new TH1D( "HLTComb_trgEta"  , "trgEta for HLTComb ", 100, -5., 5. );       
 
   }
+
+  //special trigpt hists
+  
+  // // these get fillied
+  // // // post skips but pre-cuts
+  // // // if the given HLT path fired 
+  // // // with the given trig pt('s)
+  // // // weighted by the given HLT objects prescale
+  TH1D   *hpp_IncHLTMBpscl =NULL ;
+  TH1D   *hpp_IncHLT40pscl =NULL ;
+  TH1D   *hpp_IncHLT60pscl =NULL ;
+  TH1D   *hpp_IncHLT80pscl =NULL ;
+  TH1D  *hpp_IncHLT100pscl =NULL ;  
+
+  TH1D   *hpp_IncHLT40trgPt_allobj =NULL ;
+  TH1D   *hpp_IncHLT60trgPt_allobj =NULL ;
+  TH1D   *hpp_IncHLT80trgPt_allobj =NULL ;
+  TH1D  *hpp_IncHLT100trgPt_allobj =NULL ;  
+
+  TH1D   *hpp_IncHLT40trgPt_leadobj =NULL ;
+  TH1D   *hpp_IncHLT60trgPt_leadobj =NULL ;
+  TH1D   *hpp_IncHLT80trgPt_leadobj =NULL ;
+  TH1D  *hpp_IncHLT100trgPt_leadobj =NULL;
+  TH1D   *hpp_IncHLT40MBtrgPt_leadobj =NULL ;
+  
+  TH2D   *hpp_IncHLT40trgPt_leadobj_leadjet =NULL ;
+  TH2D   *hpp_IncHLT60trgPt_leadobj_leadjet =NULL ;
+  TH2D   *hpp_IncHLT80trgPt_leadobj_leadjet =NULL ;
+  TH2D  *hpp_IncHLT100trgPt_leadobj_leadjet =NULL ;  
+  TH2D   *hpp_IncHLT40MBtrgPt_leadobj_leadjet =NULL ;
+  
+  TH2D   *hpp_IncHLT40trgPt_leadobj_globleadobj =NULL ;
+  TH2D   *hpp_IncHLT60trgPt_leadobj_globleadobj =NULL ;
+  TH2D   *hpp_IncHLT80trgPt_leadobj_globleadobj =NULL ;
+  TH2D  *hpp_IncHLT100trgPt_leadobj_globleadobj =NULL ;  
+  TH2D   *hpp_IncHLT40MBtrgPt_leadobj_globleadobj =NULL ;  
+  
+  if(fillDataJetTrigQAHists){
+
+    hpp_IncHLTMBpscl   =new TH1D( "IncHLTMBpscl",    "HLTMB pscl;Prescale;N_{evts}" , 1000,0,1000);
+    hpp_IncHLT40pscl   =new TH1D( "IncHLT40pscl",    "HLT40 pscl;Prescale;N_{evts}" , 1000,0,1000);
+    hpp_IncHLT60pscl   =new TH1D( "IncHLT60pscl",    "HLT60 pscl;Prescale;N_{evts}" , 1000,0,1000);
+    hpp_IncHLT80pscl   =new TH1D( "IncHLT80pscl",    "HLT80 pscl;Prescale;N_{evts}" , 1000,0,1000);
+    hpp_IncHLT100pscl  =new TH1D( "IncHLT100pscl",  "HLT100 pscl;Prescale;N_{evts}", 1000,0,1000);    
+    
+    hpp_IncHLT40trgPt_allobj   =new TH1D( "IncHLT40trgPt_allobj",    "all trigger jet object for HLT40;Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
+    hpp_IncHLT60trgPt_allobj   =new TH1D( "IncHLT60trgPt_allobj",    "all trigger jet object for HLT60;Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
+    hpp_IncHLT80trgPt_allobj   =new TH1D( "IncHLT80trgPt_allobj",    "all trigger jet object for HLT80;Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
+    hpp_IncHLT100trgPt_allobj  =new TH1D( "IncHLT100trgPt_allobj",  "all trigger jet object for HLT100;Trigger Jet Obj p_{T};N_{jets}", 2500,0,2500);    
+
+    hpp_IncHLT40trgPt_leadobj   =new TH1D(  "IncHLT40trgPt_leadobj",  "lead trigger jet object for HLT40;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
+    hpp_IncHLT60trgPt_leadobj   =new TH1D(  "IncHLT60trgPt_leadobj",  "lead trigger jet object for HLT60;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
+    hpp_IncHLT80trgPt_leadobj   =new TH1D(  "IncHLT80trgPt_leadobj",  "lead trigger jet object for HLT80;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
+    hpp_IncHLT100trgPt_leadobj  =new TH1D(  "IncHLT100trgPt_leadobj",  "lead trigger jet object for HLT100;Lead Trigger Jet Obj p_{T};N_{jets}", 2500,0,2500);
+    hpp_IncHLT40MBtrgPt_leadobj =new TH1D(  "IncHLT40MBtrgPt_leadobj", "lead trigger jet obj for HLT40 && HLTMB" , 2500,0,2500);
+    
+    hpp_IncHLT40trgPt_leadobj_leadjet  =new TH2D(  "IncHLT40trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT40;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}" , 
+						   2500,0,2500, 2500,0,2500);
+    hpp_IncHLT60trgPt_leadobj_leadjet  =new TH2D(  "IncHLT60trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT60;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}" , 
+						   2500,0,2500, 2500,0,2500);
+    hpp_IncHLT80trgPt_leadobj_leadjet  =new TH2D(  "IncHLT80trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT80;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}" , 
+						   2500,0,2500, 2500,0,2500);
+    hpp_IncHLT100trgPt_leadobj_leadjet =new TH2D(  "IncHLT100trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT100;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}", 
+						   2500,0,2500, 2500,0,2500);
+    hpp_IncHLT40MBtrgPt_leadobj_leadjet  =new TH2D(  "IncHLT40MBtrgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT40 && HLTMB" ,
+						     2500,0,2500, 2500,0,2500);    
+    
+    
+    hpp_IncHLT40trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT40trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT40 v lead trigger jet obj across all triggers, only for HLT40;Lead Trigger Obj p_{T} across HLT40;Lead Obj p_{T} across HLT40+60+80" , 
+						       2500,0,2500, 2500,0,2500);
+    hpp_IncHLT60trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT60trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT60 v lead trigger jet obj across all triggers, only for HLT60;Lead Trigger Obj p_{T} across HLT60;Lead Obj p_{T} across HLT40+60+80" , 
+						       2500,0,2500, 2500,0,2500);
+    hpp_IncHLT80trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT80trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT80 v lead trigger jet obj across all triggers, only for HLT80;Lead Trigger Obj p_{T} across HLT80;Lead Obj p_{T} across HLT40+60+80" , 
+						       2500,0,2500, 2500,0,2500);
+    hpp_IncHLT100trgPt_leadobj_globleadobj =new TH2D(  "IncHLT100trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT100 v lead trigger jet obj across all triggers, only for HLT100;Lead Trigger Obj p_{T} across HLT100;Lead Obj p_{T} across HLT40+60+80", 
+						       2500,0,2500, 2500,0,2500); 
+    hpp_IncHLT40MBtrgPt_leadobj_globleadobj  =new TH2D(  "IncHLT40MBtrgPt_leadobj_globleadobj", "lead trigger jet obj across HLT40 v lead trigger jet obj across all triggers, only for HLT40+HLTMB;Lead Trigger Obj p_{T} across HLT40+HLTMB;Lead Obj p_{T} across HLT40+60+80" , 
+						       2500,0,2500, 2500,0,2500);   
+
+
+  }
+
+
+
+
 
 
   //inclusive jet spectra by-trigger histograms
@@ -701,6 +824,12 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   TH2D* hpp_covmat_eta_arr[nbins_abseta]={};
   TH1D* hpp_covmat_eta_arr_helpers[nbins_abseta]={};
   bool etabin_bool_helper[nbins_abseta]={0};
+  
+  TH2D* hpp_covmat_eta_arr_JEC_sysup[nbins_abseta]={};
+  TH1D* hpp_covmat_eta_arr_helpers_JEC_sysup[nbins_abseta]={};
+  TH2D* hpp_covmat_eta_arr_JEC_sysdown[nbins_abseta]={};
+  TH1D* hpp_covmat_eta_arr_helpers_JEC_sysdown[nbins_abseta]={};
+
   if(fillDataJetCovMatrix){
     for(int i=0;i<nbins_abseta;i++){
       std::string covmat_eta_title="Data Jet Covariance Matrix, "+absetabins_str[i]+" < #||{y} < "+absetabins_str[i+1];    
@@ -712,6 +841,26 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(debugMode)std::cout<<"covmat_eta_name  =" << covmat_eta_name << std::endl;      
       hpp_covmat_eta_arr[i]=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
       hpp_covmat_eta_arr_helpers[i]=new TH1D(("covmat_helper_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+
+      if(fillDataJetJECUncHists){
+	std::string covmat_eta_name_JEC_sysup="hpp_covmat_";
+	//if(fillDataJetIDHists)covmat_eta_name+="wJetID_";
+	covmat_eta_name_JEC_sysup+="wJetID_JEC_sysup_";
+	covmat_eta_name_JEC_sysup+="etabin_"+std::to_string(i);      
+	if(debugMode)std::cout<<"covmat_eta_name_JEC_sysup  =" << covmat_eta_name_JEC_sysup << std::endl;      
+	hpp_covmat_eta_arr_JEC_sysup[i]=new TH2D((covmat_eta_name_JEC_sysup).c_str(), ("JEC sysup "+covmat_eta_title).c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+	hpp_covmat_eta_arr_helpers_JEC_sysup[i]=new TH1D(("covmat_helper_JEC_sysup_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+
+	std::string covmat_eta_name_JEC_sysdown="hpp_covmat_";
+	//if(fillDataJetIDHists)covmat_eta_name+="wJetID_";
+	covmat_eta_name_JEC_sysdown+="wJetID_JEC_sysdown_";
+	covmat_eta_name_JEC_sysdown+="etabin_"+std::to_string(i);      
+	if(debugMode)std::cout<<"covmat_eta_name_JEC_sysdown  =" << covmat_eta_name_JEC_sysdown << std::endl;      
+	hpp_covmat_eta_arr_JEC_sysdown[i]=new TH2D((covmat_eta_name_JEC_sysdown).c_str(), ("JEC sysdown "+covmat_eta_title).c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+	hpp_covmat_eta_arr_helpers_JEC_sysdown[i]=new TH1D(("covmat_helper_JEC_sysdown_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+
+
+      }
     }//nbinsabseta
   }//fill datajetcovmatrix
   
@@ -982,6 +1131,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   std::vector<float> *jetPt, *jetEta, *jetPhi, *jetE, *jetID, *jetRawPt, *jetRawE;
   std::vector<float> *jetHfHadE, *jetHfEmE, *jetChHadFrac, *jetNeutralHadAndHfFrac, *jetChEmFrac, *jetNeutralEmFrac, *jetChMult, *jetConstCnt;  
   if(useTupel){
+    if(deepDebug)std::cout<<"setting branch addresses for tupel/EventTree"<<std::endl;
+
     jetpp[5]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
     jetpp[5]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
     jetpp[5]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
@@ -1109,9 +1260,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   //float currentIntegral=0.;
   //int problemCount=0;
   for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
-
-
-    if (nEvt%100000==0) {
+//    if(nEvt!=152)continue;
+//    if(nEvt>152)assert(false);
+    
+    if (nEvt%100000==0 || deepDebug) {
+      //if (true) {
       float nEvt_fracdone=((float)nEvt)/((float)NEvents_toRead);
       float nEvt_percdone=nEvt_fracdone*100.;
       int   nEvt_intpercdone=(int)nEvt_percdone;                
@@ -1120,9 +1273,20 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     //grab an entry    
     jetpp[0]->GetEntry(nEvt);
-
-
+    
+    if(doRunExclStudy){
+      bool inGoodRunList=false;
+      for(int i=0; i<NGoodRuns; i++){
+	if(run_I==runarray_forExclRunStudy[i]){
+	  inGoodRunList=true; break;}
+      }
+      if(!inGoodRunList) continue;	
+    }
+    
     if(fillDataEvtQAHists){
+      
+
+
       hRuns->Fill(run_I, 1.);//fill this w/ no pscl wight for now, pre-skip/QA cuts
       
       for(int i=0;i<Nruns;i++){
@@ -1149,28 +1313,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       }
     }
     
-    
-    //if(run_I==262253 ||
-    //   run_I==262254 ||
-    //   run_I==262270  )continue;//b.c. MinBias 6 is missing these runs while the JetTriggered PDs have them. Trying something out. TEMPORARY
-    //    else if(run_I==262165){
-    //      if(lumi_I)
-    //    }
-    //    else if(run_I==262204){
-    //      if(lumi_I)
-    //    }
-    
-    
-    //if( filelistIsMinBias && (run_I<262081 || run_I>262328) ){
-    //  std::cout<<"evt w/ run # out of specified run range (262081 - 282328) found."<<std::endl;
-    //  std::cout<<"run # is "<<run_I<<std::endl;
-    //  assert(false);
-    //  continue;//run range of MBpart6 PD --> 261553 - 262328
-    //  //run range of Jet80/LowerJets PDs --> 262081 - 262328
-    //}
-    //else continue;
-    
-    bool MBtrgDec= ( (bool) ( MB_HF1ORp5_I * mb_l1s_I ) );
+
+    bool MBtrgDec= ( (bool) ( MB_HF1ORp5_I * mb_l1s_I ) ) && useMBevts;
     int  MBtrgPscl= MB_HF1ORp5_p_I * mb_l1s_ps_I;    
     
     bool trgDec[N_HLTBits]={ (bool) (Jet40_I * jet40_l1s_I) , (bool) ( Jet60_I * jet60_l1s_I ) ,
@@ -1187,12 +1331,14 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if(filelistIsMinBias)isInMinBiasPD=true;
     //bool isInMinBiasPD=( (bool) MB_HF1ORp5_I ||  (bool) mb_l1s_I);
     //bool isInMinBiasPD=( (bool) MB_HF1ORp5_I &&  (bool) mb_l1s_I);
+
     bool isInLowJetsPD=( (bool) Jet40_I   ||
 			 (bool) Jet60_I   ||
 			 (bool) Jet40_2_I ||
 			 (bool) Jet60_2_I 
-			);
+			 );
     if(filelistIsLowerJets)isInLowJetsPD=true;
+
     bool isInJet80PD  =( (bool) Jet80_I      || (bool) Jet100_I     || 
 			 (bool) Jet80_2_I    || (bool) Jet100_2_I   || 
 			 (bool) PFJet110_I   || (bool) PFJet120_I   ||
@@ -1210,24 +1356,22 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if((isInMinBiasPD && isInJet80PD) && !(isInLowJetsPD) )  h_NEvents_MinBiasJet80_NOTLowJets->Fill(0.,1.);    
     if(isInJet80PD && isInLowJetsPD && isInMinBiasPD )       h_NEvents_Jet80LowJetsMinBias->Fill(0.,1.);
 
+    
+
     // grab largest triggerPt among HLT paths' trigger object collectiosn
+    double maxJetPt=-1.;
+    for(int jet = 0; jet<nref_I; ++jet){
+      if(fabs(eta_F[jet])<5.1){
+	if(pt_F[jet]>maxJetPt)
+	  maxJetPt=pt_F[jet];	      }
+      else continue;
+    }
+
+
     double maxTrgPt=-1.,maxTrgEta=0.; 
     double HLT40maxTrgPt=-1.,  HLT60maxTrgPt=-1.,  HLT80maxTrgPt=-1.,  HLT100maxTrgPt=-1.; 
     unsigned int trgObj40_size=trgObjpt_40->size(), trgObj60_size=trgObjpt_60->size();
     unsigned int trgObj80_size=trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();   
-    //std::cout<<"trgObj40_size = " << trgObj40_size << std::endl;
-    //std::cout<<"trgDec[0]="<<trgDec[0]<<std::endl;
-    //std::cout<<"Jet40_I="<<Jet40_I<<std::endl;
-    //std::cout<<"jet40_l1s_I="<<jet40_l1s_I<<std::endl;
-    //std::cout<<"trgObj60_size = " << trgObj60_size << std::endl;
-    //std::cout<<"trgDec[1]="<<trgDec[1]<<std::endl;
-    //std::cout<<"Jet60_I="<<Jet60_I<<std::endl;
-    //std::cout<<"jet60_l1s_I="<<jet60_l1s_I<<std::endl;
-    //std::cout<<"trgObj80_size = " << trgObj80_size << std::endl;
-    //std::cout<<"trgObj100_size = "<< trgObj100_size << std::endl;
-
-
-    //double trgpt_noresid, trigpt_L2Res, trgpt_L2L3Res;//TO DO; RESID CORRECTED TRG PT HISTOS
     if(trgDec[3]&&useHLT100){
       for(unsigned int itt=0; itt<trgObj100_size; ++itt){
 	double trgpt=trgObjpt_100->at(itt);
@@ -1241,7 +1385,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       }
     }
     
-    
+
     if(trgDec[2]){
       for(unsigned int itt=0; itt<trgObj80_size; ++itt){
 	
@@ -1318,16 +1462,16 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	{ is60  = true;  weight_eS=(double)trgPscl[1]; }
       else if( trgDec[0] && !(trgPt<HLTthresh[0])  && trgPt<HLTthresh[1]  ) 
 	{ is40  = true;  weight_eS=(double)trgPscl[0]; }                             
-      //else if( MBtrgDec  ){ //&& trgPt<HLTthresh[0] ) { 
-      //	// i want absolutely only TRUE min bias events; ones that happen to fire a jet trigger to are not going to be what i need.	 
-      //	// if( !( ((bool) Jet40_I) || ((bool)Jet60_I) || ((bool)Jet80_I ) || ((bool) Jet40_2_I) || ((bool)Jet60_2_I) || ((bool)Jet80_2_I )  )) //PF and Calo triggers
-      //	// if( !( ((bool) Jet40_I) || ((bool)Jet60_I) || ((bool)Jet80_I )   )) //just PF triggers
-      //	// if(  !( ((bool) jet40_l1s_I) || ((bool) jet60_l1s_I)|| ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
-      //	// if(  !(  ((bool) jet60_l1s_I)|| ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
-      //	// if(  ! ( ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
-      //	// if(  ! ( ((bool) jet100_l1s_I) )  )
-      //	isMB=true; weight_eS=(double)MBtrgPscl;	    	
-      //}
+      else if( MBtrgDec ){ //&& trgPt<HLTthresh[0] ) { 
+	//	// i want absolutely only TRUE min bias events; ones that happen to fire a jet trigger to are not going to be what i need.	 
+	//	// if( !( ((bool) Jet40_I) || ((bool)Jet60_I) || ((bool)Jet80_I ) || ((bool) Jet40_2_I) || ((bool)Jet60_2_I) || ((bool)Jet80_2_I )  )) //PF and Calo triggers
+	//	// if( !( ((bool) Jet40_I) || ((bool)Jet60_I) || ((bool)Jet80_I )   )) //just PF triggers
+	//	// if(  !( ((bool) jet40_l1s_I) || ((bool) jet60_l1s_I)|| ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
+	//	// if(  !(  ((bool) jet60_l1s_I)|| ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
+	//	// if(  ! ( ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
+	//	// if(  ! ( ((bool) jet100_l1s_I) )  )
+	isMB=true; weight_eS=(double)MBtrgPscl;	    	
+      }
     }
     
     
@@ -1344,48 +1488,48 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
     
     ////duplicate skipping between LowerJets and Jet80
-    //if(filelistIsMinBias){
-    //  //      bool skipevt=false;
-    //  //      if( (bool) Jet40_I   || 
-    //  //	  (bool) Jet60_I   || 
-    //  //	  (bool) Jet40_2_I || 
-    //  //	  (bool) Jet60_2_I   ) skipevt=true;//in LowerJets
-    //  //      else if(  (bool) Jet80_I   || 
-    //  //		(bool) Jet100_I  ||
-    //  //		(bool) Jet80_2_I || 
-    //  //		(bool) Jet100_2_I  ) skipevt=true; //in Jet80
-    //  //      else if( (bool) PFJet110_I || 
-    //  //      	       (bool) PFJet120_I   ) skipevt=true; //in Jet80
-    //  //      else if( (bool) CaloJet110_I || 
-    //  //      	       (bool) CaloJet120_I || 
-    //  //      	       (bool) CaloJet150_I    ) skipevt=true; //in Jet80
-    //  //      else if( (bool) CaloJet100_Jet35_Eta0p7_I || 
-    //  //      	       (bool) CaloJet100_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
-    //  //      else if( (bool) CaloJet80_45_45_Eta2p1_I || 
-    //  //      	       (bool) CaloJet80_Jet35_Eta0p7_I || 
-    //  //      	       (bool) CaloJet80_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
-    //  //      else skipevt=false;      
-    //  //      if(skipevt){
-    //  //	//if(debugMode)std::cout<<"this event is in Jet80 AND/OR LowerJets dataset!"<<std::endl;
-    //  //	//if(debugMode)std::cout<<"Skipping event, will read it in Jet80 OR LowerJets instead!"<<std::endl;
-    //  //if(isInJet80PD || isInLowJetsPD){
-    //  if(!isMB){
-    //	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
-    //   	continue;
-    //  }      
-    //}
+    if(filelistIsMinBias){
+      //      bool skipevt=false;
+      //      if( (bool) Jet40_I   || 
+      //	  (bool) Jet60_I   || 
+      //	  (bool) Jet40_2_I || 
+      //	  (bool) Jet60_2_I   ) skipevt=true;//in LowerJets
+      //      else if(  (bool) Jet80_I   || 
+      //		(bool) Jet100_I  ||
+      //		(bool) Jet80_2_I || 
+      //		(bool) Jet100_2_I  ) skipevt=true; //in Jet80
+      //      else if( (bool) PFJet110_I || 
+      //      	       (bool) PFJet120_I   ) skipevt=true; //in Jet80
+      //      else if( (bool) CaloJet110_I || 
+      //      	       (bool) CaloJet120_I || 
+      //      	       (bool) CaloJet150_I    ) skipevt=true; //in Jet80
+      //      else if( (bool) CaloJet100_Jet35_Eta0p7_I || 
+      //      	       (bool) CaloJet100_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
+      //      else if( (bool) CaloJet80_45_45_Eta2p1_I || 
+      //      	       (bool) CaloJet80_Jet35_Eta0p7_I || 
+      //      	       (bool) CaloJet80_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
+      //      else skipevt=false;      
+      //      if(skipevt){
+      //	//if(debugMode)std::cout<<"this event is in Jet80 AND/OR LowerJets dataset!"<<std::endl;
+      //	//if(debugMode)std::cout<<"Skipping event, will read it in Jet80 OR LowerJets instead!"<<std::endl;
+      if(isInJet80PD || isInLowJetsPD){
+	//if(!isMB){
+	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
+       	continue;
+      }      
+    }
     
     
     if(filelistIsJet80){//EXCLUSION FOR READING MIN BIAS DATA MAY NEED WORK TODO
-      if( (bool)Jet40_I || (bool)Jet60_I || (bool)Jet40_2_I || (bool)Jet60_2_I ) 
-	continue;
-      //if(isInLowJetsPD){
-      //if( !(is80 || is100) ){
-      //	//if(debugMode)std::cout<<"this event is in Jet80 AND LowerJets dataset!"<<std::endl;
-      //	//if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead!"<<std::endl;	
-      //	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
-      //	continue;      
-      //}
+      //if( (bool)Jet40_I || (bool)Jet60_I || (bool)Jet40_2_I || (bool)Jet60_2_I ) 
+      //	continue;
+      if(isInLowJetsPD){
+	//if( !(is80 || is100) ){
+	//	//if(debugMode)std::cout<<"this event is in Jet80 AND LowerJets dataset!"<<std::endl;
+	//	//if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead!"<<std::endl;	
+	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
+	continue;      
+      }
     }  
     
     //if(filelistIsLowerJets){
@@ -1401,10 +1545,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     //	continue;      
     //  }
     //}
-	
+  
     
+  
 
-    
+  
     h_NEvents_read->Fill(0.);    h_NEvents_read->Fill(1.,weight_eS);        
     
     //event counts, post-duplicate skip, pre-evt cuts, having fired a trigger
@@ -1462,20 +1607,62 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     if( isMB && ((bool) jet80_l1s_I   )  )  {   h_NEvents_isMB_AND_L1jet48 -> Fill(0.)  ;  h_NEvents_isMB_AND_L1jet48 ->Fill(1.,weight_eS ) ; }//minbias
     if( isMB && ((bool) jet100_l1s_I  )  )  {   h_NEvents_isMB_AND_L1jet52 -> Fill(0.)  ;  h_NEvents_isMB_AND_L1jet52 ->Fill(1.,weight_eS ) ; }//minbias
     
-    
     if(fillDataJetTrigQAHists){ //only want to fill these trigger jet plots if they pass all our quality criteria      
 
-      if( trgDec[0] ) hpp_IncHLT40trgPt_2-> Fill(HLT40maxTrgPt, trgPscl[0]);      	
-      if( trgDec[1] ) hpp_IncHLT60trgPt_2-> Fill(HLT60maxTrgPt, trgPscl[1]);
-      if( trgDec[2] ) hpp_IncHLT80trgPt_2-> Fill(HLT80maxTrgPt, trgPscl[2]);
-      if( trgDec[3] ) hpp_IncHLT100trgPt_2->Fill(HLT100maxTrgPt, trgPscl[3]);            
+      //prescales
+      if(MBtrgDec)hpp_IncHLTMBpscl  ->Fill( (double)MBtrgPscl, 1.);
+      if(trgDec[0])hpp_IncHLT40pscl ->Fill( (double)trgPscl[0], 1.);
+      if(trgDec[1])hpp_IncHLT60pscl ->Fill( (double)trgPscl[1], 1.);
+      if(trgDec[2])hpp_IncHLT80pscl ->Fill( (double)trgPscl[2], 1.);
+      if(trgDec[3])hpp_IncHLT100pscl->Fill( (double)trgPscl[3], 1.);
+      //if(MBtrgDec && trgDec[0])hpp_IncHLT40MBpscl  ->Fill( (float)MBtrgPscl, 1.);
 
+
+      //all trigger jet object pts
+      if(trgDec[0])
+	for(unsigned int itt=0; itt<trgObj40_size; ++itt)hpp_IncHLT40trgPt_allobj->Fill(trgObjpt_40->at(itt),1.);
+      if(trgDec[1])
+	for(unsigned int itt=0; itt<trgObj60_size; ++itt)hpp_IncHLT60trgPt_allobj->Fill(trgObjpt_60->at(itt),1.);
+      if(trgDec[2])
+	for(unsigned int itt=0; itt<trgObj80_size; ++itt)hpp_IncHLT80trgPt_allobj->Fill(trgObjpt_80->at(itt),1.);
+      if(trgDec[3])
+	for(unsigned int itt=0; itt<trgObj100_size; ++itt)hpp_IncHLT100trgPt_allobj->Fill(trgObjpt_100->at(itt),1.);
+
+      //lead trigger jet object pt for each respective trigger
+      if( trgDec[0] )  hpp_IncHLT40trgPt_leadobj-> Fill(HLT40maxTrgPt , 1.);      	
+      if( trgDec[1] )  hpp_IncHLT60trgPt_leadobj-> Fill(HLT60maxTrgPt , 1.);
+      if( trgDec[2] )  hpp_IncHLT80trgPt_leadobj-> Fill(HLT80maxTrgPt , 1.);
+      if( trgDec[3] ) hpp_IncHLT100trgPt_leadobj->Fill(HLT100maxTrgPt, 1.);           
+      if( MBtrgDec && trgDec[0] ) hpp_IncHLT40MBtrgPt_leadobj-> Fill(HLT40maxTrgPt , 1.);      	 
+
+      //lead trigger jet object pt v lead reco jet object pt
+      if( trgDec[0] ) hpp_IncHLT40trgPt_leadobj_leadjet->Fill( HLT40maxTrgPt , maxJetPt,  1.);      	
+      if( trgDec[1] ) hpp_IncHLT60trgPt_leadobj_leadjet->Fill( HLT60maxTrgPt , maxJetPt,  1.);
+      if( trgDec[2] ) hpp_IncHLT80trgPt_leadobj_leadjet->Fill( HLT80maxTrgPt , maxJetPt,  1.);
+      if( trgDec[3] ) hpp_IncHLT100trgPt_leadobj_leadjet->Fill(HLT100maxTrgPt, maxJetPt,  1.);            
+      if( trgDec[0] && MBtrgDec ) hpp_IncHLT40MBtrgPt_leadobj_leadjet->Fill( HLT40maxTrgPt , maxJetPt,  1.);      	
+
+      if( trgDec[0] ) hpp_IncHLT40trgPt_leadobj_globleadobj->Fill( HLT40maxTrgPt , trgPt,  1.);      	
+      if( trgDec[1] ) hpp_IncHLT60trgPt_leadobj_globleadobj->Fill( HLT60maxTrgPt , trgPt,  1.);
+      if( trgDec[2] ) hpp_IncHLT80trgPt_leadobj_globleadobj->Fill( HLT80maxTrgPt , trgPt,  1.);
+      if( trgDec[3] ) hpp_IncHLT100trgPt_leadobj_globleadobj->Fill(HLT100maxTrgPt, trgPt,  1.);            
+      if( trgDec[0] && MBtrgDec ) hpp_IncHLT40MBtrgPt_leadobj_globleadobj->Fill( HLT40maxTrgPt , trgPt,  1.);      	
+
+      //global lead trigger jet object (lead obj across all triggers) by trigger decision + lower threshold only
       if( MBtrgDec  &&  trgPt<HLTthresh[0]    )   hpp_IncHLTMBtrgPt->Fill(  trgPt, (double)MBtrgPscl  );
       if( trgDec[0] && !(trgPt<HLTthresh[0]) )   hpp_IncHLT40trgPt->Fill(  trgPt, (double)trgPscl[0] );
       if( trgDec[1] && !(trgPt<HLTthresh[1]) )   hpp_IncHLT60trgPt->Fill(  trgPt, (double)trgPscl[1] );
       if( trgDec[2] && !(trgPt<HLTthresh[2]) )   hpp_IncHLT80trgPt->Fill(  trgPt, (double)trgPscl[2] );
       if( trgDec[3] && !(trgPt<HLTthresh[3]) )   hpp_IncHLT100trgPt->Fill( trgPt, (double)trgPscl[3] );
+
+      // trgEta [who cares really]
+      if( trgDec[0] && !(trgPt<HLTthresh[0]) )   hpp_IncHLT40trgEta->Fill(  trgEta, (double)trgPscl[0] );
+      if( trgDec[1] && !(trgPt<HLTthresh[1]) )   hpp_IncHLT60trgEta->Fill(  trgEta, (double)trgPscl[1] );
+      if( trgDec[2] && !(trgPt<HLTthresh[2]) )   hpp_IncHLT80trgEta->Fill(  trgEta, (double)trgPscl[2] );
+      if( trgDec[3] && !(trgPt<HLTthresh[3]) )   hpp_IncHLT100trgEta->Fill( trgEta, (double)trgPscl[3] );
       
+
+      //global lead jet trigger object across exclusively firing triggers (i.e. meeting all exclusion criteria)
       if     ( isMB  )   hpp_HLTMBtrgPt->Fill(   trgPt , weight_eS );
       else if( is40  )   hpp_HLT40trgPt->Fill(   trgPt , weight_eS );      
       else if( is60  )   hpp_HLT60trgPt->Fill(   trgPt , weight_eS );
@@ -1483,12 +1670,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       else if( is100 )  hpp_HLT100trgPt->Fill(   trgPt , weight_eS );   
       if(firedJetTrigger)	hpp_HLTCombtrgPt->Fill(  trgPt , weight_eS );   
 
-      // trgEta
-      if( trgDec[0] && !(trgPt<HLTthresh[0]) )   hpp_IncHLT40trgEta->Fill(  trgEta, (double)trgPscl[0] );
-      if( trgDec[1] && !(trgPt<HLTthresh[1]) )   hpp_IncHLT60trgEta->Fill(  trgEta, (double)trgPscl[1] );
-      if( trgDec[2] && !(trgPt<HLTthresh[2]) )   hpp_IncHLT80trgEta->Fill(  trgEta, (double)trgPscl[2] );
-      if( trgDec[3] && !(trgPt<HLTthresh[3]) )   hpp_IncHLT100trgEta->Fill( trgEta, (double)trgPscl[3] );
-      
       if     ( is40  )  hpp_HLT40trgEta->Fill(    trgEta , weight_eS );      
       else if( is60  )  hpp_HLT60trgEta->Fill(    trgEta , weight_eS );
       else if( is80  )  hpp_HLT80trgEta->Fill(    trgEta , weight_eS );
@@ -1496,8 +1677,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(firedJetTrigger)         hpp_HLTCombtrgEta->Fill(  trgEta , weight_eS );                         
 
     }
-    
-    
+
     // fill evt vz histo
     if(fillDataEvtQAHists){
       
@@ -1656,14 +1836,14 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	float L2L3Res_2_rawpt=-1.;//L2L3Res JEC
 	int L2L3Res_2_JECetabin=-1;
 	
-	
+
 	
 	if(fillDataJetJECQAHists){
 
 	  //readForests_JEC_v12_ak4PF_74X_dataRun2_HLT_ppAt5TeV_v0
 	  for(int uu=0; uu<1; uu++){//loop so that if the jet doesn't meet some criteria i can just quit while i'm ahead
 	    for(int i=0; i<n_L2RelL3AbsJEC_etabins;i++){	    //L2RelL3Abs
-	      if(receta>L2RelL3AbsJEC_etabins[i] && receta < L2RelL3AbsJEC_etabins[i+1]) { 
+	      if(receta>=L2RelL3AbsJEC_etabins[i] && receta < L2RelL3AbsJEC_etabins[i+1]) { 
 		L2RelL3AbsJECetabin=i; break;}
 	      else continue;	    }
 	    if(L2RelL3AbsJECetabin==-1)
@@ -1672,7 +1852,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	    L2RelL3Abs_rawpt=rawpt*(L2RelL3AbsJEC_arr[L2RelL3AbsJECetabin]->Eval(rawpt));		
 	    
 	    for(int i=0; i<n_L2L3ResJEC_etabins;i++){	    //L2L3Res
-	      if(receta>L2L3ResJEC_etabins[i] && receta < L2L3ResJEC_etabins[i+1]) { 
+	      if(receta>=L2L3ResJEC_etabins[i] && receta < L2L3ResJEC_etabins[i+1]) { 
 		L2L3ResJECetabin=i; break;}
 	      else continue;
 	    }
@@ -1687,7 +1867,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  ////readForests_JEC_v12_ak4PF_75X_data_Run2_v13
 	  for(int uu=0; uu<1; uu++){//loop so that if the jet doesn't meet some criteria i can just quit while i'm ahead
 	    for(int i=0; i<n_L2RelL3AbsJEC_2_etabins;i++){	    //L2RelL3Abs
-	      if(receta>L2RelL3AbsJEC_2_etabins[i] && receta < L2RelL3AbsJEC_2_etabins[i+1]) { 
+	      if(receta>=L2RelL3AbsJEC_2_etabins[i] && receta < L2RelL3AbsJEC_2_etabins[i+1]) { 
 		L2RelL3Abs_2_JECetabin=i; break;}
 	      else continue;	    }
 	    if(L2RelL3Abs_2_JECetabin==-1)
@@ -1696,7 +1876,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	    L2RelL3Abs_2_rawpt=rawpt*(L2RelL3AbsJEC_2_arr[L2RelL3Abs_2_JECetabin]->Eval(rawpt));		
 	    
 	    for(int i=0; i<n_L2L3ResJEC_2_etabins;i++){	    //L2L3Res
-	      if(receta>L2L3ResJEC_2_etabins[i] && receta < L2L3ResJEC_2_etabins[i+1]) { 
+	      if(receta>=L2L3ResJEC_2_etabins[i] && receta < L2L3ResJEC_2_etabins[i+1]) { 
 		L2L3Res_2_JECetabin=i; break;}
 	      else continue;
 	    }
@@ -1745,7 +1925,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	// get repidity bin
 	int theRapBin=-1;	
 	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
-	  if( absetabins[rapbin]<=absreceta  && 		
+	  if( absreceta>=absetabins[rapbin]  && 		
 	      absreceta<absetabins[rapbin+1]    	      ) {	    
 	    theRapBin=rapbin;
 	    break;
@@ -1768,18 +1948,82 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  hjtpt_v_diff_L2L3Res_2_rawpt[theRapBin]->Fill(jtpt, (jtpt-L2L3Res_2_rawpt), weight_eS);
 	  hL2L3Res_rawpt_v_diff_L2L3Res_2_rawpt[theRapBin]->Fill(L2L3Res_rawpt, (L2L3Res_rawpt-L2L3Res_2_rawpt), weight_eS);
 	}
+
+
+
+
+
+	
 	
 	
 	for(int jtid=0; jtid<2; jtid++){
+
 	  if(jtid==1 && !passesJetID)continue;
+
+	  double jtpt_sysup=-1., jtpt_sysdown=-1.;
+	  if(fillDataJetJECUncHists && jtid==1){
+	    //std::cout<<std::endl;
+	    //std::cout<<"doing JEC sysup/sysdown hists"<<std::endl;
+	    int JECUnc_etabin=-1;
+	    int JECUnc_ptbin=-1;
+	    for(int uu=0; uu<1; uu++){//loop so that if the jet doesn't meet some criteria i can just quit while i'm ahead
+	      
+	      //find JEC eta bin
+	      //for(int i=0; i<n_jecunc_etabins;i++){	  
+	      for(int i=jecunc_eta_start; i<=jecunc_eta_end;i++){	  
+		if(receta>=jecunc_etabins[i] && receta< jecunc_etabins[i+1]){
+		  JECUnc_etabin=i;break;
+		}
+		else continue;}
+	      //std::cout<<"receta="<<receta<<std::endl;
+	      //std::cout<<"JECUnc_etabin="<<JECUnc_etabin<<std::endl;
+	      if(JECUnc_etabin==-1)continue;
+	      //std::cout<<"jecunc_etabins["<<JECUnc_etabin<<"]="<<jecunc_etabins[JECUnc_etabin]<<std::endl;
+	      //std::cout<<"jecunc_etabins["<<JECUnc_etabin+1<<"]="<<jecunc_etabins[JECUnc_etabin+1]<<std::endl;
+	      
+	      
+	      //find JEC pt bin
+	      //	      for(int i=0; i<n_jecunc_ptbins;i++){	  
+	      for(int i=jecunc_pt_start; i<=jecunc_pt_end;i++){	  
+		if(jtpt>=jecunc_ptbins[i] && jtpt< jecunc_ptbins[i+1]){
+		  JECUnc_ptbin=i;break;
+		}
+		else continue;}
+	      //std::cout<<"jtpt="<<jtpt<<std::endl;
+	      //std::cout<<"JECUnc_ptbin="<<JECUnc_ptbin<<std::endl;
+	      if(JECUnc_ptbin==-1)continue;
+	      //std::cout<<"jecunc_ptbins["<<JECUnc_ptbin<<"]="<<jecunc_ptbins[JECUnc_ptbin]<<std::endl;
+	      //std::cout<<"jecunc_ptbins["<<JECUnc_ptbin+1<<"]="<<jecunc_ptbins[JECUnc_ptbin+1]<<std::endl;
+
+	      
+	      //find JEC pt bin
+	      double JECUnc=jecunc[JECUnc_etabin][JECUnc_ptbin];
+	      //std::cout<<"JECUnc="<<JECUnc<<std::endl;
+
+	      jtpt_sysup=jtpt+JECUnc*jtpt;	      
+	      jtpt_sysdown=jtpt-JECUnc*jtpt;
+	      //std::cout<<"jtpt_sysup="<<jtpt_sysup<<std::endl;
+	      //std::cout<<"jtpt_sysdown="<<jtpt_sysdown<<std::endl;
+	      hJetQA_jtpt_JEC_sysup[theRapBin]  ->Fill(jtpt_sysup,  weight_eS);
+	      hJetQA_jtpt_JEC_sysdown[theRapBin]->Fill(jtpt_sysdown,weight_eS);		
+	      
+	      //assert(false);
+	      
+	    }
+	  }
+	    
+
 	  
-	  if( fillDataJetSpectraRapHists ) 
-	    hJetSpectraRap[theRapBin][jtid]->Fill(jtpt,weight_eS);  	    	    
 	  
 	  if(jtid==1)
 	    if(fillDataJetCovMatrix){
+	      etabin_bool_helper[theRapBin]=true;      
 	      hpp_covmat_eta_arr_helpers[theRapBin]->Fill(jtpt);//,weight_eS);	    
-	      etabin_bool_helper[theRapBin]=true;      }
+	      if(fillDataJetJECUncHists){
+		hpp_covmat_eta_arr_helpers_JEC_sysup[theRapBin]->Fill(jtpt_sysup);//,weight_eS);	    
+		hpp_covmat_eta_arr_helpers_JEC_sysdown[theRapBin]->Fill(jtpt_sysdown);//,weight_eS);	    
+	      }
+	    }
 	  
 	  
 	  // trig plots
@@ -1987,9 +2231,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  } //end fill datajetqahists	    
 	}//end jtid loop
       }//end incjetanalyzer jet loop
+
     }//end if useIncJetAnalyzer
     
-    
+
     if(useTupel){
       
       jetsPerEvent=jetPt->size();
@@ -2073,9 +2318,6 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	  
 	  if(jtid==1 && !passesJetID)continue;
 	  
-	  if( fillDataJetSpectraRapHists ) 
-	    hJetSpectraRap[theRapBin][jtid]->Fill(jtpt,weight_eS);  	    	    
-	  
 	  if(jtid==1)
 	    if(fillDataJetCovMatrix){
 	      hpp_covmat_eta_arr_helpers[theRapBin]->Fill(jtpt);//,weight_eS);	    
@@ -2150,8 +2392,18 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       for(int i=0; i<nbins_abseta; i++){
 	if(etabin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
 	  fillCovMatrix( (TH2D*)hpp_covmat_eta_arr[i], (TH1D*)hpp_covmat_eta_arr_helpers[i], nbins_pt , (double) weight_eS);
-	  hpp_covmat_eta_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....
-	  etabin_bool_helper[i]=false;	}      }      }
+	  hpp_covmat_eta_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
+	  if(fillDataJetJECUncHists){
+	    fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysup[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysup[i], nbins_pt , (double) weight_eS);
+	    hpp_covmat_eta_arr_helpers_JEC_sysup[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
+
+	    fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysdown[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysdown[i], nbins_pt , (double) weight_eS);
+	    hpp_covmat_eta_arr_helpers_JEC_sysdown[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  	    
+	  }	  
+	  etabin_bool_helper[i]=false;	
+	}      
+      
+      }      }
     
   }//end event loop
 

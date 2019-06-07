@@ -8,6 +8,7 @@
 //#include "readForests_JEC_v7_ak4PF_75X_dataRun2_v13.h"
 #include "readForests_JEC_v12_ak4PF_75X_data_Run2_v13.h"
 #include "readForests_JEC_v12_ak4PF_74X_dataRun2_HLT_ppAt5TeV_v0.h"
+#include "readForests_JEC_Fall15_25nsV2_DATA_Uncertainties.h"
 
 //// FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
@@ -17,10 +18,10 @@
 const int minArgs=1;
 
 //// readForests_ppData
-const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
-const std::string defDataOutputName="readForests_ppData_defOut_Jet80_jetPlots.root";
-//const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
-//const std::string defDataOutputName="readForests_ppData_defOut_LowerJets_jetPlots.root";
+//const std::string defDataInFilelist="filelists/5p02TeV_HighPtJet80_forests.txt";
+//const std::string defDataOutputName="readForests_ppData_defOut_Jet80_jetPlots.root";
+const std::string defDataInFilelist="filelists/5p02TeV_HighPtLowerJets_forests.txt";
+const std::string defDataOutputName="readForests_ppData_defOut_LowerJets_jetPlots.root";
 //const std::string defDataInFilelist="filelists/5p02TeV_MinBias6_758p3_forests.txt";
 //const std::string defDataOutputName="readForests_ppData_defOut_MinBias_jetPlots.root";
 
@@ -33,7 +34,7 @@ const std::string defMCOutputName="readForests_ppMC_defOut_jetPlots.root";
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true;//, fastDebugMode = true;
-const float defEtaCutLo=0.0, defEtaCutHi=3.0;//really absetacut
+const float defEtaCutLo=0.0, defEtaCutHi=2.0;//really absetacut
 //const float defEtaCutLo=0.0, defEtaCutHi=5.191;//really absetacut
 //const float defEtaCutLo=0.0, defEtaCutHi=2.4;//really absetacut
 //const float defEtaCutLo=2.4, defEtaCutHi=2.7;//really absetacut
@@ -41,7 +42,7 @@ const float defEtaCutLo=0.0, defEtaCutHi=3.0;//really absetacut
 //const float defEtaCutLo=3.2, defEtaCutHi=4.7;//really absetacut
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				 int startfile=0, int endfile=2,
+				 int startfile=0, int endfile=9,
 				 int radius=defRadius, std::string jetType=defJetType, 
 				 bool debugMode=defDebugMode,
 				 std::string outfile=defDataOutputName, 
@@ -61,9 +62,9 @@ const int readForestsArgCount=9+minArgs;
 
 
 //const float jtPtCut=30; // 49 or 56 or 64 or 74...
-//const float jtPtCut=56.; // 49 or 56 or 64 or 74...
+const float jtPtCut=43.; // 49 or 56 or 64 or 74...
 //const float jtPtCut=5.; 
-const float jtPtCut=18; 
+//const float jtPtCut=18; 
 //  5.;  6.;  8.;   10.;   12.;   15.;   18.;   21.;   24.;   28.;  32.;   37.;  43.;   49.;   56.; //other low pT cuts
 const float jtPtCut_Hi=1410.; 
 const float jetQAPtCut=jtPtCut;

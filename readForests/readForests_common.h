@@ -309,21 +309,22 @@ const float etabins[]={
 };
 const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
-//raghavs suggested genpt binning for JER
+
+////straight up SMP binning for |y| bins in steps of 0.5
 const float ptbins[]={
-  //1., 
-  5., 
-  6., 
-  8., 
-  10., 
-  12., 
-  15., 
-  18., 
-  21., 
-  24., 
-  28.,
-  32., 
-  37.,
+  //  //1., 
+  //  //5., 
+  //  //6., 
+  //  //8., 
+  //  //10., 
+  //  //12., 
+  //  //15., 
+  //  18., 
+  //  21., 
+  //  24., 
+  //  28.,
+  //  32., 
+  //  37.,
   43., //garbage bins
   49., //typical gen pt cut
   56., //typical recopt cut
@@ -365,6 +366,110 @@ const float ptbins[]={
   //1497., 1588., 1684., 1784., 1890., 2000., 2116.
 };
 const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+
+
+
+
+//////John's pt binning for |y| bins in steps of 0.5
+//const float ptbins[]={
+//  56.,  
+//  64.,  
+//  84., 
+//  114., 
+//  153., 
+//  196., 
+//  245.,
+//  300.,
+//  362.,
+//  430., 
+//  507., 
+//  592., 
+//  686., 
+//  790., 
+//  905.,
+//  1032.,
+//  1101.
+//};
+//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+//
+//
+//
+
+////Chris's pt binning for |y|<2.0
+//const float ptbins[]={
+//  20.,
+//  30.,
+//  40.,
+//  50.,
+//  60.,
+//  70.,
+//  80.,
+//  90.,
+//  100.,
+//  110.,
+//  120.,
+//  130.,
+//  140.,
+//  150.,
+//  160.,
+//  170.,
+//  180.,
+//  190.,
+//  200.,
+//  210.,
+//  220.,
+//  230.,
+//  240.,
+//  250.,
+//  260.,
+//  270.,
+//  280.,
+//  290.,
+//  310.,
+//  330.,
+//  350.,
+//  370.,
+//  400.,
+//  430.,
+//  500.,
+//  1000.,
+//  1500.
+//
+//};
+//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // // my APSDNP Binning
 //  32.,   37., 43., 49., 56., 64., 74., 84., 97., 114., 133., 153., 174., 196., 220., 245., 272., 300., 330., 362., 395., 430., 468.,
 //  507., 548., 592., 638., 686., 737., 790., 846., 905., 967., //def junk bins after this or so //  1000., 1050. 
@@ -818,3 +923,48 @@ const UInt_t runarray[]={
   999999
 };
 const int Nruns=sizeof(runarray)/sizeof(UInt_t);
+
+
+
+//use me for Jet80/LowerJets/MinBias6 Study
+const UInt_t runarray_forExclRunStudy[]={
+  262173,
+  262204,
+  262205,
+  262248,
+  262272,
+  262273,
+  262275,
+  262277,
+  262325,
+  262326,
+  262327,
+  262328
+};
+const int NGoodRuns=sizeof(runarray_forExclRunStudy)/sizeof(UInt_t);
+
+////use me for Jet80/LowerJets Study
+//const UInt_t runarray_forExclRunStudy[]={
+//  262163,
+//  262165,
+//  262167,
+//  262173,
+//  262204,
+//  262205,
+//  262248,
+//  262250,
+//  262252,
+//  262253,
+//  262254,
+//  262270,
+//  262271,
+//  262272,
+//  262273,
+//  262275,
+//  262277,
+//  262325,
+//  262326,
+//  262327,
+//  262328
+//};
+//const int NGoodRuns=sizeof(runarray_forExclRunStudy)/sizeof(UInt_t);

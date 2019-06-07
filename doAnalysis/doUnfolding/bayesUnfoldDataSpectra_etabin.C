@@ -110,6 +110,9 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 //  double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
 //  int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
 
+
+
+
   //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
   int nbins_pt = HERAPDF->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
   if(etabinint==0 || etabinint==1)nbins_pt--;//subtract 1 more for last giant bin from 686 GeV to 1000 GeV
@@ -130,6 +133,11 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 		     (double*) boundaries_pt_reco_mat,
 			    nbins_pt+1, (TH1D*)HERAPDF, etabinint);
   //assert(false);
+
+
+
+
+
 
   CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
   CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
@@ -200,7 +208,8 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   // INFILE NAME(S) -----------
   //const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
-  const std::string inFile_Data_name="/HighPtJetTrig_ak4PF-allFiles.root";
+  //const std::string inFile_Data_name="/HighPtJetTrig_ak4PF-allFiles.root";
+  const std::string inFile_Data_name="/HighPtJetTrig_noMB_ak4PF-allFiles.root";
   
   // OUTPUT FILE, NAME(S) -----------
   std::string outFileName=unfoldDataSpectra_outdir+fullJetType;
@@ -423,16 +432,19 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   //for output
   if(debugWrite)fout->cd();    
   
-  TH1D* hJetQA_jtptEntries=(TH1D*)fpp_Data->Get("hJetQA_1wJetID_jtptEntries");
+  TH1D* hJetQA_jtptEntries=(TH1D*)fpp_Data->Get(
+						("hJetQA_1wJetID_jtptEntries_etabin"+std::to_string(etabinint)).c_str()
+						);
   if(hJetQA_jtptEntries){
     hJetQA_jtptEntries = (TH1D*)hJetQA_jtptEntries->Rebin(nbins_pt_reco, hJetQA_jtptEntries->GetTitle(), boundaries_pt_reco);  
   }
   
+  
   // ---------- reco, measured spectra to unfold
-  std::string histTitle="hJetSpectraRap";
-  if(doJetID)histTitle+="_wJetID";
-  //else histTitle+="_0wJetID";
-  histTitle+="_bin"+std::to_string(etabinint);
+  std::string histTitle="hJetQA";
+  if(doJetID)histTitle+="_1wJetID";
+  else histTitle+="_0wJetID";
+  histTitle+="_jtpt_etabin"+std::to_string(etabinint);
   
   TH1D*  hrec = (TH1D*)fpp_Data->Get( histTitle.c_str() ); 
   if(debugWrite)hrec->Write();

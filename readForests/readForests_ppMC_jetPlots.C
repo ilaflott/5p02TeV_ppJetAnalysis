@@ -1,6 +1,7 @@
 // Custom header
 #include "readForests_jetPlots.h"
 
+
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 
@@ -11,12 +12,7 @@ const bool fillMCJetQAHists=true;
 const bool fillgenJetQA=true&fillMCJetQAHists;
 const bool fillMCTupelJetQAHists=false&&useTupel;
 
-//const bool fillMCJetIDHists=true;//, tightJetID=false;
-//const int jetIDint=(int)fillMCJetIDHists;
-
-const bool fillMCJetSpectraRapHists=false; //other
-const bool fillgenJetRapHists=true&&fillMCJetSpectraRapHists;  //other switches
-const bool fillMCJetJECQAHists=true;
+const bool fillMCJetJECQAHists=false;
 const bool fillMCDijetHists=false;//hardly used options
 
 
@@ -336,37 +332,6 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
 
   
-  TH1D *hJetSpectraRap[nbins_abseta][2]={};
-  TH1D *hMCJetQA_rapBins_genpt[nbins_abseta][2]={};
-  TH1D *hMCJetQA_rapBins_geneta[nbins_abseta][2]={};
-  TH1D *hMCJetQA_rapBins_genrecpt[nbins_abseta][2]={};
-  TH1D *hMCJetQA_rapBins_genreceta[nbins_abseta][2]={};
-  if(fillMCJetSpectraRapHists){
-    
-    for(int j = 0; j<nbins_abseta; ++j){
-      for(int i=0; i<2; i++){
-	std::string h_Title="hJetSpectraRap_";
-	//if(fillMCJetIDHists)h_Title+="wJetID_";
-	if(i==1)h_Title+="wJetID_";
-	h_Title+="bin"+std::to_string(j);
-	
-	std::stringstream stream1, stream2;	
-	stream1.precision(1); stream1 << std::fixed << absetabins[j];
-	stream2.precision(1); stream2 << std::fixed << absetabins[j+1];
-	std::string h_Desc="JetPt Spectra for "+stream1.str()+"<abs(y)<"+ stream2.str();	
-	hJetSpectraRap[j][i]=new TH1D(h_Title.c_str(),h_Desc.c_str(), 2500,0,2500);  
-	
-	if(fillgenJetRapHists){
-	  hMCJetQA_rapBins_genpt[j][i]     = new TH1D ( Form("hJetSpectraRap_%dwJetID_bin%d_genpt",i,j), "genpt", 2500,0,2500);
-	  hMCJetQA_rapBins_geneta[j][i]    = new TH1D ( Form("hJetSpectraRap_%dwJetID_bin%d_geneta",i,j), "geneta", 200,-6.,6.);
-	  hMCJetQA_rapBins_genrecpt[j][i]  = new TH1D ( Form("hJetSpectraRap_%dwJetID_bin%d_genrecpt",i,j),  "rec/gen,pt", 100, 0.,2.);
-	  hMCJetQA_rapBins_genreceta[j][i] = new TH1D ( Form("hJetSpectraRap_%dwJetID_bin%d_genreceta",i,j), "rec-gen,eta", 2000, -100,100);
-	}//genjetrap hists      
-      }//jtid
-    }//nbinsabseta
-  }//jetspectraraphists
-  
-
 
 
   //jet QA, i.e. hists filled once per jet
@@ -859,17 +824,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
 
 	for(int jtid=0; jtid<2; jtid++){
+
 	  if(jtid==1 && !passesJetID)continue;
-	  
-	  //fill jetspectraRapHists w/ passing jetID criterion
-	  if(  fillMCJetSpectraRapHists ) { 	  
-	    hJetSpectraRap[theRapBin][jtid]->Fill(jtpt,weight_eS);  
-	    if(fillgenJetRapHists){
-	      hMCJetQA_rapBins_genpt[theRapBin][jtid]     ->Fill(genpt,weight_eS);
-	      hMCJetQA_rapBins_geneta[theRapBin][jtid]    ->Fill(geneta,weight_eS);
-	      hMCJetQA_rapBins_genrecpt[theRapBin][jtid]  ->Fill(jtpt/genpt,weight_eS);
-	      hMCJetQA_rapBins_genreceta[theRapBin][jtid] ->Fill(receta-geneta,weight_eS);	 	    }	    
-	  }//mcjetspectra rap hists
 	  
 	  /////   JETQA   ///// 
 	  if(fillMCJetQAHists	 ){
@@ -1078,15 +1034,6 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
 	  if(jtid==1 && !passesJetID)continue;
 	  
-	  //fill jetspectraRapHists w/ passing jetID criterion
-	  if(  fillMCJetSpectraRapHists ) { 	  
-	    hJetSpectraRap[theRapBin][jtid]->Fill(jtpt,weight_eS);  
-	    if(fillgenJetRapHists){
-	      hMCJetQA_rapBins_genpt[theRapBin][jtid]     ->Fill(genpt,weight_eS);
-	      hMCJetQA_rapBins_geneta[theRapBin][jtid]    ->Fill(geneta,weight_eS);
-	      hMCJetQA_rapBins_genrecpt[theRapBin][jtid]  ->Fill(jtpt/genpt,weight_eS);
-	      hMCJetQA_rapBins_genreceta[theRapBin][jtid] ->Fill(receta-geneta,weight_eS);	 	    }	    
-	  }//mcjetspectra rap hists
 	  
 	  
 	  

@@ -33,13 +33,13 @@ const Double_t ptbins_debug[]={
 //  12.,
 //  15.,
 //  18.,
-  21.,
-  24.,
-  28.,
-  32.,
-  37.,  //40., //this junk bin added in for cosmetics
-  43., 
-  49., //junk bins from here an above
+//  21.,
+//  24.,
+//  28.,
+//  32.,
+//  37.,  //40., //this junk bin added in for cosmetics
+//  43., 
+//  49., //junk bins from here an above
   56.,   64.,   74.,   84., 97., 114., 
   133., 153., 174., 196., 220., 
   245., 272., 300., 

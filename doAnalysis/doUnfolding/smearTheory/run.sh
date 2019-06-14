@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-smeartheory=0
-smearPY8=1
+smeartheory=1
+smearPY8=0
 
 
 
@@ -36,7 +36,9 @@ then
     jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
     #descstr="02.18.19_semifinal_v2_w8TeVJERscales" #_ptmax1000"
     #descstr="ptLo28_drCut_geny_sigma"
-    descstr="ptLo28_drCut_geny_sigmu"
+    #descstr="ptLo28_drCut_geny_sigmu"
+    #descstr="03.14.19_sigmu"
+    descstr="03.14.19_sigma"
     
     #fittypestr="modLog"
     #fittypestr="7TeV"
@@ -47,10 +49,9 @@ then
     
     scpoutput=0
     scpafterlast=1
-    #etabin_i=0
-    #Netabins=6 ##full set of etabins 
-    etabin_i=0 
-    Netabins=4 ##debug; runs first etabin only
+    etabin_i=0
+    #Netabins=1 ##debug; runs first etabin only
+    Netabins=4 
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]

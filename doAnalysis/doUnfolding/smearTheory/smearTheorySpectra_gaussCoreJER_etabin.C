@@ -6,7 +6,7 @@ const int CANVX=1200, CANVY=1000;
 const int xsecorder=1;//0--> LO, 1--> NLO, 2--> NNLO... etc.
 
 const bool printBaseDebug=true;
-const bool useHistSigmaFit=false;
+const bool useHistSigmaFit=true;
 const bool useJERscaleFactors=false;//note; alters JER syst. as well.
 const bool setThyPDFErrors=true;
 
@@ -34,34 +34,38 @@ const std::string NPCorrFits_text=HERWGEE5_NPS_TXT;
 //SYSTEMATICS
 //JER
 const bool doJERsys=true;
+
 //NPCs
-const bool doNPsys=false;//involves making a new thy hist, therefore, also a sep spline fit
+const bool doNPsys=true;//involves making a new thy hist, therefore, also a sep spline fit
 //NP systs v1, using HERWIG EE4C/PYTHIA8 NPs for unfolding, shifting NP fit params up/down by 1 sigma
-//const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
-//const std::string NPsys1_CorrFits_str =HERWGEE4_NPS;
-//const std::string NPsys1_CorrFits_text=HERWGEE4_NPS_TXT;
-//const std::string NPsys2_CorrFits_str =_PYTHIA8_NPS;
-//const std::string NPsys2_CorrFits_text=_PYTHIA8_NPS_TXT;
-//NP systs v1, using POW+PY8/POW+PY8 CTEQ NPs for unfolding, shifting NP fit params up/down by 2 sigma
 const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
-const std::string NPsys1_CorrFits_str =_POW_PY8_NPS;
-const std::string NPsys1_CorrFits_text=_POW_PY8_NPS_TXT;
-const std::string NPsys2_CorrFits_str =POWPY8CT_NPS;
-const std::string NPsys2_CorrFits_text=POWPY8CT_NPS_TXT;
+const std::string NPsys1_CorrFits_str =HERWGEE4_NPS;
+const std::string NPsys1_CorrFits_text=HERWGEE4_NPS_TXT;
+const std::string NPsys2_CorrFits_str =_PYTHIA8_NPS;
+const std::string NPsys2_CorrFits_text=_PYTHIA8_NPS_TXT;
+
+//NP systs v1, using POW+PY8/POW+PY8 CTEQ NPs for unfolding, shifting NP fit params up/down by 2 sigma
+//const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
+//const std::string NPsys1_CorrFits_str =_POW_PY8_NPS;
+//const std::string NPsys1_CorrFits_text=_POW_PY8_NPS_TXT;
+//const std::string NPsys2_CorrFits_str =POWPY8CT_NPS;
+//const std::string NPsys2_CorrFits_text=POWPY8CT_NPS_TXT;
+
 //PDFs
-const bool doPDFsys=false; //involves making a new thy hist, therefore, also a sep spline fit
+const bool doPDFsys=true; //involves making a new thy hist, therefore, also a sep spline fit
 //PDF systs v1; using CT14/HERA pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 1
-//const float PDFerrfact=1.0;
-//const std::string in_NLOFile_PDFsys1=_CT14FILESTR;
-//std::string PDFsys1_text=_CT14DESCTXT;
-//const std::string in_NLOFile_PDFsys2=_HERAFILESTR;
-//std::string PDFsys2_text=_HERADESCTXT;
-//PDF systs v2; using CT10/MMHT pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 2
 const float PDFerrfact=1.0;
-const std::string in_NLOFile_PDFsys1=_CT10FILESTR;
-std::string PDFsys1_text=_CT10DESCTXT;
-const std::string in_NLOFile_PDFsys2=_MMHTFILESTR;
-std::string PDFsys2_text=_MMHTDESCTXT;
+const std::string in_NLOFile_PDFsys1=_CT14FILESTR;
+std::string PDFsys1_text=_CT14DESCTXT;
+const std::string in_NLOFile_PDFsys2=_HERAFILESTR;
+std::string PDFsys2_text=_HERADESCTXT;
+
+//PDF systs v2; using CT10/MMHT pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 2
+//const float PDFerrfact=1.0;
+//const std::string in_NLOFile_PDFsys1=_CT10FILESTR;
+//std::string PDFsys1_text=_CT10DESCTXT;
+//const std::string in_NLOFile_PDFsys2=_MMHTFILESTR;
+//std::string PDFsys2_text=_MMHTDESCTXT;
 
 
 
@@ -256,23 +260,33 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   if(printBaseDebug)theory_NP->Print("base");  
   
   std::cout<<"done making NLO+NPhist."<<std::endl;
-
+  
   //rebinned theory hists
   TH1D* theory_rebin=NULL;
   TH1D* theory_NP_rebin=NULL;
-  if(etabin==0 || etabin==1){//get rid of last bin
+
+  if(etabin==0 || etabin==1){//get rid of last bin; first two central eta bins only
+    //  std::cout<<"n_thybins_incl="<<n_thybins_incl<<std::endl;
+    //  for(int i=0; i < n_thybins_incl; i++)
+    //    std::cout<<"thyBins_incl["<<i<<"]="<<thyBins_incl[i]<<std::endl;
+    //  for(int i=1; i<=theory->GetNbinsX();i++)
+    //    std::cout<<"theory->GetBinLowEdge("<<i<<")="<<theory->GetBinLowEdge(i)<<std::endl;  
     theory_rebin=(TH1D*)theory->TH1::Rebin(n_thybins_incl, 
 					   ( ( (std::string) theory->GetName() ) +"_rebin").c_str() ,   thyBins_incl );    
+    //for(int i=1; i<=theory_rebin->GetNbinsX();i++)
+    //  std::cout<<"theory_rebin->GetBinLowEdge("<<i<<")="<<theory_rebin->GetBinLowEdge(i)<<std::endl;
+    //assert(false);
     theory_NP_rebin=(TH1D*)theory_NP->TH1::Rebin(n_thybins_incl, 
 						 ( ( (std::string) theory_NP->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
   else{
-    theory_rebin=(TH1D*)theory->Clone(( ( (std::string) theory->GetName() ) +"_0").c_str());
-    theory_NP_rebin=(TH1D*)theory_NP->Clone(( ( (std::string) theory_NP->GetName() ) +"_0").c_str());}  
+    theory_rebin=(TH1D*)theory->Clone(( ( (std::string) theory->GetName() ) +"_rebin").c_str());
+    theory_NP_rebin=(TH1D*)theory_NP->Clone(( ( (std::string) theory_NP->GetName() ) +"_rebin").c_str());}  
+  
   theory_rebin->SetLineColor(kCyan+4);    
   theory_NP_rebin->SetLineColor(kCyan+4);    
   
-  for(int i=1; i<=theory_rebin->GetNbinsX(); i++) 
-    std::cout<<"theory_rebin->GetBinLowEdge("<<i<<")="<<theory_rebin->GetBinLowEdge(i)<<std::endl;
+  //for(int i=1; i<=theory_rebin->GetNbinsX(); i++) 
+  //  std::cout<<"theory_rebin->GetBinLowEdge("<<i<<")="<<theory_rebin->GetBinLowEdge(i)<<std::endl;
 
   
   //why do i do this again?
@@ -354,12 +368,17 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     //    for(int i=1; i<=(theory_PDFsys2->GetNbinsX());i++ )
     //theory_PDFsys2->SetBinError(i, theory_PDFsys2_PDFerrs->GetBinContent(i));
     
-    if(etabin==0 || etabin==1){//get rid of last bin
+    if(etabin==0 || etabin==1){//get rid of last bin; first two central eta bins only
       theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->TH1::Rebin(n_thybins_incl, 
 							     ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
       theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->TH1::Rebin(n_thybins_incl, 
 							     ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    else{
+      theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->Clone(( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str());
+      theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->Clone(( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str());}  
+    
+
+    //else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
     
     std::cout<<"done making theory PDF sys1/2 hists."<<std::endl;
     
@@ -385,12 +404,15 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     if(printBaseDebug)theory_PDFsysdown->Print("base");  
     
 
-    if(etabin==0 || etabin==1){//get rid of last bin
+    if(etabin==0 || etabin==1){//get rid of last bin; first two central eta bins only
       theory_PDFsysup_rebin=(TH1D*)theory_PDFsysup->TH1::Rebin(n_thybins_incl, 
 							       ( ( (std::string) theory_PDFsysup->GetName() ) +"_rebin").c_str() ,     thyBins_incl );
       theory_PDFsysdown_rebin=(TH1D*)theory_PDFsysdown->TH1::Rebin(n_thybins_incl, 
 								   ( ( (std::string) theory_PDFsysdown->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    else{
+      theory_PDFsysup_rebin  =(TH1D*)theory_PDFsysup  ->Clone(( ( (std::string) theory_PDFsysup->GetName() ) +"_rebin").c_str());
+      theory_PDFsysdown_rebin=(TH1D*)theory_PDFsysdown->Clone(( ( (std::string) theory_PDFsysdown->GetName() ) +"_rebin").c_str());}  
+    //else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
     
     std::cout<<"done making theory PDF sysup/down hists."<<std::endl;
     
@@ -412,12 +434,15 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     theory_NP_PDFsys2->SetLineColor(kTeal);
     if(printBaseDebug)theory_NP_PDFsys2->Print("base");  
     
-    if(etabin==0 || etabin==1){//get rid of last bin
+    if(etabin==0 || etabin==1){//get rid of last bin; first two central eta bins only
       theory_NP_PDFsys1_rebin=(TH1D*)theory_NP_PDFsys1->TH1::Rebin(n_thybins_incl, 
 								   ( ( (std::string) theory_NP_PDFsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
-      theory_NP_PDFsys2_rebin=(TH1D*)theory_NP_PDFsys2->TH1::Rebin(n_thybins_incl, 
-								   ( ( (std::string) theory_NP_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    theory_NP_PDFsys2_rebin=(TH1D*)theory_NP_PDFsys2->TH1::Rebin(n_thybins_incl, 
+								 ( ( (std::string) theory_NP_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
+    else{
+      theory_NP_PDFsys1_rebin=(TH1D*)theory_NP_PDFsys1->Clone(( ( (std::string) theory_NP_PDFsys1->GetName() ) +"_rebin").c_str());
+      theory_NP_PDFsys2_rebin=(TH1D*)theory_NP_PDFsys2->Clone(( ( (std::string) theory_NP_PDFsys2->GetName() ) +"_rebin").c_str());}  
+    //else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
     
     std::cout<<"done making theory_NP PDF sys1/2 hists."<<std::endl; 
     
@@ -439,12 +464,15 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     theory_NP_PDFsysdown->SetLineColor(kTeal);
     if(printBaseDebug)theory_NP_PDFsysdown->Print("base");  
     
-    if(etabin==0 || etabin==1){//get rid of last bin
+    if(etabin==0 || etabin==1){//get rid of last bin; first two central eta bins only
       theory_NP_PDFsysup_rebin=(TH1D*)theory_NP_PDFsysup->TH1::Rebin(n_thybins_incl, 
 								     ( ( (std::string) theory_NP_PDFsysup->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
       theory_NP_PDFsysdown_rebin=(TH1D*)theory_NP_PDFsysdown->TH1::Rebin(n_thybins_incl, 
 									 ( ( (std::string) theory_NP_PDFsysdown->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    else{
+      theory_NP_PDFsysup_rebin=(TH1D*)theory_NP_PDFsysup->Clone(( ( (std::string) theory_NP_PDFsysup->GetName() ) +"_rebin").c_str());
+      theory_NP_PDFsysdown_rebin=(TH1D*)theory_NP_PDFsysdown->Clone(( ( (std::string) theory_NP_PDFsysdown->GetName() ) +"_rebin").c_str());}  
+    //else assert(false);//can't do np sysup/down for more forward bins yet; TO DO
     
     std::cout<<"done making theory_NP PDF sysup/down hists."<<std::endl; 
     
@@ -492,15 +520,18 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     theory_NPsys2_ratio->Divide(theory);
     
     //REBIN ALT CHOICEs 1/2
-    if(etabin==0 || etabin==1){//get rid of last bin
+    if(etabin==0 || etabin==1){//get rid of last bin; first two central eta bins only
       theory_NPsys1_rebin=(TH1D*)theory_NPsys1->TH1::Rebin(n_thybins_incl, 
 							   ( ( (std::string) theory_NPsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
       theory_NPsys2_rebin=(TH1D*)theory_NPsys2->TH1::Rebin(n_thybins_incl, 
 							   ( ( (std::string) theory_NPsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else {
-      std::cout<<"error; don't do systematics for |y| bins starting beyond 1.0 for now. It's on your to do list to add this Ian."<<std::endl;
-      assert(false);//can't do np sysup/down for more forward bins yet; TO DO
-    }
+    else{
+      theory_NPsys1_rebin=(TH1D*)theory_NPsys1->Clone(( ( (std::string) theory_NPsys1->GetName() ) +"_rebin").c_str());
+      theory_NPsys2_rebin=(TH1D*)theory_NPsys2->Clone(( ( (std::string) theory_NPsys2->GetName() ) +"_rebin").c_str());}  
+  //else {
+//  std::cout<<"error; don't do systematics for |y| bins starting beyond 1.0 for now. It's on your to do list to add this Ian."<<std::endl;
+//  assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+//}
     
     //NP SYSUP
     std::cout<<"making theory NP sysup/down hists"<<std::endl;
@@ -530,15 +561,18 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     //theory_NPsysdown_ratio->Divide(theory);
     
     //REBIN ALT CHOICEs 1/2
-    if(etabin==0 || etabin==1){//get rid of last bin
+    if(etabin==0 || etabin==1){//get rid of last bin; first two central eta bins only
       theory_NPsysup_rebin=(TH1D*)theory_NPsysup->TH1::Rebin(n_thybins_incl, 
 							     ( ( (std::string) theory_NPsysup->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
       theory_NPsysdown_rebin=(TH1D*)theory_NPsysdown->TH1::Rebin(n_thybins_incl, 
 								 ( ( (std::string) theory_NPsysdown->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-    else {
-      std::cout<<"error; don't do systematics for |y| bins starting beyond 1.0 for now. It's on your to do list to add this Ian."<<std::endl;
-      assert(false);//can't do np sysup/down for more forward bins yet; TO DO
-    }
+    else{
+      theory_NPsysup_rebin=(TH1D*)theory_NPsysup->Clone(( ( (std::string) theory_NPsysup->GetName() ) +"_rebin").c_str());
+      theory_NPsysdown_rebin=(TH1D*)theory_NPsysdown->Clone(( ( (std::string) theory_NPsysdown->GetName() ) +"_rebin").c_str());}  
+    //else {
+    //  std::cout<<"error; don't do systematics for |y| bins starting beyond 1.0 for now. It's on your to do list to add this Ian."<<std::endl;
+    //  assert(false);//can't do np sysup/down for more forward bins yet; TO DO
+    //}
     
     //SYS UP/DOWN QA -- still does alt 1/2 QA, TO DO
     theory_NPsys1_ratio_NPsys2=(TH1D*)theory_NPsys1->Clone("theory_NPsys1_ratio_NPsys2");
@@ -605,7 +639,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   std::cout<<"plotting JER!"<<  std::endl;  
   //TF1 is irritating to set titles for+blah... so use this  
   TH1D * hJER = (TH1D*)( (TH1D*)fJER->GetHistogram() )->Clone(("hJER_"+std::to_string(etabin)).c_str());
-  hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
+  if(!userHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
+  else if(userHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma from Fit").c_str());
   hJER->GetXaxis()->SetNoExponent(true);
   hJER->GetXaxis()->SetMoreLogLabels(true);
   if(useHistSigmaFit)hJER->SetLineColor(kBlue-7);
@@ -903,6 +938,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
       //make_spline3_extv2(  (TSpline3*)spline3, (TF1*)spline3_ext , (double)x1, (double)x2, (double)y2, (double)xprime, (double)yprime);    
       spline3_ext->SetLineColor(kAzure-1);
     }
+
     
     // NLO+NP //      
     spline3_NP = new TSpline3( theory_NP_rebin);
@@ -926,7 +962,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
       spline3_NPsysdown->SetName( ( (std::string)theory_NPsysdown_rebin->GetName() + "_spline3").c_str() );
       spline3_NPsysdown->SetLineColor(kAzure-8);      
     }
-    
+
     if(doPDFsys){
       spline3_NP_PDFsys1 = new TSpline3( theory_NP_PDFsys1_rebin);
       spline3_NP_PDFsys1->SetName( ( (std::string)theory_NP_PDFsys1_rebin->GetName() + "_spline3").c_str() );
@@ -943,6 +979,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
       spline3_NP_PDFsysdown = new TSpline3( theory_NP_PDFsysdown_rebin);
       spline3_NP_PDFsysdown->SetName( ( (std::string)theory_NP_PDFsysdown_rebin->GetName() + "_spline3").c_str() );
       spline3_NP_PDFsysdown->SetLineColor(kAzure-8);      
+
     }
 
     if(useSplineExt){
@@ -953,7 +990,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
       //make_spline3_ext(  (TSpline3*)spline3_NP, (TF1*)spline3_NP_ext , (double)x1, (double)x2, (double)NP_y2);    
       spline3_NP_ext->SetLineColor(kAzure-9);
     }
-      
+
     //draw
     theory_rebin->SetTitle(("Cubic Splines for "+absetarange_str+";Jet p_{T};Smear Weight").c_str());    
     theory_rebin->SetAxisRange( y2/2., theory_rebin->GetMaximum()*2., "Y");

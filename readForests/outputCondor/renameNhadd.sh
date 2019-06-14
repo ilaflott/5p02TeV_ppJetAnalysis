@@ -242,7 +242,7 @@ then
 	hadd_ppData_allInDir ${R} ${ppDatajet80} ${ppDatalowJets} ${ppDataMinBias}
     elif [[ -d "${ppDatalowJets}" && -d "${ppDatajet80}" ]]
     then
-	hadd_ppData_allInDir ${R} ${ppDatajet80} ${ppDatalowJets} ${ppDataMinBias}
+	hadd_ppData_allInDir ${R} ${ppDatajet80} ${ppDatalowJets}
     fi
 	
     cd ${workingDir}

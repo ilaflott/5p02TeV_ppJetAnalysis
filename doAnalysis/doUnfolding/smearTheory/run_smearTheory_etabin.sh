@@ -9,11 +9,11 @@ then
     JERfilestr=$4
     Descstr=$5
     Fittypestr=$6
-    cp2Serin=$7
+    scp2Serin=$7
 else
     echo ""
     echo "error! usage is:"
-    echo "source run_smearTheory_etabin.sh <etaBin>  <NLOfilestr> <NLOfileshortstr> <JERfilestr> <Descstr> <Fittypestr> <cp2Serin>"
+    echo "source run_smearTheory_etabin.sh <etaBin>  <NLOfilestr> <NLOfileshortstr> <JERfilestr> <Descstr> <Fittypestr> <scp2Serin>"
     echo ""
     return
 fi
@@ -55,6 +55,7 @@ then
     OUTFILE=${NLOfileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
     JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
     JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf
+    
     #JERFILE=${JERfilestr}${etabinstr}_semifinal.root
     #JERPDFFILE=${JERfilestr}${etabinstr}_semifinal.pdf
 
@@ -106,13 +107,16 @@ then
     echo "writing plots in $OUTFILE to $OUTDIR"
     echo ""
     ROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${OUTFILE}\", ${etaBin})"
+    ##TEMP COMMENT OUT
     root -l -b -q "${ROOTEXC}"
-    
+    #return
+    ##TEMP COMMENT OUT
+
     echo ""
     echo "scp2Serin"
     echo ""
 
-    if [[ $cp2Serin -eq 1 ]]
+    if [[ $scp2Serin -eq 1 ]]
     then
 	echo "OUTDIR=$OUTDIR"
 	scp2Serin ${OUTDIR}    

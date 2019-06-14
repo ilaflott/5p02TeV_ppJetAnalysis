@@ -795,8 +795,11 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
     fits_wSystCanv->cd(1)->SetLogy(0);    
     fits_wSystCanv->cd(1);
 
-    MakeHistSigma(SigmaFit_sysup_h_hist, xmin, xmax);
+    if      (fitsigma)    MakeHistSigma(  SigmaFit_sysup_h_hist, xmin, xmax);
+    else if (fitsigmu)    MakeHistSigmaMu(SigmaFit_sysup_h_hist, xmin, xmax);
+
     SigmaFit_sysup_h_hist->SetAxisRange(0.04, 0.16,"Y");
+
     if(fitsigma) SigmaFit_sysup_h_hist->SetTitle("#sigma [Bin Content] v. GEN Jet p_{T} Fit");
     else if(fitsigmu) SigmaFit_sysup_h_hist->SetTitle("(#sigma/#mu) [Bin Content] v. GEN Jet p_{T} Fit");
     SigmaFit_sysup_h_hist->GetYaxis()->SetLabelSize(0.04);
@@ -817,21 +820,22 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
     //pad 2
     fits_wSystCanv->cd(2)->SetLogx(1);
     fits_wSystCanv->cd(2)->SetLogy(0);
-    fits_wSystCanv->cd(2);
+    fits_wSystCanv->cd(2);    
     
-    MakeHistSigma(SigmaFit_sysup_f_hist, xmin, xmax);
+    if     (fitsigma)MakeHistSigma(  SigmaFit_sysup_f_hist, xmin, xmax);
+    else if(fitsigmu)MakeHistSigmaMu(SigmaFit_sysup_f_hist, xmin, xmax);
+    
     SigmaFit_sysup_f_hist->SetAxisRange(0.04, 0.20,"Y");
+
     if(fitsigma)SigmaFit_sysup_f_hist->SetTitle("#sigma [Gauss Core] v. GEN Jet p_{T} Fit");
     else if(fitsigmu)SigmaFit_sysup_f_hist->SetTitle("(#sigma/#mu) [Gauss Core] v. GEN Jet p_{T} Fit");
     SigmaFit_sysup_f_hist->GetYaxis()->SetLabelSize(0.04);
     SigmaFit_sysup_f_hist->GetXaxis()->SetLabelSize(0.04);
     SigmaFit_f_hist->SetLineColor(kMagenta-2);
     
-    SigmaFit_sysup_f_hist->Draw("HIST ][");
-    //    SigmaFit_sysupv2_f_hist->Draw("HIST ][ SAME");
+    SigmaFit_sysup_f_hist->Draw("HIST ][");    //    SigmaFit_sysupv2_f_hist->Draw("HIST ][ SAME");
     SigmaFit_f_hist->Draw("HIST ][ SAME");
-    SigmaFit_sysdown_f_hist->Draw("HIST ][ SAME");
-    //    SigmaFit_sysdownv2_f_hist->Draw("HIST ][ SAME");
+    SigmaFit_sysdown_f_hist->Draw("HIST ][ SAME");    //    SigmaFit_sysdownv2_f_hist->Draw("HIST ][ SAME");
 
     TLegend* legend_f_fitsys=new TLegend(0.6,0.6,0.9,0.8);
     legend_f_fitsys->SetFillStyle(0);

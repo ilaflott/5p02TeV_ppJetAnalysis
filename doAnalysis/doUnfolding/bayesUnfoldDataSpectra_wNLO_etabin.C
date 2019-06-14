@@ -56,10 +56,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   std::string sysunfdir="";
   if(doSystUnf){
     if(systUnfType=="JER") sysunfdir="JERsysdir/";
+    else if(systUnfType=="JEC") sysunfdir="JECsysdir/";
     else if(systUnfType=="NP")sysunfdir="NPsysdir/";
-    //else if(systUnfType=="NPupdown")sysunfdir="NPsysdir/";
     else if(systUnfType=="PDF")sysunfdir="PDFsysdir/";
-    //else if(systUnfType=="PDFupdown")sysunfdir="PDFsysdir/";
+
     else assert(false);
   }
   
@@ -108,7 +108,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   // INFILE NAME(S) -----------
   //const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
-  const std::string inFile_Data_name="/HighPtJetTrig_ak4PF-allFiles.root";
+  const std::string inFile_Data_name="/HighPtJetTrig_noMB_ak4PF-allFiles.root";
   
   // OUTPUT FILE, NAME(S) -----------
   std::string outFileName=unfoldDataSpectra_outdir+fullJetType;
@@ -203,7 +203,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //sys
   TH1D* hgen_sysup=NULL, *hgen_sysdown=NULL;
   TH1D* hgen_sysup_rebin=NULL,  *hgen_sysdown_rebin=NULL;  
-  if(doSystUnf){
+  if(doSystUnf && systUnfType!="JEC"){
 
     if(systUnfType=="NP" && applyNPCorrs){
       //hgen_sysup=(TH1D*)fpp_MC->Get( ("theory_rnd_"+systUnfType+"sysup").c_str() );
@@ -345,7 +345,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH2D* hmat_sysup=NULL, *hmat_sysdown=NULL;
   TH2D* hmat_sysup_errors=NULL, *hmat_sysdown_errors=NULL;  
   TH2D* hmat_sysup_rebin=NULL, *hmat_sysdown_rebin=NULL;  //TO DO; SET HIST ERRS; I THINK THEYRE SET TO DEFAULT ROOT VALUES IF THEYRE NOT SET AND THEYRE NOT SET IN REBIN TH2
-  if(doSystUnf){
+  if(doSystUnf&&systUnfType!="JEC"){
 
     if(systUnfType=="NP" && applyNPCorrs){
       //hmat_sysup=(TH2D*)fpp_MC->Get(   (""+th2basetitle+"_"+systUnfType+"sysup_th2").c_str() );
@@ -485,7 +485,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //sys
   TH1D* hrec_sameside_sysup=NULL, *hrec_sameside_sysdown=NULL;
   TH1D* hrec_sameside_sysup_rebin=NULL,  *hrec_sameside_sysdown_rebin=NULL;  
-  if(doSystUnf){
+  if(doSystUnf&&systUnfType!="JEC"){
     if(systUnfType=="NP" && applyNPCorrs){
       //hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysup").c_str() );
       if(systSubType=="12")fpp_MC->GetObject(          (sysunfdir+"smeared_rnd_"+systUnfType+"sys1").c_str() , hrec_sameside_sysup);    
@@ -610,7 +610,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //syst
   TH1D* hgen_resp_sysup_rebin=NULL, *hgen_resp_sysdown_rebin=NULL;
   TH1D* hrec_sameside_resp_sysup_rebin=NULL, *hrec_sameside_resp_sysdown_rebin=NULL;
-  if(fillRespHists && doSystUnf) {        
+  if(fillRespHists && doSystUnf && systUnfType!="JEC") {        
     hrec_sameside_resp_sysup_rebin = (TH1D*)hrec_sameside_sysup_rebin->Clone( ((std::string)hrec_sameside_sysup_rebin->GetName()+"_resp").c_str() );      
     //hrec_sameside_resp_sysup_rebin->SetMarkerSize(0.);
     //hrec_sameside_resp_sysup_rebin->SetLineColor(hrec_sameside_resp_rebin->GetLineColor()-2);
@@ -638,16 +638,18 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //for output
   if(debugWrite)fout->cd();    
   
-  TH1D* hJetQA_jtptEntries=(TH1D*)fpp_Data->Get("hJetQA_1wJetID_jtptEntries");
+  TH1D* hJetQA_jtptEntries=(TH1D*)fpp_Data->Get(("hJetQA_1wJetID_jtptEntries_etabin"+std::to_string(etabinint)).c_str());
   if(hJetQA_jtptEntries){
     hJetQA_jtptEntries = (TH1D*)hJetQA_jtptEntries->Rebin(nbins_pt_reco, hJetQA_jtptEntries->GetTitle(), boundaries_pt_reco);  
   }
   
   // ---------- reco, measured spectra to unfold
-  std::string histTitle="hJetSpectraRap";
-  if(doJetID)histTitle+="_wJetID";
+  //std::string histTitle="hJetSpectraRap";
+  std::string histTitle="hJetQA";
+  if(doJetID)histTitle+="_1wJetID";
+  else histTitle+="_0wJetID";
   //else histTitle+="_0wJetID";
-  histTitle+="_bin"+std::to_string(etabinint);
+  histTitle+="_jtpt_etabin"+std::to_string(etabinint);
   
   TH1D*  hrec = (TH1D*)fpp_Data->Get( histTitle.c_str() ); 
   if(debugWrite)hrec->Write();
@@ -708,6 +710,147 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
       hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );
   }  
+
+
+
+
+
+  // ---------- reco, measured spectra, JEC sysup/down, to unfold
+  TH1D*  hrec_JECsysup = NULL, * hrec_JECsysup_rebin=NULL;
+  TH2D*  hrec_covmat_JECsysup=NULL;  TH2D* hrec_covmat_JECsysup_rebin=NULL;
+
+  TH1D*  hrec_JECsysdown = NULL, * hrec_JECsysdown_rebin=NULL;
+  TH2D*  hrec_covmat_JECsysdown=NULL;  TH2D* hrec_covmat_JECsysdown_rebin=NULL;
+
+  if(systUnfType=="JEC"){
+
+    //SYSUP
+    std::string JECsysuphistTitle="hJetQA";
+    if(doJetID)JECsysuphistTitle+="_1wJetID";
+    else assert(false);
+    JECsysuphistTitle+="_jtpt_JEC_sysup_etabin"+std::to_string(etabinint);  
+    
+    hrec_JECsysup = (TH1D*)fpp_Data->Get( JECsysuphistTitle.c_str() ); 
+    if(debugWrite)hrec->Write();
+    if(debugMode)hrec->Print("base");
+  
+    JECsysuphistTitle+="_divBylumietabin";    
+    hrec_JECsysup->Scale(1./effIntgrtdLumi); // lumi
+    if(debugWrite)hrec_JECsysup->Write( (JECsysuphistTitle).c_str() );
+    if(debugMode) hrec_JECsysup->Print("base");
+  
+    JECsysuphistTitle+="_clone";
+    hrec_JECsysup_rebin = (TH1D*)hrec_JECsysup->Clone( (JECsysuphistTitle).c_str() );
+    if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());
+    if(debugMode) hrec_JECsysup_rebin->Print("base");
+    
+    std::cout<<"rebinning hrec_JECsysup..."<<std::endl;
+    JECsysuphistTitle+="_rebins";
+    hrec_JECsysup_rebin = (TH1D*)hrec_JECsysup_rebin->Rebin( nbins_pt_reco, (JECsysuphistTitle).c_str() , boundaries_pt_reco);
+    
+    if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());   
+    if(debugMode) hrec_JECsysup_rebin->Print("base");  
+
+    if(clearOverUnderflows){
+      JECsysuphistTitle+="_noOverUnderFlows";
+      TH1clearOverUnderflows((TH1*)hrec_JECsysup_rebin);
+      if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());
+      if(debugMode) hrec_JECsysup_rebin->Print("base");  
+    }
+
+  
+    //cosmetics
+    hrec_JECsysup_rebin->SetMarkerStyle(kOpenCircle);
+    hrec_JECsysup_rebin->SetMarkerColor(kBlue);     
+    hrec_JECsysup_rebin->SetLineColor(kBlue);     
+    hrec_JECsysup_rebin->SetMarkerSize(1.02);     
+    
+    if(setDataCovMat){
+      if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
+      hrec_covmat_JECsysup=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysup_etabin_"+std::to_string(etabinint)).c_str());
+      
+      hrec_covmat_JECsysup_rebin=(TH2D*)hrec_covmat_JECsysup->Clone ( ((std::string)hrec_covmat_JECsysup->GetName()+"_clone").c_str());
+      
+      if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
+      hrec_covmat_JECsysup_rebin=(TH2D*) reBinTH2(hrec_covmat_JECsysup_rebin, 
+						   ((std::string)hrec_covmat_JECsysup_rebin->GetName()+"_rebin").c_str(), 
+						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+      
+      if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+      hrec_covmat_JECsysup_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
+      if(debugWrite)hrec_covmat_JECsysup_rebin->Write(TH2_title.c_str());
+      
+      //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+      for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+	hrec_JECsysup_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysup_rebin->GetBinContent(i,i)) );
+    }
+
+
+    //SYSDOWN
+    std::string JECsysdownhistTitle="hJetQA";
+    if(doJetID)JECsysdownhistTitle+="_1wJetID";
+    else assert(false);
+    JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
+    
+    hrec_JECsysdown = (TH1D*)fpp_Data->Get( JECsysdownhistTitle.c_str() ); 
+    if(debugWrite)hrec->Write();
+    if(debugMode)hrec->Print("base");
+    
+    JECsysdownhistTitle+="_divBylumietabin";    
+    hrec_JECsysdown->Scale(1./effIntgrtdLumi); // lumi
+    if(debugWrite)hrec_JECsysdown->Write( (JECsysdownhistTitle).c_str() );
+    if(debugMode) hrec_JECsysdown->Print("base");
+  
+    JECsysdownhistTitle+="_clone";
+    hrec_JECsysdown_rebin = (TH1D*)hrec_JECsysdown->Clone( (JECsysdownhistTitle).c_str() );
+    if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());
+    if(debugMode) hrec_JECsysdown_rebin->Print("base");
+    
+    std::cout<<"rebinning hrec_JECsysdown..."<<std::endl;
+    JECsysdownhistTitle+="_rebins";
+    hrec_JECsysdown_rebin = (TH1D*)hrec_JECsysdown_rebin->Rebin( nbins_pt_reco, (JECsysdownhistTitle).c_str() , boundaries_pt_reco);
+    
+    if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());   
+    if(debugMode) hrec_JECsysdown_rebin->Print("base");  
+
+    if(clearOverUnderflows){
+      JECsysdownhistTitle+="_noOverUnderFlows";
+      TH1clearOverUnderflows((TH1*)hrec_JECsysdown_rebin);
+      if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());
+      if(debugMode) hrec_JECsysdown_rebin->Print("base");  
+    }
+    //cosmetics
+    hrec_JECsysdown_rebin->SetMarkerStyle(kOpenCircle);
+    hrec_JECsysdown_rebin->SetMarkerColor(kBlue);     
+    hrec_JECsysdown_rebin->SetLineColor(kBlue);     
+    hrec_JECsysdown_rebin->SetMarkerSize(1.02);     
+    
+    if(setDataCovMat){
+      if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
+      hrec_covmat_JECsysdown=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysdown_etabin_"+std::to_string(etabinint)).c_str());
+      
+      hrec_covmat_JECsysdown_rebin=(TH2D*)hrec_covmat_JECsysdown->Clone ( ((std::string)hrec_covmat_JECsysdown->GetName()+"_clone").c_str());
+      
+      if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
+      hrec_covmat_JECsysdown_rebin=(TH2D*) reBinTH2(hrec_covmat_JECsysdown_rebin, 
+						   ((std::string)hrec_covmat_JECsysdown_rebin->GetName()+"_rebin").c_str(), 
+						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+      
+      if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+      hrec_covmat_JECsysdown_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
+      if(debugWrite)hrec_covmat_JECsysdown_rebin->Write(TH2_title.c_str());
+      
+      //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+      for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+	hrec_JECsysdown_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysdown_rebin->GetBinContent(i,i)) );
+    }
+  }  
+
+
+
+  
   
   // thy spectra  
   std::string NLOMCtitle_str="";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top.
@@ -903,6 +1046,16 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
 
 
+
+
+
+
+
+
+
+
+
+
   TH1D* hunf_sysup=NULL, *hunf_sysdown=NULL;
   //  TH1D* hunf_sysup_outclone=NULL, *hunf_sysdown_outclone=NULL;
   TH1D* hunf_sysup_ratio=NULL, *hunf_sysdown_ratio=NULL;
@@ -912,67 +1065,177 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   int kIter_sysup=kIterInput;//kIterInput;//+10;
   int kIter_sysdown=kIterInput;
 
+
+  TMatrixD* hrec_covmat_JECsysup_rebin_tmatrix=NULL;
+  TMatrixD* hrec_covmat_JECsysdown_rebin_tmatrix=NULL;
+
   if(doSystUnf){
     
     //if(systUnfType=="NP" && applyNPCorrs){
     if(applyNPCorrs){
-      std::cout<<"calling RooUnfoldResponse for upper systematics unfolding"<<std::endl;
-      RooUnfoldResponse roo_resp_sysup( hrec_sameside_resp_sysup_rebin, hgen_resp_sysup_rebin, hmat_sysup_rebin, ("Response_matrix_"+systUnfType+"sysup"+RandEtaRange).c_str()) ;
-      roo_resp_sysup.UseOverflow(doOverUnderflows);    
       
-      std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIter_sysup="<<kIter_sysup<<std::endl;  
-      RooUnfoldBayes unf_bayes_sysup( &roo_resp_sysup, hrec_rebin, kIter_sysup );
-      unf_bayes_sysup.SetVerbose(verbosity);
       
-      hunf_sysup = (TH1D*)unf_bayes_sysup.Hreco(errorTreatment);     std::cout<<std::endl; 
-      hunf_sysup->SetName(("ppData_BayesUnf_"+systUnfType+"sysup_Spectra").c_str());
-      hunf_sysup->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Up, kIter="+std::to_string(kIter_sysup)).c_str());
-      
-      hunf_sysup_ratio=(TH1D*)      hunf_sysup->Clone(("ppData_BayesUnf_"+systUnfType+"sysup_Ratio").c_str());
-      hunf_sysup_ratio->Divide(hunf);
+      if(systUnfType!="JEC"){//JER, NP, or PDF unc all involve a diff response matrix, truth/smear spectra... etc. JEC syst unc. only changes data spectra + cov matrix
+	std::cout<<"calling RooUnfoldResponse for upper systematics unfolding"<<std::endl;
+	RooUnfoldResponse roo_resp_sysup( hrec_sameside_resp_sysup_rebin, hgen_resp_sysup_rebin, hmat_sysup_rebin, ("Response_matrix_"+systUnfType+"sysup"+RandEtaRange).c_str()) ;
+	roo_resp_sysup.UseOverflow(doOverUnderflows);    
+	
+	std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIter_sysup="<<kIter_sysup<<std::endl;  
+	RooUnfoldBayes unf_bayes_sysup( &roo_resp_sysup, hrec_rebin, kIter_sysup );
+	unf_bayes_sysup.SetVerbose(verbosity);
 
-      divideBinWidth(hunf_sysup);            
-      divideBinWidth(hgen_sysup                       	);
-      divideBinWidth(hgen_sysup_rebin		       	);
-      divideBinWidth(hrec_sameside_sysup	       	);
-      divideBinWidth(hrec_sameside_sysup_rebin	       	);
-      divideBinWidth(hgen_resp_sysup_rebin	       	);
-      divideBinWidth(hrec_sameside_resp_sysup_rebin   	);
-      
-      hunf_sysup->SetLineColor(hunf->GetLineColor()-2);
-      hunf_sysup->SetMarkerSize(0.);
-      hunf_sysup_ratio->SetLineColor(hunf->GetLineColor()-2);
-      hunf_sysup_ratio->SetMarkerSize(0.);
-      
-      
-      std::cout<<"calling RooUnfoldResponse for lower systematics unfolding"<<std::endl;
-      RooUnfoldResponse roo_resp_sysdown( hrec_sameside_resp_sysdown_rebin, hgen_resp_sysdown_rebin, hmat_sysdown_rebin, ("Response_matrix_"+systUnfType+"sysdown"+RandEtaRange).c_str()) ;
-      roo_resp_sysdown.UseOverflow(doOverUnderflows);    
-      
-      std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIter_sysdown="<<kIter_sysdown<<std::endl;  
-      RooUnfoldBayes unf_bayes_sysdown( &roo_resp_sysdown, hrec_rebin, kIter_sysdown );
-      unf_bayes_sysdown.SetVerbose(verbosity);
-      
-      hunf_sysdown = (TH1D*)unf_bayes_sysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
-      hunf_sysdown->SetName(("ppData_BayesUnf_"+systUnfType+"sysdown_Spectra").c_str());
-      hunf_sysdown->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Down, kIter="+std::to_string(kIter_sysdown)).c_str());      
+	if(setDataCovMat){    
+	  if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes_sysup"<<std::endl;
+	  //	  if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
+	  //	  hrec_covmat_rebin_tmatrix=(TMatrixD*)roo_resp_sysup.H2M(hrec_covmat_rebin, 
+	  //								  nbins_pt_reco_mat,
+	  //								  nbins_pt_gen_mat,
+	  //								  NULL, 0	);    
+	  unf_bayes_sysup.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );  }
+	
+	hunf_sysup = (TH1D*)unf_bayes_sysup.Hreco(errorTreatment);     std::cout<<std::endl; 
+	hunf_sysup->SetName(("ppData_BayesUnf_"+systUnfType+"sysup_Spectra").c_str());
+	hunf_sysup->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Up, kIter="+std::to_string(kIter_sysup)).c_str());
+	
+	hunf_sysup_ratio=(TH1D*)      hunf_sysup->Clone(("ppData_BayesUnf_"+systUnfType+"sysup_Ratio").c_str());
+	hunf_sysup_ratio->Divide(hunf);
+	
+	divideBinWidth(hunf_sysup);            
+	divideBinWidth(hgen_sysup                       	);
+	divideBinWidth(hgen_sysup_rebin		       	);
+	divideBinWidth(hrec_sameside_sysup	       	);
+	divideBinWidth(hrec_sameside_sysup_rebin	       	);
+	divideBinWidth(hgen_resp_sysup_rebin	       	);
+	divideBinWidth(hrec_sameside_resp_sysup_rebin   	);
+	
+	hunf_sysup->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysup->SetMarkerSize(0.);
+	hunf_sysup_ratio->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysup_ratio->SetMarkerSize(0.);
+	
+	
+	std::cout<<"calling RooUnfoldResponse for lower systematics unfolding"<<std::endl;
+	RooUnfoldResponse roo_resp_sysdown( hrec_sameside_resp_sysdown_rebin, hgen_resp_sysdown_rebin, hmat_sysdown_rebin, ("Response_matrix_"+systUnfType+"sysdown"+RandEtaRange).c_str()) ;
+	roo_resp_sysdown.UseOverflow(doOverUnderflows);    
+	
+	std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIter_sysdown="<<kIter_sysdown<<std::endl;  
+	RooUnfoldBayes unf_bayes_sysdown( &roo_resp_sysdown, hrec_rebin, kIter_sysdown );
+	unf_bayes_sysdown.SetVerbose(verbosity);
 
-      hunf_sysdown_ratio=(TH1D*)      hunf_sysdown->Clone(("ppData_BayesUnf_"+systUnfType+"sysdown_Ratio").c_str());
-      hunf_sysdown_ratio->Divide(hunf);
+	if(setDataCovMat){    
+	  if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes_sysdown"<<std::endl;
+	  //	  if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
+	  //	  hrec_covmat_rebin_tmatrix=(TMatrixD*)roo_resp_sysdown.H2M(hrec_covmat_rebin, 
+	  //								  nbins_pt_reco_mat,
+	  //								  nbins_pt_gen_mat,
+	  //								  NULL, 0	);    
+	  unf_bayes_sysdown.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );  }
+	
+	hunf_sysdown = (TH1D*)unf_bayes_sysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
+	hunf_sysdown->SetName(("ppData_BayesUnf_"+systUnfType+"sysdown_Spectra").c_str());
+	hunf_sysdown->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Down, kIter="+std::to_string(kIter_sysdown)).c_str());      
+	
+	hunf_sysdown_ratio=(TH1D*)      hunf_sysdown->Clone(("ppData_BayesUnf_"+systUnfType+"sysdown_Ratio").c_str());
+	hunf_sysdown_ratio->Divide(hunf);
+	
+	divideBinWidth(hunf_sysdown);            
+	divideBinWidth(hgen_sysdown                       	);
+	divideBinWidth(hgen_sysdown_rebin		       	);
+	divideBinWidth(hrec_sameside_sysdown	       	);
+	divideBinWidth(hrec_sameside_sysdown_rebin	       	);
+	divideBinWidth(hgen_resp_sysdown_rebin	       	);
+	divideBinWidth(hrec_sameside_resp_sysdown_rebin   	);
+	
+	hunf_sysdown->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysdown->SetMarkerSize(0.);
+	hunf_sysdown_ratio->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysdown_ratio->SetMarkerSize(0.);
+	
+	
+      }
+      else if(systUnfType=="JEC"){
+	
+	std::cout<<"calling RooUnfoldResponse for upper systematics unfolding"<<std::endl;
+	RooUnfoldResponse roo_resp_sysup( hrec_sameside_resp_rebin, hgen_resp_rebin, hmat_rebin, ("Response_matrix_"+systUnfType+"sysup"+RandEtaRange).c_str()) ;
+	roo_resp_sysup.UseOverflow(doOverUnderflows);    
+	
+	std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIter_sysup="<<kIter_sysup<<std::endl;  
+	RooUnfoldBayes unf_bayes_sysup( &roo_resp_sysup, hrec_JECsysup_rebin, kIter_sysup );
+	unf_bayes_sysup.SetVerbose(verbosity);
 
-      divideBinWidth(hunf_sysdown);            
-      divideBinWidth(hgen_sysdown                       	);
-      divideBinWidth(hgen_sysdown_rebin		       	);
-      divideBinWidth(hrec_sameside_sysdown	       	);
-      divideBinWidth(hrec_sameside_sysdown_rebin	       	);
-      divideBinWidth(hgen_resp_sysdown_rebin	       	);
-      divideBinWidth(hrec_sameside_resp_sysdown_rebin   	);
+	if(setDataCovMat){    
+	  if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
+	  if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
+	  hrec_covmat_JECsysup_rebin_tmatrix=(TMatrixD*)roo_resp_sysup.H2M(hrec_covmat_JECsysup_rebin, 
+									   nbins_pt_reco_mat,
+									   nbins_pt_gen_mat,
+									   NULL, 0	);    
+	  unf_bayes_sysup.RooUnfold::SetMeasuredCov( *(hrec_covmat_JECsysup_rebin_tmatrix) );  }
+	
+	hunf_sysup = (TH1D*)unf_bayes_sysup.Hreco(errorTreatment);     std::cout<<std::endl; 
+	hunf_sysup->SetName(("ppData_BayesUnf_"+systUnfType+"sysup_Spectra").c_str());
+	hunf_sysup->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Up, kIter="+std::to_string(kIter_sysup)).c_str());
+	
+	hunf_sysup_ratio=(TH1D*)      hunf_sysup->Clone(("ppData_BayesUnf_"+systUnfType+"sysup_Ratio").c_str());
+	hunf_sysup_ratio->Divide(hunf);
+	
+	divideBinWidth(hunf_sysup);            
+	//divideBinWidth(hgen_sysup                       	);
+	//divideBinWidth(hgen_sysup_rebin		       	);
+	//divideBinWidth(hrec_sameside_sysup	       	);
+	divideBinWidth(hrec_JECsysup_rebin	       	);
+	//divideBinWidth(hrec_sameside_sysup_rebin	       	);
+	//divideBinWidth(hgen_resp_sysup_rebin	       	);
+	//divideBinWidth(hrec_sameside_resp_sysup_rebin   	);
+	
+	hunf_sysup->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysup->SetMarkerSize(0.);
+	hunf_sysup_ratio->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysup_ratio->SetMarkerSize(0.);
+	
+	
+	std::cout<<"calling RooUnfoldResponse for lower systematics unfolding"<<std::endl;
+	RooUnfoldResponse roo_resp_sysdown( hrec_sameside_resp_rebin, hgen_resp_rebin, hmat_rebin, ("Response_matrix_"+systUnfType+"sysdown"+RandEtaRange).c_str()) ;
+	roo_resp_sysdown.UseOverflow(doOverUnderflows);    
+	
+	std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIter_sysdown="<<kIter_sysdown<<std::endl;  
+	RooUnfoldBayes unf_bayes_sysdown( &roo_resp_sysdown, hrec_JECsysdown_rebin, kIter_sysdown );
+	unf_bayes_sysdown.SetVerbose(verbosity);
 
-      hunf_sysdown->SetLineColor(hunf->GetLineColor()-2);
-      hunf_sysdown->SetMarkerSize(0.);
-      hunf_sysdown_ratio->SetLineColor(hunf->GetLineColor()-2);
-      hunf_sysdown_ratio->SetMarkerSize(0.);
+	if(setDataCovMat){    
+	  if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes_sysdown"<<std::endl;
+	  if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
+	  hrec_covmat_JECsysdown_rebin_tmatrix=(TMatrixD*)roo_resp_sysdown.H2M(hrec_covmat_JECsysdown_rebin, 
+									       nbins_pt_reco_mat,
+									       nbins_pt_gen_mat,
+									       NULL, 0	);    
+	  unf_bayes_sysdown.RooUnfold::SetMeasuredCov( *(hrec_covmat_JECsysdown_rebin_tmatrix) );  }
+	
+	hunf_sysdown = (TH1D*)unf_bayes_sysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
+	hunf_sysdown->SetName(("ppData_BayesUnf_"+systUnfType+"sysdown_Spectra").c_str());
+	hunf_sysdown->SetTitle( ("Unf. Data, "+systUnfType+" Syst. Down, kIter="+std::to_string(kIter_sysdown)).c_str());      
+	
+	hunf_sysdown_ratio=(TH1D*)      hunf_sysdown->Clone(("ppData_BayesUnf_"+systUnfType+"sysdown_Ratio").c_str());
+	hunf_sysdown_ratio->Divide(hunf);
+	
+	divideBinWidth(hunf_sysdown);            
+	//divideBinWidth(hgen_sysdown                       	);
+	//divideBinWidth(hgen_sysdown_rebin		       	);
+	//divideBinWidth(hrec_sameside_sysdown	       	);
+	divideBinWidth(hrec_JECsysdown_rebin	       	);	
+	//divideBinWidth(hrec_sameside_sysdown_rebin	       	);
+	//divideBinWidth(hgen_resp_sysdown_rebin	       	);
+	//divideBinWidth(hrec_sameside_resp_sysdown_rebin   	);
+	
+	hunf_sysdown->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysdown->SetMarkerSize(0.);
+	hunf_sysdown_ratio->SetLineColor(hunf->GetLineColor()-2);
+	hunf_sysdown_ratio->SetMarkerSize(0.);
+	
+      }
     }
+
+
   }
 
 
@@ -2022,7 +2285,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 	int current_kIter=kIter_start+ki;
 	int ki_canv=ki+1;
 	if(debugMode)std::cout<<"ki="<<ki<<", current_kIter="<<current_kIter<<std::endl;
- 
+	
 	canv_3x3spectra->cd(ki_canv)->SetLogx(1);
 	canv_3x3spectra->cd(ki_canv)->SetLogy(1);
 	canv_3x3spectra->cd(ki_canv);
@@ -2278,31 +2541,64 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
   // systematics unfolding if down
   if(doSystUnf){
-    hgen_sysup->Write(); 
-    hgen_sysup_rebin->Write(); 
-    hmat_sysup->Write(); 
-    hmat_sysup_rebin->Write(); 
-    hrec_sameside_sysup->Write(); 
-    hrec_sameside_sysup_rebin->Write(); 
-    hgen_resp_sysup_rebin->Write();
-    hrec_sameside_resp_sysup_rebin->Write();
-    hunf_sysup->Write();
-    hunf_one->Write("ratioatOne_A");
-    hunf_sysup_ratio->Write();
-    //hunf_sysup_outclone->Write();
-
-    hgen_sysdown->Write(); 
-    hgen_sysdown_rebin->Write(); 
-    hmat_sysdown->Write(); 
-    hmat_sysdown_rebin->Write(); 
-    hrec_sameside_sysdown->Write(); 
-    hrec_sameside_sysdown_rebin->Write(); 
-    hgen_resp_sysdown_rebin->Write();
-    hrec_sameside_resp_sysdown_rebin->Write();
-    hunf_sysdown->Write();
-    hunf_one->Write("ratioatOne_B");
-    hunf_sysdown_ratio->Write();
-    //hunf_sysdown_outclone->Write();
+    if(systUnfType!="JEC"){
+      hgen_sysup->Write(); 
+      hgen_sysup_rebin->Write(); 
+      hmat_sysup->Write(); 
+      hmat_sysup_rebin->Write(); 
+      hrec_sameside_sysup->Write(); 
+      hrec_sameside_sysup_rebin->Write(); 
+      hgen_resp_sysup_rebin->Write();
+      hrec_sameside_resp_sysup_rebin->Write();
+      hunf_sysup->Write();
+      hunf_one->Write("ratioatOne_A");
+      hunf_sysup_ratio->Write();
+      //hunf_sysup_outclone->Write();
+      
+      hgen_sysdown->Write(); 
+      hgen_sysdown_rebin->Write(); 
+      hmat_sysdown->Write(); 
+      hmat_sysdown_rebin->Write(); 
+      hrec_sameside_sysdown->Write(); 
+      hrec_sameside_sysdown_rebin->Write(); 
+      hgen_resp_sysdown_rebin->Write();
+      hrec_sameside_resp_sysdown_rebin->Write();
+      hunf_sysdown->Write();
+      hunf_one->Write("ratioatOne_B");
+      hunf_sysdown_ratio->Write();
+      //hunf_sysdown_outclone->Write();
+    }
+    else if(systUnfType=="JEC"){
+      //hgen_sysup->Write(); 
+      //hgen_sysup_rebin->Write(); 
+      //hmat_sysup->Write(); 
+      //hmat_sysup_rebin->Write(); 
+      //hrec_sameside_sysup->Write(); 
+      //hrec_sameside_sysup_rebin->Write(); 
+      //hgen_resp_sysup_rebin->Write();
+      //hrec_sameside_resp_sysup_rebin->Write();
+      hrec_covmat_JECsysup_rebin->Write();
+      hrec_JECsysup_rebin->Write();
+      hunf_sysup->Write();
+      hunf_one->Write("ratioatOne_A");
+      hunf_sysup_ratio->Write();
+      //hunf_sysup_outclone->Write();
+      
+      //hgen_sysdown->Write(); 
+      //hgen_sysdown_rebin->Write(); 
+      //hmat_sysdown->Write(); 
+      //hmat_sysdown_rebin->Write(); 
+      //hrec_sameside_sysdown->Write(); 
+      //hrec_sameside_sysdown_rebin->Write(); 
+      //hgen_resp_sysdown_rebin->Write();
+      //hrec_sameside_resp_sysdown_rebin->Write();
+      hrec_covmat_JECsysdown_rebin->Write();
+      hrec_JECsysdown_rebin->Write();
+      hunf_sysdown->Write();
+      hunf_one->Write("ratioatOne_B");
+      hunf_sysdown_ratio->Write();
+      //hunf_sysdown_outclone->Write();
+    }
     
   }
   
@@ -2390,40 +2686,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
-//  if( argc!=10 ){
-//    std::cout<<"argc!=9 error, argc=="<<argc<<std::endl;
-//    std::cout<<"do ./bayesUnfoldDataSpectra_wNLO_etabin.exe <etabinint ><targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
-//    return rStatus;  }  
-//  if(argc==10){
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (int) std::atoi(argv[1]) ,  (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], (const std::string)argv[6], 
-//						(int)std::atoi(argv[6]),
-//						(int)std::atoi(argv[7]) , (int)std::atoi(argv[8]), (const int)std::atoi(argv[9]) );}//, (const int) std::atoi(argv[9]) );   }
-//rStatus=bayesUnfoldDataSpectra_wNLO_etabin(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], 
-//						 (int)std::atoi(argv[5]),
-//						 (int)std::atoi(argv[6]) , (int)std::atoi(argv[7]), (const int)std::atoi(argv[8]) , (const int) std::atoi(argv[9]) );   
-//  if(argc==2){
-//     rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,15,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-//    
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-  //}
-  //if (argc==3){
-  //  rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5);    
-  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
-  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
-  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
-  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
-  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
-  //}
-  //  if (argc==8){
-  if (argc==9){
-    
-    //   //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
+
+  if (argc==9){    //   //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5, (std::string)argv[3], (std::string)argv[4]);    
     rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
 					       (std::string)argv[1] ,
 					       (std::string)argv[2] , 
@@ -2434,14 +2698,6 @@ int main(int argc, char* argv[]){
 					       (bool)((int)std::atoi(argv[6])),
 					       (std::string)argv[7]  ,
 					       (std::string)argv[8] );    
-  
-  
-
-    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
-    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
-    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
-    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
-    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
   }
   else {
     //std::cout<<"do ./bayesUnfoldDataSpectra_wNLO_etabin.exe <etabinint> <targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
@@ -2568,3 +2824,50 @@ int main(int argc, char* argv[]){
     //	hgen_resp_rebin->Write((histTitle3gen+"_profile_rebin_divBinWidth_noOverUnderflow").c_str());
     //	if(debugMode)hgen_resp_rebin->Print("base");    }
     //}
+
+
+
+
+
+
+
+
+//  if( argc!=10 ){
+//    std::cout<<"argc!=9 error, argc=="<<argc<<std::endl;
+//    std::cout<<"do ./bayesUnfoldDataSpectra_wNLO_etabin.exe <etabinint ><targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
+//    return rStatus;  }  
+//  if(argc==10){
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (int) std::atoi(argv[1]) ,  (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], (const std::string)argv[6], 
+//						(int)std::atoi(argv[6]),
+//						(int)std::atoi(argv[7]) , (int)std::atoi(argv[8]), (const int)std::atoi(argv[9]) );}//, (const int) std::atoi(argv[9]) );   }
+//rStatus=bayesUnfoldDataSpectra_wNLO_etabin(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], 
+//						 (int)std::atoi(argv[5]),
+//						 (int)std::atoi(argv[6]) , (int)std::atoi(argv[7]), (const int)std::atoi(argv[8]) , (const int) std::atoi(argv[9]) );   
+//  if(argc==2){
+//     rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,15,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+  //}
+  //if (argc==3){
+  //  rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5);    
+  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
+  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
+  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
+  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
+  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
+  //}
+  //  if (argc==8){
+
+
+
+    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
+    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
+    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
+    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
+    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    

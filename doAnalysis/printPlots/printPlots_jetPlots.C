@@ -9,14 +9,14 @@ const bool debugMode=false, doEventCounts=false;//, doJetIDPlots=true;
 
 //draw switches
 const bool drawEvtQAPlots=true;
-const bool drawJetQAPlots=false;
-const bool drawTupelJetQAPlots=true;
-const bool drawJetConstituentPlots=drawJetQAPlots&&true, drawDijetPlots=drawJetQAPlots&&false;
+const bool drawJetQAPlots=true;
+const bool drawTupelJetQAPlots=false;
+const bool drawJetConstituentPlots=drawJetQAPlots&&false, drawDijetPlots=drawJetQAPlots&&false;
 const bool drawJetRapBinsPlot=false;//, drawGENJetRapBinsPlot=true;  
 
 const bool doJetIDPlots=true;
 const bool useMB=false;
-const int Netabins=1;
+const int Netabins=4;
 const bool print_incjetana_tupelequiv=false;
 
 // the macro ------------------------

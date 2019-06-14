@@ -34,17 +34,18 @@ void safe_getNdraw(TFile* f, std::string plotname ){//, std::string dname="defau
   }
   std::string fname=(std::string)f->GetName();
   std::string dname="default_gausSmThy_hists";
-  if(fname.find(     "CT10" )!=std::string::npos )  {canv->SaveAs( ("CT10nlo_"      +plotname+".png" ).c_str());     }
-  else if(fname.find("CT14" )!=std::string::npos )  {canv->SaveAs( ("CT14nlo_"      +plotname+".png" ).c_str());     }
-  else if(fname.find("HERAPDF")!=std::string::npos ){canv->SaveAs( ("HERAPDF15NLO_"   +plotname+".png").c_str());    }
-  else if(fname.find("MMHT"   )!=std::string::npos ){canv->SaveAs( ("MMHT2014nlo68cl_"+plotname+".png"   ).c_str()); }
+  if(fname.find(     "CT10" )!=std::string::npos )  {canv->SaveAs( ("CT10nlo_"      +plotname  +".pdf" ).c_str());     }
+  else if(fname.find("CT14" )!=std::string::npos )  {canv->SaveAs( ("CT14nlo_"      +plotname  +".pdf" ).c_str());     }
+  else if(fname.find("HERAPDF")!=std::string::npos ){canv->SaveAs( ("HERAPDF15NLO_"   +plotname+".pdf").c_str());    }
+  else if(fname.find("MMHT"   )!=std::string::npos ){canv->SaveAs( ("MMHT2014nlo68cl_"+plotname+".pdf"   ).c_str()); }
   else if(fname.find("NNPDF"  )!=std::string::npos ){
     
     if(fname.find("spl3wgts")!=std::string::npos )dname="NNPDF_NNLO_00eta20_spl3wgts_gausSmThy_plots/";
     else if(fname.find("fitwgts")!=std::string::npos )dname="NNPDF_NNLO_00eta20_fitwgts_gausSmThy_plots/";
     else    dname="NNPDF_NNLO_00eta20_gausSmThy_plots/";
     
-    canv->SaveAs( (dname+"NNPDF30_nnlo_"   +plotname+".png"  ).c_str());  
+    //canv->SaveAs( (dname+"NNPDF30_nnlo_"   +plotname+".png"  ).c_str());  
+    canv->SaveAs( (dname+"NNPDF30_nnlo_"   +plotname+".pdf"  ).c_str());  
 
   }
   

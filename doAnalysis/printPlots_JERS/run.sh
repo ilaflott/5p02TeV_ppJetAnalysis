@@ -61,22 +61,41 @@ echo ""
 ##### echo "source run_printPlots_ppMC_JERS_etabin.sh <R> <condorDir> <date_output> <descIn> <descOut> <JERplots> <MCeffplots> <absetabin>"
 
 
-#ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_JER
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "00eta05_semifinal" "1" "0" "0"         #JER any |y|bin
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "05eta10_semifinal" "1" "0" "1"        #JER any |y|bin
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "10eta15_semifinal" "1" "0" "2"        #JER any |y|bin
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "15eta20_semifinal" "1" "0" "3"        #JER any |y|bin
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "20eta25_semifinal" "1" "0" "4"        #JER any |y|bin
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "25eta30_semifinal" "1" "0" "5"        #JER any |y|bin
+###ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-07-19_JERS_0.0eta2.0_JER
+#
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "00eta05_06.07.19_sigma" "1" "0" "0" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "05eta10_06.07.19_sigma" "1" "0" "1" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "10eta15_06.07.19_sigma" "1" "0" "2" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "15eta20_06.07.19_sigma" "1" "0" "3" "sigma" 
+#
+#
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "00eta05_06.07.19_sigmu" "1" "0" "0" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "05eta10_06.07.19_sigmu" "1" "0" "1" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "10eta15_06.07.19_sigmu" "1" "0" "2" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.07.19_outputCondor" "06-07-19" "0.0eta2.0_JER" "15eta20_06.07.19_sigmu" "1" "0" "3" "sigmu" 
+#
+#
+#echo "scp2Serin"																             
+#scp2Serin "output/ak4PF_PY8JER_??eta??_06.07.19_sigm*.*"										             
 
-#echo "scp2Serin"
-#scp2Serin "output/ak4PF_PY8JER_00eta05_semifinal.*"
-#scp2Serin "output/ak4PF_PY8JER_??eta??_semifinal.*"
 
-#ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-14-19_JERS_0.0eta3.0_ptLo21_JER_MCEff_nodrCut
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo21_JER_MCEff_nodrCut" "00eta05_ptLo21_nodrCut" "1" "0" "0" 
-#echo "scp2Serin"
-#scp2Serin "output/ak4PF_PY8JER_00eta05_ptLo21_nodrCut.*"
+##ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-14-19_JERS_0.0eta3.0_ptLo28_JER
+
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_03.14.19_sigma" "1" "0" "0" "sigma" 
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_03.14.19_sigma" "1" "0" "1" "sigma" 
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "10eta15_03.14.19_sigma" "1" "0" "2" "sigma" 
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_03.14.19_sigma" "1" "0" "3" "sigma" 
+
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_03.14.19_sigmu" "1" "0" "0" "sigmu" 
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_03.14.19_sigmu" "1" "0" "1" "sigmu" 
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "10eta15_03.14.19_sigmu" "1" "0" "2" "sigmu" 
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_03.14.19_sigmu" "1" "0" "3" "sigmu" 
+
+
+echo "scp2Serin"																             
+scp2Serin "output/ak4PF_PY8JER_??eta??_03.14.19_sigm*.*"										             
+
+
 
 
 
@@ -85,6 +104,7 @@ echo ""
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_ptLo28_drCut_geny_sigma" "1" "0" "0" "sigma" 
 #echo "scp2Serin"																             
 #scp2Serin "output/ak4PF_PY8JER_00eta05_ptLo28_drCut_geny_sigma.*"										             
+
 																		             
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_ptLo28_drCut_geny_sigma" "1" "0" "1" "sigma"
 #echo "scp2Serin"																             
@@ -94,7 +114,7 @@ echo ""
 #echo "scp2Serin"																             
 #scp2Serin "output/ak4PF_PY8JER_10eta15_ptLo28_drCut_geny_sigma.*"										             
 																		             
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_ptLo28_drCut_geny_sigma" "1" "0" "3" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_ptLo28_drCut_geny_sigma" "1" "0" "3" "sigma" 
 #echo "scp2Serin"
 #scp2Serin "output/ak4PF_PY8JER_15eta20_ptLo28_drCut_geny_sigma.*"
 
@@ -115,17 +135,28 @@ source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19"
 #echo "scp2Serin"																             
 #scp2Serin "output/ak4PF_PY8JER_10eta15_ptLo28_drCut_geny_sigmu.*"										             
 																		             
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_ptLo28_drCut_geny_sigmu" "1" "0" "3" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_ptLo28_drCut_geny_sigmu" "1" "0" "3" "sigmu" 
 #echo "scp2Serin"
 #scp2Serin "output/ak4PF_PY8JER_15eta20_ptLo28_drCut_geny_sigmu.*"
 
 #echo "scp2Serin"
 #scp2Serin  "output/ak4PF_PY8JER_??eta??_ptLo28_drCut_geny_sigmu.*"
 
-echo "scp2Serin"
-scp2Serin  "output/ak4PF_PY8JER_??eta??_ptLo28_drCut_geny_sigm*.*"
+#echo "scp2Serin"
+#scp2Serin  "output/ak4PF_PY8JER_??eta??_ptLo28_drCut_geny_sigm*.*"
 
 
+#ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_JER
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "00eta05_semifinal" "1" "0" "0"         #JER any |y|bin
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "05eta10_semifinal" "1" "0" "1"        #JER any |y|bin
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "10eta15_semifinal" "1" "0" "2"        #JER any |y|bin
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "15eta20_semifinal" "1" "0" "3"        #JER any |y|bin
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "20eta25_semifinal" "1" "0" "4"        #JER any |y|bin
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "02.18.19_outputCondor" "02-18-19" "0.0eta3.0_JER" "25eta30_semifinal" "1" "0" "5"        #JER any |y|bin
+
+#echo "scp2Serin"
+#scp2Serin "output/ak4PF_PY8JER_00eta05_semifinal.*"
+#scp2Serin "output/ak4PF_PY8JER_??eta??_semifinal.*"
 
 
 

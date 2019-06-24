@@ -15,7 +15,7 @@ const int minArgs=1+7;//jtetalo/hi optional, default is 0to4.7
 //const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt";
 //const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_Official_forests_acrossBins.txt";
 const std::string defMCInFilelist="filelists/test_readForests_ppMC_Py8_CUETP8M1_forests_local.txt";
-const std::string defMCOutputName="readForests_ppMC_defOut_JERS.root";
+const std::string defMCOutputName="readForests_ppMC_defOut_unf.root";
 
 int readForests_ppMC_unf( std::string inFilelist=defMCInFilelist, int startfile=0, int endfile=9,
 			   int radius=4, std::string jetType="PF",

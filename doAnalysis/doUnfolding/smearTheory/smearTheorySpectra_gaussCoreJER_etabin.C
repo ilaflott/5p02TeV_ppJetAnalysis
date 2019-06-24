@@ -57,9 +57,10 @@ const bool doPDFsys=true; //involves making a new thy hist, therefore, also a se
 const float PDFerrfact=1.0;
 const std::string in_NLOFile_PDFsys1=_CT14FILESTR;
 std::string PDFsys1_text=_CT14DESCTXT;
-const std::string in_NLOFile_PDFsys2=_HERAFILESTR;
-std::string PDFsys2_text=_HERADESCTXT;
-
+const std::string in_NLOFile_PDFsys2=NNPDFFILESTR;
+std::string PDFsys2_text=NNPDFDESCTXT;
+//const std::string in_NLOFile_PDFsys2=_HERAFILESTR;
+//std::string PDFsys2_text=_HERADESCTXT;
 //PDF systs v2; using CT10/MMHT pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 2
 //const float PDFerrfact=1.0;
 //const std::string in_NLOFile_PDFsys1=_CT10FILESTR;
@@ -639,8 +640,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   std::cout<<"plotting JER!"<<  std::endl;  
   //TF1 is irritating to set titles for+blah... so use this  
   TH1D * hJER = (TH1D*)( (TH1D*)fJER->GetHistogram() )->Clone(("hJER_"+std::to_string(etabin)).c_str());
-  if(!userHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
-  else if(userHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma from Fit").c_str());
+  if(!useHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
+  else if(useHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma from Fit").c_str());
   hJER->GetXaxis()->SetNoExponent(true);
   hJER->GetXaxis()->SetMoreLogLabels(true);
   if(useHistSigmaFit)hJER->SetLineColor(kBlue-7);

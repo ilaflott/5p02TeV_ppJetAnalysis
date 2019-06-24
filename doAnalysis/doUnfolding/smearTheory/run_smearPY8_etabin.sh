@@ -79,6 +79,8 @@ then
     echo "DONE PY8 smearing."
     echo ""
 
+    #return
+
     if [[ -d "${OUTDIR}" ]]
     then	
 	echo "$OUTDIR exists!"

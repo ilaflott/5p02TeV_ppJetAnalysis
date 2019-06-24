@@ -9,9 +9,9 @@ const bool doBiasTest=false;
 const bool setDataCovMat=true;
 const bool doJetID=true     ;
 const bool useSimpBins=false;
-const bool compareToNLOThy=true;
-const bool doJECsys=true;
-const bool applyNPCorrs=true;//&&compareToNLOThy;
+const bool compareToNLOThy=false;
+const bool doJECsys=false;
+const bool applyNPCorrs=false;//&&compareToNLOThy;
 
 //-----------------------------
 
@@ -102,49 +102,44 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
   else std::cout<<"using simple pt bins"<<std::endl<<std::endl;
   
-//  double* boundaries_pt_gen=setBinning(  useSimpBins , "gen"  );
-//  int     nbins_pt_gen=setNBins(  useSimpBins , "gen"  );
-//  double* boundaries_pt_reco      = setBinning( useSimpBins , "reco" );
-//  int     nbins_pt_reco =   setNBins(  useSimpBins , "reco"  );
-//  double* boundaries_pt_gen_mat   = setBinning( useSimpBins , "gen"  );
-//  int     nbins_pt_gen_mat =   setNBins(  useSimpBins , "gen"  );
-//  double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
-//  int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
+  double* boundaries_pt_gen=setBinning(  useSimpBins , "gen"  );
+  int     nbins_pt_gen=setNBins(  useSimpBins , "gen"  );
+  double* boundaries_pt_reco      = setBinning( useSimpBins , "reco" );
+  int     nbins_pt_reco =   setNBins(  useSimpBins , "reco"  );
+  double* boundaries_pt_gen_mat   = setBinning( useSimpBins , "gen"  );
+  int     nbins_pt_gen_mat =   setNBins(  useSimpBins , "gen"  );
+  double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
+  int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
 
 
 
 
-  //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
-  int nbins_pt = HERAPDF->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
-  if(etabinint==0 || etabinint==1)nbins_pt--;//subtract 1 more for last giant bin from 686 GeV to 1000 GeV
-  const int     nbins_pt_gen           = nbins_pt;
-  const int     nbins_pt_reco          = nbins_pt;
-  const int     nbins_pt_gen_mat       = nbins_pt;
-  const int     nbins_pt_reco_mat      = nbins_pt;
-  
-  //length of array is nbins_pt+1 because the array contains the bin boundaries. so one more than # of bins
-  double      boundaries_pt_gen[nbins_pt+1] = {0.};
-  double     boundaries_pt_reco[nbins_pt+1] = {0.};
-  double  boundaries_pt_gen_mat[nbins_pt+1] = {0.};
-  double boundaries_pt_reco_mat[nbins_pt+1] = {0.};
-  
-  setBinning_etabin_forPY8( (double*)      boundaries_pt_gen,
-		     (double*)     boundaries_pt_reco,
-		     (double*)  boundaries_pt_gen_mat,
-		     (double*) boundaries_pt_reco_mat,
-			    nbins_pt+1, (TH1D*)HERAPDF, etabinint);
+//  //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
+//  int nbins_pt = HERAPDF->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
+//  if(etabinint==0 || etabinint==1)nbins_pt--;//subtract 1 more for last giant bin from 686 GeV to 1000 GeV
+//  const int     nbins_pt_gen           = nbins_pt;
+//  const int     nbins_pt_reco          = nbins_pt;
+//  const int     nbins_pt_gen_mat       = nbins_pt;
+//  const int     nbins_pt_reco_mat      = nbins_pt;
+//  
+//  //length of array is nbins_pt+1 because the array contains the bin boundaries. so one more than # of bins
+//  double      boundaries_pt_gen[nbins_pt+1] = {0.};
+//  double     boundaries_pt_reco[nbins_pt+1] = {0.};
+//  double  boundaries_pt_gen_mat[nbins_pt+1] = {0.};
+//  double boundaries_pt_reco_mat[nbins_pt+1] = {0.};
+//  
+//  setBinning_etabin_forPY8( (double*)      boundaries_pt_gen,
+//		     (double*)     boundaries_pt_reco,
+//		     (double*)  boundaries_pt_gen_mat,
+//		     (double*) boundaries_pt_reco_mat,
+//			    nbins_pt+1, (TH1D*)HERAPDF, etabinint);
   //assert(false);
 
-
-
-
-
-
-  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
-  CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
-  HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
-  MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
-  NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
+//  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
+//  CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
+//  HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
+//  MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
+//  NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
 
 
   
@@ -1133,33 +1128,33 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   // must be after the binwidth divisions + normalization (the thy hists are made this way by default)
   
   TH1D* h_thyratio_CT10nlo  =(TH1D*)CT10nlo  ->Clone("");
-  h_thyratio_CT10nlo = (TH1D*)h_thyratio_CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_Ratio_rebin",boundaries_pt_gen);
+  if(compareToNLOThy)h_thyratio_CT10nlo = (TH1D*)h_thyratio_CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_CT10nlo  ->SetTitle("CT10 NLO/Data Unf.");  
-  h_thyratio_CT10nlo  ->Divide(hunf);
+  if(compareToNLOThy)h_thyratio_CT10nlo  ->Divide(hunf);
   if(debugMode)h_thyratio_CT10nlo  ->Print("base");
   
   TH1D* h_thyratio_CT14nlo  =(TH1D*)CT14nlo  ->Clone("");  
-  h_thyratio_CT14nlo=(TH1D*)h_thyratio_CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_Ratio_rebin",boundaries_pt_gen);
+  if(compareToNLOThy)h_thyratio_CT14nlo=(TH1D*)h_thyratio_CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_CT14nlo  ->SetTitle("CT14 NLO/Data Unf.");
-  h_thyratio_CT14nlo  ->Divide(hunf);
+  if(compareToNLOThy)h_thyratio_CT14nlo  ->Divide(hunf);
   if(debugMode)h_thyratio_CT14nlo  ->Print("base");
   
   TH1D* h_thyratio_HERAPDF  =(TH1D*)HERAPDF  ->Clone("");  
-  h_thyratio_HERAPDF=(TH1D*)h_thyratio_HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_Ratio_rebin",boundaries_pt_gen);
+  if(compareToNLOThy)h_thyratio_HERAPDF=(TH1D*)h_thyratio_HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_HERAPDF  ->SetTitle("HERAPDF15 NLO/Data Unf.");
-  h_thyratio_HERAPDF  ->Divide(hunf);
+  if(compareToNLOThy)h_thyratio_HERAPDF  ->Divide(hunf);
   if(debugMode)h_thyratio_HERAPDF  ->Print("base");
   
   TH1D* h_thyratio_MMHTnlo  =(TH1D*)MMHTnlo  ->Clone("");
-  h_thyratio_MMHTnlo=(TH1D*)h_thyratio_MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_Ratio_rebin",boundaries_pt_gen);
+  if(compareToNLOThy)h_thyratio_MMHTnlo=(TH1D*)h_thyratio_MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_MMHTnlo  ->SetTitle("MMHT14 NLO/Data Unf.");
-  h_thyratio_MMHTnlo  ->Divide(hunf);
+  if(compareToNLOThy)h_thyratio_MMHTnlo  ->Divide(hunf);
   if(debugMode)h_thyratio_MMHTnlo  ->Print("base");
   
   TH1D* h_thyratio_NNPDFnnlo=(TH1D*)NNPDFnnlo->Clone("");
-  h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
+  if(compareToNLOThy)h_thyratio_NNPDFnnlo=(TH1D*)h_thyratio_NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_Ratio_rebin",boundaries_pt_gen);
   h_thyratio_NNPDFnnlo->SetTitle("NNPDF NLO/Data Unf.");
-  h_thyratio_NNPDFnnlo->Divide(hunf);
+  if(compareToNLOThy)h_thyratio_NNPDFnnlo->Divide(hunf);
   if(debugMode)h_thyratio_NNPDFnnlo->Print("base");
   
   TH1D* h_thyratio_mctruth=(TH1D*)hgen_rebin->Clone("");

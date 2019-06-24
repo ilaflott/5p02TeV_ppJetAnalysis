@@ -54,8 +54,7 @@ then
     OUTDIR=${NLOfileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_plots/
     OUTFILE=${NLOfileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
     JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
-    JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf
-    
+    JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf    
     #JERFILE=${JERfilestr}${etabinstr}_semifinal.root
     #JERPDFFILE=${JERfilestr}${etabinstr}_semifinal.pdf
 
@@ -74,8 +73,8 @@ then
     
     ## USAGE
     ## ./smearTheorySpectra_gaussCoreJER_etabin.exe <NLOfilestr> <useSplineWeights> <fitType_str> <JERFILE> <etabin> <outputfile>
-    ./smearTheorySpectra_gaussCoreJER_etabin.exe "${NLOfilestr}"  "${Fittypestr}"  "${JERFILE}"  "${etaBin}"  "${OUTFILE}"    
-    
+    ./smearTheorySpectra_gaussCoreJER_etabin.exe "${NLOfilestr}"  "${Fittypestr}"  "${JERFILE}"  "${etaBin}"  "${OUTFILE}"
+
     echo "" 
     echo "DONE NLO smearing."
     echo ""
@@ -107,10 +106,7 @@ then
     echo "writing plots in $OUTFILE to $OUTDIR"
     echo ""
     ROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${OUTFILE}\", ${etaBin})"
-    ##TEMP COMMENT OUT
     root -l -b -q "${ROOTEXC}"
-    #return
-    ##TEMP COMMENT OUT
 
     echo ""
     echo "scp2Serin"

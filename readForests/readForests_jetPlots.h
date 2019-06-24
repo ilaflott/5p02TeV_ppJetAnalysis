@@ -67,8 +67,9 @@ const float jtPtCut=43.; // 49 or 56 or 64 or 74...
 //const float jtPtCut=18; 
 //  5.;  6.;  8.;   10.;   12.;   15.;   18.;   21.;   24.;   28.;  32.;   37.;  43.;   49.;   56.; //other low pT cuts
 const float jtPtCut_Hi=1410.; 
-const float jetQAPtCut=jtPtCut;
-const float genJetPtCut=12.;//49.; 
+//const float jetQAPtCut=jtPtCut;
+const float jetQAPtCut=56.;
+const float genJetPtCut=43.;//49.; 
 const float genJetPtCut_Hi=jtPtCut_Hi; 
 const float gendrCut=0.1;
 const float ldJetPtCut=76., subldJetPtCut=56., ptAveCut=subldJetPtCut, dPhiCut=2./3.*TMath::Pi();//dijet cuts

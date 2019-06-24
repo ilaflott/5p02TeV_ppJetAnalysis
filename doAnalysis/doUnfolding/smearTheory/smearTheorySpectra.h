@@ -634,6 +634,8 @@ void makeToySpectra(TH1D* hthy,
     std::cout<<"weights object name = "<< fitweights->GetName()<<std::endl;
     useFitWeights=true;
   }
+
+
   
   //if both sets of weights are there, or if both sets are not there, shut everything down, we have a weird scenario on our hands...
   if( useFitWeights == useSplineWeights ) assert(false);
@@ -670,7 +672,7 @@ void makeToySpectra(TH1D* hthy,
   //  if(doJERsys){
   //    if(abs(JERsysdir)!=1){std::cout<<"err, JERsysdir = -1, 0, or 1 only."<<std::endl; assert(false);}
   //    JERscaleFactor+=JERsysdir*JERscaleFactErrs[etabin];      }  }
-  
+
   
   for(int i=0;i<nevts;++i){      
 
@@ -747,7 +749,7 @@ void makeToySpectra(TH1D* hthy,
   if(funcDebug)std::cout<<"response_count="<<respcount<<std::endl;
   if(funcDebug)std::cout<<"miss_count="<<misscount<<std::endl;
   if(funcDebug)std::cout<<"fake_count="<<fakecount<<std::endl;
-  
+
   return;
 }
 

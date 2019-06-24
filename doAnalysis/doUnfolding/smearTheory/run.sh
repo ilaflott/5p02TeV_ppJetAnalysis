@@ -2,7 +2,7 @@
 
 
 smeartheory=1
-smearPY8=0
+smearPY8=1
 
 
 
@@ -90,7 +90,8 @@ then
     #nlofstr="fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
-    py8fstr="02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    #py8fstr="02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    py8fstr="06.07.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-07-19_JERS_0.0eta2.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
     
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"
@@ -103,7 +104,9 @@ then
     #descstr="02.18.19_semifinal_v2_w8TeVJERscales" #_ptmax1000"
     #descstr="ptLo28_drCut_geny_sigma"
     #descstr="ptLo28_drCut_geny_sigmu"
-    descstr="ptLo28_drCut_geny_sigmu"
+    #descstr="ptLo28_drCut_geny_sigmu"
+    #descstr="03.14.19_sigma"
+    descstr="03.14.19_sigma"
     
     #fittypestr="modLog"
     #fittypestr="7TeV"
@@ -114,10 +117,11 @@ then
     
     scpoutput=0
     scpafterlast=1
-    #etabin_i=0
+    etabin_i=0
     #Netabins=6 ##full set of etabins 
-    etabin_i=0 
-    Netabins=4 ##debug; runs first etabin only
+    #etabin_i=2 
+    #Netabins=3 ##debug; runs first etabin only
+    Netabins=4 
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]

@@ -4,8 +4,6 @@
 // ppMC switches
 const bool fillMCEvtQAHists=true;
 const bool fillJERSHists=true;
-const bool fillMCUnfoldingHists=false;
-const bool fillMCUnfJetSpectraRapHists=true&&fillMCUnfoldingHists;
 const bool fillMCEffHists=true;
 
 const bool fillMCJetIDHists=true;//, tightJetID=false;
@@ -94,18 +92,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);
   TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6  ); hJetEtaCutLo->Fill(jtEtaCutLo);	
   
-  //UNF CUTS
-  TH1F *hJetPtCut_unf_lo        =new TH1F("hJetPtCut_unf_lo"      ,(std::to_string(jtPtCut_unf_lo)).c_str()   ,    100, 0.,100.); hJetPtCut_unf_lo->Fill(jtPtCut_unf_lo);  
-  TH1F *hJetPtCut_unf_hi        =new TH1F("hJetPtCut_unf_hi"      ,(std::to_string(jtPtCut_unf_hi)).c_str()   ,    1000, 1500.,2500.); hJetPtCut_unf_hi->Fill(jtPtCut_unf_hi);    
-  
-  TH1F *hGenJetPtCut_unf_lo     =new TH1F("hGenJetPtCut_unf_lo"  ,(std::to_string(genJetPtCut_unf_lo)).c_str()   ,    100, 0.,100.); hGenJetPtCut_unf_lo->Fill(genJetPtCut_unf_lo); 
-  TH1F *hGenJetPtCut_unf_hi     =new TH1F("hGenJetPtCut_unf_hi"  ,(std::to_string(genJetPtCut_unf_hi)).c_str()   ,    1000, 1500.,2500.); hGenJetPtCut_unf_hi->Fill(genJetPtCut_unf_hi); 
-
-  //TH1F *hJetQAPtCut      =new TH1F("hJetQAPtCut"    ,(std::to_string(jetQAPtCut)).c_str(),    100, 0,100); hJetQAPtCut->Fill(jetQAPtCut);     
-  //TH1F *hLeadJetPtCut    =new TH1F("hLdJetPtCut"    ,(std::to_string(ldJetPtCut)).c_str(),    100, 0,100); hLeadJetPtCut->Fill(ldJetPtCut);     
-  //TH1F *hSubLeadJetPtCut =new TH1F("hSubldJetPtCut" ,(std::to_string(subldJetPtCut)).c_str(), 100, 0,100); hSubLeadJetPtCut->Fill(subldJetPtCut);  
-  //TH1F *hPtAveCut        =new TH1F("hPtAveCut"      ,(std::to_string(ptAveCut)).c_str(),      100, 0,100); hPtAveCut->Fill(ptAveCut);  
-
   TH1D *h_NEvents         = new TH1D("NEvents","NEvents", 1,0,2);
   TH1D *h_NEvents_read    = new TH1D("NEvents_read","NEvents read", 1,0,2);
   TH1D *h_NEvents_skimCut = new TH1D("NEvents_skimCut"      ,"NEvents read post skimCut", 1,0,2);
@@ -147,121 +133,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     hWpthat   = new TH1D("hWeightedpthat","",1000,0,1000);    }
   
   
-  /////  UNFOLDING   /////
-  //to unfold ppData 
-  TH1D *hpp_gen=NULL;    
-  TH1D *hpp_reco=NULL; 
-  TH2D *hpp_matrix=NULL; 
-  
-  //to test MC sample consistency in unfolding
-  TH1D *hpp_mcclosure_gen=NULL;      //the first three are for the "truth" response matrix
-  TH1D *hpp_mcclosure_reco=NULL;         
-  TH2D *hpp_mcclosure_matrix=NULL;         
-  TH1D *hpp_mcclosure_reco_test=NULL;   
-  
-  //to unfold ppData 
-  TH1D *hpp_gen_rap[nbins_abseta]={};    
-  TH1D *hpp_reco_rap[nbins_abseta]={}; 
-  TH2D *hpp_matrix_rap[nbins_abseta]={}; 
-  
-  TH1D *hpp_gen_genrap[nbins_abseta]={};    
-  TH1D *hpp_reco_genrap[nbins_abseta]={}; 
-  TH2D *hpp_matrix_genrap[nbins_abseta]={}; 
-  
-  //to test MC sample consistency in unfolding
-  TH1D *hpp_mcclosure_gen_rap[nbins_abseta]={};      //the first three are for the "truth" response matrix
-  TH1D *hpp_mcclosure_reco_rap[nbins_abseta]={};         
-  TH2D *hpp_mcclosure_matrix_rap[nbins_abseta]={};         
-  TH1D *hpp_mcclosure_reco_test_rap[nbins_abseta]={};   
-  
-  if(fillMCUnfoldingHists){
-    
-    std::string hUnfTitleArray[]={ "gen", "reco", "matrix", 
-				   "mcclosure_gen" , "mcclosure_reco" , "mcclosure_matrix" , 
-				   "mcclosure_gen_test" , "mcclosure_reco_test" , "mcclosure_matrix_test"     }; 
-    const int nUnfTitles=sizeof(hUnfTitleArray)/sizeof(std::string);    
-    
-    //    for(int jtID=0;jtID<2;jtID++){
-    
-    //if(!fillMCJetIDHists&&jtID==1)continue;
-    //if(fillMCJetIDHists&&jtID==0)continue;
-    
-    for(int k=0; k<nUnfTitles; k++){     
-      
-      std::string hTitle="hpp_"+hUnfTitleArray[k];
-      if(fillMCJetIDHists)hTitle+="_wJetID";
-      hTitle+="_R"+std::to_string(radius)+"_"+etaWidth;      
-      
-      if(hUnfTitleArray[k]=="gen")	{
-	hpp_gen    = new TH1D( hTitle.c_str(), "MC genpt for unf data", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists){
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_gen_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-				       ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);	  
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_gen_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					  ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);
-	}
-      }
-      else if(hUnfTitleArray[k]=="reco")	{	  
-	hpp_reco    = new TH1D( hTitle.c_str(), 
-				"MC recopt for unf data", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists){
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_reco_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-					("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_reco_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					   ("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 
-	}
-      }
-      else if(hUnfTitleArray[k]=="matrix")	{
-	hpp_matrix    = new TH2D( hTitle.c_str(), 
-				  "MC gentpt v. recopt for unf data", 2500, 0,2500, 2500, 0,2500);
-	if(fillMCUnfJetSpectraRapHists){
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_matrix_rap[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-					  ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_matrix_genrap[j] = new TH2D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					     ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
-	}
-      }
-      else if(hUnfTitleArray[k]=="mcclosure_gen") {
-	hpp_mcclosure_gen    = new TH1D( hTitle.c_str(), 
-					 "genpt for mcclosure same side", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists)
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_gen_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						 ("MC gen pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);
-      }
-      else if(hUnfTitleArray[k]=="mcclosure_reco")	{
-	hpp_mcclosure_reco    = new TH1D( hTitle.c_str(), 
-					  "recopt for mcclosure same side", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists)
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_reco_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						  ("MC reco pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);   
-      }
-      else if(hUnfTitleArray[k]=="mcclosure_matrix")	{
-	hpp_mcclosure_matrix    = new TH2D( hTitle.c_str(), 
-					    "genpt v. recopt for mcclosure same side", 2500, 0,2500, 2500, 0,2500);
-	if(fillMCUnfJetSpectraRapHists)
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_matrix_rap[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						    ("MC genpt v. recopt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
-      }
-      else if(hUnfTitleArray[k]=="mcclosure_reco_test")	{
-	hpp_mcclosure_reco_test    = new TH1D( hTitle.c_str(), 
-					       "recopt for mcclosure opp side test", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists)
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_reco_test_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						       ("MC reco pt for mcclosure opp side test bin"+std::to_string(j)).c_str(), 2500,0,2500);   
-      }
-      else continue;
-    }//end loop over unf titles
-  }//end fill mc unfolding hists
   
   
   /////   GEN/RECO MATCHING   ///// 
@@ -576,14 +447,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
 
-  //MCTruthResidual* MCResidual = new MCTruthResidual( "pp5");
-  int mcclosureInt=0;
-  //int mcclosure_arr[nbins_abseta]={0};
-
-  //float jetIDCut_neSum, jetIDCut_phSum;
-  //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
-  //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
-
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
     
     if(nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
@@ -669,10 +532,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       else if (!(absreceta < jtEtaCutHi))continue; // higher abseta cut
       else if ( gendrjt > 0.1 ) continue;       //delta-r cut, proxy for gen-reco matching quality
       
-//	if(      !(recpt > jtPtCut_unf_lo)     )continue;
-//	else if( !(recpt < jtPtCut_unf_hi)     )continue;
-//	else if( !(genpt > genJetPtCut_unf_lo) )continue;
-//	else if( !(genpt < genJetPtCut_unf_hi) )continue;
       
       // jet/event counts
       h_NJets_kmatCut1->Fill(1);
@@ -684,7 +543,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
-
+      
       float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
       //float jetIDpt=rawpt_F[jet]; //ala SMP JetID (which should really use energy fractions, not pt)
       
@@ -845,46 +704,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       }
       
       
-      /////   UNFOLDING   ///// 
-      if(fillMCUnfoldingHists){
-	
-	hpp_gen->Fill(genpt, weight_eS);
-	hpp_reco->Fill(recpt, weight_eS);
-	hpp_matrix->Fill(recpt, genpt, weight_eS);	
-	if(mcclosureInt%2 == 0)
-	  hpp_mcclosure_reco_test->Fill(recpt, weight_eS);      	
-	else {
-	  hpp_mcclosure_gen->Fill(genpt, weight_eS);
-	  hpp_mcclosure_reco->Fill(recpt, weight_eS); 	
-	  hpp_mcclosure_matrix->Fill(recpt, genpt, weight_eS);	}	  
-	
-
-	//fill jetspectraRapHists
-	if( fillMCUnfJetSpectraRapHists ) { 	  //these should be filled in according to the RECO eta rap bin
-	                                          //why; data jet eta is all we can look at, so the resp matrix for a given RECO eta rap bin should reflect that occasionally, a "true" jet in a given RECO eta rap bin actually belongs in a diff GEN eta rap bin
-	  if(theGENRapBin!=-1){
-	    hpp_gen_genrap[theGENRapBin]->Fill(genpt,weight_eS);
-	    hpp_reco_genrap[theGENRapBin]->Fill(recpt,weight_eS);
-	    hpp_matrix_genrap[theGENRapBin]->Fill(recpt, genpt, weight_eS);
-	  }
-	  if(theRapBin!=-1){
-	    hpp_gen_rap[theRapBin]->Fill(genpt,weight_eS);
-	    hpp_reco_rap[theRapBin]->Fill(recpt,weight_eS);
-	    hpp_matrix_rap[theRapBin]->Fill(recpt, genpt, weight_eS);
-	    if(mcclosureInt%2 == 0)
-	      hpp_mcclosure_reco_test_rap[theRapBin]->Fill(recpt, weight_eS);      	  
-	    else {
-	      hpp_mcclosure_gen_rap[theRapBin]->Fill(genpt, weight_eS);
-	      hpp_mcclosure_reco_rap[theRapBin]->Fill(recpt, weight_eS); 	
-	      hpp_mcclosure_matrix_rap[theRapBin]->Fill(recpt, genpt, weight_eS);}	  
-	  }
-	  
-	}//end fillmcunfjetspectraraphists	  	  	
-	
-      }//end fillmcunfoldinghists
 
     }//end jet loop
-    mcclosureInt++;    
+
   }//end event loop
   
   std::cout<<std::endl;

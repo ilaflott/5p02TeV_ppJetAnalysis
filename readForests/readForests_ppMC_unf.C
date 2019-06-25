@@ -3,7 +3,7 @@
 
 // ppMC switches
 const bool fillMCEvtQAHists=true;
-const bool fillMCUnfoldingHists=false;
+const bool fillMCUnfoldingHists=true;
 const bool fillMCUnfJetSpectraRapHists=true&&fillMCUnfoldingHists;
 
 const bool fillMCJetIDHists=true;//, tightJetID=false;

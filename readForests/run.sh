@@ -1,9 +1,10 @@
 #!/bin/bash
 
 subm_ppData_jetPlots=1
-subm_ppMC_jetPlots=0
-subm_ppMC_JERS=0
-subm_ppMC_unf=0
+subm_ppMC_jetPlots=1
+subm_ppMC_JERS=1
+subm_ppMC_unf=1
+subm_ppMC_MCEff=1
 
 #rarely used
 subm_ppData_jetMult=0
@@ -19,7 +20,6 @@ if [[ $subm_ppData_jetPlots -eq 1 ]]
 then
     echo "...ppData jetPlots..."
     rootcompile readForests_ppData_jetPlots.C
-#    source run_readForests_jetPlots.sh 4 "0.0" "3.0" "ppData"
     source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
 fi
 
@@ -39,10 +39,21 @@ fi
 
 if [[ $subm_ppMC_unf -eq 1 ]]
 then
-    echo "...ppMC JERS..."
+    echo "...ppMC unf..."
     rootcompile readForests_ppMC_unf.C
     source run_readForests_unf.sh 4 "0.0" "2.0"
 fi
+
+if [[ $subm_ppMC_unf -eq 1 ]]
+then
+    echo "...ppMC MCEff..."
+    rootcompile readForests_ppMC_MCEff.C
+    source run_readForests_MCEff.sh 4 "0.0" "2.0"
+fi
+
+
+
+
 
 if [[ $subm_ppData_jetMult -eq 1 ]]
 then

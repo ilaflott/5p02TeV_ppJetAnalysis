@@ -1,17 +1,16 @@
 // custom header
-#include "readForests_JERS.h"
+#include "readForests_MCEff.h"
 
 // ppMC switches
 const bool fillMCEvtQAHists=true;
-const bool fillJERSHists=true;
+const bool fillMCEffHists=true;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 const int jetIDint=(int)fillMCJetIDHists;
-
 const bool verbose=false;
 
-//// readForests_ppMC_JERS
+//// readForests_ppMC_MCEff
 // ---------------------------------------------------------------------------------------------------------------
-int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,  
+int readForests_ppMC_MCEff(std::string inFilelist , int startfile , int endfile ,  
 			  int radius , std::string jetType , bool debugMode ,
 			  std::string outfile  ,
 			  float jtEtaCutLo, float jtEtaCutHi ){ 
@@ -133,156 +132,54 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   
   
-  /////   JEC AND JER   /////
-  
-  // TH1D * hJEC_check[nbins_JEC_ptbins][nbins_eta]={};
-  // TH1D * hJER[nbins_pt]={};  
-  // TH3F * hJEC={};
-  
-  //sanity jteta check
-  TH1D * hJER_jtetaQA;
-  TH1D * hJER_genetaQA;
-  TH1D * hJER_jtptQA[nbins_abseta]={};
-  TH1D * hJER_genptQA[nbins_abseta]={};
-  
-  //all eta in bins of genpt
-  TH1D * hJER[nbins_pt]={};       // rec/gen , bins of gen pt
-  TH1D * hJER_abseta[nbins_pt][nbins_abseta]={};       // rec/gen , bins of gen pt
-  TH1D * hJER_absgeneta[nbins_pt][nbins_abseta]={};       // rec/gen , bins of gen pt
-  //  TH1D * hJES[nbins_pt]={};       // rec/raw , bins of raw pt
-  //  TH1D * hJER_raw[nbins_pt]={};   // raw/gen , bins of gen pt
-  
-  ////two specific genpt ranges across eta bins
-  //TH1D * hJER_eta_30pt50[nbins_eta]={};
-  //TH1D * hJER_eta_150pt200[nbins_eta]={};
-  
-  ////all genpt, and two specifically set genpt bins, across abs eta
-  //TH1D *hJER_absetabins[nbins_abseta];
-  //
-  //TH1D *hJER_absetabins_genptBin1[nbins_abseta]; 
-  //TH1D *hGenPtCutHi1   = new TH1D("hGenPtCutHi1"  , (std::to_string(genptBin1High)).c_str() ,  100,  0., 100.  ); 
-  //TH1D *hGenPtCutLo1   = new TH1D("hGenPtCutLo1"  , (std::to_string(genptBin1Low)).c_str()  ,  100,  0., 100.  ); 	
-  //hGenPtCutHi1->Fill((float)genptBin1High);  hGenPtCutLo1->Fill((float)genptBin1Low); 
-  //
-  //TH1D *hJER_absetabins_genptBin2[nbins_abseta]; 
-  //TH1D *hGenPtCutHi2   = new TH1D("hGenPtCutHi2"  , (std::to_string(genptBin2High)).c_str() ,  100,  0., 100.  ); 
-  //TH1D *hGenPtCutLo2   = new TH1D("hGenPtCutLo2"  , (std::to_string(genptBin2Low)).c_str()  ,  100,  0., 100.  ); 
-  //hGenPtCutHi2->Fill((float)genptBin2High);  hGenPtCutLo2->Fill((float)genptBin2Low); 
+  /////   GEN/RECO MATCHING   ///// 
+  TH2D *hpp_mceff_pt[nbins_abseta]={}; 
+  TH2D *hpp_mceff_pt2[nbins_abseta]={}; 
+  TH2D *hpp_mceff_pt3[nbins_abseta]={}; 
+  TH2D *hpp_mceff_eta[nbins_abseta]={};
+  TH2D *hpp_mceff_eta2[nbins_abseta]={};
+  TH2D *hpp_mceff_phi[nbins_abseta]={};
+  TH2D *hpp_mceff_phi2[nbins_abseta]={};
 
-  if(fillJERSHists){   
-    
-    hJER_jtetaQA=new TH1D("jtEtaSanityCheckJER", "jetEta Dist Check" , 100, -6., 6.);
-    hJER_genetaQA=new TH1D("genEtaSanityCheckJER", "genEta Dist Check" , 100, -6., 6.);
+//, *hpp_mceff_drjt[nbins_abseta]={};
+  TH2D *hpp_mceff_ptrat_drjt[nbins_abseta]={}, *hpp_mceff_ptrat_eta[nbins_abseta]={}, *hpp_mceff_ptrat_phi[nbins_abseta]={};// all v. genpt/recpt  
 
-    for(int j=0;j<nbins_abseta;++j){
-      std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];	  
-      std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_jtptQA_etabin"+std::to_string(j);
-      if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
-      std::string hDescJER="rec pt, "+absetabins_i+"<|y|<"+absetabins_ip1;
-      if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
-      hJER_jtptQA[j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 1000,0.,1000.); 	  
-    }//etabin loop
-    
-    for(int j=0;j<nbins_abseta;++j){
-      std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];	  
-      std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_genptQA_etabin"+std::to_string(j);
-      if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
-      std::string hDescJER="gen pt, "+absetabins_i+"<|y|<"+absetabins_ip1;
-      if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
-      hJER_genptQA[j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 1000,0.,1000.); 	  
-    }//etabin loop
-    
-    //int jtID=0;
-    //if(fillMCJetIDHists)jtID=1;
-    //hJEC[0]= new TH3F( ("hJEC_"+std::to_string(0)+"wJetID").c_str(), ";raw p_{T};#eta;JEC", 500,0.,500., 200,-5.,+5., 300,0.,5.);    
-    
-    //for(int y = 0; y<nbins_eta; ++y){	               
-    //
-    //	std::string hTitleJER_30to50="hJER_"+std::to_string(jtID)+"wJetID_"+
-    //	  "etabin"+std::to_string(y)+"_30_pt_50";//"etabin"+std::to_string(etabins[y])+"_30_pt_50";
-    //	hJER_eta_30pt50[y] = new TH1D(hTitleJER_30to50.c_str(), "recpt/genpt, 30<genpt<50",100, 0, 2.);      
-    //	std::string hTitleJER_150to200="hJER_"+std::to_string(jtID)+"wJetID_"+
-    //	  "etabin"+std::to_string(y)+"_150_pt_200";
-    //	hJER_eta_150pt200[y] = new TH1D(hTitleJER_150to200.c_str(), "recpt/genpt, 150<genpt<200",100, 0, 2.);          
-    //	
-    //	/*for(int x = 0; x<nbins_JEC_ptbins; ++x) {
-    //	  std::string hTitleJEC_check="hJEC_"+std::to_string(jtID)+"wJetID_check_"+
-    //	  "ptbin"+std::to_string(x)+"_etabin"+std::to_string(y);
-    //	  hJEC_check[x][y] = new TH1D(hTitleJEC_check.c_str(),
-    //	  Form("rawpt/genpt, %2.0f<genpt<%2.0f, %2.4f<geneta<%2.4f", 
-    //	  JEC_ptbins[x],JEC_ptbins[x+1], etabins[y],etabins[y+1]),
-    //	  100,0.,3.);           }*/ 
-    //}    
+  if(fillMCEffHists){
+    std::string hMCEffTitleArray[]={ "pt", "pt2", "pt3", 
+				     "eta","eta2", 
+				     "phi", "phi2", "ptrat_drjt", "ptrat_eta", "ptrat_phi" };
+    const int nMCEffTitles=sizeof(hMCEffTitleArray)/sizeof(std::string);        
+    for(int i=0; i<nbins_abseta;i++){
+      for(int k=0; k<nMCEffTitles; k++){      	
+	std::string hTitle="hpp_mceff_"+hMCEffTitleArray[k];
+	if(fillMCJetIDHists)hTitle+="_wJetID";
+	hTitle+="_R"+std::to_string(radius)+"_absetabin"+std::to_string(i);//+etaWidth;
+	if(debugMode)std::cout<<"k="<<k<<std::endl;
+	if(debugMode)std::cout<<"hMCEffTitleArray="<<hMCEffTitleArray[k]<<std::endl;	
+	if(hMCEffTitleArray[k]=="pt")	                                                    //x stuff,, //ystuff,,
+	  hpp_mceff_pt[i] =  new TH2D( hTitle.c_str(), "refpt v recopt/refpt"          , 2500, 0., 2500. , 500,   0.,5. );
+	else if(hMCEffTitleArray[k]=="pt2")	                                                    //x stuff,, //ystuff,,
+	  hpp_mceff_pt2[i] =  new TH2D( hTitle.c_str(), "refpt v rawpt/refpt"          , 2500, 0., 2500. , 500,   0.,5. );
+	else if(hMCEffTitleArray[k]=="pt3")	                                                    //x stuff,, //ystuff,,
+	  hpp_mceff_pt3[i] =  new TH2D( hTitle.c_str(), "rawpt v recopt/rawpt"          , 2500, 0., 2500. , 500,   0.,5. );	
+	else if(hMCEffTitleArray[k]=="eta")						   		             	
+	  hpp_mceff_eta[i] = new TH2D( hTitle.c_str(), "recoeta v recoeta-refeta"       , 1000, -5.,5.   , 200, -1.,1.  );
+	else if(hMCEffTitleArray[k]=="eta2")						   		             	
+	  hpp_mceff_eta2[i] = new TH2D( hTitle.c_str(), "recoeta v refeta"       , 1000, -5.,5.   , 1000, -5.,5.   );	
+	else if(hMCEffTitleArray[k]=="phi")						   		              	
+	  hpp_mceff_phi[i] = new TH2D( hTitle.c_str(), "recophi v recophi-refphi"       , 800, -4.,4.    , 200, -1.,1. );
+	else if(hMCEffTitleArray[k]=="phi2")						   		              	
+	  hpp_mceff_phi2[i] = new TH2D( hTitle.c_str(), "recophi v refphi"       , 800, -4.,4.     , 800, -4., 4.    );	
+	else if(hMCEffTitleArray[k]=="ptrat_drjt")					   		             	
+	  hpp_mceff_ptrat_drjt[i] = new TH2D( hTitle.c_str(), "refdrjt v recopt/refpt"  , 500, 0. , 0.5  , 500,   0. , 5. );   	
+	else if(hMCEffTitleArray[k]=="ptrat_eta")					   		       	        
+	  hpp_mceff_ptrat_eta[i]  = new TH2D( hTitle.c_str(), "refeta  v recopt/refpt"  , 100, -5.,5.    , 500,   0.,5. );
+	else if(hMCEffTitleArray[k]=="ptrat_phi")					   		       	        
+	  hpp_mceff_ptrat_phi[i]  = new TH2D( hTitle.c_str(), "refphi  v recopt/refpt"  , 80, -4.,4.     , 500,   0.,5.);     
+      }//mcefftitles
+    }//nbins abseta
+  }//fillmceff hists
 
-      for(int bin = 0; bin<nbins_pt; ++bin) {      
-	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );
-	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
-	std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID_"+ptbins_i+"ptbin"+ptbins_ip1;
-	if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
-	std::string hDescJER="rec/gen pt, "+ptbins_i+"<genpt<"+ptbins_ip1;
-	if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
-	hJER[bin] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
-      }//ptbin loop 
-      
-      for(int j=0;j<nbins_abseta;++j){
-	for(int bin = 0; bin<nbins_pt; ++bin) {      	  
-	  std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
-	  std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];	  
-	  std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_etabin"+std::to_string(j)+"_"+ptbins_i+"ptbin"+ptbins_ip1;
-	  if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
-	  std::string hDescJER="rec/gen pt, "+absetabins_i+"<|y|<"+absetabins_ip1+", "+ptbins_i+"<genpt<"+ptbins_ip1;	  
-	  if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
-	  hJER_abseta[bin][j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
-	}//ptbin loop
-      }//etabin loop
-      
-      for(int j=0;j<nbins_abseta;++j){
-	for(int bin = 0; bin<nbins_pt; ++bin) {      	  
-	  std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
-	  std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];
-	  std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_genetabin"+std::to_string(j)+"_"+ptbins_i+"ptbin"+ptbins_ip1;
-	  if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
-	  std::string hDescJER="rec/gen pt, "+absetabins_i+"<|GEN y|<"+absetabins_ip1+", "+ptbins_i+"<genpt<"+ptbins_ip1;	  
-	  if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
-	  hJER_absgeneta[bin][j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
-	}//ptbin loop
-      }//etabin loop
-      //assert(false);
-      //      //TH1D * hJES[nbins_pt]={};       // rec/raw , bins of raw pt
-      //      for(int bin = 0; bin<nbins_pt; ++bin) {      
-      //	std::string hTitleJES="hJES_"+std::to_string(jetIDint)+"wJetID_ptbin"+std::to_string(bin);
-      //	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );
-      //	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
-      //	std::string hDescJES="rec/raw pt, "+ptbins_i+"<genpt<"+ptbins_ip1;
-      //	std::cout<<"hDescJES="<<hDescJES<<std::endl;
-      //	hJES[bin] = new TH1D(hTitleJES.c_str(),hDescJES.c_str(), 200,0.,2.); 
-      //       }
-      //
-      //      //TH1D * hJER_raw[nbins_pt]={};   // raw/gen , bins of gen pt
-      //      for(int bin = 0; bin<nbins_pt; ++bin) {      
-      //	std::string hTitleJER_raw="hJER_raw_"+std::to_string(jetIDint)+"wJetID_ptbin"+std::to_string(bin);
-      //	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );
-      //	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
-      //	std::string hDescJER_raw="raw/gen pt, "+ptbins_i+"<genpt<"+ptbins_ip1;
-      //	std::cout<<"hDescJER_raw="<<hDescJER_raw<<std::endl;
-      //	hJER_raw[bin] = new TH1D(hTitleJER_raw.c_str(),hDescJER_raw.c_str(), 200,0.,2.); 
-      //      } 
-      
-      //for(int bin = 0; bin<nbins_abseta; ++bin) {      
-      //	std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID_jty_bin"+std::to_string(bin);      
-      //	hJER_absetabins[bin] = new TH1D(hTitleJER.c_str(),("recpt/genpt, absetaBin"+std::to_string(bin)).c_str(), 100,0.,2.); 
-      //	
-      //	std::string hTitleJER_1="hJER_"+std::to_string(jetIDint)+"wJetID_jty_etabin"+std::to_string(bin)+
-      //	  "_genptBin1";
-      //	hJER_absetabins_genptBin1[bin] = new TH1D(hTitleJER_1.c_str(),("absetaBin "+std::to_string(bin)+", "						   
-      //									     "genpt "+std::to_string(genptBin1Low)+" to "+std::to_string(genptBin1High)).c_str(), 100,0.,2.); 
-      //	
-      //	std::string hTitleJER_2="hJER_"+std::to_string(jetIDint)+"wJetID_jty_etabin"+std::to_string(bin)+
-      //	  "_genptBin2";
-      //	hJER_absetabins_genptBin2[bin] = new TH1D(hTitleJER_2.c_str(),("absetaBin "+std::to_string(bin)+", "						   
-      //									     "genpt "+std::to_string(genptBin2Low)+" to "+std::to_string(genptBin2High)).c_str(), 100,0.,2.); 
-      //}
-  }//fill JERShists
 
   
   
@@ -464,8 +361,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       float receta = eta_F[jet];
       float absreceta=fabs(receta);
       float geneta = refeta_F[jet];
-      float absgeneta=fabs(geneta);
+      //float absgeneta=fabs(geneta);
       float gendrjt = refdrjt_F[jet];     
+      float rawpt  = rawpt_F[jet];
+      float genphi = refphi_F[jet];
+      float recphi = phi_F[jet];
+      
       
       if( subid_F[jet]!=0 ) continue;//matching gen-reco
       else if ( !(recpt > jtPtCut)    ) continue;        //low recopt cut          
@@ -526,103 +427,36 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  theRapBin=rapbin;
 	  break;	  }       	
 
-      int theGENRapBin=-1;
-      for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
-	if( absetabins[rapbin]<=absgeneta  && 		
-	    absgeneta<absetabins[rapbin+1]    	      ) {	    
-	  theGENRapBin=rapbin;
-	  break;	  }       	
+      //      int theGENRapBin=-1;
+      //      for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
+      //	if( absetabins[rapbin]<=absgeneta  && 		
+      //	    absgeneta<absetabins[rapbin+1]    	      ) {	    
+      //	  theGENRapBin=rapbin;
+      //	  break;	  }       
+      // theRapBin=theGENRapBin; //use me if you want to explore matching eff. in terms of GEN jet eta instead of RECO jet eta
       
 
-      
-      /////   JERS HISTS   ///// 
-      if(fillJERSHists ){
-	
-	//// dual-diff xsec abseta bins for two spec genpt bins and all genpt bins
-	//int absetabin=-1;
-	//if(absreceta>absetabins[nbins_abseta]) absetabin = -1;//check end of array
-	//else{
-	//  for(int bin=0; bin < nbins_abseta; bin++)
-	//    if( absreceta>=absetabins[bin] ) absetabin = bin; 				
-	//}
-	//
-	//if(absetabin != -1 ){
-	//  
-	//  for(int jtID=0; jtID<2;jtID++){
-	//    if(jtID==1 && !passesJetID) continue;
-	//    else if (jtID==1 && !fillMCJetIDHists)continue;
-	//    
-	//    hJER_absetabins[absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
-	//    
-	//    if( recpt >= ( (float) genptBin1Low  )  && 
-	//	recpt <  ( (float) genptBin1High )    ) 
-	//      hJER_absetabins_genptBin1[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     
-	//    
-	//    if( recpt >= ( (float) genptBin2Low  )  && 
-	//	recpt <  ( (float) genptBin2High )    ) 
-	//      hJER_absetabins_genptBin2[jtID][absetabin]->Fill( (float)(recpt/genpt), weight_eS);     	
-	//  }
-	//}
-	
-	//// hJER, genpt30-50, 150-200, across receta bins array (note, NOT abs-value receta bins)
-	//int etabin = -1;
-	//if(fabs(receta) >= etabins[nbins_eta]) etabin=-1; //check end of array
-	//else {
-	//  for(int bin = 0; bin<nbins_eta; ++bin)  //notice that the loop does not hit end of this array
-	//    if(receta >= etabins[bin]) etabin = bin;	  }
-	//
-	//if(etabin != -1) {
-	//  
-	//  for(int jtID=0; jtID<2;jtID++){
-	//    if(jtID==1 && !passesJetID)continue;
-	//    else if (jtID==1 && !fillMCJetIDHists)continue;
-	//    
-	//    if(recpt >= 30.  && recpt<50. ) 
-	//      hJER_eta_30pt50[jtID][etabin]->Fill((float)recpt/genpt, weight_eS);
-	//    else if(recpt >= 150. && recpt<200.) 
-	//      hJER_eta_150pt200[jtID][etabin]->Fill((float)recpt/genpt, weight_eS);	
-	//  }
-	//}
-	
-	//JER in genptbins array, according to input absetacuts
-	//	int ptbin = -1; 
-	//	if( !(genpt < ptbins[nbins_pt]) ) ptbin=-1;//check end of binning array    //else if (!passesEtaCut) ptbin=-1;
-	//	else {
-	//	  for(int bin = 0; bin<nbins_pt; ++bin)      
-	//	    if(! (genpt < ptbins[bin])) ptbin = bin;  	
-	//	}
-	
-	
-	int ptbin=-1;
-	for(int bin=0;bin<nbins_pt;bin++)
-	  if( ptbins[bin]<=genpt  && 		
-	      genpt<ptbins[bin+1]    	      ) {	    
-	    ptbin=bin;
-	    if(debugMode_verbose)std::cout<<"genpt="<<genpt<<" should be between"<<std::endl;
-	    if(debugMode_verbose)std::cout<<"ptbins["<<bin<<"]="<<ptbins[ptbin]<<" and ptbins["<<bin<<"]="<<ptbins[bin+1]<<std::endl;	    
-	    break;	  }       	
-	
-	//	int recptbin=-1;
-	//	for(int bin=0;bin<nbins_pt;bin++)
-	//	  if( ptbins[bin]<=recpt  && 		
-	//	      recpt<ptbins[bin+1]    	      ) {	    
-	//	    recptbin=bin;
-	//	    if(debugMode_verbose)std::cout<<"recpt="<<recpt<<" should be between"<<std::endl;
-	//	    if(debugMode_verbose)std::cout<<"ptbins["<<bin<<"]="<<ptbins[ptbin]<<" and ptbins["<<bin<<"]="<<ptbins[bin+1]<<std::endl;	    
-	//	    break;	  }       	
-	
-	if( (ptbin!=-1) ){	
-	  hJER[ptbin]->Fill( (float)(recpt/genpt), weight_eS); 	  	  
-	  hJER_genetaQA->Fill(geneta,weight_eS);      
-	  hJER_jtetaQA->Fill(receta,weight_eS);      
-	  if( (theGENRapBin!=-1) ) hJER_absgeneta[ptbin][theGENRapBin]->Fill( (float)(recpt/genpt), weight_eS);// genpt bin, geneta bin  	    	  
-	  if( (theRapBin!=-1) ) hJER_abseta[ptbin][theRapBin]->Fill( (float)(recpt/genpt), weight_eS);         // genpt bin, receta bin
-	  if(theGENRapBin!=-1)hJER_genptQA[theGENRapBin]->Fill(genpt,weight_eS);      
-	  if(theRapBin!=-1)hJER_jtptQA[theRapBin]->Fill(recpt,weight_eS);      
-
+      /////   GEN/RECO MATCHING   /////      
+      if(fillMCEffHists){	
+	if(theRapBin!=-1){
+	  // x val, y val, weight
+	  hpp_mceff_pt[theRapBin]->Fill(         genpt   , recpt/genpt   ,   weight_eS);
+	  hpp_mceff_pt2[theRapBin]->Fill(         genpt   , rawpt/genpt   ,   weight_eS);
+	  hpp_mceff_pt3[theRapBin]->Fill(         rawpt   , recpt/rawpt   ,   weight_eS);
+	  
+	  hpp_mceff_eta[theRapBin]->Fill(        receta  ,  receta-geneta ,   weight_eS);
+	  hpp_mceff_eta2[theRapBin]->Fill(       receta  ,  geneta ,   weight_eS);
+	  
+	  hpp_mceff_phi[theRapBin]->Fill(         recphi  , recphi-genphi ,   weight_eS);	
+	  hpp_mceff_phi2[theRapBin]->Fill(        recphi  , genphi ,   weight_eS);	
+	  
+	  hpp_mceff_ptrat_drjt[theRapBin]->Fill( gendrjt , recpt/genpt   ,   weight_eS);	
+	  hpp_mceff_ptrat_eta[theRapBin]->Fill(  geneta  , recpt/genpt   ,   weight_eS);
+	  hpp_mceff_ptrat_phi[theRapBin]->Fill(  genphi  , recpt/genpt   ,   weight_eS);       
 	}
-	
       }
+      
+      
 
     }//end jet loop
 
@@ -662,14 +496,14 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   fout->Write(); 
 
 
-  std::cout<<std::endl<<"readForests_ppMC_JERS finished."<<std::endl;  timer.Stop();
+  std::cout<<std::endl<<"readForests_ppMC_MCEff finished."<<std::endl;  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   
   return 0;
 }
 
-// end readForests_ppMC_JERS
+// end readForests_ppMC_MCEff
 								 
 
 ////// main //////
@@ -680,10 +514,10 @@ int main(int argc, char *argv[]){
   int rStatus = -1;
   if(argc!=10 && argc!=8 && argc!=1){
     std::cout<<"for tests on default inputs, do..." <<std::endl;
-    std::cout<<"./readForests_ppMC_JERS.exe";
+    std::cout<<"./readForests_ppMC_MCEff.exe";
     std::cout<<std::endl<<std::endl;
     std::cout<<"for actually running, do..."<<std::endl;
-    std::cout<<"./readForests_ppMC_JERS.exe ";
+    std::cout<<"./readForests_ppMC_MCEff.exe ";
     std::cout<<"<inputFileList> <startFile> <endFile> ";
     std::cout<<"<jetRadius> <jetType> <debugMode> ";
     std::cout<<"<outputFilename> ";
@@ -694,18 +528,18 @@ int main(int argc, char *argv[]){
   
   // good input, run
   rStatus=1;
-  if(argc==1) rStatus = readForests_ppMC_JERS();
+  if(argc==1) rStatus = readForests_ppMC_MCEff();
   else{//read input argument vector
     std::string inputFileList=argv[1]; int startfile= atoi(argv[2]); int endfile= atoi(argv[3]);  
     int jetRadius= atoi(argv[4]); std::string jetType=argv[5];     bool debug=(bool)atoi(argv[6]);
     std::string outputFileName=argv[7];      
     if(argc==minArgs){
-      rStatus = readForests_ppMC_JERS( inputFileList, startfile, endfile, 
+      rStatus = readForests_ppMC_MCEff( inputFileList, startfile, endfile, 
 				       jetRadius, jetType, debug,
 				       outputFileName);                              }    
     else if(argc==(minArgs+2)){
       float jtEtaCutLo= atof( argv[8] ) ; float jtEtaCutHi=atof( argv[9] ) ;
-      rStatus = readForests_ppMC_JERS( inputFileList, startfile, endfile,
+      rStatus = readForests_ppMC_MCEff( inputFileList, startfile, endfile,
 				       jetRadius, jetType, debug,
 				       outputFileName, jtEtaCutLo, jtEtaCutHi);    }
   }

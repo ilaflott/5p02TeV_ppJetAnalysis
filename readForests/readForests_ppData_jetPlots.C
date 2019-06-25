@@ -2,33 +2,30 @@
 #include "readForests_jetPlots.h"
 
 // ppData switches
-const bool fillDataEvtQAHists=true;
+const bool fillDataEvtQAHists=true;// leave me on always
 
-const bool useIncJetAnalyzer=true;
-const bool useTupel=false;
-
-const bool fillDataJetQAHists=true;
-const bool fillDataTupelJetQAHists=false&&useTupel;
-
-const bool fillDataJetTrigQAHists=true; //data-specific
-const bool fillDataJetCovMatrix=true;
-
-const bool fillDataDijetHists=false;//hardly used options
-
-const bool fillDataJetJECQAHists=false;
-const bool fillDataJetJECUncHists=true&&fillDataJetQAHists;
-
-const bool useHLT100=false;
-const bool useMBevts=false;
-const bool doRunExclStudy=false;
-//const bool fillDataVtxTrkQAHists=true; //in the works
+const bool useIncJetAnalyzer=true;// leave me on almost always
+const bool fillDataJetQAHists=true; // leave me on almost always
 
 
+const bool fillDataJetTrigQAHists=true; // leave me on almost always
+const bool fillDataJetCovMatrix=true; // leave me on almost always
 
-//const std::string trgCombType="Calo";
-const std::string trgCombType="PF";
+const bool fillDataJetJECQAHists=false;//expensive computationally, use only if needed (i.e. if someone asks about JECs + wants QA)
+const bool fillDataJetJECUncHists=true&&fillDataJetQAHists;// leave me on almost always
 
-const bool deepDebug=false;
+const bool fillDataDijetHists=false;// leave me off almost always
+const bool useHLT100=false; // leave me off almost always
+const bool useMBevts=false; // leave me off until Ian says to use me
+const bool doRunExclStudy=false; // leave me off almost always
+
+const bool useTupel=false&&!useIncJetAnalyzer;// leave me off almost always
+const bool fillDataTupelJetQAHists=false&&useTupel;// leave me off almost always
+
+//const std::string trgCombType="Calo"; // almost never used
+const std::string trgCombType="PF"; // almost always used
+
+const bool deepDebug=false; //put to true only if in trouble...
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -36,7 +33,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 				 int radius , std::string jetType , bool debugMode ,
 				 std::string outfile, float jtEtaCutLo, float jtEtaCutHi){
   
-  //assert(fillDataJetQAHists!=fillDataTupelJetQAHists);//just dont use them at the same time. just. dont.
+  assert(!fillDataJetQAHists || !fillDataTupelJetQAHists);//just dont use them at the same time. just. dont.
   
   // for monitoring performance + debugging
   TStopwatch timer;  timer.Start();
@@ -1489,67 +1486,80 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
 
     
-    ////duplicate skipping between LowerJets and Jet80
+    ////duplicate skipping between LowerJets and Jet80, old version extension
     if(filelistIsMinBias){
-      //      bool skipevt=false;
-      //      if( (bool) Jet40_I   || 
-      //	  (bool) Jet60_I   || 
-      //	  (bool) Jet40_2_I || 
-      //	  (bool) Jet60_2_I   ) skipevt=true;//in LowerJets
-      //      else if(  (bool) Jet80_I   || 
-      //		(bool) Jet100_I  ||
-      //		(bool) Jet80_2_I || 
-      //		(bool) Jet100_2_I  ) skipevt=true; //in Jet80
-      //      else if( (bool) PFJet110_I || 
-      //      	       (bool) PFJet120_I   ) skipevt=true; //in Jet80
-      //      else if( (bool) CaloJet110_I || 
-      //      	       (bool) CaloJet120_I || 
-      //      	       (bool) CaloJet150_I    ) skipevt=true; //in Jet80
-      //      else if( (bool) CaloJet100_Jet35_Eta0p7_I || 
-      //      	       (bool) CaloJet100_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
-      //      else if( (bool) CaloJet80_45_45_Eta2p1_I || 
-      //      	       (bool) CaloJet80_Jet35_Eta0p7_I || 
-      //      	       (bool) CaloJet80_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
-      //      else skipevt=false;      
-      //      if(skipevt){
-      //	//if(debugMode)std::cout<<"this event is in Jet80 AND/OR LowerJets dataset!"<<std::endl;
-      //	//if(debugMode)std::cout<<"Skipping event, will read it in Jet80 OR LowerJets instead!"<<std::endl;
       if(isInJet80PD || isInLowJetsPD){
-	//if(!isMB){
 	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
        	continue;
       }      
     }
-    
-    
+
     if(filelistIsJet80){//EXCLUSION FOR READING MIN BIAS DATA MAY NEED WORK TODO
-      //if( (bool)Jet40_I || (bool)Jet60_I || (bool)Jet40_2_I || (bool)Jet60_2_I ) 
-      //	continue;
       if(isInLowJetsPD){
-	//if( !(is80 || is100) ){
-	//	//if(debugMode)std::cout<<"this event is in Jet80 AND LowerJets dataset!"<<std::endl;
-	//	//if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead!"<<std::endl;	
 	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
 	continue;      
       }
     }  
     
-    //if(filelistIsLowerJets){
-    //  if( !(is40 || is60) ){
-    //	
-    //	if(fillDataJetTrigQAHists){
-    //	  //b.c. it makes the hist look scary to do this kind of duplicate skip. 
-    //	  //so i'm gonna put this here temporarily to test my understanding + hopefully make sure it doesn't look scary...	  
-    //	  if( trgDec[0] ) hpp_IncHLT40trgPt_2-> Fill(HLT40maxTrgPt, trgPscl[0]);      	
-    //	  if( trgDec[0] && !(trgPt<HLTthresh[0]) )   hpp_IncHLT40trgPt->Fill(  trgPt, (double)trgPscl[0] );      
-    //	}
+    if(filelistIsLowerJets){//do nothing in this duplicate skip version
+    }
+    
+    
+    
+    ////// alternate duplicate skipping scheme; may be "more correct" TO DO
+    //if(filelistIsMinBias)
+    //  if(!isMB){
+    //	//if(isInJet80PD || isInLowJetsPD){//some stuff i was string
+    //	//      bool skipevt=false;
+    //	//      if( (bool) Jet40_I   || 
+    //	//	  (bool) Jet60_I   || 
+    //	//	  (bool) Jet40_2_I || 
+    //	//	  (bool) Jet60_2_I   ) skipevt=true;//in LowerJets
+    //	//      else if(  (bool) Jet80_I   || 
+    //	//		(bool) Jet100_I  ||
+    //	//		(bool) Jet80_2_I || 
+    //	//		(bool) Jet100_2_I  ) skipevt=true; //in Jet80
+    //	//      else if( (bool) PFJet110_I || 
+    //	//      	       (bool) PFJet120_I   ) skipevt=true; //in Jet80
+    //	//      else if( (bool) CaloJet110_I || 
+    //	//      	       (bool) CaloJet120_I || 
+    //	//      	       (bool) CaloJet150_I    ) skipevt=true; //in Jet80
+    //	//      else if( (bool) CaloJet100_Jet35_Eta0p7_I || 
+    //	//      	       (bool) CaloJet100_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
+    //	//      else if( (bool) CaloJet80_45_45_Eta2p1_I || 
+    //	//      	       (bool) CaloJet80_Jet35_Eta0p7_I || 
+    //	//      	       (bool) CaloJet80_Jet35_Eta1p1_I   ) skipevt=true; //in Jet80
+    //	//      else skipevt=false;      
+    //	//      if(skipevt){
+    //	//	//if(debugMode)std::cout<<"this event is in Jet80 AND/OR LowerJets dataset!"<<std::endl;
+    //	//	//if(debugMode)std::cout<<"Skipping event, will read it in Jet80 OR LowerJets instead!"<<std::endl;
+    //	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
+    //   	continue;
+    //  }      
+    //
+    //
+    //
+    //if(filelistIsJet80) //EXCLUSION FOR READING MIN BIAS DATA MAY NEED WORK TODO
+    //  if( !(is80 || is100) ){
+    //	//	//if(debugMode)std::cout<<"this event is in Jet80 AND LowerJets dataset!"<<std::endl;
+    //	//	//if(debugMode)std::cout<<"Skipping event, will read it in LowerJets instead!"<<std::endl;	
     //	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
     //	continue;      
     //  }
-    //}
-  
-    
-  
+    //
+    //
+    //if(filelistIsLowerJets)
+    //  if( !(is40 || is60) ){
+    //	//	if(fillDataJetTrigQAHists){
+    //	//	  //b.c. it makes the hist look scary to do this kind of duplicate skip. 
+    //	//	  //so i'm gonna put this here temporarily to test my understanding + hopefully make sure it doesn't look scary...	  
+    //	//	  if( trgDec[0] ) hpp_IncHLT40trgPt_2-> Fill(HLT40maxTrgPt, trgPscl[0]);      	
+    //	//	  if( trgDec[0] && !(trgPt<HLTthresh[0]) )   hpp_IncHLT40trgPt->Fill(  trgPt, (double)trgPscl[0] );      
+    //	//	}
+    //	h_NEvents_skipped->Fill(0.);		h_NEvents_skipped->Fill(1.,weight_eS);  
+    //	continue;      
+    //  }
+    //
 
   
     h_NEvents_read->Fill(0.);    h_NEvents_read->Fill(1.,weight_eS);        
@@ -2491,7 +2501,7 @@ int main(int argc, char *argv[]){
 
 
 
-
+// OLD CODE IANS NOT READY TO LET GO OF YET BUT PROBABLY COULD: TOO BAD HES PARANOID
 
 //TH1D *hpp_HLT40InEff =NULL;
 //TH1D *hpp_HLT60InEff =NULL;

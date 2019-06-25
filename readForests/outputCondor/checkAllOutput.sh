@@ -17,9 +17,9 @@ do
     echo "_____________________"
     echo "checking directory $i"
     echo ""
-    echo "num files"
+    #echo "num files"
     source checkNumFiles.sh $i
     echo""
-    echo "errs"
+    #echo "errs"
     source checkErrs.sh $i
 done

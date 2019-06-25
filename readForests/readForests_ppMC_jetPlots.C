@@ -835,6 +835,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	    
 	    int ind=0;
 	    //jets
+	    hJetQA_jtptEntries[theRapBin][jtid]->Fill(jtpt,1.);	  	
 	    hJetQA[theRapBin][ind][jtid]->Fill(jtpt, weight_eS); ind++;
 	    hJetQA[theRapBin][ind][jtid]->Fill(rawpt_F[jet], weight_eS); ind++;
 	    //if(jtpt>jetQAPtCut){//second jet pt cut

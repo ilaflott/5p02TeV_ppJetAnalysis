@@ -89,7 +89,7 @@ while [[ -d "${logFileDir}"  ]]
 do
     AltCounter=$(( $AltCounter + 1 ))
     echo "dir exists!"
-    dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}__${etaCutLo}eta${etaCutHi}_${AltCounter}"
+    dirName="${outName}_$(date +"%m-%d-%y")${readForestsVer}_${etaCutLo}eta${etaCutHi}_${AltCounter}"
     logFileDir="${PWD}/outputCondor/${dirName}"    
 done
 
@@ -226,7 +226,7 @@ done
 
 cd -
 echo "done."
-#condor_q ilaflott
+condor_q $USER
 return
 
 

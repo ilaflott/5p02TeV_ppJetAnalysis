@@ -9,6 +9,8 @@ const bool fillMCUnfJetSpectraRapHists=true&&fillMCUnfoldingHists;
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 const int jetIDint=(int)fillMCJetIDHists;
 
+const bool usegenetabins=false;//only set this to true if i say it's worth it (most likely not)
+
 const bool verbose=false;
 
 //// readForests_ppMC_unf
@@ -181,12 +183,14 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       if(hUnfTitleArray[k]=="gen")	{
 	hpp_gen    = new TH1D( hTitle.c_str(), "MC genpt for unf data", 2500,0,2500);
 	if(fillMCUnfJetSpectraRapHists){
+	  
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_gen_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 				       ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);	  
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_gen_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					  ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);
+	  if(usegenetabins)
+	    for(int j=0;j<nbins_abseta;j++)
+	      hpp_gen_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
+					    ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);
 	}
       }
       else if(hUnfTitleArray[k]=="reco")	{	  
@@ -196,9 +200,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_reco_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 					("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_reco_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					   ("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 
+	  if(usegenetabins)
+	    for(int j=0;j<nbins_abseta;j++)
+	      hpp_reco_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
+					     ("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 
 	}
       }
       else if(hUnfTitleArray[k]=="matrix")	{
@@ -208,9 +213,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_matrix_rap[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 					  ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
-	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_matrix_genrap[j] = new TH2D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					     ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	  if(usegenetabins)
+	    for(int j=0;j<nbins_abseta;j++)
+	      hpp_matrix_genrap[j] = new TH2D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
+					       ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
 	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_gen") {
@@ -358,10 +364,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   
   UInt_t NEvents_read=0;
   NEvents_read = NEvents_allFiles;
-  
+  //NEvents_read=0;//debug
+
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
 
-  //MCTruthResidual* MCResidual = new MCTruthResidual( "pp5");
   int mcclosureInt=0;
   //int mcclosure_arr[nbins_abseta]={0};
 
@@ -523,7 +529,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	//fill jetspectraRapHists
 	if( fillMCUnfJetSpectraRapHists ) { 	  //these should be filled in according to the RECO eta rap bin
 	                                          //why; data jet eta is all we can look at, so the resp matrix for a given RECO eta rap bin should reflect that occasionally, a "true" jet in a given RECO eta rap bin actually belongs in a diff GEN eta rap bin
-	  if(theGENRapBin!=-1){
+	  if(theGENRapBin!=-1 && usegenetabins){
 	    hpp_gen_genrap[theGENRapBin]->Fill(genpt,weight_eS);
 	    hpp_reco_genrap[theGENRapBin]->Fill(recpt,weight_eS);
 	    hpp_matrix_genrap[theGENRapBin]->Fill(recpt, genpt, weight_eS);

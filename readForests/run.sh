@@ -1,9 +1,13 @@
 #!/bin/bash
 
-subm_ppData_jetPlots=1
-subm_ppMC_jetPlots=1
-subm_ppMC_JERS=1
-subm_ppMC_unf=1
+## general note; 
+## busy cluster (check w/ 'condor_q --allusers') --> use larger # of files per job --> longer run time but overall kinder during busy hours
+## not-busy cluster --> can use smaller # of files per job --> shorter run time but occupies more cluster machines
+
+subm_ppData_jetPlots=0
+subm_ppMC_jetPlots=0
+subm_ppMC_JERS=0
+subm_ppMC_unf=0
 subm_ppMC_MCEff=1
 
 #rarely used
@@ -30,6 +34,7 @@ then
     source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
 fi
 
+
 if [[ $subm_ppMC_JERS -eq 1 ]]
 then
     echo "...ppMC JERS..."
@@ -37,12 +42,14 @@ then
     source run_readForests_JERS.sh 4 "0.0" "2.0"
 fi
 
+
 if [[ $subm_ppMC_unf -eq 1 ]]
 then
     echo "...ppMC unf..."
     rootcompile readForests_ppMC_unf.C
     source run_readForests_unf.sh 4 "0.0" "2.0"
 fi
+
 
 if [[ $subm_ppMC_unf -eq 1 ]]
 then

@@ -51,7 +51,7 @@ then
 fi
 
 
-if [[ $subm_ppMC_unf -eq 1 ]]
+if [[ $subm_ppMC_MCEff -eq 1 ]]
 then
     echo "...ppMC MCEff..."
     rootcompile readForests_ppMC_MCEff.C

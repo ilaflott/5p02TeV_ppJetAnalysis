@@ -9,6 +9,7 @@ const bool fillDataJetQAHists=true; // leave me on almost always
 
 
 const bool fillDataJetTrigQAHists=true; // leave me on almost always
+
 const bool fillDataJetCovMatrix=true; // leave me on almost always
 
 const bool fillDataJetJECQAHists=false;//expensive computationally, use only if needed (i.e. if someone asks about JECs + wants QA)
@@ -1797,7 +1798,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
 	
 	if(fillDataJetJECQAHists){
-
+	  
 	  //readForests_JEC_v12_ak4PF_74X_dataRun2_HLT_ppAt5TeV_v0
 	  for(int uu=0; uu<1; uu++){//loop so that if the jet doesn't meet some criteria i can just quit while i'm ahead
 	    for(int i=0; i<n_L2RelL3AbsJEC_etabins;i++){	    //L2RelL3Abs
@@ -2342,7 +2343,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     
     if(fillDataJetCovMatrix){      
-
+      
       for(int i=0; i<nbins_abseta; i++){
 	if(etabin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
 	  fillCovMatrix( (TH2D*)hpp_covmat_eta_arr[i], (TH1D*)hpp_covmat_eta_arr_helpers[i], nbins_pt , (double) weight_eS);

@@ -4,14 +4,14 @@
 // code/job switches ------------------------
 
 //options
-const bool debugMode=false, doEventCounts=false;//, doJetIDPlots=true;
+const bool debugMode=false, doEventCounts=true;//, doJetIDPlots=true;
 
 
 //draw switches
 const bool drawEvtQAPlots=true;
 const bool drawJetQAPlots=true;
 const bool drawTupelJetQAPlots=false;
-const bool drawJetConstituentPlots=drawJetQAPlots&&false, drawDijetPlots=drawJetQAPlots&&false;
+const bool drawJetConstituentPlots=drawJetQAPlots&&true, drawDijetPlots=drawJetQAPlots&&false;
 const bool drawJetRapBinsPlot=false;//, drawGENJetRapBinsPlot=true;  
 
 const bool doJetIDPlots=true;
@@ -222,8 +222,9 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     
     //TH1s
     //int etabin=0;
-    for(int j=0;j<N_vars;j++){ 
-      for(int etabin=0; etabin<Netabins; etabin++){
+    for(int etabin=0; etabin<Netabins; etabin++){
+      for(int j=0;j<N_vars;j++){ 
+	
 	std::cout<<std::endl;
 	if(debugMode)std::cout<<std::endl<<" var ="<<var[j]<<", j="<<j<<std::endl;
 	

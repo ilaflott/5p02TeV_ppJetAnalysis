@@ -6,7 +6,7 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=false;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-const bool setMCCovMat=false;
+const bool setMCCovMat=true;
 const bool doJetID=true     ;
 const bool useSimpBins=false;
 const bool compareToNLOThy=true;
@@ -14,6 +14,7 @@ const bool useGENybin=false;
 //const bool doJECsys=false;
 const bool applyNPCorrs=true;//&&compareToNLOThy;
 
+const std::string ptbintype="SMP";
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, make sure doToyErrs in header is set to true
@@ -100,16 +101,24 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
-  else std::cout<<"using simple pt bins"<<std::endl<<std::endl;
+  else std::cout<<"using simple pt bins"<<std::endl<<std::endl;  
   
-  double* boundaries_pt_gen=setBinning(  useSimpBins , "gen"  );
-  int     nbins_pt_gen=setNBins(  useSimpBins , "gen"  );
-  double* boundaries_pt_reco      = setBinning( useSimpBins , "reco" );
-  int     nbins_pt_reco =   setNBins(  useSimpBins , "reco"  );
-  double* boundaries_pt_gen_mat   = setBinning( useSimpBins , "gen"  );
-  int     nbins_pt_gen_mat =   setNBins(  useSimpBins , "gen"  );
-  double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
-  int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
+  int     nbins_pt_gen=-1;
+  double* boundaries_pt_gen=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen);
+  
+  int     nbins_pt_reco=-1;
+  double* boundaries_pt_reco=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco);
+  
+  int     nbins_pt_gen_mat=-1;
+  double* boundaries_pt_gen_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen_mat);
+  
+  int     nbins_pt_reco_mat=-1;
+  double* boundaries_pt_reco_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco_mat);
+
+
+
+
+  
 
   
   if(debugMode)std::cout<<"TH2 GetDefaultSumw2="<<TH2::GetDefaultSumw2()<<std::endl;

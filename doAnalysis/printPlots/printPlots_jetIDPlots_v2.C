@@ -3,7 +3,7 @@
 
 // code/job switches ------------------------
 //options
-const bool debugMode=true, doEventCounts=false;
+const bool debugMode=true, doEventCounts=true;
 //draw switches
 const bool drawJetIDPlots=true;
 const bool drawJetConstituentPlots=true, drawDijetPlots=false;
@@ -11,8 +11,8 @@ const bool drawJetConstituentPlots=true, drawDijetPlots=false;
 const bool drawJetQAPlots=false;
 const bool drawTupelJetQAPlots=true&&!drawJetQAPlots;
 //bool useMB=false;
-const int Netabins=6;
-const bool print_incjetana_tupelequiv=false;
+const int Netabins=4;
+const bool print_incjetana_tupelequiv=true;
 
 //int printPlots_jetIDPlots_v2(const std::string input_condorDir ,
 int printPlots_jetIDPlots_v2(const std::string input_condorDir_jetID , 
@@ -35,22 +35,24 @@ int printPlots_jetIDPlots_v2(const std::string input_condorDir_jetID ,
   if(debugMode)std::cout<<"jetType string is = "<<jetType<<std::endl;
   if(debugMode)std::cout<<"fullJetType string is = "<<fullJetType<<std::endl;
   
-  bool useMB;
+  bool useMB=false;
   std::string input_ppData_Filename_MB="HighPtJetTrig_" +fullJetType+ "-allFiles.root";
   std::string input_ppData_Filename_noMB="HighPtJetTrig_noMB_" +fullJetType+ "-allFiles.root";
   std::string input_ppData_Filename;
+  std::string input_ppMC_Filename="Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
 
   //put together input file strings
-  if(output_PDFname_base.find("wMB")!=std::string::npos) {
-    std::cout<<"using MinBias data!"<<std::endl;
-    useMB=true;
+  if(input_condorDir_jetID.find("Py8")==std::string::npos){//must be data if this is the case
+    if(output_PDFname_base.find("wMB")!=std::string::npos) {
+      std::cout<<"using MinBias data!"<<std::endl;
+      useMB=true;
+    }
+    else if(output_PDFname_base.find("noMB")!=std::string::npos) {
+      std::cout<<"not using MinBias data!"<<std::endl;
+      useMB=false;
+    }
+    else assert(false);
   }
-  else if(output_PDFname_base.find("noMB")!=std::string::npos) {
-    std::cout<<"not using MinBias data!"<<std::endl;
-    useMB=false;
-  }
-  else assert(false);
-  
   if(useMB)
     input_ppData_Filename=input_ppData_Filename_MB;
   else
@@ -76,6 +78,7 @@ int printPlots_jetIDPlots_v2(const std::string input_condorDir_jetID ,
   
   std::string input_Filename;//, input_Filename_nojetID;
   if(isData) input_Filename=input_ppData_Filename;
+  else if (isMC)input_Filename=input_ppMC_Filename;
   else assert(false);
   //else  input_Filename=input_ppMC_Filename;
   const std::string fullFilename_jetID=inputDir+input_condorDir_jetID+input_Filename;
@@ -161,9 +164,9 @@ int printPlots_jetIDPlots_v2(const std::string input_condorDir_jetID ,
 	//		      (std::string) thePDFFileName  , 
 	//		      (std::string) fullJetType, (long double) theLumi  );
 	//	printJetIDHist( (TFile*) fin_jetID , (TFile*) fin_nojetID , 
-	printJetIDHist( (TFile*) fin_jetID , NULL, 
+	printJetIDHist( (TFile*) fin_jetID , //NULL, 
 			(int) j, (bool) isData,
-		      (std::string) thePDFFileName  , 
+			(std::string) thePDFFileName  , 
 			(std::string) fullJetType, (long double) theLumi,  
 			(TFile*) fout);
       }
@@ -219,7 +222,7 @@ int printPlots_jetIDPlots_v2(const std::string input_condorDir_jetID ,
 
 	}//etabin loop
 	
-	      //etabin loop
+
       }//varloop
     }//draw tupeljetqaplots
     

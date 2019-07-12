@@ -6,7 +6,7 @@ const int CANVX=1200, CANVY=1000;
 const int xsecorder=1;//0--> LO, 1--> NLO, 2--> NNLO... etc.
 
 const bool printBaseDebug=true;
-const bool useHistSigmaFit=true;
+const bool useHistSigmaFit=false;
 const bool useJERscaleFactors=false;//note; alters JER syst. as well.
 const bool setThyPDFErrors=true;
 

@@ -509,7 +509,7 @@ void printMCEvtQAHist( TFile* finMC   , std::string inMCHistName , std::string t
 void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, int etabin,
 		     std::string inHistName , std::string thePDFFileName , std::string fullJetType, 
 		     long double theLumi  ,TFile* fout=NULL) {
-
+  bool funcDebug=false;
   
   std::string jetIDInt;
   if(doJetIDPlots)jetIDInt="1";
@@ -518,42 +518,29 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
   if(!finData || !finMC ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
     return; }
-  bool funcDebug=false;
   
-  
+  bool isConstitHist= (bool)( j>=jetConstits_varStart && j<dijet_varStart );  
   
   // STRINGS FOR HISTS
   TH1F* genjtptCut_h= (TH1F*)finMC->Get( "hGenJetPtCut" );
   std::string genjtptCut_str = std::to_string( (int) genjtptCut_h->GetMean() );
-  std::cout<<"genjtptCut_str = "<<genjtptCut_str<<std::endl;
-  
+  std::cout<<"genjtptCut_str = "<<genjtptCut_str<<std::endl;  
   std::string genJetCutString="p_{T}^{GEN} > "+genjtptCut_str+" GeV";
   std::cout<<"genJetCutString="<<genJetCutString<<std::endl;
-  
-  TH1F* jtptCut_h= (TH1F*)finData->Get( "hJetPtCut" );
-  std::string jtptCut_str = std::to_string( (int) jtptCut_h->GetMean() );
-  std::cout<<"jtptCut_str = "<<jtptCut_str<<std::endl;
-  
-  std::string jetCutString="p_{T}^{RECO} > "+jtptCut_str+" GeV";
-  std::cout<<"jetCutString="<<jetCutString<<std::endl;
   
   TH1F* jtptQACut_h= (TH1F*)finData->Get( "hJetQAPtCut" );
   std::string jtptQACut_str = std::to_string( (int) jtptQACut_h->GetMean() );
   std::cout<<"jtptQACut_str = "<<jtptQACut_str<<std::endl;
+  std::string jtptCut_str=jtptQACut_str;
+  std::string jetCutString="p_{T}^{RECO} > "+jtptCut_str+" GeV";
+  std::cout<<"jetCutString="<<jetCutString<<std::endl;
   
   TH1F* jtetaLoCut_h= (TH1F*)finData->Get( "hJetEtaCutLo" );
   std::stringstream etaLo; etaLo.precision(1);
   float jtetaLoCut_F=jtetaLoCut_h->GetMean();
   etaLo << std::fixed << jtetaLoCut_F;
   std::string jtetaLoCut_str = etaLo.str();
-  std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;
-  
-//  TH1F* jtetaHiCut_h= (TH1F*)finData->Get( "hJetEtaCutHi" );
-//  std::stringstream etaHi; etaHi.precision(1);
-//  float jtetaHiCut_F=jtetaHiCut_h->GetMean();
-//  etaHi << std::fixed << jtetaHiCut_F;
-//  std::string jtetaHiCut_str = etaHi.str();
-//  std::cout<<"jtetaHiCut_str = "<<jtetaHiCut_str<<std::endl;
+  std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;  
   
   std::string jetEtaCutString;
   if(etabin==0) jetEtaCutString = "0.0 < #||{y} < 0.5";
@@ -562,17 +549,10 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   if(etabin==3) jetEtaCutString = "1.5 < #||{y} < 2.0";
   if(etabin==4) jetEtaCutString = "2.0 < #||{y} < 2.5";
   if(etabin==5) jetEtaCutString = "2.5 < #||{y} < 3.0";
-//  if(jtetaLoCut_str=="0.0") jetEtaCutString="|y| < "+jtetaHiCut_str;
-//  else jetEtaCutString=jtetaLoCut_str+" < |y| < "+jtetaHiCut_str;
   std::cout<<"jetEtaCutString="<<jetEtaCutString<<std::endl;
   
-  //float etaBinWidth=2.*(jtetaHiCut_F-jtetaLoCut_F);//factor of two, because abseta
-  float etaBinWidth=1.;//2.*(jtetaHiCut_F-jtetaLoCut_F);//factor of two, because abseta
+  float etaBinWidth=1.;
   std::cout<<"etaBinWidth="<<etaBinWidth<<std::endl;
-  
-  
-  
-  
   
   // OPEN FILES
   std::string inDataHist=inHistName;
@@ -588,10 +568,8 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
   
   std::string inMCHist=inHistName;
-  float MCscale4Units=1./etaBinWidth;
   if(var[j]=="jtpt_forRes" || var[j]=="jtpt_L2Res" || var[j]=="jtpt_L3Res"){
     inMCHist="hJetQA_"+std::to_string((int)doJetIDPlots)+"wJetID_jtpt";
-    //MCscale4Units=1.;
   }
   
   std::cout<<" opening input MC "<<inMCHist<<std::endl<<std::endl;      
@@ -599,9 +577,9 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   theMCJetQAHist=(TH1F*) (theMCJetQAHist->Clone((inMCHist+"_"+std::to_string(j)+"clone").c_str()) );
   if(!theMCJetQAHist){ std::cout<<"input MC hist not found! skipping hist"<<std::endl;
     return;}
-  theMCJetQAHist->Scale(MCscale4Units);
-  
-  
+  //theMCJetQAHist->Scale(MCscale4Units);
+  theMCJetQAHist->Scale(1./etaBinWidth);  
+  theMCJetQAHist->ClearUnderflowAndOverflow();      theDataJetQAHist->ClearUnderflowAndOverflow();  
   
   // MORE SCALING
   if(var[j]=="jtpt" || var[j]=="rawpt" ||
@@ -618,23 +596,85 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
   else {
     
-    theDataJetQAHist->TH1::Rebin(var_xAx_reBin[j]);
-    theDataJetQAHist->Scale( 1./theDataJetQAHist->GetBinWidth(1) );          
-    theDataJetQAHist->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X"); 
+
     
-    theMCJetQAHist->TH1::Rebin(var_xAx_reBin[j]);
-    theMCJetQAHist->Scale( 1./theMCJetQAHist->GetBinWidth(1) );          
-    theMCJetQAHist->Scale( theDataJetQAHist->Integral()/theMCJetQAHist->Integral() );	        
-    theMCJetQAHist->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X"); 
+    if(j>=jetConstits_varStart && j<dijet_varStart){
+      //i'm sorry, C++ gods, this is because the hists' bins in readForests_ppMC/Data_jetPlots are defined differently
+      if(funcDebug)std::cout<<"BEFORE REBIN theMCJetQAHist nbins="<<theMCJetQAHist->GetNbinsX()<<std::endl;      
+      if(funcDebug)std::cout<<"BEFORE REBIN theMCJetQAHist xmin="<<theMCJetQAHist->GetBinLowEdge(1)<<std::endl;      
+      if(funcDebug)std::cout<<"BEFORE REBIN theMCJetQAHist xmax="<<
+		     theMCJetQAHist->GetBinLowEdge(theMCJetQAHist->GetNbinsX()) +
+		     theMCJetQAHist->GetBinWidth(theMCJetQAHist->GetNbinsX()) 
+			    <<std::endl;      
+      if(funcDebug)std::cout<<std::endl;
+      theMCJetQAHist->TH1::Rebin(var_xAx_reBin[j]);
+      theMCJetQAHist->Scale( 1./theMCJetQAHist->GetBinWidth(1) );          
+      theMCJetQAHist->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X"); 
+      //theMCJetQAHist->GetXaxis()->SetRange(jetQAxmin[j],jetQAxmax[j]); 
+      std::cout<<"theMCJetQAHist nbins="<<theMCJetQAHist->GetNbinsX()<<std::endl;      
+      std::cout<<"theMCJetQAHist xmin="<<theMCJetQAHist->GetBinLowEdge(1)<<std::endl;      
+      std::cout<<"theMCJetQAHist xmax="<<
+	theMCJetQAHist->GetBinLowEdge(theMCJetQAHist->GetNbinsX()) +
+	theMCJetQAHist->GetBinWidth(theMCJetQAHist->GetNbinsX()) 
+	       <<std::endl;
+      std::cout<<std::endl;      
+      theMCJetQAHist->ClearUnderflowAndOverflow();     
+      
+      const int mcjetqa_nbins=theMCJetQAHist->GetNbinsX();
+      double mcjetqa_bins[mcjetqa_nbins+1]={0.};
+      for(int i=1; i<=mcjetqa_nbins; i++)
+	mcjetqa_bins[i-1]=theMCJetQAHist->GetBinLowEdge(i);
+      mcjetqa_bins[mcjetqa_nbins]=theMCJetQAHist->GetBinLowEdge(mcjetqa_nbins) + theMCJetQAHist->GetBinWidth(mcjetqa_nbins);
+      if(funcDebug)      std::cout<<"mcjetqa_nbins="<<mcjetqa_nbins<<std::endl;
+      if(funcDebug)      std::cout<<"mcjetqa_bins[0]="<<mcjetqa_bins[0]<<std::endl;
+      if(funcDebug)      std::cout<<"mcjetqa_bins["<< mcjetqa_nbins <<"]="<<mcjetqa_bins[mcjetqa_nbins]<<std::endl;
+      if(funcDebug)      std::cout<<std::endl;
+
+      if(funcDebug)std::cout<<"BEFORE REBIN theDataJetQAHist nbins="<<theDataJetQAHist->GetNbinsX()<<std::endl;      
+      if(funcDebug)std::cout<<"BEFORE REBIN theDataJetQAHist xmin="<<theDataJetQAHist->GetBinLowEdge(1)<<std::endl;      
+      if(funcDebug)std::cout<<"BEFORE REBIN theDataJetQAHist xmax="<<
+		     theDataJetQAHist->GetBinLowEdge(theDataJetQAHist->GetNbinsX()) +
+		     theDataJetQAHist->GetBinWidth(theDataJetQAHist->GetNbinsX()) 
+			    <<std::endl;      
+      if(funcDebug)std::cout<<std::endl;
+      //theDataJetQAHist->TH1::Rebin(var_xAx_reBin[j]);
+      theDataJetQAHist=(TH1F*)theDataJetQAHist->TH1::Rebin(mcjetqa_nbins, 
+							   ( ((std::string)theDataJetQAHist->GetName())+"_mcjetqarebin").c_str(), 
+							   (const Double_t*)mcjetqa_bins);
+      theDataJetQAHist->ClearUnderflowAndOverflow();  
+      theDataJetQAHist->Scale( 1./theDataJetQAHist->GetBinWidth(1) );          //its a constant binning so this is fine
+
+      theDataJetQAHist->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X");   
+      //theDataJetQAHist->GetXaxis()->SetRange(jetQAxmin[j],jetQAxmax[j]);
+    
+      if(funcDebug)      std::cout<<"theDataJetQAHist nbins="<<theDataJetQAHist->GetNbinsX()<<std::endl;      
+      if(funcDebug)      std::cout<<"theDataJetQAHist xmin="<<theDataJetQAHist->GetBinLowEdge(1)<<std::endl;      
+      if(funcDebug)      std::cout<<"theDataJetQAHist xmax="<<
+	theDataJetQAHist->GetBinLowEdge(theDataJetQAHist->GetNbinsX()) +
+	theDataJetQAHist->GetBinWidth(theDataJetQAHist->GetNbinsX()) 
+	       <<std::endl;      
+      theMCJetQAHist->Scale( theDataJetQAHist->Integral()/theMCJetQAHist->Integral() );	        
+
+      //assert(false);
+
+    }
+    else{
+      theDataJetQAHist->TH1::Rebin(var_xAx_reBin[j]);
+      theDataJetQAHist->Scale( 1./theDataJetQAHist->GetBinWidth(1) );          
+      theDataJetQAHist->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X"); 
+      //theDataJetQAHist->GetXaxis()->SetRange(jetQAxmin[j],jetQAxmax[j]);
+      
+      theMCJetQAHist->TH1::Rebin(var_xAx_reBin[j]);
+      theMCJetQAHist->Scale( 1./theMCJetQAHist->GetBinWidth(1) );          
+      theMCJetQAHist->Scale( theDataJetQAHist->Integral()/theMCJetQAHist->Integral() );	        
+      theMCJetQAHist->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X"); 
+      //theMCJetQAHist->GetXaxis()->SetRange(jetQAxmin[j],jetQAxmax[j]); 
+    }
     
   }
-  
-  if(funcDebug)theDataJetQAHist->Print("base");       std::cout<<std::endl;  
-  if(funcDebug)theMCJetQAHist->Print("base");       std::cout<<std::endl;
-  
 
 
-  
+
   // STYLE  
   dataHistStyle(theDataJetQAHist);
   MCHistStyle(theMCJetQAHist);
@@ -642,11 +682,12 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
   
   // TITLES
+  std::string h_Title = PDStatsString_2; //for APS DNP
   std::string h_XAx_Title= var_xAx_Titles[j];
   //std::string h_YAx_Title= dcrossSectionAxTitle;
   //std::string h_YAx_Title= AUAxTitle;//for APS DNP
   std::string h_YAx_Title= ddcrossSectionAxTitle;//for APS DNP
-  std::string h_Title = PDStatsString_2; //for APS DNP
+  if((var[j]=="jteta" || var[j]=="jtphi" || isConstitHist) )h_YAx_Title=AUAxTitle;
   
   theDataJetQAHist->SetTitle (    h_Title.c_str() );
   theDataJetQAHist->SetXTitle( h_XAx_Title.c_str() );
@@ -658,7 +699,36 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
   
   
+  // GET RATIO PLOT READY FOR BOTTOM PANEL
   TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone(  ("MCJetHistClone4Ratio_"+var[j]).c_str());  
+  //general
+  theRatio->SetTitle("");
+  theRatio->SetLineColor( theMCLineColor );
+  
+  //yaxis, range, title, labels
+  theRatio->SetAxisRange(0.25,1.75,"Y");  
+  theRatio->GetYaxis()->CenterTitle(true);
+  theRatio->GetYaxis()->SetTitleSize(17);
+  theRatio->GetYaxis()->SetTitleFont(43);
+  theRatio->GetYaxis()->SetTitleOffset(1.4);
+  theRatio->SetYTitle(ratioTitle.c_str() );    
+  theRatio->GetYaxis()->SetLabelFont(43); 
+  theRatio->GetYaxis()->SetLabelSize(13);  
+  
+  //xaxis, range, title, labels
+  //  if((var[j]=="jteta" || var[j]=="jtphi" || isConstitHist) )
+  //    theRatio->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X");	
+  theRatio->GetXaxis()->SetTitleSize(20);
+  theRatio->GetXaxis()->SetTitleFont(43);
+  theRatio->GetXaxis()->SetTitleOffset(4.);
+  theRatio->SetXTitle( h_XAx_Title.c_str() );  
+  theRatio->GetXaxis()->SetLabelFont(43); 
+  theRatio->GetXaxis()->SetLabelSize(18);
+  
+
+
+
+
   
   
   if(funcDebug) std::cout<<"creating temporary canvas for printing Jet plots..."<<std::endl;
@@ -667,43 +737,35 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
     
   TPad *jetpad1 = new TPad("jetpad1", "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
-  jetpad1->SetGridy(0);
   jetpad1->SetGridx(0);
-  jetpad1->SetLogy(1);
+  jetpad1->SetGridy(0);  
+  jetpad1->SetBottomMargin(0);
 
 
   TPad *jetpad2 = new TPad("jetpad2", "Ratio Pad"  , 0.0, 0.05, 1.0, 0.3);
   jetpad2->SetGridx(1);
-  jetpad2->SetLogy(0);
-  
+  jetpad2->SetGridy(0);  
+  jetpad2->SetTopMargin(0);
+  jetpad2->SetBottomMargin(0.3);
+
   
   if(var[j]=="jtpt"      || var[j]=="rawpt"          ||
      var[j]=="jtpt_forRes"|| var[j]=="jtpt_L2Res"|| var[j]=="jtpt_L3Res"|| 
-     var[j]=="leadJetPt" || var[j]=="subleadJetPt"     ){
-    
+     var[j]=="leadJetPt" || var[j]=="subleadJetPt"     ){    
     jetpad1->SetLogx(1);  
+    jetpad1->SetLogy(1);  
     jetpad2->SetLogx(1);  
+    jetpad2->SetLogy(0);  
   }
   else {
-    jetpad1->SetLogx(0);
-    jetpad2->SetLogx(0);
+    jetpad1->SetLogx(0);  
+    jetpad1->SetLogy(1);  
+    jetpad2->SetLogx(0);  
+    jetpad2->SetLogy(0);  
   }
   
-  jetpad1->SetBottomMargin(0);
-  
-  jetpad2->SetTopMargin(0);
-  jetpad2->SetBottomMargin(0.3);
-  
-  //if(var[j]=="jtpt"      || var[j]=="rawpt"          ||
-  //   var[j]=="leadJetPt" || var[j]=="subleadJetPt"     )
-  //  jetpad2->SetLogx(1);  
-  //else jetpad2->SetLogx(0);
-  
-  
-  
-  
   jetpad1->Draw();
-  jetpad2->Draw();  
+  jetpad2->Draw();
   
 
   
@@ -712,18 +774,10 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
      var[j]=="jtpt_forRes" ||     var[j]=="jtpt_L2Res" ||     var[j]=="jtpt_L3Res"      )         {
     
     jetpad1->cd();
-    if(var[j]=="jtpt"||var[j]=="rawpt"){
-      //theMCJetQAHist->Draw("HIST E"); 
-      //theDataJetQAHist->Draw("E SAME"); 
-      theDataJetQAHist->Draw("E"); 
-      theMCJetQAHist->Draw("HIST E SAME ]["); 
- 
-    } 
+
+    theDataJetQAHist->Draw("E"); 
+    theMCJetQAHist->Draw("HIST E SAME ]["); 
     
-    else if(var[j]=="jtpt_forRes"||var[j]=="jtpt_L2Res"||var[j]=="jtpt_L3Res"){
-      theDataJetQAHist->Draw("E"); 
-      theMCJetQAHist->Draw("HIST E SAME"); 
-    } 
     
     float t1Loc1=0.50, t1Loc2=0.84;
     TLatex* t1= makeTLatex(  t1Loc1  ,  t1Loc2      ,  fullJetType+"Jets" );    t1->Draw();
@@ -748,45 +802,21 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
     
     TH1F* theDenom=(TH1F*)theDataJetQAHist->Clone(("DataHistClone4Ratio_"+var[j]).c_str());
     
-    theRatio->SetLineColor( theMCLineColor );
-    
-    theRatio->SetAxisRange(0.5,1.5,"Y");
-    
-    theRatio->GetYaxis()->SetTitleSize(15);
-    theRatio->GetYaxis()->SetTitleFont(43);
-    theRatio->GetYaxis()->SetTitleOffset(2);
-    
-    theRatio->GetYaxis()->SetLabelFont(43); 
-    theRatio->GetYaxis()->SetLabelSize(13);
-    
-    theRatio->GetXaxis()->SetTitleSize(20);
-    theRatio->GetXaxis()->SetTitleFont(43);
-    theRatio->GetXaxis()->SetTitleOffset(4.);
-    
-    theRatio->GetXaxis()->SetLabelFont(43); 
-    theRatio->GetXaxis()->SetLabelSize(18);
-    
-    theRatio->SetTitle("");
-    theRatio->SetXTitle( h_XAx_Title.c_str() );
-    theRatio->SetYTitle(ratioTitle.c_str() );
-    
-    theRatio->Divide(theDenom);
-    
     theRatio->GetXaxis()->SetMoreLogLabels(true);
-    theRatio->GetXaxis()->SetNoExponent(true);
-    
+    theRatio->GetXaxis()->SetNoExponent(true);        
+    theRatio->Divide(theDenom);    
     theRatio->Draw("HIST E");
     
     TLine* lineAtOne          = new TLine(ptbins_debug[0],1.0,ptbins_debug[nbins_pt_debug],1.0); 
     lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
-    TLine* lineAtOneHalf      = new TLine(ptbins_debug[0],0.5,ptbins_debug[nbins_pt_debug],0.5); 
-    lineAtOneHalf->SetLineColor(12);      lineAtOneHalf->SetLineStyle(2);
-    TLine* lineAtOneEtOneHalf = new TLine(ptbins_debug[0],1.5,ptbins_debug[nbins_pt_debug],1.5); 
-    lineAtOneEtOneHalf->SetLineColor(12); lineAtOneEtOneHalf->SetLineStyle(2);
+    //TLine* lineAtOneHalf      = new TLine(ptbins_debug[0],0.5,ptbins_debug[nbins_pt_debug],0.5); 
+    //lineAtOneHalf->SetLineColor(12);      lineAtOneHalf->SetLineStyle(2);
+    //TLine* lineAtOneEtOneHalf = new TLine(ptbins_debug[0],1.5,ptbins_debug[nbins_pt_debug],1.5); 
+    //lineAtOneEtOneHalf->SetLineColor(12); lineAtOneEtOneHalf->SetLineStyle(2);
     
     lineAtOne->Draw("same");
-    lineAtOneHalf->Draw("same");
-    lineAtOneEtOneHalf->Draw("same");
+    //lineAtOneHalf->Draw("same");
+    //lineAtOneEtOneHalf->Draw("same");
 
 
 
@@ -796,16 +826,12 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
   else if(var[j]=="jteta" ||
 	  var[j]=="jtphi"	||
-	  ( j>=jetConstits_varStart && j<dijet_varStart )){ 
+	  isConstitHist){ 
     
     jetpad1->cd();
-    //if(var[j]=="jtphi"){
-      //theMCJetQAHist->SetAxisRange(  .02,.8,"Y");
-      //theDataJetQAHist->SetAxisRange(.02,.8,"Y");
-    //};
     
     theMCJetQAHist->Draw("HIST E"); 
-    theDataJetQAHist->Draw("E same");  
+    theDataJetQAHist->Draw("E SAME");  
     
     float t1Loc1=0.54, t1Loc2=0.82;
     //float t1Loc1=0.50, t1Loc2=0.72; 	    
@@ -828,48 +854,22 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
     theJetQALeg->AddEntry(theMCJetQAHist,  "P8 MC"  ,"lp");
     theJetQALeg->Draw();
     
-    //Ratio Plots
-    
+    //Ratio Plots    
     jetpad2->cd();
-
-    //TH1F* theRatio=(TH1F*)theMCJetQAHist->Clone("mcJetHistClone4Ratio");
-    //    theRatio->SetMarkerStyle( kMultiply );
-    //    theRatio->SetMarkerSize(0.99 );
-    //    theRatio->SetMarkerColor( theMCColor );
-    theRatio->SetLineColor( theMCLineColor );
-    //theRatio->SetLineWidth( 2 );
-
-    theRatio->SetAxisRange(0.,2.,"Y");
-    theRatio->SetAxisRange(jetQAxmin[j],jetQAxmax[j],"X");	
-    
-    theRatio->GetYaxis()->SetTitleSize(15);
-    theRatio->GetYaxis()->SetTitleFont(43);
-    theRatio->GetYaxis()->SetTitleOffset(2);
-    theRatio->GetYaxis()->SetLabelFont(43); 
-    theRatio->GetYaxis()->SetLabelSize(13);
-
-    theRatio->GetXaxis()->SetTitleSize(20);
-    theRatio->GetXaxis()->SetTitleFont(43);
-    theRatio->GetXaxis()->SetTitleOffset(4.);
-    theRatio->GetXaxis()->SetLabelFont(43); 
-    theRatio->GetXaxis()->SetLabelSize(18);
-    
-    theRatio->SetTitle("");
-    theRatio->SetXTitle( h_XAx_Title.c_str() );
-    theRatio->SetYTitle(ratioTitle.c_str());
-    theRatio->Divide(theDataJetQAHist);
+    theRatio->Divide(theDataJetQAHist);        
     theRatio->Draw("HIST E");
-	  
-    TLine* lineAtOne          = new TLine(jetQAxmin[j],1.0,jetQAxmax[j],1.0); 
+    
+    //lines on ratio plot for y axis
+    TLine* lineAtOne          = new TLine(jetQAxmin[j],1.0,jetQAxmax[j]+theRatio->GetBinWidth(1),1.0); 
     lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
-    TLine* lineAtOneHalf      = new TLine(jetQAxmin[j],0.5,jetQAxmax[j],0.5); 
-    lineAtOneHalf->SetLineColor(12);      lineAtOneHalf->SetLineStyle(2);
-    TLine* lineAtOneEtOneHalf = new TLine(jetQAxmin[j],1.5,jetQAxmax[j],1.5); 
-    lineAtOneEtOneHalf->SetLineColor(12); lineAtOneEtOneHalf->SetLineStyle(2);
+    //TLine* lineAtOneHalf      = new TLine(jetQAxmin[j],0.5,jetQAxmax[j]+theRatio->GetBinWidth(1),0.5); 
+    //lineAtOneHalf->SetLineColor(12);      lineAtOneHalf->SetLineStyle(2);
+    //TLine* lineAtOneEtOneHalf = new TLine(jetQAxmin[j],1.5,jetQAxmax[j]+theRatio->GetBinWidth(1),1.5); 
+    //lineAtOneEtOneHalf->SetLineColor(12); lineAtOneEtOneHalf->SetLineStyle(2);
     
     lineAtOne->Draw("same");
-    lineAtOneHalf->Draw("same");
-    lineAtOneEtOneHalf->Draw("same");
+    //lineAtOneHalf->Draw("same");
+    //lineAtOneEtOneHalf->Draw("same");
     
     
   }

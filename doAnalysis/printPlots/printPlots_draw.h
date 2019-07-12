@@ -60,7 +60,7 @@ const int var_xAx_reBin[]={
   10, 10,     //reco/rawjtpt  
   //  10, 10, 10,    //no Res, L2Res, L3Res jtpt
   
-  5,  4,      //jteta, phi    
+  5,  2,      //jteta, phi    
 
   1, 5, 5,    //trks	      
   1, 5,                       
@@ -75,7 +75,7 @@ const int var_xAx_reBin[]={
   1, 5, 5,    //e	      				      
   1, 5, 5,    //mu	      				      
   
-  1, 1, 1,    // N Const.     
+  2, 2, 2,    // N Const.     
   
   1, 1, 1,    //xj,Aj,dphi    
   20, 20        //sub/lead jttpt
@@ -85,22 +85,22 @@ const float jetQAxmax[]={
   (1000. ), (1000.),             //reco/rawjtpt  
   //  (1000. ), (1000.), (1000.), //jtpt forRes, L2Res, L3Res
 
-  (5.   ), (3.2  ),  		 //jteta, phi    
+  (4.5   ), (3.2  ),  		 //jteta, phi    
 
-  (60 ), (2.00), (2.00), 	 //trks	      
-  (60 ), (2.00), 		                 
+  (59) /*(60 )*/, (1.95), (1.95), 	 //trks	      //note; 60 is commented out because of the way axis range setting works
+  (59) /*(60 )*/, (1.95), 		              // see: https://root.cern.ch/doc/master/TAxis_8cxx_source.html#l00405 
+                                                      // the way to "catch NaN" causes the overflow bin in these hists to be drawn
+  (59 ), (1.95), (1.95), 	 //ph	      
+  (59 ), (1.95), 		                 
 
-  (60 ), (2.00), (2.00), 	 //ph	      
-  (60 ), (2.00), 		                 
-
-  (60 ), (2.00), (2.00),	 //ch  	      
-  (60 ), (2.00), 		              
+  (59 ), (1.95), (1.95),	 //ch  	      
+  (59 ), (1.95), 		              
    
-  (20 ), (2.00), (2.00),	 //ne	      
-  (10 ), (2.00), (2.00),	 //e	      
-  (10 ), (2.00), (2.00),	 //mu	      
+  (19 ), (1.95), (1.95),	 //ne	      
+  (9 ), (1.95), (1.95),	 //e	      
+  (9 ), (1.95), (1.95),	 //mu	      
 
-  (100),   (100),   (100),   	 // N Const.     
+  (98),   (98),   (98),   	 // N Const.     
 
   (1.   ), (1.  ),   (3.2  ), 	 //xj,Aj,dphi    
   (1000. ), (1000.) 		 //sub/lead jttpt

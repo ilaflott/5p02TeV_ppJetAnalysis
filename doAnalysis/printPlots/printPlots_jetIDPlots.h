@@ -4,14 +4,15 @@
 
 
 
-void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID, 
+//void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID, 
+void printJetIDHist( TFile* fin , 
 		     int j, bool isData,
 		     std::string thePDFFileName , std::string fullJetType, 
 		     long double theLumi,  
 		     TFile* fout=NULL) {
   
   
-  if(!fin_jetID || !fin_nojetID ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
+  if(!fin ){    std::cout<<"input file not found, cannot look at jetID selection"<<std::endl; 
     return; }
   bool funcDebug=false;
     
@@ -19,11 +20,11 @@ void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID,
   TH1F* genjtptCut_h=NULL; 
   std::string genjtptCut_str;
   if(!isData){
-    genjtptCut_h=(TH1F*)fin_jetID->Get( "hGenJePttCut" );
+    genjtptCut_h=(TH1F*)fin->Get( "hGenJePttCut" );
     genjtptCut_str = std::to_string( (int) genjtptCut_h->GetMean() );
     std::cout<<"genjtptCut_str = "<<genjtptCut_str<<std::endl;}
   
-  TH1F* jtptCut_h= (TH1F*)fin_jetID->Get( "hJetPtCut" );
+  TH1F* jtptCut_h= (TH1F*)fin->Get( "hJetPtCut" );
   std::string jtptCut_str = std::to_string( (int) jtptCut_h->GetMean() );
   std::cout<<"jtptCut_str = "<<jtptCut_str<<std::endl;
   
@@ -32,18 +33,18 @@ void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID,
   else jetCutString="p_{T}>"+jtptCut_str+" GeV";//, "+jtetaLoCut_str+"<|#eta|<"+jtetaHiCut_str;
   std::cout<<"jetCutString="<<jetCutString<<std::endl;
   
-  TH1F* jtptQACut_h= (TH1F*)fin_jetID->Get( "hJetQAPtCut" );
+  TH1F* jtptQACut_h= (TH1F*)fin->Get( "hJetQAPtCut" );
   std::string jtptQACut_str = std::to_string( (int) jtptQACut_h->GetMean() );
   std::cout<<"jtptQACut_str = "<<jtptQACut_str<<std::endl;
   
-  TH1F* jtetaLoCut_h= (TH1F*)fin_jetID->Get( "hJetEtaCutLo" );
+  TH1F* jtetaLoCut_h= (TH1F*)fin->Get( "hJetEtaCutLo" );
   std::stringstream etaLo; etaLo.precision(1);
   float jtetaLoCut_F=jtetaLoCut_h->GetMean();
   etaLo << std::fixed << jtetaLoCut_F;
   std::string jtetaLoCut_str = etaLo.str(); 
  std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;
  
- TH1F* jtetaHiCut_h= (TH1F*)fin_jetID->Get( "hJetEtaCutHi" );
+ TH1F* jtetaHiCut_h= (TH1F*)fin->Get( "hJetEtaCutHi" );
   std::stringstream etaHi; etaHi.precision(1);
   float jtetaHiCut_F=jtetaHiCut_h->GetMean();
   etaHi << std::fixed << jtetaHiCut_F;
@@ -63,13 +64,13 @@ void printJetIDHist( TFile* fin_jetID , TFile* fin_nojetID,
   std::string inHistName="hJetQA_0wJetID_"+var[j];
   if(funcDebug)std::cout<<" opening input hist "<<inHistName<<std::endl<<std::endl;      
   
-  TH1F* theNonJetIDHist=(TH1F*) ( (TH1*)fin_nojetID->Get(inHistName.c_str()) );
+  TH1F* theNonJetIDHist=(TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
   if(!theNonJetIDHist){ std::cout<<"input hist not found! skipping hist"<<std::endl;
     return;}
   
   std::string inJetIDHistName="hJetQA_1wJetID_"+var[j];
   if(funcDebug)std::cout<<" opening input jetID hist "<<inJetIDHistName<<std::endl<<std::endl;      
-  TH1F* theJetIDHist= (TH1F*) ( (TH1*)fin_jetID->Get(inJetIDHistName.c_str()) );  
+  TH1F* theJetIDHist= (TH1F*) ( (TH1*)fin->Get(inJetIDHistName.c_str()) );  
   if(!theJetIDHist){ std::cout<<"input jetID hist not found! skipping hist"<<std::endl;
     return;}
   
@@ -369,7 +370,7 @@ void printTupelJetIDHist( TFile* fin_jetID , int etabin, bool print_incjetana_tu
     return; }
   bool funcDebug=false;
 
-  if(!isData)assert(false);
+  //if(!isData)assert(false);
 
   //// PUT JET CUTS SECTION IN HERE
   //TH1F* genjtptCut_h=NULL; 
@@ -482,7 +483,10 @@ void printTupelJetIDHist( TFile* fin_jetID , int etabin, bool print_incjetana_tu
   
   
   // TITLES
-  std::string h_XAx_Title=tupelvar_xAx_Titles[j];//, h_YAx_Title=AUAxTitle;
+  std::string h_XAx_Title;
+  if(!print_incjetana_tupelequiv)h_XAx_Title=tupelvar_xAx_Titles[j];//, h_YAx_Title=AUAxTitle;
+  else h_XAx_Title=tupelvar_incjetanaequiv_xAx_Titles[j];
+
   std::string h_YAx_Title;
   if(tupelvar[j]=="Pt" || tupelvar[j]=="RawPt")h_YAx_Title= h_YAx_Title=ddcrossSectionAxTitle;//for APS DNP
   else h_YAx_Title="A.U.";

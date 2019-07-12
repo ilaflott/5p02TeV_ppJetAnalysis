@@ -7,13 +7,13 @@ then
     NLOfilestr=$2
     NLOfileshortstr=$3
     JERfilestr=$4
-    Descstr=$5
+    sescstr=$5
     Fittypestr=$6
     scp2Serin=$7
 else
     echo ""
     echo "error! usage is:"
-    echo "source run_smearTheory_etabin.sh <etaBin>  <NLOfilestr> <NLOfileshortstr> <JERfilestr> <Descstr> <Fittypestr> <scp2Serin>"
+    echo "source run_smearTheory_etabin.sh <etaBin>  <NLOfilestr> <NLOfileshortstr> <JERfilestr> <descstr> <Fittypestr> <scp2Serin>"
     echo ""
     return
 fi

@@ -80,6 +80,7 @@
 #include "unfoldSpectra_TH1_funcs.h"
 #include "unfoldSpectra_TH2_funcs.h"
 #include "unfoldSpectra_TMatrix_funcs.h"
+#include "unfoldSpectra_ptbins.h"
 #include "unfoldSpectra_simpbins.h"
 #include "unfoldSpectra_anabins.h"
 #include "unfoldSpectra_thySpectra.h"
@@ -310,44 +311,76 @@ double* setBinning ( bool useSimpBins, std::string type){
   return binarray;  
 }
 
-void setBinning_etabin(
-		       double* binarr1,//gen
-		       double* binarr2,//reco
-		       double* binarr3,//genmat
-		       double* binarr4,//recomat
-		       int arrlength, TH1D* nlohist   ){
-  bool funcDebug=false;
-  if(funcDebug)std::cout<<"setting binning for unfolding single-etabin hist"<<std::endl;
-  int arrindex=0;  
-  int nbins_hist=nlohist->GetNbinsX();
-  if(funcDebug){
-    std::cout<<"arrlength="<<arrlength<<std::endl;
-    std::cout<<"nbins_hist="<<nbins_hist<<std::endl;  }
-  for(int i=1; i<=nbins_hist; i++){
-    if(funcDebug)std::cout<<"__________"<<std::endl;
-    if(funcDebug)std::cout<<"i="<<i<<std::endl;
-    if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
-    double binedge=-1.;
-    binedge=nlohist->GetBinLowEdge(i);        
-    if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
-    if(binedge<56.)continue;
-    binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
-    binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;    
-    if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;
-    arrindex++;
-    if(i==nbins_hist){//upper edge of last bin special case or else we run off the end of the array and/or hist. bad!
-      if(funcDebug)std::cout<<"i="<<i<<std::endl;
-      if(funcDebug)std::cout<<"(bool)(i==nbins_hist)="<<(i==nbins_hist)<<std::endl;
-      if(funcDebug)std::cout<<"hitting last bin!"<<std::endl;
-      binedge=nlohist->GetBinLowEdge(i)+nlohist->GetBinWidth(i);       
-      if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
-      if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
-      binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
-      binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;                 
-      if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;    }    
+
+//returns binning array, puts # of bins in nbins
+double* setBinning_etabin(int etabinint=0, std::string type="SMP", int* nbins=NULL    ){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<std::endl<<"in setBinning_etabin"<<std::endl<<std::endl;  
+  
+  double* binarray=NULL;  
+  if(type=="SMP"){
+    binarray=(double*)(SMP_ptbins[etabinint].data());
+    *(nbins)=(int)(SMP_ptbins[etabinint].size()-1);
   }
-  return;
+  else if(type=="NLO_SMP"){
+    binarray=(double*)(NLO_SMP_ptbins[etabinint].data());
+    *(nbins)=(int)(NLO_SMP_ptbins[etabinint].size()-1);    
+  }
+  else if(type=="john"){
+    binarray=(double*)(john_ptbins[etabinint].data());
+    *(nbins)=(int)(john_ptbins[etabinint].size()-1);
+  }
+  else if(type=="chris"){
+    binarray=(double*)(chris_ptbins[etabinint].data());
+    *(nbins)=(int)(chris_ptbins[etabinint].size()-1);
+  }
+  else
+    assert(false);
+  
+  if(funcDebug)std::cout<<std::endl<<"setBinning_etabin done, exiting."<<std::endl<<std::endl;
+  return binarray;  
+
 }
+
+
+//void setBinning_etabin(
+//		       double* binarr1,//gen
+//		       double* binarr2,//reco
+//		       double* binarr3,//genmat
+//		       double* binarr4,//recomat
+//		       int arrlength, TH1D* nlohist   ){
+//  bool funcDebug=false;
+//  if(funcDebug)std::cout<<"setting binning for unfolding single-etabin hist"<<std::endl;
+//  int arrindex=0;  
+//  int nbins_hist=nlohist->GetNbinsX();
+//  if(funcDebug){
+//    std::cout<<"arrlength="<<arrlength<<std::endl;
+//    std::cout<<"nbins_hist="<<nbins_hist<<std::endl;  }
+//  for(int i=1; i<=nbins_hist; i++){
+//    if(funcDebug)std::cout<<"__________"<<std::endl;
+//    if(funcDebug)std::cout<<"i="<<i<<std::endl;
+//    if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
+//    double binedge=-1.;
+//    binedge=nlohist->GetBinLowEdge(i);        
+//    if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
+//    if(binedge<56.)continue;
+//    binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
+//    binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;    
+//    if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;
+//    arrindex++;
+//    if(i==nbins_hist){//upper edge of last bin special case or else we run off the end of the array and/or hist. bad!
+//      if(funcDebug)std::cout<<"i="<<i<<std::endl;
+//      if(funcDebug)std::cout<<"(bool)(i==nbins_hist)="<<(i==nbins_hist)<<std::endl;
+//      if(funcDebug)std::cout<<"hitting last bin!"<<std::endl;
+//      binedge=nlohist->GetBinLowEdge(i)+nlohist->GetBinWidth(i);       
+//      if(funcDebug)std::cout<<"arrindex="<<arrindex<<std::endl;
+//      if(funcDebug)std::cout<<"binedge="<<binedge<<std::endl;
+//      binarr1[arrindex]=binedge;    binarr2[arrindex]=binedge;
+//      binarr3[arrindex]=binedge;    binarr4[arrindex]=binedge;                 
+//      if(funcDebug)std::cout<<"binarr1["<<arrindex<<"]="<<binarr1[arrindex]<<std::endl;    }    
+//  }
+//  return;
+//}
 
 void setBinning_etabin_forPY8(
 			      double* binarr1,//gen
@@ -587,13 +620,13 @@ void drawRespMatrixFile(TH2D* hmat, TH2D* hmat_rebin, TH2D* hmat_errors,
   double xLow,xHi;//=boundaries_pt_reco_mat[0];
   double yLow, yHi;//=boundaries_pt_gen_mat[0];
   if( (bool)fpp_MC && !isForNLOMC){
-    xLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_lo") )
+    xLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut") )
 			      )->GetTitle() );
-    xHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_unf_hi") )
+    xHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hJetPtCut_Hi") )
 			     )->GetTitle() );
-    yLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_lo") )
+    yLow=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut") )
 			      )->GetTitle() );
-    yHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_unf_hi") )
+    yHi=(double)std::atof( ( (TH1*) (fpp_MC->Get("hGenJetPtCut_Hi") )
 			     )->GetTitle() );	
     hmat->SetAxisRange(xLow,xHi,"X");
     hmat->SetAxisRange(yLow,yHi,"Y");        

@@ -905,7 +905,9 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
     TCanvas* JERfitsCanv=new TCanvas("JERfitsCanv","Canv for JER fit", CANVX, CANVY);    
     JERfitsCanv->SetLogy(1);
     JERfitsCanv->cd();                    
+
     for(int j=0;j<nbins_pt_debug;++j){ 
+      std::cout<<"j="<<j<<std::endl;
       int ptbin_j=(int)ptbins_debug[j];
       int ptbin_j1=(int)ptbins_debug[j+1];
       std::string hrspTitle=std::to_string(ptbin_j)+" GeV < GEN Jet p_{T} < "+std::to_string(ptbin_j1)+" GeV";    
@@ -916,7 +918,7 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
 		     ( std::string ) hrsp_XAxTitle    ,
 		     ( TFile*      ) rootfout         ,
 		     ( TDirectory*  ) fout_ptbin_JER );    }
-
+    //assert(false);
     
     //___________________________________________
     //MULTIPANEL CANVASES OF JER HISTS

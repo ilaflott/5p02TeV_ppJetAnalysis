@@ -10,9 +10,10 @@ const bool setDataCovMat=true;
 const bool doJetID=true     ;
 const bool useSimpBins=false;
 const bool compareToNLOThy=false;
-const bool doJECsys=false;
+const bool doJECsys=true;
 const bool applyNPCorrs=false;//&&compareToNLOThy;
 
+const std::string ptbintype="SMP";
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true
@@ -102,14 +103,14 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
   else std::cout<<"using simple pt bins"<<std::endl<<std::endl;
   
-  double* boundaries_pt_gen=setBinning(  useSimpBins , "gen"  );
-  int     nbins_pt_gen=setNBins(  useSimpBins , "gen"  );
-  double* boundaries_pt_reco      = setBinning( useSimpBins , "reco" );
-  int     nbins_pt_reco =   setNBins(  useSimpBins , "reco"  );
-  double* boundaries_pt_gen_mat   = setBinning( useSimpBins , "gen"  );
-  int     nbins_pt_gen_mat =   setNBins(  useSimpBins , "gen"  );
-  double* boundaries_pt_reco_mat  = setBinning( useSimpBins , "reco" );
-  int     nbins_pt_reco_mat =   setNBins(  useSimpBins , "reco"  );
+  int     nbins_pt_gen=-1;
+  double* boundaries_pt_gen=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen);  
+  int     nbins_pt_reco=-1;
+  double* boundaries_pt_reco=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco);  
+  int     nbins_pt_gen_mat=-1;
+  double* boundaries_pt_gen_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen_mat);  
+  int     nbins_pt_reco_mat=-1;
+  double* boundaries_pt_reco_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco_mat);
 
 
 

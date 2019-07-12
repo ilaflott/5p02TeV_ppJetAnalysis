@@ -7,7 +7,7 @@ const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
 const bool setDataCovMat=true;
-
+const std::string ptbintype="NLO_SMP";
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true
@@ -149,6 +149,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   std::cout<<"input NLO dir : "<< (inFile_MC_dir)  <<std::endl; 
   std::cout<<"NLO file name : "<< (inFile_MC_name)<<std::endl;   std::cout<<std::endl<<std::endl;  
   TFile *fpp_MC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
+  if(fpp_MC->IsZombie())assert(false);
 
   // ---------- gen, NLO truth spectra
   std::string genHistTitle="theory_rnd";//"hpp_mcclosure_gen"
@@ -160,25 +161,34 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   if(debugWrite)hgen->Write(genHistTitle.c_str());
   if(debugMode)hgen->Print("base");    
   
-  //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
-  const int nbins_pt = hgen->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
-  const int     nbins_pt_gen           = nbins_pt;
-  const int     nbins_pt_reco          = nbins_pt;
-  const int     nbins_pt_gen_mat       = nbins_pt;
-  const int     nbins_pt_reco_mat      = nbins_pt;
+//  //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
+//  const int nbins_pt = hgen->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
+//  const int     nbins_pt_gen           = nbins_pt;
+//  const int     nbins_pt_reco          = nbins_pt;
+//  const int     nbins_pt_gen_mat       = nbins_pt;
+//  const int     nbins_pt_reco_mat      = nbins_pt;
+//  
+//  //length of array is nbins_pt+1 because the array contains the bin boundaries. so one more than # of bins
+//  double      boundaries_pt_gen[nbins_pt+1] = {0.};
+//  double     boundaries_pt_reco[nbins_pt+1] = {0.};
+//  double  boundaries_pt_gen_mat[nbins_pt+1] = {0.};
+//  double boundaries_pt_reco_mat[nbins_pt+1] = {0.};
+//  
+//  setBinning_etabin( (double*)      boundaries_pt_gen,
+//		     (double*)     boundaries_pt_reco,
+//		     (double*)  boundaries_pt_gen_mat,
+//		     (double*) boundaries_pt_reco_mat,
+//		     nbins_pt+1, (TH1D*)hgen);
   
-  //length of array is nbins_pt+1 because the array contains the bin boundaries. so one more than # of bins
-  double      boundaries_pt_gen[nbins_pt+1] = {0.};
-  double     boundaries_pt_reco[nbins_pt+1] = {0.};
-  double  boundaries_pt_gen_mat[nbins_pt+1] = {0.};
-  double boundaries_pt_reco_mat[nbins_pt+1] = {0.};
-  
-  setBinning_etabin( (double*)      boundaries_pt_gen,
-		     (double*)     boundaries_pt_reco,
-		     (double*)  boundaries_pt_gen_mat,
-		     (double*) boundaries_pt_reco_mat,
-		     nbins_pt+1, (TH1D*)hgen);
-  
+  int     nbins_pt_gen=-1;
+  double* boundaries_pt_gen=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen);  
+  int     nbins_pt_reco=-1;
+  double* boundaries_pt_reco=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco);  
+  int     nbins_pt_gen_mat=-1;
+  double* boundaries_pt_gen_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen_mat);  
+  int     nbins_pt_reco_mat=-1;
+  double* boundaries_pt_reco_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco_mat);
+
   genHistTitle+="_clone";
   TH1D* hgen_rebin = (TH1D*)hgen->Clone( (genHistTitle).c_str() );
   if(debugWrite)hgen_rebin->Write(genHistTitle.c_str());
@@ -634,6 +644,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   std::cout<<"input Data dir : "<< (inFile_Data_dir)  <<std::endl; 
   std::cout<<"Data file name : "<< (inFile_Data_name)<<std::endl;   std::cout<<std::endl;//<<std::endl;  
   TFile *fpp_Data = TFile::Open( (inFile_Data_dir+inFile_Data_name).c_str());
+  if(fpp_Data->IsZombie())assert(false);
   
   //for output
   if(debugWrite)fout->cd();    

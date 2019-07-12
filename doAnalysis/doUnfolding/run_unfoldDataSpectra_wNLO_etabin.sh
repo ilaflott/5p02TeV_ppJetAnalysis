@@ -5,23 +5,23 @@
 rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 
 
-############# NNPDF NLO + HERWIG EE5C LO NPCs ###############
-####NNPDF_03.14.19_sigmu_noJERscales_spl3wgts_gaussSmear_NLO_plots
-#
+############## NNPDF NLO + HERWIG EE5C LO NPCs ###############
+#####NNPDF_03.14.19_sigmu_noJERscales_spl3wgts_gaussSmear_NLO_plots
+##
 #FITTYPE="sigmu"
-#DATADIR="06.07.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_06-07-19_jetPlots_0.0eta2.0_SMPbins_withJECsys"
-#THYDIR="smearTheory/NNPDF_03.14.19_${FITTYPE}_noJERscales_spl3wgts_gaussSmear_NLO_plots/"
-#THYFILESTR="NNPDF_03.14.19_${FITTYPE}_noJERscales_spl3wgts_gaussSmear_"
-#OUTPUTTAG="06.07.19_Bayes_NNPDF_NLO_${FITTYPE}_noJERscales"
+#DATADIR="06.25.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_06-25-19_jetPlots_0.0eta2.0_SMPbins_withJECsys_semifinal"
+#THYDIR="smearTheory/NNPDF_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_NLO_plots/"
+#THYFILESTR="NNPDF_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
+#OUTPUTTAG="06.25.19_Bayes_NNPDF_NLO_${FITTYPE}_noJERscales_semifinal"
 #
 #
-###vanilla no sys
-#./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  0    ${THYDIR} ${THYFILESTR}  0 "" ""
-#./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  1    ${THYDIR} ${THYFILESTR}  0 "" ""
-#./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  2    ${THYDIR} ${THYFILESTR}  0 "" ""
-#./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  3    ${THYDIR} ${THYFILESTR}  0 "" ""
-##scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_nosys_NLOMC_wNP_??eta??.*"
-##return
+####vanilla no sys
+##./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  0    ${THYDIR} ${THYFILESTR}  0 "" ""
+##./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  1    ${THYDIR} ${THYFILESTR}  0 "" ""
+##./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  2    ${THYDIR} ${THYFILESTR}  0 "" ""
+##./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_nosys"  3    ${THYDIR} ${THYFILESTR}  0 "" ""
+###scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_nosys_NLOMC_wNP_??eta??.*"
+###return
 #
 ###JEC sys
 #./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_JECsys"  0    ${THYDIR} ${THYFILESTR}  1 "JEC" ""
@@ -72,7 +72,9 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 ##return
 #
 #scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_*sys*_NLOMC_wNP_??eta??.*"
-###-----
+#scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_*sys*_NLOMC_wNP_??eta??_respMat.*"
+#return
+####-----
 
 
 
@@ -84,10 +86,10 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 ###NNPDF_03.14.19_sigmu_noJERscales_spl3wgts_gaussSmear_NLO_plots
 
 FITTYPE="sigmu"
-DATADIR="06.07.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_06-07-19_jetPlots_0.0eta2.0_SMPbins_withJECsys"
-THYDIR="smearTheory/PY8_03.14.19_${FITTYPE}_noJERscales_spl3wgts_gaussSmear_NLO_plots/"
-THYFILESTR="PY8_03.14.19_${FITTYPE}_noJERscales_spl3wgts_gaussSmear_"
-OUTPUTTAG="06.07.19_Bayes_PY8_LO_${FITTYPE}_noJERscales"
+DATADIR="06.25.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_06-25-19_jetPlots_0.0eta2.0_SMPbins_withJECsys_semifinal"
+THYDIR="smearTheory/PY8_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_NLO_plots/"
+THYFILESTR="PY8_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
+OUTPUTTAG="06.25.19_Bayes_PY8_LO_${FITTYPE}_noJERscales_semifinal"
 
 
 ##vanilla no sys

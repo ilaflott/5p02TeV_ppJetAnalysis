@@ -2,6 +2,10 @@
 
 
 #echo "sourcing condor+OSG software"
+
+#export PATH=/cms/base/root/root-6.14.06/bin:${PATH}
+#export LD_LIBRARY_PATH=/cms/base/root/root-6.14.06/lib:${LD_LIBRARY_PATH}
+
 source /condor/HTCondor/current/condor.sh
 source /osg/current/setup.sh
 
@@ -11,6 +15,8 @@ export SCRAM_ARCH=slc6_amd64_gcc491
 
 echo "sourcing cmssetup defaults"
 source $VO_CMS_SW_DIR/cmsset_default.sh
+
+
 
 ##other env variables, no need to output to screen
 #export CMSSW_GIT_REFERENCE=$VO_CMS_SW_DIR/cmssw.git

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-smeartheory=1
+smeartheory=0
 smearPY8=1
 
 
@@ -34,11 +34,10 @@ then
     nlofshortstr="NNPDF"
     
     jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
-    #descstr="02.18.19_semifinal_v2_w8TeVJERscales" #_ptmax1000"
-    #descstr="ptLo28_drCut_geny_sigma"
-    #descstr="ptLo28_drCut_geny_sigmu"
-    #descstr="03.14.19_sigmu"
-    descstr="03.14.19_sigma"
+    #descstr="03.14.19_sigmu" ##keep me
+    #descstr="03.14.19_sigma" ##keep me
+    descstr="06.25.19_sigmu_semifinal" 
+    #descstr="06.25.19_sigma_semifinal" 
     
     #fittypestr="modLog"
     #fittypestr="7TeV"
@@ -51,7 +50,7 @@ then
     scpafterlast=1
     etabin_i=0
     #Netabins=1 ##debug; runs first etabin only
-    Netabins=4 
+    Netabins=4
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]
@@ -91,7 +90,7 @@ then
     #nlofstr="fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
     #py8fstr="02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
-    py8fstr="06.07.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-07-19_JERS_0.0eta2.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    py8fstr="06.25.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-25-19_unf_0.0eta2.0_semifinal/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
     
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"
@@ -101,12 +100,10 @@ then
     py8fshortstr="PY8"
     
     jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
-    #descstr="02.18.19_semifinal_v2_w8TeVJERscales" #_ptmax1000"
-    #descstr="ptLo28_drCut_geny_sigma"
-    #descstr="ptLo28_drCut_geny_sigmu"
-    #descstr="ptLo28_drCut_geny_sigmu"
+    #descstr="03.14.19_sigmu"
     #descstr="03.14.19_sigma"
-    descstr="03.14.19_sigma"
+    descstr="06.25.19_sigmu_semifinal"
+    #descstr="06.25.19_sigma_semifinal"
     
     #fittypestr="modLog"
     #fittypestr="7TeV"
@@ -117,10 +114,7 @@ then
     
     scpoutput=0
     scpafterlast=1
-    etabin_i=0
-    #Netabins=6 ##full set of etabins 
-    #etabin_i=2 
-    #Netabins=3 ##debug; runs first etabin only
+    etabin_i=1
     Netabins=4 
     while [ $etabin_i -lt $Netabins ]
     do

@@ -5,7 +5,7 @@
 const bool fillMCEvtQAHists=true;
 const bool fillMCUnfoldingHists=true;
 const bool fillMCUnfJetSpectraRapHists=true&&fillMCUnfoldingHists;
-
+const bool fillMCJetCovMatrix=true; // leave me on almost always
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 const int jetIDint=(int)fillMCJetIDHists;
 
@@ -256,8 +256,39 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   }//end fill mc unfolding hists
   
   
+
+  TH2D* hpp_mcclosure_covmat_test=NULL;
+  TH1D* hpp_mcclosure_covmat_test_helper=NULL;
+  bool bool_helper=false;
   
+  TH2D* hpp_mcclosure_covmat_test_eta_arr[nbins_abseta]={};
+  TH1D* hpp_mcclosure_covmat_test_eta_arr_helpers[nbins_abseta]={};
+  bool etabin_bool_helper[nbins_abseta]={0};
   
+  if(fillMCJetCovMatrix && fillMCJetIDHists){
+    std::string covmat_eta_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[0]+" < #||{y} < "+absetabins_str[nbins_abseta];    
+    if(debugMode)std::cout<<"covmat_eta_title =" << covmat_eta_title<< std::endl;      
+    std::string covmat_eta_name="hpp_mcclosure_covmat_test_";
+    covmat_eta_name+="wJetID";
+    if(debugMode)std::cout<<"covmat_eta_name  =" << covmat_eta_name << std::endl;      
+    hpp_mcclosure_covmat_test=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+    hpp_mcclosure_covmat_test_helper=new TH1D( "mcclosure_covmat_test_helper", "helper only", nbins_pt, ptbins);      
+    
+    if(fillMCUnfJetSpectraRapHists)
+      for(int i=0;i<nbins_abseta;i++){
+	std::string covmat_eta_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[i]+" < #||{y} < "+absetabins_str[i+1];    
+	if(debugMode)std::cout<<"covmat_eta_title =" << covmat_eta_title<< std::endl;      
+	std::string covmat_eta_name="hpp_mcclosure_covmat_test_";
+	//if(fillDataJetIDHists)covmat_eta_name+="wJetID_";
+	covmat_eta_name+="wJetID_";
+	covmat_eta_name+="etabin_"+std::to_string(i);      
+	if(debugMode)std::cout<<"covmat_eta_name  =" << covmat_eta_name << std::endl;      
+	hpp_mcclosure_covmat_test_eta_arr[i]=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+	hpp_mcclosure_covmat_test_eta_arr_helpers[i]=new TH1D(("mcclosure_covmat_test_helper_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+      }//end etabin loop
+  }//end fillMCJetCovMatrix
+
+
   // EVENT LOOP PREP
   // declare variables/arrays + set branch address for each input tree
   //JetAnalyzer, jets
@@ -369,9 +400,19 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
 
   int mcclosureInt=0;
-  //int mcclosure_arr[nbins_abseta]={0};
-
+  bool incrementClosureInt=false;
+  
+  int mcclosureInt_arr[nbins_abseta]={0,0,0,0};
+  bool incrementClosureInt_arr[nbins_abseta]={0};
+  //bool eventAccepted=false;
+  
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
+    //eventAccepted=false;
+    
+    incrementClosureInt=false;
+    for(int i=0; i<nbins_abseta; i++)
+      incrementClosureInt_arr[i]=false;
+      
     
     if(nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
     jetpp[0]->GetEntry(nEvt);    
@@ -385,6 +426,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 
     if( fabs(vz_F)>24.              ) continue;
     h_NEvents_vzCut->Fill(1);
+    
+    //eventAccepted=true;
+    //if(debugMode && eventAccepted)
+    //  std::cout<<"nEvt="<<nEvt<<", event accepted"<<std::endl;
     
     // grab vzweight
     double vzWeight=1.;
@@ -406,7 +451,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     float vr_F=std::sqrt( vx_F*vx_F + vy_F*vy_F);
     //vz hists
     if(fillMCEvtQAHists){
-
+      
       hVr->Fill( vr_F, 1.);
       hWVr->Fill(vr_F, weight_eS);      
       hVx->Fill( vx_F, 1.);
@@ -425,9 +470,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     // for event counting + avoiding duplicate fills in dijet hists
     bool hNEvts_withJets_Filled=false;
     bool hNEvts_withJets_kmatCut1_Filled=false, hNEvts_withJets_kmatCut2_Filled=false; 
-
+    //bool jetAccepted=false;
     for(int jet = 0; jet<nref_I; ++jet){
-
+      //jetAccepted=false;
       // event+jet counting
       h_NJets->Fill(1);
       if(!hNEvts_withJets_Filled){
@@ -447,14 +492,32 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       //float recphi = phi_F[jet];
       
       
-      if( subid_F[jet]!=0 ) continue;//matching gen-reco
-      else if ( !(recpt > jtPtCut)    ) continue;        //low recopt cut          
-      else if ( !(recpt < jtPtCut_Hi)    ) continue;     //high recopt cut
-      else if ( !(genpt > genJetPtCut) ) continue;       //low genpt cut
-      else if ( !(genpt < genJetPtCut_Hi) ) continue;   //high genpt cut
-      else if ( absreceta < jtEtaCutLo ) continue; // lower abseta cut 
-      else if (!(absreceta < jtEtaCutHi))continue; // higher abseta cut
-      else if ( gendrjt > 0.1 ) continue;       //delta-r cut, proxy for gen-reco matching quality
+      if( subid_F[jet]!=0 ) {
+	//if(debugMode)std::cout<<"jet not matched!"<<std::endl;
+	continue;//matching gen-reco
+      }
+      else if ( !(recpt > jtPtCut)    ) {
+	//if(debugMode)std::cout<<"recpt="<<recpt<<", too low!"<<std::endl;
+	continue;        //low recopt cut          
+      }
+      else if ( !(recpt < jtPtCut_Hi)    ){ 
+	//if(debugMode)std::cout<<"recpt too high!"<<std::endl;
+	continue;}     //high recopt cut
+      else if ( !(genpt > genJetPtCut) ) {
+	//if(debugMode)std::cout<<"genpt too low!"<<std::endl;
+	continue;}       //low genpt cut
+      else if ( !(genpt < genJetPtCut_Hi) ) {
+	//if(debugMode)std::cout<<"genpt too high!"<<std::endl;
+	continue;}   //high genpt cut
+      else if ( absreceta < jtEtaCutLo ) {
+	//if(debugMode)std::cout<<"absreceta too low!"<<std::endl;
+	continue;} // lower abseta cut 
+      else if (!(absreceta < jtEtaCutHi)){
+	//if(debugMode)std::cout<<"absreceta too high!"<<std::endl;
+	continue;} // higher abseta cut
+      else if ( gendrjt > 0.1 ) {
+	//if(debugMode)std::cout<<"gendrjt too high!"<<std::endl;
+	continue;}       //delta-r cut, proxy for gen-reco matching quality
       
       // jet/event counts
       h_NJets_kmatCut1->Fill(1);
@@ -491,6 +554,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	if(!passesJetID) continue;
       }
       
+      //jetAccepted=true;
+      //eventAccepted=true;
+      //if(debugMode&&jetAccepted&&eventAccepted)std::cout<<"nEvt="<<nEvt<<", jet="<<jet<<", jet accepted. filling hists"<<std::endl;
       
       h_NJets_kmatCut2->Fill(1);
       if(!hNEvts_withJets_kmatCut2_Filled){
@@ -506,11 +572,13 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  break;	  }       	
 
       int theGENRapBin=-1;
-      for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
-	if( absetabins[rapbin]<=absgeneta  && 		
-	    absgeneta<absetabins[rapbin+1]    	      ) {	    
-	  theGENRapBin=rapbin;
-	  break;	  }       	                  
+      if(usegenetabins){
+	for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
+	  if( absetabins[rapbin]<=absgeneta  && 		
+	      absgeneta<absetabins[rapbin+1]    	      ) {	    
+	    theGENRapBin=rapbin;
+	    break;	  }     
+      }  	                  
       
       /////   UNFOLDING   ///// 
       if(fillMCUnfoldingHists){
@@ -518,12 +586,20 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	hpp_gen->Fill(genpt, weight_eS);
 	hpp_reco->Fill(recpt, weight_eS);
 	hpp_matrix->Fill(recpt, genpt, weight_eS);	
-	if(mcclosureInt%2 == 0)
+
+	if(mcclosureInt%2 == 0){
+	  incrementClosureInt=true;
 	  hpp_mcclosure_reco_test->Fill(recpt, weight_eS);      	
+	  if(fillMCJetCovMatrix){	    
+	    bool_helper=true;
+	    hpp_mcclosure_covmat_test_helper->Fill(recpt); }	  
+	}
 	else {
+	  incrementClosureInt=true;
 	  hpp_mcclosure_gen->Fill(genpt, weight_eS);
 	  hpp_mcclosure_reco->Fill(recpt, weight_eS); 	
-	  hpp_mcclosure_matrix->Fill(recpt, genpt, weight_eS);	}	  
+	  hpp_mcclosure_matrix->Fill(recpt, genpt, weight_eS);	
+	}	  
 	
 
 	//fill jetspectraRapHists
@@ -534,24 +610,67 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	    hpp_reco_genrap[theGENRapBin]->Fill(recpt,weight_eS);
 	    hpp_matrix_genrap[theGENRapBin]->Fill(recpt, genpt, weight_eS);
 	  }
+
 	  if(theRapBin!=-1){
 	    hpp_gen_rap[theRapBin]->Fill(genpt,weight_eS);
 	    hpp_reco_rap[theRapBin]->Fill(recpt,weight_eS);
 	    hpp_matrix_rap[theRapBin]->Fill(recpt, genpt, weight_eS);
-	    if(mcclosureInt%2 == 0)
+
+	    if(mcclosureInt_arr[theRapBin]%2==0){
+	      incrementClosureInt_arr[theRapBin]=true;
 	      hpp_mcclosure_reco_test_rap[theRapBin]->Fill(recpt, weight_eS);      	  
+	      if(fillMCJetCovMatrix){
+		etabin_bool_helper[theRapBin]=true;
+		hpp_mcclosure_covmat_test_eta_arr_helpers[theRapBin]->Fill(recpt);	      	    }
+	    }
 	    else {
+	      incrementClosureInt_arr[theRapBin]=true;
 	      hpp_mcclosure_gen_rap[theRapBin]->Fill(genpt, weight_eS);
 	      hpp_mcclosure_reco_rap[theRapBin]->Fill(recpt, weight_eS); 	
-	      hpp_mcclosure_matrix_rap[theRapBin]->Fill(recpt, genpt, weight_eS);}	  
-	  }
-	  
+	      hpp_mcclosure_matrix_rap[theRapBin]->Fill(recpt, genpt, weight_eS);  
+	    }	  
+	  }//end theRapBin	  
 	}//end fillmcunfjetspectraraphists	  	  	
 	
       }//end fillmcunfoldinghists
 
     }//end jet loop
-    mcclosureInt++;    
+
+    //increment the closure int IF A CLOSURE HIST WAS FILLED IN 0 < |y| < |y_max|
+    //if(debugMode && eventAccepted)std::cout<<"mcclosureInt="<<mcclosureInt<<std::endl;
+    if(incrementClosureInt)mcclosureInt++;    
+    
+    //increment the closure int IF A CLOSURE HIST WAS FILLED IN |y_min|[i] < |y| < |y_max|[i+1]
+    for(int i=0; i<nbins_abseta; i++){
+      if(incrementClosureInt_arr[i]){
+	//if(debugMode&&eventAccepted)std::cout<<"mcclosureInt_arr["<<i<<"]="<<mcclosureInt_arr[i]<<std::endl;
+	mcclosureInt_arr[i]++;
+      }
+    }
+    
+    
+    if(fillMCJetCovMatrix&&fillMCJetIDHists){
+      
+      if(bool_helper){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
+	fillCovMatrix( (TH2D*)hpp_mcclosure_covmat_test, (TH1D*)hpp_mcclosure_covmat_test_helper, nbins_pt , (double) weight_eS);
+	hpp_mcclosure_covmat_test_helper->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
+      }//end bool_helper
+      bool_helper=false;	
+      
+      if(fillMCUnfJetSpectraRapHists){
+	for(int i=0; i<nbins_abseta; i++){
+	  if(etabin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
+	    fillCovMatrix( (TH2D*)hpp_mcclosure_covmat_test_eta_arr[i], (TH1D*)hpp_mcclosure_covmat_test_eta_arr_helpers[i], nbins_pt , (double) weight_eS);
+	    hpp_mcclosure_covmat_test_eta_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
+	  }//end etabin_bool_helper	  
+	  etabin_bool_helper[i]=false;	
+	}//end etabin loop
+      }//end fillMCJetSpectraRapHists
+    }//end fillMCJetCovMatrix
+    
+    //if((nEvt%1000==0) &&
+    //   (nEvt!=0)) break;
+    
   }//end event loop
   
   std::cout<<std::endl;

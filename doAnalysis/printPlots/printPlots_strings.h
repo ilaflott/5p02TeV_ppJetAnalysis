@@ -42,12 +42,12 @@ const std::string PDStatsString_2="#bf{CMS} #it{Work In Progress}               
 
 // variable names for QA Plots
 const std::string var[]={
-  //jets, 0-6, 7 vars tot
+  //jets, 0-3, 4 vars tot
   "jtpt"  , "rawpt" ,
-  //"jtpt_forRes", "jtpt_L2Res", "jtpt_L3Res",
+  //"jtpt_forRes", "jtpt_L2Res", "jtpt_L3Res",  //jets, 0-6, 7 vars tot
   "jteta" , "jtphi" ,
 
-  //jet constituents, 7-33, 27 vars tot
+  //jet constituents, 4-30, 27 vars tot
   "trkN", "trkSum", "trkMax", //trk
   "trkHardN", "trkHardSum",
 
@@ -63,16 +63,17 @@ const std::string var[]={
 
   "neuMult", "chMult", "numConst",
 
-  // dijets, 34-38=5 vars
+  // dijets, 31-35=5 vars
   "Aj" , "xj" , "dphi",    //JERS might not like me
   "leadJetPt", "subleadJetPt"  
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
 const int jetQA_varStart=0;
-//const int jetQA_Nvars=7;
-const int jetQA_Nvars=4;
+const int jetQA_Nvars=4;//const int jetQA_Nvars=7;
+
 const int jetConstits_varStart=jetQA_varStart+jetQA_Nvars;
 const int jetConstits_Nvars=27;
+
 const int dijet_varStart=jetConstits_varStart+jetConstits_Nvars;
 
 // variable names, string array
@@ -110,9 +111,28 @@ const std::string tupelvar_xAx_Titles[N_tupelvars]={
   "Neutral Hadron Energy/Jet E^{RAW} (PF Neutral Hadrons)",//"NeutralHadAnHfFrac",
   "Charged EM Energy/Jet E^{RAW} (PF Electrons)",//"ChEmFrac",
   "Neutral EM Energy/Jet E^{RAW} (PF Photons)",//"NeutralEmFrac",
-  "Charged Multiplicity (PF Charged Hadrons + Electrons + Muons)",//"ChMult",
-  "Constituent Count (All PF Particles)",//"ConstCnt",
-  "Neutral Multiplicity (PF Neutral Hadrons + Photons)"//"NeuMult"
+  "Jet Charged Multiplicity (PF Charged Hadrons + Electrons + Muons)",//"ChMult",
+  "Jet Constituent Count (All PF Particles)",//"ConstCnt",
+  "Jet Neutral Multiplicity (PF Neutral Hadrons + Photons)"//"NeuMult"
+};
+
+const std::string tupelvar_incjetanaequiv_xAx_Titles[N_tupelvars]={
+  "Jet p_{T}^{RECO} [GeV]",//"Pt",
+  "Jet y^{RECO}",//"Eta",
+  "Jet #phi^{RECO}",//"Phi",
+  "NULL",//"E",
+  "NULL",//"Id",
+  "Jet p_{T}^{Raw} [GeV]",//"RawPt",
+  "NULL",//"RawE",
+  "NULL",//"HfHadE",
+  "NULL",//"HfEmE",
+  "#Sigma p^{h+/-}_{T}/Jet p_{T}^{RECO} (PF Charged Hadrons)",//"Charged Hadron p_{T}/Jet p_{T}^{RECO} (PF Charged Hadrons)",//"ChHadFrac",
+  "#Sigma p^{h0}_{T}/Jet p_{T}^{RECO} (PF Neutral Hadrons)",  //"Neutral Hadron p_{T}/Jet p_{T}^{RECO} (PF Neutral Hadrons)",//"NeutralHadAnHfFrac",
+  "#Sigma p^{e+/-}_{T}/Jet p_{T}^{RECO} (PF Electrons)",//  "Charged EM p_{T}/Jet p_{T}^{RECO} (PF Electrons)",//"ChEmFrac",
+  "#Sigma p^{#gamma}_{T}/Jet p_{T}^{RECO} (PF Photons)",//"Neutral EM p_{T}/Jet p_{T}^{RECO} (PF Photons)",//"NeutralEmFrac",
+  "Jet Charged Multiplicity (PF Charged Hadrons + Electrons + Muons)",//"ChMult",
+  "Jet Constituent Count (All PF Particles)",//"ConstCnt",
+  "Jet Neutral Multiplicity (PF Neutral Hadrons + Photons)"//"NeuMult"
 };
 
 const std::string tupelvar_incjetanaequiv[]={
@@ -142,20 +162,24 @@ const std::string var_xAx_Titles[] = {
 //  "Jet p_{T}^{RECO} (GeV) L2+L3 Residuals"  ,
   "#eta_{Jet}", "#phi_{Jet}", //"y_{jet}" ,
   
-  "N^{Trks}",   "#Sigma p_{T}^{Trk}/p_{T}^{RECO}", "Max p_{T}^{Trk}/p_{T}^{RECO}", 
-  "N_{Hard}^{Trks}",   "#Sigma p_{T}^{Hard Trk}/p_{T}^{RECO}",
+  "N^{Trks}_{Jet}",   "#Sigma p^{Trk}_{T}/Jet p_{T}^{RECO}", "Max p^{Trk}_{T}/Jet p_{T}^{RECO}", 
+  "Hard N^{Trks}_{Jet} (p^{Trk}_{T} > 5 GeV)",   "#Sigma_{> 5 GeV} p_{T}^{Trk}/Jet p_{T}^{RECO}",
   
-  "phN", "phSum/p_{T}^{RECO}", "phMax/p_{T}^{RECO}", 
-  "phHardN", "phHardSum/p_{T}^{RECO}",
+  "N^{#gamma}_{Jet}", "#Sigma p^{#gamma}_{T}/Jet p_{T}^{RECO}", "Max p^{#gamma}_{T}/Jet p_{T}^{RECO}", 
+  "Hard N^{#gamma}_{Jet} (p^{#gamma}_{T} > 5 GeV)", "#Sigma_{> 5 GeV} p^{#gamma}_{T}/Jet p_{T}^{RECO}",//photons
   
-  "chN", "chSum/p_{T}^{RECO}", "chMax/p_{T}^{RECO}", 
-  "chHardN", "chHardSum/p_{T}^{RECO}",
+  "N^{h+/-}_{Jet}", "#Sigma p^{h+/-}_{T}/Jet p_{T}^{RECO}", "Max p^{h+/-}_{T}/Jet p_{T}^{RECO}", 
+  "Hard N^{h+/-}_{Jet} (p^{h+/-}_{T} > 5 GeV)", "#Sigma_{> 5 GeV} p^{h+/-}_{T}/Jet p_{T}^{RECO}", //charged had
   
-  "neN", "neSum/p_{T}^{RECO}",  "neMax/p_{T}^{RECO}", 
-  "eN",   "eSum/p_{T}^{RECO}",   "eMax/p_{T}^{RECO}", 
-  "muN", "muSum/p_{T}^{RECO}",  "muMax/p_{T}^{RECO}",
-  
-  "N_{neu}^{Jet}",   "N_{chg}^{Jet}",   "N_{sum}^{Jet}",
+  "N^{h0}_{Jet}", "#Sigma p^{h0}_{T}/Jet p_{T}^{RECO}", "Max p^{h0}_{T}/Jet p_{T}^{RECO}",  //neutral had
+
+  "N^{e+/-}_{Jet}", "#Sigma p^{e+/-}_{T}/Jet p_{T}^{RECO}", "Max p^{e+/-}_{T}/Jet p_{T}^{RECO}",  //electrons
+
+  "N^{#mu+/-}_{Jet}", "#Sigma p^{#mu+/-}_{T}/Jet p_{T}^{RECO}", "Max p^{#mu+/-}_{T}/Jet p_{T}^{RECO}",  //muons
+
+  "Jet Neutral Multiplicity (PF Neutral Hadrons + Photons)",//"NeuMult"
+  "Jet Charged Multiplicity (PF Charged Hadrons + Electrons + Muons)",//"ChMult",
+  "Jet Constituent Count (All PF Particles)",//"ConstCnt",
   
   "A_{j}",     "x_{j}" , "#Delta #phi", 
   "Jet p_{T,1}^{RECO} (GeV)", "Jet p_{T,2}^{RECO} (GeV)"

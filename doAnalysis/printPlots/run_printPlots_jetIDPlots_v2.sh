@@ -20,7 +20,8 @@ then
 elif [ "${type}" = "ppMC" ]
 then
 #    ./printPlots_jetIDPlots.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin}/      Py8_CUETP8M1_${outtag}
-    ./printPlots_jetIDPlots.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/ ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_nojetID}/ Py8_CUETP8M1_${outtag}
+    #./printPlots_jetIDPlots.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/ ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_nojetID}/ Py8_CUETP8M1_${outtag}
+    ./printPlots_jetIDPlots_v2.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/ Py8_CUETP8M1_${outtag}
 else
     echo ""
     echo "data type ${type} not known. exit"

@@ -7,13 +7,13 @@ then
     PY8filestr=$2
     PY8fileshortstr=$3
     JERfilestr=$4
-    Descstr=$5
+    descstr=$5
     Fittypestr=$6
     cp2Serin=$7
 else
     echo ""
     echo "error! usage is:"
-    echo "source run_smearPY8_etabin.sh <etaBin>  <PY8filestr> <PY8fileshortstr> <JERfilestr> <Descstr> <Fittypestr> <cp2Serin>"
+    echo "source run_smearPY8_etabin.sh <etaBin>  <PY8filestr> <PY8fileshortstr> <JERfilestr> <descstr> <Fittypestr> <cp2Serin>"
     echo ""
     return
 fi

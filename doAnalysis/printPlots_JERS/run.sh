@@ -79,21 +79,40 @@ echo ""
 #scp2Serin "output/ak4PF_PY8JER_??eta??_06.07.19_sigm*.*"										             
 
 
+
+###ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-14-19_JERS_0.0eta3.0_ptLo28_JER
+#
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_03.14.19_sigma" "1" "0" "0" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_03.14.19_sigma" "1" "0" "1" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "10eta15_03.14.19_sigma" "1" "0" "2" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_03.14.19_sigma" "1" "0" "3" "sigma" 
+#
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_03.14.19_sigmu" "1" "0" "0" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_03.14.19_sigmu" "1" "0" "1" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "10eta15_03.14.19_sigmu" "1" "0" "2" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_03.14.19_sigmu" "1" "0" "3" "sigmu" 
+#
+#
+#echo "scp2Serin"																             
+#scp2Serin "output/ak4PF_PY8JER_??eta??_03.14.19_sigm*.*"										             
+
+
+
 ##ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-14-19_JERS_0.0eta3.0_ptLo28_JER
 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_03.14.19_sigma" "1" "0" "0" "sigma" 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_03.14.19_sigma" "1" "0" "1" "sigma" 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "10eta15_03.14.19_sigma" "1" "0" "2" "sigma" 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_03.14.19_sigma" "1" "0" "3" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_03.14.19_sigma" "1" "0" "0" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_03.14.19_sigma" "1" "0" "1" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "10eta15_03.14.19_sigma" "1" "0" "2" "sigma" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_03.14.19_sigma" "1" "0" "3" "sigma" 
 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "00eta05_03.14.19_sigmu" "1" "0" "0" "sigmu" 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "05eta10_03.14.19_sigmu" "1" "0" "1" "sigmu" 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "10eta15_03.14.19_sigmu" "1" "0" "2" "sigmu" 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "03.14.19_outputCondor" "03-14-19" "0.0eta3.0_ptLo28_JER" "15eta20_03.14.19_sigmu" "1" "0" "3" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal" "00eta05_06.25.19_sigmu_semifinal" "1" "0" "0" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal" "05eta10_06.25.19_sigmu_semifinal" "1" "0" "1" "sigmu" 
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal" "10eta15_06.25.19_sigmu_semifinal" "1" "0" "2" "sigmu" 
+source run_printPlots_ppMC_JERS_etabin.sh "4" "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal" "15eta20_06.25.19_sigmu_semifinal" "1" "0" "3" "sigmu" 
 
 
 echo "scp2Serin"																             
-scp2Serin "output/ak4PF_PY8JER_??eta??_03.14.19_sigm*.*"										             
+scp2Serin "output/ak4PF_PY8JER_??eta??_06.25.19_sigm*.*"										             
 
 
 

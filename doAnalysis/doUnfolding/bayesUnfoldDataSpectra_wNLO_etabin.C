@@ -869,26 +869,72 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   std::string CT10NPs ="" ; 
   TFile*fNLO_CT10nlo=TFile::Open(fNLOFile_R04_CT10nlo.c_str());
   TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
-  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT10nlo,   
-					 CT10nlo, &CT10NPs, etabinint);
+  TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());//set proper, typical pdf errs on the thy hist
+  for(int i=1; i<=CT10nlo->GetNbinsX(); i++)CT10nlo->SetBinError(i, CT10nlo->GetBinContent(i)*(CT10nloerr->GetBinContent(i))); 
+  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10nlo_rebin",boundaries_pt_gen);  
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
   CT10nlo->Scale(1./1000.);
   
+  TH1D* CT10nlo_scale6err_up  =(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"09").c_str());//6 pt scale errors
+  TH1D* CT10nlo_scale6err_down=(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"08").c_str());
+  CT10nlo_scale6err_up   = (TH1D*)CT10nlo_scale6err_up  ->Rebin(nbins_pt_gen,"pp_CT10nlo_scale6err_up_rebin",  boundaries_pt_gen);  
+  CT10nlo_scale6err_down = (TH1D*)CT10nlo_scale6err_down->Rebin(nbins_pt_gen,"pp_CT10nlo_scale6err_down_rebin",boundaries_pt_gen);  
+  
+  TH1D* CT10nlo_np_scale6_up  =(TH1D*) CT10nlo->Clone("CT10nlo_np_scale6_up"  );
+  TH1D* CT10nlo_np_scale6_down=(TH1D*) CT10nlo->Clone("CT10nlo_np_scale6_down");
+  for(int i=1; i<=CT10nlo->GetNbinsX(); i++){
+    CT10nlo_np_scale6_up->SetBinContent(i, 
+					CT10nlo_np_scale6_up->GetBinContent(i)*(
+										1+CT10nlo_scale6err_up->GetBinContent(i)
+										)); 
+    CT10nlo_np_scale6_up->SetBinError(i, 1.e-30);
+    
+    CT10nlo_np_scale6_down->SetBinContent(i, 
+					CT10nlo_np_scale6_down->GetBinContent(i)*(
+										  1+CT10nlo_scale6err_down->GetBinContent(i)//bin content neg for down
+										  )); 
+    CT10nlo_np_scale6_down->SetBinError(i, 1.e-30);
+  }
+  
   std::string CT14NPs ="" ; 
   TFile*fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
   TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());
+  for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(CT14nloerr->GetBinContent(i))); 
   CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
 					 CT14nlo, &CT14NPs, etabinint);
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
   CT14nlo->Scale(1./1000.);
+
+  TH1D* CT14nlo_scale6err_up  =(TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"09").c_str());//6 pt scale errors
+  TH1D* CT14nlo_scale6err_down=(TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"08").c_str());
+  CT14nlo_scale6err_up   = (TH1D*)CT14nlo_scale6err_up  ->Rebin(nbins_pt_gen,"pp_CT14nlo_scale6err_up_rebin",  boundaries_pt_gen);  
+  CT14nlo_scale6err_down = (TH1D*)CT14nlo_scale6err_down->Rebin(nbins_pt_gen,"pp_CT14nlo_scale6err_down_rebin",boundaries_pt_gen);  
+  
+  TH1D* CT14nlo_np_scale6_up  =(TH1D*) CT14nlo->Clone("CT14nlo_np_scale6_up"  );
+  TH1D* CT14nlo_np_scale6_down=(TH1D*) CT14nlo->Clone("CT14nlo_np_scale6_down");
+  for(int i=1; i<=CT14nlo->GetNbinsX(); i++){
+    CT14nlo_np_scale6_up->SetBinContent(i, 
+					CT14nlo_np_scale6_up->GetBinContent(i)*(
+										1+CT14nlo_scale6err_up->GetBinContent(i)
+										)); 
+    CT14nlo_np_scale6_up->SetBinError(i, 1.e-30);
+    
+    CT14nlo_np_scale6_down->SetBinContent(i, 
+					CT14nlo_np_scale6_down->GetBinContent(i)*(
+										  1+CT14nlo_scale6err_down->GetBinContent(i)//bin content neg for down
+										  )); 
+    CT14nlo_np_scale6_down->SetBinError(i, 1.e-30);
+  }
   
   std::string HERANPs ="" ; 
   TFile*fNLO_HERAPDF=TFile::Open(fNLOFile_R04_HERAPDF.c_str());
   TH1D* HERAPDF  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* HERAPDFerr  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());
+  for(int i=1; i<=HERAPDF->GetNbinsX(); i++)HERAPDF->SetBinError(i, HERAPDF->GetBinContent(i)*(HERAPDFerr->GetBinContent(i))); 
   HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_HERAPDF,
 					 HERAPDF, &HERANPs, etabinint);
@@ -896,26 +942,92 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   HERAPDF->SetLineColor(kViolet-5);  
   HERAPDF->Scale(1./1000.);
   
+  TH1D* HERAPDF_scale6err_up  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"09").c_str());//6 pt scale errors
+  TH1D* HERAPDF_scale6err_down=(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"08").c_str());
+  HERAPDF_scale6err_up   = (TH1D*)HERAPDF_scale6err_up  ->Rebin(nbins_pt_gen,"pp_HERAPDF_scale6err_up_rebin",  boundaries_pt_gen);  
+  HERAPDF_scale6err_down = (TH1D*)HERAPDF_scale6err_down->Rebin(nbins_pt_gen,"pp_HERAPDF_scale6err_down_rebin",boundaries_pt_gen);  
+  
+  TH1D* HERAPDF_np_scale6_up  =(TH1D*) HERAPDF->Clone("HERAPDF_np_scale6_up"  );
+  TH1D* HERAPDF_np_scale6_down=(TH1D*) HERAPDF->Clone("HERAPDF_np_scale6_down");
+  for(int i=1; i<=HERAPDF->GetNbinsX(); i++){
+    HERAPDF_np_scale6_up->SetBinContent(i, 
+					HERAPDF_np_scale6_up->GetBinContent(i)*(
+										1+HERAPDF_scale6err_up->GetBinContent(i)
+										)); 
+    HERAPDF_np_scale6_up->SetBinError(i, 1.e-30);
+    
+    HERAPDF_np_scale6_down->SetBinContent(i, 
+					HERAPDF_np_scale6_down->GetBinContent(i)*(
+										  1+HERAPDF_scale6err_down->GetBinContent(i)//bin content neg for down
+										  )); 
+    HERAPDF_np_scale6_down->SetBinError(i, 1.e-30);
+  }
+  
   std::string MMHTNPs ="" ; 
   TFile*fNLO_MMHTnlo=TFile::Open(fNLOFile_R04_MMHTnlo.c_str());
   TH1D* MMHTnlo  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* MMHTnloerr  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());
+  for(int i=1; i<=MMHTnlo->GetNbinsX(); i++)MMHTnlo->SetBinError(i, MMHTnlo->GetBinContent(i)*(MMHTnloerr->GetBinContent(i))); 
   MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_MMHTnlo,
 					 MMHTnlo, &MMHTNPs, etabinint);
   MMHTnlo->SetMarkerSize(0);
   MMHTnlo->SetLineColor(kOrange+7);  
   MMHTnlo->Scale(1./1000.);
+
+  TH1D* MMHTnlo_scale6err_up  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"09").c_str());//6 pt scale errors
+  TH1D* MMHTnlo_scale6err_down=(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"08").c_str());
+  MMHTnlo_scale6err_up   = (TH1D*)MMHTnlo_scale6err_up  ->Rebin(nbins_pt_gen,"pp_MMHTnlo_scale6err_up_rebin",  boundaries_pt_gen);  
+  MMHTnlo_scale6err_down = (TH1D*)MMHTnlo_scale6err_down->Rebin(nbins_pt_gen,"pp_MMHTnlo_scale6err_down_rebin",boundaries_pt_gen);  
+  
+  TH1D* MMHTnlo_np_scale6_up  =(TH1D*) MMHTnlo->Clone("MMHTnlo_np_scale6_up"  );
+  TH1D* MMHTnlo_np_scale6_down=(TH1D*) MMHTnlo->Clone("MMHTnlo_np_scale6_down");
+  for(int i=1; i<=MMHTnlo->GetNbinsX(); i++){
+    MMHTnlo_np_scale6_up->SetBinContent(i, 
+					MMHTnlo_np_scale6_up->GetBinContent(i)*(
+										1+MMHTnlo_scale6err_up->GetBinContent(i)
+										)); 
+    MMHTnlo_np_scale6_up->SetBinError(i, 1.e-30);
+    
+    MMHTnlo_np_scale6_down->SetBinContent(i, 
+					MMHTnlo_np_scale6_down->GetBinContent(i)*(
+										  1+MMHTnlo_scale6err_down->GetBinContent(i)//bin content neg for down
+										  )); 
+    MMHTnlo_np_scale6_down->SetBinError(i, 1.e-30);
+  }
   
   std::string NNPDFNPs="" ; 
   TFile*fNLO_NNPDFnnlo=TFile::Open(fNLOFile_R04_NNPDFnnlo.c_str());
   TH1D* NNPDFnnlo=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* NNPDFnnloerr=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());
+  for(int i=1; i<=NNPDFnnloerr->GetNbinsX(); i++)NNPDFnnlo->SetBinError(i, NNPDFnnlo->GetBinContent(i)*(NNPDFnnloerr->GetBinContent(i))); 
   NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_NNPDFnnlo,
 					 NNPDFnnlo, &NNPDFNPs, etabinint);
-  //assert(false);
   NNPDFnnlo->SetMarkerSize(0);
   NNPDFnnlo->SetLineColor(kCyan-6); 
   NNPDFnnlo->Scale(1./1000.);
+
+  TH1D* NNPDFnnlo_scale6err_up  =(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"09").c_str());//6 pt scale errors
+  TH1D* NNPDFnnlo_scale6err_down=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"08").c_str());
+  NNPDFnnlo_scale6err_up   = (TH1D*)NNPDFnnlo_scale6err_up  ->Rebin(nbins_pt_gen,"pp_NNPDFnnlo_scale6err_up_rebin",  boundaries_pt_gen);  
+  NNPDFnnlo_scale6err_down = (TH1D*)NNPDFnnlo_scale6err_down->Rebin(nbins_pt_gen,"pp_NNPDFnnlo_scale6err_down_rebin",boundaries_pt_gen);  
+  
+  TH1D* NNPDFnnlo_np_scale6_up  =(TH1D*) NNPDFnnlo->Clone("NNPDFnnlo_np_scale6_up"  );
+  TH1D* NNPDFnnlo_np_scale6_down=(TH1D*) NNPDFnnlo->Clone("NNPDFnnlo_np_scale6_down");
+  for(int i=1; i<=NNPDFnnlo->GetNbinsX(); i++){
+    NNPDFnnlo_np_scale6_up->SetBinContent(i, 
+					NNPDFnnlo_np_scale6_up->GetBinContent(i)*(
+										1+NNPDFnnlo_scale6err_up->GetBinContent(i)
+										)); 
+    NNPDFnnlo_np_scale6_up->SetBinError(i, 1.e-30);
+    
+    NNPDFnnlo_np_scale6_down->SetBinContent(i, 
+					NNPDFnnlo_np_scale6_down->GetBinContent(i)*(
+										  1+NNPDFnnlo_scale6err_down->GetBinContent(i)//bin content neg for down
+										  )); 
+    NNPDFnnlo_np_scale6_down->SetBinError(i, 1.e-30);
+  }
   
   bool nlothyused=true;
   TH1D* thyHistUsed=NULL;
@@ -2506,6 +2618,24 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   HERAPDF  ->SetTitle("HERAPDF NLO Spectra");	   HERAPDF  ->Write("NLO_HERAPDF105_NLO_R04_jtpt");  
   MMHTnlo  ->SetTitle("MMHT NLO Spectra");	   MMHTnlo  ->Write("NLO_MMHT2014_NLO_R04_jtpt");    
   NNPDFnnlo->SetTitle("NNPDF NNLO Spectra");	   NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt");       
+  
+  CT10nloerr  ->SetTitle("CT10 NLO Spectra Err");      CT10nloerr  ->Write("NLO_CT10_NLO_R04_jtpt_err");	      
+  CT14nloerr  ->SetTitle("CT14 NLO Spectra Err");      CT14nloerr  ->Write("NLO_CT14_NLO_R04_jtpt_err");	      
+  HERAPDFerr  ->SetTitle("HERAPDF NLO Spectra Err");   HERAPDFerr  ->Write("NLO_HERAPDF105_NLO_R04_jtpt_err");  
+  MMHTnloerr  ->SetTitle("MMHT NLO Spectra Err");      MMHTnloerr  ->Write("NLO_MMHT2014_NLO_R04_jtpt_err");    
+  NNPDFnnloerr->SetTitle("NNPDF NNLO Spectra Err");    NNPDFnnloerr->Write("NLO_NNPDF_NLO_R04_jtpt_err");       
+  
+  CT10nlo_np_scale6_up  ->SetTitle("CT10 NLO Spectra 6 Pt Scale Up Err");      CT10nlo_np_scale6_up  ->Write();   
+  CT14nlo_np_scale6_up  ->SetTitle("CT14 NLO Spectra 6 Pt Scale Up Err");      CT14nlo_np_scale6_up  ->Write();   
+  HERAPDF_np_scale6_up  ->SetTitle("HERAPDF NLO Spectra 6 Pt Scale Up Err");   HERAPDF_np_scale6_up  ->Write();
+  MMHTnlo_np_scale6_up  ->SetTitle("MMHT NLO Spectra 6 Pt Scale Up Err");      MMHTnlo_np_scale6_up  ->Write();
+  NNPDFnnlo_np_scale6_up->SetTitle("NNPDF NNLO Spectra 6 Pt Scale Up Err");    NNPDFnnlo_np_scale6_up->Write();
+  
+  CT10nlo_np_scale6_down  ->SetTitle("CT10 NLO Spectra 6 Pt Scale Down Err");      CT10nlo_np_scale6_down  ->Write();
+  CT14nlo_np_scale6_down  ->SetTitle("CT14 NLO Spectra 6 Pt Scale Down Err");      CT14nlo_np_scale6_down  ->Write();
+  HERAPDF_np_scale6_down  ->SetTitle("HERAPDF NLO Spectra 6 Pt Scale Down Err");   HERAPDF_np_scale6_down  ->Write();
+  MMHTnlo_np_scale6_down  ->SetTitle("MMHT NLO Spectra 6 Pt Scale Down Err");      MMHTnlo_np_scale6_down  ->Write();
+  NNPDFnnlo_np_scale6_down->SetTitle("NNPDF NNLO Spectra 6 Pt Scale Down Err");    NNPDFnnlo_np_scale6_down->Write();
   
   // output hists -------------
   hfak->SetTitle("PY8 Meas. Fakes");hfak->Write("MC_meas_fakes");

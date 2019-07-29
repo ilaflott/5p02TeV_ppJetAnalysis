@@ -27,11 +27,6 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
 
 
-
-
-
-
-
   // OPEN INPUT SECTION
   TFile *finData=NULL;    
   bool usedMinBias;
@@ -157,7 +152,7 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
   else {
     std::cout<<"skipping evt/jet QA counts + plots..."<<std::endl<<std::endl;
     theLumi=intgrtdLumi;}
-  
+  std::cout<<"theLumi="<<theLumi<<std::endl;
   
   
 
@@ -187,10 +182,12 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
     printTrigPtHist(finData, usedHLT100, false, usedMinBias, 
     		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
     // ----------------------------------    
-    for(int etabin=0;etabin<N_etabins;etabin++)
+    //    for(int etabin=0;etabin<N_etabins;etabin++)
+    for(int etabin=0;etabin<2;etabin++)
       printJetTrigHist_wRatio(finData, usedHLT100, usedMinBias, false, etabin,
 			      thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
-    for(int etabin=0;etabin<N_etabins;etabin++)
+    //    for(int etabin=0;etabin<N_etabins;etabin++)
+    for(int etabin=0;etabin<2;etabin++)
       printJetTrigHist_wRatio(finData, usedHLT100, usedMinBias, false, etabin,
 			      thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
     // ----------------------------------    
@@ -205,21 +202,32 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
     //			  thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
     //    // ----------------------------------
     
-    if(comparePFandCalo){      
-      printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, true, false,
-				  thePDFFileName, fullJetType, "excl", radius,  doJetIDPlots);
-      printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, false, false,
-				  thePDFFileName, fullJetType, "excl", radius,  doJetIDPlots);      
-      printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, true, false,
-				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);
-      printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, false, false, 
-				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);
-      //combo only comparison
-      printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, true, true,
-				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);
-      printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, false, true,
-				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);            
-    }
+    //if(comparePFandCalo){      
+    //  printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, true, false,
+    //				  thePDFFileName, fullJetType, "excl", radius,  doJetIDPlots);
+    //  printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, false, false,
+    //				  thePDFFileName, fullJetType, "excl", radius,  doJetIDPlots);      
+    //  printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, true, false,
+    //				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);
+    //  printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, false, false, 
+    //				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);
+    //  //combo only comparison
+    //  printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, true, true,
+    //				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);
+    //  printPFvCaloTrigHist_wRatio(finData, finData2, usedHLT100, usedHLTPF, false, true,
+    //				  thePDFFileName, fullJetType, "incl", radius,  doJetIDPlots);            
+    
+    // ----------------------------------    
+    //    for(int runind=0;runind<Nruns;runind++){
+//    for(int runind=0;runind<1;runind++){
+//      printJetTrigHist_wRatio_vRun(finData, false,  runind,
+//				   thePDFFileName, fullJetType, "excl", radius, usedHLTPF,  (TFile*) fout);
+//      printJetTrigHist_wRatio_vRun(finData,  false,  runind,
+//				   thePDFFileName, fullJetType, "incl", radius, usedHLTPF,  (TFile*) fout);
+//      
+//    }
+      
+    
   }//end else statement for jet trig plots
   
   

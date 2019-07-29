@@ -9,11 +9,13 @@ const bool doBiasTest=false;
 const bool setDataCovMat=true;
 const bool doJetID=true     ;
 const bool useSimpBins=false;
-const bool compareToNLOThy=false;
 const bool doJECsys=true;
 const bool applyNPCorrs=false;//&&compareToNLOThy;
 
-const std::string ptbintype="SMP";
+
+const std::string ptbintype="NLO_SMP";
+const bool compareToNLOThy=true&&(ptbintype=="NLO_SMP");
+
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true
@@ -112,35 +114,13 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   int     nbins_pt_reco_mat=-1;
   double* boundaries_pt_reco_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco_mat);
 
-
-
-
-//  //have to get binning from the smeared NLO hist and set the lowest pt bin to 56 here, because the highest pt bin available varies w/ eta bin
-//  int nbins_pt = HERAPDF->GetNbinsX()-2;//subtract 2, because the hist binning goes 43., 49., 56. ... 43-49, 49-56 --> two bins to get rid of
-//  if(etabinint==0 || etabinint==1)nbins_pt--;//subtract 1 more for last giant bin from 686 GeV to 1000 GeV
-//  const int     nbins_pt_gen           = nbins_pt;
-//  const int     nbins_pt_reco          = nbins_pt;
-//  const int     nbins_pt_gen_mat       = nbins_pt;
-//  const int     nbins_pt_reco_mat      = nbins_pt;
-//  
-//  //length of array is nbins_pt+1 because the array contains the bin boundaries. so one more than # of bins
-//  double      boundaries_pt_gen[nbins_pt+1] = {0.};
-//  double     boundaries_pt_reco[nbins_pt+1] = {0.};
-//  double  boundaries_pt_gen_mat[nbins_pt+1] = {0.};
-//  double boundaries_pt_reco_mat[nbins_pt+1] = {0.};
-//  
-//  setBinning_etabin_forPY8( (double*)      boundaries_pt_gen,
-//		     (double*)     boundaries_pt_reco,
-//		     (double*)  boundaries_pt_gen_mat,
-//		     (double*) boundaries_pt_reco_mat,
-//			    nbins_pt+1, (TH1D*)HERAPDF, etabinint);
-  //assert(false);
-
-//  CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
-//  CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
-//  HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
-//  MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
-//  NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
+  if(compareToNLOThy){
+    CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
+    CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
+    HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
+    MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
+    NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
+  }
 
 
   
@@ -1509,77 +1489,78 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     canv_thy_spectra_2=(TCanvas*)canvForPrint->DrawClone();
     canvForPrint->Print(outPdfFile.c_str());
 
-    // thy ratios w hunf------------    
-    canvForPrint->cd();
-    if(!useSimpBins)canvForPrint->SetLogx(1);
-    canvForPrint->SetLogy(0);
+    if(compareToNLOThy){
+      // thy ratios w hunf------------    
+      canvForPrint->cd();
+      if(!useSimpBins)canvForPrint->SetLogx(1);
+      canvForPrint->SetLogy(0);
+      
+      setupRatioHist(h_thyratio_CT10nlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      setupRatioHist(h_thyratio_CT14nlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      
+      if(applyNPCorrs) h_thyratio_CT10nlo->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+      else h_thyratio_CT10nlo->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+      
+      h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Unf. Data");
+      
+      h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
+      h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
+      h_thyratio_NNPDFnnlo->DrawClone("][HIST SAME"); 
+      h_thyratio_mctruth->DrawClone("P E SAME");     
+      
+      TLegend* legendthyrat = new TLegend( 0.1,0.7,0.5,0.9 );
+      legendthyrat->AddEntry(h_thyratio_CT10nlo ,    ("CT10 PDF NLO"    +CT10NPs).c_str(),    "l");
+      legendthyrat->AddEntry(h_thyratio_CT14nlo ,    ("CT14 PDF NLO"    +CT14NPs).c_str(),    "l"); 
+      legendthyrat->AddEntry(h_thyratio_NNPDFnnlo,   ("NNPDF NNLO"      +NNPDFNPs).c_str(),       "l");
+      legendthyrat->AddEntry(h_thyratio_mctruth, "GEN PY8 LO MC",       "lp");        //legendthyrat->AddEntry(h_thyratio_mctruth, ("GEN PY8 LO MC").c_str(),       "lp");    
+      legendthyrat->SetBorderSize(0);
+      legendthyrat->SetFillStyle(0);
+      legendthyrat->Draw();
+      drawTLatex( 0.50, 0.84, 0.035, canvForPrint, desclines);    
+      
+      theLineAtp9 ->Draw();
+      theLineAtOne->Draw();
+      theLineAt1p1->Draw();
+      
+      canv_thy_ratio=(TCanvas*)canvForPrint->DrawClone();
+      canvForPrint->Print(outPdfFile.c_str());
+      
+      // thy ratios w hunf------------    
+      canvForPrint->cd();
+      if(!useSimpBins)canvForPrint->SetLogx(1);
+      canvForPrint->SetLogy(0);
+      
+      setupRatioHist(h_thyratio_HERAPDF , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      setupRatioHist(h_thyratio_MMHTnlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+      
+      if(applyNPCorrs) h_thyratio_HERAPDF->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+      else h_thyratio_HERAPDF->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+      
+      h_thyratio_HERAPDF->GetYaxis()->SetTitle("Thy / Unf. Data");
+      
+      h_thyratio_HERAPDF ->DrawClone( "][HIST "); 
+      h_thyratio_MMHTnlo ->DrawClone( "][HIST  SAME"); 
+      h_thyratio_mctruth->DrawClone("P E SAME");     
+      
+      TLegend* legendthyrat2 = new TLegend( 0.1,0.7,0.5,0.9 );
+      legendthyrat2->AddEntry(h_thyratio_HERAPDF ,  ("HERAPDF 2015 NLO"+HERANPs).c_str(), "l");
+      legendthyrat2->AddEntry(h_thyratio_MMHTnlo ,  ("MMHT 2014 NLO"   +MMHTNPs).c_str(),    "l");
+      legendthyrat2->AddEntry(h_thyratio_mctruth, "GEN PY8 LO MC",       "lp");        //legendthyrat2->AddEntry(h_thyratio_mctruth, ("GEN PY8 LO MC").c_str(),       "lp");    
+      legendthyrat2->SetBorderSize(0);
+      legendthyrat2->SetFillStyle(0);
+      legendthyrat2->Draw();
+      drawTLatex( 0.50, 0.84, 0.035, canvForPrint, desclines);    
+      
+      theLineAtp9 ->Draw();
+      theLineAtOne->Draw();
+      theLineAt1p1->Draw();
     
-    setupRatioHist(h_thyratio_CT10nlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    setupRatioHist(h_thyratio_CT14nlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    
-    if(applyNPCorrs) h_thyratio_CT10nlo->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
-    else h_thyratio_CT10nlo->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
-    
-    h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Unf. Data");
-    
-    h_thyratio_CT10nlo ->DrawClone( "][HIST ");      
-    h_thyratio_CT14nlo ->DrawClone( "][HIST SAME"); 
-    h_thyratio_NNPDFnnlo->DrawClone("][HIST SAME"); 
-    h_thyratio_mctruth->DrawClone("P E SAME");     
-    
-    TLegend* legendthyrat = new TLegend( 0.1,0.7,0.5,0.9 );
-    legendthyrat->AddEntry(h_thyratio_CT10nlo ,    ("CT10 PDF NLO"    +CT10NPs).c_str(),    "l");
-    legendthyrat->AddEntry(h_thyratio_CT14nlo ,    ("CT14 PDF NLO"    +CT14NPs).c_str(),    "l"); 
-    legendthyrat->AddEntry(h_thyratio_NNPDFnnlo,   ("NNPDF NNLO"      +NNPDFNPs).c_str(),       "l");
-    legendthyrat->AddEntry(h_thyratio_mctruth, "GEN PY8 LO MC",       "lp");        //legendthyrat->AddEntry(h_thyratio_mctruth, ("GEN PY8 LO MC").c_str(),       "lp");    
-    legendthyrat->SetBorderSize(0);
-    legendthyrat->SetFillStyle(0);
-    legendthyrat->Draw();
-    drawTLatex( 0.50, 0.84, 0.035, canvForPrint, desclines);    
-    
-    theLineAtp9 ->Draw();
-    theLineAtOne->Draw();
-    theLineAt1p1->Draw();
-    
-    canv_thy_ratio=(TCanvas*)canvForPrint->DrawClone();
-    canvForPrint->Print(outPdfFile.c_str());
-    
-    // thy ratios w hunf------------    
-    canvForPrint->cd();
-    if(!useSimpBins)canvForPrint->SetLogx(1);
-    canvForPrint->SetLogy(0);
-    
-    setupRatioHist(h_thyratio_HERAPDF , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    setupRatioHist(h_thyratio_MMHTnlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-    
-    if(applyNPCorrs) h_thyratio_HERAPDF->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
-    else h_thyratio_HERAPDF->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
-    
-    h_thyratio_HERAPDF->GetYaxis()->SetTitle("Thy / Unf. Data");
-    
-    h_thyratio_HERAPDF ->DrawClone( "][HIST "); 
-    h_thyratio_MMHTnlo ->DrawClone( "][HIST  SAME"); 
-    h_thyratio_mctruth->DrawClone("P E SAME");     
-    
-    TLegend* legendthyrat2 = new TLegend( 0.1,0.7,0.5,0.9 );
-    legendthyrat2->AddEntry(h_thyratio_HERAPDF ,  ("HERAPDF 2015 NLO"+HERANPs).c_str(), "l");
-    legendthyrat2->AddEntry(h_thyratio_MMHTnlo ,  ("MMHT 2014 NLO"   +MMHTNPs).c_str(),    "l");
-    legendthyrat2->AddEntry(h_thyratio_mctruth, "GEN PY8 LO MC",       "lp");        //legendthyrat2->AddEntry(h_thyratio_mctruth, ("GEN PY8 LO MC").c_str(),       "lp");    
-    legendthyrat2->SetBorderSize(0);
-    legendthyrat2->SetFillStyle(0);
-    legendthyrat2->Draw();
-    drawTLatex( 0.50, 0.84, 0.035, canvForPrint, desclines);    
-    
-    theLineAtp9 ->Draw();
-    theLineAtOne->Draw();
-    theLineAt1p1->Draw();
-    
-    canv_thy_ratio2=(TCanvas*)canvForPrint->DrawClone();
-    canvForPrint->Print(outPdfFile.c_str());
-
-
+      canv_thy_ratio2=(TCanvas*)canvForPrint->DrawClone();
+      canvForPrint->Print(outPdfFile.c_str());
+    }
+      
     
     
     if(doJECsys){
@@ -2058,6 +2039,14 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   hfak->SetTitle("PY8 Meas. Fakes");hfak->Write("MC_meas_fakes");
   
   hunf->SetTitle(("Data Unf. kIter="+std::to_string(kIterInput)).c_str() );hunf->Write("Data_unf");      
+  if(doJECsys){
+    hunf_JECsysup->SetTitle(("Data Unf. JEC sys up, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysup->Write("Data_unf_JECsysup");      
+    hunf_JECsysdown->SetTitle(("Data Unf. JEC sys down, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysdown->Write("Data_unf_JECsysdown");      
+
+    hunf_JECsysup_ratio->SetTitle(("Data Unf. JEC sys up, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysup_ratio->Write("Data_unf_JECsysup_ratio");      
+    hunf_JECsysdown_ratio->SetTitle(("Data Unf. JEC sys down, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysdown_ratio->Write("Data_unf_JECsysdown_ratio");      
+    
+  }
   hfold->SetTitle(("Data Fold(Unf.) kIter="+std::to_string(kIterInput)).c_str() ); hfold->Write("Data_fold");        
   hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, kIter="+std::to_string(kIterInput)).c_str() ); hfold_fakecorr->Write("Data_foldfakcorr");        
   hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");  
@@ -2088,14 +2077,17 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   h_recratio_truthfold ->SetTitle("PY8 Fold(Truth)/(PY8 Meas. - Fakes)");      h_recratio_truthfold  ->Write(); //PY8 fold(truth) / data meas - fakes    
   h_foldratio_datafold ->SetTitle("(Data Fold(Unf.) + Fakes)/Data Meas."); h_foldratio_datafold ->Write();
   h_foldratio_mcfold   ->SetTitle("(PY8 Fold(Truth) + Fakes)/PY8 Meas.");    h_foldratio_mcfold   ->Write();
-  
-  // thy ratios w/ unfolded data
-  h_thyratio_CT10nlo  ->Write("ratio_CT10_NLO_Data_unf");
-  h_thyratio_CT14nlo  ->Write("ratio_CT14_NLO_Data_unf");
-  h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_Data_unf");
-  h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
-  h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NNLO_Data_unf");
+
+  if(compareToNLOThy){
+    // thy ratios w/ unfolded data
+    h_thyratio_CT10nlo  ->Write("ratio_CT10_NLO_Data_unf");
+    h_thyratio_CT14nlo  ->Write("ratio_CT14_NLO_Data_unf");
+    h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_Data_unf");
+    h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
+    h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NNLO_Data_unf");
+  }
   h_thyratio_mctruth->Write("ratio_PY8_MCTruth_Data_unf");
+
 
 
   
@@ -2133,8 +2125,10 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     canv_rec_ratio        ->SetTitle("Data Meas Ratios Canvas");  canv_rec_ratio          ->Write("canv_meas_ratio");
     canv_fold_ratio       ->SetTitle("Fold Test Ratios Canvas");  canv_fold_ratio         ->Write("canv_fold_ratio");
     canv_fold_ratio2       ->SetTitle("Fold Test Ratios v2 Canvas");  canv_fold_ratio2         ->Write("canv_fold_ratio2");
-    canv_thy_ratio        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio          ->Write("canv_thy_ratio");                                
-    canv_thy_ratio2        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio2          ->Write("canv_thy_ratio2");                                
+    if(compareToNLOThy){
+      canv_thy_ratio        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio          ->Write("canv_thy_ratio");                                
+      canv_thy_ratio2        ->SetTitle("NLO Thy Ratios Canvas");    canv_thy_ratio2          ->Write("canv_thy_ratio2");                                
+    }
        
 
     canv_covmat           ->SetTitle("Covariance Matrix Canvas");           canv_covmat        ->Write("canv_covmat");

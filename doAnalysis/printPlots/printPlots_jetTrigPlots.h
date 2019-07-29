@@ -1147,3 +1147,306 @@ void printTrigEtaAsymmHist( TFile* fin , bool usedHLT100,
 
 
 
+
+
+
+
+const UInt_t runarray[]={
+  262163,
+  262165,
+  262167,
+  262173,
+  262174,
+  262204,
+  262205,
+  262235,
+  262248,
+  262250,
+  262252,
+  262253,
+  262254,
+  262270,
+  262271,
+  262272,
+  262273,
+  262274,
+  262275,
+  262277,
+  262325,
+  262326,
+  262327,
+  262328,
+  999999
+};
+const int Nruns=sizeof(runarray)/sizeof(UInt_t);
+
+
+void printJetTrigHist_wRatio_vRun( TFile* fin ,  bool analysisRebin,  int runind,
+				   std::string thePDFFileName , std::string fullJetType , 
+				   std::string trigType, std::string radius , bool usedHLTPF,  TFile* fout=NULL){
+  bool funcDebug=true;
+
+  
+  if(!fin ){    std::cout<<"input file not found, cannot look at event counts"<<std::endl; 
+    return; }
+  
+  if(trigType=="excl")std::cout<<"drawing exclusive trigger spectra + ratios"<<std::endl;
+  else if(trigType=="incl")std::cout<<"drawing inclusive trigger spectra + ratios"<<std::endl;
+  else {
+    std::cout<<"trigger spectra + ratios not recognized, exit"<<std::endl; 
+    return; }
+  
+  std::string jetCutString, jetEtaCutString, jtptQACut_str;
+  makeJetCutStrings(&jetCutString, &jetEtaCutString, &jtptQACut_str, fin);  
+  std::string sampleDescString=sqrts2k15ppString;  
+  jetEtaCutString="0.0 < #||{y} < 1.0";
+  
+  
+  if(funcDebug)std::cout<<std::endl<<"creating temporary canvas for printing JetTrig plots..."<<std::endl;
+  TCanvas *temp_canvJetTrig = new TCanvas(("tempJetTrigSpec"+trigType).c_str(), ("blahTrigPt"+trigType).c_str(), canvx_trig, canvy_trig);
+  temp_canvJetTrig->cd();  
+  
+  TPad *jetpad_excsp = new TPad("jetpad_excsp", "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
+  TPad *jetpad_excrat = new TPad("jetpad_excrat", "Ratio Pad", 0.0, 0.05, 1.0, 0.3);  
+  setupJetTrigSpectraRatioCanvas(temp_canvJetTrig, jetpad_excsp,  jetpad_excrat);
+  jetpad_excsp->cd();
+  
+  TLegend* JetTrigLegend=new TLegend(0.70,0.66,0.85,0.86, NULL,"brNDC");
+  TH1F* theCombo=NULL;
+  TH1F* theDenominator=NULL;//for later ratio drawing
+
+  if(funcDebug){
+    std::cout<<std::endl<<std::endl<<" ------------------------------------------------------------------- "<<std::endl;
+    std::cout<<" --------------- CREATING COMBO JET SPECTRA --------------- "<<std::endl;
+    std::cout<<" ------------------------------------------------------------------- "<<std::endl<<std::endl<<std::endl;  }
+  for(int j=1; j<4; j++){//combo is always the sum of the exclusive hists
+    std::string inHistName="";
+    inHistName+="is";
+    if     (j==1)inHistName+="40";
+    else if(j==2)inHistName+="60";
+    else if(j==3)inHistName+="80";
+    inHistName+="JtPt_Run"+std::to_string(runarray[runind]);
+    if(funcDebug)std::cout<<"inHistName="<<inHistName<<std::endl;
+
+    //get hist
+    TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
+
+    //rebin
+    if(analysisRebin) {
+      theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(nbins_pt_debug,(inHistName+"_spec_anabins").c_str(), ptbins_debug    );
+      divideBinWidth(theJetTrigQAHist);    }
+    else {
+      theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_spec_rebin"+std::to_string(rebinfactor)).c_str() );
+      theJetTrigQAHist->Scale(1./((float)rebinfactor));    
+    }
+    
+    theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X");
+    
+    if(j==1){
+      theCombo= (TH1F*)
+	theJetTrigQAHist->Clone(("HLTCombo_Run"+std::to_string(runarray[runind])).c_str()); 
+    }
+    else{
+      theCombo->Add(theJetTrigQAHist);
+    }
+  }  
+  
+  theCombo->GetXaxis()->SetMoreLogLabels(true);
+  theCombo->GetXaxis()->SetNoExponent(true);  
+  theCombo->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X");
+  
+  std::string h_Title;
+  if(trigType=="excl")h_Title="Excl. Jet Spectra by Trigger,";
+  else if(trigType=="incl")h_Title="Incl. Jet Spectra by Trigger,";      
+  h_Title+=" Run "+std::to_string(runarray[runind]);
+  std::string h_YAx_Title= AUAxTitle;
+  
+  //set titles
+  theCombo->SetTitle (    h_Title.c_str() );      
+  theCombo->SetYTitle( h_YAx_Title.c_str() );      
+  
+  //style
+  trigSpectraHistStyle(theCombo, 0);
+  theCombo->Draw("");
+  JetTrigLegend->AddEntry(theCombo, "HLT Combo", "lp");
+  
+  theDenominator=(TH1F*)theCombo->Clone( ("HLTCombo_denom_Run"+std::to_string(runarray[runind]) ).c_str() ); 
+
+  //descriptive text on plot
+  float t1Loc1=0.54, t1Loc2=0.82;
+  TLatex *t1=makeTLatex(t1Loc1,t1Loc2,(fullJetType+"Jets").c_str());      t1->Draw();
+  TLatex *t2=makeTLatex((t1Loc1),(t1Loc2-.04),(jetCutString).c_str());      t2->Draw();
+  TLatex *t3=makeTLatex((t1Loc1),(t1Loc2-.08),(jetEtaCutString).c_str());      t3->Draw();
+  
+  float pp1x=t1Loc1,pp1y=t1Loc2-0.12;
+  TLatex *pp1=makeTLatex(pp1x,pp1y,sqrts2k15ppString.c_str() );      pp1->Draw();
+  TLatex *pp2=makeTLatex(pp1x,(pp1y-0.04),intLumiString.c_str() );    pp2->Draw();        
+  
+
+  if(funcDebug){
+    std::cout<<std::endl<<std::endl<<" ------------------------------------------------------------------- "<<std::endl;
+    std::cout<<" --------------- DRAWING JET SPECTRA BY TRIGGER --------------- "<<std::endl;
+    std::cout<<" ------------------------------------------------------------------- "<<std::endl<<std::endl<<std::endl;  }
+  for(int j=1; j<4; j++){
+    
+    std::string inHistName;
+    if     (trigType=="incl")inHistName+="HLT";
+    else if(trigType=="excl")inHistName+="is";
+    if     (j==1)inHistName+="40";
+    else if(j==2)inHistName+="60";
+    else if(j==3)inHistName+="80";
+    inHistName+="JtPt_Run"+std::to_string(runarray[runind]);
+    if(funcDebug)std::cout<<"inHistName="<<inHistName<<std::endl;
+    //assert(false);
+    
+    //get hist
+    TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
+    if(funcDebug)theJetTrigQAHist->Print("base"); std::cout<<std::endl;
+
+    //rebin
+    if(analysisRebin) {
+      theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(nbins_pt_debug,(inHistName+"_spec_anabins").c_str(), ptbins_debug    );
+      divideBinWidth(theJetTrigQAHist);    }
+    else {
+      theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_spec_rebin"+std::to_string(rebinfactor)).c_str() );
+      theJetTrigQAHist->Scale(1./((float)rebinfactor));    
+    }
+
+    
+    
+    //legend entry titles
+    if(funcDebug)std::cout<<"setting legend entry titles"<<std::endl;
+    if(usedHLTPF){//      if(funcDebug)std::cout<<"using HLTPF Trig titles"<<std::endl;
+      JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTPFName_Leg[j]).c_str(),"lp");  }
+    else {//   if(funcDebug)std::cout<<"using HLTCalo Trig titles"<<std::endl;
+      JetTrigLegend->AddEntry(theJetTrigQAHist,(HLTCaloName_Leg[j]).c_str(),"lp");    }
+        
+    
+    trigSpectraHistStyle(theJetTrigQAHist, j);  
+    theJetTrigQAHist->Draw("SAME");          
+    
+    if(fout){
+      fout->cd();
+      theJetTrigQAHist->Write();
+      jetpad_excsp->cd();
+    }
+    
+  }//end trig spectra loop
+
+
+  JetTrigLegend->Draw();
+  //done drawing spectra pad
+  
+  if(funcDebug){
+  std::cout<<std::endl<<std::endl<<" ------------------------------------------------------------------ "<<std::endl;
+  std::cout<<" --------------- DRAWING RATIOS  --------------- "<<std::endl;
+  std::cout<<" ------------------------------------------------------------------ "<<std::endl<<std::endl<<std::endl;}
+  
+  
+  jetpad_excrat->cd();
+
+  for(int j=1; j<4; j++){
+    
+    std::string inHistName;
+    
+    if(j>0){//individial hlt paths, numerators, combohist setup by now
+      
+      
+      if     (trigType=="incl")inHistName+="HLT";
+      else if(trigType=="excl")inHistName+="is";
+      if     (j==1)inHistName+="40";
+      else if(j==2)inHistName+="60";
+      else if(j==3)inHistName+="80";
+      inHistName+="JtPt_Run"+std::to_string(runarray[runind]);
+      if(funcDebug)std::cout<<"inHistName="<<inHistName<<std::endl;
+      
+      TH1F* theJetTrigQAHist= (TH1F*) ( (TH1*)fin->Get(inHistName.c_str()) );
+      if(funcDebug)theJetTrigQAHist->Print("base");
+
+
+      if(analysisRebin) 
+	theJetTrigQAHist= (TH1F*) theJetTrigQAHist->TH1::Rebin(nbins_pt_debug,(inHistName+"_rat_anabins").c_str(), ptbins_debug    );
+      else {
+	theJetTrigQAHist=(TH1F*)theJetTrigQAHist->TH1::Rebin(rebinfactor, (inHistName+"_rat_rebin"+std::to_string(rebinfactor)).c_str() );
+	theJetTrigQAHist->Scale(1./((float)rebinfactor));    
+      }
+
+      //theJetTrigQAHist->SetAxisRange(ptbins_debug[0],ptbins_debug[nbins_pt_debug],"X"); 
+      theJetTrigQAHist->SetAxisRange(40,ptbins_debug[nbins_pt_debug],"X"); 
+      
+      trigRatioHistStyle(theJetTrigQAHist, j);
+      
+      
+
+
+      theJetTrigQAHist->Divide(theDenominator);
+      
+      theJetTrigQAHist->SetAxisRange(0.0,1.5,"Y");
+      
+      std::string h_XAx_Title="Jet p_{T} (GeV)     ";
+      theJetTrigQAHist->SetXTitle( h_XAx_Title.c_str() );
+      theJetTrigQAHist->GetXaxis()->SetMoreLogLabels(true);
+      theJetTrigQAHist->GetXaxis()->SetNoExponent(true);
+      
+      std::string h_YAx_Title="Combo/Indiv.";
+      theJetTrigQAHist->SetYTitle( h_YAx_Title.c_str() );
+      
+      theJetTrigQAHist->SetTitle("");	
+      
+      if(j==1)theJetTrigQAHist->Draw("");
+      else theJetTrigQAHist->Draw(" SAME");
+      
+      
+      if( j==1 )  {
+	
+	float min = theJetTrigQAHist->GetBinLowEdge(1);
+	float max = ptbins_debug[nbins_pt_debug];
+	
+	TLine* lineAtOne          = new TLine(min,1.0,max,1.0);
+	lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);
+	
+	lineAtOne->Draw("same");
+	
+      }//end j=1 specific
+      
+      if(fout){
+	fout->cd();
+	theJetTrigQAHist->Write();
+	jetpad_excrat->cd();
+      }
+    }//end j>0 
+    
+  }//end loop over trigs for ratio
+  
+  temp_canvJetTrig->Print(thePDFFileName.c_str());
+  
+  if(fout){
+    fout->cd();
+    TCanvas* outcanv=(TCanvas*)temp_canvJetTrig->DrawClone();
+    
+    std::string outcanvtitle = "HLTak4PF"; 
+    outcanvtitle+="40 to 80 ";
+    outcanvtitle+=fullJetType+" Jet p_{T}";    
+    if(analysisRebin)outcanvtitle+=" Ana. Bins ";
+    else             outcanvtitle+=" Simp. Bins ";
+    outcanvtitle +=trigType;
+    outcanv->SetTitle((outcanvtitle+" Canvas").c_str());
+    
+    std::string outcanvname  = "HLTak4PF";
+    outcanvname+="40to80_";
+    outcanvname+=fullJetType+"_jtpt_";
+    if(analysisRebin) outcanvname+="anabins_";
+    else              outcanvname+="simpbins_";
+    outcanvname +=trigType+"_"+std::to_string(runarray[runind]);
+    outcanv->Write((outcanvname+"_canv").c_str());   
+    
+   }//end fout
+  
+  temp_canvJetTrig->Close();
+  
+  
+  
+  
+  return;
+}
+

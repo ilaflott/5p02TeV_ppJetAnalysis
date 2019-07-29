@@ -1,9 +1,9 @@
 #!/bin/bash
 
 
-dojetQAPlots=1        #done for ppMC+ppData, 06.25.19, look at ouput
+dojetQAPlots=0        #done for ppMC+ppData, 06.25.19, look at ouput
                       #some ratios from constituent plots look funny, double check
-dojetTrigQAPlots=0    #done for ppData, 06.25.19, look at ouput
+dojetTrigQAPlots=1   #done for ppData, 06.25.19, look at ouput
                       #looks good
 dojetIDQAPlots=0      #done for ppMC, ppData, 06.25.19, look at ouput
                       #for ppData, values look fine, fix x-axis labels
@@ -313,9 +313,11 @@ then
 
     
     ##
-    source run_printPlots_jetTrig.sh "4" "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_SMPbins_withJECsys_semifinal"      "00eta20_06.25.19_noMB_SMPbins_semifinal"
-
-
+    #source run_printPlots_jetTrig.sh "4" "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_SMPbins_withJECsys_semifinal"      "00eta20_06.25.19_noMB_SMPbins_semifinal"
+    source run_printPlots_jetTrig.sh "4" "07.29.19_outputCondor" "07-29-19" "0.0eta1.0_lumiRunStudy_usualDupeSkip"      "00eta10_07.29.19_noMB_lumiRunStudy_usualDupeSkip_semifinal"
+    #source run_printPlots_jetTrig.sh "4" "07.29.19_outputCondor" "07-29-19" "0.0eta1.0_lumiRunStudy_diffDupeSkip"      "00eta10_07.29.19_noMB_lumiRunStudy_diffDupeSkip_semifinal"
+    
+    
     ##############################################
     
     echo ""

@@ -4,11 +4,11 @@
 ## busy cluster (check w/ 'condor_q --allusers') --> use larger # of files per job --> longer run time but overall kinder during busy hours
 ## not-busy cluster --> can use smaller # of files per job --> shorter run time but occupies more cluster machines
 
-subm_ppData_jetPlots=0
+subm_ppData_jetPlots=1
 subm_ppMC_jetPlots=0
 subm_ppMC_JERS=0
 subm_ppMC_unf=0
-subm_ppMC_MCEff=1
+subm_ppMC_MCEff=0
 
 #rarely used
 subm_ppData_jetMult=0
@@ -24,7 +24,7 @@ if [[ $subm_ppData_jetPlots -eq 1 ]]
 then
     echo "...ppData jetPlots..."
     rootcompile readForests_ppData_jetPlots.C
-    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
+    source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
 fi
 
 if [[ $subm_ppMC_jetPlots -eq 1 ]]

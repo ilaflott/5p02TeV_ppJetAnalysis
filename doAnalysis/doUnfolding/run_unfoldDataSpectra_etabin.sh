@@ -27,6 +27,7 @@ OUTPUTTAG="Bayes_PY8_FullRECO_06.25.19_SMPbins_withJECsys"
 ./bayesUnfoldDataSpectra_etabin.exe ${DATADIR} ${OUTPUTTAG}  2  ${MCDIR} ${MCFILESTR}
 ./bayesUnfoldDataSpectra_etabin.exe ${DATADIR} ${OUTPUTTAG}  3  ${MCDIR} ${MCFILESTR}
 scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_LOMC_??eta??.*"
+scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_LOMC_??eta??_respMat.*"
 
 
 ## NO JEC SYS + CHRIS MCGINNS BINNING

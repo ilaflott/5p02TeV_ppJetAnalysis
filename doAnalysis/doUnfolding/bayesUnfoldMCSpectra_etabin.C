@@ -13,8 +13,8 @@ const bool useGENybin=false;
 //const bool doJECsys=false;
 const bool applyNPCorrs=true;//&&compareToNLOThy;
 
-const std::string ptbintype="SMP";
-const bool compareToNLOThy=false&&(ptbintype=="NLO_SMP");
+const std::string ptbintype="NLO_SMP";
+const bool compareToNLOThy=true&&(ptbintype=="NLO_SMP");
 
 //-----------------------------
 
@@ -105,17 +105,21 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   else std::cout<<"using simple pt bins"<<std::endl<<std::endl;  
   
   int     nbins_pt_gen=-1;
-  double* boundaries_pt_gen=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen);
-  
+  double* boundaries_pt_gen=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen);  
   int     nbins_pt_reco=-1;
-  double* boundaries_pt_reco=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco);
-  
+  double* boundaries_pt_reco=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco);  
   int     nbins_pt_gen_mat=-1;
-  double* boundaries_pt_gen_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen_mat);
-  
+  double* boundaries_pt_gen_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen_mat);  
   int     nbins_pt_reco_mat=-1;
   double* boundaries_pt_reco_mat=setBinning_etabin(etabinint, ptbintype, &nbins_pt_reco_mat);
 
+  if(compareToNLOThy){
+    CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_rebin",boundaries_pt_gen);  
+    CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,"pp_CT14Thy_rebin",boundaries_pt_gen);
+    HERAPDF=(TH1D*)HERAPDF->Rebin(nbins_pt_gen,"pp_HERAPDF_rebin",boundaries_pt_gen);
+    MMHTnlo=(TH1D*)MMHTnlo->Rebin(nbins_pt_gen,"pp_MMHT_rebin",boundaries_pt_gen);
+    NNPDFnnlo=(TH1D*)NNPDFnnlo->Rebin(nbins_pt_gen,"pp_NNPDFnlo_rebin",boundaries_pt_gen);
+  }
 
 
 

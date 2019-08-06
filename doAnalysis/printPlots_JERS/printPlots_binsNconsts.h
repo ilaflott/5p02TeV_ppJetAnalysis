@@ -270,29 +270,30 @@ const int n_10y15_widths=sizeof(fgaus_width_arr_10y15)/sizeof(double);
 
 const int fit_ptlo_bin_15y20=3, fit_pthi_bin_15y20=nbins_pt_debug-13;
 const double fgaus_width_arr_15y20[]={
-  0.26,// gen pt low edge =43., //garbage bins
-  0.25,// gen pt low edge =49., //typical gen pt cut
-  0.24,// gen pt low edge =56., //typical recopt cut
-  0.23,// gen pt low edge =64.,
-  0.22,// gen pt low edge =74.,
-  0.22,// gen pt low edge =84.,
-  0.21,// gen pt low edge =97.,
-  0.21,// gen pt low edge =114.,
-  0.20,// gen pt low edge =133.,
-  0.20,// gen pt low edge =153.,
-  0.20,// gen pt low edge =174.,
-  0.18,//18,// gen pt low edge =196.,
-  0.17,//15,// gen pt low edge =220.,
-  0.16,//15,// gen pt low edge =245.,
-  0.16,//15,// gen pt low edge =272.,
-  0.16,//13,// gen pt low edge =300.,
-  0.15,//13,// gen pt low edge =330.,
-  0.15,//13,// gen pt low edge =362.,
-  0.14,//11,// gen pt low edge =395.,
-  0.13,//11,// gen pt low edge =430.,
-  0.13,//11,// gen pt low edge =468.,
-  0.12,//11,// gen pt low edge =507.,//fit must reach at least here for this |y| range
-  0.11//11,// gen pt low edge =548.,
+  //best//good//meh
+  0.23,//0.27,//0.26,// gen pt low edge =43., //garbage bins
+  0.23,//0.26,//0.25,// gen pt low edge =49., //typical gen pt cut
+  0.23,//0.25,//0.24,// gen pt low edge =56., //typical recopt cut
+  0.23,//0.24,//0.23,// gen pt low edge =64.,
+  0.23,//0.23,//0.22,// gen pt low edge =74.,
+  0.22,//0.22,//0.22,// gen pt low edge =84.,
+  0.21,//0.21,//0.21,// gen pt low edge =97.,
+  0.21,//0.21,//0.21,// gen pt low edge =114.,
+  0.20,//0.20,//0.20,// gen pt low edge =133.,
+  0.18,//0.18,//0.20,// gen pt low edge =153.,
+  0.18,//0.18,//0.20,// gen pt low edge =174.,
+  0.18,//0.18,//0.18,//18,// gen pt low edge =196.,
+  0.17,//0.17,//0.17,//15,// gen pt low edge =220.,
+  0.17,//0.17,//0.16,//15,// gen pt low edge =245.,
+  0.17,//0.17,//0.16,//15,// gen pt low edge =272.,
+  0.15,//0.15,//0.16,//13,// gen pt low edge =300.,
+  0.15,//0.15,//0.15,//13,// gen pt low edge =330.,
+  0.15,//0.15,//0.15,//13,// gen pt low edge =362.,
+  0.13,//0.13,//0.14,//11,// gen pt low edge =395.,
+  0.13,//0.13,//0.13,//11,// gen pt low edge =430.,
+  0.13,//0.13,//0.13,//11,// gen pt low edge =468.,
+  0.12,//0.12,//0.12,//11,// gen pt low edge =507.,//fit must reach at least here for this |y| range
+  0.12 // 0.12// 0.11//11,// gen pt low edge =548.,
   //0.12,// gen pt low edge =592.,
   //0.10// gen pt low edge =638.,
   //0.10,// gen pt low edge =686.,
@@ -322,7 +323,7 @@ double* setWidthArr(int absetabin=0, int *nwidths=NULL){
     *nwidths= n_10y15_widths;
   }
   else if(absetabin==3){
-    widtharr=(double*) fgaus_width_arr_05y10;
+    widtharr=(double*) fgaus_width_arr_15y20;
     *nwidths= n_15y20_widths;
   }
   else{

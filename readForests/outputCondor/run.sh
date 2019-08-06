@@ -10,21 +10,19 @@ echo ""
 #MM="06"
 #DD="25"
 #YY="19"
-MM="07"
-DD="29"
+MM="08"
+DD="05"
 YY="19"
 
 
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppMC" "semifinal_doublecheck"
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.0"     "ppMC" "semifinal_doublecheck"
+#mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-31-19_jetPlots_0.0eta1.0 ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-29-19_jetPlots_0.0eta1.0
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppMC" "semifinal_novzweights"
 
 
 
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppData" "lumiRunStudy_usualDupeSkip"
 
-mv ppData_HighPtJet80_ak4PFJets_07-29-19_jetPlots_0.0eta1.0_1 ppData_HighPtJet80_ak4PFJets_07-29-19_jetPlots_0.0eta1.0
-mv ppData_HighPtLowerJets_ak4PFJets_07-29-19_jetPlots_0.0eta1.0_1 ppData_HighPtLowerJets_ak4PFJets_07-29-19_jetPlots_0.0eta1.0
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppData" "lumiRunStudy_diffDupeSkip"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "lumiRunStudy_lumieffcalcOnly"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppData" "lumiRunStudy_diffDupeSkip"
 
 
 ####source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "Chrisbins"

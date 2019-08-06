@@ -668,6 +668,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   histTitle+="_divBylumietabin";
   double effIntgrtdLumi=computeEffLumi(fpp_Data);
+  effIntgrtdLumi=1.e+03;//TEMPORARY?!
   hrec->Scale(1./effIntgrtdLumi); // lumi
   if(debugWrite)hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");
@@ -872,6 +873,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());//set proper, typical pdf errs on the thy hist
   for(int i=1; i<=CT10nlo->GetNbinsX(); i++)CT10nlo->SetBinError(i, CT10nlo->GetBinContent(i)*(CT10nloerr->GetBinContent(i))); 
   CT10nlo = (TH1D*)CT10nlo->Rebin(nbins_pt_gen,"pp_CT10nlo_rebin",boundaries_pt_gen);  
+  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT10nlo,
+					 CT10nlo, &CT10NPs, etabinint);
   CT10nlo->SetMarkerSize(0);
   CT10nlo->SetLineColor(kBlack);  
   CT10nlo->Scale(1./1000.);

@@ -112,7 +112,8 @@ source run_printPlots_ppMC_JERS_etabin.sh "4" "06.25.19_outputCondor" "06-25-19"
 
 
 echo "scp2Serin"																             
-scp2Serin "output/ak4PF_PY8JER_??eta??_06.25.19_sigm*.*"										             
+#scp2Serin "output/ak4PF_PY8JER_??eta??_06.25.19_sigm*.*"										             
+scp2Serin "output/ak4PF_PY8JER_??eta??_06.25.19_sigm*.*"  
 
 
 

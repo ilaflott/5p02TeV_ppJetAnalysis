@@ -601,8 +601,9 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     jetpp[0]->GetEntry(nEvt);
     
     // grab vzweight
-    double vzWeight=0.;
-    if(doVzWeights){
+    double vzWeight=1.;
+    //if(doVzWeights ){//TEMPORARY
+    if(doVzWeights && false){
       if(!(fabs(vz_F)>24.)) vzWeight=cpuVzWeight_poly(vz_F);
       //vzWeight=cpuVzWeight_gauss(vz_F);
       //vzWeight=cpuVzWeight_bins(vz_F);

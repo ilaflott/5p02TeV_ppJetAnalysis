@@ -24,14 +24,14 @@ if [[ $subm_ppData_jetPlots -eq 1 ]]
 then
     echo "...ppData jetPlots..."
     rootcompile readForests_ppData_jetPlots.C
-    source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppData"
+    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
 fi
 
 if [[ $subm_ppMC_jetPlots -eq 1 ]]
 then
     echo "...ppMC jetPlots..."
     rootcompile readForests_ppMC_jetPlots.C
-    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
+    source run_readForests_jetPlots.sh 4 "0.0" "1.0" "ppMC"
 fi
 
 

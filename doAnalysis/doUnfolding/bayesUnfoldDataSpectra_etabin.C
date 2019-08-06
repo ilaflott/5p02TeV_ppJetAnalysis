@@ -9,7 +9,7 @@ const bool doBiasTest=false;
 const bool setDataCovMat=true;
 const bool doJetID=true     ;
 const bool useSimpBins=false;
-const bool doJECsys=true;
+const bool doJECsys=false;
 const bool applyNPCorrs=false;//&&compareToNLOThy;
 
 
@@ -429,6 +429,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   histTitle+="_divBylumietabin";
   double effIntgrtdLumi=computeEffLumi(fpp_Data);
+  effIntgrtdLumi=1.e+03;//TEMPORARY?!
   hrec->Scale(1./effIntgrtdLumi); // lumi
   if(debugWrite)hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");

@@ -156,7 +156,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     theLumi=intgrtdLumi;
   }
   
-  
+  theLumi=1.e+3;//TEMPORARY?!
   
   // evt plots ----------------------
   if(drawEvtQAPlots && !(finMC->IsZombie()) ){
@@ -221,9 +221,11 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     else jetIDInt="0";  
     
     //TH1s
-    //int etabin=0;
-    for(int etabin=0; etabin<Netabins; etabin++){
-      for(int j=0;j<N_vars;j++){ 
+    for(int j=0;j<N_vars;j++){ 
+      for(int etabin=0; etabin<Netabins; etabin++){//TEMP
+      //	for(int etabin=0; etabin<1; etabin++){
+	
+	//continue;
 	
 	std::cout<<std::endl;
 	if(debugMode)std::cout<<std::endl<<" var ="<<var[j]<<", j="<<j<<std::endl;
@@ -239,7 +241,11 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	continue;}
 	
 	//printPlot      
-	//std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j];          
+	//if(var[j]=="jtpt"){
+	//  printJetQAHist_jtpt_SMPTrigCombo( (TFile*) finData , (TFile*) finMC   ,   (int)etabin, (long double)theLumi/intgrtdLumi,
+	//				    (std::string) thePDFFileName  , (std::string) fullJetType, (TFile*) fout );      
+	//}
+	  
 	std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_etabin"+std::to_string(etabin);          
 	printJetQAHist( (TFile*) finData , (TFile*) finMC   ,  (int) j, (bool)doJetIDPlots, (int)etabin, 
 			(std::string) inHistName , (std::string) thePDFFileName  , (std::string) fullJetType, 

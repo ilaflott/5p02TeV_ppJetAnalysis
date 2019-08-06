@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-smeartheory=0
+smeartheory=1
 smearPY8=1
 
 
@@ -48,7 +48,7 @@ then
     
     scpoutput=0
     scpafterlast=1
-    etabin_i=0
+    etabin_i=3
     #Netabins=1 ##debug; runs first etabin only
     Netabins=4
     while [ $etabin_i -lt $Netabins ]
@@ -114,7 +114,7 @@ then
     
     scpoutput=0
     scpafterlast=1
-    etabin_i=1
+    etabin_i=3
     Netabins=4 
     while [ $etabin_i -lt $Netabins ]
     do

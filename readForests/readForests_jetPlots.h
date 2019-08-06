@@ -25,7 +25,7 @@ const std::string defMCOutputName="readForests_ppMC_defOut_jetPlots.root";
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true;
-const float defEtaCutLo=0.0, defEtaCutHi=1.0;//really absetacut, don't use negative numbers
+const float defEtaCutLo=0.0, defEtaCutHi=2.0;//really absetacut, don't use negative numbers
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
 				 int startfile=20, int endfile=21,

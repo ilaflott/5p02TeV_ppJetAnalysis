@@ -11,7 +11,7 @@ echo ""
 #DD="25"
 #YY="19"
 MM="08"
-DD="05"
+DD="06"
 YY="19"
 
 
@@ -21,7 +21,7 @@ YY="19"
 
 
 
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "lumiRunStudy_lumieffcalcOnly"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "SMPbins_withJECsys_withLumiCorr_semifinal"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppData" "lumiRunStudy_diffDupeSkip"
 
 

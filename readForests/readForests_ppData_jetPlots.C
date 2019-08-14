@@ -10,8 +10,8 @@ const bool fillDataJetQAHists=true; // leave me on almost always
 const bool fillDataJetTrigQAHists=true; // leave me on almost always
 const bool fillDataJetCovMatrix=true; // leave me on almost always
 
-const bool fillDataJetJECQAHists=false;//expensive computationally, use only if needed (i.e. if someone asks about JECs + wants QA)
-const bool fillDataJetJECUncHists=false&&fillDataJetQAHists;// leave me on almost always
+const bool fillDataJetJECQAHists=true;//expensive computationally, use only if needed (i.e. if someone asks about JECs + wants QA)
+const bool fillDataJetJECUncHists=true&&fillDataJetQAHists;// leave me on almost always
 
 const bool fillDataDijetHists=false;// leave me off almost always
 const bool useHLT100=false; // leave me off almost always

@@ -131,6 +131,7 @@ int printPlots_jetIDPlots_v2(const std::string input_condorDir_jetID ,
     if(isData)theLumi=intgrtdLumi;
     else theLumi=1.;
   }
+  theLumi=1.;
   
   
 
@@ -181,10 +182,10 @@ int printPlots_jetIDPlots_v2(const std::string input_condorDir_jetID ,
     //for(int jetIDInt=0;jetIDInt<2;jetIDInt++){
     if(drawTupelJetQAPlots){
 
-      for( int etabin=0; etabin<Netabins ; etabin++ ){
+      for(int j=0;j<N_tupelvars;j++){
+	for( int etabin=0; etabin<Netabins ; etabin++ ){
 	
-	for(int j=0;j<N_tupelvars;j++){
-	  
+	
 	  
 	  std::cout<<std::endl;
 	  if(debugMode)std::cout<<std::endl<<" tupelvar ="<<tupelvar[j]<<", j="<<j<<std::endl;

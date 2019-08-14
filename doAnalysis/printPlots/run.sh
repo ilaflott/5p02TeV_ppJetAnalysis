@@ -1,13 +1,12 @@
 #!/bin/bash
 
 
-dojetQAPlots=0        #done for ppMC+ppData, 06.25.19, look at ouput
-                      #some ratios from constituent plots look funny, double check
-dojetTrigQAPlots=1   #done for ppData, 06.25.19, look at ouput
+dojetQAPlots=0        #done for ppMC + (ppData from 08.06.19)
                       #looks good
-dojetIDQAPlots=0      #done for ppMC, ppData, 06.25.19, look at ouput
-                      #for ppData, values look fine, fix x-axis labels
-                      #for ppMC, values look fine, fix x-axis labels
+dojetTrigQAPlots=0   #done for ppData, 08.06.19
+                      #looks good
+dojetIDQAPlots=1      #done for ppMC, DO FOR ppData, 08.06.19, look at ouput
+
 dojetMultPlots=0
 scpOutput=0
 
@@ -67,10 +66,13 @@ then
     #scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta10_07.29.19_noMB_SMPbins_SMPtrigCombo_jetPlots.*"
     #source run_printPlots_jetPlots.sh "4" "07.29.19_outputCondor" "07-29-19" "0.0eta1.0_lumiRunStudy_diffDupeSkip"    "07.29.19_outputCondor" "07-29-19" "0.0eta1.0_semifinal_novzweights"  "00eta10_07.29.19_noMB_SMPbins_SMPtrigCombo_novzweights"    
     #scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta10_07.29.19_noMB_SMPbins_SMPtrigCombo_novzweights_jetPlots.*"
-    source run_printPlots_jetPlots.sh "4" "08.05.19_outputCondor" "08-05-19" "0.0eta2.0_lumiRunStudy_lumieffcalcOnly"    "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_08.05.19_noMB_SMPbins_semifinal_SMPTrigCombo"    
-    scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_08.05.19_noMB_SMPbins_semifinal_SMPTrigCombo_jetPlots.*"
+    #source run_printPlots_jetPlots.sh "4" "08.05.19_outputCondor" "08-05-19" "0.0eta2.0_lumiRunStudy_lumieffcalcOnly"    "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_08.05.19_noMB_SMPbins_semifinal_SMPTrigCombo"    
+    #scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_08.05.19_noMB_SMPbins_semifinal_SMPTrigCombo_jetPlots.*"
 
-    
+    #####SPECIAL######
+    source run_printPlots_jetPlots.sh "4" "08.06.19_outputCondor" "08-06-19" "0.0eta2.0_SMPbins_withJECsys_withLumiCorr_semifinal"    "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_08.06.19_noMB_SMPbins_withLumiCorr_semifinal"    
+    scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_08.06.19_noMB_SMPbins_withLumiCorr_semifinal_jetPlots.*"
+
     ##############################################
     
     echo ""
@@ -321,12 +323,16 @@ then
     #scp2Serin  "${JETTRIGOUTDIR}/ak4PF_HPtJetTrig_00eta30_05.01.19_wJetID_incjetana_*MB_isHLTforDupeSkip_wTrgPt_HLTMBexclu_jetTrig.*"
 
     
-    ##
+    #####SPECIAL
     #source run_printPlots_jetTrig.sh "4" "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_SMPbins_withJECsys_semifinal"      "00eta20_06.25.19_noMB_SMPbins_semifinal"
+
     #source run_printPlots_jetTrig.sh "4" "07.29.19_outputCondor" "07-29-19" "0.0eta1.0_lumiRunStudy_usualDupeSkip"      "00eta10_07.29.19_noMB_lumiRunStudy_usualDupeSkip_semifinal"
     #source run_printPlots_jetTrig.sh "4" "07.29.19_outputCondor" "07-29-19" "0.0eta1.0_lumiRunStudy_diffDupeSkip"      "00eta10_07.29.19_noMB_lumiRunStudy_diffDupeSkip_semifinal"
-    source run_printPlots_jetTrig.sh "4" "08.05.19_outputCondor" "08-05-19" "0.0eta2.0_lumiRunStudy_lumieffcalcOnly"      "00eta20_08.05.19_noMB_SMPbins_semifinal_SMPTrigCombo"
+    #source run_printPlots_jetTrig.sh "4" "08.05.19_outputCondor" "08-05-19" "0.0eta2.0_lumiRunStudy_lumieffcalcOnly"      "00eta20_08.05.19_noMB_SMPbins_semifinal_SMPTrigCombo"
     
+    ####SPECIAL
+    source run_printPlots_jetTrig.sh "4" "08.06.19_outputCondor" "08-06-19" "0.0eta2.0_SMPbins_withJECsys_withLumiCorr_semifinal"      "00eta20_08.06.19_noMB_SMPbins_withLumiCorr_semifinal"
+    scp2Serin "output/ak4PF_HPtJetTrig_00eta20_08.06.19_noMB_SMPbins_withLumiCorr_semifinal_jetTrig.*"
     
     ##############################################
     
@@ -334,7 +340,7 @@ then
     echo "done running jetTrig!"
     echo ""
 
-    return
+    #return
     
 
     
@@ -385,10 +391,11 @@ then
     #source run_printPlots_jetIDPlots_v2.sh "4" "04.16.19_outputCondor" "04-16-19"  "0.0eta3.0_incjetana"  "00eta30_incjetana_wMB" "ppData"
     #source run_printPlots_jetIDPlots_v2.sh "4" "04.16.19_outputCondor" "04-16-19"  "0.0eta3.0_incjetana"  "00eta30_incjetana_noMB" "ppData"
 
-
-    source run_printPlots_jetIDPlots_v2.sh "4" "06.25.19_outputCondor" "06-25-19"  "0.0eta2.0_SMPbins_withJECsys_semifinal"  "00eta20_06.25.19_noMB_SMPbins_semifinal" "ppData"
-
-    source run_printPlots_jetIDPlots_v2.sh "4" "06.25.19_outputCondor" "06-25-19"  "0.0eta2.0_semifinal"  "00eta20_06.25.19_SMPbins_semifinal" "ppMC"
+    #####SPECIAL
+    #source run_printPlots_jetIDPlots_v2.sh "4" "06.25.19_outputCondor" "06-25-19"  "0.0eta2.0_SMPbins_withJECsys_semifinal"  "00eta20_06.25.19_noMB_SMPbins_semifinal" "ppData"
+    source run_printPlots_jetIDPlots_v2.sh "4" "08.06.19_outputCondor" "08-06-19"  "0.0eta2.0_SMPbins_withJECsys_withLumiCorr_semifinal"  "00eta20_08.06.19_noMB_SMPbins_withLumiCorr_semifinal" "ppData"
+    scp2Serin "output/ak4PF_HPtJetTrig_00eta20_08.06.19_noMB_SMPbins_withLumiCorr_semifinal_jetIDPlots.*"
+    #source run_printPlots_jetIDPlots_v2.sh "4" "06.25.19_outputCondor" "06-25-19"  "0.0eta2.0_semifinal"  "00eta20_06.25.19_SMPbins_semifinal" "ppMC"
 
     
     

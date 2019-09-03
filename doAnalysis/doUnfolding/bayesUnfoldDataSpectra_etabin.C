@@ -13,8 +13,8 @@ const bool doJECsys=true;
 const bool applyNPCorrs=false;//&&compareToNLOThy;
 
 
-const std::string ptbintype="NLO_SMP";
-const bool compareToNLOThy=true&&(ptbintype=="NLO_SMP");
+const std::string ptbintype="NLO_SMP";//"john";//
+const bool compareToNLOThy=false&&(ptbintype=="NLO_SMP");
 
 //-----------------------------
 

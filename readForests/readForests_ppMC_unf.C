@@ -90,6 +90,8 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   TH1F *hJetPtCut_Hi        =new TH1F("hJetPtCut_Hi"     ,(std::to_string(jtPtCut_Hi)).c_str()   ,    1000, 1500.,2500.); hJetPtCut_Hi->Fill(jtPtCut_Hi);           
   TH1F *hGenJetPtCut     =new TH1F("hGenJetPtCut"  ,(std::to_string(genJetPtCut)).c_str()   ,    100, 0.,100.); hGenJetPtCut->Fill(genJetPtCut);           
   TH1F *hGenJetPtCut_Hi     =new TH1F("hGenJetPtCut_Hi"  ,(std::to_string(genJetPtCut_Hi)).c_str()   ,    1000, 1500.,2500.); hGenJetPtCut_Hi->Fill(genJetPtCut_Hi);           
+
+  TH1F *hGenDRCut     =new TH1F("hGenDRCut"  ,(std::to_string(gendrCut)).c_str()   ,    100, 0.,100.); hGenDRCut->Fill(gendrCut);           
   
   TH1F *hJetEtaCutHi       =new TH1F("hJetEtaCutHi"     ,(std::to_string(jtEtaCutHi)).c_str()  ,    60,   0,6  ); hJetEtaCutHi->Fill(jtEtaCutHi);
   TH1F *hJetEtaCutLo       =new TH1F("hJetEtaCutLo"     ,(std::to_string(jtEtaCutLo)).c_str()  ,    60,   0,6  ); hJetEtaCutLo->Fill(jtEtaCutLo);	
@@ -515,7 +517,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       else if (!(absreceta < jtEtaCutHi)){
 	//if(debugMode)std::cout<<"absreceta too high!"<<std::endl;
 	continue;} // higher abseta cut
-      else if ( gendrjt > 0.1 ) {
+      else if ( gendrjt > gendrCut ) {
 	//if(debugMode)std::cout<<"gendrjt too high!"<<std::endl;
 	continue;}       //delta-r cut, proxy for gen-reco matching quality
       

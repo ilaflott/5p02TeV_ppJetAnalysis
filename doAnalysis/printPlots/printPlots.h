@@ -13,6 +13,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 // ROOTSYS
@@ -36,6 +37,8 @@
 #include <TGraphAsymmErrors.h>
 #include <TLegend.h>
 #include <TLatex.h>
+#include <TPaveLabel.h>
+#include <TPaveText.h>
 #include <TLine.h>
 #include <TStyle.h>
 #include <TROOT.h>
@@ -59,6 +62,7 @@ const int CANVY=800;
 
 #include "printPlots_jetPlots.h"    
 #include "printPlots_jetTrigPlots.h"
+#include "printPlots_jetTrigEff.h"
 #include "printPlots_jetIDPlots.h"
 #include "printPlots_jetMultPlots.h"
 //#include "printPlots_fitsNfuncs.h" //deprecated

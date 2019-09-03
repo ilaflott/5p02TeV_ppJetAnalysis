@@ -538,6 +538,56 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
   hfold_truth->SetMarkerSize(1.02);     
 
 
+
+
+
+
+
+  // Bayesian unfolding same side -------------------------   
+  std::cout<<"calling RooUnfoldBayes... kIterInput="<<kIterInput<<std::endl;  
+  RooUnfoldBayes unf_ss_bayes( &roo_resp, hrec_sameside_rebin, kIterInput ); //sameside unfolding
+  unf_ss_bayes.SetVerbose(verbosity);
+  
+  if(doToyErrs){
+    std::cout<<"using toy errors, suppressing text output"<<std::endl;
+    unf_ss_bayes.SetNToys(10000);
+    unf_ss_bayes.SetVerbose(1);  }
+  
+  std::cout<<"Overflow Status: " << unf_ss_bayes.Overflow()<<std::endl<<std::endl;
+  
+  
+  std::cout<<"unfolding hrec w/ Hreco func"<<std::endl;
+  TH1D *hunf_ss = (TH1D*)unf_ss_bayes.Hreco(errorTreatment);     std::cout<<std::endl; 
+  hunf_ss->SetName("ppMC_BayesUnf_SS_Spectra");
+  hunf_ss->SetTitle( ("Unf. Toy NLO Truth, kIter="+std::to_string(kIterInput)).c_str());
+  if(debugMode)hunf_ss->Print("base");
+  
+  //cosmetics
+  hunf_ss->SetMarkerStyle(kOpenSquare);
+  hunf_ss->SetMarkerColor(kRed);
+  hunf_ss->SetLineColor(kRed);
+  hunf_ss->SetMarkerSize(1.02);     
+  
+  std::cout<<"folding unfolded mc histogram!!"<<std::endl;
+  TH1D* hfold_ss=(TH1D*)roo_resp.ApplyToTruth(hunf_ss);          
+  hfold_ss->SetName("ppMC_BayesFold_SS_Spectra");
+  hfold_ss->SetTitle(("Fold. Unf. Toy NLO Truth, kIter="+std::to_string(kIterInput)).c_str());
+  if(debugMode)hfold_ss->Print("base");
+  
+  //cosmetics
+  hfold_ss->SetMarkerStyle(kOpenSquare);
+  hfold_ss->SetMarkerColor(kGreen-5);
+  hfold_ss->SetLineColor(  kGreen-5);
+  hfold_ss->SetMarkerSize(1.02);     
+
+
+
+
+
+
+
+
+
   
   
   //i should probably do this differently, but for now ignore
@@ -600,11 +650,23 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
   h_genratio_oppunf->SetTitle( "Unf. Test Toy NLO/Truth Toy NLO" );
   h_genratio_oppunf->Divide(hgen_rebin_ratiobin);
   if(debugMode)h_genratio_oppunf->Print("base");
+
+  TH1D *h_genratio_ssunf = (TH1D*)hunf_ss->Clone( "ppMC_Gen_Ratio_SSUnf" );
+  h_genratio_ssunf->SetTitle( "Unf. Smeared Truth Toy NLO/GEN Truth PY8" );
+  h_genratio_ssunf->Divide(hgen_rebin_ratiobin);
+  if(debugMode)h_genratio_ssunf->Print("base");
+
   
   TH1D *h_genratio_oppfold = (TH1D*)hfold->Clone( "ppMC_Gen_Ratio_OppFold" );
   h_genratio_oppfold->SetTitle( "Fold Test Toy NLO/Truth Toy NLO" );
   h_genratio_oppfold->Divide(hgen_rebin_ratiobin);
   if(debugMode)h_genratio_oppfold->Print("base");
+
+  TH1D *h_genratio_ssfold = (TH1D*)hfold_ss->Clone( "ppMC_Gen_Ratio_SSFold" );
+  h_genratio_ssfold->SetTitle( "Fold. Unf. Truth Toy NLO/GEN Truth PY8" );
+  h_genratio_ssfold->Divide(hgen_rebin_ratiobin);
+  if(debugMode)h_genratio_oppfold->Print("base");
+
   
   TH1D *h_genratio_oppmeas = (TH1D*)hrec_rebin->Clone( "ppMC_Gen_Ratio_Meas" );
   h_genratio_oppmeas->SetTitle( "Meas. Test Toy NLO/Truth Toy NLO" );
@@ -623,6 +685,12 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
   h_recratio_oppunf->SetTitle( "Unf. Test Toy NLO/Test Toy NLO" );
   h_recratio_oppunf->Divide(hrec_rebin);
   if(debugMode)h_recratio_oppunf->Print("base");
+
+  TH1D *h_recratio_ssunf = (TH1D*)hunf_ss->Clone( "ppMC_Meas_Ratio_SSUnf" );
+  h_recratio_ssunf->SetTitle( "Unf. Smeared Toy Truth NLO/Test Toy NLO" );
+  h_recratio_ssunf->Divide(hrec_rebin);
+  if(debugMode)h_recratio_oppunf->Print("base");
+
   
   TH1D *h_recratio_ssmeas = (TH1D*)hrec_sameside_rebin->Clone( "ppMC_Meas_Ratio_SSMeas" );
   h_recratio_ssmeas->SetTitle( "Smeared Truth Toy NLO/Test Toy NLO" );
@@ -874,19 +942,31 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
   divideBinWidth(hunf); 
   if(debugWrite)hunf->Write();
   if(debugMode)hunf->Print("base");  
+
+  // -- MC SS UNF -- //
+  hunf_ss->Scale(1./etaBinWidth); // |y| bin width
+  divideBinWidth(hunf_ss); 
+  if(debugWrite)hunf_ss->Write();
+  if(debugMode)hunf_ss->Print("base");  
   
   // -- DATA FOLD(UNF) -- //
   hfold->Scale(1./etaBinWidth); // |y| bin width
   divideBinWidth(hfold); 
   if(debugWrite)hfold->Write();
   if(debugMode)hfold->Print("base");  
-  // ----- END BIN WIDTH DIVISIONS + NORMALIZING ----- //
+
+  // -- MC FOLD(SS UNF) -- //
+  hfold_ss->Scale(1./etaBinWidth); // |y| bin width
+  divideBinWidth(hfold_ss); 
+  if(debugWrite)hfold_ss->Write();
+  if(debugMode)hfold_ss->Print("base");  
   
   // -- DATA FOLD(UNF) + FAKES-- //
   hfold_fakecorr->Scale(1./etaBinWidth); // |y| bin width
   divideBinWidth(hfold_fakecorr); 
   if(debugWrite)hfold_fakecorr->Write();
   if(debugMode) hfold_fakecorr->Print("base");  
+  // ----- END BIN WIDTH DIVISIONS + NORMALIZING ----- //
 
   // ---------------- THY RATIOS (THY / DATA) ----------------- //
   // must be after the binwidth divisions + normalization (the thy hists are made this way by default)
@@ -1003,6 +1083,7 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
     hrec_rebin->DrawClone("P E");           
     hgen_rebin->DrawClone("P E SAME");                 
     hunf->DrawClone("P E SAME");     //          hunf->DrawClone("P E");               //debug
+    hunf_ss->DrawClone("P E SAME");     //          hunf->DrawClone("P E");               //debug
     hrec_sameside_rebin->DrawClone("P E SAME");           
     
     //assert(false);
@@ -1010,6 +1091,7 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
     
     TLegend* legend_in1 = new TLegend( 0.55,0.7,0.9,0.9 );
     legend_in1->AddEntry(hunf,                "Unf. Test Toy NLO" ,  "lp");
+    legend_in1->AddEntry(hunf_ss,                "Unf. Smeared Toy Truth NLO" ,  "lp");
     legend_in1->AddEntry(hrec_rebin,          "Test Toy NLO" , "lp");	
     legend_in1->AddEntry(hrec_sameside_rebin, ("Smeared "+NLOMCtitle_str).c_str()  ,  "lp");	 
     legend_in1->AddEntry(hgen_rebin,          ("Toy "+NLOMCtitle_str+" Truth").c_str()   , "lp");
@@ -1042,6 +1124,7 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
     
     // FIX ME
     h_genratio_oppunf->DrawClone("P E");            //data unf/mc truth
+    h_genratio_ssunf->DrawClone("P E SAME");            //mc unf mc truth/mc truth
     h_genratio_oppmeas->DrawClone("P E SAME");      // data meas/mc truth
     h_genratio_ssmeas->DrawClone("P E SAME");       // mc meas/mc truth
     //h_genratio_oppfold->DrawClone("P E SAME");
@@ -1050,8 +1133,10 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
     TLegend* legend2 = new TLegend( 0.55,0.75,0.95,0.9 );
     
     legend2->AddEntry(h_genratio_oppunf,  "Unf. Test Toy NLO" ,  "lp");
+    legend2->AddEntry(h_genratio_ssunf,  "Unf. Smeared Toy Truth NLO" ,  "lp");
     legend2->AddEntry(h_genratio_oppmeas, "Test Toy NLO" , "lp"); 
     legend2->AddEntry(h_genratio_ssmeas, ("Smeared "+NLOMCtitle_str).c_str(), "lp");
+
     //legend2->AddEntry(h_genratio_oppfold, "Fold Test Toy NLO", "lp");
     legend2->SetBorderSize(0);
     legend2->SetFillStyle(0);
@@ -1079,11 +1164,12 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
     setupRatioHist(h_recratio_ssmeas , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
     setupRatioHist(h_recratio_oppunf , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
     setupRatioHist(h_recratio_ssgen  , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
+    setupRatioHist(h_recratio_ssunf , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
     
     h_recratio_ssmeas->DrawClone("P E");
     h_recratio_oppunf->DrawClone("P E SAME");
     h_recratio_ssgen->DrawClone("P E SAME");
-    ////h_recratio_ssunf->DrawClone("P E SAME");
+    h_recratio_ssunf->DrawClone("P E SAME");
     //h_recratio_oppfold->DrawClone("P E SAME");  
     //h_recratio_ssfold->DrawClone("P E SAME");
     
@@ -1091,7 +1177,7 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
     legend4->AddEntry(h_recratio_oppunf,  "Unf. Test Toy NLO", "lp");
     legend4->AddEntry(h_recratio_ssmeas, ("Smeared "+NLOMCtitle_str).c_str()  ,  "lp");	 
     legend4->AddEntry(h_recratio_ssgen,  ("Toy "+NLOMCtitle_str+" Truth").c_str()   , "lp");
-    ////legend4->AddEntry(h_recratio_ssunf, NULL, "p");
+    legend4->AddEntry(h_recratio_ssunf, "Unf. Smeared Toy Truth NLO", "lp");
     //legend4->AddEntry(h_recratio_oppfold, "Fold Test Toy NLO", "lp");
     //legend4->AddEntry(h_recratio_ssfold, "PY8 Fold(Unf.)", "p");    
     legend4->SetBorderSize(0);

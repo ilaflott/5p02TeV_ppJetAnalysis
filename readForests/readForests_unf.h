@@ -29,7 +29,7 @@ const float jtPtCut        = 43.;
 const float jtPtCut_Hi     = 1410.;
 const float genJetPtCut    = 43.;
 const float genJetPtCut_Hi = 1410.;
-
+const float gendrCut = 99.;//0.1;
 // Apr 29th 2016
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later

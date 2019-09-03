@@ -29,7 +29,7 @@ const float jtPtCut        = 28.;
 const float jtPtCut_Hi     = 1410.;
 const float genJetPtCut    = 28.;
 const float genJetPtCut_Hi = 1410.;
-
+const float gendrCut       = 99.;//0.1;
 const int genptBin1Low = 56 , genptBin1High = 64 ;	 
 const int genptBin2Low = 64 , genptBin2High  = 74 ;
 

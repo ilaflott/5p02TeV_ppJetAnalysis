@@ -462,10 +462,11 @@ void setupRatioHist(TH1* h, bool useSimpBins, double* boundaries=NULL, int nbins
   //h->SetAxisRange(0.2, 1.8, "Y");
   //h->SetAxisRange(0.3, 1.7, "Y");
   //h->SetAxisRange(0.4, 1.6, "Y");
-  h->SetAxisRange(0.5, 1.5, "Y");
+  h->SetAxisRange(0.6, 1.4, "Y");
   h->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
   h->GetXaxis()->SetMoreLogLabels(true);
   h->GetXaxis()->SetNoExponent(true);
+  h->GetYaxis()->CenterTitle(true);
   //if(!useSimpBins)h->GetXaxis()->SetMoreLogLabels(true);
   //if(!useSimpBins)h->GetXaxis()->SetNoExponent(true);
   //h->SetAxisRange( boundaries[0] ,  

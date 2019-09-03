@@ -52,7 +52,7 @@ const float jetQAPtCut=56.;//need a "QA" pt cut to make sure jets at low pT for 
 //for MC jets only
 const float genJetPtCut=43.;//49.; 
 const float genJetPtCut_Hi=jtPtCut_Hi; 
-const float gendrCut=0.1;
+const float gendrCut=99.;//0.1;
 
 //for dijet histograms only
 const float ldJetPtCut=76., subldJetPtCut=56., ptAveCut=subldJetPtCut, dPhiCut=2./3.*TMath::Pi();//dijet cuts

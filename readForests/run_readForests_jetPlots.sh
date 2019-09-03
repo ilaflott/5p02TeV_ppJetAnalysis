@@ -58,7 +58,9 @@ then
     echo ""
     
     #source condorSubmit_readForests.sh readForests_ppMC_jetPlots 2 20 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
-    source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 300 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+    
+    source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 200 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+    #source condorSubmit_readForests.sh readForests_ppMC_jetPlots -1 300 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
 
     
     

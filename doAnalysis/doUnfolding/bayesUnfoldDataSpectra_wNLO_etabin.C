@@ -7,7 +7,7 @@ const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
 const bool setDataCovMat=true;
-const std::string ptbintype="NLO_SMP";
+const std::string ptbintype="NLO_SMP";//"john";//
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true

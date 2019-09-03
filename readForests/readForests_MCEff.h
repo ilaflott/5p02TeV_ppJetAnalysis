@@ -31,7 +31,7 @@ const float jtPtCut        = 28.;
 const float jtPtCut_Hi     = 1410.;
 const float genJetPtCut    = 28.;
 const float genJetPtCut_Hi = 1410.;
-
+const float gendrCut = 99.;//0.1;
 ////use these cuts to explore the matching efficiency of the jets found in the readForests_ppMC_unf scripts
 //const float jtPtCut        = 43.;
 //const float jtPtCut_Hi     = 1410.;

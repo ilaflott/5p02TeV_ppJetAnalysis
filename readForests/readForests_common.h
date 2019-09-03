@@ -275,9 +275,10 @@ const float absetabins[]={
   1.5,
   2.0//, 
   //2.5,
-  //3.0//, 
-  //  3.2,
-  //  4.7
+  //3.0, 
+  //3.2,
+  //4.7,
+  //5.1
 };
 const int nbins_abseta=sizeof(absetabins)/sizeof(float)-1;//this is the # of bins in a root histo
 //const int nbins_abseta=sizeof(absetabins)/sizeof(float); //this is the # of elements in the array
@@ -289,9 +290,10 @@ std::string absetabins_str[]={
   "1.5",
   "2.0"//, 
   //"2.5",
-  //"3.0"//
+  //"3.0",
   //"3.2",
-  //"4.7"
+  //"4.7",
+  //"5.1"
 };
 
 
@@ -311,88 +313,88 @@ const float etabins[]={
 const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 
-////straight up SMP binning for |y| bins in steps of 0.5
-const float ptbins[]={
-  //  //1., 
-  //  //5., 
-  //  //6., 
-  //  //8., 
-  //  //10., 
-  //  //12., 
-  //  //15., 
-  //  18., 
-  //  21., 
-  //  24., 
-  28.,
-  32., 
-  37.,
-  43., //garbage bins
-  49., //typical gen pt cut
-  56., //typical recopt cut
-  64.,
-  74.,
-  84.,
-  97.,
-  114.,
-  133.,
-  153.,
-  174.,
-  196.,
-  220.,
-  245.,
-  272.,
-  300.,
-  330.,
-  362.,
-  395.,
-  430.,
-  468.,
-  507.,
-  548.,
-  592.,
-  638.,
-  686.,
-  737.,
-  790.,
-  846.,
-  905.,
-  967.,//,
-  //1000.,
-  1032., //generally, garbage bins
-  1101., 
-  1172., 
-  1248., 
-  1327.,
-  1410.//,
-  //1497., 1588., 1684., 1784., 1890., 2000., 2116.
-};
-const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
-
-
-
-
-
-//////John's pt binning for |y| bins in steps of 0.5
+//////straight up SMP binning for |y| bins in steps of 0.5
 //const float ptbins[]={
-//  56.,  
-//  64.,  
-//  84., 
-//  114., 
-//  153., 
-//  196., 
+//  //  //1., 
+//  //  //5., 
+//  //  //6., 
+//  //  //8., 
+//  //  //10., 
+//  //  //12., 
+//  //  //15., 
+//  //  18., 
+//  //  21., 
+//  //  24., 
+//  28.,
+//  32., 
+//  37.,
+//  43., //garbage bins
+//  49., //typical gen pt cut
+//  56., //typical recopt cut
+//  64.,
+//  74.,
+//  84.,
+//  97.,
+//  114.,
+//  133.,
+//  153.,
+//  174.,
+//  196.,
+//  220.,
 //  245.,
+//  272.,
 //  300.,
+//  330.,
 //  362.,
-//  430., 
-//  507., 
-//  592., 
-//  686., 
-//  790., 
+//  395.,
+//  430.,
+//  468.,
+//  507.,
+//  548.,
+//  592.,
+//  638.,
+//  686.,
+//  737.,
+//  790.,
+//  846.,
 //  905.,
-//  1032.,
-//  1101.
+//  967.,//,
+//  //1000.,
+//  1032., //generally, garbage bins
+//  1101., 
+//  1172., 
+//  1248., 
+//  1327.,
+//  1410.//,
+//  //1497., 1588., 1684., 1784., 1890., 2000., 2116.
 //};
 //const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+
+
+
+
+////John's pt binning for |y| bins in steps of 0.5
+const float ptbins[]={
+  56.,  
+  64.,  
+  84., 
+  114., 
+  153., 
+  196., 
+  245.,
+  300.,
+  362.,
+  430., 
+  507., 
+  592., 
+  686., 
+  790., 
+  905.,
+  1032.,
+  1101.
+};
+const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 //
 //
 //

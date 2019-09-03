@@ -19,7 +19,8 @@ echo "submitting Py8 ppMC unf job(s)"
 echo ""
 
 #source condorSubmit_readForests.sh     <readForestsCode>  <NJobs> <NFilesPerJob> <startFilePos> <filelistIn> <radius> <jetType> <debug> [<etaCutLo> <etaCutHi>]
-source  condorSubmit_readForests.sh readForests_ppMC_unf -1 300 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+source  condorSubmit_readForests.sh readForests_ppMC_unf -1 200 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_unf -1 300 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
 #source  condorSubmit_readForests.sh readForests_ppMC_unf 2 20 120 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
 
 echo ""

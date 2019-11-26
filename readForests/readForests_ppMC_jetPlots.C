@@ -14,7 +14,7 @@ const bool fillMCTupelJetQAHists=false&&useTupel;
 
 const bool fillMCJetJECQAHists=false;
 const bool fillMCDijetHists=false;//hardly used options
-
+const bool useTightJetID=true;
 
 
 
@@ -776,18 +776,18 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	if (!(absreceta > 2.4)) 
 	  passesJetID=(bool)jetID_00eta24( jtpt, 
 					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult);
+					   numConst,  chMult, useTightJetID);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  passesJetID=(bool) jetID_24eta27( jtpt,
 					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
-					    numConst);
+					    numConst, useTightJetID);
 	else if( !(absreceta>3.0) && absreceta>2.7 )
 	  passesJetID=(bool) jetID_27eta30( jtpt,
 					    neSum_F[jet],  phSum_F[jet], 
-					    neuMult);
+					    neuMult, useTightJetID);
 	else  
 	  passesJetID=(bool)jetID_32eta47( jtpt, 
-					   phSum_F[jet]);
+					   phSum_F[jet], useTightJetID);
 	
 	int theRapBin=-1;
 	for(int rapbin=0;rapbin<nbins_abseta;++rapbin){

@@ -1303,13 +1303,8 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
   
   //begin event loop
   int NJets_largeJECdiff=0;
-  //int assertcount=0;
-  //float currentIntegral=0.;
-  //int problemCount=0;
   for(UInt_t nEvt = 0; nEvt < NEvents_toRead; ++nEvt) {
-    //if(nEvt > 10 )break;
-    //    if(nEvt!=152)continue;
-    //    if(nEvt>152)assert(false);
+      //for(UInt_t nEvt = 0; nEvt < 100; ++nEvt) {
     
     if (nEvt%100000==0 || deepDebug) {
       //if (true) {
@@ -1318,6 +1313,17 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
       int   nEvt_intpercdone=(int)nEvt_percdone;                
       std::cout<<"from trees, grabbing Evt # = "<<nEvt<<", ~"<<nEvt_intpercdone<<"% of job completed"<<std::endl;
     }
+
+
+    trgObjpt_40->clear();
+    trgObjpt_60->clear();
+    trgObjpt_80->clear();
+    trgObjpt_100->clear();
+    
+    trgObjeta_40->clear();
+    trgObjeta_60->clear();
+    trgObjeta_80->clear();
+    trgObjeta_100->clear();
     
     //grab an entry    
     jetpp[0]->GetEntry(nEvt);
@@ -1332,11 +1338,6 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	if(!evtIsInList)continue;	
       }
     }
-    std::cout<<"--------------------------------------------------------------------"<<std::endl;
-    std::cout<<"--------------------------------------------------------------------"<<std::endl;
-    std::cout<<std::endl;
-    
-    std::cout<<"Event = "<< evt_I<<"  RunNo = "<<run_I <<"  Lumi = "<<lumi_I<<std::endl<<std::endl;
     
     if(doRunExclStudy){
       bool inGoodRunList=false;
@@ -1346,9 +1347,21 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
       }
       if(!inGoodRunList) continue;	
     }
+
+
+    if(run_I!=262163)continue;
+    if(lumi_I!=1)continue;
+    if(evt_I!=2607 && evt_I!=19442 && evt_I!=56477)    continue;
+
+
+
+    std::cout<<"--------------------------------------------------------------------"<<std::endl;
+    std::cout<<"--------------------------------------------------------------------"<<std::endl;
+    std::cout<<std::endl;
     
+    std::cout<<"Event = "<< evt_I<<"  RunNo = "<<run_I <<"  Lumi = "<<lumi_I<<std::endl<<std::endl;
 
-
+    
     int runind=0;//for filling hists run-by-run w/o looping over the run # everytime. 
     if(fillDataEvtQAHists){
       
@@ -1384,11 +1397,15 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
     h_NEvents_read->Fill(0.);    //h_NEvents_read->Fill(1.,weight_eS);        
     //std::cout<<"up"<<std::endl;
     // skim/HiEvtAnalysis criteria
+    std::cout<<"pHBHENoiseFilter_I    ="<< pHBHENoiseFilter_I    << std::endl;
+    std::cout<<"pBeamScrapingFilter_I ="<< pBeamScrapingFilter_I << std::endl;
+    std::cout<<"pprimaryvertexFilter_I="<< pprimaryvertexFilter_I<< std::endl;
     if( (pHBHENoiseFilter_I    ==0    || 
 	 pBeamScrapingFilter_I ==0 || 
-	 pprimaryvertexFilter_I==0   ) && false)  continue;  
+	 pprimaryvertexFilter_I==0   ) && false)  continue;      
     h_NEvents_skimCut->Fill(0.);  //h_NEvents_skimCut->Fill(1.,weight_eS); 
     //std::cout<<"down"<<std::endl<<std::endl;
+    std::cout<<"vz_F="<<vz_F<<std::endl;
     if( (fabs(vz_F)>24. ) && false)     continue;
     h_NEvents_vzCut->Fill(0.); //h_NEvents_vzCut->Fill(1.,weight_eS);    
     
@@ -1401,11 +1418,7 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
     int trgPscl[N_HLTBits]={ Jet40_p_I * jet40_l1s_ps_I ,  Jet60_p_I *  jet60_l1s_ps_I ,   
                              Jet80_p_I * jet80_l1s_ps_I , Jet100_p_I * jet100_l1s_ps_I };    
 
-    //    bool trgDec2[N_HLTBits]={ (bool) (Jet40_2_I* jet40_l1s_I ), (bool) ( Jet60_2_I * jet60_l1s_I ) , //keep track of the other trigger decision bits
-    //			      (bool) (Jet80_2_I* jet80_l1s_I ), (bool) (Jet100_2_I * jet100_l1s_I) };    
-    
-    
-    //bool isInMinBiasPD=( (bool) mb_l1s_I );
+
     bool isInMinBiasPD=( (bool) MB_HF1ORp5_I );
     if(filelistIsMinBias)isInMinBiasPD=true;
     //bool isInMinBiasPD=( (bool) MB_HF1ORp5_I ||  (bool) mb_l1s_I);
@@ -1455,6 +1468,7 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
       for(unsigned int itt=0; itt<trgObj100_size; ++itt){
 	double trgpt=trgObjpt_100->at(itt);
 	double trgeta=trgObjeta_100->at(itt);
+	std::cout<<itt<<") -- pt ="<<trgpt<<", eta ="<<trgeta<<std::endl;	  
     	if(trgpt > maxTrgPt) { 
 	  maxTrgEta = trgeta;
 	  maxTrgPt = trgpt;
@@ -1470,8 +1484,8 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
       std::cout<<"HLT objects:"<<std::endl;
       for(unsigned int itt=0; itt<trgObj80_size; ++itt){
 	double trgpt=trgObjpt_80->at(itt);
-	std::cout<<itt<<") -- pt ="<<trgpt<<std::endl;	  
 	double trgeta=trgObjeta_80->at(itt);
+	std::cout<<itt<<") -- pt ="<<trgpt<<", eta ="<<trgeta<<std::endl;	  
     	if(trgpt > maxTrgPt) { 
 	  maxTrgEta = trgeta;
 	  maxTrgPt  = trgpt;
@@ -1487,8 +1501,8 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
       std::cout<<"HLT objects:"<<std::endl;
       for(unsigned int itt=0; itt<trgObj60_size; ++itt){
 	double trgpt=trgObjpt_60->at(itt);
-	std::cout<<itt<<") -- pt ="<<trgpt<<std::endl;	  
 	double trgeta=trgObjeta_60->at(itt);
+	std::cout<<itt<<") -- pt ="<<trgpt<<", eta ="<<trgeta<<std::endl;	  
     	if(trgpt > maxTrgPt) { 
 	  maxTrgEta =trgeta;
 	  maxTrgPt  =trgpt;
@@ -1504,8 +1518,8 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
       std::cout<<"HLT objects:"<<std::endl;
       for(unsigned int itt=0; itt<trgObj40_size; ++itt)	{
 	double trgpt=trgObjpt_40->at(itt);
-	std::cout<<itt<<") -- pt ="<<trgpt<<std::endl;	  
 	double trgeta=trgObjeta_40->at(itt);
+	std::cout<<itt<<") -- pt ="<<trgpt<<", eta ="<<trgeta<<std::endl;	  
     	if(trgpt > maxTrgPt) { 
 	  maxTrgEta = trgeta;
 	  maxTrgPt  = trgpt;
@@ -1574,6 +1588,18 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
     h_NEvents->Fill(0.);   h_NEvents->Fill(1.,weight_eS);      
 
 
+    std::cout<<"HLT40="<<Jet40_I<<std::endl;
+    std::cout<<"HLT60="<<Jet60_I<<std::endl;
+    std::cout<<"HLT80="<<Jet80_I<<std::endl;
+    std::cout<<"HLT40_L1Seed="<<jet40_l1s_I<<std::endl;
+    std::cout<<"HLT60_L1Seed="<<jet60_l1s_I<<std::endl;
+    std::cout<<"HLT80_L1Seed="<<jet80_l1s_I<<std::endl;
+    std::cout<<"final trgDec40="<<trgDec[0]<<std::endl;
+    std::cout<<"final trgDec60="<<trgDec[1]<<std::endl;
+    std::cout<<"final trgDec80="<<trgDec[2]<<std::endl;
+    std::cout<<"is40="<<is40<<std::endl;
+    std::cout<<"is60="<<is60<<std::endl;
+    std::cout<<"is80="<<is80<<std::endl;
     
     ////duplicate skipping between LowerJets and Jet80, old version extension
     if(filelistIsMinBias){
@@ -1882,6 +1908,14 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
 	int neuMult = neN_I[jet] + phN_I[jet] ;
 	int numConst  = chMult + neuMult;
+
+	std::cout<<"-----------------------------------------"<<std::endl;
+	std::cout<<std::fixed;
+	std::cout<<"Jet # "<<jet<<std::endl;
+	//std::cout<<"pt uncorrected/corrected: "<< std::setprecision(4)<<rawpt<<"/"<<jtpt<<" ---- eta = "<<receta<<std::endl;
+	std::cout<<"pt uncorrected: "<< std::setprecision(4)<<rawpt<<" ---- eta = "<<receta<<std::endl;
+	
+
 	
 	// event+jet counting
 	h_NJets->Fill(0.); h_NJets->Fill(1.,weight_eS);      			
@@ -1889,17 +1923,17 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	if(jtpt>evt_leadJetPt){
 	  evt_leadJetPt=jtpt;      }
 	
-	if( !(jtpt > jtPtCut) ){ jetsPerEvent--; continue;} //paranoia about float comparisons
+	if( !(jtpt > jtPtCut) ){ jetsPerEvent--; }//continue;} //paranoia about float comparisons
 	h_NJets_jtptCut->Fill(0.); h_NJets_jtptCut->Fill(1.,weight_eS);     
 	
-	if( !(jtpt < jtPtCut_Hi) ){ jetsPerEvent--; continue;}      
+	if( !(jtpt < jtPtCut_Hi) ){ jetsPerEvent--; }//continue;}      
 	h_NJets_jtptCut_Hi->Fill(0.); h_NJets_jtptCut_Hi->Fill(1.,weight_eS);      
 	
-	if( !(absreceta < 4.7) ) { jetsPerEvent--; continue;}      //this prett redundant; PDs dont seem to write jets past 4.7
+	if( !(absreceta < 4.7) ) { jetsPerEvent--; }//continue;}      //this prett redundant; PDs dont seem to write jets past 4.7
 	h_NJets_jtetaCut1->Fill(0.); h_NJets_jtetaCut1->Fill(1.,weight_eS);      
 	
-	if( absreceta < jtEtaCutLo ) { jetsPerEvent--;	continue;}
-	else if( !(absreceta < jtEtaCutHi) ) { jetsPerEvent--;	continue;}      
+	if( absreceta < jtEtaCutLo ) { jetsPerEvent--;	}//continue;}
+	else if( !(absreceta < jtEtaCutHi) ) { jetsPerEvent--;	}//continue;}      
 	h_NJets_jtetaCut2->Fill(0.); h_NJets_jtetaCut2->Fill(1.,weight_eS);                        
 	
 	
@@ -1988,7 +2022,6 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	  passesJetID=(bool)jetID_32eta47( jtpt, 
 					   phSum_F[jet]);
 	
-
 	// get repidity bin
 	int theRapBin=-1;	
 	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
@@ -1997,7 +2030,7 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	    theRapBin=rapbin;
 	    break;
 	  }
-	
+	std::cout<<"LooseID="<<(int)passesJetID<<std::endl;
 	
 	if(fillDataJetJECQAHists && passesJetID ){
 	  hjtpt[theRapBin]->Fill(jtpt,weight_eS);//spectra
@@ -2016,8 +2049,6 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	  hjtpt_v_diff_L2L3Res_2_rawpt[theRapBin]->Fill(jtpt, (jtpt-L2L3Res_2_rawpt), weight_eS);
 	  hL2L3Res_rawpt_v_diff_L2L3Res_2_rawpt[theRapBin]->Fill(L2L3Res_rawpt, (L2L3Res_rawpt-L2L3Res_2_rawpt), weight_eS);
 	}
-
-
 
 
 
@@ -2063,11 +2094,17 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	    jtpt_sysup=jtpt+JECUnc*jtpt;	      
 	    jtpt_sysdown=jtpt-JECUnc*jtpt;
 	    
-	    std::cout<<"-----------------------------------------"<<std::endl;
-	    std::cout<<"Jet # "<<jet<<std::endl;
-	    std::cout<<"pt uncorrected: "<<rawpt<<" ---- eta = "<<receta<<std::endl;
-	    std::cout<<"LooseID="<<(int)passesJetID<<std::endl;
-	    std::cout<<"&&&&&&&&& JE correction and uncertainty: "<<jtpt/rawpt<<" +/- "<< (jtpt/rawpt)*JECUnc << std::endl;
+	    //std::cout<<"-----------------------------------------"<<std::endl;
+	    //std::cout<<std::fixed;
+	    //std::cout<<"Jet # "<<jet<<std::endl;
+	    ////std::cout<<"pt uncorrected/corrected: "<< std::setprecision(4)<<rawpt<<"/"<<jtpt<<" ---- eta = "<<receta<<std::endl;
+	    //std::cout<<"pt uncorrected: "<< std::setprecision(4)<<rawpt<<" ---- eta = "<<receta<<std::endl;
+	    //std::cout<<"LooseID="<<(int)passesJetID<<std::endl;
+	    std::cout<<"&&&&&&&&& JE correction and uncertainty: "<< std::setprecision(4)<< jtpt/rawpt<<" +/- "<< (jtpt/rawpt)*JECUnc << std::endl;
+	    std::cout<<"pt corrected: "<< std::setprecision(4)<<jtpt<<std::endl;
+	    std::cout<<"&&&&&&&&& JE  rel. unc.   : "<< std::setprecision(4) <<(jtpt/rawpt)*jecunc_subtotrel[JECUnc_etabin][JECUnc_ptbin] << std::endl;
+	    std::cout<<"&&&&&&&&& JE  abs. unc.   : "<< std::setprecision(4) <<(jtpt/rawpt)*jecunc_subtotabs[JECUnc_etabin][JECUnc_ptbin] << std::endl;
+	    std::cout<<"&&&&&&&&& JE  flavqcd unc.: "<< std::setprecision(4) <<(jtpt/rawpt)*jecunc_flavqcd[JECUnc_etabin][JECUnc_ptbin]   << std::endl;
 
 	    //std::cout<<"jtpt_sysup="<<jtpt_sysup<<std::endl;
 	    //std::cout<<"jtpt_sysdown="<<jtpt_sysdown<<std::endl;
@@ -2083,6 +2120,7 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	  }//end JECUnc loop
 	}//end JECUnc hists + JetID	
 	
+
 
 	if(!(jtpt>jetQAPtCut)){ jetsPerEvent--; continue;}//need JEC syst. stuff before this cut; so jets from below 56 GeV can migrate above	
 	h_NJets_jetQAPtCut->Fill(0.);	  h_NJets_jetQAPtCut->Fill(1., weight_eS);
@@ -2101,8 +2139,10 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 
 
 	//STUFF I WANT FILLED FOR 56 GEV AND ABOVE ONLY
+
 	for(int jtid=0; jtid<2; jtid++){
-	  
+
+
 	  if(jtid==1 ){
 	    
 	    if(!passesJetID){ jetsPerEvent--; continue;	  }
@@ -2120,7 +2160,7 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	  
 	  
 	  
-	  
+
 	  // trig plots
 	  if(fillDataJetTrigQAHists){
 	    
@@ -2220,8 +2260,8 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	    
 	  }//end fill data jettrig qa hists	
 	    
-	    
 
+	  
 	  
 	  if(fillDataJetQAHists){
 	    
@@ -2278,7 +2318,7 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	    hJetQA[theRapBin][ind][jtid]->Fill(numConst, weight_eS); ind++; //HIN NUMCONST ~= SMP CONSTCNT	      			      
 	    //}
 	    
-	    
+
 	    //this dijet routine probably wont work since the rapidity bin changes. CAUTION!
 	    //looking for the first two good jets that meet the criteria specified
 	    if(fillDataDijetHists && passesJetID){
@@ -2323,9 +2363,13 @@ int readForests_ppData_findEvt_v3( std::string inFilelist , int startfile , int 
 	    }//end fillDataDijetHists	      
 	  } //end fill datajetqahists	    
 	}//end jtid loop
+
+
       }//end incjetanalyzer jet loop
+
+
     }//end if useIncJetAnalyzer
-    
+
     //assert(false);	
     if(useTupel){
       

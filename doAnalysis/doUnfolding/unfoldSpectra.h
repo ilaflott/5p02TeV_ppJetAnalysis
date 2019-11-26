@@ -108,9 +108,10 @@ const int verbosity=1;
 
 const double NLOMCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
 const double MCscaling=1e+00; // i.e. for when i fuck up the scaling/normalization
+const double etaBinWidth=1.;   // e.g. |y| < 2.0
 //const double etaBinWidth=4.;   // e.g. |y| < 2.0
 //const double etaBinWidth=2.; // e.g. |y| < 1.0
-const double etaBinWidth=1.; // e.g. |y| < 0.5
+//const double etaBinWidth=1.; // e.g. |y| < 0.5
 
 // for future way of dealing w/ mc response matrix th2
 //const float TH2ProjRecPtLoCut=49.;
@@ -333,6 +334,11 @@ double* setBinning_etabin(int etabinint=0, std::string type="SMP", int* nbins=NU
   else if(type=="chris"){
     binarray=(double*)(chris_ptbins[etabinint].data());
     *(nbins)=(int)(chris_ptbins[etabinint].size()-1);
+  }
+  else if(type=="chris2"){
+    if(etabinint!=0)assert(false);//00eta20 only
+    binarray=(double*)(chris_ptbins2[etabinint].data());
+    *(nbins)=(int)(chris_ptbins2[etabinint].size()-1);
   }
   else
     assert(false);

@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdio>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -224,8 +225,8 @@ const double HLTPFthresh[]={
   //55., 80., 105., 135.   //TODO/TRY 1 -- DONE
   //55., 85., 105., 135.   //TODO/TRY 2 -- DONE
   //55., 90., 105., 135.   //TODO/TRY 3 -- DONE
-  55., 90., 110., 135.   //TODO/TRY 4 -- DONE
-  //60., 90., 110., 135.   //TODO/TRY 4 -- NOT DONE
+  //55., 90., 110., 135.   //TODO/TRY 4 -- DONE
+  40., 90., 110., 135.   //TODO/TRY 5 -- FOR SEMIFINAL v2
 };
 const std::string PF_HLTBitStrings[]={
   "HLT_AK4PFJet40_Eta5p1",
@@ -269,26 +270,28 @@ const int N_MCTrees=sizeof(MCTreeNames)/sizeof(std::string);
 // for 5 tev pp jets 2k17
 const float absetabins[]={
   //  0.0, 0.5, 1.0, 1.5, 2.0, 2.4, 2.5, 2.7, 3.0, 3.2, 3.7, 4.2, 4.7, 5.1 //alt binning i've seen before
+  //0.0,  //2.0
   0.0, 
   0.5,
   1.0, 
   1.5,
-  2.0//, 
+  2.0,5.1//, 
   //2.5,
   //3.0, 
   //3.2,
-  //4.7,
+  //4.7
   //5.1
 };
 const int nbins_abseta=sizeof(absetabins)/sizeof(float)-1;//this is the # of bins in a root histo
 //const int nbins_abseta=sizeof(absetabins)/sizeof(float); //this is the # of elements in the array
 
-std::string absetabins_str[]={  
+std::string absetabins_str[]={ 
+  //"0.0","2.0"
   "0.0", 
   "0.5",
   "1.0", 
   "1.5",
-  "2.0"//, 
+  "2.0","5.1"//, 
   //"2.5",
   //"3.0",
   //"3.2",
@@ -313,8 +316,8 @@ const float etabins[]={
 const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 
 
-//////straight up SMP binning for |y| bins in steps of 0.5
-//const float ptbins[]={
+////straight up SMP binning for |y| bins in steps of 0.5
+const float ptbins[]={
 //  //  //1., 
 //  //  //5., 
 //  //  //6., 
@@ -325,120 +328,136 @@ const int nbins_eta=sizeof(etabins)/sizeof(float)-1;
 //  //  18., 
 //  //  21., 
 //  //  24., 
-//  28.,
-//  32., 
-//  37.,
-//  43., //garbage bins
-//  49., //typical gen pt cut
-//  56., //typical recopt cut
-//  64.,
-//  74.,
-//  84.,
-//  97.,
-//  114.,
-//  133.,
-//  153.,
-//  174.,
-//  196.,
-//  220.,
-//  245.,
-//  272.,
-//  300.,
-//  330.,
-//  362.,
-//  395.,
-//  430.,
-//  468.,
-//  507.,
-//  548.,
-//  592.,
-//  638.,
-//  686.,
-//  737.,
-//  790.,
-//  846.,
-//  905.,
-//  967.,//,
-//  //1000.,
-//  1032., //generally, garbage bins
-//  1101., 
-//  1172., 
-//  1248., 
-//  1327.,
-//  1410.//,
-//  //1497., 1588., 1684., 1784., 1890., 2000., 2116.
-//};
-//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
-
-
-
-
-
-////John's pt binning for |y| bins in steps of 0.5
-const float ptbins[]={
-  56.,  
-  64.,  
-  84., 
-  114., 
-  153., 
-  196., 
+  28.,
+  32., 
+  37.,
+  43., //garbage bins
+  49., //typical gen pt cut
+  56., //typical recopt cut
+  64.,
+  74.,
+  84.,
+  97.,
+  114.,
+  133.,
+  153.,
+  174.,
+  196.,
+  220.,
   245.,
+  272.,
   300.,
+  330.,
   362.,
-  430., 
-  507., 
-  592., 
-  686., 
-  790., 
+  395.,
+  430.,
+  468.,
+  507.,
+  548.,
+  592.,
+  638.,
+  686.,
+  737.,
+  790.,
+  846.,
   905.,
-  1032.,
-  1101.
+  967.,//,  //1000.,
+  1032., //generally, garbage bins
+  1101., 
+  1172., 
+  1248., 
+  1327.,
+  1410.,
+  1497., 
+  1588., 
+  1684., 
+  1784., 
+  1890., 
+  2000.//, 2116.
 };
 const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
+
+
+
+
+
+//////John's pt binning for |y| bins in steps of 0.5
+//const float ptbins[]={
+//  56.,  
+//  64.,  
+//  84., 
+//  114., 
+//  153., 
+//  196., 
+//  245.,
+//  300.,
+//  362.,
+//  430., 
+//  507., 
+//  592., 
+//  686., 
+//  790., 
+//  905.,
+//  1032.,
+//  1101.
+//};
+//const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 //
 //
 //
 
 ////Chris's pt binning for |y|<2.0
 //const float ptbins[]={
-//  20.,
-//  30.,
-//  40.,
-//  50.,
-//  60.,
-//  70.,
-//  80.,
-//  90.,
-//  100.,
-//  110.,
-//  120.,
-//  130.,
-//  140.,
-//  150.,
-//  160.,
-//  170.,
-//  180.,
-//  190.,
-//  200.,
-//  210.,
-//  220.,
-//  230.,
-//  240.,
-//  250.,
-//  260.,
-//  270.,
-//  280.,
-//  290.,
-//  310.,
-//  330.,
-//  350.,
-//  370.,
-//  400.,
-//  430.,
-//  500.,
-//  1000.,
-//  1500.
-//
+  ////NEWER BINNING
+  //100, 
+  //150,
+  //200, 
+  //250, 
+  //300, 
+  //350, 
+  //400,
+  //450, 
+  //500, 
+  //620, 
+  //1000
+  //BINNING USED FOR INITIAL COMPARISON AWHILE BACK
+  //20.,
+  //30.,
+  //40.,
+  //50.,
+  //60.,
+  //70.,
+  //80.,
+  //90.,
+  //100.,
+  //110.,
+  //120.,
+  //130.,
+  //140.,
+  //150.,
+  //160.,
+  //170.,
+  //180.,
+  //190.,
+  //200.,
+  //210.,
+  //220.,
+  //230.,
+  //240.,
+  //250.,
+  //260.,
+  //270.,
+  //280.,
+  //290.,
+  //310.,
+  //330.,
+  //350.,
+  //370.,
+  //400.,
+  //430.,
+  //500.,
+  //1000.,
+  //1500.
 //};
 //const int nbins_pt=sizeof(ptbins)/sizeof(float)-1;//above values define edges of bins, not centers, so subtract one
 
@@ -543,18 +562,29 @@ const double pthatWeights[]={
 const bool jetIDDebug=false;
 bool jetID_00eta24(float jetIDpt, 
 		   float neSum, float phSum, float chSum, float eSum, float muSum,
-		   int numConst, int chMult){
+		   int numConst, int chMult, bool isTight=false){
   bool funcDebug=jetIDDebug;
   if(funcDebug)
     std::cout<<"jetID_00eta24 called.";
   bool passesJetID=false;
-  if( neSum/jetIDpt    < 0.99 &&
-      phSum/jetIDpt    < 0.99 &&
-      numConst         > 1    &&      
-      muSum/jetIDpt    < 0.80 &&
-      chSum/jetIDpt    > 0.   && 
-      chMult           > 0    &&
-      eSum/jetIDpt     < 0.99    ) passesJetID=true;	      
+  if(isTight){
+    if( neSum/jetIDpt    < 0.90 &&
+	phSum/jetIDpt    < 0.90 &&
+	numConst         > 1    &&      
+	muSum/jetIDpt    < 0.80 &&
+	chSum/jetIDpt    > 0.   && 
+	chMult           > 0    &&
+	eSum/jetIDpt     < 0.90    ) passesJetID=true;	      
+  }  
+  else{
+    if( neSum/jetIDpt    < 0.99 &&
+	phSum/jetIDpt    < 0.99 &&
+	numConst         > 1    &&      
+	muSum/jetIDpt    < 0.80 &&
+	chSum/jetIDpt    > 0.   && 
+	chMult           > 0    &&
+	eSum/jetIDpt     < 0.99    ) passesJetID=true;	      
+  }
   if(funcDebug)
     std::cout<<" passesJetID="<<passesJetID<<std::endl;
   return passesJetID;
@@ -562,59 +592,84 @@ bool jetID_00eta24(float jetIDpt,
 
 bool jetID_24eta27(float jetIDpt,
 		   float neSum, float phSum, float muSum, 
-		   int numConst){
+		   int numConst, bool isTight=false){
   bool funcDebug=jetIDDebug;
   if(funcDebug)
     std::cout<<"jetID_24eta27 called.";
   bool passesJetID=false;
-  if( neSum/jetIDpt    < 0.99 &&
-      phSum/jetIDpt    < 0.99 &&
-      numConst         > 1    &&
-      muSum/jetIDpt    < 0.80    ) passesJetID=true;	      
+  if(isTight){//same as loose (!isTight aka else) for now
+    if( neSum/jetIDpt    < 0.99 &&
+	phSum/jetIDpt    < 0.99 &&
+	numConst         > 1    &&
+	muSum/jetIDpt    < 0.80    ) passesJetID=true;	      
+  }
+  else{
+    if( neSum/jetIDpt    < 0.99 &&
+	phSum/jetIDpt    < 0.99 &&
+	numConst         > 1    &&
+	muSum/jetIDpt    < 0.80    ) passesJetID=true;	      
+  }
   if(funcDebug)
     std::cout<<" passesJetID="<<passesJetID<<std::endl;
   return passesJetID;
 }
 
 bool jetID_27eta30(float jetIDpt,
-		   float neSum, float phSum, int neuMult){
+		   float neSum, float phSum, int neuMult,
+		   bool isTight=false){
   //int numConst){ // int numConst, int neuMult){//
   bool funcDebug=jetIDDebug;
   if(funcDebug)
     std::cout<<"jetID_27eta30 called.";
   bool passesJetID=false;
-  if(  phSum/jetIDpt  < .99 && 
-       neSum/jetIDpt < .99 &&
-       neuMult > 0 )passesJetID=true;   
-  //  if(  true && 
-  //       true &&
-  //       numConst            > 0       ) passesJetID=true;   
-  //diff versions         // CMSSW [76,80]X criterion
-  //  if(  phSum/jetIDpt > 0.00 && 
-  //       neSum/jetIDpt < 1.00 && 
-  //       numConst            > 0       ) passesJetID=true; 
-  //  if(  phSum/jetIDpt [< 0.90 ] / [ > 0.01 &&]	
-  //       neSum/jetIDpt [null   ] / [ < 0.98 &&]	   
-  //       neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+  
+  if(isTight){//same as loose (!isTight aka else) for now
+    if(  phSum/jetIDpt  < .99 && 
+	 neSum/jetIDpt < .99 &&
+	 neuMult > 0 )passesJetID=true;   
+  }
+  else{
+    if(  phSum/jetIDpt  < .99 && 
+	 neSum/jetIDpt < .99 &&
+	 neuMult > 0 )passesJetID=true;   
+    //  if(  true && 
+    //       true &&
+    //       numConst            > 0       ) passesJetID=true;   
+    //diff versions         // CMSSW [76,80]X criterion
+    //  if(  phSum/jetIDpt > 0.00 && 
+    //       neSum/jetIDpt < 1.00 && 
+    //       numConst            > 0       ) passesJetID=true; 
+    //  if(  phSum/jetIDpt [< 0.90 ] / [ > 0.01 &&]	
+    //       neSum/jetIDpt [null   ] / [ < 0.98 &&]	   
+    //       neuMult            [> 2    ] / [ > 2      ] ) passesJetID=true;
+  }
   if(funcDebug)
     std::cout<<" passesJetID="<<passesJetID<<std::endl;
   return passesJetID;
 }
 
 bool jetID_32eta47(float jetIDpt, 
-		   float phSum){// float phSum, float neSum, float trkSum, float neuMult){//
+		   float phSum,
+		   bool isTight=false){// float phSum, float neSum, float trkSum, float neuMult){//
   bool funcDebug=jetIDDebug;
   if(funcDebug)
     std::cout<<"jetID_32eta47 called.";
   bool passesJetID=false;
-  if( phSum < 0.4 &&
-      true               &&
-      true       ) passesJetID=true; 
-  //diff version
-//  if( phSum_F[jet]/jetIDpt > 0. &&                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
-//      trkSum_F[jet] < 0.4       && 
-//      neSum_F[jet]/jetIDpt > 0. &&                         //          neSum_F[jet]/jetIDpt < null &&
-//      true       ) passesJetID=true;     //          neuMult            > 10  
+  if(isTight){//same as loose (!isTight aka else) for now
+    if( phSum < 0.4 &&
+	true               &&
+	true       ) passesJetID=true; 
+  }
+  else{
+    if( phSum < 0.4 &&
+	true               &&
+	true       ) passesJetID=true; 
+    //diff version
+    //  if( phSum_F[jet]/jetIDpt > 0. &&                      // else if( phSum_F[jet]/jetIDpt < 0.90 &&
+    //      trkSum_F[jet] < 0.4       && 
+    //      neSum_F[jet]/jetIDpt > 0. &&                         //          neSum_F[jet]/jetIDpt < null &&
+    //      true       ) passesJetID=true;     //          neuMult            > 10  
+  }
   if(funcDebug)
     std::cout<<" passesJetID="<<passesJetID<<std::endl;
   return passesJetID;

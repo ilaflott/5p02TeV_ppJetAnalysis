@@ -8,7 +8,7 @@ const bool fillMCJetIDHists=true;//, tightJetID=false;
 const int jetIDint=(int)fillMCJetIDHists;
 
 const bool verbose=false;
-
+const bool useTightJetID=false;
 //// readForests_ppMC_JERS
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,  
@@ -499,18 +499,18 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if (!(absreceta > 2.4)) 
 	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
 					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult);
+					   numConst,  chMult, useTightJetID);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  passesJetID=(bool) jetID_24eta27( jetIDpt,
 					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
-					    numConst);
+					    numConst, useTightJetID);
 	else if( !(absreceta>3.0) && absreceta>2.7 )
 	  passesJetID=(bool) jetID_27eta30( jetIDpt,
 					    neSum_F[jet],  phSum_F[jet], 
-					    neuMult);
+					    neuMult, useTightJetID);
 	else  
 	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
-					   phSum_F[jet]);
+					   phSum_F[jet], useTightJetID);
 	if(!passesJetID) continue;
       }
       

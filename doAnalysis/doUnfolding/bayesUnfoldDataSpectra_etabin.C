@@ -13,7 +13,7 @@ const bool doJECsys=true;
 const bool applyNPCorrs=false;//&&compareToNLOThy;
 
 
-const std::string ptbintype="NLO_SMP";//"john";//
+const std::string ptbintype="SMP";//"NLO_SMP";//"chris2";//"john";//
 const bool compareToNLOThy=false&&(ptbintype=="NLO_SMP");
 
 //-----------------------------
@@ -43,12 +43,12 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 
   // thy spectra  
   std::string NLOMCtitle_str="";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top.
-
+  
   std::string CT10NPs ="" ; 
   TFile*fNLO_CT10nlo=TFile::Open(fNLOFile_R04_CT10nlo.c_str());
-  TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=CT10nlo->GetNbinsX(); i++)CT10nlo->SetBinError(i, CT10nlo->GetBinContent(i)*(fabs(CT10nloerr->GetBinContent(i)))); 
+  TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=CT10nlo->GetNbinsX(); i++)CT10nlo->SetBinError(i, CT10nlo->GetBinContent(i)*(fabs(CT10nloerr->GetBinContent(i)/100.))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT10nlo,   
 					 CT10nlo, &CT10NPs, etabinint);
   CT10nlo->SetMarkerSize(0);
@@ -57,9 +57,9 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   std::string CT14NPs ="" ; 
   TFile*fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
-  TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(fabs(CT14nloerr->GetBinContent(i)))); 
+  TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(fabs(CT14nloerr->GetBinContent(i)/100.))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
 					 CT14nlo, &CT14NPs, etabinint);
   CT14nlo->SetMarkerSize(0);
@@ -68,9 +68,9 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   std::string HERANPs ="" ; 
   TFile*fNLO_HERAPDF=TFile::Open(fNLOFile_R04_HERAPDF.c_str());
-  TH1D* HERAPDF  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* HERAPDFerr  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=HERAPDF->GetNbinsX(); i++)HERAPDF->SetBinError(i, HERAPDF->GetBinContent(i)*(fabs(HERAPDFerr->GetBinContent(i)))); 
+  TH1D* HERAPDF  =(TH1D*) fNLO_HERAPDF->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* HERAPDFerr  =(TH1D*) fNLO_HERAPDF->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=HERAPDF->GetNbinsX(); i++)HERAPDF->SetBinError(i, HERAPDF->GetBinContent(i)*(fabs(HERAPDFerr->GetBinContent(i)/100.))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_HERAPDF,
 					 HERAPDF, &HERANPs, etabinint);
   HERAPDF->SetMarkerSize(0);
@@ -79,9 +79,9 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   std::string MMHTNPs ="" ; 
   TFile*fNLO_MMHTnlo=TFile::Open(fNLOFile_R04_MMHTnlo.c_str());
-  TH1D* MMHTnlo  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* MMHTnloerr  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=MMHTnlo->GetNbinsX(); i++)MMHTnlo->SetBinError(i, MMHTnlo->GetBinContent(i)*(fabs(MMHTnloerr->GetBinContent(i)))); 
+  TH1D* MMHTnlo  =(TH1D*) fNLO_MMHTnlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* MMHTnloerr  =(TH1D*) fNLO_MMHTnlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=MMHTnlo->GetNbinsX(); i++)MMHTnlo->SetBinError(i, MMHTnlo->GetBinContent(i)*(fabs(MMHTnloerr->GetBinContent(i)/100.))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_MMHTnlo,
 					 MMHTnlo, &MMHTNPs, etabinint);
   MMHTnlo->SetMarkerSize(0);
@@ -90,9 +90,9 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   std::string NNPDFNPs="" ; 
   TFile*fNLO_NNPDFnnlo=TFile::Open(fNLOFile_R04_NNPDFnnlo.c_str());
-  TH1D* NNPDFnnlo=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* NNPDFnnloerr=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
-  for(int i=1; i<=NNPDFnnloerr->GetNbinsX(); i++)NNPDFnnloerr->SetBinError(i, NNPDFnnlo->GetBinContent(i)*(fabs(NNPDFnnloerr->GetBinContent(i)))); 
+  TH1D* NNPDFnnlo=(TH1D*) fNLO_NNPDFnnlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* NNPDFnnloerr=(TH1D*) fNLO_NNPDFnnlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
+  for(int i=1; i<=NNPDFnnloerr->GetNbinsX(); i++)NNPDFnnloerr->SetBinError(i, NNPDFnnlo->GetBinContent(i)*(fabs(NNPDFnnloerr->GetBinContent(i)/100.))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_NNPDFnnlo,
 					 NNPDFnnlo, &NNPDFNPs, etabinint);
   //assert(false);
@@ -229,13 +229,16 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   // ---------- gen, NLO truth spectra
   std::string genHistTitle="hpp_gen";
   if(doJetID)genHistTitle+="_wJetID";
-  genHistTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  if(ptbintype=="chris2")
+    genHistTitle+=RandEtaRange;
+  else
+    genHistTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
   
 
 
   TH1D* hgen = (TH1D*)fpp_MC->Get( genHistTitle.c_str() );
   hgen->Scale(1./MCscaling);//05/09/18
-  hgen->Scale(etaBinWidth);
+  //hgen->Scale(etaBinWidth);
 
   if(debugWrite)hgen->Write(genHistTitle.c_str());
   if(debugMode)hgen->Print("base");    
@@ -268,7 +271,10 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   std::string th2basetitle="hpp_matrix";
   std::string TH2_title=th2basetitle;//"_ynew_th2"
   if(doJetID)TH2_title+="_wJetID";
-  TH2_title+=RandEtaRange+"_bin"+std::to_string(etabinint);  
+  if(ptbintype=="chris2")
+    TH2_title+=RandEtaRange;
+  else 
+    TH2_title+=RandEtaRange+"_bin"+std::to_string(etabinint);  
 
   //get the response matrix made by readforests
   TH2D* hmat = (TH2D*)fpp_MC->Get( TH2_title.c_str() );
@@ -324,11 +330,14 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   // ---------- reco, measured same-side spectra used to create response matrix, and for "sameside" unfolding test
   std::string histTitle2="hpp_reco";
   if(doJetID) histTitle2+="_wJetID";
-  histTitle2+=RandEtaRange+"_bin"+std::to_string(etabinint);
-
+  if(ptbintype=="chris2")
+    histTitle2+=RandEtaRange;
+  else 
+    histTitle2+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  
   TH1D*  hrec_sameside = (TH1D*)fpp_MC->Get( histTitle2.c_str() ); 
   hrec_sameside->Scale(1./MCscaling);
-  hrec_sameside->Scale(etaBinWidth);//cause of the way the thy hists are made
+  //hrec_sameside->Scale(etaBinWidth);//cause of the way the thy hists are made
 
   if(debugWrite)hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");

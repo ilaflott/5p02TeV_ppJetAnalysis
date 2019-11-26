@@ -7,7 +7,7 @@ then
     NLOfilestr=$2
     NLOfileshortstr=$3
     JERfilestr=$4
-    sescstr=$5
+    descstr=$5
     Fittypestr=$6
     scp2Serin=$7
 else
@@ -51,8 +51,8 @@ then
     echo "etabinstr=${etabinstr}"
     echo ""
     
-    OUTDIR=${NLOfileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_plots/
-    OUTFILE=${NLOfileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
+    OUTDIR=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_plots/
+    OUTFILE=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root    
     JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
     JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf    
     #JERFILE=${JERfilestr}${etabinstr}_semifinal.root

@@ -19,6 +19,7 @@ const bool deepDebug=false; //put to true only if in trouble...
 //lumi in Jet80/LowerJets PDs according to brilcalc, accounting for event selection efficiency [inv picobarns]
 const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;
 const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+const bool useTightJetID=false;
 
 //// readForests_ppData_jetTrigEff
 // ---------------------------------------------------------------------------------------------------------------
@@ -287,8 +288,11 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     for(int j = 0; j<N_vars; ++j){		      
       for(int k = 0; k<nbins_abseta; ++k){      
 	for(int i=0; i<2; i++){
-	  if(j==0)
+
+	  if(j==0){
 	    hJetQA_jtptEntries[k][i] = new TH1D( Form("hJetQA_%dwJetID_jtptEntries_etabin%d", i,k) , "N_{Jets}, no Pscl. Weights;N_{Jets};Jet p_{T} [GeV]" , 2500,0,2500);    
+	    //hJetQA_jtptEntries[k][i]->Print("BASE");
+	  }
 	  
 	  //jets
 	  if(var[j]=="jtpt"||var[j]=="rawpt"){
@@ -305,8 +309,13 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k), Form(";%s;",var[j].c_str()), 100,0,100);         
 	  else if(var[j]=="neuMult"|| var[j]=="chMult"|| var[j]=="numConst")
 	    hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k), Form(";%s;",var[j].c_str()), 100,0,100);         
+ 	  else if(var[j]=="trkSum"||var[j]=="phSum"||var[j]=="chSum"||var[j]=="neSum"||var[j]=="eSum"||var[j]=="muSum"||
+		  var[j]=="trkHardSum"||var[j]=="phHardSum"||var[j]=="chHardSum"||
+		  var[j]=="trkMax"||var[j]=="phMax"||var[j]=="chMax"||var[j]=="neMax"||var[j]=="eMax"||var[j]=="muMax"		  )
+	    hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k), Form(";%s;",var[j].c_str()), 200,0,2);         
 	  //dijets
 	  else if (fillDataDijetHists){
+	    std::cout<<"booking dijet hists"<<std::endl;
 	    if(var[j]=="dphi") 
 	      hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k) , Form(";%s;",var[j].c_str()) , 50,0,4);
 	    else if(var[j]=="leadJetPt"||var[j]=="subleadJetPt")
@@ -314,9 +323,6 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    else //xj and Aj binnings
 	      hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k), Form(";%s;",var[j].c_str()), 200,0,2);         
 	  }//dijet hists
-	  //jetpt fractions binnings
-	  else 
-	    hJetQA[k][j][i] = new TH1D( Form("hJetQA_%dwJetID_%s_etabin%d", i,var[j].c_str(),k), Form(";%s;",var[j].c_str()), 200,0,2);         
 	}//jet ID loop
       }//nvars loop 
     }//nbins_abseta loop        
@@ -326,174 +332,241 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
   
   //// trigger object histograms
   
-  // //these get filled 
-  // // // post cuts and post skips 
-  // // // if the given HLT path fires AND max trig pt across all fired HLT bits meets the given LOWER threshold 
-  // // // with the max trig pt across all fired triggger objects
-  // // // weighted by the given HLT objects prescale
-  TH1D *hpp_IncHLTMBtrgPt=NULL;
-  TH1D  *hpp_IncHLT40trgPt =NULL ,   *hpp_IncHLT40trgEta =NULL;
-  TH1D  *hpp_IncHLT60trgPt =NULL ,   *hpp_IncHLT60trgEta =NULL;
-  TH1D  *hpp_IncHLT80trgPt =NULL ,   *hpp_IncHLT80trgEta =NULL;
-  TH1D  *hpp_IncHLT100trgPt =NULL ,  *hpp_IncHLT100trgEta =NULL;  
-  
-  // //these get filled 
-  // // // post cuts and post skips 
+  // // these get filled 
   // // // POST EXCLUSION CRITERIA
-  // // // with the max trig pt across all fired HLT bits
-  // // // weighted by the given HLT objects prescale
-  TH1D *hpp_HLTMBtrgPt=NULL;
-  TH1D  *hpp_HLT40trgPt =NULL ,   *hpp_HLT40trgEta =NULL;
-  TH1D  *hpp_HLT60trgPt =NULL ,   *hpp_HLT60trgEta =NULL;
-  TH1D  *hpp_HLT80trgPt =NULL ,   *hpp_HLT80trgEta =NULL;
-  TH1D *hpp_HLT100trgPt =NULL ,  *hpp_HLT100trgEta =NULL;  
-  TH1D *hpp_HLTCombtrgPt=NULL, *hpp_HLTCombtrgEta=NULL;
+  // // // with the max trig pt across the final trigger path for exclusion decision
+  TH1D    *hpp_is40pscl =NULL ;
+  TH1D    *hpp_is60pscl =NULL ;
+  TH1D    *hpp_is80pscl =NULL ;
 
-  
-  if(fillDataJetTrigQAHists){    
-    
-    //semi excluded, looks at lower threshold but only respective trigger path's decision + pscl
-    hpp_IncHLTMBtrgPt   = new TH1D( "IncHLTMB_trgPt"  , "inc trgPt for HLTMB   ", 2500, 0, 2500 ); 
-    hpp_IncHLT40trgPt   = new TH1D( "IncHLT40_trgPt"  , "inc trgPt for HLT40   ", 2500, 0, 2500 ); 
-    hpp_IncHLT60trgPt   = new TH1D( "IncHLT60_trgPt"  , "inc trgPt for HLT60   ", 2500, 0, 2500 ); 
-    hpp_IncHLT80trgPt   = new TH1D( "IncHLT80_trgPt"  , "inc trgPt for HLT80   ", 2500, 0, 2500 ); 
-    hpp_IncHLT100trgPt  = new TH1D( "IncHLT100_trgPt" , "inc trgPt for HLT100  ", 2500, 0, 2500 );       
-    
-    //full exclusion between triggers
-    hpp_HLTMBtrgPt   = new TH1D( "isHLTMB_trgPt"  , "exc trgPt for HLTMB   ", 2500, 0, 2500 ); 
-    hpp_HLT40trgPt   = new TH1D( "isHLT40_trgPt"  , "exc trgPt for HLT40   ", 2500, 0, 2500 ); 
-    hpp_HLT60trgPt   = new TH1D( "isHLT60_trgPt"  , "exc trgPt for HLT60   ", 2500, 0, 2500 ); 
-    hpp_HLT80trgPt   = new TH1D( "isHLT80_trgPt"  , "exc trgPt for HLT80   ", 2500, 0, 2500 ); 
-    hpp_HLT100trgPt  = new TH1D( "isHLT100_trgPt" , "exc trgPt for HLT100  ", 2500, 0, 2500 );       
-    
-    //combination after full exclusion criteria applied
-    hpp_HLTCombtrgPt = new TH1D( "HLTComb_trgPt"  , "trgPt for HLTComb ", 2500, 0, 2500 );       
+  TH1D   *hpp_is40trgPt_allobj =NULL ;
+  TH1D   *hpp_is60trgPt_allobj =NULL ;
+  TH1D   *hpp_is80trgPt_allobj =NULL ;  
 
+  TH1D  *hpp_is40trgPt =NULL ,   *hpp_is40trgEta =NULL;
+  TH1D  *hpp_is60trgPt =NULL ,   *hpp_is60trgEta =NULL;
+  TH1D  *hpp_is80trgPt =NULL ,   *hpp_is80trgEta =NULL;
+  TH1D *hpp_HLTCombtrgPt=NULL ,   *hpp_HLTCombtrgEta=NULL;
 
-    //semi excluded, looks at lower threshold but only respective trigger path's decision + pscl
-    hpp_HLT40trgEta   = new TH1D( "isHLT40_trgEta"  , "exc trgEta for HLT40   ", 100, -5., 5. ); 
-    hpp_HLT60trgEta   = new TH1D( "isHLT60_trgEta"  , "exc trgEta for HLT60   ", 100, -5., 5. ); 
-    hpp_HLT80trgEta   = new TH1D( "isHLT80_trgEta"  , "exc trgEta for HLT80   ", 100, -5., 5. ); 
-    hpp_HLT100trgEta  = new TH1D( "isHLT100_trgEta" , "exc trgEta for HLT100  ", 100, -5., 5. );       
+  TH1D  * hpp_is40trgPt_00eta20 =NULL , *hpp_is40trgPt_20eta51 =NULL ;  
+  TH1D  * hpp_is60trgPt_00eta20 =NULL , *hpp_is60trgPt_20eta51 =NULL ;  
+  TH1D  * hpp_is80trgPt_00eta20 =NULL , *hpp_is80trgPt_20eta51 =NULL ;  
+  TH1D *hpp_HLTCombtrgPt_00eta20 =NULL, *hpp_HLTCombtrgPt_20eta51 =NULL ;
 
-    //full exclusion between triggers
-    hpp_IncHLT40trgEta   = new TH1D( "IncHLT40_trgEta"  , "inc trgEta for HLT40   ", 100, -5., 5. ); 
-    hpp_IncHLT60trgEta   = new TH1D( "IncHLT60_trgEta"  , "inc trgEta for HLT60   ", 100, -5., 5. ); 
-    hpp_IncHLT80trgEta   = new TH1D( "IncHLT80_trgEta"  , "inc trgEta for HLT80   ", 100, -5., 5. ); 
-    hpp_IncHLT100trgEta  = new TH1D( "IncHLT100_trgEta" , "inc trgEta for HLT100  ", 100, -5., 5. );       
+  TH2D   *hpp_is40trgPt_leadobj_globleadobj =NULL ;
+  TH2D   *hpp_is60trgPt_leadobj_globleadobj =NULL ;
+  TH2D   *hpp_is80trgPt_leadobj_globleadobj =NULL ;
 
-    //combined after full exclusion criteria applied
-    hpp_HLTCombtrgEta = new TH1D( "HLTComb_trgEta"  , "trgEta for HLTComb ", 100, -5., 5. );       
+  TH2D   *hpp_is40trgPt_trgEta_leadobj =NULL ;
+  TH2D   *hpp_is60trgPt_trgEta_leadobj =NULL ;
+  TH2D   *hpp_is80trgPt_trgEta_leadobj =NULL ;
 
-  }
-
-  //special trigpt hists
+  TH1D   *hpp_is40trgPt_leadobj_finalSpectra =NULL ,  *hpp_is40trgEta_leadobj_finalSpectra =NULL ;
+  TH1D   *hpp_is60trgPt_leadobj_finalSpectra =NULL ,  *hpp_is60trgEta_leadobj_finalSpectra =NULL ;
+  TH1D   *hpp_is80trgPt_leadobj_finalSpectra =NULL ,  *hpp_is80trgEta_leadobj_finalSpectra =NULL ;
   
   // // these get fillied
   // // // post skips but pre-cuts
   // // // if the given HLT path fired 
-  // // // with the given trig pt('s)
+  // // // with the given path's object w/ highest pt(s)/eta/prescale etc.
   // // // weighted by the given HLT objects prescale
-  TH1D   *hpp_IncHLTMBpscl =NULL ;
   TH1D   *hpp_IncHLT40pscl =NULL ;
   TH1D   *hpp_IncHLT60pscl =NULL ;
   TH1D   *hpp_IncHLT80pscl =NULL ;
-  TH1D  *hpp_IncHLT100pscl =NULL ;  
   
   TH1D   *hpp_IncHLT40trgPt_allobj =NULL ;
   TH1D   *hpp_IncHLT60trgPt_allobj =NULL ;
   TH1D   *hpp_IncHLT80trgPt_allobj =NULL ;
-  TH1D  *hpp_IncHLT100trgPt_allobj =NULL ;  
 
-  TH1D   *hpp_IncHLT40trgPt_leadobj =NULL ;
-  TH1D   *hpp_IncHLT60trgPt_leadobj =NULL ;
-  TH1D   *hpp_IncHLT80trgPt_leadobj =NULL ;
-  TH1D  *hpp_IncHLT100trgPt_leadobj =NULL;
-  TH1D   *hpp_IncHLT40MBtrgPt_leadobj =NULL ;
+  TH1D   *hpp_IncHLT40trgPt_leadobj =NULL, *hpp_IncHLT40trgEta =NULL ;
+  TH1D   *hpp_IncHLT60trgPt_leadobj =NULL, *hpp_IncHLT60trgEta =NULL ;
+  TH1D   *hpp_IncHLT80trgPt_leadobj =NULL, *hpp_IncHLT80trgEta =NULL ;
+  //
   
-  TH2D   *hpp_IncHLT40trgPt_leadobj_leadjet =NULL ;
-  TH2D   *hpp_IncHLT60trgPt_leadobj_leadjet =NULL ;
-  TH2D   *hpp_IncHLT80trgPt_leadobj_leadjet =NULL ;
-  TH2D  *hpp_IncHLT100trgPt_leadobj_leadjet =NULL ;  
-  TH2D   *hpp_IncHLT40MBtrgPt_leadobj_leadjet =NULL ;
-  
+  TH1D   *hpp_IncHLT40trgPt_leadobj_00eta20 =NULL , *hpp_IncHLT40trgPt_leadobj_20eta51 =NULL ;
+  TH1D   *hpp_IncHLT60trgPt_leadobj_00eta20 =NULL , *hpp_IncHLT60trgPt_leadobj_20eta51 =NULL ;
+  TH1D   *hpp_IncHLT80trgPt_leadobj_00eta20 =NULL , *hpp_IncHLT80trgPt_leadobj_20eta51 =NULL ;
+  //
+
   TH2D   *hpp_IncHLT40trgPt_leadobj_globleadobj =NULL ;
   TH2D   *hpp_IncHLT60trgPt_leadobj_globleadobj =NULL ;
   TH2D   *hpp_IncHLT80trgPt_leadobj_globleadobj =NULL ;
-  TH2D  *hpp_IncHLT100trgPt_leadobj_globleadobj =NULL ;  
-  TH2D   *hpp_IncHLT40MBtrgPt_leadobj_globleadobj =NULL ;  
+
+  TH2D   *hpp_IncHLT40trgPt_trgEta_leadobj =NULL ;
+  TH2D   *hpp_IncHLT60trgPt_trgEta_leadobj =NULL ;
+  TH2D   *hpp_IncHLT80trgPt_trgEta_leadobj =NULL ;
+  
+  TH1D   *hpp_IncHLT40trgPt_leadobj_finalSpectra =NULL ,  *hpp_IncHLT40trgEta_leadobj_finalSpectra =NULL ;
+  TH1D   *hpp_IncHLT60trgPt_leadobj_finalSpectra =NULL ,  *hpp_IncHLT60trgEta_leadobj_finalSpectra =NULL ;
+  TH1D   *hpp_IncHLT80trgPt_leadobj_finalSpectra =NULL ,  *hpp_IncHLT80trgEta_leadobj_finalSpectra =NULL ;
 
 
   //TRIGGER EFFICIENCY HISTS
   //for measuring trigger eff. of HLT80 --------
-  TH1D* hpp_HLT80ref_IncHLT60trgPt_allobj =NULL;
+  TH1D* hpp_HLT80ref_IncHLT60trgPt_allobj =NULL;//ref method
   TH1D* hpp_HLT80ref_IncHLT60trgPt_leadobj=NULL;
-  TH1D* hpp_HLT80ref_IncHLT40trgPt_allobj =NULL;
-  TH1D* hpp_HLT80ref_IncHLT40trgPt_leadobj=NULL;
+  TH1D* hpp_HLT80ref_IncHLT60trgPt_leadobj_00eta20=NULL;
+  TH1D* hpp_HLT80ref_IncHLT60trgPt_leadobj_20eta51=NULL;
+  TH1D* hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj=NULL;//emulation method (basically ref + L1 req)
+  TH1D* hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_00eta20=NULL;
+  TH1D* hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_20eta51=NULL;
+
   //for measuring trigger eff. of HLT60 --------
-  //TODO
+  TH1D* hpp_HLT60ref_IncHLT40trgPt_allobj =NULL;//ref method
+  TH1D* hpp_HLT60ref_IncHLT40trgPt_leadobj=NULL;
+  TH1D* hpp_HLT60ref_IncHLT40trgPt_leadobj_00eta20=NULL;
+  TH1D* hpp_HLT60ref_IncHLT40trgPt_leadobj_20eta51=NULL;
+  TH1D* hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj=NULL;//emulation method (basically ref + L1 req)
+  TH1D* hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_00eta20=NULL;
+  TH1D* hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_20eta51=NULL;
   //for measuring trigger eff. of HLT40 --------
   //NULL? USE MB SOMEHOW?
-  
 
+
+
+  
   if(fillDataJetTrigQAHists){
 
-    hpp_IncHLTMBpscl   =new TH1D( "IncHLTMBpscl",    "HLTMB pscl;Prescale;N_{evts}" , 1000,0,1000);
-    hpp_IncHLT40pscl   =new TH1D( "IncHLT40pscl",    "HLT40 pscl;Prescale;N_{evts}" , 1000,0,1000);
-    hpp_IncHLT60pscl   =new TH1D( "IncHLT60pscl",    "HLT60 pscl;Prescale;N_{evts}" , 1000,0,1000);
-    hpp_IncHLT80pscl   =new TH1D( "IncHLT80pscl",    "HLT80 pscl;Prescale;N_{evts}" , 1000,0,1000);
-    hpp_IncHLT100pscl  =new TH1D( "IncHLT100pscl",  "HLT100 pscl;Prescale;N_{evts}", 1000,0,1000);    
-    
-    hpp_IncHLT40trgPt_allobj   =new TH1D( "IncHLT40trgPt_allobj",    "all trigger jet object for HLT40;Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-    hpp_IncHLT60trgPt_allobj   =new TH1D( "IncHLT60trgPt_allobj",    "all trigger jet object for HLT60;Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-    hpp_IncHLT80trgPt_allobj   =new TH1D( "IncHLT80trgPt_allobj",    "all trigger jet object for HLT80;Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-    hpp_IncHLT100trgPt_allobj  =new TH1D( "IncHLT100trgPt_allobj",  "all trigger jet object for HLT100;Trigger Jet Obj p_{T};N_{jets}", 2500,0,2500);    
+    //FULL EXCLUSION CRITERIA APPLIED
+    hpp_is40pscl   =new TH1D( "is40pscl",    "HLT40 pscl;Prescale;N_{evts}" , 200,0,200);
+    hpp_is60pscl   =new TH1D( "is60pscl",    "HLT60 pscl;Prescale;N_{evts}" , 200,0,200);
+    hpp_is80pscl   =new TH1D( "is80pscl",    "HLT80 pscl;Prescale;N_{evts}" , 200,0,200);
 
-    hpp_IncHLT40trgPt_leadobj   =new TH1D(  "IncHLT40trgPt_leadobj",  "lead trigger jet object for HLT40;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-    hpp_IncHLT60trgPt_leadobj   =new TH1D(  "IncHLT60trgPt_leadobj",  "lead trigger jet object for HLT60;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-    hpp_IncHLT80trgPt_leadobj   =new TH1D(  "IncHLT80trgPt_leadobj",  "lead trigger jet object for HLT80;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-    hpp_IncHLT100trgPt_leadobj  =new TH1D(  "IncHLT100trgPt_leadobj",  "lead trigger jet object for HLT100;Lead Trigger Jet Obj p_{T};N_{jets}", 2500,0,2500);
-    hpp_IncHLT40MBtrgPt_leadobj =new TH1D(  "IncHLT40MBtrgPt_leadobj", "lead trigger jet obj for HLT40 && HLTMB" , 2500,0,2500);
+    hpp_is40trgPt_allobj   =new TH1D( "is40trgPt_allobj",    "all trig jet object for HLT40;Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_is60trgPt_allobj   =new TH1D( "is60trgPt_allobj",    "all trig jet object for HLT60;Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_is80trgPt_allobj   =new TH1D( "is80trgPt_allobj",    "all trig jet object for HLT80;Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
     
-    hpp_IncHLT40trgPt_leadobj_leadjet  =new TH2D(  "IncHLT40trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT40;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}" , 
-						   2500,0,2500, 2500,0,2500);
-    hpp_IncHLT60trgPt_leadobj_leadjet  =new TH2D(  "IncHLT60trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT60;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}" , 
-						   2500,0,2500, 2500,0,2500);
-    hpp_IncHLT80trgPt_leadobj_leadjet  =new TH2D(  "IncHLT80trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT80;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}" , 
-						   2500,0,2500, 2500,0,2500);
-    hpp_IncHLT100trgPt_leadobj_leadjet =new TH2D(  "IncHLT100trgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT100;Lead Trigger Obj p_{T};Lead RECO Obj p_{T}", 
-						   2500,0,2500, 2500,0,2500);
-    hpp_IncHLT40MBtrgPt_leadobj_leadjet  =new TH2D(  "IncHLT40MBtrgPt_leadobj_leadjet", "lead trigger jet obj v lead RECO jet obj, only for HLT40 && HLTMB" ,
-						     2500,0,2500, 2500,0,2500);    
+    hpp_is40trgPt   = new TH1D( "is40_trgPt"  , "trgPt for is40   ", 2000,0,2000 ); 
+    hpp_is60trgPt   = new TH1D( "is60_trgPt"  , "trgPt for is60   ", 2000,0,2000 ); 
+    hpp_is80trgPt   = new TH1D( "is80_trgPt"  , "trgPt for is80   ", 2000,0,2000 ); 
+    hpp_HLTCombtrgPt = new TH1D( "HLTComb_trgPt"  , "trgPt for HLTComb ", 2000,0,2000 );       
     
+    hpp_is40trgEta   = new TH1D( "is40_trgEta"  , "exc trgEta for HLT40   ", 102, -5.1, 5.1 ); 
+    hpp_is60trgEta   = new TH1D( "is60_trgEta"  , "exc trgEta for HLT60   ", 102, -5.1, 5.1 ); 
+    hpp_is80trgEta   = new TH1D( "is80_trgEta"  , "exc trgEta for HLT80   ", 102, -5.1, 5.1 ); 
+    hpp_HLTCombtrgEta = new TH1D( "HLTComb_trgEta"  , "trgEta for HLTComb ", 102, -5.1, 5.1 );           
+
+    hpp_is40trgPt_00eta20  = new TH1D(  "is40_trgPt_00eta20"  , "trgPt for is40  #||{y}<2.0 ", 2000,0,2000 ); 
+    hpp_is60trgPt_00eta20  = new TH1D(  "is60_trgPt_00eta20"  , "trgPt for is60  #||{y}<2.0 ", 2000,0,2000 ); 
+    hpp_is80trgPt_00eta20  = new TH1D(  "is80_trgPt_00eta20"  , "trgPt for is80  #||{y}<2.0 ", 2000,0,2000 ); 
+    hpp_HLTCombtrgPt_00eta20 = new TH1D( "HLTComb_trgPt_00eta20"  , "trgPt for HLTComb  #||{y}<2.0", 2000,0,2000 );       
     
-    hpp_IncHLT40trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT40trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT40 v lead trigger jet obj across all triggers, only for HLT40;Lead Trigger Obj p_{T} across HLT40;Lead Obj p_{T} across HLT40+60+80" , 
-						       2500,0,2500, 2500,0,2500);
-    hpp_IncHLT60trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT60trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT60 v lead trigger jet obj across all triggers, only for HLT60;Lead Trigger Obj p_{T} across HLT60;Lead Obj p_{T} across HLT40+60+80" , 
-						       2500,0,2500, 2500,0,2500);
-    hpp_IncHLT80trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT80trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT80 v lead trigger jet obj across all triggers, only for HLT80;Lead Trigger Obj p_{T} across HLT80;Lead Obj p_{T} across HLT40+60+80" , 
-						       2500,0,2500, 2500,0,2500);
-    hpp_IncHLT100trgPt_leadobj_globleadobj =new TH2D(  "IncHLT100trgPt_leadobj_globleadobj", "lead trigger jet obj across HLT100 v lead trigger jet obj across all triggers, only for HLT100;Lead Trigger Obj p_{T} across HLT100;Lead Obj p_{T} across HLT40+60+80", 
-						       2500,0,2500, 2500,0,2500); 
-    hpp_IncHLT40MBtrgPt_leadobj_globleadobj  =new TH2D(  "IncHLT40MBtrgPt_leadobj_globleadobj", "lead trigger jet obj across HLT40 v lead trigger jet obj across all triggers, only for HLT40+HLTMB;Lead Trigger Obj p_{T} across HLT40+HLTMB;Lead Obj p_{T} across HLT40+60+80" , 
-						       2500,0,2500, 2500,0,2500);   
+    hpp_is40trgPt_20eta51  = new TH1D(  "is40_trgPt_20eta51"  , "trgPt for is40  #||{y}>2.0 ", 2000,0,2000 ); 
+    hpp_is60trgPt_20eta51  = new TH1D(  "is60_trgPt_20eta51"  , "trgPt for is60  #||{y}>2.0 ", 2000,0,2000 ); 
+    hpp_is80trgPt_20eta51  = new TH1D(  "is80_trgPt_20eta51"  , "trgPt for is80  #||{y}>2.0 ", 2000,0,2000 ); 
+    hpp_HLTCombtrgPt_20eta51 = new TH1D( "HLTComb_trgPt_20eta51"  , "trgPt for HLTComb  #||{y}>2.0", 2000,0,2000 );       
 
 
+    hpp_is40trgPt_leadobj_globleadobj  =new TH2D(  "is40trgPt_leadobj_globleadobj", "lead trig jet obj across HLT40 v lead trig jet obj across all triggers, only for HLT40;Lead Trig Obj p_{T} across HLT40;Lead Obj p_{T} across HLT40+60+80" , 
+						       2000,0,2000, 2000,0,2000);
+    hpp_is60trgPt_leadobj_globleadobj  =new TH2D(  "is60trgPt_leadobj_globleadobj", "lead trig jet obj across HLT60 v lead trig jet obj across all triggers, only for HLT60;Lead Trig Obj p_{T} across HLT60;Lead Obj p_{T} across HLT40+60+80" , 
+						       2000,0,2000, 2000,0,2000);
+    hpp_is80trgPt_leadobj_globleadobj  =new TH2D(  "is80trgPt_leadobj_globleadobj", "lead trig jet obj across HLT80 v lead trig jet obj across all triggers, only for HLT80;Lead Trig Obj p_{T} across HLT80;Lead Obj p_{T} across HLT40+60+80" , 
+						       2000,0,2000, 2000,0,2000);
+
+
+    hpp_is40trgPt_trgEta_leadobj  =new TH2D(  "is40trgPt_trgEta_leadobj", "lead trig jet pt HLT40 v lead trig jet y, only for HLT40;Lead Trig Obj p_{T} across HLT40;Lead Obj y across HLT40" , 
+					      2000,0,2000, 102,-5.1,5.1);
+    hpp_is60trgPt_trgEta_leadobj  =new TH2D(  "is60trgPt_trgEta_leadobj", "lead trig jet pt HLT60 v lead trig jet y, only for HLT60;Lead Trig Obj p_{T} across HLT60;Lead Obj y across HLT60" , 
+					      2000,0,2000, 102,-5.1,5.1);
+    hpp_is80trgPt_trgEta_leadobj  =new TH2D(  "is80trgPt_trgEta_leadobj", "lead trig jet pt HLT80 v lead trig jet y, only for HLT80;Lead Trig Obj p_{T} across HLT80;Lead Obj y across HLT80" , 
+					      2000,0,2000, 102,-5.1,5.1);    
+    
+    hpp_is40trgPt_leadobj_finalSpectra    =new TH1D(  "is40trgPt_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_is60trgPt_leadobj_finalSpectra    =new TH1D(  "is60trgPt_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_is80trgPt_leadobj_finalSpectra    =new TH1D(  "is80trgPt_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT80;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+
+    hpp_is40trgEta_leadobj_finalSpectra   =new TH1D(  "is40trgEta_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT40;Lead Trig Jet Obj y;N_{jets}" , 102,-5.1,5.1);
+    hpp_is60trgEta_leadobj_finalSpectra   =new TH1D(  "is60trgEta_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT60;Lead Trig Jet Obj y;N_{jets}" , 102,-5.1,5.1);
+    hpp_is80trgEta_leadobj_finalSpectra   =new TH1D(  "is80trgEta_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT80;Lead Trig Jet Obj y;N_{jets}" , 102,-5.1,5.1);
+
+
+    
+
+
+
+    //NO EXCLUSION CRITERIA APPLIED    
+    hpp_IncHLT40pscl   =new TH1D( "IncHLT40pscl",    "HLT40 pscl;Prescale;N_{evts}" , 200,0,200);
+    hpp_IncHLT60pscl   =new TH1D( "IncHLT60pscl",    "HLT60 pscl;Prescale;N_{evts}" , 200,0,200);
+    hpp_IncHLT80pscl   =new TH1D( "IncHLT80pscl",    "HLT80 pscl;Prescale;N_{evts}" , 200,0,200);
+
+    hpp_IncHLT40trgPt_allobj   =new TH1D( "IncHLT40trgPt_allobj",    "all trig jet object for HLT40;Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT60trgPt_allobj   =new TH1D( "IncHLT60trgPt_allobj",    "all trig jet object for HLT60;Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT80trgPt_allobj   =new TH1D( "IncHLT80trgPt_allobj",    "all trig jet object for HLT80;Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+
+    hpp_IncHLT40trgEta   = new TH1D( "IncHLT40_trgEta"  , "inc trgEta for HLT40   ", 102, -5.1, 5.1 ); 
+    hpp_IncHLT60trgEta   = new TH1D( "IncHLT60_trgEta"  , "inc trgEta for HLT60   ", 102, -5.1, 5.1 ); 
+    hpp_IncHLT80trgEta   = new TH1D( "IncHLT80_trgEta"  , "inc trgEta for HLT80   ", 102, -5.1, 5.1 ); 
+    
+    hpp_IncHLT40trgPt_leadobj   =new TH1D(  "IncHLT40trgPt_leadobj",  "lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT60trgPt_leadobj   =new TH1D(  "IncHLT60trgPt_leadobj",  "lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT80trgPt_leadobj   =new TH1D(  "IncHLT80trgPt_leadobj",  "lead trig jet object for HLT80;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+
+    hpp_IncHLT40trgPt_leadobj_00eta20   =new TH1D(  "IncHLT40trgPt_leadobj_00eta20",  "lead trig jet obj. for HLT40, #||{y}<2.0;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT60trgPt_leadobj_00eta20   =new TH1D(  "IncHLT60trgPt_leadobj_00eta20",  "lead trig jet obj. for HLT60, #||{y}<2.0;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT80trgPt_leadobj_00eta20   =new TH1D(  "IncHLT80trgPt_leadobj_00eta20",  "lead trig jet obj. for HLT80, #||{y}<2.0;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    
+    hpp_IncHLT40trgPt_leadobj_20eta51   =new TH1D(  "IncHLT40trgPt_leadobj_20eta51",  "lead trig jet obj. for HLT40, 2.0<#||{y}<5.1;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT60trgPt_leadobj_20eta51   =new TH1D(  "IncHLT60trgPt_leadobj_20eta51",  "lead trig jet obj. for HLT60, 2.0<#||{y}<5.1;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT80trgPt_leadobj_20eta51   =new TH1D(  "IncHLT80trgPt_leadobj_20eta51",  "lead trig jet obj. for HLT80, 2.0<#||{y}<5.1;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    
+
+    hpp_IncHLT40trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT40trgPt_leadobj_globleadobj", "lead trig jet obj across HLT40 v lead trig jet obj across all triggers, only for HLT40;Lead Trig Obj p_{T} across HLT40;Lead Obj p_{T} across HLT40+60+80" , 
+						       2000,0,2000, 2000,0,2000);
+    hpp_IncHLT60trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT60trgPt_leadobj_globleadobj", "lead trig jet obj across HLT60 v lead trig jet obj across all triggers, only for HLT60;Lead Trig Obj p_{T} across HLT60;Lead Obj p_{T} across HLT40+60+80" , 
+						       2000,0,2000, 2000,0,2000);
+    hpp_IncHLT80trgPt_leadobj_globleadobj  =new TH2D(  "IncHLT80trgPt_leadobj_globleadobj", "lead trig jet obj across HLT80 v lead trig jet obj across all triggers, only for HLT80;Lead Trig Obj p_{T} across HLT80;Lead Obj p_{T} across HLT40+60+80" , 
+						       2000,0,2000, 2000,0,2000);
+
+    hpp_IncHLT40trgPt_trgEta_leadobj  =new TH2D(  "IncHLT40trgPt_trgEta_leadobj", "lead trig jet pt HLT40 v lead trig jet y, only for HLT40;Lead Trig Obj p_{T} across HLT40;Lead Obj y across HLT40" , 
+						  2000,0,2000, 102,-5.1,5.1);
+    hpp_IncHLT60trgPt_trgEta_leadobj  =new TH2D(  "IncHLT60trgPt_trgEta_leadobj", "lead trig jet pt HLT60 v lead trig jet y, only for HLT60;Lead Trig Obj p_{T} across HLT60;Lead Obj y across HLT60" , 
+						  2000,0,2000, 102,-5.1,5.1);
+    hpp_IncHLT80trgPt_trgEta_leadobj  =new TH2D(  "IncHLT80trgPt_trgEta_leadobj", "lead trig jet pt HLT80 v lead trig jet y, only for HLT80;Lead Trig Obj p_{T} across HLT80;Lead Obj y across HLT80" , 
+						  2000,0,2000, 102,-5.1,5.1);
+
+
+    hpp_IncHLT40trgPt_leadobj_finalSpectra   =new TH1D(  "IncHLT40trgPt_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT60trgPt_leadobj_finalSpectra   =new TH1D(  "IncHLT60trgPt_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_IncHLT80trgPt_leadobj_finalSpectra   =new TH1D(  "IncHLT80trgPt_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT80;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+
+    hpp_IncHLT40trgEta_leadobj_finalSpectra   =new TH1D(  "IncHLT40trgEta_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT40;Lead Trig Jet Obj y;N_{jets}" , 102,-5.1,5.1);
+    hpp_IncHLT60trgEta_leadobj_finalSpectra   =new TH1D(  "IncHLT60trgEta_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT60;Lead Trig Jet Obj y;N_{jets}" , 102,-5.1,5.1);
+    hpp_IncHLT80trgEta_leadobj_finalSpectra   =new TH1D(  "IncHLT80trgEta_leadobj_finalSpectra",  "in final spectra, lead trig jet obj. for HLT80;Lead Trig Jet Obj y;N_{jets}" , 102,-5.1,5.1);    
+
+
+
+
+
+    
+    
     //TRIGGER EFFICIENCY HISTS
     //for measuring trigger eff. of HLT80 --------
-    hpp_HLT80ref_IncHLT60trgPt_allobj   =new TH1D( "HLT80ref_IncHLT60trgPt_allobj" ,   "HLT80 Ref., all trigger jet object for HLT60;Trigger Jet Obj p_{T};N_{jets}"      , 2500,0,2500);    
-    hpp_HLT80ref_IncHLT60trgPt_leadobj  =new TH1D( "HLT80ref_IncHLT60trgPt_leadobj",   "HLT80 Ref., lead trigger jet object for HLT60;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-    hpp_HLT80ref_IncHLT40trgPt_allobj   =new TH1D( "HLT80ref_IncHLT40trgPt_allobj" ,   "HLT80 Ref., all trigger jet object for HLT40;Trigger Jet Obj p_{T};N_{jets}"      , 2500,0,2500);
-    hpp_HLT80ref_IncHLT40trgPt_leadobj  =new TH1D( "HLT80ref_IncHLT40trgPt_leadobj",   "HLT80 Ref., lead trigger jet object for HLT40;Lead Trigger Jet Obj p_{T};N_{jets}" , 2500,0,2500);
-
-
+    hpp_HLT80ref_IncHLT60trgPt_allobj   =new TH1D( "HLT80ref_IncHLT60trgPt_allobj" ,   "HLT80 Ref., all trig jet object for HLT60;Trig Jet Obj p_{T};N_{jets}"      , 2000,0,2000);   
+    hpp_HLT80ref_IncHLT60trgPt_leadobj  =new TH1D( "HLT80ref_IncHLT60trgPt_leadobj",   "HLT80 Ref., lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT80ref_IncHLT60trgPt_leadobj_00eta20  =new TH1D( "HLT80ref_IncHLT60trgPt_leadobj_00eta20",   "HLT80 Ref., lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT80ref_IncHLT60trgPt_leadobj_20eta51  =new TH1D( "HLT80ref_IncHLT60trgPt_leadobj_20eta51",   "HLT80 Ref., lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj  =new TH1D( "HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj",   "HLT80 Ref., lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_00eta20  =new TH1D( "HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_00eta20",   "HLT80 Ref., lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_20eta51  =new TH1D( "HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_20eta51",   "HLT80 Ref., lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);    
+    
+    //for measuring trigger eff. of HLT60 --------
+    hpp_HLT60ref_IncHLT40trgPt_allobj   =new TH1D( "HLT60ref_IncHLT40trgPt_allobj" ,   "HLT60 Ref., all trig jet object for HLT40;Trig Jet Obj p_{T};N_{jets}"      , 2000,0,2000);
+    hpp_HLT60ref_IncHLT40trgPt_leadobj  =new TH1D( "HLT60ref_IncHLT40trgPt_leadobj",   "HLT60 Ref., lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT60ref_IncHLT40trgPt_leadobj_00eta20  =new TH1D( "HLT60ref_IncHLT40trgPt_leadobj_00eta20",   "HLT60 Ref., lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT60ref_IncHLT40trgPt_leadobj_20eta51  =new TH1D( "HLT60ref_IncHLT40trgPt_leadobj_20eta51",   "HLT60 Ref., lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj  =new TH1D( "HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj",   "HLT60 Ref., lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_00eta20  =new TH1D( "HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_00eta20",   "HLT60 Ref., lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_20eta51  =new TH1D( "HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_20eta51",   "HLT60 Ref., lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
+    
+    
   }
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
   //inclusive jet spectra by-trigger histograms
   TH1D  *hpp_HLT40[nbins_abseta][2]={}, *hpp_HLT60[nbins_abseta][2]={}, *hpp_HLT80[nbins_abseta][2]={}, *hpp_HLT100[nbins_abseta][2]={}; //no exclusion, looks at each path on its own terms
   TH1D *hpp_HLTMB[nbins_abseta][2]={};
@@ -511,8 +584,8 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
   //for measuring trigger eff. of HLT80 --------  
   TH1D* hpp_HLT80ref_HLT60[nbins_abseta]={};
   TH1D* hpp_HLT80ref_HLT60_wL1Thresh[nbins_abseta]={};
-  TH1D* hpp_HLT80ref_HLT40[nbins_abseta]={};  
-  TH1D* hpp_HLT80ref_HLT40_wL1Thresh[nbins_abseta]={};  
+  //TH1D* hpp_HLT80ref_HLT40[nbins_abseta]={};  
+  //TH1D* hpp_HLT80ref_HLT40_wL1Thresh[nbins_abseta]={};  
   //for measuring trigger eff. of HLT60 --------
   TH1D* hpp_HLT60ref_HLT40[nbins_abseta]={};  
   TH1D* hpp_HLT60ref_HLT40_wL1Thresh[nbins_abseta]={};  
@@ -605,29 +678,29 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	      if(hJetHLTQATitleArray[k]=="hpp_HLT60"  )  hpp_HLT80ref_HLT60_wL1Thresh[j]     = new TH1D( ("hpp_HLT80ref_HLT60_wL1Thresh_wJetID_R"+
 													  std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(),
 													 ("HLT80 Ref. && LeadL1JetEt>48, "+hHLTDesc).c_str(), 2500,0,2500);	
-	      if(hJetHLTQATitleArray[k]=="hpp_HLT40"  )  hpp_HLT80ref_HLT40[j]     = new TH1D( ("hpp_HLT80ref_HLT40_wJetID_R"+
-												std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(), 
-											       ("HLT80 Ref., "+hHLTDesc).c_str(), 2500,0,2500);
-	      if(hJetHLTQATitleArray[k]=="hpp_HLT40"  )  hpp_HLT80ref_HLT40_wL1Thresh[j]     = new TH1D( ("hpp_HLT80ref_HLT40_wL1Thresh_wJetID_R"+
-													  std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(), 
-													 ("HLT80 Ref. && LeadL1JetEt>48, "+hHLTDesc).c_str(), 2500,0,2500);
+	      //if(hJetHLTQATitleArray[k]=="hpp_HLT40"  )  hpp_HLT80ref_HLT40[j]     = new TH1D( ("hpp_HLT80ref_HLT40_wJetID_R"+
+	      //											std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(), 
+	      //										       ("HLT80 Ref., "+hHLTDesc).c_str(), 2500,0,2500);
+	      //if(hJetHLTQATitleArray[k]=="hpp_HLT40"  )  hpp_HLT80ref_HLT40_wL1Thresh[j]     = new TH1D( ("hpp_HLT80ref_HLT40_wL1Thresh_wJetID_R"+
+	      //												  std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(), 
+	      //												 ("HLT80 Ref. && LeadL1JetEt>48, "+hHLTDesc).c_str(), 2500,0,2500);
 	      //HLT60 REF TRIGGERS
 	      if(hJetHLTQATitleArray[k]=="hpp_HLT40"  )  hpp_HLT60ref_HLT40[j]     = new TH1D( ("hpp_HLT60ref_HLT40_wJetID_R"+
 												std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(), 
 											       ("HLT60 Ref., "+hHLTDesc).c_str(), 2500,0,2500);
 	      if(hJetHLTQATitleArray[k]=="hpp_HLT40"  )  hpp_HLT60ref_HLT40_wL1Thresh[j]     = new TH1D( ("hpp_HLT60ref_HLT40_wL1Thresh_wJetID_R"+
-												std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(), 
-											       ("HLT60 Ref. && LeadL1JetEt>40, "+hHLTDesc).c_str(), 2500,0,2500);
+													  std::to_string(radius)+"_etabin"+std::to_string(j)).c_str(), 
+													 ("HLT60 Ref. && LeadL1JetEt>40, "+hHLTDesc).c_str(), 2500,0,2500);
 	    }
 	    
 	    
 	  }
-
 	  
-
+	  
+	  
 	  //excl trigg plots	
 	  if(k<nJetExcTrigQATitles){
-
+	    
 	    std::string hExcTitle=hJetExcTrigQATitleArray[k];
 	    //if(fillDataJetIDHists)hExcTitle+="_wJetID";
 	    if(i==1)hExcTitle+="_wJetID";
@@ -1191,7 +1264,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     if(filelistIsMinBias)isInMinBiasPD=true;
     //bool isInMinBiasPD=( (bool) MB_HF1ORp5_I ||  (bool) mb_l1s_I);
     //bool isInMinBiasPD=( (bool) MB_HF1ORp5_I &&  (bool) mb_l1s_I);
-
+    
     bool isInLowJetsPD=( (bool) Jet40_I   ||
 			 (bool) Jet60_I   ||
 			 (bool) Jet40_2_I ||
@@ -1216,7 +1289,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     if((isInMinBiasPD && isInJet80PD) && !(isInLowJetsPD) )  h_NEvents_MinBiasJet80_NOTLowJets->Fill(0.,1.);    
     if(isInJet80PD && isInLowJetsPD && isInMinBiasPD )       h_NEvents_Jet80LowJetsMinBias->Fill(0.,1.);
 
-    
+
 
     // grab largest triggerPt among HLT paths' trigger object collectiosn
     double maxJetPt=-1.;
@@ -1228,8 +1301,9 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     }
 
 
-    double maxTrgPt=-1.,maxTrgEta=0.; 
+    double maxTrgPt=-1.;//,maxTrgEta=-999.; //globle leading object for an event, regardless of trigger exclusion
     double HLT40maxTrgPt=-1.,  HLT60maxTrgPt=-1.,  HLT80maxTrgPt=-1.,  HLT100maxTrgPt=-1.; 
+    double HLT40maxTrgEta=-1.,  HLT60maxTrgEta=-1.,  HLT80maxTrgEta=-1., HLT100maxTrgEta=-1.; 
     unsigned int trgObj40_size=trgObjpt_40->size(), trgObj60_size=trgObjpt_60->size();
     unsigned int trgObj80_size=trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();   
     if(trgDec[3]&&useHLT100){
@@ -1237,11 +1311,11 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	double trgpt=trgObjpt_100->at(itt);
 	double trgeta=trgObjeta_100->at(itt);
     	if(trgpt > maxTrgPt) { 
-	  maxTrgEta = trgeta;
-	  maxTrgPt = trgpt;
-	}
-	if(trgpt > HLT100maxTrgPt)
+	  //maxTrgEta = trgeta;
+	  maxTrgPt = trgpt;	}
+	if(trgpt > HLT100maxTrgPt){
 	  HLT100maxTrgPt=trgpt;
+	  HLT100maxTrgEta=trgeta;	}
       }
     }
     
@@ -1251,11 +1325,11 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	double trgpt=trgObjpt_80->at(itt);
 	double trgeta=trgObjeta_80->at(itt);
     	if(trgpt > maxTrgPt) { 
-	  maxTrgEta = trgeta;
-	  maxTrgPt  = trgpt;
-	}	  	
-	if(trgpt > HLT80maxTrgPt)
+	  //maxTrgEta = trgeta;
+	  maxTrgPt  = trgpt;	}	  	
+	if(trgpt > HLT80maxTrgPt){
 	  HLT80maxTrgPt=trgpt;
+	  HLT80maxTrgEta=trgeta;	}
       }
     }
     
@@ -1264,12 +1338,12 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	double trgpt=trgObjpt_60->at(itt);
 	double trgeta=trgObjeta_60->at(itt);
     	if(trgpt > maxTrgPt) { 
-	  maxTrgEta =trgeta;
-	  maxTrgPt  =trgpt;
-	}
-	if(trgpt > HLT60maxTrgPt)
+	  //maxTrgEta =trgeta;
+	  maxTrgPt  =trgpt;	}
+	if(trgpt > HLT60maxTrgPt){	  
 	  HLT60maxTrgPt=trgpt;
-      }    
+	  HLT60maxTrgEta=trgeta;	}    
+      }
     }
     
     if(trgDec[0])  {
@@ -1277,52 +1351,41 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	double trgpt=trgObjpt_40->at(itt);
 	double trgeta=trgObjeta_40->at(itt);
     	if(trgpt > maxTrgPt) { 
-	  maxTrgEta = trgeta;
-	  maxTrgPt  = trgpt;
-	} 
-	if(trgpt > HLT40maxTrgPt)
+	  //maxTrgEta = trgeta;
+	  maxTrgPt  = trgpt;	} 
+	if(trgpt > HLT40maxTrgPt){
 	  HLT40maxTrgPt=trgpt;
+	  HLT40maxTrgEta=trgeta;	}
       }
     }
 
-    double trgPt=maxTrgPt; 
-    double trgEta=maxTrgEta;
+
+
     
-    // check trigger decisions for events + exclusivity between them, count events, assign prescale weight
+    double trgPt=-1., trgEta=-999.;//for lead obj from final trigger decision path
     double weight_eS=0.;
-    
-    //TO DO put this is40/60/80/100 stuff in a sep void function; feed it the is-flags, the trg pt, the trgDec array, and the trgPscl array
-    bool is40  = false, is60  = false, is80  = false, is100 = false;
-    bool isMB=false;//minbias
+    bool is40  = false, is60  = false, is80  = false, is100 = false, isMB=false;
     if(useHLT100){
-      if(      trgDec[3] && !(trgPt<HLTthresh[3])               ) 
-	{ is100 = true;  weight_eS=(double)trgPscl[3]; }
-      else if( trgDec[2] && !(trgPt<HLTthresh[2])  && trgPt<HLTthresh[3] ) 
-	{ is80  = true;  weight_eS=(double)trgPscl[2]; }
-      else if( trgDec[1] && !(trgPt<HLTthresh[1])  && trgPt<HLTthresh[2]  ) 
-	{ is60  = true;  weight_eS=(double)trgPscl[1]; }
-      else if( trgDec[0] && !(trgPt<HLTthresh[0])  && trgPt<HLTthresh[1]  ) 
-	{ is40  = true;  weight_eS=(double)trgPscl[0]; }                             
-      else if( MBtrgDec ) { //i want absolutely only TRUE min bias events; ones that happen to fire a jet trigger to are not going to be what i need.	  
-	if( !( ((bool) Jet40_I) || ((bool)Jet60_I) || ((bool)Jet80_I ) || ((bool) Jet40_2_I) || ((bool)Jet60_2_I) || ((bool)Jet80_2_I )  )) //PF and Calo triggers
+      if(      trgDec[3] && !(HLT100maxTrgPt<HLTthresh[3])               ) 
+	{ is100 = true;  weight_eS=(double)trgPscl[3]; trgPt=HLT100maxTrgPt; trgEta=HLT100maxTrgEta;}
+      else if( trgDec[2] && !(HLT80maxTrgPt<HLTthresh[2])  && HLT80maxTrgPt<HLTthresh[3] ) 
+	{ is80  = true;  weight_eS=(double)trgPscl[2]; trgPt=HLT80maxTrgPt;trgEta=HLT80maxTrgEta;}
+      else if( trgDec[1] && !(HLT60maxTrgPt<HLTthresh[1])  && HLT60maxTrgPt<HLTthresh[2]  ) 
+	{ is60  = true;  weight_eS=(double)trgPscl[1]; trgPt=HLT60maxTrgPt;trgEta=HLT60maxTrgEta;}
+      else if( trgDec[0] && !(HLT40maxTrgPt<HLTthresh[0])  && HLT40maxTrgPt<HLTthresh[1]  ) 
+	{ is40  = true;  weight_eS=(double)trgPscl[0]; trgPt=HLT40maxTrgPt;trgEta=HLT40maxTrgEta;}      
+      else if( MBtrgDec ) { 
 	  { isMB=true; weight_eS=(double)MBtrgPscl; }
       }
     }
     else {
-      if( trgDec[2] && !(trgPt<HLTthresh[2])  ) 
-	{ is80  = true;  weight_eS=(double)trgPscl[2]; }
-      else if( trgDec[1] && !(trgPt<HLTthresh[1])  && trgPt<HLTthresh[2]  ) 
-	{ is60  = true;  weight_eS=(double)trgPscl[1]; }
-      else if( trgDec[0] && !(trgPt<HLTthresh[0])  && trgPt<HLTthresh[1]  ) 
-	{ is40  = true;  weight_eS=(double)trgPscl[0]; }                             
-      else if( MBtrgDec ){ //&& trgPt<HLTthresh[0] ) { 
-	//	// i want absolutely only TRUE min bias events; ones that happen to fire a jet trigger to are not going to be what i need.	 
-	//	// if( !( ((bool) Jet40_I) || ((bool)Jet60_I) || ((bool)Jet80_I ) || ((bool) Jet40_2_I) || ((bool)Jet60_2_I) || ((bool)Jet80_2_I )  )) //PF and Calo triggers
-	//	// if( !( ((bool) Jet40_I) || ((bool)Jet60_I) || ((bool)Jet80_I )   )) //just PF triggers
-	//	// if(  !( ((bool) jet40_l1s_I) || ((bool) jet60_l1s_I)|| ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
-	//	// if(  !(  ((bool) jet60_l1s_I)|| ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
-	//	// if(  ! ( ((bool) jet80_l1s_I) || ((bool) jet100_l1s_I) )  )
-	//	// if(  ! ( ((bool) jet100_l1s_I) )  )
+      if( trgDec[2] && !(HLT80maxTrgPt<HLTthresh[2])  ) 
+	{ is80  = true;  weight_eS=(double)trgPscl[2];  trgPt=HLT80maxTrgPt;trgEta=HLT80maxTrgEta;}
+      else if( trgDec[1] && !(HLT60maxTrgPt<HLTthresh[1])  && HLT60maxTrgPt<HLTthresh[2]  ) 
+	{ is60  = true;  weight_eS=(double)trgPscl[1];  trgPt=HLT60maxTrgPt;trgEta=HLT60maxTrgEta;}
+      else if( trgDec[0] && !(HLT40maxTrgPt<HLTthresh[0])  && HLT40maxTrgPt<HLTthresh[1]  ) 
+	{ is40  = true;  weight_eS=(double)trgPscl[0];  trgPt=HLT40maxTrgPt;trgEta=HLT40maxTrgEta;}
+      else if( MBtrgDec ) { 
 	isMB=true; weight_eS=(double)MBtrgPscl;	    	
       }
     }
@@ -1339,7 +1402,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     h_NEvents->Fill(0.);   h_NEvents->Fill(1.,weight_eS);      
 
 
-    
+
     
     //event counts, post-duplicate skip, pre-evt cuts, having fired a trigger
     if(firedTrigger)
@@ -1367,124 +1430,12 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     else if( is80  )  { NEvents_80++  ;  h_NEvents_is80 ->Fill(0.)  ;  h_NEvents_is80 ->Fill(1.,weight_eS ) ; }
     else if( is100 )  { NEvents_100++ ;  h_NEvents_is100->Fill(0.)  ;  h_NEvents_is100->Fill(1.,weight_eS ) ; }
     
+    
     float LeadL1CenJetEt=0., LeadL1ForJetEt=0., LeadL1JetEt=0.;
-
     if(fillDataJetTrigQAHists){ //only want to fill these trigger jet plots if they pass all our quality criteria      
       
-      //prescales
-      if(MBtrgDec)hpp_IncHLTMBpscl  ->Fill( (double)MBtrgPscl, 1.);
-      if(trgDec[0])hpp_IncHLT40pscl ->Fill( (double)trgPscl[0], 1.);
-      if(trgDec[1])hpp_IncHLT60pscl ->Fill( (double)trgPscl[1], 1.);
-      if(trgDec[2])hpp_IncHLT80pscl ->Fill( (double)trgPscl[2], 1.);
-      if(trgDec[3])hpp_IncHLT100pscl->Fill( (double)trgPscl[3], 1.);
-      //if(MBtrgDec && trgDec[0])hpp_IncHLT40MBpscl  ->Fill( (float)MBtrgPscl, 1.);
-
-
-      //all trigger jet object pts
-      if(trgDec[0])
-	for(unsigned int itt=0; itt<trgObj40_size; ++itt)hpp_IncHLT40trgPt_allobj->Fill(trgObjpt_40->at(itt),(double)trgPscl[0]);
-      if(trgDec[1])
-	for(unsigned int itt=0; itt<trgObj60_size; ++itt)hpp_IncHLT60trgPt_allobj->Fill(trgObjpt_60->at(itt),(double)trgPscl[1]);
-      if(trgDec[2])
-	for(unsigned int itt=0; itt<trgObj80_size; ++itt)hpp_IncHLT80trgPt_allobj->Fill(trgObjpt_80->at(itt),(double)trgPscl[2]);
-      if(trgDec[3])
-	for(unsigned int itt=0; itt<trgObj100_size; ++itt)hpp_IncHLT100trgPt_allobj->Fill(trgObjpt_100->at(itt),(double)trgPscl[3]);
-
-      //lead trigger jet object pt for each respective trigger
-      if( trgDec[0] )  hpp_IncHLT40trgPt_leadobj-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);      	
-      if( trgDec[1] )  hpp_IncHLT60trgPt_leadobj-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);
-      if( trgDec[2] )  hpp_IncHLT80trgPt_leadobj-> Fill(HLT80maxTrgPt , (double)trgPscl[2]);
-      if( trgDec[3] ) hpp_IncHLT100trgPt_leadobj->Fill(HLT100maxTrgPt,  (double)trgPscl[3]);           
-      if( MBtrgDec && trgDec[0] ) hpp_IncHLT40MBtrgPt_leadobj-> Fill(HLT40maxTrgPt , 1.);      	 
-      
-      
-      //lead trigger jet object pt v lead reco jet object pt
-      if( trgDec[0] ) hpp_IncHLT40trgPt_leadobj_leadjet->Fill( HLT40maxTrgPt , maxJetPt,  1.);      	
-      if( trgDec[1] ) hpp_IncHLT60trgPt_leadobj_leadjet->Fill( HLT60maxTrgPt , maxJetPt,  1.);
-      if( trgDec[2] ) hpp_IncHLT80trgPt_leadobj_leadjet->Fill( HLT80maxTrgPt , maxJetPt,  1.);
-      if( trgDec[3] ) hpp_IncHLT100trgPt_leadobj_leadjet->Fill(HLT100maxTrgPt, maxJetPt,  1.);            
-      if( trgDec[0] && MBtrgDec ) hpp_IncHLT40MBtrgPt_leadobj_leadjet->Fill( HLT40maxTrgPt , maxJetPt,  1.);      	
-
-
-
-
-
-      //TRIGGER EFFICIENCY HISTS // NOTE these don't really make sense to me. but i'm gonna ignore that for now....
-      
-      //for measuring trigger eff. of HLT80 --------
-      //if(trgDec[1] && HLT60maxTrgPt>80. && /*HLT80L1S*/){//TODO
-      if(trgDec[1] && HLT60maxTrgPt>80. ){
-	for(unsigned int itt=0; itt<trgObj60_size; ++itt)hpp_HLT80ref_IncHLT60trgPt_allobj->Fill(trgObjpt_60->at(itt),(double)trgPscl[1]);
-	hpp_HLT80ref_IncHLT60trgPt_leadobj-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);	
-      }
-      
-      //if(trgDec[0] && HLT40maxTrgPt>80. && /*HLT80L1S*/){//TODO
-      if(trgDec[0] && HLT40maxTrgPt>80. ){
-	for(unsigned int itt=0; itt<trgObj40_size; ++itt)hpp_HLT80ref_IncHLT40trgPt_allobj->Fill(trgObjpt_40->at(itt),(double)trgPscl[0]);
-	hpp_HLT80ref_IncHLT40trgPt_leadobj-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);	
-      }
-      //for measuring trigger eff. of HLT60 --------
-      //TO DO
-      //for measuring trigger eff. of HLT40 --------
-      //NULL
 
       
-      //all trigger jet object pts
-      if(trgDec[0])
-	for(unsigned int itt=0; itt<trgObj40_size; ++itt)hpp_IncHLT40trgPt_allobj->Fill(trgObjpt_40->at(itt),(double)trgPscl[0]);
-      if(trgDec[1])
-	for(unsigned int itt=0; itt<trgObj60_size; ++itt)hpp_IncHLT60trgPt_allobj->Fill(trgObjpt_60->at(itt),(double)trgPscl[1]);
-      if(trgDec[2])
-	for(unsigned int itt=0; itt<trgObj80_size; ++itt)hpp_IncHLT80trgPt_allobj->Fill(trgObjpt_80->at(itt),(double)trgPscl[2]);
-      if(trgDec[3])
-	for(unsigned int itt=0; itt<trgObj100_size; ++itt)hpp_IncHLT100trgPt_allobj->Fill(trgObjpt_100->at(itt),(double)trgPscl[3]);
-      
-      //lead trigger jet object pt for each respective trigger
-      if( trgDec[0] )  hpp_IncHLT40trgPt_leadobj-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);      	
-      if( trgDec[1] )  hpp_IncHLT60trgPt_leadobj-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);
-      if( trgDec[2] )  hpp_IncHLT80trgPt_leadobj-> Fill(HLT80maxTrgPt , (double)trgPscl[2]);
-      if( trgDec[3] ) hpp_IncHLT100trgPt_leadobj->Fill(HLT100maxTrgPt,  (double)trgPscl[3]);           
-      if( MBtrgDec && trgDec[0] ) hpp_IncHLT40MBtrgPt_leadobj-> Fill(HLT40maxTrgPt , 1.);      	 
-
-
-
-
-      if( trgDec[0] ) hpp_IncHLT40trgPt_leadobj_globleadobj->Fill( HLT40maxTrgPt , trgPt,  1.);      	
-      if( trgDec[1] ) hpp_IncHLT60trgPt_leadobj_globleadobj->Fill( HLT60maxTrgPt , trgPt,  1.);
-      if( trgDec[2] ) hpp_IncHLT80trgPt_leadobj_globleadobj->Fill( HLT80maxTrgPt , trgPt,  1.);
-      if( trgDec[3] ) hpp_IncHLT100trgPt_leadobj_globleadobj->Fill(HLT100maxTrgPt, trgPt,  1.);            
-      if( trgDec[0] && MBtrgDec ) hpp_IncHLT40MBtrgPt_leadobj_globleadobj->Fill( HLT40maxTrgPt , trgPt,  1.);      	
-
-      //global lead trigger jet object (lead obj across all triggers) by trigger decision + lower threshold only
-      if( MBtrgDec  &&  trgPt<HLTthresh[0]    )   hpp_IncHLTMBtrgPt->Fill(  trgPt, (double)MBtrgPscl  );
-      if( trgDec[0] && !(trgPt<HLTthresh[0]) )   hpp_IncHLT40trgPt->Fill(  trgPt, (double)trgPscl[0] );
-      if( trgDec[1] && !(trgPt<HLTthresh[1]) )   hpp_IncHLT60trgPt->Fill(  trgPt, (double)trgPscl[1] );
-      if( trgDec[2] && !(trgPt<HLTthresh[2]) )   hpp_IncHLT80trgPt->Fill(  trgPt, (double)trgPscl[2] );
-      if( trgDec[3] && !(trgPt<HLTthresh[3]) )   hpp_IncHLT100trgPt->Fill( trgPt, (double)trgPscl[3] );
-
-      // trgEta [who cares really]
-      if( trgDec[0] && !(trgPt<HLTthresh[0]) )   hpp_IncHLT40trgEta->Fill(  trgEta, (double)trgPscl[0] );
-      if( trgDec[1] && !(trgPt<HLTthresh[1]) )   hpp_IncHLT60trgEta->Fill(  trgEta, (double)trgPscl[1] );
-      if( trgDec[2] && !(trgPt<HLTthresh[2]) )   hpp_IncHLT80trgEta->Fill(  trgEta, (double)trgPscl[2] );
-      if( trgDec[3] && !(trgPt<HLTthresh[3]) )   hpp_IncHLT100trgEta->Fill( trgEta, (double)trgPscl[3] );
-      
-
-      //global lead jet trigger object across exclusively firing triggers (i.e. meeting all exclusion criteria)
-      if     ( isMB  )   hpp_HLTMBtrgPt->Fill(   trgPt , weight_eS );
-      else if( is40  )   hpp_HLT40trgPt->Fill(   trgPt , weight_eS );      
-      else if( is60  )   hpp_HLT60trgPt->Fill(   trgPt , weight_eS );
-      else if( is80  )   hpp_HLT80trgPt->Fill(   trgPt , weight_eS );
-      else if( is100 )  hpp_HLT100trgPt->Fill(   trgPt , weight_eS );   
-      if(firedJetTrigger)	hpp_HLTCombtrgPt->Fill(  trgPt , weight_eS );   
-
-      if     ( is40  )  hpp_HLT40trgEta->Fill(    trgEta , weight_eS );      
-      else if( is60  )  hpp_HLT60trgEta->Fill(    trgEta , weight_eS );
-      else if( is80  )  hpp_HLT80trgEta->Fill(    trgEta , weight_eS );
-      else if( is100 )  hpp_HLT100trgEta->Fill(   trgEta , weight_eS );   
-      if(firedJetTrigger)         hpp_HLTCombtrgEta->Fill(  trgEta , weight_eS );                         
-
-
-
       //L1 JETS SECTION
       int N_L1CenJets=0, N_L1ForJets=0;
       for(int i=0; i<4; i++){
@@ -1605,8 +1556,140 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	if(N_L1ForJets>0)hpp_SJ28_LeadL1ForJet_Et->Fill(LeadL1ForJetEt ,(float)jet40_l1s_ps_I);
 	if(N_L1CenJets>0)hpp_SJ28_LeadL1CenJet_Et->Fill(LeadL1CenJetEt ,(float)jet40_l1s_ps_I);      
 	hpp_SJ28_LeadL1Jet_Et->Fill(LeadL1JetEt      	               ,(float)jet40_l1s_ps_I); }
+      //END L1 JETS SECTION
+
+
+
+
+
+      // --- BEGIN TRIGGER OBJECT(S) HIST SECTION --- //
+
+      //EXCLUSIVE TRIGER OBJECT HISTS
+      if(is40)hpp_is40pscl ->Fill(  weight_eS, 1.);
+      if(is60)hpp_is60pscl ->Fill(  weight_eS, 1.);
+      if(is80)hpp_is80pscl ->Fill(  weight_eS, 1.);
+
+      //all trigger jet object pts
+      if(is40)
+	for(unsigned int itt=0; itt<trgObj40_size; ++itt)hpp_is40trgPt_allobj->Fill(trgObjpt_40->at(itt),weight_eS);
+      if(is60)
+	for(unsigned int itt=0; itt<trgObj60_size; ++itt)hpp_is60trgPt_allobj->Fill(trgObjpt_60->at(itt),weight_eS);
+      if(is80)
+	for(unsigned int itt=0; itt<trgObj80_size; ++itt)hpp_is80trgPt_allobj->Fill(trgObjpt_80->at(itt),weight_eS);
+
+      if( is40  )    hpp_is40trgPt  ->Fill(  HLT40maxTrgPt  , weight_eS );      
+      else if( is60  )    hpp_is60trgPt  ->Fill(  HLT60maxTrgPt  , weight_eS );
+      else if( is80  )    hpp_is80trgPt  ->Fill(  HLT80maxTrgPt  , weight_eS );
+      if(firedJetTrigger) hpp_HLTCombtrgPt->Fill(  trgPt          , weight_eS );   
+
+      if     ( is40  )    hpp_is40trgEta  ->Fill(  HLT40maxTrgEta  , weight_eS );      
+      else if( is60  )    hpp_is60trgEta  ->Fill(  HLT60maxTrgEta  , weight_eS );
+      else if( is80  )    hpp_is80trgEta  ->Fill(  HLT80maxTrgEta  , weight_eS );
+      if(firedJetTrigger) hpp_HLTCombtrgEta->Fill(  trgEta          , weight_eS );                         
+
+      if(      is40  && fabs(HLT40maxTrgEta) <= 2.0)   hpp_is40trgPt_00eta20  ->Fill(  HLT40maxTrgPt  , weight_eS );      
+      else if( is60  && fabs(HLT60maxTrgEta) <= 2.0)   hpp_is60trgPt_00eta20  ->Fill(  HLT60maxTrgPt  , weight_eS );
+      else if( is80  && fabs(HLT80maxTrgEta) <= 2.0)   hpp_is80trgPt_00eta20  ->Fill(  HLT80maxTrgPt  , weight_eS );
+      if(firedJetTrigger && fabs(trgEta)  <= 2.0)   hpp_HLTCombtrgPt_00eta20->Fill(  trgPt          , weight_eS );   
+
+      if(      is40  && fabs(HLT40maxTrgEta) > 2.0)   hpp_is40trgPt_20eta51  ->Fill(     HLT40maxTrgPt , weight_eS );      
+      else if( is60  && fabs(HLT60maxTrgEta) > 2.0)   hpp_is60trgPt_20eta51  ->Fill(     HLT60maxTrgPt , weight_eS );
+      else if( is80  && fabs(HLT80maxTrgEta) > 2.0)   hpp_is80trgPt_20eta51  ->Fill(     HLT80maxTrgPt , weight_eS );
+      if(firedJetTrigger && fabs(trgEta)  > 2.0)   hpp_HLTCombtrgPt_20eta51->Fill(     trgPt         , weight_eS );   
       
+      if( is40 ) hpp_is40trgPt_leadobj_globleadobj->Fill( HLT40maxTrgPt , maxTrgPt,  weight_eS);      	
+      else if( is60 ) hpp_is60trgPt_leadobj_globleadobj->Fill( HLT60maxTrgPt , maxTrgPt,  weight_eS);
+      else if( is80 ) hpp_is80trgPt_leadobj_globleadobj->Fill( HLT80maxTrgPt , maxTrgPt,  weight_eS);
+      
+      if( is40 ) hpp_is40trgPt_trgEta_leadobj->Fill( HLT40maxTrgPt , HLT40maxTrgEta,  weight_eS);      	
+      else if( is60 ) hpp_is60trgPt_trgEta_leadobj->Fill( HLT60maxTrgPt , HLT60maxTrgEta,  weight_eS);
+      else if( is80 ) hpp_is80trgPt_trgEta_leadobj->Fill( HLT80maxTrgPt , HLT80maxTrgEta,  weight_eS);
+      //EXCLUSIVE TRIGGER OBJECT HISTS END
+
+
+      //INCLUSIVE TRIGER OBJECT HISTS
+      if(trgDec[0])hpp_IncHLT40pscl ->Fill( (double)trgPscl[0], 1.);
+      if(trgDec[1])hpp_IncHLT60pscl ->Fill( (double)trgPscl[1], 1.);
+      if(trgDec[2])hpp_IncHLT80pscl ->Fill( (double)trgPscl[2], 1.);
+
+      //all trigger jet object pts
+      if(trgDec[0])
+	for(unsigned int itt=0; itt<trgObj40_size; ++itt)hpp_IncHLT40trgPt_allobj->Fill(trgObjpt_40->at(itt),(double)trgPscl[0]);
+      if(trgDec[1])
+	for(unsigned int itt=0; itt<trgObj60_size; ++itt)hpp_IncHLT60trgPt_allobj->Fill(trgObjpt_60->at(itt),(double)trgPscl[1]);
+      if(trgDec[2])
+	for(unsigned int itt=0; itt<trgObj80_size; ++itt)hpp_IncHLT80trgPt_allobj->Fill(trgObjpt_80->at(itt),(double)trgPscl[2]);
+
+      if( trgDec[0] )  hpp_IncHLT40trgEta-> Fill(HLT40maxTrgEta , (double)trgPscl[0]);      	
+      if( trgDec[1] )  hpp_IncHLT60trgEta-> Fill(HLT60maxTrgEta , (double)trgPscl[1]);
+      if( trgDec[2] )  hpp_IncHLT80trgEta-> Fill(HLT80maxTrgEta , (double)trgPscl[2]);
+
+
+      if( trgDec[0] )  hpp_IncHLT40trgPt_leadobj-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);      	
+      if( trgDec[1] )  hpp_IncHLT60trgPt_leadobj-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);
+      if( trgDec[2] )  hpp_IncHLT80trgPt_leadobj-> Fill(HLT80maxTrgPt , (double)trgPscl[2]);
+
+
+      if( trgDec[0] && (fabs(HLT40maxTrgEta<=2.0)))  hpp_IncHLT40trgPt_leadobj_00eta20-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);      	
+      if( trgDec[1] && (fabs(HLT60maxTrgEta<=2.0)))  hpp_IncHLT60trgPt_leadobj_00eta20-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);
+      if( trgDec[2] && (fabs(HLT80maxTrgEta<=2.0)))  hpp_IncHLT80trgPt_leadobj_00eta20-> Fill(HLT80maxTrgPt , (double)trgPscl[2]);
+
+
+      if( trgDec[0] && (fabs(HLT40maxTrgEta >2.0)))  hpp_IncHLT40trgPt_leadobj_20eta51-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);      	
+      if( trgDec[1] && (fabs(HLT60maxTrgEta >2.0)))  hpp_IncHLT60trgPt_leadobj_20eta51-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);
+      if( trgDec[2] && (fabs(HLT80maxTrgEta >2.0)))  hpp_IncHLT80trgPt_leadobj_20eta51-> Fill(HLT80maxTrgPt , (double)trgPscl[2]);
+
+      
+      if( trgDec[0] ) hpp_IncHLT40trgPt_leadobj_globleadobj->Fill( HLT40maxTrgPt , maxTrgPt,  (double)trgPscl[0]);      	
+      if( trgDec[1] ) hpp_IncHLT60trgPt_leadobj_globleadobj->Fill( HLT60maxTrgPt , maxTrgPt,  (double)trgPscl[1]);
+      if( trgDec[2] ) hpp_IncHLT80trgPt_leadobj_globleadobj->Fill( HLT80maxTrgPt , maxTrgPt,  (double)trgPscl[2]);
+      
+      if( trgDec[0] ) hpp_IncHLT40trgPt_trgEta_leadobj->Fill( HLT40maxTrgPt , HLT40maxTrgEta, (double)trgPscl[0] );      	
+      if( trgDec[1] ) hpp_IncHLT60trgPt_trgEta_leadobj->Fill( HLT60maxTrgPt , HLT60maxTrgEta, (double)trgPscl[1] );
+      if( trgDec[2] ) hpp_IncHLT80trgPt_trgEta_leadobj->Fill( HLT80maxTrgPt , HLT80maxTrgEta, (double)trgPscl[2] );
+      //INCLUSIVE TRIGER OBJECT HISTS END
+ 
+      // --- END TRIGGER OBJECT(S) HIST SECTION --- //
+
+      
+
+
+
+
+      // --- BEGIN TRIGGER EFFICIENCY HIST SECTION --- //
+      
+      //for measuring trigger eff. of HLT80 --------
+      if(trgDec[1] && HLT60maxTrgPt>=80. ){
+	for(unsigned int itt=0; itt<trgObj60_size; ++itt)hpp_HLT80ref_IncHLT60trgPt_allobj->Fill(trgObjpt_60->at(itt),(double)trgPscl[1]);
+	hpp_HLT80ref_IncHLT60trgPt_leadobj-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);		
+	if(fabs(HLT60maxTrgEta)<=2.0) hpp_HLT80ref_IncHLT60trgPt_leadobj_00eta20-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);	
+	if(fabs(HLT60maxTrgEta)>2.0)  hpp_HLT80ref_IncHLT60trgPt_leadobj_20eta51-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);	
+	if(LeadL1JetEt>=48.){
+	  hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);	
+	  if(fabs(HLT60maxTrgEta)<=2.0) hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_00eta20-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);	
+	  if(fabs(HLT60maxTrgEta)>2.0)  hpp_HLT80ref_IncHLT60trgPt_wL1Thresh_leadobj_20eta51-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);	
+	}
+      }  
+
+      //for measuring trigger eff. of HLT60 --------
+      if(trgDec[0] && HLT40maxTrgPt>=60. ){
+	for(unsigned int itt=0; itt<trgObj40_size; ++itt)hpp_HLT60ref_IncHLT40trgPt_allobj->Fill(trgObjpt_40->at(itt),(double)trgPscl[0]);
+	hpp_HLT60ref_IncHLT40trgPt_leadobj-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);	
+	if(fabs(HLT40maxTrgEta)<=2.0) hpp_HLT60ref_IncHLT40trgPt_leadobj_00eta20-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);	
+	if(fabs(HLT40maxTrgEta)>2.0)  hpp_HLT60ref_IncHLT40trgPt_leadobj_20eta51-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);	
+	if(LeadL1JetEt>=40.){
+	  hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);	
+	  if(fabs(HLT40maxTrgEta)<=2.0) hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_00eta20-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);	
+	  if(fabs(HLT40maxTrgEta)>2.0)  hpp_HLT60ref_IncHLT40trgPt_wL1Thresh_leadobj_20eta51-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);	
+	}
+      }
+      //for measuring trigger eff. of HLT40 --------
+      //NULL
+
+      // --- END TRIGGER EFFICIENCY HIST SECTION --- //      
+
     }
+
 
     // fill evt vz histo
     if(fillDataEvtQAHists){
@@ -1665,12 +1748,14 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     
     int jetsPerEvent=-1;//=tupel_njets;    
     
-    
+
+    bool evtHasJetInFinalSpectra=false;
 
     if(useIncJetAnalyzer){
       
       jetsPerEvent=nref_I;
       for(int jet = 0; jet<nref_I; ++jet){
+	if(deepDebug)std::cout<<"jet="<<jet<<std::endl;
 	
 	float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
 	//float rawpt=rawpt_F[jet];      
@@ -1713,18 +1798,18 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	if (!(absreceta > 2.4)) 
 	  passesJetID=(bool)jetID_00eta24( jtpt, 
 					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult);
+					   numConst,  chMult, useTightJetID);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  passesJetID=(bool) jetID_24eta27( jtpt,
 					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
-					    numConst);
+					    numConst, useTightJetID);
 	else if( !(absreceta>3.0) && absreceta>2.7 )
 	  passesJetID=(bool) jetID_27eta30( jtpt,
 					    neSum_F[jet],  phSum_F[jet], 
-					    neuMult);
+					    neuMult, useTightJetID);
 	else  
 	  passesJetID=(bool)jetID_32eta47( jtpt, 
-					   phSum_F[jet]);
+					   phSum_F[jet], useTightJetID);
 	
 	
 	// get repidity bin
@@ -1735,13 +1820,33 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    theRapBin=rapbin;
 	    break;
 	  }
+
+	if(!evtHasJetInFinalSpectra)
+	  if(!(absreceta>2.0) && passesJetID){
+	    evtHasJetInFinalSpectra=true;
+	    if(trgDec[0]) hpp_IncHLT40trgPt_leadobj_finalSpectra->Fill(HLT40maxTrgPt,trgPscl[0]);
+	    if(trgDec[1]) hpp_IncHLT60trgPt_leadobj_finalSpectra->Fill(HLT60maxTrgPt,trgPscl[1]);
+	    if(trgDec[2]) hpp_IncHLT80trgPt_leadobj_finalSpectra->Fill(HLT80maxTrgPt,trgPscl[2]);
+	    if(trgDec[0]) hpp_IncHLT40trgEta_leadobj_finalSpectra->Fill(HLT40maxTrgEta,trgPscl[0]);
+	    if(trgDec[1]) hpp_IncHLT60trgEta_leadobj_finalSpectra->Fill(HLT60maxTrgEta,trgPscl[1]);
+	    if(trgDec[2]) hpp_IncHLT80trgEta_leadobj_finalSpectra->Fill(HLT80maxTrgEta,trgPscl[2]);
+
+	    if(is40) hpp_is40trgPt_leadobj_finalSpectra->Fill(HLT40maxTrgPt,weight_eS);
+	    if(is60) hpp_is60trgPt_leadobj_finalSpectra->Fill(HLT60maxTrgPt,weight_eS);
+	    if(is80) hpp_is80trgPt_leadobj_finalSpectra->Fill(HLT80maxTrgPt,weight_eS);
+	    if(is40) hpp_is40trgEta_leadobj_finalSpectra->Fill(HLT40maxTrgEta,weight_eS);
+	    if(is60) hpp_is60trgEta_leadobj_finalSpectra->Fill(HLT60maxTrgEta,weight_eS);
+	    if(is80) hpp_is80trgEta_leadobj_finalSpectra->Fill(HLT80maxTrgEta,weight_eS);
+
+	  }
 	
 	
+      
 
 
-
+      
 	
-
+      
 	if(!(jtpt>jetQAPtCut)){ jetsPerEvent--; continue;}//need JEC syst. stuff before this cut; so jets from below 56 GeV can migrate above	
 	h_NJets_jetQAPtCut->Fill(0.);	  h_NJets_jetQAPtCut->Fill(1., weight_eS);
 
@@ -1761,7 +1866,8 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    
 	    
 	  }//end jtid==1 specific. 	  
-	  
+	  if(deepDebug)std::cout<<"jtid="<<jtid<<std::endl;
+
 	  
 	  
 	  
@@ -1825,12 +1931,12 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	      if(trgDec[1] && HLT60maxTrgPt>80. && LeadL1JetEt>48. ){
 		hpp_HLT80ref_HLT60_wL1Thresh[theRapBin]->Fill(jtpt, (double)trgPscl[1]);  
 	      }
-	      if(trgDec[0] && HLT40maxTrgPt>80. ){
-		hpp_HLT80ref_HLT40[theRapBin]->Fill(jtpt, (double)trgPscl[0]);  
-	      }
-	      if(trgDec[0] && HLT40maxTrgPt>80. && LeadL1JetEt>48.){
-		hpp_HLT80ref_HLT40_wL1Thresh[theRapBin]->Fill(jtpt, (double)trgPscl[0]);  
-	      }
+	      //if(trgDec[0] && HLT40maxTrgPt>80. ){
+	      //	hpp_HLT80ref_HLT40[theRapBin]->Fill(jtpt, (double)trgPscl[0]);  
+	      //}
+	      //if(trgDec[0] && HLT40maxTrgPt>80. && LeadL1JetEt>48.){
+	      //	hpp_HLT80ref_HLT40_wL1Thresh[theRapBin]->Fill(jtpt, (double)trgPscl[0]);  
+	      //}
 	      //for measuring trigger eff. of HLT60 --------
 	      if(trgDec[0] && HLT40maxTrgPt>60. ){
 		hpp_HLT60ref_HLT40[theRapBin]->Fill(jtpt, (double)trgPscl[0]);  
@@ -1876,7 +1982,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	      }
 	    }
 	    else if(is100) { 
-	      hpp_excHLT100[theRapBin][jtid]->Fill( jtpt , weight_eS); 	    //assert(false);
+	      hpp_excHLT100[theRapBin][jtid]->Fill( jtpt , weight_eS); 	    //
 	    }
 	    
 	  }//end fill data jettrig qa hists	
@@ -1889,13 +1995,15 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    int ind=0;
 	    //if(jtpt>jetQAPtCut){//second jet pt cut
 	    
+	    
 	    //jets	
 	    hJetQA_jtptEntries[theRapBin][jtid]->Fill(jtpt,1.);	  	
 	    hJetQA[theRapBin][ind][jtid]->Fill(jtpt, weight_eS); ind++;
 	    hJetQA[theRapBin][ind][jtid]->Fill(rawpt_F[jet], weight_eS); ind++;	    	    
 	    hJetQA[theRapBin][ind][jtid]->Fill(eta_F[jet], weight_eS); ind++;
 	    hJetQA[theRapBin][ind][jtid]->Fill(phi_F[jet], weight_eS); ind++;
-	    
+
+
 	    //tracks
 	    hJetQA[theRapBin][ind][jtid]->Fill(trkN_I[jet], weight_eS); ind++;
 	    hJetQA[theRapBin][ind][jtid]->Fill(trkSum_F[jet]/jtpt, weight_eS); ind++;
@@ -1938,6 +2046,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    hJetQA[theRapBin][ind][jtid]->Fill(chMult, weight_eS); ind++; //HIN CHMULT ~= SMP CHMULT 
 	    hJetQA[theRapBin][ind][jtid]->Fill(numConst, weight_eS); ind++; //HIN NUMCONST ~= SMP CONSTCNT	      			      
 	    //}
+
 	    
 	    
 	    //this dijet routine probably wont work since the rapidity bin changes. CAUTION!
@@ -1984,11 +2093,11 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    }//end fillDataDijetHists	      
 	  } //end fill datajetqahists	    
 	}//end jtid loop
-      }//end incjetanalyzer jet loop
-    }//end if useIncJetAnalyzer
-    
-    
 
+      }//end incjetanalyzer jet loop
+
+
+    }//end if useIncJetAnalyzer
 
 
     
@@ -2003,6 +2112,8 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 
     
   }//end event loop
+    
+
 
   std::cout<<std::endl;  
   std::cout<<"//////////////////////////"<<std::endl;
@@ -2065,7 +2176,6 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 
   std::cout<<std::endl<<"writing output file... "<<std::endl;
   fout->Write(); 
-  //assert(false);
   
   trgObjpt_40->clear();
   trgObjpt_60->clear();
@@ -2130,285 +2240,3 @@ int main(int argc, char *argv[]){
 
 
 
-
-
-
-
-
-// OLD CODE IANS NOT READY TO LET GO OF YET BUT PROBABLY COULD: TOO BAD HES PARANOID
-
-//TH1D *hpp_HLT40InEff =NULL;
-//TH1D *hpp_HLT60InEff =NULL;
-//TH1D *hpp_HLT80InEff =NULL;
-//TH1D *hpp_HLT100InEff=NULL;
-//TH1D *hpp_HLTAllInEff=NULL;      
-
-////ineff
-//hpp_HLT40InEff  = new TH1D( "isHLT40_inEff"  , "isHLT40  inEff Check", 1000, 0,1000 ); 
-//hpp_HLT60InEff  = new TH1D( "isHLT60_inEff"  , "isHLT60  inEff Check", 1000, 0,1000 ); 
-//hpp_HLT80InEff  = new TH1D( "isHLT80_inEff"  , "isHLT80  inEff Check", 1000, 0,1000 ); 
-//hpp_HLT100InEff = new TH1D( "isHLT100_inEff" , "isHLT100 inEff Check", 1000, 0,1000 );       
-//
-//hpp_HLTAllInEff = new TH1D( "isHLTAll_inEff" , "isHLTAll inEff Check", 1000, 0,1000 );                 
-
-//bool L1trgDec[N_HLTBits]   ={ (bool)jet40_l1s_I, (bool)jet60_l1s_I,  (bool)jet80_l1s_I,  (bool)jet100_l1s_I    };
-
-//if(      trgDec[3] && !L1trgDec[3])  hpp_HLT100InEff->Fill((float)trgPt,weight_eS);   
-//else if( trgDec[2] && !L1trgDec[2])   hpp_HLT80InEff->Fill((float)trgPt,weight_eS);
-//else if( trgDec[1] && !L1trgDec[1])   hpp_HLT60InEff->Fill((float)trgPt,weight_eS);
-//else if( trgDec[0] && !L1trgDec[0])   hpp_HLT40InEff->Fill((float)trgPt,weight_eS);    
-
-//if(fillDataJetTrigQAHists){
-//  
-//  hpp_HLTAllInEff->Add(hpp_HLT40InEff );
-//  hpp_HLTAllInEff->Add(hpp_HLT60InEff );
-//  hpp_HLTAllInEff->Add(hpp_HLT80InEff );
-//  hpp_HLTAllInEff->Add(hpp_HLT100InEff);       
-//  
-//}
- 
-   //float jetIDCut_neSum, jetIDCut_phSum;
-  //if(tightJetID){     jetIDCut_neSum=0.90;  jetIDCut_phSum=0.90;}
-  //else{     jetIDCut_neSum=0.99;  jetIDCut_phSum=0.99;}
-      
-
-
-
-
-
-
-
-
-
-
-
-      //if(true)         hpp_HLTCombtrgEta->Fill(  trgEta , weight_eS );                   
-
-      
-
-
-
-
-
-
-
-      //if(true)    // {
-      //if(firedJetTrigger)     {
-
-	//if( hpp_HLTCombtrgPt->Integral(1,(int)HLTthresh[2]) > currentIntegral){
-	//  problemCount++;
-	//  std::cout<<"//--------------------//"<<std::endl;
-	//  std::cout<<"WARNING!!!!"<<std::endl;
-	//  std::cout<<"weight_eS="<<weight_eS<<std::endl;
-	//  std::cout<<"problemCount="<<problemCount<<std::endl;
-	//  std::cout<<"//--------------------//"<<std::endl;
-	//}
-
-//	if(filelistIsJet80){
-//	  
-//	  //if(hpp_HLTCombtrgPt->GetBinContent(1) > 0.){
-//	  if(hpp_HLTCombtrgPt->Integral(1,(int)HLTthresh[2]) > currentIntegral &&
-//	     trgPt>0.){
-//	    //std::cout<<"hpp_HLTCombtrgPt->GetBinLowEdge(1)="<<hpp_HLTCombtrgPt->GetBinLowEdge(1)<<std::endl;
-//	    //std::cout<<"hpp_HLTCombtrgPt->GetBinLowEdge("<<(int)HLTthresh[2]<<")="<<hpp_HLTCombtrgPt->GetBinLowEdge((int)HLTthresh[2])<<std::endl;
-//	    std::cout<<std::endl;
-//	    std::cout<<"//--------------------//"<<std::endl;
-//	    std::cout<<"WARNING!!!!"<<std::endl;
-//	    std::cout<<"weight_eS="<<weight_eS<<std::endl;
-//	    std::cout<<"//--------------------//"<<std::endl;
-//	    std::cout<<std::endl;
-//	    std::cout<<"hpp_HLTCombtrgPt->Integral(1,(int)HLTthresh[2]) WAS    "<< currentIntegral<<std::endl;
-//	    std::cout<<"hpp_HLTCombtrgPt->Integral(1,(int)HLTthresh[2]) IS NOW "<<  hpp_HLTCombtrgPt->Integral(1,(int)HLTthresh[2]) <<std::endl;
-//	    std::cout<<std::endl;
-//	    std::cout<<"trgPt="<<trgPt<<std::endl;
-//	    std::cout<<"HLTthresh[2]="<<HLTthresh[2]<<std::endl;
-//	    std::cout<<"is40/is60/is80/is100/isMB="<<is40<<"/"<<is60<<"/"<<is80<<"/"<<is100<<"/"<<isMB<<std::endl;
-//	    std::cout<<"weight_eS="<<weight_eS<<std::endl;
-//	    
-//	    std::cout<<std::endl;
-//	    std::cout<<"Jet100_I        ="<<Jet100_I<<std::endl;
-//	    std::cout<<"Jet100_p_I      ="<<Jet100_p_I<<std::endl;
-//	    std::cout<<"jet100_l1s_I    ="<<jet100_l1s_I<<std::endl;
-//	    std::cout<<"jet100_l1s_ps_I ="<<jet100_l1s_ps_I<<std::endl;
-//	    std::cout<<"trgObj100_size  ="<<trgObj100_size<<std::endl;
-//	    for(unsigned int itt=0; itt<trgObj100_size; ++itt){
-//	      std::cout<<"trgpt at "<<itt<<"="<<trgObjpt_100->at(itt)<<std::endl;
-//	    }
-//	    std::cout<<std::endl;
-//	    std::cout<<"Jet80_I         ="<<Jet80_I<<std::endl;
-//	    std::cout<<"Jet80_p_I       ="<<Jet80_p_I<<std::endl;
-//	    std::cout<<"jet80_l1s_I     ="<<jet80_l1s_I<<std::endl;
-//	    std::cout<<"jet80_l1s_ps_I  ="<<jet80_l1s_ps_I<<std::endl;
-//	    std::cout<<"trgObj80_size   ="<<trgObj80_size<<std::endl;
-//	    for(unsigned int itt=0; itt<trgObj80_size; ++itt){
-//	      std::cout<<"trgpt at "<<itt<<"="<<trgObjpt_80->at(itt)<<std::endl;
-//	    }
-//	    std::cout<<std::endl;
-//	    std::cout<<"Jet60_I         ="<<Jet60_I<<std::endl;
-//	    std::cout<<"Jet60_p_I       ="<<Jet60_p_I<<std::endl;
-//	    std::cout<<"jet60_l1s_I     ="<<jet60_l1s_I<<std::endl;
-//	    std::cout<<"jet60_l1s_ps_I  ="<<jet60_l1s_ps_I<<std::endl;
-//	    std::cout<<"trgObj60_size   ="<<trgObj60_size<<std::endl;
-//	    for(unsigned int itt=0; itt<trgObj60_size; ++itt){
-//	      std::cout<<"trgpt at "<<itt<<"="<<trgObjpt_60->at(itt)<<std::endl;
-//	    }
-//	    std::cout<<std::endl;
-//	    std::cout<<"Jet40_I         ="<<Jet40_I<<std::endl;
-//	    std::cout<<"Jet40_p_I       ="<<Jet40_p_I<<std::endl;
-//	    std::cout<<"jet40_l1s_I     ="<<jet40_l1s_I<<std::endl;
-//	    std::cout<<"jet40_l1s_ps_I  ="<<jet40_l1s_ps_I<<std::endl;
-//	    std::cout<<"trgObj40_size   ="<<trgObj40_size<<std::endl;
-//	    for(unsigned int itt=0; itt<trgObj40_size; ++itt){
-//	      std::cout<<"trgpt at "<<itt<<"="<<trgObjpt_40->at(itt)<<std::endl;
-//	    }
-//	    std::cout<<std::endl;	    
-//	    std::cout<<"MB_HF1ORp5_I    =" <<MB_HF1ORp5_I    <<std::endl;
-//	    std::cout<<"MB_HF1ORp5_p_I  =" <<MB_HF1ORp5_p_I  <<std::endl;
-//	    std::cout<<"mb_l1s_I        =" <<mb_l1s_I        <<std::endl;
-//	    std::cout<<"mb_l1s_ps_I     =" <<mb_l1s_ps_I     <<std::endl;
-//	    std::cout<<std::endl;
-//
-//	    currentIntegral=hpp_HLTCombtrgPt->Integral(1,(int)HLTthresh[2]) ;
-//
-//
-//	    
-//	    //assert(false);
-//	  }
-//
-////	  if(trgPt<HLTthresh[2] && weight_eS>0.){
-////	    std::cout<<std::endl;
-////	    std::cout<<"WARNING!!!!"<<std::endl;
-////	    std::cout<<"trgPt="<<trgPt<<std::endl;
-////	    std::cout<<"HLTthresh[2]="<<HLTthresh[2]<<std::endl;
-////	    std::cout<<"is40/is60/is80/is100/isMB="<<is40<<"/"<<is60<<"/"<<is80<<"/"<<is100<<"/"<<isMB<<std::endl;
-////	    std::cout<<"weight_eS="<<weight_eS<<std::endl;
-////	    hpp_HLTCombtrgPt_wgt1->Fill(  trgPt , 1. );   
-////	    hpp_HLTCombtrgPt_wgt0->Fill(  trgPt , 0. );   
-////	    hpp_HLTCombtrgPt_weight_eS->Fill(  trgPt , weight_eS );   
-////	    //assertcount++;
-////	    //if(assertcount==10)assert(false);
-////	  }
-//	}
-      //}
-      
-
-	      
-
-
-
-
-  
-  //  //readForests_JEC_twiki
-  //  TF1* L2RelJEC_arr[n_JEC_etabins]={};
-  //  for(int i=0; i<n_JEC_etabins; i++){
-  //    L2RelJEC_arr[i]=new TF1(("L2RecJEC_etabin"+std::to_string(i)).c_str(), L2RelativeJEC_str.c_str(),L2RelJEC_ptlo_arr[i],L2RelJEC_pthi_arr[i]);
-  //    L2RelJEC_arr[i]->SetParameter(0,L2RelJEC_par0_arr[i]);
-  //    L2RelJEC_arr[i]->SetParameter(1,L2RelJEC_par1_arr[i]);
-  //    L2RelJEC_arr[i]->SetParameter(2,L2RelJEC_par2_arr[i]);
-  //    L2RelJEC_arr[i]->SetParameter(3,L2RelJEC_par3_arr[i]);
-  //    L2RelJEC_arr[i]->SetParameter(4,L2RelJEC_par4_arr[i]);
-  //    L2RelJEC_arr[i]->SetParameter(5,L2RelJEC_par5_arr[i]);
-  //  }
-  //  //readForests_JEC_v1
-  //  TF1* L3AbsJEC=new TF1 ("L3AbsJEC",L3AbsoluteJEC_str.c_str(),L3AbsJEC_ptlo, L3AbsJEC_pthi);
-  //  L3AbsJEC->SetParameter(0,L3Abs_par0);
-  //  L3AbsJEC->SetParameter(1,L3Abs_par1);
-  //  L3AbsJEC->SetParameter(2,L3Abs_par2);
-  //  L3AbsJEC->SetParameter(3,L3Abs_par3);
-  //  L3AbsJEC->SetParameter(4,L3Abs_par4);
-  //  L3AbsJEC->SetParameter(5,L3Abs_par5);
-  //  L3AbsJEC->SetParameter(6,L3Abs_par6);
-  //  //assert(false);
-
-  //  //  //readForests_JEC_v7_ak4PF_75X_dataRun2_v13
-  //  TF1* L2RelL3AbsJEC_arr[n_L2RelL3AbsJEC_etabins]={};
-  //  for(int i=0; i<n_L2RelL3AbsJEC_etabins; i++){
-  //    L2RelL3AbsJEC_arr[i]=new TF1(("L2RelL3AbsJEC_etabin"+std::to_string(i)).c_str(), L2RelL3AbsJEC_str.c_str(),L2RelL3AbsJEC_ptlo[i],L2RelL3AbsJEC_pthi[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(0, L2RelL3Abs_par0_arr[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(1, L2RelL3Abs_par1_arr[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(2, L2RelL3Abs_par2_arr[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(3, L2RelL3Abs_par3_arr[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(4, L2RelL3Abs_par4_arr[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(5, L2RelL3Abs_par5_arr[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(6, L2RelL3Abs_par6_arr[i]);
-  //    L2RelL3AbsJEC_arr[i]->SetParameter(7, L2RelL3Abs_par7_arr[i]);
-  //  }
-  //  
-  //  TF1* L2L3ResJEC_arr[n_L2L3ResJEC_etabins]={};
-  //  for(int i=0; i<n_L2L3ResJEC_etabins; i++){
-  //    L2L3ResJEC_arr[i]=new TF1(("L2L3ResJEC_etabin"+std::to_string(i)).c_str(), L2L3ResJEC_str.c_str(),L2L3ResJEC_ptlo,L2L3ResJEC_pthi);
-  //    L2L3ResJEC_arr[i]->SetParameter(0, L2L3Res_par0_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(1, L2L3Res_par1_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(2, L2L3Res_par2_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(3, L2L3Res_par3_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(4, L2L3Res_par4_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(5, L2L3Res_par5_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(6, L2L3Res_par6_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(7, L2L3Res_par7_arr[i]);
-  //    L2L3ResJEC_arr[i]->SetParameter(8, L2L3Res_par8_arr[i]);
-  //  }
-  //assert(false);
-
-
-
-
-
-
-
-
-
-	//	if(isMB){
-	//	  if( ( pt_F[jet]>119.      )        && 
-	//	      ( pt_F[jet]<120.      )      &&
-	//	      ( fabs(eta_F[jet])<0.5)       && 
-	//	      ((bool)jet100_l1s_I)){
-	//	    std::cout << "evt w/ crazy jet(s) found!"<<std::endl;
-	//	    std::cout << "evt  =" << evt_I  << std::endl;
-	//	    std::cout << "run  =" << run_I  << std::endl;
-	//	    std::cout << "lumi =" << lumi_I << std::endl;
-	//	    std::cout << "vz   =" << vz_F << std::endl;
-	//	    std::cout << "vx   =" << vx_F << std::endl;
-	//	    std::cout << "vy   =" << vy_F << std::endl;
-	//	    std::cout << "nVtx =" << nVtx_I << std::endl;
-	//	    std::cout << "nTrk =" << nTrk_I<< std::endl;		
-	//	    std::cout << std::endl;
-	//	    std::cout << "weight_eS = "<<weight_eS<<std::endl;
-	//	    std::cout << "MBtrgDec  = "<<MBtrgDec<<std::endl;
-	//	    std::cout << "MBtrgPscl = "<< MBtrgPscl<<std::endl;
-	//	    std::cout << "MB_HF1ORp5_I   = "<< MB_HF1ORp5_I <<std::endl;
-	//	    std::cout << "MB_HF1ORp5_p_I = "<< MB_HF1ORp5_p_I<<std::endl;
-	//	    std::cout << "mb_l1s_I    = "<<mb_l1s_I <<std::endl;
-	//	    std::cout << "mb_l1s_ps_I = "<< mb_l1s_ps_I<<std::endl;
-	//	    std::cout << std::endl;
-	//	    std::cout<<"here's the other jets in the event"<<std::endl;
-	//	    std::cout << "nref_I="<<nref_I<<std::endl;
-	//	    for(int j=0; j<nref_I; j++){
-	//	      std::cout << std::endl;
-	//	      std::cout << "// ------------------------------- //"<<std::endl;		  
-	//	      std::cout << "jet # = "<< jet       <<std::endl;
-	//	      std::cout << "rawpt = "<< rawpt_F[j]<<std::endl;
-	//	      std::cout << "pt    = "<< pt_F[j]   <<std::endl;
-	//	      std::cout << "eta   = "<< eta_F[j]  <<std::endl;
-	//	      std::cout << "phi   = "<< phi_F[j]  <<std::endl;
-	//	      std::cout <<  std::endl;
-	//	      std::cout << "#constituents:"   <<std::endl;
-	//	      std::cout << "trkN = "<< trkN_I[j] <<std::endl;
-	//	      std::cout << "chN  = "<<  chN_I[j] <<std::endl;
-	//	      std::cout << "phN  = "<<  phN_I[j] <<std::endl;
-	//	      std::cout << "eN   = "<<   eN_I[j] <<std::endl;
-	//	      std::cout << "muN  = "<<  muN_I[j] <<std::endl;
-	//	      std::cout << "neN  = "<<  neN_I[j] <<std::endl;
-	//	      std::cout <<  std::endl;
-	//	      std::cout << "#constituent fractions:"<<std::endl;
-	//	      std::cout << "trkSum = "<< trkSum_F[j]/pt_F[jet] <<std::endl;
-	//	      std::cout << "chSum  = "<<  chSum_F[j]/pt_F[jet] <<std::endl;
-	//	      std::cout << "phSum  = "<<  phSum_F[j]/pt_F[jet] <<std::endl;
-	//	      std::cout << "eSum   = "<<   eSum_F[j]/pt_F[jet] <<std::endl;
-	//	      std::cout << "muSum  = "<<  muSum_F[j]/pt_F[jet] <<std::endl;
-	//	      std::cout << "neSum  = "<<  neSum_F[j]/pt_F[jet] <<std::endl;
-	//	      
-	//	    } 
-	//	    assert(false);
-	//	  }
-	//	  else continue;
-	//	}

@@ -25,7 +25,7 @@ then
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots 2 2 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 1 ${etaLo} ${etaHi} ## DEBUG
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 15 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
-    source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 25 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
+    source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 20 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 50 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
     
     echo ""
@@ -35,7 +35,7 @@ then
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots 2 2 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 1 ${etaLo} ${etaHi} ## DEBUG
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 10 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 15 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
-    source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 25 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+    source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 20 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
     #source condorSubmit_readForests.sh readForests_ppData_jetPlots -1 50 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
     
     #echo ""

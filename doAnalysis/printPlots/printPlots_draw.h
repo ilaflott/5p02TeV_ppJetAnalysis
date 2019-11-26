@@ -223,6 +223,24 @@ void globalTrigHistStyle(){
 }
 
 
+
+void setupJetTrigSpectraRatioCanvas(TCanvas* canv, 
+				    TPad* specpad,  TPad* ratpad){  
+  canv->cd();  
+  specpad->SetLogx(1);  specpad->SetLogy(1);
+  //specpad->SetLogx(0);  specpad->SetLogy(1);
+  //specpad->SetGridx(1);  specpad->SetGridy(1);  
+  specpad->SetBottomMargin(0);
+  specpad->Draw();  
+  ratpad->SetLogx(1);  ratpad->SetLogy(0);
+  //ratpad->SetLogx(0);  ratpad->SetLogy(0);
+  //ratpad->SetGridx(1);  ratpad->SetGridy(0);  
+  ratpad->SetTopMargin(0);  ratpad->SetBottomMargin(0.3);  
+  ratpad->Draw();  
+  return;
+}
+
+
 //1=kBlack
 //2=kRed
 //3=kGreen
@@ -331,10 +349,12 @@ void trigRatioHistStyle(TH1* h, int j){
   
   h->GetXaxis()->SetLabelSize(0.08);
   h->GetXaxis()->SetTitleSize(0.08);
+  h->GetXaxis()->SetTitleOffset(1.1);
   
   h->GetYaxis()->SetLabelSize(0.08);
   h->GetYaxis()->SetTitleSize(0.08);
-  h->GetYaxis()->SetTitle("Combo/Indiv.");
+  h->GetYaxis()->SetTitleOffset(0.4);
+  //h->GetYaxis()->SetTitle("Combo/Indiv.");
   
   
   //h->SetLineColor(   theTrigOverlayLineColor[j]   );
@@ -354,8 +374,8 @@ void trigRatioHistStyle2(TH1* h, int j){
   h->GetXaxis()->SetTitleSize(0.08);
   
   h->GetYaxis()->SetLabelSize(0.08);
-  h->GetYaxis()->SetTitleSize(0.08);
-  h->GetYaxis()->SetTitle("Combo/Indiv.");
+  //h->GetYaxis()->SetTitleSize(0.08);
+  //h->GetYaxis()->SetTitle("Combo/Indiv.");
   
   
   
@@ -370,7 +390,7 @@ void trigSpectraHistStyle(TH1* h, int j){
   
   h->SetMarkerStyle(theTrigOverlayMarker[j]);
   h->SetMarkerColor( theTrigOverlayMarkerColor[j] );
-  h->SetMarkerSize(0.90);
+  //h->SetMarkerSize(0.90);
   
   h->SetLineColor(   theTrigOverlayLineColor[j]   );
   
@@ -400,15 +420,15 @@ void trigPtHistStyle(TH1* h, int j){
   
   h->SetMarkerStyle(theTrigOverlayMarker[j]);
   h->SetMarkerColor( theTrigOverlayMarkerColor[j] );
-  h->SetMarkerSize(0.90);
+  //h->SetMarkerSize(0.90);
   
   h->SetLineColor(   theTrigOverlayLineColor[j]   );
   
-  h->GetXaxis()->SetLabelSize(0.04);
-  h->GetXaxis()->SetTitleSize(0.04);
-  
-  h->GetYaxis()->SetLabelSize(0.04);
-  h->GetYaxis()->SetTitleSize(0.04);
+  //h->GetXaxis()->SetLabelSize(0.04);
+  //h->GetXaxis()->SetTitleSize(0.04);
+  //
+  //h->GetYaxis()->SetLabelSize(0.04);
+  //h->GetYaxis()->SetTitleSize(0.04);
   
   //h->SetAxisRange(40.,1000.,"X");
   

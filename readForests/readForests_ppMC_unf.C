@@ -10,7 +10,7 @@ const bool fillMCJetIDHists=true;//, tightJetID=false;
 const int jetIDint=(int)fillMCJetIDHists;
 
 const bool usegenetabins=false;//only set this to true if i say it's worth it (most likely not)
-
+const bool useTightJetID=false;
 const bool verbose=false;
 
 //// readForests_ppMC_unf
@@ -404,7 +404,8 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   int mcclosureInt=0;
   bool incrementClosureInt=false;
   
-  int mcclosureInt_arr[nbins_abseta]={0,0,0,0};
+  //int mcclosureInt_arr[nbins_abseta]={0,0,0,0};
+  int mcclosureInt_arr[nbins_abseta]={0};
   bool incrementClosureInt_arr[nbins_abseta]={0};
   //bool eventAccepted=false;
   
@@ -541,18 +542,18 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	if (!(absreceta > 2.4)) 
 	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
 					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult);
+					   numConst,  chMult, useTightJetID);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  passesJetID=(bool) jetID_24eta27( jetIDpt,
 					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
-					    numConst);
+					    numConst, useTightJetID);
 	else if( !(absreceta>3.0) && absreceta>2.7 )
 	  passesJetID=(bool) jetID_27eta30( jetIDpt,
 					    neSum_F[jet],  phSum_F[jet], 
-					    neuMult);
+					    neuMult, useTightJetID);
 	else  
 	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
-					   phSum_F[jet]);
+					   phSum_F[jet], useTightJetID);
 	if(!passesJetID) continue;
       }
       
@@ -709,7 +710,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   fout->Write(); 
 
 
-  std::cout<<std::endl<<"readForests_ppMC_JERS finished."<<std::endl;  timer.Stop();
+  std::cout<<std::endl<<"readForests_ppMC_UNF finished."<<std::endl;  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   

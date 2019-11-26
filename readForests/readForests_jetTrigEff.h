@@ -19,7 +19,7 @@ const std::string defDataOutputName="readForests_ppData_defOut_LowerJets_jetTrig
 const int defRadius=4;
 const std::string defJetType="PF";
 const bool defDebugMode=true;
-const float defEtaCutLo=0.0, defEtaCutHi=2.0;//really absetacut, don't use negative numbers
+const float defEtaCutLo=0.0, defEtaCutHi=5.1;//really absetacut, don't use negative numbers
 
 int readForests_ppData_jetTrigEff( std::string inFilelist=defDataInFilelist, 
 				   int startfile=20, int endfile=21,

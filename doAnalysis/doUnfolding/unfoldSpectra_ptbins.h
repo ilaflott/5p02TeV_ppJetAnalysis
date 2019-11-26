@@ -1,6 +1,5 @@
-const int NETABINS=4;
 
-//these are the binnings from raghav's NLO files. they impose a minimum of 56 GeV (current lower limit of data) and cut off the large high pt bin (686-1000 GeV)
+//these are "proper" SMP bins up to 967 GeV (where we start to lose statistics) from raghav's NLO files. minimum of 56 GeV imposed just like NLO files (and likely where HLT40 is close to 100% eff)
 std::vector<std::vector<double>> SMP_ptbins{
   {//00eta05
     56.,      
@@ -32,6 +31,7 @@ std::vector<std::vector<double>> SMP_ptbins{
     737.,      790.,      846.,      905.,      967. }
 };
 
+//these are the binnings from raghav's NLO files. they impose a minimum of 56 GeV (current lower limit of data) and cut off the large high pt bin (686-1000 GeV)
 
 std::vector<std::vector<double>> NLO_SMP_ptbins{
   {//00eta05
@@ -139,8 +139,11 @@ std::vector<std::vector<double>> chris_ptbins{
 };
 
 
-
-
+std::vector<std::vector<double>> chris_ptbins2{
+  {//00eta20
+    200., 250., 300., 350., 400., 500., 620., 1000.
+      }
+};
 
 
 //// ------ SMP SPECTRA BINS ORIGINAL ------

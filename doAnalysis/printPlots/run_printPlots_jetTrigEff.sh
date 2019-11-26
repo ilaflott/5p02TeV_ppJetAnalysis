@@ -3,8 +3,9 @@
 R=$1
 condorDir=$2
 dateDataIn=$3
-etabin=$4
-filename=$5
+etabintrgeff=$4
+etabin=$5
+#filename=$5
 outtag=$6
 targtrig=$7
 reftrig=$8
@@ -18,8 +19,7 @@ echo ""
 echo "Running printPlots_jetTrigEff..."
 echo ""
 
-#./printPlots_jetTrigEff.exe ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateDataIn}_jetTrigEff_${etabin}/ ${filenameLowJets} ${filenameJet80} HPtJetTrig_${outtag} ${targtrig} ${reftrig}
-./printPlots_jetTrigEff.exe ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateDataIn}_jetTrigEff_${etabin}/ ${filename} HPtJetTrig_${outtag} ${targtrig} ${reftrig}
+./printPlots_jetTrigEff.exe ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateDataIn}_jetTrigEff_${etabintrgeff}/  ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateDataIn}_jetPlots_${etabin}/ HPtJetTrig_${outtag} ${targtrig} ${reftrig}
 
 
 return

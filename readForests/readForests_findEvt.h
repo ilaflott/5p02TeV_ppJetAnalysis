@@ -31,7 +31,7 @@ const std::string defJetType="PF";
 const bool defDebugMode=true;//, fastDebugMode = true;
 const std::string defDataOutputName="readForests_ppData_findEvt_defOut.root";
 const std::string defMCOutputName="readForests_ppMC_defOut";//.root";
-const float defEtaCutLo=0.0, defEtaCutHi=4.2;//really absetacut
+const float defEtaCutLo=0.0, defEtaCutHi=5.1;//really absetacut
 
 int readForests_ppData_findEvt( std::string inFilelist=defDataInFilelist, 
 				int startfile=39, int endfile=39,
@@ -65,9 +65,9 @@ int readForests_ppData_findEvt_v3( std::string inFilelist=defDataJ80InFilelist_f
 const int readForestsArgCount=9+minArgs;
 
 // extended eta range for jetID Eff, or more QA in diff region... etc.
-const float jtPtCut=15.; 
-const float jtPtCut_Hi=1500.; 
-const float jetQAPtCut=56.;//need a "QA" pt cut to make sure jets at low pT for JEC Unc can migrate to bins up above 56 GeV + so constituent hists for jet ID QA look alright
+const float jtPtCut=10.; 
+const float jtPtCut_Hi=1400.; 
+const float jetQAPtCut=1400.;//need a "QA" pt cut to make sure jets at low pT for JEC Unc can migrate to bins up above 56 GeV + so constituent hists for jet ID QA look alright
 
 //for MC jets only
 const float genJetPtCut=43.;//49.; 

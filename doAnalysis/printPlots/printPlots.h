@@ -61,10 +61,10 @@ const int CANVX=1000;
 const int CANVY=800;
 
 #include "printPlots_jetPlots.h"    
-#include "printPlots_jetTrigPlots.h"
+//#include "printPlots_jetTrigPlots.h"
 #include "printPlots_jetTrigEff.h"
 #include "printPlots_jetIDPlots.h"
-#include "printPlots_jetMultPlots.h"
+//#include "printPlots_jetMultPlots.h"//notinuse
 //#include "printPlots_fitsNfuncs.h" //deprecated
 //#include "printPlots_ppMC.h"  //deprecated
 //#include "printPlots_ppData.h" // deprecated

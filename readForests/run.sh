@@ -6,6 +6,7 @@
 
 subm_ppData_jetPlots=0
 subm_ppData_jetTrigEff=1
+subm_ppData_makeNTuple=0
 
 subm_ppMC_jetPlots=0
 subm_ppMC_JERS=0
@@ -13,7 +14,7 @@ subm_ppMC_unf=0
 subm_ppMC_MCEff=0
 
 sleep_between_subm=0
-Nmin=40
+Nmin=60
 
 #rarely used
 subm_ppData_jetMult=0
@@ -31,16 +32,29 @@ then
     rootcompile readForests_ppData_jetPlots.C
     source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
     if [[ $sleep_between_subm -eq 1 ]]
-	then
-	sleep ${Nmin}m
+    then
+	#sleep ${Nmin}m
+	askCondor 360 10
     fi
 fi
+
 
 if [[ $subm_ppData_jetTrigEff -eq 1 ]]
 then
     echo "...ppData jetTrigEff..."
     rootcompile readForests_ppData_jetTrigEff.C
-    source run_readForests_jetTrigEff.sh 4 "0.0" "2.0" "ppData"
+    source run_readForests_jetTrigEff.sh 4 "0.0" "5.1" "ppData"
+    if [[ $sleep_between_subm -eq 1 ]]
+	then
+	sleep ${Nmin}m
+    fi
+fi
+
+if [[ $subm_ppData_makeNTuple -eq 1 ]]
+then
+    echo "...ppData makeNTuple..."
+    rootcompile readForests_ppData_makeNTuple.C
+    source run_readForests_makeNTuple.sh 4 "0.0" "2.0"
     if [[ $sleep_between_subm -eq 1 ]]
 	then
 	sleep ${Nmin}m

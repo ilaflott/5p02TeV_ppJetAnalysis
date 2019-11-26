@@ -3,10 +3,10 @@
 R=$1
 condorDir=$2
 dateIn=$3
-etabin_jetID=$4
-#etabin_nojetID=$5
-outtag=$5
-type=$6
+etabin_HINjetID=$4
+etabin_SMPjetID=$5
+outtag=$6
+type=$7
 
 echo ""
 echo "Running w/ Jet80+LowerJets PDs..."
@@ -16,12 +16,14 @@ if [ "${type}" = "ppData" ]
 then
 #    ./printPlots_jetIDPlots.exe   ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateIn}_jetPlots_${etabin}/       HPtJetTrig_${outtag}
     #./printPlots_jetIDPlots.exe   ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/  ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateIn}_jetPlots_${etabin_nojetID}/     HPtJetTrig_${outtag}
-    ./printPlots_jetIDPlots.exe   ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/       HPtJetTrig_${outtag}
+    ./printPlots_HINvSMPjetIDPlots.exe       ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateIn}_jetPlots_${etabin_HINjetID}/           ${condorDir}/ppData_HighPtJetTrig_ak${R}PFJets_${dateIn}_jetPlots_${etabin_SMPjetID}/           HPtJetTrig_${outtag}
+    
 elif [ "${type}" = "ppMC" ]
 then
+    return
 #    ./printPlots_jetIDPlots.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin}/      Py8_CUETP8M1_${outtag}
     #./printPlots_jetIDPlots.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/ ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_nojetID}/ Py8_CUETP8M1_${outtag}
-    ./printPlots_jetIDPlots.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/ Py8_CUETP8M1_${outtag}
+    #./printPlots_jetIDPlots.exe   ${condorDir}/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PFJets_${dateIn}_jetPlots_${etabin_jetID}/ Py8_CUETP8M1_${outtag}
 else
     echo ""
     echo "data type ${type} not known. exit"

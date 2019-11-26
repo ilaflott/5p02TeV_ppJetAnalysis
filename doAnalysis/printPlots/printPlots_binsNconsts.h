@@ -2,11 +2,10 @@
 #include <string>
 #include <TMath.h>
 
-//#define NOBJECT_MAX 16384
-
 //highPtJetTrig 5.02TeV 2015 prompt reco
+const long double effJet80Lumi  =(0.9974435 * 27.385867785);
+const long double effLowJetsLumi=(0.9984391 * 27.108290680);
 
-//const double intgrtdLumi=25.8*pow(10.,6.);// 25.8 pb^-1 to \microbarns^-1 //old lumi
 const double intgrtdLumi=27.4*pow(10.,3.);// pb^-1 to \microbarns^-1 // new lumi
 const double intgrtdLumi_unc=2.3/100.;
 const int jetTrigQABinning=10;
@@ -37,9 +36,10 @@ const Double_t ptbins_debug[]={
 //  24.,
 //  28.,
 //  32.,
-//  37.,  //40., //this junk bin added in for cosmetics
-//  43., 
-//  49., //junk bins from here an above
+//  37.,  
+  40., //this junk bin added in for cosmetics
+  43., 
+  49., //junk bins from here an above
   56.,   64.,   74.,   84., 97., 114., 
   133., 153., 174., 196., 220., 
   245., 272., 300., 
@@ -50,9 +50,9 @@ const Double_t ptbins_debug[]={
   737., 
   790., 
   846., 
-  905., 
-  967., //, // end of SMP Official bin limits 
-  1032.//1000. //,  // to catch overflow or other entries?
+  905.//, 
+  //967., //, // end of SMP Official bin limits 
+  //1032.//1000. //,  // to catch overflow or other entries?
   //1050. // junk bin, cosmetics only
 }; 
 const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;

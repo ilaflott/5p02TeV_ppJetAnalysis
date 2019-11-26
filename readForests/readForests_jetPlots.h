@@ -46,7 +46,7 @@ const int readForestsArgCount=9+minArgs;
 ////CUTS: DO NOT CHANGE FOR NOW (6/25/19)
 ///  5.;  6.;  8.;   10.;   12.;   15.;   18.;   21.;   24.;   28.;  32.;   37.;  43.;   49.;   56.; //other potential low pT cuts, from SMP binning
 const float jtPtCut=43.; 
-const float jtPtCut_Hi=1410.; 
+const float jtPtCut_Hi=2000.; 
 const float jetQAPtCut=56.;//need a "QA" pt cut to make sure jets at low pT for JEC Unc can migrate to bins up above 56 GeV + so constituent hists for jet ID QA look alright
 
 //for MC jets only

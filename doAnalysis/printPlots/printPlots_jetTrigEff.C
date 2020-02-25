@@ -88,7 +88,7 @@ int printPlots_jetTrigEff ( const std::string input_ppDataTrgEff_condorDir ,   c
     assert(false);
   }
   std::cout<<std::endl;
-  
+
   ////// GET OUTPUT FILE(S) READY
   std::cout<<" now opening output files in directory: "<<outputDir<<std::endl;
   //root file
@@ -105,41 +105,13 @@ int printPlots_jetTrigEff ( const std::string input_ppDataTrgEff_condorDir ,   c
   TCanvas *temp_canv = new TCanvas("temp", "temp", 1200, 1000);
   temp_canv->Print( open_thePDFFileName.c_str() );    
   std::cout<<std::endl;
+
   
   int trigpt_rebinfact=1;
   if(     targTrig=="HLT80")
     trigpt_rebinfact=1;
   else if(targTrig=="HLT60")
     trigpt_rebinfact=1;
-
-
-
-
-  //-------------------------------------------------------------------------//
-  //----------------- LEAD TRIGGER JET OBJECT SPECTRA -----------------------//
-  //-------------------------------------------------------------------------//
-  //COMBO w/ EXCLUSIVE TRIGGER SPECTRA
-  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
-  		  fullJetType, radius, "excl", 
-  		  thePDFFileName, (TFile*) fout);
-  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
-  		  fullJetType, radius, "excl", 
-  		  thePDFFileName, (TFile*) fout,"_00eta20");
-  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
-  		  fullJetType, radius, "excl", 
-  		  thePDFFileName, (TFile*) fout,"_20eta51");
-  //-------------------------------------------------------------------------------//
-  //COMBO w/ INCLUSIVE TRIGGER SPECTRA
-  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
-  		  fullJetType, radius, "incl", 
-  		  thePDFFileName, (TFile*) fout);  
-  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
-  		  fullJetType, radius, "incl", 
-  		  thePDFFileName, (TFile*) fout,"_00eta20");
-  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
-  		  fullJetType, radius, "incl", 
-  		  thePDFFileName, (TFile*) fout,"_20eta51");
-  //----------------------------------------------------------------------//  
 
 
 
@@ -198,58 +170,95 @@ int printPlots_jetTrigEff ( const std::string input_ppDataTrgEff_condorDir ,   c
 		    targTrig, refTrig, "reference","",
 		    thePDFFileName, fout);
   //----------------------------------------------------------------------//
-//  //TRIGGER EMULATION EFFICIENCY  0.0<|Y|<1.0
-//  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
-//		    fullJetType, radius, 0, 1, 
-//		    targTrig, refTrig, "emulation","",
-//		    thePDFFileName, fout);
-//  //TRIGGER EMULATION EFFICIENCY  1.0<|Y|<2.0
-//  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
-//		    fullJetType, radius, 2, 3, 
-//		    targTrig, refTrig, "emulation","",
-//		    thePDFFileName, fout);
-//  //TRIGGER EMULATION EFFICIENCY  |Y|<2.0
-//  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
-//		    fullJetType, radius, 0, 3, 
-//		    targTrig, refTrig, "emulation","",
-//		    thePDFFileName, fout);
-//  //----------------------------------------------------------------------//
-//  //TRIGGER EMULATION EFFICIENCY W L1 THRESHOLD 0.0<|Y|<1.0
-//  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
-//		    fullJetType, radius, 0, 1, 
-//		    targTrig, refTrig, "emulation","wL1Thresh",
-//		    thePDFFileName, fout);
-//  //TRIGGER EMULATION EFFICIENCY W L1 THRESHOLD 1.0<|Y|<2.0
-//  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
-//		    fullJetType, radius, 2, 3, 
-//		    targTrig, refTrig, "emulation","wL1Thresh",
-//		    thePDFFileName, fout);
-//  //TRIGGER EMULATION EFFICIENCY W L1 THRESHOLD |Y|<2.0
-//  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
-//		    fullJetType, radius, 0, 3, 
-//		    targTrig, refTrig, "emulation","wL1Thresh",
-//		    thePDFFileName, fout);
+  //  //TRIGGER EMULATION EFFICIENCY  0.0<|Y|<1.0
+  //  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
+  //		    fullJetType, radius, 0, 1, 
+  //		    targTrig, refTrig, "emulation","",
+  //		    thePDFFileName, fout);
+  //  //TRIGGER EMULATION EFFICIENCY  1.0<|Y|<2.0
+  //  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
+  //		    fullJetType, radius, 2, 3, 
+  //		    targTrig, refTrig, "emulation","",
+  //		    thePDFFileName, fout);
+  //  //TRIGGER EMULATION EFFICIENCY  |Y|<2.0
+  //  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
+  //		    fullJetType, radius, 0, 3, 
+  //		    targTrig, refTrig, "emulation","",
+  //		    thePDFFileName, fout);
+  //  //----------------------------------------------------------------------//
+  //  //TRIGGER EMULATION EFFICIENCY W L1 THRESHOLD 0.0<|Y|<1.0
+  //  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
+  //		    fullJetType, radius, 0, 1, 
+  //		    targTrig, refTrig, "emulation","wL1Thresh",
+  //		    thePDFFileName, fout);
+  //  //TRIGGER EMULATION EFFICIENCY W L1 THRESHOLD 1.0<|Y|<2.0
+  //  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
+  //		    fullJetType, radius, 2, 3, 
+  //		    targTrig, refTrig, "emulation","wL1Thresh",
+  //		    thePDFFileName, fout);
+  //  //TRIGGER EMULATION EFFICIENCY W L1 THRESHOLD |Y|<2.0
+  //  drawAndFitTrigEff(finDataJet80, finDataLowJets, 
+  //		    fullJetType, radius, 0, 3, 
+  //		    targTrig, refTrig, "emulation","wL1Thresh",
+  //		    thePDFFileName, fout);
+  //----------------------------------------------------------------------//  
+
+  
+
+  //globalTrigHistStyle();
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  gROOT->ForceStyle();
+  //TH1::SetDefaultSumw2(true);
+
+  //-------------------------------------------------------------------------//
+  //----------------- LEAD TRIGGER JET OBJECT SPECTRA -----------------------//
+  //-------------------------------------------------------------------------//
+  //COMBO w/ EXCLUSIVE TRIGGER SPECTRA
+  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
+    		  fullJetType, radius, "excl", 
+    		  thePDFFileName, (TFile*) fout);
+  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
+    		  fullJetType, radius, "excl", 
+    		  thePDFFileName, (TFile*) fout,"_00eta20");
+  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
+    		  fullJetType, radius, "excl", 
+    		  thePDFFileName, (TFile*) fout,"_20eta51");
+  //-------------------------------------------------------------------------------//
+  //COMBO w/ INCLUSIVE TRIGGER SPECTRA
+  printTrigPtHist(finDataLowJets, finDataJet80, finData, 
+  		  fullJetType, radius, "incl", 
+  		  thePDFFileName, (TFile*) fout);  
+  //printTrigPtHist(finDataLowJets, finDataJet80, finData,  //these don't make sense for... reasons
+  //fullJetType, radius, "incl", 
+  //thePDFFileName, (TFile*) fout,"_00eta20");
+  //printTrigPtHist(finDataLowJets, finDataJet80, finData, 
+  //fullJetType, radius, "incl", 
+  //thePDFFileName, (TFile*) fout,"_20eta51");
   //----------------------------------------------------------------------//  
 
 
-
-
-
-  ////-----------------------------------------------------------------------//
-  ////----------------- INLCUSIVE TRIGGER JET SPECTRA -----------------------//
-  ////-----------------------------------------------------------------------//
-  ////COMBO w/ EXCLUSIVE TRIGGER SPECTRA
-  //for(int etabin=0;etabin<N_etabins;etabin++)
-  //  printJetTrigHist_wRatio(finDataLowJets, finDataJet80, finData, 
-  //			    fullJetType, radius, "excl", etabin,			    
-  //			    thePDFFileName, (TFile*) fout);
-  ////-----------------------------------------------------------------------//
-  ////COMBO w/ INCLUSIVE TRIGGER SPECTRA
-  //for(int etabin=0;etabin<N_etabins;etabin++)
-  //  printJetTrigHist_wRatio(finDataLowJets, finDataJet80, finData, 
-  //			    fullJetType, radius, "incl", etabin,			    
-  //			    thePDFFileName, (TFile*) fout);
-  ////-----------------------------------------------------------------------//
+  //-----------------------------------------------------------------------//
+  //----------------- INLCUSIVE TRIGGER JET SPECTRA -----------------------//
+  //-----------------------------------------------------------------------//
+  //COMBO w/ EXCLUSIVE TRIGGER SPECTRA
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  gROOT->ForceStyle();
+  for(int etabin=0;etabin<4;etabin++)
+    printJetTrigHist_wRatio(finDataLowJets, finDataJet80, finData, 
+  			    fullJetType, radius, "excl", etabin,			    
+  			    thePDFFileName, (TFile*) fout);
+  //-----------------------------------------------------------------------//
+  //  //COMBO w/ INCLUSIVE TRIGGER SPECTRA
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  gROOT->ForceStyle();
+  for(int etabin=0;etabin<4;etabin++)
+    printJetTrigHist_wRatio(finDataLowJets, finDataJet80, finData, 
+			    fullJetType, radius, "incl", etabin,			    
+    			    thePDFFileName, (TFile*) fout);
+  //-----------------------------------------------------------------------//
 
   //-----------------------------------------------------------------------------//
   //----------------- INLCUSIVE TRIGGER JET SPECTRA V RUN -----------------------//

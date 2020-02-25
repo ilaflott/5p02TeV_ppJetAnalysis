@@ -34,6 +34,7 @@ then
     nlofshortstr="NNPDF"
     
     jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
+    #descstr="06.25.19_sigmu_semifinal" 
     descstr="06.25.19_sigmu_semifinal" 
     #descstr="06.25.19_sigma_semifinal" 
     
@@ -47,8 +48,8 @@ then
     scpoutput=0
     scpafterlast=1
     etabin_i=0
-    #Netabins=1 ##debug; runs first etabin only
-    Netabins=4
+    Netabins=1 ##debug; runs first etabin only
+    #Netabins=4
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]

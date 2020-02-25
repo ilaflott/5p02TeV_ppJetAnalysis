@@ -30,10 +30,14 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 ####NNPDF_LO_06.25.19_sigmu_noJERscales_spl3wgts_gaussSmear_NLO_plots
 
 FITTYPE="sigmu"
-DATADIR="08.06.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_08-06-19_jetPlots_0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinal"
-THYDIR="smearTheory/NNPDF_LO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_NLO_plots/"
-THYFILESTR="NNPDF_LO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
-OUTPUTTAG="08.06.19_Bayes_NNPDF_LO_${FITTYPE}_noJERscales_withLumiCorr_SMPbins_withJECsysv2_ptLo56_semifinal"
+#DATADIR="11.26.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_11-26-19_jetPlots_0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2"
+DATADIR="11.26.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_11-26-19_jetPlots_0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"
+#THYDIR="smearTheory/NNPDF_LO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_plots/"
+#THYFILESTR="NNPDF_LO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
+THYDIR="smearTheory/NNPDF_NLO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_plots/"
+THYFILESTR="NNPDF_NLO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
+#OUTPUTTAG="11.26.19_Bayes_NNPDF_NLO_${FITTYPE}_noJERscales_withLumiCorr_SMPbins_withJECsysv2_ptLo56_semifinalv2"
+OUTPUTTAG="11.26.19_Bayes_NNPDF_NLO_${FITTYPE}_noJERscales_withLumiCorr_SMPbins_withJECsysv2_ptLo56_semifinalv2_LowHLT40Thresh"
 
 
 
@@ -61,37 +65,38 @@ OUTPUTTAG="08.06.19_Bayes_NNPDF_LO_${FITTYPE}_noJERscales_withLumiCorr_SMPbins_w
 ###scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_JERsys_NLOMC_wNP_??eta??.*"
 ###return
 ##
-####NP sys12, alt NP choices, HERWIG EE4C/PYTHIA8
+#
+#####NP sys12, alt NP choices, HERWIG EE4C/PYTHIA8
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsys12" 0   ${THYDIR} ${THYFILESTR}  1 "NP" "12"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsys12" 1   ${THYDIR} ${THYFILESTR}  1 "NP" "12"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsys12" 2   ${THYDIR} ${THYFILESTR}  1 "NP" "12"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsys12" 3   ${THYDIR} ${THYFILESTR}  1 "NP" "12"
-###scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_NPsys12_NLOMC_wNP_??eta??.*"
-###return
-##
-####NP sysupdown, shifted HERWIG EE5C NP up/down, 1 sigma
+####scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_NPsys12_NLOMC_wNP_??eta??.*"
+####return
+###
+#####NP sysupdown, shifted HERWIG EE5C NP up/down, 1 sigma
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsysupdown" 0 ${THYDIR} ${THYFILESTR}  1 "NP" "updown"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsysupdown" 1 ${THYDIR} ${THYFILESTR}  1 "NP" "updown"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsysupdown" 2 ${THYDIR} ${THYFILESTR}  1 "NP" "updown"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_NPsysupdown" 3 ${THYDIR} ${THYFILESTR}  1 "NP" "updown"
-###scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_NPsysupdown_NLOMC_wNP_??eta??.*"
-###return
-##
-####PDF sys12, alt PDF choices, CT14/HERA
+####scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_NPsysupdown_NLOMC_wNP_??eta??.*"
+####return
+###
+#####PDF sys12, alt PDF choices, CT14/HERA
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsys12" 0   ${THYDIR} ${THYFILESTR}  1 "PDF" "12"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsys12" 1   ${THYDIR} ${THYFILESTR}  1 "PDF" "12"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsys12" 2   ${THYDIR} ${THYFILESTR}  1 "PDF" "12"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsys12" 3   ${THYDIR} ${THYFILESTR}  1 "PDF" "12"
-###scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_PDFsys12_NLOMC_wNP_??eta??.*"
-###return
-##
-####PDF sysupdown, shifted NNPDF PDF up/down, 6 Pt scale + PDF errs, 1 sigma
+####scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_PDFsys12_NLOMC_wNP_??eta??.*"
+####return
+###
+#####PDF sysupdown, shifted NNPDF PDF up/down, 6 Pt scale + PDF errs, 1 sigma
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsysupdown" 0 ${THYDIR} ${THYFILESTR}  1 "PDF" "updown"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsysupdown" 1 ${THYDIR} ${THYFILESTR}  1 "PDF" "updown"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsysupdown" 2 ${THYDIR} ${THYFILESTR}  1 "PDF" "updown"
 ./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} "${OUTPUTTAG}_PDFsysupdown" 3 ${THYDIR} ${THYFILESTR}  1 "PDF" "updown"
-##scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_PDFsysupdown_NLOMC_wNP_??eta??.*"
-##return
+###scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_PDFsysupdown_NLOMC_wNP_??eta??.*"
+###return
 
 scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_*sys*_NLOMC_wNP_??eta??.*"
 scp2Serin "output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_${OUTPUTTAG}_*sys*_NLOMC_wNP_??eta??_respMat.*"

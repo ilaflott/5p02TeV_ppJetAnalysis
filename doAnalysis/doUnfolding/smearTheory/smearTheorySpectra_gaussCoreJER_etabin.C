@@ -3,7 +3,7 @@
 //const std::string SPLINE_STR="spline";
 //const std::string FIT_STR="fit";
 const int CANVX=1200, CANVY=1000;
-const int xsecorder=0;//0--> LO, 1--> NLO, 2--> NNLO... etc.
+const int xsecorder=0;//0--> order of calculation (i.e. NLO or NNLO depending on fastNLO setting), 1--> just LO part if available, 2--> just NLO correction to LO part if available... etc.
 
 const bool printBaseDebug=true;
 const bool useHistSigmaFit=false;
@@ -33,10 +33,10 @@ const std::string NPCorrFits_text=HERWGEE5_NPS_TXT;
 
 //SYSTEMATICS
 //JER
-const bool doJERsys=true;
+const bool doJERsys=false;
 
 //NPCs
-const bool doNPsys=true;//involves making a new thy hist, therefore, also a sep spline fit
+const bool doNPsys=false;//involves making a new thy hist, therefore, also a sep spline fit
 //NP systs v1, using HERWIG EE4C/PYTHIA8 NPs for unfolding, shifting NP fit params up/down by 1 sigma
 const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
 const std::string NPsys1_CorrFits_str =HERWGEE4_NPS;
@@ -52,7 +52,7 @@ const std::string NPsys2_CorrFits_text=_PYTHIA8_NPS_TXT;
 //const std::string NPsys2_CorrFits_text=POWPY8CT_NPS_TXT;
 
 //PDFs
-const bool doPDFsys=true; //involves making a new thy hist, therefore, also a sep spline fit
+const bool doPDFsys=false; //involves making a new thy hist, therefore, also a sep spline fit
 //PDF systs v1; using CT14/HERA pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 1
 const float PDFerrfact=1.0;
 const std::string in_NLOFile_PDFsys1=_CT14FILESTR;
@@ -181,8 +181,9 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   std::string thyname="h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"00";
   
   std::string orderstring="LO";
-  if(xsecorder==1)orderstring="N"+orderstring;
-  else if(xsecorder==2)orderstring=="NN"+orderstring;
+  if(xsecorder==0)orderstring="N"+orderstring;
+  else if(xsecorder==1)orderstring==orderstring;
+  else if(xsecorder==2)orderstring=="N"+orderstring+" corr. to LO only";
   PDF_text+=" "+orderstring;
   
   //////////// NLO Thy calculation xsecions get from file ////////////////////////////////////////////////////////
@@ -1816,7 +1817,24 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   divideBinWidth(smeared_rnd_NP); 
   divideBinWidth(smeared_rnd_NP_test); 
   
-  double norm_rnd_NP=theory_NP_rebin->Integral()/theory_rnd_NP->Integral();
+  double norm_rnd_NP=theory_NP_rebin->Integral("width")/theory_rnd_NP->Integral("width");
+  //double norm_rnd_NP=theory_NP_rebin->Integral()/theory_rnd_NP->Integral();
+  std::cout<<"without accounting for bin width: norm_rnd_NP="<<norm_rnd_NP<<std::endl;
+  std::cout<<"theory_NP_rebin->Integral()="         <<theory_NP_rebin->Integral()<<std::endl;
+  std::cout<<"theory_rnd_NP->  Integral()="         <<theory_rnd_NP->  Integral()<<std::endl;  
+
+  double norm_rnd_NP_withwidth=theory_NP_rebin->Integral("width")/theory_rnd_NP->Integral("width");
+  std::cout<<"accounting for bin width division: norm_rnd_NP_postdiv="<<norm_rnd_NP_withwidth<<std::endl;
+  std::cout<<"theory_NP_rebin->Integral(\"width\")="<<theory_NP_rebin->Integral("width")<<std::endl;
+  std::cout<<"theory_rnd_NP->  Integral(\"width\")="<<theory_rnd_NP->  Integral("width")<<std::endl;
+  
+  std::cout<<"norm_rnd_NP_withwidth/norm_rnd_NP="<<norm_rnd_NP_withwidth/norm_rnd_NP<<std::endl;
+
+
+
+
+  //assert(false);
+  
   response_NP_th2->Scale(   norm_rnd_NP);   
   theory_rnd_NP->Scale( norm_rnd_NP);
   smeared_rnd_NP->Scale(norm_rnd_NP);

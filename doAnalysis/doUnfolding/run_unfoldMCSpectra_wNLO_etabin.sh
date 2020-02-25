@@ -8,8 +8,8 @@ rooUnfoldCompile bayesUnfoldMCSpectra_wNLO_etabin.C
 ############ NNPDF NLO + HERWIG EE5C LO NPCs ###############
 
 FITTYPE="sigmu"
-THYDIR="smearTheory/NNPDF_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_NLO_plots/"
-THYFILESTR="NNPDF_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
+THYDIR="smearTheory/NNPDF_NLO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_plots/"
+THYFILESTR="NNPDF_NLO_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
 OUTPUTTAG="06.25.19_Bayes_Closure_NNPDF_NLO_${FITTYPE}_noJERscales_semifinal"
 
 

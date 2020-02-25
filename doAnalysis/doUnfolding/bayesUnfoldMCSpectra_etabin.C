@@ -13,7 +13,7 @@ const bool useGENybin=false;
 //const bool doJECsys=false;
 const bool applyNPCorrs=true;//&&compareToNLOThy;
 
-const std::string ptbintype="NLO_SMP";
+const std::string ptbintype="SMP";
 const bool compareToNLOThy=true&&(ptbintype=="NLO_SMP");
 
 //-----------------------------
@@ -40,8 +40,8 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   
   std::string CT10NPs ="" ; 
   TFile*fNLO_CT10nlo=TFile::Open(fNLOFile_R04_CT10nlo.c_str());
-  TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* CT10nloerr=(TH1D*) fNLO_CT10nlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
   for(int i=1; i<=CT10nlo->GetNbinsX(); i++)CT10nlo->SetBinError(i, CT10nlo->GetBinContent(i)*(fabs(CT10nloerr->GetBinContent(i)))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT10nlo,   
 					 CT10nlo, &CT10NPs, etabinint);
@@ -52,8 +52,8 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   
   std::string CT14NPs ="" ; 
   TFile*fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
-  TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
   for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(fabs(CT14nloerr->GetBinContent(i)))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
 					 CT14nlo, &CT14NPs, etabinint);
@@ -64,8 +64,8 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   
   std::string HERANPs ="" ; 
   TFile*fNLO_HERAPDF=TFile::Open(fNLOFile_R04_HERAPDF.c_str());
-  TH1D* HERAPDF  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* HERAPDFerr  =(TH1D*) fNLO_HERAPDF->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  TH1D* HERAPDF  =(TH1D*) fNLO_HERAPDF->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* HERAPDFerr  =(TH1D*) fNLO_HERAPDF->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
   for(int i=1; i<=HERAPDF->GetNbinsX(); i++)HERAPDF->SetBinError(i, HERAPDF->GetBinContent(i)*(fabs(HERAPDFerr->GetBinContent(i)))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_HERAPDF,
 					 HERAPDF, &HERANPs, etabinint);
@@ -76,8 +76,8 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   
   std::string MMHTNPs ="" ; 
   TFile*fNLO_MMHTnlo=TFile::Open(fNLOFile_R04_MMHTnlo.c_str());
-  TH1D* MMHTnlo  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* MMHTnloerr  =(TH1D*) fNLO_MMHTnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  TH1D* MMHTnlo  =(TH1D*) fNLO_MMHTnlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* MMHTnloerr  =(TH1D*) fNLO_MMHTnlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
   for(int i=1; i<=MMHTnlo->GetNbinsX(); i++)MMHTnlo->SetBinError(i, MMHTnlo->GetBinContent(i)*(fabs(MMHTnloerr->GetBinContent(i)))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_MMHTnlo,
 					 MMHTnlo, &MMHTNPs, etabinint);
@@ -88,8 +88,8 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   
   std::string NNPDFNPs="" ; 
   TFile*fNLO_NNPDFnnlo=TFile::Open(fNLOFile_R04_NNPDFnnlo.c_str());
-  TH1D* NNPDFnnlo=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
-  TH1D* NNPDFnnloerr=(TH1D*) fNLO_NNPDFnnlo->Get(("h1100"+std::to_string(etabinint+1)+"01").c_str());
+  TH1D* NNPDFnnlo=(TH1D*) fNLO_NNPDFnnlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
+  TH1D* NNPDFnnloerr=(TH1D*) fNLO_NNPDFnnlo->Get(("h0100"+std::to_string(etabinint+1)+"01").c_str());
   for(int i=1; i<=NNPDFnnloerr->GetNbinsX(); i++)NNPDFnnloerr->SetBinError(i, NNPDFnnlo->GetBinContent(i)*(fabs(NNPDFnnloerr->GetBinContent(i)))); 
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_NNPDFnnlo,
 					 NNPDFnnlo, &NNPDFNPs, etabinint);

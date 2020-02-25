@@ -2598,6 +2598,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   
   // input data ------------------
+  hrec->SetTitle( "Data Meas. 1 GeVbins");  hrec->Write("Data_meas_1GeVbins");
   hrec_rebin->SetTitle( "Data Meas.");  hrec_rebin->Write("Data_meas");
   if(setDataCovMat) hrec_covmat->SetTitle ( "Data Meas. Cov. Mat."); hrec_covmat->Write( "Data_covmat");
   if(setDataCovMat) hrec_covmat_rebin->SetTitle ( "Data Meas. Cov. Mat. Rebinned"); hrec_covmat_rebin->Write( "Data_covmat_rebin");
@@ -2605,15 +2606,16 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     hJetQA_jtptEntries->SetTitle("Data N_{Jets}");hJetQA_jtptEntries->Write("Data_njets");}
   
   // input PY8 ---------------------
-  hgen->SetTitle("PY8 Truth Orign");  hgen->Write("MC_truth_orig");
-  hgen_rebin->SetTitle("PY8 Truth");  hgen_rebin->Write("MC_truth");
-  hrec_sameside_rebin->SetTitle("PY8 Meas.");  hrec_sameside_rebin->Write("MC_meas");
+  hgen->SetTitle("NLO Truth Orig. Bins");  hgen->Write("MC_truth_orig");
+  hgen_rebin->SetTitle("NLO Truth");  hgen_rebin->Write("MC_truth");
+  hrec_sameside_rebin->SetTitle("NLO Meas. Orig. Bins");  hrec_sameside_rebin->Write("MC_meas_orig");
+  hrec_sameside_rebin->SetTitle("NLO Meas.");  hrec_sameside_rebin->Write("MC_meas");
   
-  hmat->SetTitle("PY8 Response Matrix");  hmat->Write("MC_mat");
-  hmat_rebin->SetTitle("PY8 Response Matrix Rebinned");  hmat_rebin->Write("MC_mat_rebin"); 
-  hmat_errors->SetTitle("PY8 Response Matrix Errors");  hmat_errors->Write("MC_mat_rebin_errors");
+  hmat->SetTitle("NLO Response Matrix");  hmat->Write("MC_mat");
+  hmat_rebin->SetTitle("NLO Response Matrix Rebinned");  hmat_rebin->Write("MC_mat_rebin"); 
+  hmat_errors->SetTitle("NLO Response Matrix Errors");  hmat_errors->Write("MC_mat_rebin_errors");
   if((bool)hmat_percenterrs){
-    hmat_percenterrs->SetTitle("PY8 Response Matrix Percent Errors");hmat_percenterrs->Write("MC_mat_rebin_percerrors");  }
+    hmat_percenterrs->SetTitle("NLO Response Matrix Percent Errors");hmat_percenterrs->Write("MC_mat_rebin_percerrors");  }
   
   // input thy ---------------- 
   CT10nlo  ->SetTitle("CT10 NLO Spectra");         CT10nlo  ->Write("NLO_CT10_NLO_R04_jtpt");	      
@@ -2641,16 +2643,16 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   NNPDFnnlo_np_scale6_down->SetTitle("NNPDF NNLO Spectra 6 Pt Scale Down Err");    NNPDFnnlo_np_scale6_down->Write();
   
   // output hists -------------
-  hfak->SetTitle("PY8 Meas. Fakes");hfak->Write("MC_meas_fakes");
+  hfak->SetTitle("NLO Meas. Fakes");hfak->Write("MC_meas_fakes");
   
   hunf->SetTitle(("Data Unf. kIter="+std::to_string(kIterInput)).c_str() );hunf->Write("Data_unf");      
   hfold->SetTitle(("Data Fold(Unf.) kIter="+std::to_string(kIterInput)).c_str() ); hfold->Write("Data_fold");        
   hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, kIter="+std::to_string(kIterInput)).c_str() ); hfold_fakecorr->Write("Data_foldfakcorr");        
   hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");  
   
-  hfold_truth->SetTitle(("PY8 Fold(Truth), kIter="+std::to_string(kIterInput)).c_str() );hfold_truth->Write("MC_truth_fold");
-  hfold_truth_fakecorr->SetTitle(("PY8 Fold(Truth) + Fakes, kIter="+std::to_string(kIterInput)).c_str() );hfold_truth_fakecorr->Write("MC_truth_foldfakcorr");
-  hrec_sameside_rebin_fakecorr->SetTitle("PY8 Fake Corr. Meas."); hrec_sameside_rebin_fakecorr->Write("MC_measfakcorr");
+  hfold_truth->SetTitle(("NLO Fold(Truth), kIter="+std::to_string(kIterInput)).c_str() );hfold_truth->Write("MC_truth_fold");
+  hfold_truth_fakecorr->SetTitle(("NLO Fold(Truth) + Fakes, kIter="+std::to_string(kIterInput)).c_str() );hfold_truth_fakecorr->Write("MC_truth_foldfakcorr");
+  hrec_sameside_rebin_fakecorr->SetTitle("NLO Fake Corr. Meas."); hrec_sameside_rebin_fakecorr->Write("MC_measfakcorr");
   
   covmat_TH2->Write("covmat");
   covmatabsval_TH2->Write("covmatabsval");
@@ -2659,21 +2661,21 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   // output ratio comparisons -------------
   // gen ratios (denom=mc truth)
-  h_genratio_oppunf ->SetTitle("Data Unf./PY8 Truth");h_genratio_oppunf ->Write("ratio_Data_unf_MC_truth");  //data unf/mc truth	   
-  h_genratio_oppfold->SetTitle("Data Fold(Unf.)/PY8 Truth");h_genratio_oppfold->Write("ratio_Data_fold_MC_truth"); //data fold(unf)/mc truth 
-  h_genratio_oppmeas->SetTitle("Data Meas./PY8 Truth");h_genratio_oppmeas->Write("ratio_Data_meas_MC_truth"); //data meas/mc truth	   
-  h_genratio_ssmeas ->SetTitle("PY8 Meas./PY8 Truth");h_genratio_ssmeas ->Write("ratio_MC_meas_MC_truth");  //mc meas/mc truth        
+  h_genratio_oppunf ->SetTitle("Data Unf./NLO Truth");h_genratio_oppunf ->Write("ratio_Data_unf_MC_truth");  //data unf/mc truth	   
+  h_genratio_oppfold->SetTitle("Data Fold(Unf.)/NLO Truth");h_genratio_oppfold->Write("ratio_Data_fold_MC_truth"); //data fold(unf)/mc truth 
+  h_genratio_oppmeas->SetTitle("Data Meas./NLO Truth");h_genratio_oppmeas->Write("ratio_Data_meas_MC_truth"); //data meas/mc truth	   
+  h_genratio_ssmeas ->SetTitle("NLO Meas./NLO Truth");h_genratio_ssmeas ->Write("ratio_MC_meas_MC_truth");  //mc meas/mc truth        
   
   // rec ratios (denom=data meas)
   h_recratio_oppunf ->SetTitle("Data Unf./Data Meas.");h_recratio_oppunf ->Write("ratio_Data_unf_Data_meas");  //data unf       / data meas	   
-  h_recratio_ssmeas ->SetTitle("PY8 Meas./Data Meas.");h_recratio_ssmeas ->Write("ratio_MC_meas_Data_meas");  //mc meas        / data meas	   
-  h_recratio_ssgen  ->SetTitle("PY8 Truth/Data Meas.");h_recratio_ssgen  ->Write("ratio_MC_truth_Data_meas");   //mc truth       / data meas        
+  h_recratio_ssmeas ->SetTitle("NLO Meas./Data Meas.");h_recratio_ssmeas ->Write("ratio_MC_meas_Data_meas");  //mc meas        / data meas	   
+  h_recratio_ssgen  ->SetTitle("NLO Truth/Data Meas.");h_recratio_ssgen  ->Write("ratio_MC_truth_Data_meas");   //mc truth       / data meas        
   
   // fold ratio test
   h_recratio_oppfold   ->SetTitle("Data Fold(Unf.)/(Data Meas. - Fakes)");  h_recratio_oppfold   ->Write(); //data fold(unf) / data meas - fakes    
-  h_recratio_truthfold ->SetTitle("PY8 Fold(Truth)/(PY8 Meas. - Fakes)");      h_recratio_truthfold  ->Write(); //PY8 fold(truth) / data meas - fakes    
+  h_recratio_truthfold ->SetTitle("NLO Fold(Truth)/(NLO Meas. - Fakes)");      h_recratio_truthfold  ->Write(); //NLO fold(truth) / data meas - fakes    
   h_foldratio_datafold ->SetTitle("(Data Fold(Unf.) + Fakes)/Data Meas."); h_foldratio_datafold ->Write();
-  h_foldratio_mcfold   ->SetTitle("(PY8 Fold(Truth) + Fakes)/PY8 Meas.");    h_foldratio_mcfold   ->Write();
+  h_foldratio_mcfold   ->SetTitle("(NLO Fold(Truth) + Fakes)/NLO Meas.");    h_foldratio_mcfold   ->Write();
   
   // thy ratios w/ unfolded data
   h_thyratio_CT10nlo  ->Write("ratio_CT10_NLO_Data_unf");
@@ -2681,7 +2683,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   h_thyratio_HERAPDF  ->Write("ratio_HERAPDF_NLO_Data_unf");
   h_thyratio_MMHTnlo  ->Write("ratio_MMHTnlo_NLO_Data_unf");    
   h_thyratio_NNPDFnnlo->Write("ratio_NNPDFnnlo_NNLO_Data_unf");
-  h_thyratio_mctruth->Write("ratio_PY8_MCTruth_Data_unf");
+  h_thyratio_mctruth->Write("ratio_NLO_MCTruth_Data_unf");
 
   // systematics unfolding if down
   if(doSystUnf){
@@ -2772,11 +2774,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   if(drawPDFs){
     std::cout<<"writing canvases to file"<<std::endl;
     canv_spectra          ->SetTitle("I/O Spectra Canvas");        canv_spectra           ->Write("canv_spectra");
-    canv_mc_fakes_spectra ->SetTitle("PY8 Fakes Spectra Canvas");   canv_mc_fakes_spectra  ->Write("canv_mc_fakes_spectra");
+    canv_mc_fakes_spectra ->SetTitle("NLO Fakes Spectra Canvas");   canv_mc_fakes_spectra  ->Write("canv_mc_fakes_spectra");
     canv_thy_spectra_1    ->SetTitle("NLO Thy Spectra 1 Canvas");  canv_thy_spectra_1     ->Write("canv_thy_spectra_1");
     canv_thy_spectra_2    ->SetTitle("NLO Thy Spectra 2 Canvas");  canv_thy_spectra_2     ->Write("canv_thy_spectra_2");                                
     
-    canv_gen_ratio        ->SetTitle("PY8 Truth Ratios Canvas");   canv_gen_ratio          ->Write("canv_gen_ratio");
+    canv_gen_ratio        ->SetTitle("NLO Truth Ratios Canvas");   canv_gen_ratio          ->Write("canv_gen_ratio");
     canv_rec_ratio        ->SetTitle("Data Meas Ratios Canvas");  canv_rec_ratio          ->Write("canv_meas_ratio");
     canv_fold_ratio       ->SetTitle("Fold Test Ratios Canvas");  canv_fold_ratio         ->Write("canv_fold_ratio");
     canv_fold_ratio2       ->SetTitle("Fold Test Ratios v2 Canvas");  canv_fold_ratio2         ->Write("canv_fold_ratio2");
@@ -2791,8 +2793,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     canv_absval_covmat    ->SetTitle("Abs Val. Covariance Matrix Canvas");  canv_absval_covmat ->Write("canv_covmatabsval");
     canv_pearson          ->SetTitle("Pearson Matrix Canvas");      canv_pearson               ->Write("canv_pearson");
     canv_unfmat           ->SetTitle("Unfolding Matrix Canvas");    canv_unfmat                ->Write("canv_unfmat");
-    canv_mat_rebin        ->SetTitle("PY8 Response Matrix Canvas");  canv_mat_rebin             ->Write("canv_mat_rebin");
-    canv_mat_percerrs     ->SetTitle("PY8 Response Matrix % Errors Canvas");  canv_mat_percerrs ->Write("canv_mat_percerrors");
+    canv_mat_rebin        ->SetTitle("NLO Response Matrix Canvas");  canv_mat_rebin             ->Write("canv_mat_rebin");
+    canv_mat_percerrs     ->SetTitle("NLO Response Matrix % Errors Canvas");  canv_mat_percerrs ->Write("canv_mat_percerrors");
     if(dokIterQA){ canv_3x3spectra->SetTitle("3x3 Unf. Spectra kIter QA Canvas");  canv_3x3spectra ->Write("canv_3x3spectra");}
     if(dokIterQA){ canv_3x3genratio->SetTitle("3x3 Gen Ratio kIter QA Canvas");    canv_3x3genratio->Write("canv_3x3genratio");}
     if(dokIterQA){ canv_3x3recratio->SetTitle("3x3 Rec Ratio kIter QA Canvas");    canv_3x3recratio->Write("canv_3x3recratio");}

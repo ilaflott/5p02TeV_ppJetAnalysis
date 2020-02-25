@@ -13,12 +13,15 @@ echo ""
 #MM="08"
 #DD="06"
 #YY="19"
-MM="11"
-DD="26"
-YY="19"
+#MM="11"
+#DD="26"
+#YY="19"
+MM="02"
+DD="19"
+YY="20"
 
 
-#mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-31-19_jetPlots_0.0eta1.0 ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-29-19_jetPlots_0.0eta1.0
+mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-20_jetPlots_0.0eta2.0 ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-19-20_jetPlots_0.0eta2.0
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppMC" "semifinal_novzweights"
 
 
@@ -31,8 +34,9 @@ YY="19"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "SMPbins_JECsysv2_withLumiCorr_semifinal"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "CHRISbins_JECsysv2_withLumiCorr_semifinal"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetTrigEff_0.0eta2.0" "ppData" "forHLTTurnOns_secondAttempt"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetTrigEff_0.0eta5.1" "ppData" "semifinalv2"
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetTrigEff_0.0eta5.1" "ppData" "semifinalv2_LowHLT40Thresh"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetTrigEff_0.0eta5.1" "ppData" "semifinalv2"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "jety_v_jeteta_check"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppMC" "jety_v_jeteta_check"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "JOHNbins_withJECsys_withLumiCorr_semifinal"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppData" "lumiRunStudy_diffDupeSkip"
 

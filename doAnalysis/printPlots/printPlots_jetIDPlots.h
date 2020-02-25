@@ -346,6 +346,7 @@ void printJetIDHist( TFile* fin ,
     std::string outcanvname="JetIDEff_"+var[j];
     if(isData)outcanvname="Data_"+outcanvname;
     else outcanvname="MC_"+outcanvname;
+    //outcanvname+="_etabin"+std::to_string(etabin);
     outcanv->Write(outcanvname.c_str());    
   }
   
@@ -393,6 +394,8 @@ void printTupelJetIDHist( TFile* fin_jetID , int etabin, bool print_incjetana_tu
   TH1F* jtptQACut_h= (TH1F*)fin_jetID->Get( "hJetQAPtCut" );
   std::string jtptQACut_str = std::to_string( (int) jtptQACut_h->GetMean() );
   std::cout<<"jtptQACut_str = "<<jtptQACut_str<<std::endl;
+  jetCutString="p_{T}>"+jtptQACut_str+" GeV";//, "+jtetaLoCut_str+"<|#eta|<"+jtetaHiCut_str;
+  
   
 //  TH1F* jtetaLoCut_h= (TH1F*)fin_jetID->Get( "hJetEtaCutLo" );
 //  std::stringstream etaLo; etaLo.precision(1);
@@ -412,11 +415,12 @@ void printTupelJetIDHist( TFile* fin_jetID , int etabin, bool print_incjetana_tu
  //  std::cout<<"jetEtaCutString="<<jetEtaCutString<<std::endl;
   std::string jetEtaCutString;
   if(etabin==0) jetEtaCutString = "0.0 < #||{y} < 0.5";
-  if(etabin==1) jetEtaCutString = "0.5 < #||{y} < 1.0";
-  if(etabin==2) jetEtaCutString = "1.0 < #||{y} < 1.5";
-  if(etabin==3) jetEtaCutString = "1.5 < #||{y} < 2.0";
-  if(etabin==4) jetEtaCutString = "2.0 < #||{y} < 2.5";
-  if(etabin==5) jetEtaCutString = "2.5 < #||{y} < 3.0";  
+  else if(etabin==1) jetEtaCutString = "0.5 < #||{y} < 1.0";
+  else if(etabin==2) jetEtaCutString = "1.0 < #||{y} < 1.5";
+  else if(etabin==3) jetEtaCutString = "1.5 < #||{y} < 2.0";
+  else if(etabin==4) jetEtaCutString = "2.0 < #||{y} < 2.5";
+  else if(etabin==5) jetEtaCutString = "2.5 < #||{y} < 3.0";  
+  else if(etabin==6) jetEtaCutString = "3.2 < #||{y} < 4.7";  
   //float etaBinWidth=2.*(jtetaHiCut_F-jtetaLoCut_F);//factor of two, because abseta
   float etaBinWidth=1.;
   std::cout<<"etaBinWidth="<<etaBinWidth<<std::endl;
@@ -660,6 +664,7 @@ void printTupelJetIDHist( TFile* fin_jetID , int etabin, bool print_incjetana_tu
     std::string outcanvname="JetIDEff_"+tupelvar[j];
     if(isData)outcanvname="Data_"+outcanvname;
     else outcanvname="MC_"+outcanvname;
+    outcanvname+="_etabin"+std::to_string(etabin);
     outcanv->Write(outcanvname.c_str());    
   }
   
@@ -883,6 +888,7 @@ void printHINvSMPJetIDHist_pt( TFile* fin_HINjetID=NULL , TFile* fin_SMPjetID=NU
     else if (jetptvar=="rawpt")outcanvname+="rawpt";
     if(isData)outcanvname="Data_"+outcanvname;
     else outcanvname="MC_"+outcanvname;
+    outcanvname+="_etabin"+std::to_string(etabin);
     outcanv->Write(outcanvname.c_str());    
   }
   
@@ -1101,6 +1107,7 @@ void print_tightVlooseJetIDHist_pt( TFile* fin_loose_jetID=NULL , TFile* fin_tig
     else if (jetptvar=="rawpt")outcanvname+="rawpt";
     if(isData)outcanvname="Data_"+outcanvname;
     else outcanvname="MC_"+outcanvname;
+    outcanvname+="_etabin"+std::to_string(etabin);
     outcanv->Write(outcanvname.c_str());    
   }
   

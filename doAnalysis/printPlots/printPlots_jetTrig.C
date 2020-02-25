@@ -31,7 +31,8 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
     usedMinBias=true;
   else if(output_PDFname_base.find("noMB")!=std::string::npos)
     usedMinBias=false;
-  else assert(false);
+  //else assert(false);
+  usedMinBias=false;
   
   if(usedMinBias)std::cout<<"running plots for LowJets+Jet80+MinBias PDs"<<std::endl;
   else std::cout<<"running plots for LowJets+Jet80+MinBias PDs"<<std::endl;
@@ -196,17 +197,17 @@ int printPlots_jetTrig ( const std::string input_ppData_condorDir ,   const std:
     //    // ----------------------------------
     
     // ----------------------------------    
-    printTrigPtHist(finData, usedHLT100, false, usedMinBias, 
-    		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
-    printTrigPtHist(finData, usedHLT100, false, usedMinBias, 
-    		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
+    //    printTrigPtHist(finData, usedHLT100, false, usedMinBias, 
+    //    		    thePDFFileName, fullJetType, "excl", radius, usedHLTPF , (TFile*) fout);
+    //    printTrigPtHist(finData, usedHLT100, false, usedMinBias, 
+    //    		    thePDFFileName, fullJetType, "incl", radius, usedHLTPF , (TFile*) fout);    
     // ----------------------------------    
     for(int etabin=0;etabin<N_etabins;etabin++)
       printJetTrigHist_wRatio(finData, usedHLT100, usedMinBias, false, etabin,
 			      thePDFFileName, fullJetType, "excl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
-    for(int etabin=0;etabin<N_etabins;etabin++)
-      printJetTrigHist_wRatio(finData, usedHLT100, usedMinBias, false, etabin,
-			      thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
+    //for(int etabin=0;etabin<N_etabins;etabin++)
+    //  printJetTrigHist_wRatio(finData, usedHLT100, usedMinBias, false, etabin,
+    //			      thePDFFileName, fullJetType, "incl", radius, usedHLTPF, doJetIDPlots , (TFile*) fout);
     // ----------------------------------    
     //for(int runind=0;runind<Nruns;runind++){
     //  printJetTrigHist_wRatio_vRun(finData, false,  runind,

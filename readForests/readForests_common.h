@@ -275,7 +275,7 @@ const float absetabins[]={
   0.5,
   1.0, 
   1.5,
-  2.0,5.1//, 
+  2.0,2.4,2.7,3.0//5.1//, 
   //2.5,
   //3.0, 
   //3.2,
@@ -291,7 +291,39 @@ std::string absetabins_str[]={
   "0.5",
   "1.0", 
   "1.5",
-  "2.0","5.1"//, 
+  "2.0","2.4","2.7","3.0"//"5.1"//, 
+  //"2.5",
+  //"3.0",
+  //"3.2",
+  //"4.7",
+  //"5.1"
+};
+
+
+const float absybins[]={
+  //  0.0, 0.5, 1.0, 1.5, 2.0, 2.4, 2.5, 2.7, 3.0, 3.2, 3.7, 4.2, 4.7, 5.1 //alt binning i've seen before
+  //0.0,  //2.0
+  0.0, 
+  0.5,
+  1.0, 
+  1.5,
+  2.0,2.4,2.7,3.0//,5.1//, 
+  //2.5,
+  //3.0, 
+  //3.2,
+  //4.7
+  //5.1
+};
+const int nbins_absy=sizeof(absybins)/sizeof(float)-1;//this is the # of bins in a root histo
+//const int nbins_abseta=sizeof(absetabins)/sizeof(float); //this is the # of elements in the array
+
+std::string absybins_str[]={ 
+  //"0.0","2.0"
+  "0.0", 
+  "0.5",
+  "1.0", 
+  "1.5",
+  "2.0","2.4", "2.7", "3.0"//, "5.1"//, 
   //"2.5",
   //"3.0",
   //"3.2",

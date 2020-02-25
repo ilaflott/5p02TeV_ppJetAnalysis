@@ -51,8 +51,8 @@ then
     echo "etabinstr=${etabinstr}"
     echo ""
     
-    OUTDIR=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_plots/
-    OUTFILE=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root    
+    OUTDIR=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_TEST_plots/
+    OUTFILE=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_${etabinstr}.root    
     JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
     JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf    
     #JERFILE=${JERfilestr}${etabinstr}_semifinal.root

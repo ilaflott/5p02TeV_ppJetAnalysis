@@ -37,8 +37,8 @@ const Double_t ptbins_debug[]={
 //  28.,
 //  32.,
 //  37.,  
-  40., //this junk bin added in for cosmetics
-  43., 
+  //40., //this junk bin added in for cosmetics
+  //43., 
   49., //junk bins from here an above
   56.,   64.,   74.,   84., 97., 114., 
   133., 153., 174., 196., 220., 
@@ -50,9 +50,14 @@ const Double_t ptbins_debug[]={
   737., 
   790., 
   846., 
-  905.//, 
-  //967., //, // end of SMP Official bin limits 
-  //1032.//1000. //,  // to catch overflow or other entries?
+  905., 
+  967., //, // end of SMP Official bin limits 
+  1032.,//1000. //,  // to catch overflow or other entries?
+  1101., 
+  1172., 
+  1248., 
+  1327.,
+  1410.
   //1050. // junk bin, cosmetics only
 }; 
 const int nbins_pt_debug = sizeof(ptbins_debug)/sizeof(Double_t)-1;

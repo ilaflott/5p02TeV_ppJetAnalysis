@@ -3,7 +3,7 @@ const std::string SCRATCH_BASE ="/cms/heavyion/ilaflott/T2_US_MIT_SCRATCH/5p02Te
 const std::string _PY8_FILESTR="02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
 const std::string _PY8_DESCTXT="GEN PY8 CUETP8M1";
 
-//PDF file strings + descriptive text
+//PDF file strings + descriptive text, these are from raghav, in |eta| bins
 const std::string _CT10FILESTR="fnl5020_LO2_R04Jets_modify_CT10nlo_HS";
 const std::string _CT14FILESTR="fnl5020_LO2_R04Jets_modify_CT14nlo_HS";
 const std::string _HERAFILESTR="fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS";
@@ -16,6 +16,11 @@ const std::string _CT14DESCTXT="CT14";
 const std::string _HERADESCTXT="HERAPDF15";
 const std::string _MMHTDESCTXT="MMHT14";
 const std::string NNPDFDESCTXT="NNPDF30";
+
+//PDF file strings + descriptive text, these are from Joao, in |y| bins
+const std::string _CT14NNLOFILESTR ="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v3";
+const std::string _CT14NNLOFILESTR2="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3";
+const std::string _CT14NNLODESCTXT ="CT14NNLO";
 
 
 //NP corr fits strings + descriptive text

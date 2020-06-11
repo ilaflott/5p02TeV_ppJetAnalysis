@@ -1762,7 +1762,6 @@ int readForests_ppData_jetPlots_v2( std::string inFilelist , int startfile , int
 	    break;
 	  }
 	
-	int theYBin=-1;	
 	for(int ybin=0;ybin<nbins_absy;++ybin)
 	  if( absjty>=absybins[ybin]  && 		
 	      absjty<absybins[ybin+1]    	      ) {	    

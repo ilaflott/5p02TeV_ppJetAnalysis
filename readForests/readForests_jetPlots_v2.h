@@ -34,12 +34,12 @@ int readForests_ppData_jetPlots_v2( std::string inFilelist=defDataInFilelist,
 				    std::string outfile=defDataOutputName, 
 				    float jtYCutLo=defYCutLo, float jtYCutHi=defYCutHi      );
 
-//int readForests_ppMC_jetPlots_v2( std::string inFilelist=defMCInFilelist,
-//				  int startfile=0, int endfile=4, 
-//				  int radius=defRadius, std::string jetType=defJetType, 
-//				  bool debugMode=defDebugMode,			
-//				  std::string outfile=(defMCOutputName),
-//				  float jtYCutLo=defYCutLo, float jtYCutHi=defYCutHi      );
+int readForests_ppMC_jetPlots_v2( std::string inFilelist=defMCInFilelist,
+				  int startfile=0, int endfile=4, 
+				  int radius=defRadius, std::string jetType=defJetType, 
+				  bool debugMode=defDebugMode,			
+				  std::string outfile=(defMCOutputName),
+				  float jtYCutLo=defYCutLo, float jtYCutHi=defYCutHi      );
 
 const int readForestsArgCount=9+minArgs;
 

@@ -51,29 +51,37 @@ then
     echo "etabinstr=${etabinstr}"
     echo ""
     
-    OUTDIR=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_TEST_plots/
-    OUTFILE=${NLOfileshortstr}_LO_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_${etabinstr}.root    
-    JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
-    JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf    
-    #JERFILE=${JERfilestr}${etabinstr}_semifinal.root
-    #JERPDFFILE=${JERfilestr}${etabinstr}_semifinal.pdf
+    #OUTDIR=${NLOfileshortstr}_NLO_v2_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_plots/
+    #OUTFILE=${NLOfileshortstr}_NLO_v2_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_${etabinstr}.root    
 
-    echo ""
-    echo "OUTDIR =${OUTDIR}"
-    echo "OUTFILE=${OUTFILE}"
-    echo "JERFILE=${JERFILE}"
-    echo "JERPDFFILE=${JERPDFFILE}"
-    echo ""    
-    
+    ##OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_murmufpt_plots/
+    ##OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_murmufpt_${etabinstr}.root    
+    ##OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_murmufpt1_plots/
+    ##OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_murmufpt1_${etabinstr}.root    
+    ##OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_DEBUG_JERSF1.0_wREDRAW_plots/
+    ##OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_DEBUG_JERSF1.0_wREDRAW_${etabinstr}.root    
+    OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_plots/
+    OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_${etabinstr}.root    
+    #OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_plots/
+    #OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_${etabinstr}.root    
+    JERDIR=/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/
+    JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
+    FULLJERFILEPATH=${JERDIR}${JERFILE}
+    JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf    
+    FULLJERPDFFILEPATH=${JERDIR}${JERPDFFILE}
+
     #return     #DEBUG
     
     echo ""
     echo "RUN NLO smearing"
+    echo "OUTFILE=${OUTFILE}"
+    echo "FULLJERFILEPATH=${FULLJERFILEPATH}"
     echo ""
+
     
     ## USAGE
-    ## ./smearTheorySpectra_gaussCoreJER_etabin.exe <NLOfilestr> <useSplineWeights> <fitType_str> <JERFILE> <etabin> <outputfile>
-    ./smearTheorySpectra_gaussCoreJER_etabin.exe "${NLOfilestr}"  "${Fittypestr}"  "${JERFILE}"  "${etaBin}"  "${OUTFILE}"
+    # ./smearTheorySpectra_gaussCoreJER_etabin.exe <NLOfilestr> <useSplineWeights> <fitType_str> <JERFILE> <etabin> <outputfile>
+    ./smearTheorySpectra_gaussCoreJER_etabin.exe "${NLOfilestr}"  "${Fittypestr}"  "${FULLJERFILEPATH}"  "${etaBin}"  "${OUTFILE}"
 
     echo "" 
     echo "DONE NLO smearing."
@@ -81,32 +89,55 @@ then
 
     if [[ -d "${OUTDIR}" ]]
     then	
-	echo "$OUTDIR exists!"
-	#echo "removing directory!"
-	#rm -rf $OUTDIR
+	echo "WARNING $OUTDIR exists!"
 	#echo "recreating directory!"
 	#mkdir $OUTDIR
     else 
 	mkdir  $OUTDIR
     fi
     
+
+
+
+
+    echo ""
+    echo "copying code to $OUTDIR"
+    echo ""    
+
+    cp smearTheorySpectra_gaussCoreJER_etabin.C $OUTDIR/.
+    cp smearTheorySpectra.h $OUTDIR/.
+    
     echo ""
     echo "moving $OUTFILE to $OUTDIR"
     echo ""
+
+    mv $OUTFILE $OUTDIR/.
     
-    cp smearTheorySpectra_gaussCoreJER_etabin.C $OUTDIR/.
-    cp smearTheorySpectra.h $OUTDIR/.
-    cp $OUTFILE $OUTDIR/.
-    cp $JERFILE $OUTDIR/.
-    cp $JERPDFFILE $OUTDIR/.
+    
+    echo ""
+    echo "JERDIR=${JERDIR}"
+    echo "JERFILE=${JERFILE}"
+    echo "FULLJERFILEPATH=${FULLJERFILEPATH}"
+    cp $FULLJERFILEPATH $OUTDIR/.
+    echo ""
+    echo "JERPDFFILE=${JERPDFFILE}"
+    echo "FULLJERPDFFILEPATH=${FULLJERPDFFILEPATH}"
+    cp $FULLJERPDFFILEPATH $OUTDIR/.
+    echo ""
 
     #return    #DEBUG
     
     echo ""
     echo "writing plots in $OUTFILE to $OUTDIR"
     echo ""
-    ROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${OUTFILE}\", ${etaBin})"
-    root -l -b -q "${ROOTEXC}"
+    NLOROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${OUTFILE}\", ${etaBin})"
+    root -l -b -q "${NLOROOTEXC}"
+
+    echo ""
+    echo "writing plots in $JERFILE to $OUTDIR"
+    echo ""
+    JERROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${JERFILE}\", ${etaBin})"
+    root -l -b -q "${JERROOTEXC}"
 
     echo ""
     echo "scp2Serin"

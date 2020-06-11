@@ -20,24 +20,33 @@ then
     rooUnfoldCompile smearTheorySpectra_gaussCoreJER_etabin.C
     
     
-### INPUTS FOR run_smearTheory_etabin
+    ### INPUTS FOR run_smearTheory_etabin
     #nlofstr="fnl5020_LO2_R04Jets_modify_CT10nlo_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_CT14nlo_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS"
-    nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
+    #nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
+    ##this didn't have the scale var spectra in it, just the errors
+    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v2"
+    ##this does have the scale var spectra in it ## IN PROGRESS
+    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v3"
+    #this does have the scale var spectra in it ## TO DO
+    nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3"
     
+
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"
     #nlofshortstr="HERAPDF"
     #nlofshortstr="MMHT"
-    nlofshortstr="NNPDF"
+    #nlofshortstr="NNPDF"
+    nlofshortstr="CT14NNLO"
     
-    jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
+    jerfstr="ak4PF_PY8JER_"
     #descstr="06.25.19_sigmu_semifinal" 
-    descstr="06.25.19_sigmu_semifinal" 
+    #descstr="06.25.19_sigmu_semifinal" 
     #descstr="06.25.19_sigma_semifinal" 
-    
+    descstr="03.18.20_sigmu_geny"
+
     #fittypestr="modLog"
     #fittypestr="7TeV"
     fittypestr="spl3wgts"
@@ -46,10 +55,10 @@ then
     ##fittypestr="spl3wgts_extv3"
     
     scpoutput=0
-    scpafterlast=1
+    scpafterlast=0
     etabin_i=0
-    Netabins=1 ##debug; runs first etabin only
-    #Netabins=4
+    #Netabins=4 
+    #Netabins=1 ##debug; runs first etabin only
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]
@@ -113,7 +122,7 @@ then
     
     scpoutput=0
     scpafterlast=1
-    etabin_i=3
+    etabin_i=0
     Netabins=4 
     while [ $etabin_i -lt $Netabins ]
     do

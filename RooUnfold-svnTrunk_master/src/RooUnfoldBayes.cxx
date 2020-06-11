@@ -145,19 +145,21 @@ TMatrixD& RooUnfoldBayes::H2M (const TH2* h, TMatrixD& m, Bool_t overflow)
 //-------------------------------------------------------------------------
 void RooUnfoldBayes::setup()
 {
-  _nc = _nt;
-  _ne = _nm;
+  _nc = _nt; //NUMBER OF GEN pT BINS //number of truth [_nt] bins (aka number of cause [_nc] bins)
+  _ne = _nm; //NUMBER OF RECO pT BINS //number of measured [_nm] bins (aka number of effect [_ne] bins)
 
-  _nEstj.ResizeTo(_ne);
-  _nEstj= Vmeasured();
+  _nEstj.ResizeTo(_ne); //number of measured events from effect E_j (aka effect/measured bin j)
+  _nEstj= Vmeasured(); //RECO DATA HISTOGRAM//this is the measured events histogram/vector
 
   _nCi.ResizeTo(_nt);
-  _nCi= _res->Vtruth();//_nCi is the projectiong of response onto GEN axis
+  _nCi= _res->Vtruth();// GEN pT HISTOGRAM I GIVE TO ROOUNFOLD [NOT A PROJECTION]
+                       
 
   _Nji.ResizeTo(_ne,_nt);
-  H2M (_res->Hresponse(), _Nji, _overflow);   // don't normalise, which is what _res->Mresponse() would give us
+  H2M (_res->Hresponse(), _Nji, _overflow);   //TURN RESPONSE MATRIX INTO TMATRIX CALLED _Nji
+  // don't normalise, which is what _res->Mresponse() would give us
 
-  if (_res->FakeEntries()) {
+  if (_res->FakeEntries()) {// IF THERE EXIST FAKES, DETERMINE THE FAKES VECTOR
     TVectorD fakes= _res->Vfakes();
     Double_t nfakes= fakes.Sum();
     if (verbose()>=0) cout << "Add truth bin for " << nfakes << " fakes" << endl;
@@ -168,11 +170,11 @@ void RooUnfoldBayes::setup()
     for (Int_t i= 0; i<_nm; i++) _Nji(i,_nc-1)= fakes[i];
   }
 
-  _nbarCi.ResizeTo(_nc);
-  _efficiencyCi.ResizeTo(_nc);
-  _Mij.ResizeTo(_nc,_ne);
-  _P0C.ResizeTo(_nc);
-  _UjInv.ResizeTo(_ne);
+  _nbarCi.ResizeTo(_nc);//estimated number of true events from cause C_i [aka cause/truth bin i] ??
+  _efficiencyCi.ResizeTo(_nc); //efficiency vector (accounts for misses/inefficiency)
+  _Mij.ResizeTo(_nc,_ne); //unfolding matrix
+  _P0C.ResizeTo(_nc);//prior before last iteration  // how does this get used?
+  _UjInv.ResizeTo(_ne);// (1 / folded prior) from last iteration ??
 #ifndef OLDERRS
   if (_dosys!=2) _dnCidnEj.ResizeTo(_nc,_ne);
 #endif
@@ -180,10 +182,10 @@ void RooUnfoldBayes::setup()
 
   // Initial distribution //WHERE _P0C GETS SET INITIALLY
                           //_P0C IS _nCi initially, "number of true events from cause C_i"
-  _N0C= _nCi.Sum();
+  _N0C= _nCi.Sum(); //INTEGRAL OF GEN pT HISTOGRAM I GIVE ROO UNFOLD
   if (_N0C!=0.0) {
     _P0C= _nCi;
-    _P0C *= 1.0/_N0C;
+    _P0C *= 1.0/_N0C;//_P0C == GEN pT HISTOGRAM NORMALIZED TO 1
   }
 }
 
@@ -195,17 +197,19 @@ void RooUnfoldBayes::unfold()
   // _smoothit = smooth the matrix in between iterations (default false).
   
 
-  TMatrixD PEjCi(_ne,_nc), PEjCiEff(_ne,_nc);
+  TMatrixD PEjCi(_ne,_nc);    //this is response matrix w/ all entries normalized by the gen pT hist gentries in their respective gen pT bin, each reco row doesn't sum to 1, it sums to the efficiency
+  TMatrixD PEjCiEff(_ne,_nc); //this should be response matrix accounted for misses, i.e. each reco row should sum to 1
   for (Int_t i = 0 ; i < _nc ; i++) {
     if (_nCi[i] <= 0.0) { _efficiencyCi[i] = 0.0; continue; }
     Double_t eff = 0.0;
     for (Int_t j = 0 ; j < _ne ; j++) {
       Double_t response = _Nji(j,i) / _nCi[i];
-      PEjCi(j,i) = PEjCiEff(j,i) = response;  // efficiency of detecting the cause Ci in Effect Ej
-      eff += response;
+      PEjCi(j,i) = PEjCiEff(j,i) = response;  //response = response matrix entry j i / truth spectra i 
+      eff += response;//efficiency = N1i/nCi + N2i/nCi + ... N_nei/nCi
     }
     _efficiencyCi[i] = eff;
     Double_t effinv = eff > 0.0 ? 1.0/eff : 0.0;   // reset PEjCiEff if eff=0
+                                                   // effinv = eff^-1 as long as it's not 0 (which would signify no truth events in that truth bin)
     for (Int_t j = 0 ; j < _ne ; j++) PEjCiEff(j,i) *= effinv;
   }
 
@@ -224,6 +228,7 @@ void RooUnfoldBayes::unfold()
       _N0C = _nbartrue;
     }
     
+    //calculated Uj, UjInv. Uj = resp matrix norm'd to eff * truth. UjInv=1/Uj for each entry in vector
     for (Int_t j = 0 ; j < _ne ; j++) {
       Double_t Uj = 0.0;
       for (Int_t i = 0 ; i < _nc ; i++)
@@ -231,22 +236,22 @@ void RooUnfoldBayes::unfold()
       _UjInv[j] = Uj > 0.0 ? 1.0/Uj : 0.0;
     }
 
-    // Unfolding matrix M
+    // calculate Unfolding matrix Mij = resp matrix norm'd to eff * truth * resp matrix norm'd to 1 * truth
     _nbartrue = 0.0;
     for (Int_t i = 0 ; i < _nc ; i++) {
       Double_t nbarC = 0.0;
       for (Int_t j = 0 ; j < _ne ; j++) {
-        Double_t Mij = _UjInv[j] * PEjCiEff(j,i) * _P0C[i];
+        Double_t Mij = _UjInv[j] * PEjCiEff(j,i) * _P0C[i];//compute response matrix element
         _Mij(i,j) = Mij;
-        nbarC += Mij * _nEstj[j];
+        nbarC += Mij * _nEstj[j]; //apply response matrix to RECO data
       }
-      _nbarCi[i] = nbarC;
+      _nbarCi[i] = nbarC; //unfolded RECO data value for bin i
       _nbartrue += nbarC;  // best estimate of true number of events
     }
     
     // new estimate of true distribution
-    PbarCi= _nbarCi;
-    PbarCi *= 1.0/_nbartrue;
+    PbarCi= _nbarCi; 
+    PbarCi *= 1.0/_nbartrue; //PbarCi == 1/ unfolded RECO data value for bin i
 
 #ifndef OLDERRS
     if (_dosys!=2) {
@@ -254,10 +259,13 @@ void RooUnfoldBayes::unfold()
         _dnCidnEj= _Mij;
       } else {
 #ifndef OLDMULT
-        TVectorD en(_nc), nr(_nc);
+        TVectorD en(_nc);//-1 * 1/gen Pt Hist corr for efficiency
+	TVectorD nr(_nc);
         for (Int_t i = 0 ; i < _nc ; i++) {
           if (_P0C[i]<=0.0) continue;
-          Double_t ni= 1.0/(_N0C*_P0C[i]);
+          Double_t ni= 1.0/(_N0C*_P0C[i]);// should just be 1 / the gen Pt histogram value for gen pT bin i
+	  // !!!! THIS IS WHERE THE EFFICIENCY/INEFFICIENCY/MISSES MAGIC HAPPENS !!!! //
+	  cout<<"LOCATION 1: _efficiencyCi["<<i<<"]="<<_efficiencyCi[i]<<endl;
           en[i]= -ni*_efficiencyCi[i];
           nr[i]=  ni*_nbarCi[i];
         }
@@ -276,7 +284,10 @@ void RooUnfoldBayes::unfold()
           for (Int_t k = 0 ; k < _ne ; k++) {
             Double_t sum = 0.0;
             for (Int_t l = 0 ; l < _nc ; l++) {
-              if (_P0C[l]>0.0) sum += _efficiencyCi[l]*_Mij(l,k)*_dnCidnEj(l,j)/_P0C[l];
+              if (_P0C[l]>0.0) {
+		sum += _efficiencyCi[l]*_Mij(l,k)*_dnCidnEj(l,j)/_P0C[l];
+		//cout<<"LOCATION 2: _efficiencyCi["<<i<<"]="<<_efficiencyCi[i]<<endl;
+	      }
             }
             ksum[k]= sum;
           }
@@ -289,10 +300,10 @@ void RooUnfoldBayes::unfold()
             _dnCidnEj(i,j) = _Mij(i,j) + dsum/_N0C;
           }
         }
-#endif
+#endif /*end OLDMULT */
       }
     }
-#endif
+#endif/* end OLDERRS */
 
     if (_dosys) {
 #ifndef OLDERRS2
@@ -315,7 +326,7 @@ void RooUnfoldBayes::unfold()
       }
 #else  /* OLDERRS2 */
       if (kiter == _niter-1)   // used to only calculate _dnCidPjk for the final iteration
-#endif
+#endif /*end OLDERRS2 */
       for (Int_t j = 0 ; j < _ne ; j++) {
         if (_UjInv[j]==0.0) continue;
         Double_t mbyu= _UjInv[j]*_nEstj[j];
@@ -323,8 +334,10 @@ void RooUnfoldBayes::unfold()
         for (Int_t i = 0 ; i < _nc ; i++) {
           Double_t b= -mbyu * _Mij(i,j);
           for (Int_t k = 0 ; k < _nc ; k++) _dnCidPjk(i,j0+k) += b*_P0C[k];
-          if (_efficiencyCi[i]!=0.0)
+          if (_efficiencyCi[i]!=0.0){	    
             _dnCidPjk(i,j0+i) += (_P0C[i]*mbyu - _nbarCi[i]) / _efficiencyCi[i];
+	    //cout<<"LOCATION 3: _efficiencyCi["<<i<<"]="<<_efficiencyCi[i]<<endl;
+	  }
         }
       }
     }
@@ -339,8 +352,8 @@ void RooUnfoldBayes::unfold()
     if(verbose()>=1)cout<< "sanity check in RooUnfoldBayes::unfold(); bin content of _chi2iter hist is "<<  _chi2iter->GetBinContent(kiter+1) << endl;
     
     // and repeat
-  }
-}
+  }//end kIter loop
+}//end unfold function
 
 //-------------------------------------------------------------------------
 void RooUnfoldBayes::getCovariance()

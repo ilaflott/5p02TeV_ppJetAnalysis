@@ -5,12 +5,11 @@
 ## not-busy cluster --> can use smaller # of files per job --> shorter run time but occupies more cluster machines
 
 subm_ppData_jetPlots=0
-subm_ppData_jetPlots_v2=1
 subm_ppData_jetTrigEff=0
 subm_ppData_makeNTuple=0
 
 subm_ppMC_jetPlots=0
-subm_ppMC_JERS=0
+subm_ppMC_JERS=1
 subm_ppMC_unf=0
 subm_ppMC_MCEff=0
 
@@ -31,19 +30,7 @@ if [[ $subm_ppData_jetPlots -eq 1 ]]
 then
     echo "...ppData jetPlots..."
     rootcompile readForests_ppData_jetPlots.C
-    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppData"
-    if [[ $sleep_between_subm -eq 1 ]]
-    then
-	#sleep ${Nmin}m
-	askCondor 360 10
-    fi
-fi
-
-if [[ $subm_ppData_jetPlots_v2 -eq 1 ]]
-then
-    echo "...ppData jetPlots v2..."
-    rootcompile readForests_ppData_jetPlots_v2.C
-    source run_readForests_jetPlots_v2.sh 4 "0.0" "2.0" "ppData"
+    source run_readForests_jetPlots.sh 4 "0.0" "2.5" "ppData"
     if [[ $sleep_between_subm -eq 1 ]]
     then
 	#sleep ${Nmin}m
@@ -90,7 +77,7 @@ if [[ $subm_ppMC_JERS -eq 1 ]]
 then
     echo "...ppMC JERS..."
     rootcompile readForests_ppMC_JERS.C
-    source run_readForests_JERS.sh 4 "0.0" "2.0"
+    source run_readForests_JERS.sh 4 "0.0" "2.5"
     if [[ $sleep_between_subm -eq 1 ]]
 	then
 	sleep ${Nmin}m
@@ -102,7 +89,7 @@ if [[ $subm_ppMC_unf -eq 1 ]]
 then
     echo "...ppMC unf..."
     rootcompile readForests_ppMC_unf.C
-    source run_readForests_unf.sh 4 "0.0" "2.0"
+    source run_readForests_unf.sh 4 "0.0" "2.5"
     if [[ $sleep_between_subm -eq 1 ]]
 	then
 	sleep ${Nmin}m

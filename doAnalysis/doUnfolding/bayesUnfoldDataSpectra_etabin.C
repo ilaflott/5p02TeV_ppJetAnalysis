@@ -11,7 +11,8 @@ const bool doJetID=true     ;
 const bool useSimpBins=false;
 const bool doJECsys=true;
 const bool applyNPCorrs=false;//&&compareToNLOThy;
-
+//const bool dorapbins=true;
+//const bool dopseudorapbins=true&&!(dorapbins);
 
 const std::string ptbintype="SMP";//"NLO_SMP";//"chris2";//"john";//
 const bool compareToNLOThy=false&&(ptbintype=="NLO_SMP");
@@ -36,12 +37,17 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 					const int etabinint=0, 
 					const int kIterInput=5,
 					std::string inFile_MC_dir  = "02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/",
-					std::string inFile_MC_name = "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root" //"NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
+					std::string inFile_MC_name = "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root", //"NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
+					std::string bintype="eta"
 					){
   
   //const int kIterInput=5 ){//, //const int etabinint=0){
-
+  bool dopseudorapbins=false; bool dorapbins=false;
+  if(bintype=="eta"){dopseudorapbins=true; dorapbins=!dopseudorapbins;}
+  else if(bintype=="y"){dopseudorapbins=false; dorapbins=!dopseudorapbins;}
+  else assert(false);
   // thy spectra  
+  //eventually, when i get new NLO spectra, i'll need to change which NLO files i call here. will be a pain.
   std::string NLOMCtitle_str="";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top.
   
   std::string CT10NPs ="" ; 
@@ -148,30 +154,35 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   std::string RandEtaRange="_"+radius+"_20_eta_20";
   std::string RandEtaRange_plotTitle=" "+radius;//+" 20eta20";// R4 20eta20
   std::string etabin_str="";
-  if(etabinint==0){
-    etabin_str="00eta05";
-    //RandEtaRange+="_00_eta_05";  
+  if(dopseudorapbins){
+    if(etabinint==0)
+      etabin_str="00eta05";
+    else if(etabinint==1)
+      etabin_str="05eta10";
+    else if(etabinint==2)
+      etabin_str="10eta15";
+    else if(etabinint==3)
+      etabin_str="15eta20";
+    else if(etabinint==4)
+      etabin_str="20eta25";
+    else if(etabinint==5)
+      etabin_str="25eta30";
   }
-  else if(etabinint==1){
-    etabin_str="05eta10";
-    //RandEtaRange+="_05_eta_10";  
+  else if(dorapbins){
+    if(etabinint==0)
+      etabin_str="00y05";
+    else if(etabinint==1)
+      etabin_str="05y10";
+    else if(etabinint==2)
+      etabin_str="10y15";
+    else if(etabinint==3)
+      etabin_str="15y20";
+    else if(etabinint==4)
+      etabin_str="20y25";
+    else if(etabinint==5)
+      etabin_str="25y30";
   }
-  else if(etabinint==2){
-    etabin_str="10eta15";
-    //RandEtaRange+="_10_eta_15";  
-  }
-  else if(etabinint==3){
-    etabin_str="15eta20";
-    //RandEtaRange+="_15_eta_20";  
-  }
-  else if(etabinint==4){
-    etabin_str="20eta25";
-    //RandEtaRange+="_20_eta_25";  
-  }
-  else if(etabinint==5){
-    etabin_str="25eta30";
-    //RandEtaRange+="_25_eta_30";  
-  }
+
   RandEtaRange_plotTitle+=etabin_str;  
   if(debugMode)std::cout<<"etabin_str string is = "<<etabin_str<<std::endl;
   if(debugMode)std::cout<<"radius string is = "<<radius<<std::endl;
@@ -231,8 +242,12 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   if(doJetID)genHistTitle+="_wJetID";
   if(ptbintype=="chris2")
     genHistTitle+=RandEtaRange;
-  else
-    genHistTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  else{
+    if(dopseudorapbins)
+      genHistTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
+    else if(dorapbins)
+      genHistTitle+=RandEtaRange+"_ybin"+std::to_string(etabinint);
+  }
   
 
 
@@ -273,8 +288,12 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   if(doJetID)TH2_title+="_wJetID";
   if(ptbintype=="chris2")
     TH2_title+=RandEtaRange;
-  else 
-    TH2_title+=RandEtaRange+"_bin"+std::to_string(etabinint);  
+  else {
+    if(dopseudorapbins)
+      TH2_title+=RandEtaRange+"_bin"+std::to_string(etabinint);  
+    else if(dorapbins)
+      TH2_title+=RandEtaRange+"_ybin"+std::to_string(etabinint);  
+  }
 
   //get the response matrix made by readforests
   TH2D* hmat = (TH2D*)fpp_MC->Get( TH2_title.c_str() );
@@ -332,8 +351,12 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   if(doJetID) histTitle2+="_wJetID";
   if(ptbintype=="chris2")
     histTitle2+=RandEtaRange;
-  else 
-    histTitle2+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  else {
+    if(dopseudorapbins)
+      histTitle2+=RandEtaRange+"_bin"+std::to_string(etabinint);
+    else if(dorapbins)
+      histTitle2+=RandEtaRange+"_ybin"+std::to_string(etabinint);
+  }
   
   TH1D*  hrec_sameside = (TH1D*)fpp_MC->Get( histTitle2.c_str() ); 
   hrec_sameside->Scale(1./MCscaling);
@@ -417,7 +440,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   //for output
   if(debugWrite)fout->cd();    
-  
+  //no rapidity bin version of this hist yet, not sure it's important, don't worry about it for now
   TH1D* hJetQA_jtptEntries=(TH1D*)fpp_Data->Get(
 						("hJetQA_1wJetID_jtptEntries_etabin"+std::to_string(etabinint)).c_str()
 						);
@@ -430,7 +453,10 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   std::string histTitle="hJetQA";
   if(doJetID)histTitle+="_1wJetID";
   else histTitle+="_0wJetID";
-  histTitle+="_jtpt_etabin"+std::to_string(etabinint);
+  if(dopseudorapbins)
+    histTitle+="_jtpt_etabin"+std::to_string(etabinint);
+  else if(dorapbins)
+    histTitle+="_jtpt_ybin"+std::to_string(etabinint);
   
   TH1D*  hrec = (TH1D*)fpp_Data->Get( histTitle.c_str() ); 
   if(debugWrite)hrec->Write();
@@ -438,7 +464,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   histTitle+="_divBylumietabin";
   double effIntgrtdLumi=computeEffLumi(fpp_Data);
-  effIntgrtdLumi=1.e+03;//TEMPORARY?!
+  effIntgrtdLumi=1.e+03;//int lumi of each trig path gets put in with weight_eS on hist entry in readForests step, this is for unit scaling only
   hrec->Scale(1./effIntgrtdLumi); // lumi
   if(debugWrite)hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");
@@ -474,7 +500,10 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   TH2D* hrec_covmat=NULL;  TH2D* hrec_covmat_rebin=NULL;
   if(setDataCovMat){
     if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
-    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
+    if(dopseudorapbins)
+      hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
+    else if(dorapbins)
+      hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_ybin_"+std::to_string(etabinint)).c_str());
     
     hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
     
@@ -493,30 +522,35 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );
   }  
 
+
   // ---------- reco, measured spectra, JEC sysup/down, to unfold
   TH1D*  hrec_JECsysup = NULL, * hrec_JECsysup_rebin=NULL;
   TH2D*  hrec_covmat_JECsysup=NULL;  TH2D* hrec_covmat_JECsysup_rebin=NULL;
 
   TH1D*  hrec_JECsysdown = NULL, * hrec_JECsysdown_rebin=NULL;
   TH2D*  hrec_covmat_JECsysdown=NULL;  TH2D* hrec_covmat_JECsysdown_rebin=NULL;
-
+  
   if(doJECsys){
-
+    
     //SYSUP
     std::string JECsysuphistTitle="hJetQA";
     if(doJetID)JECsysuphistTitle+="_1wJetID";
     else assert(false);
-    JECsysuphistTitle+="_jtpt_JEC_sysup_etabin"+std::to_string(etabinint);  
-    
+    if(dopseudorapbins)
+      JECsysuphistTitle+="_jtpt_JEC_sysup_etabin"+std::to_string(etabinint);  
+    else if(dorapbins)
+      JECsysuphistTitle+="_jtpt_JEC_sysup_ybin"+std::to_string(etabinint);  
+
+    if(debugMode)std::cout<<"JECsysuphistTitle="<<JECsysuphistTitle<<std::endl;    
     hrec_JECsysup = (TH1D*)fpp_Data->Get( JECsysuphistTitle.c_str() ); 
-    if(debugWrite)hrec->Write();
-    if(debugMode)hrec->Print("base");
-  
+    if(debugWrite)hrec_JECsysup->Write();
+    if(debugMode)hrec_JECsysup->Print("base");
+    
     JECsysuphistTitle+="_divBylumietabin";    
     hrec_JECsysup->Scale(1./effIntgrtdLumi); // lumi
     if(debugWrite)hrec_JECsysup->Write( (JECsysuphistTitle).c_str() );
     if(debugMode) hrec_JECsysup->Print("base");
-  
+    
     JECsysuphistTitle+="_clone";
     hrec_JECsysup_rebin = (TH1D*)hrec_JECsysup->Clone( (JECsysuphistTitle).c_str() );
     if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());
@@ -528,14 +562,14 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     
     if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());   
     if(debugMode) hrec_JECsysup_rebin->Print("base");  
-
+    
     if(clearOverUnderflows){
       JECsysuphistTitle+="_noOverUnderFlows";
       TH1clearOverUnderflows((TH1*)hrec_JECsysup_rebin);
       if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());
       if(debugMode) hrec_JECsysup_rebin->Print("base");  
     }
-  
+    
     //cosmetics
     hrec_JECsysup_rebin->SetMarkerStyle(kOpenCircle);
     hrec_JECsysup_rebin->SetMarkerColor(kBlue);     
@@ -543,48 +577,59 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     hrec_JECsysup_rebin->SetMarkerSize(1.02);     
     
     if(setDataCovMat){
-      if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
-      hrec_covmat_JECsysup=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysup_etabin_"+std::to_string(etabinint)).c_str());
+      if(debugMode)std::cout<<"getting JECsysup covariance matrix from data file"<<std::endl;    
+      if(dopseudorapbins) 
+	hrec_covmat_JECsysup=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysup_etabin_"+std::to_string(etabinint)).c_str());
+      if(dorapbins) 
+	hrec_covmat_JECsysup=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysup_ybin_"+std::to_string(etabinint)).c_str());
       
       hrec_covmat_JECsysup_rebin=(TH2D*)hrec_covmat_JECsysup->Clone ( ((std::string)hrec_covmat_JECsysup->GetName()+"_clone").c_str());
       
-      if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
+      if(debugMode)std::cout<<"rebinning JECsysup covariance matrix from data file"<<std::endl;    
       hrec_covmat_JECsysup_rebin=(TH2D*) reBinTH2(hrec_covmat_JECsysup_rebin, 
-						   ((std::string)hrec_covmat_JECsysup_rebin->GetName()+"_rebin").c_str(), 
-						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+						  ((std::string)hrec_covmat_JECsysup_rebin->GetName()+"_rebin").c_str(), 
+						  (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
       
-      if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+      if(debugMode)std::cout<<"scaling JECsysup covariance matrix from data file"<<std::endl;    
       hrec_covmat_JECsysup_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
       if(debugWrite)hrec_covmat_JECsysup_rebin->Write(TH2_title.c_str());
-      
+
       //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
       for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
 	hrec_JECsysup_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysup_rebin->GetBinContent(i,i)) );
     }
-
-
-
-
+    
+    
+    
+    
     //SYSDOWN
     std::string JECsysdownhistTitle="hJetQA";
     if(doJetID)JECsysdownhistTitle+="_1wJetID";
     else assert(false);
-    JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
-    
+    if(dopseudorapbins)
+      JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
+    else if(dorapbins)//TYPO: SHOULD BE 'jtpt', IS 'jtpy', FIX ME SOMEDAY
+      JECsysdownhistTitle+="_jtpy_JEC_sysdown_ybin"+std::to_string(etabinint);  
+
+    if(debugMode)std::cout<<"JECsysdownhistTitle="<<JECsysdownhistTitle<<std::endl;
     hrec_JECsysdown = (TH1D*)fpp_Data->Get( JECsysdownhistTitle.c_str() ); 
-    if(debugWrite)hrec->Write();
-    if(debugMode)hrec->Print("base");
-    
+    if(debugWrite)hrec_JECsysdown->Write();
+    if(debugMode)hrec_JECsysdown->Print("base");
+
+
     JECsysdownhistTitle+="_divBylumietabin";    
     hrec_JECsysdown->Scale(1./effIntgrtdLumi); // lumi
     if(debugWrite)hrec_JECsysdown->Write( (JECsysdownhistTitle).c_str() );
     if(debugMode) hrec_JECsysdown->Print("base");
+
   
     JECsysdownhistTitle+="_clone";
     hrec_JECsysdown_rebin = (TH1D*)hrec_JECsysdown->Clone( (JECsysdownhistTitle).c_str() );
     if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());
     if(debugMode) hrec_JECsysdown_rebin->Print("base");
+
+
     
     std::cout<<"rebinning hrec_JECsysdown..."<<std::endl;
     JECsysdownhistTitle+="_rebins";
@@ -605,20 +650,24 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     hrec_JECsysdown_rebin->SetMarkerColor(kBlue);     
     hrec_JECsysdown_rebin->SetLineColor(kBlue);     
     hrec_JECsysdown_rebin->SetMarkerSize(1.02);     
-    
+
     if(setDataCovMat){
-      if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
-      hrec_covmat_JECsysdown=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysdown_etabin_"+std::to_string(etabinint)).c_str());
+      if(debugMode)std::cout<<"getting JECsysdown covariance matrix from data file"<<std::endl;    
+
+      if(dopseudorapbins)
+	hrec_covmat_JECsysdown=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysdown_etabin_"+std::to_string(etabinint)).c_str());
+      else if(dorapbins)
+	hrec_covmat_JECsysdown=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysdown_ybin_"+std::to_string(etabinint)).c_str());
       
       hrec_covmat_JECsysdown_rebin=(TH2D*)hrec_covmat_JECsysdown->Clone ( ((std::string)hrec_covmat_JECsysdown->GetName()+"_clone").c_str());
       
-      if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
+      if(debugMode)std::cout<<"rebinning JECsysdown covariance matrix from data file"<<std::endl;    
       hrec_covmat_JECsysdown_rebin=(TH2D*) reBinTH2(hrec_covmat_JECsysdown_rebin, 
 						   ((std::string)hrec_covmat_JECsysdown_rebin->GetName()+"_rebin").c_str(), 
 						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
 						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
       
-      if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+      if(debugMode)std::cout<<"scaling JECsysdown covariance matrix from data file"<<std::endl;    
       hrec_covmat_JECsysdown_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
       if(debugWrite)hrec_covmat_JECsysdown_rebin->Write(TH2_title.c_str());
       
@@ -629,6 +678,8 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   }  
   
   
+    
+
   
   // ----- unfolding setup+use below here
 
@@ -1202,8 +1253,10 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     
     TLine* theLineAt1p1= (TLine*)theLineAtOne->Clone();
     theLineAt1p1->SetY1(1.1);    theLineAt1p1->SetY2(1.1);
-
-    std::string etabindesc_str="#||{y}";
+    
+    std::string etabindesc_str;
+    if(dopseudorapbins)etabindesc_str="#||{#eta}";
+    else if(dorapbins)etabindesc_str="#||{y}";
     if(     etabinint==0)etabindesc_str="0.0 < "+etabindesc_str+" < 0.5";
     else if(etabinint==1)etabindesc_str="0.5 < "+etabindesc_str+" < 1.0";
     else if(etabinint==2)etabindesc_str="1.0 < "+etabindesc_str+" < 1.5";
@@ -1227,6 +1280,23 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     
     hrec_rebin->SetTitle(("Jet Spectra"+methodString+descString).c_str());
     
+    float miny=999999999.; float maxy=-1.;
+    if(getnonzeromin(hrec_rebin)<miny)miny=getnonzeromin(hrec_rebin);
+    if(getnonzeromin(hunf)<miny)miny=getnonzeromin(hunf);
+    if(getnonzeromin(hgen_rebin)<miny)miny=getnonzeromin(hgen_rebin);
+    if(getnonzeromin(hrec_sameside_rebin)<miny)miny=getnonzeromin(hrec_sameside_rebin);
+
+    if(hrec_rebin->GetMaximum()>maxy)maxy=hrec_rebin->GetMaximum();
+    if(hunf->GetMaximum()>maxy)maxy=hunf->GetMaximum();
+    if(hgen_rebin->GetMaximum()>maxy)maxy=hgen_rebin->GetMaximum();
+    if(hrec_sameside_rebin->GetMaximum()>maxy)maxy=hrec_sameside_rebin->GetMaximum();
+    hrec_rebin->SetMinimum(miny); hrec_rebin->SetMaximum(maxy);
+    
+    if(debugMode){
+      std::cout<<"miny="<<miny<<std::endl;
+      std::cout<<"maxy="<<maxy<<std::endl;
+      //assert(false);
+    }
     hrec_rebin->DrawClone("P E");           
     hgen_rebin->DrawClone("P E SAME");                 
     hunf->DrawClone("P E SAME");     //          hunf->DrawClone("P E");               //debug
@@ -2190,9 +2260,9 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
 
-  if (argc!=6){
+  if (argc!=7){
     std::cout<<"error!"<<std::endl;
-    std::cout<<" do ./bayesUnfoldDataSpectra_etbina.exe <inFile_Data_dir> <baseName> <inFile_MC_dir> <inFile_MC_name>"<<std::endl;
+    std::cout<<" do ./bayesUnfoldDataSpectra_etabin.exe <inFile_Data_dir> <baseName> <inFile_MC_dir> <inFile_MC_name> <bin type>"<<std::endl;
     return rStatus;
   }
   else {
@@ -2203,10 +2273,8 @@ int main(int argc, char* argv[]){
 					  (const int)std::atoi(argv[3]),//0, 
 					  4, 
 					  (std::string)argv[4], 
-					  (std::string)argv[5] );
-    //      (bool)((int)std::atoi(argv[5])),
-    //	(std::string)argv[6]  ,
-    //	(std::string)argv[7] );    
+					  (std::string)argv[5],
+					  (std::string)argv[6]);
     std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
     return rStatus;
   }

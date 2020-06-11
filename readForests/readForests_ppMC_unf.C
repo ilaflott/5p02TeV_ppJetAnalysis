@@ -150,19 +150,28 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   TH1D *hpp_mcclosure_reco_test=NULL;   
   
   //to unfold ppData 
-  TH1D *hpp_gen_rap[nbins_abseta]={};    
-  TH1D *hpp_reco_rap[nbins_abseta]={}; 
-  TH2D *hpp_matrix_rap[nbins_abseta]={}; 
+  TH1D *hpp_gen_eta[nbins_abseta]={};    
+  TH1D *hpp_reco_eta[nbins_abseta]={}; 
+  TH2D *hpp_matrix_eta[nbins_abseta]={};
+ 
+  TH1D *hpp_gen_y[nbins_abseta]={};    
+  TH1D *hpp_reco_y[nbins_abseta]={}; 
+  TH2D *hpp_matrix_y[nbins_abseta]={}; 
   
-  TH1D *hpp_gen_genrap[nbins_abseta]={};    
-  TH1D *hpp_reco_genrap[nbins_abseta]={}; 
-  TH2D *hpp_matrix_genrap[nbins_abseta]={}; 
+  TH1D *hpp_gen_geneta[nbins_abseta]={};    
+  TH1D *hpp_reco_geneta[nbins_abseta]={}; 
+  TH2D *hpp_matrix_geneta[nbins_abseta]={}; 
   
   //to test MC sample consistency in unfolding
-  TH1D *hpp_mcclosure_gen_rap[nbins_abseta]={};      //the first three are for the "truth" response matrix
-  TH1D *hpp_mcclosure_reco_rap[nbins_abseta]={};         
-  TH2D *hpp_mcclosure_matrix_rap[nbins_abseta]={};         
-  TH1D *hpp_mcclosure_reco_test_rap[nbins_abseta]={};   
+  TH1D *hpp_mcclosure_gen_eta[nbins_abseta]={};      //the first three are for the "truth" response matrix
+  TH1D *hpp_mcclosure_reco_eta[nbins_abseta]={};         
+  TH2D *hpp_mcclosure_matrix_eta[nbins_abseta]={};         
+  TH1D *hpp_mcclosure_reco_test_eta[nbins_abseta]={};   
+
+  TH1D *hpp_mcclosure_gen_y[nbins_abseta]={};      //the first three are for the "truth" response matrix
+  TH1D *hpp_mcclosure_reco_y[nbins_abseta]={};         
+  TH2D *hpp_mcclosure_matrix_y[nbins_abseta]={};         
+  TH1D *hpp_mcclosure_reco_test_y[nbins_abseta]={};   
   
   if(fillMCUnfoldingHists){
     
@@ -187,11 +196,14 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	if(fillMCUnfJetSpectraRapHists){
 	  
 	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_gen_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
+	    hpp_gen_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 				       ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_gen_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
+				       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
 	  if(usegenetabins)
 	    for(int j=0;j<nbins_abseta;j++)
-	      hpp_gen_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
+	      hpp_gen_geneta[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
 					    ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);
 	}
       }
@@ -200,11 +212,14 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 				"MC recopt for unf data", 2500,0,2500);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_reco_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
+	    hpp_reco_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 					("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_reco_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
+					("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
 	  if(usegenetabins)
 	    for(int j=0;j<nbins_abseta;j++)
-	      hpp_reco_genrap[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
+	      hpp_reco_geneta[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
 					     ("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 
 	}
       }
@@ -213,45 +228,64 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 				  "MC gentpt v. recopt for unf data", 2500, 0,2500, 2500, 0,2500);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_matrix_rap[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
+	    hpp_matrix_eta[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 					  ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_matrix_y[j] = new TH2D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
+					  ("MC genpt v. recopt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
 	  if(usegenetabins)
 	    for(int j=0;j<nbins_abseta;j++)
-	      hpp_matrix_genrap[j] = new TH2D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
+	      hpp_matrix_geneta[j] = new TH2D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
 					       ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
 	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_gen") {
 	hpp_mcclosure_gen    = new TH1D( hTitle.c_str(), 
 					 "genpt for mcclosure same side", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists)
+	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_gen_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
+	    hpp_mcclosure_gen_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 						 ("MC gen pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_mcclosure_gen_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
+					       ("MC gen pt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2500,0,2500);
+	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_reco")	{
 	hpp_mcclosure_reco    = new TH1D( hTitle.c_str(), 
 					  "recopt for mcclosure same side", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists)
+	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_reco_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
+	    hpp_mcclosure_reco_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 						  ("MC reco pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);   
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_mcclosure_reco_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
+						("MC reco pt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2500,0,2500);   
+	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_matrix")	{
 	hpp_mcclosure_matrix    = new TH2D( hTitle.c_str(), 
 					    "genpt v. recopt for mcclosure same side", 2500, 0,2500, 2500, 0,2500);
-	if(fillMCUnfJetSpectraRapHists)
+	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_matrix_rap[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
+	    hpp_mcclosure_matrix_eta[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 						    ("MC genpt v. recopt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_mcclosure_matrix_y[j] = new TH2D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
+						  ("MC genpt v. recopt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_reco_test")	{
 	hpp_mcclosure_reco_test    = new TH1D( hTitle.c_str(), 
 					       "recopt for mcclosure opp side test", 2500,0,2500);
-	if(fillMCUnfJetSpectraRapHists)
+	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
-	    hpp_mcclosure_reco_test_rap[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
+	    hpp_mcclosure_reco_test_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 						       ("MC reco pt for mcclosure opp side test bin"+std::to_string(j)).c_str(), 2500,0,2500);   
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_mcclosure_reco_test_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
+						       ("MC reco pt for mcclosure opp side test ybin"+std::to_string(j)).c_str(), 2500,0,2500);   
+	}
       }
       else continue;
     }//end loop over unf titles
@@ -266,19 +300,23 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   TH2D* hpp_mcclosure_covmat_test_eta_arr[nbins_abseta]={};
   TH1D* hpp_mcclosure_covmat_test_eta_arr_helpers[nbins_abseta]={};
   bool etabin_bool_helper[nbins_abseta]={0};
+
+  TH2D* hpp_mcclosure_covmat_test_y_arr[nbins_abseta]={};
+  TH1D* hpp_mcclosure_covmat_test_y_arr_helpers[nbins_abseta]={};
+  bool ybin_bool_helper[nbins_abseta]={0};
   
   if(fillMCJetCovMatrix && fillMCJetIDHists){
-    std::string covmat_eta_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[0]+" < #||{y} < "+absetabins_str[nbins_abseta];    
-    if(debugMode)std::cout<<"covmat_eta_title =" << covmat_eta_title<< std::endl;      
-    std::string covmat_eta_name="hpp_mcclosure_covmat_test_";
-    covmat_eta_name+="wJetID";
-    if(debugMode)std::cout<<"covmat_eta_name  =" << covmat_eta_name << std::endl;      
-    hpp_mcclosure_covmat_test=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+    std::string covmat_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[0]+" < #||{#eta} < "+absetabins_str[nbins_abseta];    
+    if(debugMode)std::cout<<"covmat_title =" << covmat_title<< std::endl;      
+    std::string covmat_name="hpp_mcclosure_covmat_test_";
+    covmat_name+="wJetID";
+    if(debugMode)std::cout<<"covmat_name  =" << covmat_name << std::endl;      
+    hpp_mcclosure_covmat_test=new TH2D(covmat_name.c_str(), covmat_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
     hpp_mcclosure_covmat_test_helper=new TH1D( "mcclosure_covmat_test_helper", "helper only", nbins_pt, ptbins);      
     
-    if(fillMCUnfJetSpectraRapHists)
+    if(fillMCUnfJetSpectraRapHists){
       for(int i=0;i<nbins_abseta;i++){
-	std::string covmat_eta_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[i]+" < #||{y} < "+absetabins_str[i+1];    
+	std::string covmat_eta_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[i]+" < #||{#eta} < "+absetabins_str[i+1];    
 	if(debugMode)std::cout<<"covmat_eta_title =" << covmat_eta_title<< std::endl;      
 	std::string covmat_eta_name="hpp_mcclosure_covmat_test_";
 	//if(fillDataJetIDHists)covmat_eta_name+="wJetID_";
@@ -288,6 +326,19 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	hpp_mcclosure_covmat_test_eta_arr[i]=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
 	hpp_mcclosure_covmat_test_eta_arr_helpers[i]=new TH1D(("mcclosure_covmat_test_helper_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
       }//end etabin loop
+      
+      for(int i=0;i<nbins_abseta;i++){
+	std::string covmat_y_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[i]+" < #||{y} < "+absetabins_str[i+1];    
+	if(debugMode)std::cout<<"covmat_y_title =" << covmat_y_title<< std::endl;      
+	std::string covmat_y_name="hpp_mcclosure_covmat_test_";
+	//if(fillDataJetIDHists)covmat_eta_name+="wJetID_";
+	covmat_y_name+="wJetID_";
+	covmat_y_name+="ybin_"+std::to_string(i);      
+	if(debugMode)std::cout<<"covmat_y_name  =" << covmat_y_name << std::endl;      
+	hpp_mcclosure_covmat_test_y_arr[i]=new TH2D(covmat_y_name.c_str(), covmat_y_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+	hpp_mcclosure_covmat_test_y_arr_helpers[i]=new TH1D(("mcclosure_covmat_test_helper_ybin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+      }//end etabin loop
+    }
   }//end fillMCJetCovMatrix
 
 
@@ -296,7 +347,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   //JetAnalyzer, jets
   int nref_I;  
   float pt_F[1000];  float eta_F[1000];   float phi_F[1000];
-  float rawpt_F[1000]; //float y_F[1000], float jtpu_F[1000];
+  float rawpt_F[1000]; float m_F[1000];
   //tracks
   int trkN_I[1000], trkHardN_I[1000];
   float trkSum_F[1000],  trkMax_F[1000], trkHardSum_F[1000];
@@ -325,6 +376,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   jetpp[0]->SetBranchAddress("jteta",&eta_F);
   jetpp[0]->SetBranchAddress("jtphi",&phi_F);
   jetpp[0]->SetBranchAddress("rawpt",&rawpt_F);
+  jetpp[0]->SetBranchAddress("jtm",&m_F);
   //tracks
   jetpp[0]->SetBranchAddress("trackN",&trkN_I);
   jetpp[0]->SetBranchAddress("trackSum",&trkSum_F);
@@ -407,6 +459,8 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   //int mcclosureInt_arr[nbins_abseta]={0,0,0,0};
   int mcclosureInt_arr[nbins_abseta]={0};
   bool incrementClosureInt_arr[nbins_abseta]={0};
+  int mcclosureInt_y_arr[nbins_abseta]={0};
+  bool incrementClosureInt_y_arr[nbins_abseta]={0};
   //bool eventAccepted=false;
   
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
@@ -415,6 +469,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     incrementClosureInt=false;
     for(int i=0; i<nbins_abseta; i++)
       incrementClosureInt_arr[i]=false;
+
+    for(int i=0; i<nbins_abseta; i++)
+      incrementClosureInt_y_arr[i]=false;
       
     
     if(nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
@@ -481,18 +538,32 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       if(!hNEvts_withJets_Filled){
 	h_NEvents_withJets->Fill(1);
 	hNEvts_withJets_Filled=true;      }      
-      
-      //if reco jet w/o matched gen jet, skip.
-      float genpt= refpt_F[jet];
-      float recpt  = pt_F[jet];
+
+      float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
+      float recpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
       float receta = eta_F[jet];
-      float absreceta=fabs(receta);
-      float geneta = refeta_F[jet];
-      float absgeneta=fabs(geneta);
-      float gendrjt = refdrjt_F[jet];     
-      //float rawpt  = rawpt_F[jet];
-      //float genphi = refphi_F[jet];
-      //float recphi = phi_F[jet];
+      float jtm=m_F[jet];
+      
+      int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
+      int neuMult = neN_I[jet] + phN_I[jet] ;
+      int numConst  = chMult + neuMult;
+      
+      float absreceta = fabs(receta);	
+      float jttheta=2.*atan(exp(-1.*receta));
+      float jtpz=jtpt/tan(jttheta);
+      float jtp=sqrt(jtpt*jtpt + jtpz*jtpz);
+      float jtE=sqrt(jtp*jtp + jtm*jtm);
+      float jty=0.5*log((jtE+jtpz)/(jtE-jtpz));//experimentalist version
+      float absjty=fabs(jty);
+      
+      float genpt   = refpt_F[jet];
+      //float genphi  = refphi_F[jet];
+      float geneta  = refeta_F[jet];
+      float absgeneta  = fabs(geneta);
+      float gendrjt = refdrjt_F[jet];
+
+      
+      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
       
       
       if( subid_F[jet]!=0 ) {
@@ -529,13 +600,6 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	hNEvts_withJets_kmatCut1_Filled=true;      }      
       
       
-      int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
-      int neuMult = neN_I[jet] + phN_I[jet] ;
-      int numConst  = chMult + neuMult;
-
-      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
-      //float jetIDpt=rawpt_F[jet]; //ala SMP JetID (which should really use energy fractions, not pt)
-      
       // 13 TeV JetID criterion
       bool passesJetID=false; //int jtID=0;
       if(fillMCJetIDHists) 	{
@@ -566,20 +630,27 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	h_NEvents_withJets_kmatCut2->Fill(1);
 	hNEvts_withJets_kmatCut2_Filled=true;      }
 
+
+      int theYBin=-1;
+      for(int ybin=0;ybin<nbins_absy;ybin++)
+	if( absybins[ybin]<=absjty  && 		
+	    absjty<absybins[ybin+1]    	      ) {	    
+	  theYBin=ybin;
+	  break;	  }       	
       
-      int theRapBin=-1;
+      int theEtaBin=-1;
       for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
 	if( absetabins[rapbin]<=absreceta  && 		
 	    absreceta<absetabins[rapbin+1]    	      ) {	    
-	  theRapBin=rapbin;
+	  theEtaBin=rapbin;
 	  break;	  }       	
-
-      int theGENRapBin=-1;
+      
+      int theGENEtaBin=-1;
       if(usegenetabins){
 	for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
 	  if( absetabins[rapbin]<=absgeneta  && 		
 	      absgeneta<absetabins[rapbin+1]    	      ) {	    
-	    theGENRapBin=rapbin;
+	    theGENEtaBin=rapbin;
 	    break;	  }     
       }  	                  
       
@@ -608,31 +679,51 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	//fill jetspectraRapHists
 	if( fillMCUnfJetSpectraRapHists ) { 	  //these should be filled in according to the RECO eta rap bin
 	                                          //why; data jet eta is all we can look at, so the resp matrix for a given RECO eta rap bin should reflect that occasionally, a "true" jet in a given RECO eta rap bin actually belongs in a diff GEN eta rap bin
-	  if(theGENRapBin!=-1 && usegenetabins){
-	    hpp_gen_genrap[theGENRapBin]->Fill(genpt,weight_eS);
-	    hpp_reco_genrap[theGENRapBin]->Fill(recpt,weight_eS);
-	    hpp_matrix_genrap[theGENRapBin]->Fill(recpt, genpt, weight_eS);
+	  if(theGENEtaBin!=-1 && usegenetabins){
+	    hpp_gen_geneta[theGENEtaBin]->Fill(genpt,weight_eS);
+	    hpp_reco_geneta[theGENEtaBin]->Fill(recpt,weight_eS);
+	    hpp_matrix_geneta[theGENEtaBin]->Fill(recpt, genpt, weight_eS);
 	  }
 
-	  if(theRapBin!=-1){
-	    hpp_gen_rap[theRapBin]->Fill(genpt,weight_eS);
-	    hpp_reco_rap[theRapBin]->Fill(recpt,weight_eS);
-	    hpp_matrix_rap[theRapBin]->Fill(recpt, genpt, weight_eS);
+	  if(theEtaBin!=-1){
+	    hpp_gen_eta[theEtaBin]->Fill(genpt,weight_eS);
+	    hpp_reco_eta[theEtaBin]->Fill(recpt,weight_eS);
+	    hpp_matrix_eta[theEtaBin]->Fill(recpt, genpt, weight_eS);
 
-	    if(mcclosureInt_arr[theRapBin]%2==0){
-	      incrementClosureInt_arr[theRapBin]=true;
-	      hpp_mcclosure_reco_test_rap[theRapBin]->Fill(recpt, weight_eS);      	  
+	    if(mcclosureInt_arr[theEtaBin]%2==0){
+	      incrementClosureInt_arr[theEtaBin]=true;
+	      hpp_mcclosure_reco_test_eta[theEtaBin]->Fill(recpt, weight_eS);      	  
 	      if(fillMCJetCovMatrix){
-		etabin_bool_helper[theRapBin]=true;
-		hpp_mcclosure_covmat_test_eta_arr_helpers[theRapBin]->Fill(recpt);	      	    }
+		etabin_bool_helper[theEtaBin]=true;
+		hpp_mcclosure_covmat_test_eta_arr_helpers[theEtaBin]->Fill(recpt);	      	    }
 	    }
 	    else {
-	      incrementClosureInt_arr[theRapBin]=true;
-	      hpp_mcclosure_gen_rap[theRapBin]->Fill(genpt, weight_eS);
-	      hpp_mcclosure_reco_rap[theRapBin]->Fill(recpt, weight_eS); 	
-	      hpp_mcclosure_matrix_rap[theRapBin]->Fill(recpt, genpt, weight_eS);  
+	      incrementClosureInt_arr[theEtaBin]=true;
+	      hpp_mcclosure_gen_eta[theEtaBin]->Fill(genpt, weight_eS);
+	      hpp_mcclosure_reco_eta[theEtaBin]->Fill(recpt, weight_eS); 	
+	      hpp_mcclosure_matrix_eta[theEtaBin]->Fill(recpt, genpt, weight_eS);  
 	    }	  
-	  }//end theRapBin	  
+	  }//end theEtaBin	  
+
+	  if(theYBin!=-1){
+	    hpp_gen_y[theYBin]->Fill(genpt,weight_eS);
+	    hpp_reco_y[theYBin]->Fill(recpt,weight_eS);
+	    hpp_matrix_y[theYBin]->Fill(recpt, genpt, weight_eS);
+
+	    if(mcclosureInt_y_arr[theYBin]%2==0){
+	      incrementClosureInt_y_arr[theYBin]=true;
+	      hpp_mcclosure_reco_test_y[theYBin]->Fill(recpt, weight_eS);      	  
+	      if(fillMCJetCovMatrix){
+		ybin_bool_helper[theYBin]=true;
+		hpp_mcclosure_covmat_test_y_arr_helpers[theYBin]->Fill(recpt);	      	    }
+	    }
+	    else {
+	      incrementClosureInt_y_arr[theYBin]=true;
+	      hpp_mcclosure_gen_y[theYBin]->Fill(genpt, weight_eS);
+	      hpp_mcclosure_reco_y[theYBin]->Fill(recpt, weight_eS); 	
+	      hpp_mcclosure_matrix_y[theYBin]->Fill(recpt, genpt, weight_eS);  
+	    }	  
+	  }//end theYBin	  
 	}//end fillmcunfjetspectraraphists	  	  	
 	
       }//end fillmcunfoldinghists
@@ -648,6 +739,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       if(incrementClosureInt_arr[i]){
 	//if(debugMode&&eventAccepted)std::cout<<"mcclosureInt_arr["<<i<<"]="<<mcclosureInt_arr[i]<<std::endl;
 	mcclosureInt_arr[i]++;
+      }
+      if(incrementClosureInt_y_arr[i]){
+	//if(debugMode&&eventAccepted)std::cout<<"mcclosureInt_arr["<<i<<"]="<<mcclosureInt_arr[i]<<std::endl;
+	mcclosureInt_y_arr[i]++;
       }
     }
     
@@ -667,6 +762,11 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	    hpp_mcclosure_covmat_test_eta_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
 	  }//end etabin_bool_helper	  
 	  etabin_bool_helper[i]=false;	
+	  if(ybin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
+	    fillCovMatrix( (TH2D*)hpp_mcclosure_covmat_test_y_arr[i], (TH1D*)hpp_mcclosure_covmat_test_y_arr_helpers[i], nbins_pt , (double) weight_eS);
+	    hpp_mcclosure_covmat_test_y_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
+	  }//end etabin_bool_helper	  
+	  ybin_bool_helper[i]=false;	
 	}//end etabin loop
       }//end fillMCJetSpectraRapHists
     }//end fillMCJetCovMatrix

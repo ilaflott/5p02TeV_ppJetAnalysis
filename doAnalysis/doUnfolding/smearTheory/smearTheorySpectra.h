@@ -31,8 +31,24 @@
 
  //#include "RooUnfoldResponse.h"
 #include "smearTheorySpectra_strs.h"
-
+#include "smearTheorySpectra_bins.h"
  //TH1D *cross_section(TH1D *Spectra_);
+
+
+//returns binning array, puts # of bins in nbins
+double* setBinning_etabin(int etabinint=0,  int* nbins=NULL    ){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<std::endl<<"in setBinning_etabin"<<std::endl<<std::endl;  
+  
+  double* binarray=NULL;  
+  binarray=(double*)(SMP_ptbins[etabinint].data());
+  *(nbins)=(int)(SMP_ptbins[etabinint].size()-1);
+  
+  if(funcDebug)std::cout<<std::endl<<"setBinning_etabin done, exiting."<<std::endl<<std::endl;
+  return binarray;  
+  
+}
+
 
 void debugcout(int debugInt=0){
   std::cout<<"location #"<<debugInt<<std::endl;
@@ -130,185 +146,6 @@ void multiplyBinWidth(TH1D* h){
   return;
 }
 
-/////////////// Inclusive jets Binning form Ksenia ////////////////////////////////////////////////////////
-double py8Bins_incl[]={
-  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
-  //  32., 37., //junk bins above 
-  //43., 49., 
-  //37.,
-  //43., 
-  49.,
-  56., 
-  64., 
-  74., 
-  84., 
-  97., 
-  114.,
-  133., 
-  153., 
-  174., 
-  196., 
-  220., 
-  245.,
-  272., 
-  300.,
-  330.,
-  362., 
-  395., 
-  430., 
-  468.,
-  507., 
-  548., 
-  592., 
-  638., 
-  686.//,
-  //1000.//,//967.//1032. 
-  //1500.
-  //  1032., 1101. //junk from here down
-}; 
-const int n_py8bins_incl=sizeof(py8Bins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
-
-double py8smearedBins_incl[]={
-  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
-  //37.,
-  //43.,
-  49.,
-  56.,
-  64., 
-  74., 
-  84., 
-  97., 
-  114., 
-  133., 
-  153., 
-  174.,
-  196., 
-  220., 
-  245., 
-  272., 
-  300., 
-  330., 
-  362.,
-  395., 
-  430., 
-  468.,
-  507.,
-  548.,
-  592., 
-  638., 
-  686.//, 
-  //  1000.//,
-  //1500.//967.//1032.
-  //,1500.
-  //  1032., 1101. //junk from here down
-}; 
-const int n_py8smearedbins_incl=sizeof(py8smearedBins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
-
-
-double thyBins_incl[]={
-  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
-  //  32., 37., //junk bins above 
-  //43., 49., 
-  //37.,
-  43., 
-  49.,
-  56., 
-  64., 
-  74., 
-  84., 
-  97., 
-  114.,
-  133., 
-  153., 
-  174., 
-  196., 
-  220., 
-  245.,
-  272., 
-  300.,
-  330.,
-  362., 
-  395., 
-  430., 
-  468.,
-  507., 
-  548., 
-  592., 
-  638., 
-  686.//,
-  //1000.//,//967.//1032. 
-  //1500.
-  //  1032., 1101. //junk from here down
-}; 
-const int n_thybins_incl=sizeof(thyBins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
-
-double smearedBins_incl[]={
-  //0., 1., 5., 6., 8., 10., 12., 15., 18., 21., 24.,   // junk
-  //37.,
-  43.,
-  49.,
-  56.,
-  64., 
-  74., 
-  84., 
-  97., 
-  114., 
-  133., 
-  153., 
-  174.,
-  196., 
-  220., 
-  245., 
-  272., 
-  300., 
-  330., 
-  362.,
-  395., 
-  430., 
-  468.,
-  507.,
-  548.,
-  592., 
-  638., 
-  686.//, 
-  //  1000.//,
-  //1500.//967.//1032.
-  //,1500.
-  //  1032., 1101. //junk from here down
-}; 
-const int n_smearedbins_incl=sizeof(smearedBins_incl)/sizeof(double)-1; //this is # of bins = # of entries in array - 1
-
-const double absetabins[]={
-  0.0,
-  0.5,
-  1.0,
-  1.5,
-  2.0,
-  2.5,
-  3.0//,
-  //  3.2,
-  //  4.7
-};
-const int n_absetabins=sizeof(absetabins)/sizeof(double)-1;
-const std::string absetabins_str[]={
-  "0.0",
-  "0.5",
-  "1.0",
-  "1.5",
-  "2.0",
-  "2.5",
-  "3.0"//,
-  //  "3.2",
-  //  "4.7"
-};
-const std::string absetabins_tags[]={
-  "00eta05",
-  "05eta10",
-  "10eta15",
-  "15eta20",
-  "20eta25",
-  "25eta30",
-};
 
 
 
@@ -316,20 +153,20 @@ const std::string absetabins_tags[]={
 // 1.01 etc.  --- > from 5 TeV HIN studies showing excellent MC/Data JER closure
 //one scale factor per |y| bin. #'s only available up to |y| < 3.0
 const double JERscaleFacts[]={
-1.01,//  1.079,
-1.02,//  1.099,
-1.03,//  1.121,
-1.04,//  1.208,
-1.05,//  1.254,
-1.06//  1.395  
+1.10,//1.01,//  1.079,
+1.10,//1.02,//  1.099,
+1.10,//1.03,//  1.121,
+1.10,//1.04,//  1.208,
+1.10,//1.05,//  1.254,
+1.10//1.06//  1.395  
 };
 const double JERscaleFactErrs[]={
-0.01,//  0.026,
-0.02,//  0.028,
-0.03,//  0.029,
-0.04,//  0.046,
-0.05,//  0.062,
-0.06//  0.063
+0.10,//0.01,//  0.026,
+0.10,//0.02,//  0.028,
+0.10,//0.03,//  0.029,
+0.10,//0.04,//  0.046,
+0.10,//0.05,//  0.062,
+0.10//0.06//  0.063
 };
 
 
@@ -683,6 +520,14 @@ void makeToySpectra(TH1D* hthy,
     double sigma   = fJER->Eval(ptTrue);    //sigma*=1.079; //JER Scaling factor 8 TeV  Acoording to Mikko no scaling for the moment
     //sigma*=JERscaleFactor;
     double ptSmeared =  rnd->Gaus(ptTrue,ptTrue*sigma);
+
+    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
+    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
+    bool fillresp=in_smearpt_range&&in_trupt_range;
+    //if(!fillresp){//no, do not ever do this again.
+    //  i--;//i want 1e+08 events filled into the response matrix
+    //  continue;
+    //}
     
     double pt_w =0.;//     =  hthy_spline->Eval(ptTrue);
     if(useSplineWeights){
@@ -699,10 +544,6 @@ void makeToySpectra(TH1D* hthy,
     }
     else if(useFitWeights){
       pt_w=fitweights->Eval(ptTrue);    }
-    
-    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
-    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
-    bool fillresp=in_smearpt_range&&in_trupt_range;
     
     if(fillresp){
       resp->Fill(ptSmeared,ptTrue,pt_w);
@@ -743,12 +584,12 @@ void makeToySpectra(TH1D* hthy,
     
   }//end loop throwing random no's
 
-  std::cout<<"done smearing ynew."<<std::endl;  
-  if(funcDebug)std::cout<<"smear summary;"<<std::endl;
-  if(funcDebug)std::cout<<"nEvents="<<nevts<<std::endl;
-  if(funcDebug)std::cout<<"response_count="<<respcount<<std::endl;
-  if(funcDebug)std::cout<<"miss_count="<<misscount<<std::endl;
-  if(funcDebug)std::cout<<"fake_count="<<fakecount<<std::endl;
+  std::cout<<"done making toy spectra: "<< resp->GetName()<<std::endl;  
+  std::cout<<"smear summary;"<<std::endl;
+  std::cout<<"nEvents="<<nevts<<std::endl;
+  std::cout<<"response_count="<<respcount<<std::endl;
+  std::cout<<"miss_count="<<misscount<<std::endl;
+  std::cout<<"fake_count="<<fakecount<<std::endl;
 
   return;
 }

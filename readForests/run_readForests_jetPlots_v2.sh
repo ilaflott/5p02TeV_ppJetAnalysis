@@ -23,14 +23,14 @@ then
     echo ""
 
 
-    #source condorSubmit_readForests.sh readForests_ppData_jetPlots_v2 -1 20 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
-    source condorSubmit_readForests.sh readForests_ppData_jetPlots_v2 2 20 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
+    source condorSubmit_readForests.sh readForests_ppData_jetPlots_v2 -1 20 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
+    #source condorSubmit_readForests.sh readForests_ppData_jetPlots_v2 2 20 0 filelists/5p02TeV_HighPtJet80_forests.txt     ${R} PF 0 ${etaLo} ${etaHi}
     
     echo ""
     echo "submitting ppData LowerJets job(s)"
     echo ""
     
-    #source condorSubmit_readForests.sh readForests_ppData_jetPlots_v2 -1 20 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
+    source condorSubmit_readForests.sh readForests_ppData_jetPlots_v2 -1 20 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
     
     echo ""
     echo "done submitting ppData jetPlots job(s)"

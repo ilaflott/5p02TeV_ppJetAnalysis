@@ -131,7 +131,8 @@ const double integratedLuminosity=27.4*pow(10.,3.);//+/-2.4% //int lumi is in nb
 const bool doToyErrs          =false; // error options: kCovToy, kCovariance, kErrors, kNoError
 const bool doMCIntegralScaling=false;
 const bool fillRespHists      =true;
-const bool useTH2ProjRespHist= fillRespHists&&false;
+//const bool useTH2ProjRespHist= fillRespHists&&false;
+const bool trimRespMat=true&&fillRespHists;//only reason to do this is to adjust fake/misses correction. only will be done if fillRespHists is true.
 
 // settings that don't really get used
 const bool doOverUnderflows   =false;//leave false almost always
@@ -1233,6 +1234,125 @@ void draw_di_sv_canv(TCanvas* di_sv_canv, TH1D* hSVal, TH1D* hdi, int kRegInput)
 
 
 
+//void makeMissesHist(TH2D* hmat_rebin=NULL, TH1D* hgen_rebin=NULL, TH1D* misseshist=NULL){
+TH1D* makeMissesHist(TH2D* hmat_rebin=NULL, TH1D* hgen_rebin=NULL){
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in makeMissesHist!"<<std::endl;
+  if( !((bool)hmat_rebin) || !((bool)hgen_rebin) )assert(false);
+  TH1D* misseshist=(TH1D*)hgen_rebin->Clone("my_misses_hist");
+  misseshist->Reset("MICES");
+  int nbinsy=hgen_rebin->GetNbinsX();//should also be the # of bins of resp matrix
+                                     //#xbins in hgen == #y bins in hmat_rebin
+  TAxis* hmat_rebin_yax=(TAxis*)hmat_rebin->GetYaxis();
+  int nbinsy_hmat=hmat_rebin_yax->GetNbins();
+  assert(nbinsy_hmat=nbinsy);
+  TAxis* hmat_rebin_xax=(TAxis*)hmat_rebin->GetXaxis();
+  int nbinsx=hmat_rebin_xax->GetNbins();
+  
+  for(int ybin=1; ybin<=nbinsy;ybin++){
+    double val   =hgen_rebin->GetBinContent(ybin);
+    double valerr=hgen_rebin->GetBinError(ybin);
+    valerr*=valerr;
+    double histval=val;
+    double rowsum=0.;
+    for(int xbin=1; xbin<=nbinsx;xbin++){
+      rowsum+=hmat_rebin->GetBinContent(xbin,ybin);
+      val-=hmat_rebin->GetBinContent(xbin,ybin);
+      valerr-=(hmat_rebin->GetBinError(xbin,ybin)*hmat_rebin->GetBinError(xbin,ybin));    }
+    
+    if(funcDebug){
+      std::cout<<"---------------------------------------------------"<<std::endl;
+      std::cout<<"ybin="<<ybin<<", "<<(int)misseshist->GetBinLowEdge(ybin)<<" GeV < pT < "<<
+	(int)misseshist->GetBinLowEdge(ybin) + (int)misseshist->GetBinWidth(ybin)<<std::endl;}
+    
+    if(val<0.)      { 
+      if(funcDebug)std::cout<<"WARNING, val<0.! val="<<val<<", setting equal to 0."<<std::endl;
+      val=0.;        }
+    if(valerr>0.) 
+      valerr=sqrt(valerr);
+    else             {  
+      if(funcDebug)std::cout<<"WARNING, valerr<=0.! valerr="<<valerr<<", setting equal to sqrt(val)="<<sqrt(val)<<std::endl;
+      valerr=sqrt(val);    }
+    
+    if(funcDebug){
+      std::cout<<"misseshist content = "<< val<< " +/- "<<valerr<<std::endl;
+      std::cout<<"hgen content      = "<<histval<<std::endl;
+      std::cout<<"hmat content      = "<<rowsum<<std::endl;
+      std::cout<<"hgen hmat diff    = "<<histval-rowsum<<std::endl;
+      
+    }
+    
+    misseshist->SetBinContent(ybin, val);
+    misseshist->SetBinError(ybin, valerr);
+  }
+  misseshist->SetMarkerStyle(kOpenStar);
+  misseshist->SetMarkerColor(kBlack);
+  misseshist->SetMarkerSize(1.02);
+  misseshist->SetLineColor(kBlack);
+  //return;
+  return (TH1D*)misseshist;
+}
+
+//void makeFakesHist(TH2D* hmat_rebin=NULL, TH1D* hrec_sameside_rebin=NULL, TH1D* fakeshist=NULL){
+
+TH1D* makeFakesHist(TH2D* hmat_rebin=NULL, TH1D* hrec_sameside_rebin=NULL){
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in makeFakesHist!"<<std::endl;
+  if( !((bool)hmat_rebin) || !((bool)hrec_sameside_rebin) )assert(false);
+  TH1D* fakeshist=(TH1D*)hrec_sameside_rebin->Clone("my_fake_hist");
+  fakeshist->Reset("MICES");
+  int nbinsx=hrec_sameside_rebin->GetNbinsX();//should also be the # of bins of resp matrix
+  TAxis* hmat_rebin_xax=(TAxis*)hmat_rebin->GetXaxis();
+  int nbinsx_hmat=hmat_rebin_xax->GetNbins();
+  assert(nbinsx_hmat=nbinsx);
+  TAxis* hmat_rebin_yax=(TAxis*)hmat_rebin->GetYaxis();
+  int nbinsy=hmat_rebin_yax->GetNbins();
+  
+  for(int xbin=1; xbin<=nbinsx;xbin++){
+    double val   =hrec_sameside_rebin->GetBinContent(xbin);
+    double valerr=hrec_sameside_rebin->GetBinError(xbin);
+    valerr*=valerr;
+    double histval=val;
+    double colsum=0.;
+    for(int ybin=1; ybin<=nbinsy;ybin++){
+      colsum+=hmat_rebin->GetBinContent(xbin,ybin);
+      val-=hmat_rebin->GetBinContent(xbin,ybin);
+      valerr-=(hmat_rebin->GetBinError(xbin,ybin)*hmat_rebin->GetBinError(xbin,ybin));    }
+    
+    if(funcDebug){
+      std::cout<<"---------------------------------------------------"<<std::endl;
+      std::cout<<"xbin="<<xbin<<", "<<(int)fakeshist->GetBinLowEdge(xbin)<<" GeV < pT < "<<
+	(int)fakeshist->GetBinLowEdge(xbin) + (int)fakeshist->GetBinWidth(xbin)<<std::endl;}
+    
+    if(val<0.)      { 
+      if(funcDebug)std::cout<<"WARNING, val<0.! val="<<val<<", setting equal to 0."<<std::endl;
+      val=0.;        }
+    if(valerr>0.) 
+      valerr=sqrt(valerr);
+    else             {  
+      if(funcDebug)std::cout<<"WARNING, valerr<=0.! valerr="<<valerr<<", setting equal to sqrt(val)="<<sqrt(val)<<std::endl;
+      valerr=sqrt(val);    }
+    
+    if(funcDebug){
+      std::cout<<"fakeshist content = "<< val<< " +/- "<<valerr<<std::endl;      
+      std::cout<<"hrec content      = "<<histval<<std::endl;
+      std::cout<<"hmat content      = "<<colsum<<std::endl;
+      std::cout<<"hrec hmat diff    = "<<histval-colsum<<std::endl;
+    }
+    
+    fakeshist->SetBinContent(xbin, val);
+    fakeshist->SetBinError(xbin, valerr);
+  }
+  fakeshist->SetMarkerStyle(kOpenStar);
+  fakeshist->SetMarkerColor(kGreen);
+  fakeshist->SetMarkerSize(1.02);
+  fakeshist->SetLineColor(kGreen);
+  //return;
+  return (TH1D*)fakeshist;
+}
+
+
+
 void applyFakeCorrection(TH1D* hrec_rebin_fakecorr         =NULL, 			 TH1D* hrec_sameside_rebin_fakecorr=NULL, 
 			 TH1D* hfold_fakecorr              =NULL, 			 TH1D* hfold_truth_fakecorr        =NULL,
 			 TH1D* hfak=NULL){
@@ -1244,26 +1364,31 @@ void applyFakeCorrection(TH1D* hrec_rebin_fakecorr         =NULL, 			 TH1D* hrec
     std::cout<<"not enough hists given for fake correction. exiting applyFakeCorrection"<<std::endl;
     return;  }
   
-  //fake correction
+  //normalization diff between data meas and MC meas
   Double_t fac=(hrec_rebin_fakecorr->Integral()/hrec_sameside_rebin_fakecorr->Integral());
   int nbins_fakcorr=hrec_rebin_fakecorr->GetNbinsX();
   for(int i=1;i<=nbins_fakcorr; i++){
+    //get # of fakes in given bin
     Double_t hfak_i     = hfak->GetBinContent(i); Double_t hfak_i_err = hfak->GetBinError(i);
     
+    //take away fakes in misses spectra + set error
     Double_t hrec_i     = hrec_rebin_fakecorr->GetBinContent(i); Double_t hrec_i_err = hrec_rebin_fakecorr->GetBinError(i);
     hrec_rebin_fakecorr->SetBinContent( i, hrec_i-fac*hfak_i );
     hrec_rebin_fakecorr->SetBinError(   i, sqrt(hrec_i_err*hrec_i_err + fac*hfak_i_err*fac*hfak_i_err));
     
+    //fold(unf) == detector level spectra w/o fakes. put the fakes back in
     if(hfold_fakecorr){
       Double_t hfold_i     = hfold_fakecorr->GetBinContent(i); Double_t hfold_i_err = hfold_fakecorr->GetBinError(i);
       hfold_fakecorr->SetBinContent( i, hfold_i+fac*hfak_i );
       hfold_fakecorr->SetBinError(   i, sqrt(hfold_i_err*hfold_i_err + fac*hfak_i_err*fac*hfak_i_err));
     }
     
+    //take away fakes in misses spectra + set error
     Double_t hrecss_i     = hrec_sameside_rebin_fakecorr->GetBinContent(i); Double_t hrecss_i_err = hrec_sameside_rebin_fakecorr->GetBinError(i);
     hrec_sameside_rebin_fakecorr->SetBinContent( i, hrecss_i-hfak_i );
     hrec_sameside_rebin_fakecorr->SetBinError(   i, sqrt(hrecss_i_err*hrecss_i_err + hfak_i_err*hfak_i_err));
     
+    //fold(truth) == detector level spectra w/o fakes. put the fakes back in
     if(hfold_truth_fakecorr){
       Double_t hfold_truth_i     = hfold_truth_fakecorr->GetBinContent(i); Double_t hfold_truth_i_err = hfold_truth_fakecorr->GetBinError(i);
       hfold_truth_fakecorr->SetBinContent( i, hfold_truth_i+hfak_i );
@@ -1273,6 +1398,59 @@ void applyFakeCorrection(TH1D* hrec_rebin_fakecorr         =NULL, 			 TH1D* hrec
 
   return;
 }
+
+
+
+
+//miss correction does NOT work in an analagous way to fake correction....
+void applyMissCorrection(TH1D* hunf_misscorr         =NULL, TH1D* hgen_rebin=NULL,
+			 TH1D* hmiss=NULL){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<"in applyMissCorrection"<<std::endl;
+  if(!(hunf_misscorr) ||
+     !(hgen_rebin) ||
+     !(hmiss) ){
+    std::cout<<"not enough hists given for Miss correction. exiting applyMissCorrection"<<std::endl;
+    return;  }
+  
+
+
+  //normalization diff between data meas and MC meas
+  //Double_t fac=(hunf_misscorr->Integral()/hgen_rebin->Integral());//this might not make sense since the correct normalization factor would be with the fakes in the spectra already..
+  int nbins_fakcorr=hunf_misscorr->GetNbinsX();
+  for(int i=1;i<=nbins_fakcorr; i++){
+    //get # of fakes in given bin
+    Double_t hmiss_i     = hmiss->GetBinContent(i);     
+    //Double_t hmiss_i_err = hmiss->GetBinError(i);//forget error calculation for now
+    Double_t eff_i=(hgen_rebin->GetBinContent(i)-hmiss_i)/hgen_rebin->GetBinContent(i);
+    //Double_t eff_i_err=(hgen_rebin->GetBinError(i)*hgen_rebin->GetBinError(i) - hmiss_i_err*hmiss_i_err);
+    
+    //add back into unfolded data the misses spectra + set error
+    Double_t hunf_i     = hunf_misscorr->GetBinContent(i); Double_t hunf_i_err = hunf_misscorr->GetBinError(i);
+    hunf_misscorr->SetBinContent( i, hunf_i*eff_i );
+    hunf_misscorr->SetBinError(   i, hunf_i_err*eff_i);
+
+  }
+  //
+  ////normalization diff between data meas and MC meas
+  //Double_t fac=(hunf_misscorr->Integral()/hgen_rebin->Integral());//this might not make sense since the correct normalization factor would be with the fakes in the spectra already..
+  //int nbins_fakcorr=hunf_misscorr->GetNbinsX();
+  //for(int i=1;i<=nbins_fakcorr; i++){
+  //  //get # of fakes in given bin
+  //  Double_t hmiss_i     = hmiss->GetBinContent(i);     Double_t hmiss_i_err = hmiss->GetBinError(i);
+  //  
+  //  //add back into unfolded data the misses spectra + set error
+  //  Double_t hunf_i     = hunf_misscorr->GetBinContent(i); Double_t hunf_i_err = hunf_misscorr->GetBinError(i);
+  //  hunf_misscorr->SetBinContent( i, hunf_i+fac*hmiss_i );
+  //  hunf_misscorr->SetBinError(   i, sqrt(hunf_i_err*hunf_i_err + fac*hmiss_i_err*fac*hmiss_i_err));
+  //
+  //}
+
+  return;
+}
+
+
+
 
 
 
@@ -2537,6 +2715,21 @@ void makeStatErrRatio(TH1D* hratio=NULL, TH1D* hratio_staterr=NULL){
   
   
   return;
+}
+
+float getnonzeromin(TH1* th1){
+  float nonzeromin=1.e+40;
+  int nbinsx=th1->GetNbinsX();
+  for(int i=1;i<=nbinsx;i++){
+    float content=th1->GetBinContent(i);
+    if(!(content>0.)&&!(content<0.))//check for zero
+      continue;
+    else if(content < nonzeromin)//check that new content is less than current minium
+      nonzeromin=content;
+    else continue;//if the content is greater than current minimum
+  }
+  return nonzeromin;
+
 }
 
 //void divideThyByUnf(TH1* hthyratio, TH1* hunf){

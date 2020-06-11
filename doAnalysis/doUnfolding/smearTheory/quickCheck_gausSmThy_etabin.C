@@ -10,6 +10,7 @@
 #include "TH2.h"
 #include "TCanvas.h"
 
+//NOTE: errors when printing PNG on hexfarm, resulting in "empty" image files. do not use.
 const bool DO_PNG=false, DO_PDF=true, DO_EPS=false, DO_C=false;
 const bool debugMode=true;
 

@@ -1,5 +1,7 @@
 #include <cmath>
 
+
+
 TH2D* reBinTH2( TH2D* inputTH2, std::string rebinTH2_name,
 		double* boundaries_pt_reco, int nbins_pt_reco,
 		double* boundaries_pt_gen  , int nbins_pt_gen           ){
@@ -48,6 +50,99 @@ TH2D* reBinTH2( TH2D* inputTH2, std::string rebinTH2_name,
 
   if(funcDebug)std::cout<<std::endl<<"reBinTH2 done"<<std::endl<<std::endl;
   return reBinnedTH2;
+}
+
+void trimResponseMatrix(TH2D* hmat=NULL, TH1D* hgen=NULL, TH1D* hrec=NULL,
+			int gen_trim_nbins_lo=0, int gen_trim_nbins_hi=0,
+			int rec_trim_nbins_lo=0, int rec_trim_nbins_hi=0){
+  bool funcDebug=true;
+  if(funcDebug)std::cout<<std::endl<<"in trimResponseMatrix"<<std::endl<<std::endl;
+
+  TAxis *xaxis = hmat->GetXaxis(); //reco pt axis
+  int nbins_rec= xaxis->GetNbins();
+   
+  TAxis *yaxis = hmat->GetYaxis(); //gen pt axis
+  int nbins_gen = yaxis->GetNbins();
+
+  int genbin_start=1+gen_trim_nbins_lo;
+  int recbin_start=1+rec_trim_nbins_lo;
+  int genbin_end=nbins_gen-gen_trim_nbins_hi;
+  int recbin_end=nbins_rec-rec_trim_nbins_hi;
+
+  if(funcDebug){
+    std::cout<<"nbins_gen="<<nbins_gen<<std::endl;
+    std::cout<< (int)hgen->GetBinLowEdge(1)<< "< GEN jet p_T < " << (int)(hgen->GetBinLowEdge(nbins_gen)+hgen->GetBinWidth(nbins_gen))<<std::endl;
+    std::cout<<"i want to trim "<<gen_trim_nbins_lo <<" from the beginning"<<std::endl;
+    std::cout<<"i want to trim "<<gen_trim_nbins_hi <<" from the end"<<std::endl;
+    std::cout<<"remaining genbins should be genbin #'s "<<1+gen_trim_nbins_lo<<" to " << nbins_gen-gen_trim_nbins_hi << " so that i have..."<<std::endl ;
+    std::cout<< (int)hgen->GetBinLowEdge(genbin_start)<< "< GEN jet p_T < " << (int)(hgen->GetBinLowEdge(genbin_end)+hgen->GetBinWidth(genbin_end))<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<"nbins_rec="<<nbins_rec<<std::endl;
+    std::cout<< (int)hrec->GetBinLowEdge(1)<< "< RECO jet p_T < " << (int)(hrec->GetBinLowEdge(nbins_rec)+hrec->GetBinWidth(nbins_rec))<<std::endl;
+    std::cout<<"i want to trim "<<rec_trim_nbins_lo <<" from the beginning"<<std::endl;
+    std::cout<<"i want to trim "<<rec_trim_nbins_hi <<" from the end"<<std::endl;
+    std::cout<<"remaining recbins should be recbin #'s "<<1+rec_trim_nbins_lo<<" to " << nbins_rec-rec_trim_nbins_hi << " so that i have.."<<std::endl; 
+    std::cout<< (int)hrec->GetBinLowEdge(recbin_start)<< "< RECO jet p_T < " << (int)(hrec->GetBinLowEdge(recbin_end)+hrec->GetBinWidth(recbin_end))<<std::endl;
+    std::cout<<std::endl;
+  }
+ 
+  //zero bin content in bins to be trimmed from beginning and end of x/y axes
+  for (  int recbin=1 ; recbin <= nbins_rec ; recbin++ ) {
+    for (  int genbin=1 ; genbin <= nbins_gen ; genbin++ ) {
+      
+      bool trimcontent=false;
+      if(genbin<genbin_start || 
+	 genbin>genbin_end)
+	trimcontent=true;
+      else if(recbin<recbin_start ||
+	      recbin>recbin_end)
+	trimcontent=true;
+      else 
+	continue;
+
+      if(trimcontent){
+	if(funcDebug)std::cout<<"-------------------------"<<std::endl;
+	if(funcDebug)std::cout<<"recbin="<<recbin<<" and genbin="<<genbin<<std::endl;
+	if(funcDebug)std::cout<<"trimming content!"<<std::endl;
+	hmat->SetBinContent(recbin, genbin, 0.);
+	hmat->SetBinError(  recbin, genbin, 0.);
+      }
+
+    }
+  }
+  
+  //recalculate bin content of hrec
+  for (  int recbin=1 ; recbin <= nbins_rec ; recbin++ ) {
+    hrec->SetBinContent(recbin,0.);
+    hrec->SetBinError(recbin,0.);
+    double val=0.;
+    double valerr=0.;
+    for (  int genbin=1 ; genbin <= nbins_gen ; genbin++ ) {
+      val+=hmat->GetBinContent(recbin, genbin);
+      valerr+=hmat->GetBinError(recbin,genbin)*hmat->GetBinError(recbin,genbin);
+    }
+    valerr=sqrt(valerr);
+    hrec->SetBinContent(recbin,val);
+    hrec->SetBinError(recbin,valerr);
+  }
+
+//  //recalculate bin content of hgen
+   for (  int genbin=1 ; genbin <= nbins_gen ; genbin++ ) {
+    hgen->SetBinContent(genbin,0.);
+    hgen->SetBinError(genbin,0.);
+    double val=0.;
+    double valerr=0.;
+    for (  int recbin=1 ; recbin <= nbins_rec ; recbin++ ) {
+      val+=hmat->GetBinContent(recbin, genbin);
+      valerr+=hmat->GetBinError(recbin,genbin)*hmat->GetBinError(recbin,genbin);
+    }
+    valerr=sqrt(valerr);
+    hgen->SetBinContent(genbin,val);
+    hgen->SetBinError(genbin,valerr);
+  }
+
+  if(funcDebug)std::cout<<std::endl<<"leaving trimpResponseMatrix"<<std::endl<<std::endl;
+  return;
 }
 
 
@@ -424,7 +519,7 @@ TH2D* makeRespMatrixPercentErrs( TH2D* hmat_errors, TH2D* hmat_anabin,
 void setRespMatrixErrs( TH2D* hmat_anabin , TH2D* hmat_errors , bool zeroBins){   
   
   
-  bool funcDebug=false;
+  bool funcDebug=true;
   if(funcDebug)std::cout<<std::endl<<"in setRespMatrixErrors"<<std::endl<<std::endl;    
   //if(funcDebug) hmat_errors->Print("base");
   //if(funcDebug) hmat_anabin->Print("base");
@@ -480,16 +575,16 @@ void setRespMatrixErrs( TH2D* hmat_anabin , TH2D* hmat_errors , bool zeroBins){
       else if (theErr==theVal && theVal>0.){
 	if(zeroBins){
 	  binsZerod++;
-	  if(funcDebug)std::cout<<"error equal to bin value. setting content/err to zero!"<<std::endl;
+	  if(funcDebug)std::cout<<"WARNING error equal to bin value. setting content/err to zero!"<<std::endl;
 	  hmat_anabin->SetBinContent( xbin ,  ybin , 0. );
 	  hmat_anabin->SetBinError( xbin ,  ybin , 0. );	}
 	else{
-	  if(funcDebug)std::cout<<"setting error."<<std::endl;
+	  //if(funcDebug)std::cout<<"setting error."<<std::endl;
 	  hmat_anabin->SetBinError( xbin ,  ybin , theErr );
 	}
       }
       else{
-	if(funcDebug)std::cout<<"setting error."<<std::endl;
+	//if(funcDebug)std::cout<<"setting error."<<std::endl;
 	hmat_anabin->SetBinError( xbin ,  ybin , theErr );
       }
       
@@ -514,7 +609,7 @@ void setRespMatrixErrs( TH2D* hmat_anabin , TH2D* hmat_errors , bool zeroBins){
 
 TH2D* reBinPearsonTH2(TMatrixD* pearson, const double* boundaries_pt, const int nbins_pt){
 
-  bool debugPearson=false;
+  bool debugPearson=true;
   if(debugPearson)std::cout<<std::endl<<"in reBinPearsonTH2"<<std::endl<<std::endl;
   //const double* the_ptBins=boundaries_pt;//ptbins
   //const int numbins=nbins_pt;//nbins
@@ -576,3 +671,4 @@ void TH2clearOverUnderflows(TH2D* h)
   if(funcDebug)std::cout<<"done clearing Over/Underflow Bins for TH2...."<<std::endl;
   return;
 }
+

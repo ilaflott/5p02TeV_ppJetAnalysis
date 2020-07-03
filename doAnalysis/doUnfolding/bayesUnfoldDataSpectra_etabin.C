@@ -6,15 +6,15 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-const bool setDataCovMat=true;
+const bool setDataCovMat=false;
 const bool doJetID=true     ;
 const bool useSimpBins=false;
-const bool doJECsys=true;
+//const bool doJECsys=true;
 const bool applyNPCorrs=false;//&&compareToNLOThy;
 //const bool dorapbins=true;
 //const bool dopseudorapbins=true&&!(dorapbins);
 
-const std::string ptbintype="SMP";//"NLO_SMP";//"chris2";//"john";//
+const std::string ptbintype="merged_SMP";//"SMP";//"NLO_SMP";//"chris2";//"john";//
 const bool compareToNLOThy=false&&(ptbintype=="NLO_SMP");
 
 //-----------------------------
@@ -38,8 +38,15 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 					const int kIterInput=5,
 					std::string inFile_MC_dir  = "02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/",
 					std::string inFile_MC_name = "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root", //"NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
-					std::string bintype="eta"
+					std::string bintype="eta",
+					bool dosystunf = false,
+					std::string systunftype="JEC"
 					){
+  
+  if(dosystunf){
+    if(systunftype=="")assert(false);
+    if(!((systunftype=="JEC")||(systunftype=="JER")))assert(false);
+  }
   
   //const int kIterInput=5 ){//, //const int etabinint=0){
   bool dopseudorapbins=false; bool dorapbins=false;
@@ -498,31 +505,42 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   hrec_rebin->SetMarkerSize(1.02);     
 
   TH2D* hrec_covmat=NULL;  TH2D* hrec_covmat_rebin=NULL;
-  if(setDataCovMat){
-    if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
-    if(dopseudorapbins)
-      hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
-    else if(dorapbins)
-      hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_ybin_"+std::to_string(etabinint)).c_str());
-    
-    hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
-    
-    if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
-    hrec_covmat_rebin=(TH2D*) reBinTH2(hrec_covmat_rebin, 
-				       ((std::string)hrec_covmat_rebin->GetName()+"_rebin").c_str(), 
-				       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-				       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-    
-    if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
-    hrec_covmat_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
-    if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
-    
-    //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+  //if(setDataCovMat){
+  if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
+  if(dopseudorapbins)
+    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
+  else if(dorapbins)
+    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_ybin_"+std::to_string(etabinint)).c_str());
+  
+  hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
+  
+  if(debugMode)std::cout<<"rebinning covariance matrix from data file"<<std::endl;    
+  hrec_covmat_rebin=(TH2D*) reBinTH2(hrec_covmat_rebin, 
+				     ((std::string)hrec_covmat_rebin->GetName()+"_rebin").c_str(), 
+				     (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+				     (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+  
+  if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+  hrec_covmat_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
+  if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
+  
+  //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+  if(setDataCovMat)
     for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
-      hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );
-  }  
+      hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) ); 
 
 
+
+  // ---------- reco meas spectra MC, resp matrix MC, JER sysup/sysdown, to unfold
+  TH1D* hgen_resp_JERsysup_rebin=NULL, *hgen_resp_JERsysdown_rebin=NULL;
+  TH1D* hrec_sameside_JERsysup=NULL, *hrec_sameside_JERsysdown=NULL;
+  TH1D* hrec_sameside_JERsysup_rebin=NULL, *hrec_sameside_JERsysdown_rebin=NULL;
+  TH1D* hrec_sameside_resp_JERsysup_rebin=NULL, *hrec_sameside_resp_JERsysdown_rebin=NULL;
+  
+  TH2D* hmat_JERsysup=NULL, *hmat_JERsysdown=NULL;
+  TH2D* hmat_JERsysup_errors=NULL, *hmat_JERsysdown_errors=NULL;
+  TH2D* hmat_JERsysup_rebin=NULL, *hmat_JERsysdown_rebin=NULL;
+  
   // ---------- reco, measured spectra, JEC sysup/down, to unfold
   TH1D*  hrec_JECsysup = NULL, * hrec_JECsysup_rebin=NULL;
   TH2D*  hrec_covmat_JECsysup=NULL;  TH2D* hrec_covmat_JECsysup_rebin=NULL;
@@ -530,53 +548,53 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   TH1D*  hrec_JECsysdown = NULL, * hrec_JECsysdown_rebin=NULL;
   TH2D*  hrec_covmat_JECsysdown=NULL;  TH2D* hrec_covmat_JECsysdown_rebin=NULL;
   
-  if(doJECsys){
+  if(dosystunf){
     
-    //SYSUP
-    std::string JECsysuphistTitle="hJetQA";
-    if(doJetID)JECsysuphistTitle+="_1wJetID";
-    else assert(false);
-    if(dopseudorapbins)
-      JECsysuphistTitle+="_jtpt_JEC_sysup_etabin"+std::to_string(etabinint);  
-    else if(dorapbins)
-      JECsysuphistTitle+="_jtpt_JEC_sysup_ybin"+std::to_string(etabinint);  
-
-    if(debugMode)std::cout<<"JECsysuphistTitle="<<JECsysuphistTitle<<std::endl;    
-    hrec_JECsysup = (TH1D*)fpp_Data->Get( JECsysuphistTitle.c_str() ); 
-    if(debugWrite)hrec_JECsysup->Write();
-    if(debugMode)hrec_JECsysup->Print("base");
-    
-    JECsysuphistTitle+="_divBylumietabin";    
-    hrec_JECsysup->Scale(1./effIntgrtdLumi); // lumi
-    if(debugWrite)hrec_JECsysup->Write( (JECsysuphistTitle).c_str() );
-    if(debugMode) hrec_JECsysup->Print("base");
-    
-    JECsysuphistTitle+="_clone";
-    hrec_JECsysup_rebin = (TH1D*)hrec_JECsysup->Clone( (JECsysuphistTitle).c_str() );
-    if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());
-    if(debugMode) hrec_JECsysup_rebin->Print("base");
-    
-    std::cout<<"rebinning hrec_JECsysup..."<<std::endl;
-    JECsysuphistTitle+="_rebins";
-    hrec_JECsysup_rebin = (TH1D*)hrec_JECsysup_rebin->Rebin( nbins_pt_reco, (JECsysuphistTitle).c_str() , boundaries_pt_reco);
-    
-    if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());   
-    if(debugMode) hrec_JECsysup_rebin->Print("base");  
-    
-    if(clearOverUnderflows){
-      JECsysuphistTitle+="_noOverUnderFlows";
-      TH1clearOverUnderflows((TH1*)hrec_JECsysup_rebin);
+    if(systunftype=="JEC"){
+      //SYSUP
+      std::string JECsysuphistTitle="hJetQA";
+      if(doJetID)JECsysuphistTitle+="_1wJetID";
+      else assert(false);
+      if(dopseudorapbins)
+	JECsysuphistTitle+="_jtpt_JEC_sysup_etabin"+std::to_string(etabinint);  
+      else if(dorapbins)
+	JECsysuphistTitle+="_jtpt_JEC_sysup_ybin"+std::to_string(etabinint);  
+      
+      if(debugMode)std::cout<<"JECsysuphistTitle="<<JECsysuphistTitle<<std::endl;    
+      hrec_JECsysup = (TH1D*)fpp_Data->Get( JECsysuphistTitle.c_str() ); 
+      if(debugWrite)hrec_JECsysup->Write();
+      if(debugMode)hrec_JECsysup->Print("base");
+      
+      JECsysuphistTitle+="_divBylumietabin";    
+      hrec_JECsysup->Scale(1./effIntgrtdLumi); // lumi
+      if(debugWrite)hrec_JECsysup->Write( (JECsysuphistTitle).c_str() );
+      if(debugMode) hrec_JECsysup->Print("base");
+      
+      JECsysuphistTitle+="_clone";
+      hrec_JECsysup_rebin = (TH1D*)hrec_JECsysup->Clone( (JECsysuphistTitle).c_str() );
       if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());
+      if(debugMode) hrec_JECsysup_rebin->Print("base");
+      
+      std::cout<<"rebinning hrec_JECsysup..."<<std::endl;
+      JECsysuphistTitle+="_rebins";
+      hrec_JECsysup_rebin = (TH1D*)hrec_JECsysup_rebin->Rebin( nbins_pt_reco, (JECsysuphistTitle).c_str() , boundaries_pt_reco);
+      
+      if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());   
       if(debugMode) hrec_JECsysup_rebin->Print("base");  
-    }
-    
-    //cosmetics
-    hrec_JECsysup_rebin->SetMarkerStyle(kOpenCircle);
-    hrec_JECsysup_rebin->SetMarkerColor(kBlue);     
-    hrec_JECsysup_rebin->SetLineColor(kBlue);     
-    hrec_JECsysup_rebin->SetMarkerSize(1.02);     
-    
-    if(setDataCovMat){
+      
+      if(clearOverUnderflows){
+	JECsysuphistTitle+="_noOverUnderFlows";
+	TH1clearOverUnderflows((TH1*)hrec_JECsysup_rebin);
+	if(debugWrite)hrec_JECsysup_rebin->Write(JECsysuphistTitle.c_str());
+	if(debugMode) hrec_JECsysup_rebin->Print("base");  
+      }
+      
+      //cosmetics
+      hrec_JECsysup_rebin->SetMarkerStyle(kOpenCircle);
+      hrec_JECsysup_rebin->SetMarkerColor(kBlue);     
+      hrec_JECsysup_rebin->SetLineColor(kBlue);     
+      hrec_JECsysup_rebin->SetMarkerSize(1.02);     
+      
       if(debugMode)std::cout<<"getting JECsysup covariance matrix from data file"<<std::endl;    
       if(dopseudorapbins) 
 	hrec_covmat_JECsysup=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysup_etabin_"+std::to_string(etabinint)).c_str());
@@ -594,66 +612,67 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       if(debugMode)std::cout<<"scaling JECsysup covariance matrix from data file"<<std::endl;    
       hrec_covmat_JECsysup_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
       if(debugWrite)hrec_covmat_JECsysup_rebin->Write(TH2_title.c_str());
-
+      
       //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
-      for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
-	hrec_JECsysup_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysup_rebin->GetBinContent(i,i)) );
-    }
+      if(setDataCovMat)      
+	for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+	  hrec_JECsysup_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysup_rebin->GetBinContent(i,i)) );
+      
     
     
     
-    
-    //SYSDOWN
-    std::string JECsysdownhistTitle="hJetQA";
-    if(doJetID)JECsysdownhistTitle+="_1wJetID";
-    else assert(false);
-    if(dopseudorapbins)
-      JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
-    else if(dorapbins)//TYPO: SHOULD BE 'jtpt', IS 'jtpy', FIX ME SOMEDAY
+      
+      //SYSDOWN
+      std::string JECsysdownhistTitle="hJetQA";
+      if(doJetID)JECsysdownhistTitle+="_1wJetID";
+      else assert(false);
+      if(dopseudorapbins)
+	JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
+      else if(dorapbins)//TYPO: SHOULD BE 'jtpt', IS 'jtpy', FIX ME SOMEDAY
       JECsysdownhistTitle+="_jtpy_JEC_sysdown_ybin"+std::to_string(etabinint);  
-
-    if(debugMode)std::cout<<"JECsysdownhistTitle="<<JECsysdownhistTitle<<std::endl;
-    hrec_JECsysdown = (TH1D*)fpp_Data->Get( JECsysdownhistTitle.c_str() ); 
-    if(debugWrite)hrec_JECsysdown->Write();
-    if(debugMode)hrec_JECsysdown->Print("base");
-
-
-    JECsysdownhistTitle+="_divBylumietabin";    
-    hrec_JECsysdown->Scale(1./effIntgrtdLumi); // lumi
-    if(debugWrite)hrec_JECsysdown->Write( (JECsysdownhistTitle).c_str() );
-    if(debugMode) hrec_JECsysdown->Print("base");
-
-  
-    JECsysdownhistTitle+="_clone";
-    hrec_JECsysdown_rebin = (TH1D*)hrec_JECsysdown->Clone( (JECsysdownhistTitle).c_str() );
-    if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());
-    if(debugMode) hrec_JECsysdown_rebin->Print("base");
-
-
-    
-    std::cout<<"rebinning hrec_JECsysdown..."<<std::endl;
-    JECsysdownhistTitle+="_rebins";
-    hrec_JECsysdown_rebin = (TH1D*)hrec_JECsysdown_rebin->Rebin( nbins_pt_reco, (JECsysdownhistTitle).c_str() , boundaries_pt_reco);
-    
-    if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());   
-    if(debugMode) hrec_JECsysdown_rebin->Print("base");  
-
-    if(clearOverUnderflows){
-      JECsysdownhistTitle+="_noOverUnderFlows";
-      TH1clearOverUnderflows((TH1*)hrec_JECsysdown_rebin);
+      
+      if(debugMode)std::cout<<"JECsysdownhistTitle="<<JECsysdownhistTitle<<std::endl;
+      hrec_JECsysdown = (TH1D*)fpp_Data->Get( JECsysdownhistTitle.c_str() ); 
+      if(debugWrite)hrec_JECsysdown->Write();
+      if(debugMode)hrec_JECsysdown->Print("base");
+      
+      
+      JECsysdownhistTitle+="_divBylumietabin";    
+      hrec_JECsysdown->Scale(1./effIntgrtdLumi); // lumi
+      if(debugWrite)hrec_JECsysdown->Write( (JECsysdownhistTitle).c_str() );
+      if(debugMode) hrec_JECsysdown->Print("base");
+      
+      
+      JECsysdownhistTitle+="_clone";
+      hrec_JECsysdown_rebin = (TH1D*)hrec_JECsysdown->Clone( (JECsysdownhistTitle).c_str() );
       if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());
+      if(debugMode) hrec_JECsysdown_rebin->Print("base");
+
+      
+      
+      std::cout<<"rebinning hrec_JECsysdown..."<<std::endl;
+      JECsysdownhistTitle+="_rebins";
+      hrec_JECsysdown_rebin = (TH1D*)hrec_JECsysdown_rebin->Rebin( nbins_pt_reco, (JECsysdownhistTitle).c_str() , boundaries_pt_reco);
+      
+      if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());   
       if(debugMode) hrec_JECsysdown_rebin->Print("base");  
-    }
-  
-    //cosmetics
-    hrec_JECsysdown_rebin->SetMarkerStyle(kOpenCircle);
-    hrec_JECsysdown_rebin->SetMarkerColor(kBlue);     
-    hrec_JECsysdown_rebin->SetLineColor(kBlue);     
-    hrec_JECsysdown_rebin->SetMarkerSize(1.02);     
 
-    if(setDataCovMat){
+      if(clearOverUnderflows){
+	JECsysdownhistTitle+="_noOverUnderFlows";
+	TH1clearOverUnderflows((TH1*)hrec_JECsysdown_rebin);
+	if(debugWrite)hrec_JECsysdown_rebin->Write(JECsysdownhistTitle.c_str());
+	if(debugMode) hrec_JECsysdown_rebin->Print("base");  
+      }
+      
+      
+      //cosmetics
+      hrec_JECsysdown_rebin->SetMarkerStyle(kOpenCircle);
+      hrec_JECsysdown_rebin->SetMarkerColor(kBlue);     
+      hrec_JECsysdown_rebin->SetLineColor(kBlue);     
+      hrec_JECsysdown_rebin->SetMarkerSize(1.02);     
+      
       if(debugMode)std::cout<<"getting JECsysdown covariance matrix from data file"<<std::endl;    
-
+      
       if(dopseudorapbins)
 	hrec_covmat_JECsysdown=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_JEC_sysdown_etabin_"+std::to_string(etabinint)).c_str());
       else if(dorapbins)
@@ -663,19 +682,110 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       
       if(debugMode)std::cout<<"rebinning JECsysdown covariance matrix from data file"<<std::endl;    
       hrec_covmat_JECsysdown_rebin=(TH2D*) reBinTH2(hrec_covmat_JECsysdown_rebin, 
-						   ((std::string)hrec_covmat_JECsysdown_rebin->GetName()+"_rebin").c_str(), 
-						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+						    ((std::string)hrec_covmat_JECsysdown_rebin->GetName()+"_rebin").c_str(), 
+						    (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						    (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
       
       if(debugMode)std::cout<<"scaling JECsysdown covariance matrix from data file"<<std::endl;    
       hrec_covmat_JECsysdown_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
       if(debugWrite)hrec_covmat_JECsysdown_rebin->Write(TH2_title.c_str());
       
       //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
-      for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
-	hrec_JECsysdown_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysdown_rebin->GetBinContent(i,i)) );
+      if(setDataCovMat)      
+	for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+	  hrec_JECsysdown_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysdown_rebin->GetBinContent(i,i)) );
+      
+    }  
+    else if(systunftype=="JER"){
+      std::string JERsysTH2basetitle="hpp_matrix_wJetID_R4_20_eta_20_";//JERsysup_ybin0"
+      std::string JERsysupTH2title=JERsysTH2basetitle+"JERsysup_ybin"+std::to_string(etabinint);
+      fpp_MC->GetObject( JERsysupTH2title.c_str() , hmat_JERsysup);    
+
+      hmat_JERsysup_rebin = (TH2D*)hmat_JERsysup->Clone( ((std::string)hmat_JERsysup->GetName()+"_clone").c_str() );
+      hmat_JERsysup_rebin=(TH2D*) reBinTH2(hmat_JERsysup_rebin, ( ((std::string)hmat_JERsysup_rebin->GetName())+"_rebin").c_str(), 
+					   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+					   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+      if(clearOverUnderflows)
+	TH2clearOverUnderflows((TH2D*)hmat_JERsysup_rebin);
+      
+      
+      hmat_JERsysup_errors=makeRespMatrixErrors( (TH2D*) hmat_JERsysup,
+						 (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						 (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat,((std::string)hmat_JERsysup->GetName()+"_errors")  );
+      if(clearOverUnderflows)
+	TH2clearOverUnderflows((TH2D*)hmat_JERsysup_errors);
+      
+      setRespMatrixErrs( (TH2D*)hmat_JERsysup_rebin, (TH2D*) hmat_JERsysup_errors , (bool)zeroBins);  
+
+      std::string JERsysTH1basetitle="hpp_reco_wJetID_R4_20_eta_20_";//"JERsysdown_ybin0"
+      std::string JERsysupTH1title=JERsysTH1basetitle+"JERsysup_ybin"+std::to_string(etabinint);
+      fpp_MC->GetObject( (JERsysupTH1title).c_str() , hrec_sameside_JERsysup);          
+      hrec_sameside_JERsysup_rebin = (TH1D*)hrec_sameside_JERsysup->Clone( ((std::string)hrec_sameside_JERsysup->GetName()+"_clone").c_str() );
+      hrec_sameside_JERsysup_rebin = (TH1D*)hrec_sameside_JERsysup_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_JERsysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+      
+      
+      if(clearOverUnderflows){
+	TH1clearOverUnderflows((TH1*)hrec_sameside_JERsysup_rebin);
+	if(debugMode)hrec_sameside_JERsysup_rebin->Print("base");    }
+      
+      //cosmetics
+      hrec_sameside_JERsysup_rebin->SetMarkerStyle(kOpenSquare);
+      hrec_sameside_JERsysup_rebin->SetMarkerColor(kBlue-3);     
+      hrec_sameside_JERsysup_rebin->SetLineColor(kBlue-3);     
+      hrec_sameside_JERsysup_rebin->SetMarkerSize(1.02);    
+
+      std::string JERsysdownTH2title=JERsysTH2basetitle+"JERsysdown_ybin"+std::to_string(etabinint);
+      fpp_MC->GetObject( JERsysdownTH2title.c_str(), hmat_JERsysdown);    
+      hmat_JERsysdown_rebin = (TH2D*)hmat_JERsysdown->Clone( ((std::string)hmat_JERsysdown->GetName()+"_clone").c_str() );
+      hmat_JERsysdown_rebin=(TH2D*) reBinTH2(hmat_JERsysdown_rebin, (((std::string)hmat_JERsysdown_rebin->GetName())+"_rebin").c_str(), 
+					     (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+					     (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  ); 
+      if(clearOverUnderflows)
+	TH2clearOverUnderflows((TH2D*)hmat_JERsysdown_rebin);
+      
+      hmat_JERsysdown_errors=makeRespMatrixErrors( (TH2D*) hmat_JERsysdown,
+						   (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+						   (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat,((std::string)hmat_JERsysdown->GetName()+"_errors")  );
+      if(clearOverUnderflows)
+	TH2clearOverUnderflows((TH2D*)hmat_JERsysdown_errors);
+
+      setRespMatrixErrs( (TH2D*)hmat_JERsysdown_rebin, (TH2D*) hmat_JERsysdown_errors , (bool)zeroBins);  
+      
+      std::string JERsysdownTH1title=JERsysTH1basetitle+"JERsysdown_ybin"+std::to_string(etabinint);
+      fpp_MC->GetObject( (JERsysdownTH1title).c_str() , hrec_sameside_JERsysdown);          
+      hrec_sameside_JERsysdown_rebin = (TH1D*)hrec_sameside_JERsysdown->Clone( ((std::string)hrec_sameside_JERsysdown->GetName()+"_clone").c_str() );
+      hrec_sameside_JERsysdown_rebin = (TH1D*)hrec_sameside_JERsysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_JERsysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+      
+      if(clearOverUnderflows){
+	TH1clearOverUnderflows((TH1*)hrec_sameside_JERsysdown_rebin);
+	if(debugMode)hrec_sameside_JERsysdown_rebin->Print("base");    }
+      
+      //cosmetics
+      hrec_sameside_JERsysdown_rebin->SetMarkerStyle(kOpenSquare);
+      hrec_sameside_JERsysdown_rebin->SetMarkerColor(kBlue-3);     
+      hrec_sameside_JERsysdown_rebin->SetLineColor(kBlue-3);     
+      hrec_sameside_JERsysdown_rebin->SetMarkerSize(1.02);     
+
+      //response hists for systunfolding
+      if(fillRespHists){
+	hrec_sameside_resp_JERsysup_rebin=(TH1D*)hrec_sameside_JERsysup_rebin->Clone(((std::string)hrec_sameside_JERsysup_rebin->GetName()+"_resp").c_str());
+	
+	hrec_sameside_resp_JERsysdown_rebin=(TH1D*)hrec_sameside_JERsysdown_rebin->Clone(((std::string)hrec_sameside_JERsysdown_rebin->GetName()+"_resp").c_str());
+
+	hgen_resp_JERsysup_rebin=(TH1D*)hgen_rebin->Clone(((std::string)hgen_rebin->GetName()+"_JERsysup_resp").c_str());
+	hgen_resp_JERsysdown_rebin=(TH1D*)hgen_rebin->Clone(((std::string)hgen_rebin->GetName()+"_JERsysdown_resp").c_str());
+      }
+      else{
+	hrec_sameside_resp_JERsysup_rebin=new TH1D( ((std::string)hrec_sameside_JERsysup_rebin->GetName()+"_resp").c_str(), "" , nbins_pt_reco, boundaries_pt_reco);
+	hrec_sameside_resp_JERsysdown_rebin=new TH1D( ((std::string)hrec_sameside_JERsysdown_rebin->GetName()+"_resp").c_str(), "" , nbins_pt_reco, boundaries_pt_reco);
+	
+	hgen_resp_JERsysup_rebin=new TH1D( ((std::string)hgen_rebin->GetName()+"_JERsysup_resp").c_str(), "", nbins_pt_gen, boundaries_pt_gen);
+	hgen_resp_JERsysdown_rebin=new TH1D( ((std::string)hgen_rebin->GetName()+"_JERsysdown_resp").c_str(), "", nbins_pt_gen, boundaries_pt_gen);	
+      }
+      
     }
-  }  
+    
+  }
   
   
     
@@ -786,89 +896,166 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 
 
 
-  TH1D* hunf_JECsysup=NULL, *hunf_JECsysdown=NULL;
-  //  TH1D* hunf_JECsysup_outclone=NULL, *hunf_JECsysdown_outclone=NULL;
-  TH1D* hunf_JECsysup_ratio=NULL, *hunf_JECsysdown_ratio=NULL;
   TH1D* hunf_one=(TH1D*)hunf->Clone("ppData_unf_one_forJECSys");
   hunf_one->Divide(hunf);
   for(int i=1; i<=hunf_one->GetNbinsX();i++)hunf_one->SetBinError(i, hunf_one->GetBinError(i)/(sqrt(2)));
+
+  TH1D* hunf_JECsysup=NULL, *hunf_JECsysdown=NULL;
+  TH1D* hunf_JECsysup_ratio=NULL, *hunf_JECsysdown_ratio=NULL;
   int kIter_JECsysup=kIterInput;//kIterInput;//+10;
   int kIter_JECsysdown=kIterInput;
-
   TMatrixD* hrec_covmat_JECsysup_rebin_tmatrix=NULL;
   TMatrixD* hrec_covmat_JECsysdown_rebin_tmatrix=NULL;
+
+
+  TH1D* hunf_JERsysup=NULL, *hunf_JERsysdown=NULL;
+  TH1D* hunf_JERsysup_ratio=NULL, *hunf_JERsysdown_ratio=NULL;
+  int kIter_JERsysup=kIterInput;//kIterInput;//+10;
+  int kIter_JERsysdown=kIterInput;
   
-  
-  if(doJECsys){
-    std::cout<<"calling RooUnfoldBayes for upper JEC systematics unfolding... kIter_JECsysup="<<kIter_JECsysup<<std::endl;  
-    RooUnfoldBayes unf_bayes_JECsysup( &roo_resp, hrec_JECsysup_rebin, kIter_JECsysup );
-    unf_bayes_JECsysup.SetVerbose(verbosity);
+  if(dosystunf){
     
-    if(setDataCovMat){    
-      if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
-      if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
-      hrec_covmat_JECsysup_rebin_tmatrix=(TMatrixD*)roo_resp.H2M(hrec_covmat_JECsysup_rebin, 
-								 nbins_pt_reco_mat,
-								 nbins_pt_gen_mat,
-								 NULL, 0	);    
-      unf_bayes_JECsysup.RooUnfold::SetMeasuredCov( *(hrec_covmat_JECsysup_rebin_tmatrix) );  }
-    else if(doToyErrs){
-      std::cout<<"using toy errors, suppressing text output"<<std::endl;
-      unf_bayes_JECsysup.SetNToys(10000);
-      unf_bayes_JECsysup.SetVerbose(1);  }
-    
-    hunf_JECsysup = (TH1D*)unf_bayes_JECsysup.Hreco(errorTreatment);     std::cout<<std::endl; 
-    hunf_JECsysup->SetName(("ppData_BayesUnf_JECsysup_Spectra"));
-    hunf_JECsysup->SetTitle( ("Unf. Data, JEC Syst. Up, kIter="+std::to_string(kIter_JECsysup)).c_str());
-    
-    hunf_JECsysup_ratio=(TH1D*)      hunf_JECsysup->Clone(("ppData_BayesUnf_JECsysup_Ratio"));
-    hunf_JECsysup_ratio->Divide(hunf);
-
-    divideBinWidth(hunf_JECsysup);            
-
-    hunf_JECsysup->SetLineColor(hunf->GetLineColor()-2);
-    hunf_JECsysup->SetMarkerSize(0.);
-    hunf_JECsysup_ratio->SetLineColor(hunf->GetLineColor()-2);
-    hunf_JECsysup_ratio->SetMarkerSize(0.);
-
-
-
-
-
-    std::cout<<"calling RooUnfoldBayes for lower JEC systematics unfolding... kIter_JECsysdown="<<kIter_JECsysdown<<std::endl;  
-    RooUnfoldBayes unf_bayes_JECsysdown( &roo_resp, hrec_JECsysdown_rebin, kIter_JECsysdown );
-    unf_bayes_JECsysdown.SetVerbose(verbosity);
+    if(systunftype=="JEC"){
+      std::cout<<"calling RooUnfoldBayes for upper JEC systematics unfolding... kIter_JECsysup="<<kIter_JECsysup<<std::endl;  
+      RooUnfoldBayes unf_bayes_JECsysup( &roo_resp, hrec_JECsysup_rebin, kIter_JECsysup );
+      unf_bayes_JECsysup.SetVerbose(verbosity);
       
-    if(setDataCovMat){    
-      if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
-      if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
-      hrec_covmat_JECsysdown_rebin_tmatrix=(TMatrixD*)roo_resp.H2M(hrec_covmat_JECsysdown_rebin, 
-								 nbins_pt_reco_mat,
-								 nbins_pt_gen_mat,
-								 NULL, 0	);    
-      unf_bayes_JECsysdown.RooUnfold::SetMeasuredCov( *(hrec_covmat_JECsysdown_rebin_tmatrix) );  }
-    else if(doToyErrs){
-      std::cout<<"using toy errors, suppressing text output"<<std::endl;
-      unf_bayes_JECsysdown.SetNToys(10000);
-      unf_bayes_JECsysdown.SetVerbose(1);  }
-
-
-    hunf_JECsysdown = (TH1D*)unf_bayes_JECsysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
-    hunf_JECsysdown->SetName(("ppData_BayesUnf_JECsysdown_Spectra"));
-    hunf_JECsysdown->SetTitle( ("Unf. Data, JEC Syst. Down, kIter="+std::to_string(kIter_JECsysdown)).c_str());
+      if(setDataCovMat){    
+	if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
+	if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
+	hrec_covmat_JECsysup_rebin_tmatrix=(TMatrixD*)roo_resp.H2M(hrec_covmat_JECsysup_rebin, 
+								   nbins_pt_reco_mat,
+								   nbins_pt_gen_mat,
+								   NULL, 0	);    
+	unf_bayes_JECsysup.RooUnfold::SetMeasuredCov( *(hrec_covmat_JECsysup_rebin_tmatrix) );  }
+      else if(doToyErrs){
+	std::cout<<"using toy errors, suppressing text output"<<std::endl;
+	unf_bayes_JECsysup.SetNToys(10000);
+	unf_bayes_JECsysup.SetVerbose(1);  }
       
-    hunf_JECsysdown_ratio=(TH1D*)      hunf_JECsysdown->Clone(("ppData_BayesUnf_JECsysdown_Ratio"));
-    hunf_JECsysdown_ratio->Divide(hunf);
+      hunf_JECsysup = (TH1D*)unf_bayes_JECsysup.Hreco(errorTreatment);     std::cout<<std::endl; 
+      hunf_JECsysup->SetName(("ppData_BayesUnf_JECsysup_Spectra"));
+      hunf_JECsysup->SetTitle( ("Unf. Data, JEC Syst. Up, kIter="+std::to_string(kIter_JECsysup)).c_str());
+      
+      hunf_JECsysup_ratio=(TH1D*)      hunf_JECsysup->Clone(("ppData_BayesUnf_JECsysup_Ratio"));
+      hunf_JECsysup_ratio->Divide(hunf);
+      
+      divideBinWidth(hunf_JECsysup);            
+      
+      hunf_JECsysup->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JECsysup->SetMarkerSize(0.);
+      hunf_JECsysup_ratio->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JECsysup_ratio->SetMarkerSize(0.);
+      
 
-    divideBinWidth(hunf_JECsysdown);            
+      
+      
+      
+      std::cout<<"calling RooUnfoldBayes for lower JEC systematics unfolding... kIter_JECsysdown="<<kIter_JECsysdown<<std::endl;  
+      RooUnfoldBayes unf_bayes_JECsysdown( &roo_resp, hrec_JECsysdown_rebin, kIter_JECsysdown );
+      unf_bayes_JECsysdown.SetVerbose(verbosity);
+      
+      if(setDataCovMat){    
+	if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes"<<std::endl;
+	if(debugMode)std::cout<<"converting TH2D to TMatrixD"<<std::endl;
+	hrec_covmat_JECsysdown_rebin_tmatrix=(TMatrixD*)roo_resp.H2M(hrec_covmat_JECsysdown_rebin, 
+								     nbins_pt_reco_mat,
+								     nbins_pt_gen_mat,
+								     NULL, 0	);    
+	unf_bayes_JECsysdown.RooUnfold::SetMeasuredCov( *(hrec_covmat_JECsysdown_rebin_tmatrix) );  }
+      else if(doToyErrs){
+	std::cout<<"using toy errors, suppressing text output"<<std::endl;
+	unf_bayes_JECsysdown.SetNToys(10000);
+	unf_bayes_JECsysdown.SetVerbose(1);  }
+      
+      
+      hunf_JECsysdown = (TH1D*)unf_bayes_JECsysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
+      hunf_JECsysdown->SetName(("ppData_BayesUnf_JECsysdown_Spectra"));
+      hunf_JECsysdown->SetTitle( ("Unf. Data, JEC Syst. Down, kIter="+std::to_string(kIter_JECsysdown)).c_str());
+      
+      hunf_JECsysdown_ratio=(TH1D*)      hunf_JECsysdown->Clone(("ppData_BayesUnf_JECsysdown_Ratio"));
+      hunf_JECsysdown_ratio->Divide(hunf);
+      
+      divideBinWidth(hunf_JECsysdown);            
+      
+      hunf_JECsysdown->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JECsysdown->SetMarkerSize(0.);
+      hunf_JECsysdown_ratio->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JECsysdown_ratio->SetMarkerSize(0.);
+    }
+    
+    else if(systunftype=="JER"){
+      
+      std::cout<<"calling RooUnfoldResponse for upper JER systematics unfolding"<<std::endl;
+      RooUnfoldResponse roo_resp_JERsysup( hrec_sameside_resp_JERsysup_rebin, hgen_resp_JERsysup_rebin, hmat_JERsysup_rebin, ("Response_matrix_"+systunftype+"sysup"+RandEtaRange).c_str()) ;
+      roo_resp_JERsysup.UseOverflow(doOverUnderflows);    
+      
+      std::cout<<"calling RooUnfoldBayes for upper systematics unfolding... kIter_JERsysup="<<kIter_JERsysup<<std::endl;  
+      RooUnfoldBayes unf_bayes_JERsysup( &roo_resp_JERsysup, hrec_rebin, kIter_JERsysup );
+      unf_bayes_JERsysup.SetVerbose(verbosity);
+      
+      if(setDataCovMat){    
+	if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes_JERsysup"<<std::endl;
+	unf_bayes_JERsysup.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );  }
+      
+      hunf_JERsysup = (TH1D*)unf_bayes_JERsysup.Hreco(errorTreatment);     std::cout<<std::endl; 
+      hunf_JERsysup->SetName(("ppData_BayesUnf_"+systunftype+"sysup_Spectra").c_str());
+      hunf_JERsysup->SetTitle( ("Unf. Data, "+systunftype+" Syst. Up, kIter="+std::to_string(kIter_JERsysup)).c_str());
+      
+      hunf_JERsysup_ratio=(TH1D*)      hunf_JERsysup->Clone(("ppData_BayesUnf_"+systunftype+"sysup_Ratio").c_str());
+      hunf_JERsysup_ratio->Divide(hunf);
+      
+      divideBinWidth(hunf_JERsysup);            
+      divideBinWidth(hrec_sameside_JERsysup	       	);
+      divideBinWidth(hrec_sameside_JERsysup_rebin	       	);
+      divideBinWidth(hgen_resp_JERsysup_rebin	       	);
+      divideBinWidth(hrec_sameside_resp_JERsysup_rebin   	);
+      
+      hunf_JERsysup->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JERsysup->SetMarkerSize(0.);
+      hunf_JERsysup_ratio->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JERsysup_ratio->SetMarkerSize(0.);
+      
+      
+      std::cout<<"calling RooUnfoldResponse for lower JER systematics unfolding"<<std::endl;
+      RooUnfoldResponse roo_resp_JERsysdown( hrec_sameside_resp_JERsysdown_rebin, hgen_resp_JERsysdown_rebin, hmat_JERsysdown_rebin, ("Response_matrix_"+systunftype+"sysdown"+RandEtaRange).c_str()) ;
+      roo_resp_JERsysdown.UseOverflow(doOverUnderflows);    
+	
+      std::cout<<"calling RooUnfoldBayes for lower systematics unfolding... kIter_JERsysdown="<<kIter_JERsysdown<<std::endl;  
+      RooUnfoldBayes unf_bayes_JERsysdown( &roo_resp_JERsysdown, hrec_rebin, kIter_JERsysdown );
+      unf_bayes_JERsysdown.SetVerbose(verbosity);
+      
+      if(setDataCovMat){    
+	if(debugMode)std::cout<<"passing TMatrixD covariance matrix to unf_bayes_JERsysdown"<<std::endl;
+	unf_bayes_JERsysdown.RooUnfold::SetMeasuredCov( *(hrec_covmat_rebin_tmatrix) );  }
+      
+      hunf_JERsysdown = (TH1D*)unf_bayes_JERsysdown.Hreco(errorTreatment);     std::cout<<std::endl; 
+      hunf_JERsysdown->SetName(("ppData_BayesUnf_"+systunftype+"sysdown_Spectra").c_str());
+      hunf_JERsysdown->SetTitle( ("Unf. Data, "+systunftype+" Syst. Down, kIter="+std::to_string(kIter_JERsysdown)).c_str());      
+      
+      hunf_JERsysdown_ratio=(TH1D*)      hunf_JERsysdown->Clone(("ppData_BayesUnf_"+systunftype+"sysdown_Ratio").c_str());
+      hunf_JERsysdown_ratio->Divide(hunf);
+      
+      divideBinWidth(hunf_JERsysdown);            
+      divideBinWidth(hrec_sameside_JERsysdown	       	);
+      divideBinWidth(hrec_sameside_JERsysdown_rebin	       	);
+      divideBinWidth(hgen_resp_JERsysdown_rebin	       	);
+      divideBinWidth(hrec_sameside_resp_JERsysdown_rebin   	);
+      
+      hunf_JERsysdown->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JERsysdown->SetMarkerSize(0.);
+      hunf_JERsysdown_ratio->SetLineColor(hunf->GetLineColor()-2);
+      hunf_JERsysdown_ratio->SetMarkerSize(0.);
+      
+      
+      }
+    
 
-    hunf_JECsysdown->SetLineColor(hunf->GetLineColor()-2);
-    hunf_JECsysdown->SetMarkerSize(0.);
-    hunf_JECsysdown_ratio->SetLineColor(hunf->GetLineColor()-2);
-    hunf_JECsysdown_ratio->SetMarkerSize(0.);
+    
+    
   }
-
-
+  
+  
   // --------- RATIOS WITH TOY NLO TRUTH ----------------
   TH1D *hgen_rebin_ratiobin=(TH1D*)hgen_rebin->Clone("ppData_Gen_Ratio_denom");
   if(debugMode)hgen_rebin_ratiobin->Print("base");  
@@ -1225,6 +1412,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   TCanvas *canv_spectra=NULL, *canv_mc_fakes_spectra=NULL, *canv_thy_spectra_1=NULL, *canv_thy_spectra_2=NULL;
   TCanvas *canv_gen_ratio=NULL, *canv_rec_ratio=NULL, *canv_fold_ratio=NULL, *canv_fold_ratio2=NULL, *canv_thy_ratio=NULL,*canv_thy_ratio2=NULL; 
   TCanvas *canv_JECsysterrs_ratio=NULL,*canv_JECsysterrs_spectra=NULL,*canv_JECsysterrs_combined=NULL;
+  TCanvas *canv_JERsysterrs_ratio=NULL,*canv_JERsysterrs_spectra=NULL;
   TCanvas *canv_covmat=NULL, *canv_absval_covmat=NULL, *canv_pearson=NULL, *canv_unfmat=NULL, *canv_mat_rebin=NULL, *canv_mat_percerrs=NULL;
   TCanvas *canv_3x3spectra=NULL, *canv_3x3genratio=NULL, *canv_3x3recratio=NULL, *canv_kIterRatio=NULL,  *canv_chi2iter=NULL;
   TCanvas *canv_3x3covmat=NULL, *canv_3x3covmatabsval=NULL, *canv_3x3pearson=NULL;
@@ -1643,133 +1831,200 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       
     
     
-    if(doJECsys){
+    if(dosystunf){
       
-      float systerr_text_x=0.665, systerr_text_y=0.70;
-      // ---- spectra syst unf plot
-      canvForPrint->cd();
-      if(!useSimpBins)canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(1);
+      if(systunftype=="JEC"){
+	
+	float systerr_text_x=0.665, systerr_text_y=0.70;
+	// ---- spectra syst unf plot
+	canvForPrint->cd();
+	if(!useSimpBins)canvForPrint->SetLogx(1);
+	canvForPrint->SetLogy(1);
+	
+	hunf->Draw("P E");
+	hunf_JECsysup->Draw("HIST SAME ][");
+	hunf_JECsysdown->Draw("HIST SAME ][");
+	
+	TLegend* legendsystspec= new TLegend(0.55,0.75,0.90,0.90 );
+	legendsystspec->AddEntry(hunf, "Data Unf.", "lep" );
+	legendsystspec->AddEntry(hunf_JECsysup, ("Upper/Lower JEC Syst. Err."), "l");
+	//legendsyst->AddEntry(h_recratio_staterr, "Statistical Error", "lep");      
+	legendsystspec->SetBorderSize(0);
+	legendsystspec->SetFillStyle(0);
+	legendsystspec->Draw();
+	
+	drawTLatex( systerr_text_x, systerr_text_y, 0.035, canvForPrint, desclines);
+	
+	canv_JECsysterrs_spectra=(TCanvas*)canvForPrint->DrawClone();
+	
+	canvForPrint->Print(outPdfFile.c_str());
+	
+	
+	
+	// ---- ratio syst unf plot
+	canvForPrint->cd();
+	if(!useSimpBins)canvForPrint->SetLogx(1);
+	canvForPrint->SetLogy(0);
+	
+	setupRatioHist(hunf_one, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);     
+	//setupSystPercErrsHist(h_genratio_JERsysterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+	//setupSystPercErrsHist(h_genratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+	//setupSystPercErrsHist(h_recratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+	
+	//h_genratio_JERsysterr->SetTitle("Sources of Systematic Error");
+	//h_genratio_JERsysterr->GetYaxis()->SetTitle("% Error");
+	//h_genratio_JERsysterr->DrawClone("][ P E2");
+	//h_genratio_staterr   ->DrawClone("][ P E SAME");    
+	hunf_one->GetYaxis()->SetTitle("Rel. Error");// w.r.t Unf. Data");
+	hunf_one->SetAxisRange(0.7,1.3,"Y");
+	
+	hunf_one->Draw("P E");
+	hunf_JECsysup_ratio->Draw("HIST SAME ][");
+	hunf_JECsysdown_ratio->Draw("HIST SAME ][");
       
-      hunf->Draw("P E");
-      hunf_JECsysup->Draw("HIST SAME ][");
-      hunf_JECsysdown->Draw("HIST SAME ][");
-      
-      TLegend* legendsystspec= new TLegend(0.55,0.75,0.90,0.90 );
-      legendsystspec->AddEntry(hunf, "Data Unf.", "lep" );
-      legendsystspec->AddEntry(hunf_JECsysup, ("Upper/Lower JEC Syst. Err."), "l");
-      //legendsyst->AddEntry(h_recratio_staterr, "Statistical Error", "lep");      
-      legendsystspec->SetBorderSize(0);
-      legendsystspec->SetFillStyle(0);
-      legendsystspec->Draw();
+	TLegend* legendsystratio= new TLegend(0.55,0.75,0.90,0.9 );
+	legendsystratio->AddEntry(hunf_one, "Stat. Err.", "lep" );
+	legendsystratio->AddEntry(hunf_JECsysup_ratio,  ("Upper/Lower JEC Syst. Err."), "l" );
+	legendsystratio->SetBorderSize(0);
+	legendsystratio->SetFillStyle(0);
+	
+	legendsystratio->Draw();
+	drawTLatex( systerr_text_x, systerr_text_y, 0.035, canvForPrint, desclines);    
+	canv_JECsysterrs_ratio=(TCanvas*)canvForPrint->DrawClone();
+	
+	canvForPrint->Print(outPdfFile.c_str());
 
-      drawTLatex( systerr_text_x, systerr_text_y, 0.035, canvForPrint, desclines);
-      
-      canv_JECsysterrs_spectra=(TCanvas*)canvForPrint->DrawClone();
-      
-      canvForPrint->Print(outPdfFile.c_str());
-      
-      
-      
-      // ---- ratio syst unf plot
-      canvForPrint->cd();
-      if(!useSimpBins)canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(0);
-      
-      setupRatioHist(hunf_one, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);     
-      //setupSystPercErrsHist(h_genratio_JERsysterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      //setupSystPercErrsHist(h_genratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      //setupSystPercErrsHist(h_recratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
-      
-      //h_genratio_JERsysterr->SetTitle("Sources of Systematic Error");
-      //h_genratio_JERsysterr->GetYaxis()->SetTitle("% Error");
-      //h_genratio_JERsysterr->DrawClone("][ P E2");
-      //h_genratio_staterr   ->DrawClone("][ P E SAME");    
-      hunf_one->GetYaxis()->SetTitle("Rel. Error");// w.r.t Unf. Data");
-      hunf_one->SetAxisRange(0.7,1.3,"Y");
+	
+	// ---- spectra/ratio syst unf plot
+	canvForPrint->Clear();
+	
+	canvForPrint->cd();
+	
+	TPad* specpad=new TPad( "specpad", "specpad", 0., 0.3, 1., 1.);
+	specpad->SetLogx(1);
+	specpad->SetLogy(1);
+	specpad->SetBottomMargin(0);
+	specpad->Draw();
+	
+	TPad* ratiopad=new TPad( "ratiopad", "ratiopad", 0., 0.0, 1., 0.3);
+	ratiopad->SetLogx(1);
+	ratiopad->SetLogy(0);
+	ratiopad->SetBottomMargin(0.2);
+	ratiopad->SetTopMargin(0.);
+	ratiopad->Draw();
+	
+	specpad->cd();
+	
+	//---------------------------------------
+	hunf->GetYaxis()->SetTitleSize(0.045);
+	hunf->GetYaxis()->SetTitleOffset(0.7);
+	hunf->GetYaxis()->SetLabelSize(0.045);
+	//---------------------------------------
+	//hunf->GetXaxis()->Set();
+	//---------------------------------------
+	
+	hunf->Draw("P E");
+	hunf_JECsysup->Draw("HIST SAME ][");
+	hunf_JECsysdown->Draw("HIST SAME ][");
+	
+	legendsystspec->Draw();
+	drawTLatex( systerr_text_x, systerr_text_y+0.08, 0.035, canvForPrint, desclines);    
+	
+	ratiopad->cd();
+	
+	//---------------------------------------
+	hunf_one->SetTitle("");
+	hunf_one->SetAxisRange(0.75,1.25,"Y");
+	hunf_one->GetYaxis()->SetLabelSize(0.07);
+	//hunf_one->GetYaxis()->SetLabelOffset(0.4);
+	hunf_one->GetYaxis()->SetTitleSize(0.08);
+	hunf_one->GetYaxis()->SetTitleOffset(0.4);
+	hunf_one->GetYaxis()->CenterTitle(true);
+	//---------------------------------------
+	hunf_one->GetXaxis()->SetLabelSize(0.07);      
+	//hunf_one->GetXaxis()->SetLabelOffset(0.4);
+	hunf_one->GetXaxis()->SetTitleSize(0.08);
+	//hunf_one->GetXaxis()->SetTitleOffset(0.4);
+	//hunf_one->GetXaxis()->CenterTitle(true);
+	//---------------------------------------
+	
+	hunf_one->Draw("P E");
+	hunf_JECsysup_ratio->Draw("HIST SAME ][ ");
+	hunf_JECsysdown_ratio->Draw("HIST SAME ][ ");
+	
+	canv_JECsysterrs_combined=(TCanvas*) canvForPrint->DrawClone();
+	canvForPrint->Print(outPdfFile.c_str());
+	canvForPrint->Clear();
+	
+	
+      }
 
-      hunf_one->Draw("P E");
-      hunf_JECsysup_ratio->Draw("HIST SAME ][");
-      hunf_JECsysdown_ratio->Draw("HIST SAME ][");
-      
-      TLegend* legendsystratio= new TLegend(0.55,0.75,0.90,0.9 );
-      legendsystratio->AddEntry(hunf_one, "Stat. Err.", "lep" );
-      legendsystratio->AddEntry(hunf_JECsysup_ratio,  ("Upper/Lower JEC Syst. Err."), "l" );
-      legendsystratio->SetBorderSize(0);
-      legendsystratio->SetFillStyle(0);
+      else if (systunftype=="JER"){
+	//canv_JERsysterrs_ratio
+	//canv_JERsysterrs_spectra
 
-      legendsystratio->Draw();
-      drawTLatex( systerr_text_x, systerr_text_y, 0.035, canvForPrint, desclines);    
-      canv_JECsysterrs_ratio=(TCanvas*)canvForPrint->DrawClone();
+	float systerr_text_x=0.665, systerr_text_y=0.70;
+	// ---- spectra syst unf plot
+	canvForPrint->cd();
+	if(!useSimpBins)canvForPrint->SetLogx(1);
+	canvForPrint->SetLogy(1);
+	
+	hunf->Draw("P E");
+	hunf_JERsysup->Draw("HIST SAME ][");
+	hunf_JERsysdown->Draw("HIST SAME ][");
+	
+	TLegend* legendsystspec= new TLegend(0.55,0.75,0.90,0.90 );
+	legendsystspec->AddEntry(hunf, "Data Unf.", "lep" );
+	legendsystspec->AddEntry(hunf_JERsysup, ("Upper/Lower JER Syst. Err."), "l");
+	//legendsyst->AddEntry(h_recratio_staterr, "Statistical Error", "lep");      
+	legendsystspec->SetBorderSize(0);
+	legendsystspec->SetFillStyle(0);
+	legendsystspec->Draw();
+	
+	drawTLatex( systerr_text_x, systerr_text_y, 0.035, canvForPrint, desclines);
+	
+	canv_JERsysterrs_spectra=(TCanvas*)canvForPrint->DrawClone();
+	
+	canvForPrint->Print(outPdfFile.c_str());
+	
+	
+	
+	// ---- ratio syst unf plot
+	canvForPrint->cd();
+	if(!useSimpBins)canvForPrint->SetLogx(1);
+	canvForPrint->SetLogy(0);
+	
+	setupRatioHist(hunf_one, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);     
+	//setupSystPercErrsHist(h_genratio_JERsysterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+	//setupSystPercErrsHist(h_genratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+	//setupSystPercErrsHist(h_recratio_staterr, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+	
+	//h_genratio_JERsysterr->SetTitle("Sources of Systematic Error");
+	//h_genratio_JERsysterr->GetYaxis()->SetTitle("% Error");
+	//h_genratio_JERsysterr->DrawClone("][ P E2");
+	//h_genratio_staterr   ->DrawClone("][ P E SAME");    
+	hunf_one->GetYaxis()->SetTitle("Rel. Error");// w.r.t Unf. Data");
+	hunf_one->SetAxisRange(0.7,1.3,"Y");
+	
+	hunf_one->Draw("P E");
+	hunf_JERsysup_ratio->Draw("HIST SAME ][");
+	hunf_JERsysdown_ratio->Draw("HIST SAME ][");
       
-      canvForPrint->Print(outPdfFile.c_str());
-
-
-      // ---- spectra/ratio syst unf plot
-      canvForPrint->Clear();
-
-      canvForPrint->cd();
-      
-      TPad* specpad=new TPad( "specpad", "specpad", 0., 0.3, 1., 1.);
-      specpad->SetLogx(1);
-      specpad->SetLogy(1);
-      specpad->SetBottomMargin(0);
-      specpad->Draw();
-      
-      TPad* ratiopad=new TPad( "ratiopad", "ratiopad", 0., 0.0, 1., 0.3);
-      ratiopad->SetLogx(1);
-      ratiopad->SetLogy(0);
-      ratiopad->SetBottomMargin(0.2);
-      ratiopad->SetTopMargin(0.);
-      ratiopad->Draw();
-      
-      specpad->cd();
-      
-      //---------------------------------------
-      hunf->GetYaxis()->SetTitleSize(0.045);
-      hunf->GetYaxis()->SetTitleOffset(0.7);
-      hunf->GetYaxis()->SetLabelSize(0.045);
-      //---------------------------------------
-      //hunf->GetXaxis()->Set();
-      //---------------------------------------
-      
-      hunf->Draw("P E");
-      hunf_JECsysup->Draw("HIST SAME ][");
-      hunf_JECsysdown->Draw("HIST SAME ][");
-
-      legendsystspec->Draw();
-      drawTLatex( systerr_text_x, systerr_text_y+0.08, 0.035, canvForPrint, desclines);    
-
-      ratiopad->cd();
-      
-      //---------------------------------------
-      hunf_one->SetTitle("");
-      hunf_one->SetAxisRange(0.75,1.25,"Y");
-      hunf_one->GetYaxis()->SetLabelSize(0.07);
-      //hunf_one->GetYaxis()->SetLabelOffset(0.4);
-      hunf_one->GetYaxis()->SetTitleSize(0.08);
-      hunf_one->GetYaxis()->SetTitleOffset(0.4);
-      hunf_one->GetYaxis()->CenterTitle(true);
-      //---------------------------------------
-      hunf_one->GetXaxis()->SetLabelSize(0.07);      
-      //hunf_one->GetXaxis()->SetLabelOffset(0.4);
-      hunf_one->GetXaxis()->SetTitleSize(0.08);
-      //hunf_one->GetXaxis()->SetTitleOffset(0.4);
-      //hunf_one->GetXaxis()->CenterTitle(true);
-      //---------------------------------------
-      
-      hunf_one->Draw("P E");
-      hunf_JECsysup_ratio->Draw("HIST SAME ][ ");
-      hunf_JECsysdown_ratio->Draw("HIST SAME ][ ");
-      
-      canv_JECsysterrs_combined=(TCanvas*) canvForPrint->DrawClone();
-      canvForPrint->Print(outPdfFile.c_str());
-      canvForPrint->Clear();
-      
-
+	TLegend* legendsystratio= new TLegend(0.55,0.75,0.90,0.9 );
+	legendsystratio->AddEntry(hunf_one, "Stat. Err.", "lep" );
+	legendsystratio->AddEntry(hunf_JERsysup_ratio,  ("Upper/Lower JER Syst. Err."), "l" );
+	legendsystratio->SetBorderSize(0);
+	legendsystratio->SetFillStyle(0);
+	
+	legendsystratio->Draw();
+	drawTLatex( systerr_text_x, systerr_text_y, 0.035, canvForPrint, desclines);    
+	canv_JERsysterrs_ratio=(TCanvas*)canvForPrint->DrawClone();
+	
+	canvForPrint->Print(outPdfFile.c_str());
+	
+      }
     }
     
-
     
     // NJets v. Jet p_T hist (all weight=1) ---------------------    
     if( (bool)hJetQA_jtptEntries )      {
@@ -1797,28 +2052,28 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       
       canvForPrint->Print(outPdfFile.c_str());    }
     
-    if(setDataCovMat){
-
-      // rebinned covariance matrix from data readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
-      canvForPrint->cd();
-      canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(1);
-      canvForPrint->SetLogz(1);
-      
-      matStylePrint( (TH2D*)hrec_covmat, ("Data Covariance Matrix"), canvForPrint, outPdfFile, true);        
-      //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
-      
-      
-      // rebinned covariance matrix from data readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
-      canvForPrint->cd();
-      canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(1);
-      canvForPrint->SetLogz(1);
-      
-      matStylePrint( (TH2D*)hrec_covmat_rebin, ("Rebin+Scaled Data Covariance Matrix"), canvForPrint, outPdfFile, true);        
-      //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
-    }
-
+    //if(setDataCovMat){
+    
+    // rebinned covariance matrix from data readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
+    canvForPrint->cd();
+    canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(1);
+    canvForPrint->SetLogz(1);
+    
+    matStylePrint( (TH2D*)hrec_covmat, ("Data Covariance Matrix"), canvForPrint, outPdfFile, true);        
+    //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
+    
+    
+    // rebinned covariance matrix from data readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
+    canvForPrint->cd();
+    canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(1);
+    canvForPrint->SetLogz(1);
+    
+    matStylePrint( (TH2D*)hrec_covmat_rebin, ("Rebin+Scaled Data Covariance Matrix"), canvForPrint, outPdfFile, true);        
+    //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
+    //}
+    
     // covariance matrix from bayes unf ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
     canvForPrint->cd();
     canvForPrint->SetLogx(0);
@@ -2092,8 +2347,8 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   // input data ------------------
   hrec_rebin->SetTitle( "Data Meas.");  hrec_rebin->Write("Data_meas");
-  if(setDataCovMat) hrec_covmat->SetTitle ( "Data Meas. Cov. Mat."); hrec_covmat->Write( "Data_covmat");
-  if(setDataCovMat) hrec_covmat_rebin->SetTitle ( "Data Meas. Cov. Mat. Rebinned"); hrec_covmat_rebin->Write( "Data_covmat_rebin");
+  hrec_covmat->SetTitle ( "Data Meas. Cov. Mat."); hrec_covmat->Write( "Data_covmat");
+  hrec_covmat_rebin->SetTitle ( "Data Meas. Cov. Mat. Rebinned"); hrec_covmat_rebin->Write( "Data_covmat_rebin");
   if((bool)hJetQA_jtptEntries){ 
     hJetQA_jtptEntries->SetTitle("Data N_{Jets}");hJetQA_jtptEntries->Write("Data_njets");}
   
@@ -2119,14 +2374,6 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   hfak->SetTitle("PY8 Meas. Fakes");hfak->Write("MC_meas_fakes");
   
   hunf->SetTitle(("Data Unf. kIter="+std::to_string(kIterInput)).c_str() );hunf->Write("Data_unf");      
-  if(doJECsys){
-    hunf_JECsysup->SetTitle(("Data Unf. JEC sys up, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysup->Write("Data_unf_JECsysup");      
-    hunf_JECsysdown->SetTitle(("Data Unf. JEC sys down, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysdown->Write("Data_unf_JECsysdown");      
-
-    hunf_JECsysup_ratio->SetTitle(("Data Unf. JEC sys up, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysup_ratio->Write("Data_unf_JECsysup_ratio");      
-    hunf_JECsysdown_ratio->SetTitle(("Data Unf. JEC sys down, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysdown_ratio->Write("Data_unf_JECsysdown_ratio");      
-    
-  }
   hfold->SetTitle(("Data Fold(Unf.) kIter="+std::to_string(kIterInput)).c_str() ); hfold->Write("Data_fold");        
   hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, kIter="+std::to_string(kIterInput)).c_str() ); hfold_fakecorr->Write("Data_foldfakcorr");        
   hrec_rebin_fakecorr->SetTitle("Data Fake Corr. Meas.");hrec_rebin_fakecorr->Write("Data_measfakcorr");  
@@ -2168,8 +2415,6 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   }
   h_thyratio_mctruth->Write("ratio_PY8_MCTruth_Data_unf");
 
-
-
   
   if(dokIterQA){
     hkiter_hiratio->Write();
@@ -2189,9 +2434,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     for(int ki=0; ki<nKiterMax;ki++) hpearson_bayes[ki]->Write();
     fout->cd();//return to base dir of file
   }
-
-
-
+  
   
   // canvases ----------------
   if(drawPDFs){
@@ -2226,17 +2469,74 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     if(dokIterQA) canv_kIterRatio->Write();
     if(dokIterQA) canv_chi2iter->Write();
 
-
-
-    if(doJECsys) canv_JECsysterrs_ratio->Write(   "canv_JECsyserrs_ratio");
-    if(doJECsys) canv_JECsysterrs_spectra->Write( "canv_JECsyserrs_spectra");
-    if(doJECsys) canv_JECsysterrs_combined->Write("canv_JECsyserrs_combined");
-
-
-
+    
   }
+
+  if(dosystunf){
+    if(systunftype=="JEC"){
+      TDirectory* fout_JECsys_dir=fout->mkdir("JECsys");
+      fout_JECsys_dir->cd();
+      hrec_JECsysup->Write("Data_meas_JECsysup");
+      hrec_JECsysup_rebin->Write("Data_meas_JECsysup_rebin");
+      hrec_covmat_JECsysup->Write("Data_meas_covmat_JECsysup");
+      hrec_covmat_JECsysup_rebin->Write("Data_meas_covmat_JECsysup_rebin");
+      
+      hunf_JECsysup->SetTitle(("Data Unf. JEC sys up, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysup->Write("Data_unf_JECsysup");      
+      hunf_JECsysup_ratio->SetTitle(("Data Unf. JEC sys up, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysup_ratio->Write("Data_unf_JECsysup_ratio");      
+      
+      hrec_JECsysdown->Write("Data_meas_JECsysdown");
+      hrec_JECsysdown_rebin->Write("Data_meas_JECsysdown_rebin");
+      hrec_covmat_JECsysdown->Write("Data_meas_covmat_JECsysdown");
+      hrec_covmat_JECsysdown_rebin->Write("Data_meas_covmat_JECsysdown_rebin");
+      
+      hunf_JECsysdown->SetTitle(("Data Unf. JEC sys down, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysdown->Write("Data_unf_JECsysdown");      
+      hunf_JECsysdown_ratio->SetTitle(("Data Unf. JEC sys down, kIter="+std::to_string(kIterInput)).c_str() );hunf_JECsysdown_ratio->Write("Data_unf_JECsysdown_ratio");
+      if(drawPDFs){
+	canv_JECsysterrs_ratio->Write(   "canv_JECsyserrs_ratio");
+	canv_JECsysterrs_spectra->Write( "canv_JECsyserrs_spectra");
+	canv_JECsysterrs_combined->Write("canv_JECsyserrs_combined");
+      }
+      fout->cd();
+    }
+    else if(systunftype=="JER"){
+      TDirectory* fout_JERsys_dir=fout->mkdir("JECsys");
+      fout_JERsys_dir->cd();
+      hgen_resp_JERsysup_rebin->Write("MC_truth_resp_JERsysup_rebin");
+      hrec_sameside_JERsysup->Write("MC_meas_JERsysup");
+      hrec_sameside_JERsysup_rebin->Write("MC_meas_JERsysup_rebin");
+      hrec_sameside_resp_JERsysup_rebin->Write("MC_meas_resp_JERsysup_rebin");
+      hmat_JERsysup->Write("MC_mat_JERsysup");
+      hmat_JERsysup_rebin->Write("MC_mat_rebin_JERsysup");
+      hmat_JERsysup_errors->Write("MC_mat_errors_JERsysup");
+      hunf_JERsysup->SetTitle(("Data Unf. JERsysup, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysup->Write("Data_unf_JERsysup");      
+      hunf_JERsysup_ratio->SetTitle(("Data Unf. JERsysup, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysup_ratio->Write("Data_unf_JERsysup_ratio");      
+
+      hgen_resp_JERsysdown_rebin->Write("MC_truth_resp_JERsysdown_rebin");
+      hrec_sameside_JERsysdown->Write("MC_meas_JERsysdown");
+      hrec_sameside_JERsysdown_rebin->Write("MC_meas_JERsysdown_rebin");
+      hrec_sameside_resp_JERsysdown_rebin->Write("MC_meas_resp_JERsysdown_rebin");
+      hmat_JERsysdown->Write("MC_mat_JERsysdown");
+      hmat_JERsysdown_rebin->Write("MC_mat_rebin_JERsysdown");
+      hmat_JERsysdown_errors->Write("MC_mat_errors_JERsysdown");
+      hunf_JERsysdown->SetTitle(("Data Unf. JERsysdown, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysdown->Write("Data_unf_JERsysdown");      
+      hunf_JERsysdown_ratio->SetTitle(("Data Unf. JERsysdown, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysdown_ratio->Write("Data_unf_JERsysdown_ratio");      
+
+      if(drawPDFs){
+	canv_JERsysterrs_ratio->Write(   "canv_JERsyserrs_ratio");
+	canv_JERsysterrs_spectra->Write( "canv_JERsyserrs_spectra");	
+      }
+      fout->cd();
+    }
+    
+  }
+
+
+
   
 
+
+  
+  
   fout->Close();//must close output file before makecombined plots or scary messages  
   if(drawPDFs){
     //std::cout<<"making combined plots"<<std::endl;
@@ -2260,9 +2560,9 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
 
-  if (argc!=7){
+  if (argc!=9){
     std::cout<<"error!"<<std::endl;
-    std::cout<<" do ./bayesUnfoldDataSpectra_etabin.exe <inFile_Data_dir> <baseName> <inFile_MC_dir> <inFile_MC_name> <bin type>"<<std::endl;
+    std::cout<<" do ./bayesUnfoldDataSpectra_etabin.exe <inFile_Data_dir> <baseName> <etabinint> <inFile_MC_dir> <inFile_MC_name> <etaORybins> <dosystunf> <systunftype>"<<std::endl;
     return rStatus;
   }
   else {
@@ -2274,7 +2574,9 @@ int main(int argc, char* argv[]){
 					  4, 
 					  (std::string)argv[4], 
 					  (std::string)argv[5],
-					  (std::string)argv[6]);
+					  (std::string)argv[6],
+					  (bool)((int)std::atoi(argv[7])),
+					  (std::string)argv[8] );
     std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
     return rStatus;
   }

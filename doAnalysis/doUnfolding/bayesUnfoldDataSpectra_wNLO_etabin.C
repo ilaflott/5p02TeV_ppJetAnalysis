@@ -6,10 +6,12 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-const bool setDataCovMat=false;
+const bool setDataCovMat=true;
 const bool usePseudoRapBins=false;
 const bool useRapBins=true&&!usePseudoRapBins;
-const std::string ptbintype="SMP";//"john";//
+//const std::string ptbintype="merged_SMP";
+//const std::string ptbintype="default_SMP";
+const std::string ptbintype="default2_SMP";
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true
@@ -954,8 +956,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
   std::string CT14NPs ="" ; 
   TFile*fNLO_CT14nlo=NULL;
-  if     (inFile_MC_name.find("murmufpt")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
-  else if(inFile_MC_name.find("murmufpt1")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo2.c_str());
+  if(inFile_MC_name.find("murmufpt1")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo2.c_str());
+  else  if     (inFile_MC_name.find("murmufpt")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
   else assert(false);
   TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
   TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());

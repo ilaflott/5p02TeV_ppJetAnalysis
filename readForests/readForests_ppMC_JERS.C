@@ -377,7 +377,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   UInt_t NEvents_read=0;
   NEvents_read = NEvents_allFiles;
-      int goodgenjetcount=0,badgenjetcount=0;  
+  int goodgenjetcount=0,badgenjetcount=0;  
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
 
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   

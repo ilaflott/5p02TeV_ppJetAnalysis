@@ -8,8 +8,9 @@ const bool fillMCUnfJetSpectraRapHists=true&&fillMCUnfoldingHists;
 const bool fillMCJetCovMatrix=true; // leave me on almost always
 const bool fillMCJetIDHists=true;//, tightJetID=false;
 const int jetIDint=(int)fillMCJetIDHists;
+const bool useJERScaleFactors=true;
 
-const bool usegenetabins=false;//only set this to true if i say it's worth it (most likely not)
+const bool usegenetabins=true;//
 const bool useTightJetID=false;
 const bool verbose=false;
 
@@ -78,6 +79,30 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   }//end file loop  
   if(debugMode)std::cout<<"filesAdded="<<filesAdded<<std::endl;
   assert(filesAdded);//avoid segfault later
+
+
+  // EXTRA JER SCALE FACTOR SMEARING FITS
+  //[0]+[1]/(pow(x,[2])+[3]*x)
+  TFile* JERsmearingfiles[4]={};
+  TF1* JER_sigmu[4]={};
+  double ptmin[4]={0.};
+  double ptmax[4]={0.};
+  if(useJERScaleFactors){
+    for(int i=0; i<4; i++){
+      JERsmearingfiles[i]=TFile::Open((JERsmearingfilenames[i]).c_str(),"READ");      
+      JER_sigmu[i]=((TF1*)
+		    ((TF1*)JERsmearingfiles[i]->Get("SigmaFit_f"))->Clone(
+									  ("SigmaFit_f_"+absetabins_str[i]+"y"+absetabins_str[i+1]).c_str()
+									  )
+		    )
+	;
+      JERsmearingfiles[i]->Close();
+      JER_sigmu[i]->GetRange(ptmin[i],ptmax[i]);
+      //if(debugMode)JER_sigmu[i]->Print("base");
+      if(debugMode)std::cout<<" this smearing fit is defined between "<<(int)ptmin[i]<<" GeV - "<< (int)ptmax[i]<<" GeV"<<std::endl;
+    }
+  }
+  
   
   // Declare the output file, declare hists after for easy write
   std::cout<<"opening output file "<<outfile<<std::endl;
@@ -135,8 +160,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     hWVz      = new TH1D("hWeightedVz","", 1000,-25.,25.);//pthat*vz-weighted evt vz
     hpthat    = new TH1D("hpthat","",1000,0,1000);//evt pthat, unweighted and weighted
     hWpthat   = new TH1D("hWeightedpthat","",1000,0,1000);    }
-  
-  
+
+
+
   /////  UNFOLDING   /////
   //to unfold ppData 
   TH1D *hpp_gen=NULL;    
@@ -157,10 +183,16 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   TH1D *hpp_gen_y[nbins_abseta]={};    
   TH1D *hpp_reco_y[nbins_abseta]={}; 
   TH2D *hpp_matrix_y[nbins_abseta]={}; 
+
+  TH1D *hpp_reco_y_JERsysup[nbins_abseta]={}; 
+  TH2D *hpp_matrix_y_JERsysup[nbins_abseta]={}; 
+
+  TH1D *hpp_reco_y_JERsysdown[nbins_abseta]={}; 
+  TH2D *hpp_matrix_y_JERsysdown[nbins_abseta]={}; 
   
-  TH1D *hpp_gen_geneta[nbins_abseta]={};    
-  TH1D *hpp_reco_geneta[nbins_abseta]={}; 
-  TH2D *hpp_matrix_geneta[nbins_abseta]={}; 
+  //TH1D *hpp_gen_geneta[nbins_abseta]={};    
+  //TH1D *hpp_reco_geneta[nbins_abseta]={}; 
+  //TH2D *hpp_matrix_geneta[nbins_abseta]={}; 
   
   //to test MC sample consistency in unfolding
   TH1D *hpp_mcclosure_gen_eta[nbins_abseta]={};      //the first three are for the "truth" response matrix
@@ -198,13 +230,18 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_gen_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 				       ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+	  
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_gen_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-				       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
-	  if(usegenetabins)
-	    for(int j=0;j<nbins_abseta;j++)
-	      hpp_gen_geneta[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					    ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);
+				     ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+	  //if(useJERScaleFactors)
+	  //  for(int j=0;j<nbins_abseta;j++)
+	  //    hpp_gen_y_JERsysup[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)+"_JERsysup").c_str(), 
+	  //			       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+	  //if(useJERScaleFactors)
+	  //  for(int j=0;j<nbins_abseta;j++)
+	  //    hpp_gen_y_JERsysdown[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)+"_JERsysdown").c_str(), 
+	  //			       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
 	}
       }
       else if(hUnfTitleArray[k]=="reco")	{	  
@@ -214,13 +251,19 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_reco_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 					("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_reco_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-					("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
-	  if(usegenetabins)
+				      ("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+	  
+	  if(useJERScaleFactors){
 	    for(int j=0;j<nbins_abseta;j++)
-	      hpp_reco_geneta[j] = new TH1D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					     ("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 
+	      hpp_reco_y_JERsysup[j] = new TH1D( (hTitle+"_JERsysup_ybin"+std::to_string(j)).c_str(), 
+						 ("MC reco pt JERsysup for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+	    for(int j=0;j<nbins_abseta;j++)
+	      hpp_reco_y_JERsysdown[j] = new TH1D( (hTitle+"_JERsysdown_ybin"+std::to_string(j)).c_str(), 
+						   ("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+	  }
 	}
       }
       else if(hUnfTitleArray[k]=="matrix")	{
@@ -230,13 +273,18 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_matrix_eta[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
 					  ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	  
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_matrix_y[j] = new TH2D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-					  ("MC genpt v. recopt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
-	  if(usegenetabins)
+					("MC genpt v. recopt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	  if(useJERScaleFactors){
 	    for(int j=0;j<nbins_abseta;j++)
-	      hpp_matrix_geneta[j] = new TH2D( (hTitle+"_genbin"+std::to_string(j)).c_str(), 
-					       ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	      hpp_matrix_y_JERsysup[j] = new TH2D( (hTitle+"_JERsysup_ybin"+std::to_string(j)).c_str(), 
+						   ("MC genpt v. recopt JERsysup for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	    for(int j=0;j<nbins_abseta;j++)
+	      hpp_matrix_y_JERsysdown[j] = new TH2D( (hTitle+"_JERsysdown_ybin"+std::to_string(j)).c_str(), 
+						     ("MC genpt v. recopt JERsysdown for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+	  }
 	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_gen") {
@@ -366,9 +414,12 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   float neSum_F[1000];  float neMax_F[1000];
   //MC jet variable
   float pthat_F;
-  int subid_F[1000];    int refparton_F[1000];
+  int subid_I[1000];    int refparton_F[1000];
   float refpt_F[1000];  float refeta_F[1000];  float refphi_F[1000];  
   float refdrjt_F[1000];
+  //MC gen jet variables
+  int ngen_I;  int genmatchindex_I[1000];
+  float genpt_F[1000];
 
   //jets
   jetpp[0]->SetBranchAddress("nref",&nref_I);
@@ -409,12 +460,16 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   jetpp[0]->SetBranchAddress("neutralMax",&neMax_F);
   //MC jet variables
   jetpp[0]->SetBranchAddress( "pthat"   , &pthat_F);
-  jetpp[0]->SetBranchAddress( "subid"	, &subid_F     );
+  jetpp[0]->SetBranchAddress( "subid"	, &subid_I     );
   jetpp[0]->SetBranchAddress( "refparton_flavor" , &refparton_F );
   jetpp[0]->SetBranchAddress( "refpt"	, &refpt_F     );
   jetpp[0]->SetBranchAddress( "refeta"  , &refeta_F    );
   jetpp[0]->SetBranchAddress( "refphi"  , &refphi_F    );
   jetpp[0]->SetBranchAddress( "refdrjt"	, &refdrjt_F   );  
+  //gen jet stuff; for making "reco match index" array
+  jetpp[0]->SetBranchAddress( "ngen" , &ngen_I );
+  jetpp[0]->SetBranchAddress( "genmatchindex", &genmatchindex_I);
+  jetpp[0]->SetBranchAddress( "genpt" , &genpt_F);
   
   // HiEvtAnalyzer
   ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I; 
@@ -432,6 +487,24 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);  
+
+
+
+  //tupel/EventTree (for calculating genjet rapidity for AK4 only [R=0.3 jet info absent])
+  std::vector<float> *jetPt, *jetEta, *jetPhi, *jetE;// *jetID, *jetRawPt, *jetRawE;
+  std::vector<float> *GjetPt, *GjetEta, *GjetPhi, *GjetE;// *jetID, *jetRawPt, *jetRawE;
+  //std::vector<float> *jetHfHadE, *jetHfEmE, *jetChHadFrac, *jetNeutralHadAndHfFrac, *jetChEmFrac, *jetNeutralEmFrac, *jetChMult, *jetConstCnt;  
+  if(debugMode)std::cout<<"setting branch addresses for tupel/EventTree"<<std::endl;
+  
+  jetpp[4]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
+  jetpp[4]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
+  jetpp[4]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
+  jetpp[4]->SetBranchAddress( "JetAk04E",                   &jetE                   );
+  jetpp[4]->SetBranchAddress( "GJetAk04Pt",                 &GjetPt                  );
+  jetpp[4]->SetBranchAddress( "GJetAk04Eta",                &GjetEta                 );
+  jetpp[4]->SetBranchAddress( "GJetAk04Phi",                &GjetPhi                 );
+  jetpp[4]->SetBranchAddress( "GJetAk04E",                  &GjetE                   );
+
   
   // event count from files
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
@@ -450,6 +523,8 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   UInt_t NEvents_read=0;
   NEvents_read = NEvents_allFiles;
   //NEvents_read=0;//debug
+
+  int goodgenjetcount=0,badgenjetcount=0;  
 
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
 
@@ -526,6 +601,21 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 
       hpthat->Fill(pthat_F, 1.);
       hWpthat->Fill(pthat_F, weight_eS); }
+
+
+
+    std::vector<int>recomatchindex_I;
+    recomatchindex_I.assign(nref_I,-1);//set nref_I elements of vector to -1, indicating that reco jet N doesn't yet have matching genjet
+
+    bool tempdebug=false;//debugMode&&(nEvt%200==0);    
+    if(tempdebug)std::cout<<std::endl<<"_______ nEvt="<<nEvt<<" ________"<<std::endl;
+    if(tempdebug)std::cout<<"ngen_I="<<ngen_I<<std::endl;
+    for(int gjet=0; gjet<ngen_I; ++gjet){
+      if(tempdebug)std::cout<<"// genmatchindex_I["<<gjet<<"]="<<genmatchindex_I[gjet]<<std::endl;
+      if(tempdebug)std::cout<<"genpt_F["<<gjet<<"]="<<genpt_F[gjet]<<std::endl;
+      if((genmatchindex_I[gjet]!=-1) &&
+	 (genmatchindex_I[gjet]<nref_I)) recomatchindex_I[genmatchindex_I[gjet]]=gjet;
+    }
     
     // for event counting + avoiding duplicate fills in dijet hists
     bool hNEvts_withJets_Filled=false;
@@ -566,7 +656,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
       
       
-      if( subid_F[jet]!=0 ) {
+      if( subid_I[jet]!=0 ) {
 	//if(debugMode)std::cout<<"jet not matched!"<<std::endl;
 	continue;//matching gen-reco
       }
@@ -620,6 +710,40 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 					   phSum_F[jet], useTightJetID);
 	if(!passesJetID) continue;
       }
+
+      
+      if(recomatchindex_I.at(jet)<0){
+	std::cerr<<std::endl;
+	std::cerr<<"//////////////////////////////////////////////"<<std::endl;
+	std::cerr<<"////////////// !!! WARNING !!! ///////////////"<<std::endl;
+	std::cerr<<"reco jet w/ nonnegative subid has a negative recomatchindex!!!"<<std::endl;
+	std::cerr<<"---------DETAILS--------"<<std::endl;
+	std::cerr<<std::endl<<"_______ nEvt="<<nEvt<<" ________"<<std::endl;
+	std::cerr<<"ngen_I="<<ngen_I<<std::endl;
+	for(int gjet=0; gjet<ngen_I; ++gjet){
+	  std::cerr<<"// genmatchindex_I["<<gjet<<"]="<<genmatchindex_I[gjet]<<std::endl;
+	  std::cerr<<"genpt_F["<<gjet<<"]="<<genpt_F[gjet]<<std::endl;
+	}
+	std::cerr<<std::endl;
+	std::cerr<<"nref_I="<<nref_I<<std::endl;
+	for(int kjet=0;kjet<nref_I;++kjet){
+	  std::cerr<<"// recomatchindex_I["<<kjet<<"]="<<recomatchindex_I.at(kjet)<<std::endl;
+	  std::cerr<<"subid_I["<<kjet<<"]="<<subid_I[kjet]<<std::endl;
+	  std::cerr<<"refpt["<<kjet<<"]="<<refpt_F[kjet]<<std::endl;
+	  if(recomatchindex_I[kjet]!=-1){
+	    std::cerr<<"genpt["<<recomatchindex_I[kjet]<<"]="<<genpt_F[recomatchindex_I[kjet]]<<std::endl;
+	    std::cerr<<"GJetAk04JetPt["<<recomatchindex_I[kjet]<<"]="<<GjetPt->at(recomatchindex_I[kjet])<<std::endl;
+	  }
+	}
+	badgenjetcount++;
+	continue;
+      }
+      
+      float genjttheta=2.*atan(exp(-1.*geneta));
+      float genjtpz=genpt/tan(genjttheta);
+      float genjtE=GjetE->at(recomatchindex_I.at(jet));
+      float genjty=0.5*log((genjtE+genjtpz)/(genjtE-genjtpz));//experimentalist version
+      float absgenjty=fabs(genjty);
       
       //jetAccepted=true;
       //eventAccepted=true;
@@ -629,14 +753,21 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       if(!hNEvts_withJets_kmatCut2_Filled){
 	h_NEvents_withJets_kmatCut2->Fill(1);
 	hNEvts_withJets_kmatCut2_Filled=true;      }
-
-
+      
+      
       int theYBin=-1;
       for(int ybin=0;ybin<nbins_absy;ybin++)
 	if( absybins[ybin]<=absjty  && 		
 	    absjty<absybins[ybin+1]    	      ) {	    
 	  theYBin=ybin;
-	  break;	  }       	
+	  break;	  }       
+      
+      int theGENYBin=-1;
+      for(int ybin=0;ybin<nbins_absy;ybin++)
+	if( absybins[ybin]<=absgenjty  && 		
+	    absgenjty<absybins[ybin+1]    	      ) {	    
+	  theGENYBin=ybin;
+	  break;	  }       		
       
       int theEtaBin=-1;
       for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
@@ -646,13 +777,40 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  break;	  }       	
       
       int theGENEtaBin=-1;
+      for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
+	if( absetabins[rapbin]<=absgeneta  && 		
+	    absgeneta<absetabins[rapbin+1]    	      ) {	    
+	  theGENEtaBin=rapbin;
+	  break;	  }     
+      
       if(usegenetabins){
-	for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
-	  if( absetabins[rapbin]<=absgeneta  && 		
-	      absgeneta<absetabins[rapbin+1]    	      ) {	    
-	    theGENEtaBin=rapbin;
-	    break;	  }     
-      }  	                  
+	theYBin=theGENYBin;
+	theEtaBin=theGENEtaBin;
+      }
+      
+      float recpt_SFdown=-1.;
+      float recpt_SFup=-1.;
+      if(useJERScaleFactors){
+	if(theYBin<4&&theYBin>=0){
+	  recpt_SFdown=recpt;//b.c. SF=1.1 +/- .1 -> (1.0 , 1.1, 1.2)
+	  //std::cout<<std::endl<<"genpt="<<genpt<<std::endl;
+	  //std::cout<<"theYBin="<<theYBin<<std::endl;
+	  //std::cout<<"WAS: recpt="<<recpt<<std::endl;
+	  //std::cout<<"WAS: recpt/genpt="<<recpt/genpt<<std::endl;
+	  smearPY8wJERScaleFactor(JER_sigmu[theYBin],genpt, &recpt);
+	  recpt_SFup=genpt*(((recpt/genpt-1.)/1.1*1.2)+1.);//b.c. algebra
+	  //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
+	  //std::cout<<"NOW: recpt="<<recpt<<std::endl;
+	  //std::cout<<"NOW: recpt_SFup="<<recpt_SFup<<std::endl;
+	  //if(recpt/genpt<1.)assert(false);
+	  //if(nEvt>100)assert(false);
+	}
+	else {
+	  //have to do this since i'm running w/ abseta<2.5 and i don't have a JER fit for that region
+	  recpt_SFdown=recpt;
+	  recpt_SFup=recpt;
+	}
+      }
       
       /////   UNFOLDING   ///// 
       if(fillMCUnfoldingHists){
@@ -679,17 +837,12 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	//fill jetspectraRapHists
 	if( fillMCUnfJetSpectraRapHists ) { 	  //these should be filled in according to the RECO eta rap bin
 	                                          //why; data jet eta is all we can look at, so the resp matrix for a given RECO eta rap bin should reflect that occasionally, a "true" jet in a given RECO eta rap bin actually belongs in a diff GEN eta rap bin
-	  if(theGENEtaBin!=-1 && usegenetabins){
-	    hpp_gen_geneta[theGENEtaBin]->Fill(genpt,weight_eS);
-	    hpp_reco_geneta[theGENEtaBin]->Fill(recpt,weight_eS);
-	    hpp_matrix_geneta[theGENEtaBin]->Fill(recpt, genpt, weight_eS);
-	  }
-
+	  
 	  if(theEtaBin!=-1){
 	    hpp_gen_eta[theEtaBin]->Fill(genpt,weight_eS);
 	    hpp_reco_eta[theEtaBin]->Fill(recpt,weight_eS);
 	    hpp_matrix_eta[theEtaBin]->Fill(recpt, genpt, weight_eS);
-
+	    
 	    if(mcclosureInt_arr[theEtaBin]%2==0){
 	      incrementClosureInt_arr[theEtaBin]=true;
 	      hpp_mcclosure_reco_test_eta[theEtaBin]->Fill(recpt, weight_eS);      	  
@@ -704,11 +857,17 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	      hpp_mcclosure_matrix_eta[theEtaBin]->Fill(recpt, genpt, weight_eS);  
 	    }	  
 	  }//end theEtaBin	  
-
+	  
 	  if(theYBin!=-1){
 	    hpp_gen_y[theYBin]->Fill(genpt,weight_eS);
 	    hpp_reco_y[theYBin]->Fill(recpt,weight_eS);
 	    hpp_matrix_y[theYBin]->Fill(recpt, genpt, weight_eS);
+	    if(useJERScaleFactors){
+	      hpp_reco_y_JERsysup[theYBin]->Fill(recpt_SFup,weight_eS);
+	      hpp_matrix_y_JERsysup[theYBin]->Fill(recpt_SFup, genpt, weight_eS);
+	      hpp_reco_y_JERsysdown[theYBin]->Fill(recpt_SFdown,weight_eS);
+	      hpp_matrix_y_JERsysdown[theYBin]->Fill(recpt_SFdown, genpt, weight_eS);
+	    }
 
 	    if(mcclosureInt_y_arr[theYBin]%2==0){
 	      incrementClosureInt_y_arr[theYBin]=true;
@@ -804,7 +963,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   std::cout<<"Total Num of Jets read from good events post kmatCut2              = " <<
     h_NJets_kmatCut2->GetEntries()<<std::endl;
   std::cout<<std::endl;
-  
+  std::cout<<"Total Num of good gen jets = "<<goodgenjetcount<<std::endl;
+  std::cout<<"Total Num of bad gen jets  = "<<badgenjetcount<<std::endl;
+  std::cout<<std::endl;  
 
   std::cout<<"writing output file "<<outfile<<std::endl;
   fout->Write(); 

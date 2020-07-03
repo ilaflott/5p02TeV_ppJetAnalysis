@@ -5,9 +5,203 @@
 
 
 
+//default pt bin edges, chosen such that pt goes as high as possible as long as 
+//1; there's SOME statistics and 2; plays well with smeared NLO pT range
+std::vector<std::vector<double>> default_SMP_ptbins{
+  {//00eta05
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.,
+      638., 
+      686.,
+      737.,
+      790.,  
+      846.,
+      905.,
+      967.,//last entry in data spectra
+      1032.},
 
 
-std::vector<std::vector<double>> SMP_ptbins{
+  {//05eta10
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.,
+      638., 
+      686.,
+      737.,
+      790.,  
+      846.,//WARNING, empty bin in data here
+      905.,//last entry in data spectra
+      967.},
+
+
+
+  {//10eta15
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.,
+      638., 
+      686.,//last entry in data spectra
+      737.},
+
+
+  {//15eta20
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.,//WARNING, empty bin in data here
+      638., //limit of NLO smearing for this bin
+      686.}//,//last entry in data spectra
+    //737.}
+};
+
+
+//default pt bin edges, chosen such that pt goes as high as possible as long as
+// 1; there's SOME statistics and 2; plays well with smeared NLO pT range and 3; no empty bins in data spectra
+std::vector<std::vector<double>> default2_SMP_ptbins{
+  {//00eta05
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.,
+      638., 
+      686.,
+      737.,
+      790.,  
+      846.,
+      905.,
+      967.,//last entry in data spectra
+      1032.},
+
+
+  {//05eta10
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.,
+      638., 
+      686.,
+      737.,
+      790.,  
+      846.},//WARNING, empty bin in data here
+    //905.,//last entry in data spectra
+    //967.},
+
+
+
+  {//10eta15
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.,
+      638., 
+      686.,//last entry in data spectra
+      737.},
+
+
+  {//15eta20
+    56.,      
+    64.,       74.,       84.,       97.,       114.,
+      133.,      153.,      174.,      196.,      
+      220.,     
+      245.,
+      272.,  
+      300., 
+      330.,   
+      362.,
+      395.,    
+      430.,   
+      468.,      
+      507.,  
+      548.,
+      592.}//,//WARNING, empty bin in data here
+      //638., //limit of NLO smearing for this bin
+      //686.}//,//last entry in data spectra
+      //737.}
+};
+
+
+std::vector<std::vector<double>> merged_SMP_ptbins{
   {//00eta05
 
     ////if i'm allowed to omit some bins at high pt, then i like this one, because it works for 05y10 as well as this one.
@@ -37,14 +231,6 @@ std::vector<std::vector<double>> SMP_ptbins{
     //1032. ,
     //1101.},
 
-    ////same as above but w/o comments
-    //56., 64., 74., 84., 97., 114., 133., 153., 
-    //  174., 196., 220., 245., 272., 300., 330.,            
-    //  395.,  507.,   638., 846.},           
-        
-
-
-
 //    //what i get if i keep all bins w/ statistics and don't care about how it plays with other y bins
 //    //con: don't like the way the boundaries contrast w/ 05y10
 //    //con: plus the statistics in the last two bins are tricky
@@ -65,14 +251,14 @@ std::vector<std::vector<double>> SMP_ptbins{
 //      //592.,
 //      638., 
 //      //686.,
-//      //747.,
+//      //737.,
 //      790.,  
 //      //846.,
 //      //905.},
 //      //967.},
 //      1032.},
 
-//    //what i get if i omit some bins w/ crappy statistics and don't care about how it plays with other y bins
+//    //another possibility what i get if i omit some bins w/ crappy statistics and don't care about how it plays with other y bins
 ////    //con: don't like the way the boundaries contrast w/ 05y10
 ////    //con: plus the statistics in the last two bins are tricky
 //    56.,      
@@ -92,12 +278,15 @@ std::vector<std::vector<double>> SMP_ptbins{
 //      592.,
 //      //638., 
 //      //686.,
-//      747.,
+//      737.,
 //      //790.,  
 //      //846.,
 //      905.},
-//    //967.},
+//    //967.},//last entry in data spectra
 //    //1032.},
+
+
+
 
 
   {//05eta10
@@ -125,7 +314,9 @@ std::vector<std::vector<double>> SMP_ptbins{
       //686.,     
       //737.,     
       // 790.,
-      846.},      //,     //905.,      //967.//,      //1032.      },
+      846.}, //WARNING empty bin in data 846. - 905.      
+      //905.,  //last entry in data spectra
+    //967.  },
     
 
 
@@ -172,7 +363,7 @@ std::vector<std::vector<double>> SMP_ptbins{
       507.,     
       //548., 
       //592.,
-      638.},//,      
+      638.},//,//last entry in data spectra      
       //686.,     
       //737.,     
       //790.,
@@ -193,9 +384,9 @@ std::vector<std::vector<double>> SMP_ptbins{
       //468.,      
       507.}//,      
       //548.,      
-      //592.}//,     
-      //638.}//,      
-      //686.,  
+      //592.}//empty, bin in data here     
+      //638.}//limit of NLO smearing      
+      //686.}//last entry in data spectra
 
   //  {//20eta25
   //    43.,       49.,       56.,      

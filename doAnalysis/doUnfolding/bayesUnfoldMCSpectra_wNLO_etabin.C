@@ -6,8 +6,7 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=false;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-//const bool setMCCovMat=false; //no cov mat for this because this is toy MC; no way to define jets on an event-by-event basis, so no way to make a cov mat.
-const std::string ptbintype="NLO_SMP";
+const std::string ptbintype="merged_SMP";
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true
@@ -30,8 +29,14 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
 					std::string inFile_MC_name ="NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
 					const bool applyNPCorrs=true,
 					const bool doJetID=true     , 
-					const bool useSimpBins=false){//, 
+					const bool useSimpBins=false){
+  //std::string bintype="eta"){//, 
+  
   //const int kIterInput=5 ){//, //const int etabinint=0){
+  //bool dopseudorapbins=false; bool dorapbins=false;
+  //if(bintype=="eta"){dopseudorapbins=true; dorapbins=!dopseudorapbins;}
+  //else if(bintype=="y"){dopseudorapbins=false; dorapbins=!dopseudorapbins;}
+  //else assert(false);
   
   // BINNING -----------  
   if(!useSimpBins)std::cout<<"using analysis pt bins"<<std::endl;
@@ -1852,7 +1857,8 @@ int main(int argc, char* argv[]){
 						(const int)(std::atoi(argv[2])), 					       //0, 
 						4, 
 						(std::string)argv[3], 
-						(std::string)argv[4]);
+						(std::string)argv[4]);//,
+						//(std::string)argv[5]						);
   }
   else {
     return rStatus;

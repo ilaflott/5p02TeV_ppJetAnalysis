@@ -132,7 +132,7 @@ const bool doToyErrs          =false; // error options: kCovToy, kCovariance, kE
 const bool doMCIntegralScaling=false;
 const bool fillRespHists      =true;
 //const bool useTH2ProjRespHist= fillRespHists&&false;
-const bool trimRespMat=true&&fillRespHists;//only reason to do this is to adjust fake/misses correction. only will be done if fillRespHists is true.
+const bool trimRespMat=false&&fillRespHists;//only reason to do this is to adjust fake/misses correction. only will be done if fillRespHists is true.
 
 // settings that don't really get used
 const bool doOverUnderflows   =false;//leave false almost always
@@ -319,24 +319,32 @@ double* setBinning_etabin(int etabinint=0, std::string type="SMP", int* nbins=NU
   bool funcDebug=true;
   if(funcDebug)std::cout<<std::endl<<"in setBinning_etabin"<<std::endl<<std::endl;  
   
-  double* binarray=NULL;  
-  if(type=="SMP"){
-    binarray=(double*)(SMP_ptbins[etabinint].data());
-    *(nbins)=(int)(SMP_ptbins[etabinint].size()-1);
+  double* binarray=NULL;   
+  if(type=="default_SMP"){//default, unchanged, SMP pt bin edges out to last bin w/ content in it in data
+    binarray=(double*)(default_SMP_ptbins[etabinint].data());
+    *(nbins)=(int)(default_SMP_ptbins[etabinint].size()-1);
   }
-  else if(type=="NLO_SMP"){
+  else if(type=="default2_SMP"){//default, unchanged, SMP pt bin edges out to last bin w/ content in it in data
+    binarray=(double*)(default2_SMP_ptbins[etabinint].data());
+    *(nbins)=(int)(default2_SMP_ptbins[etabinint].size()-1);
+  }
+  else if(type=="merged_SMP"){//SMP pt bin edges merged for statistics, for joao's NLO in |y| bins
+    binarray=(double*)(merged_SMP_ptbins[etabinint].data());
+    *(nbins)=(int)(merged_SMP_ptbins[etabinint].size()-1);
+  }
+  else if(type=="NLO_SMP"){//SMP pt bin edges for raghav's NLO spectra (EXCEPTION: 686 - 1000 GeV bin for first two |eta| bins, should be 686-1032 GeV)
     binarray=(double*)(NLO_SMP_ptbins[etabinint].data());
     *(nbins)=(int)(NLO_SMP_ptbins[etabinint].size()-1);    
   }
-  else if(type=="john"){
+  else if(type=="john"){//for comparison with john OLD
     binarray=(double*)(john_ptbins[etabinint].data());
     *(nbins)=(int)(john_ptbins[etabinint].size()-1);
   }
-  else if(type=="chris"){
+  else if(type=="chris"){//for comparison with chris OLD
     binarray=(double*)(chris_ptbins[etabinint].data());
     *(nbins)=(int)(chris_ptbins[etabinint].size()-1);
   }
-  else if(type=="chris2"){
+  else if(type=="chris2"){//for comparison with chris OLD
     if(etabinint!=0)assert(false);//00eta20 only
     binarray=(double*)(chris_ptbins2[etabinint].data());
     *(nbins)=(int)(chris_ptbins2[etabinint].size()-1);

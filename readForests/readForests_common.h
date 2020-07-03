@@ -1058,3 +1058,33 @@ const int NGoodRuns=sizeof(runarray_forExclRunStudy)/sizeof(UInt_t);
 //  262328
 //};
 //const int NGoodRuns=sizeof(runarray_forExclRunStudy)/sizeof(UInt_t);
+
+
+
+std::string JERsmearingfilenames[4]={
+  "ak4PF_PY8JER_00eta05_03.18.20_sigmu_geny.root",
+  "ak4PF_PY8JER_05eta10_03.18.20_sigmu_geny.root",
+  "ak4PF_PY8JER_10eta15_03.18.20_sigmu_geny.root",
+  "ak4PF_PY8JER_15eta20_03.18.20_sigmu_geny.root"
+};
+
+inline void smearPY8wJERScaleFactor(TF1* JER_sigmu, float genpt, float *recpt){
+  bool funcDebug=false;
+  if(funcDebug)std::cout<<std::endl<<"in smearPY8wJERScaleFactor"<<std::endl;
+  if(funcDebug)std::cout<<"genpt="<<genpt<<std::endl;
+  if(funcDebug)std::cout<<"recpt="<<*recpt<<std::endl;
+  if(funcDebug)std::cout<<"JER_sigmu->GetName()="<<JER_sigmu->GetName()<<std::endl;
+  float width=JER_sigmu->Eval(genpt)/1.1;//fits have JER SF in them, take it out by dividing by 1
+  if(funcDebug)std::cout<<"width="<<width<<std::endl;
+  float recovgen=(*recpt)/genpt;
+  if(funcDebug)std::cout<<"recovgen="<<recovgen<<std::endl;
+  float stddev=(recovgen-1.)/width;
+  if(funcDebug)std::cout<<"stddev="<<stddev<<std::endl;
+  float SFwidth=width*1.1;
+  if(funcDebug)std::cout<<"SFwidth="<<SFwidth<<std::endl;
+  float nurecovgen=1.+SFwidth*stddev;
+  if(funcDebug)std::cout<<"nurecovgen="<<nurecovgen<<std::endl;
+  (*recpt)=genpt*nurecovgen;
+  if(funcDebug)std::cout<<"NOW: recpt="<<(*recpt)<<std::endl;
+  return;
+}

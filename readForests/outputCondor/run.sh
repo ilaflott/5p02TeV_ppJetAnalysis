@@ -21,7 +21,7 @@ DD="18"
 YY="20"
 
 
-mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-26-20_JERS_0.0eta2.5/ ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_JERS_0.0eta2.5/ 
+#mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-26-20_JERS_0.0eta2.5/ ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_JERS_0.0eta2.5/ 
 #mv ppData_HighPtJet80_ak4PFJets_02-26-20_jetPlots_0.0eta2.5     ppData_HighPtJet80_ak4PFJets_03-18-20_jetPlots_0.0eta2.5    
 #mv ppData_HighPtLowerJets_ak4PFJets_02-26-20_jetPlots_0.0eta2.5 ppData_HighPtLowerJets_ak4PFJets_03-18-20_jetPlots_0.0eta2.5
 #mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-20_jetPlots_0.0eta2.0 ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-19-20_jetPlots_0.0eta2.0
@@ -49,8 +49,8 @@ mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-26-20_JERS_0.0eta2.5/ ppMC_Py8
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0"      "ppMC" "noDRCut_tightJetID_semifinal"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "MCEff_0.0eta2.0"      "ppMC" "noDRCut_semifinal"
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "unf_0.0eta2.0"      "ppMC" "noDRCut_semifinal"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5"      "ppMC" "SMPbins_withjety_semifinalv3"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "unf_0.0eta2.5"      "ppMC" "genetabins_semifinalv3"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5"      "ppMC" "SMPbins_withjety_semifinalv3"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "unf_0.0eta2.5"      "ppMC" "SMPbins_withjety_semifinalv3"
 
 ##mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-26-19_MCEff_0.0eta2.0 ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-25-19_MCEff_0.0eta2.0

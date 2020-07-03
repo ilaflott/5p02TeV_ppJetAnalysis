@@ -9,8 +9,8 @@ subm_ppData_jetTrigEff=0
 subm_ppData_makeNTuple=0
 
 subm_ppMC_jetPlots=0
-subm_ppMC_JERS=1
-subm_ppMC_unf=0
+subm_ppMC_JERS=0
+subm_ppMC_unf=1
 subm_ppMC_MCEff=0
 
 sleep_between_subm=0

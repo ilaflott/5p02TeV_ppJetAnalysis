@@ -13,8 +13,8 @@ const bool useGENybin=false;
 //const bool doJECsys=false;
 const bool applyNPCorrs=true;//&&compareToNLOThy;
 
-const std::string ptbintype="SMP";
-const bool compareToNLOThy=true&&(ptbintype=="NLO_SMP");
+const std::string ptbintype="merged_SMP";
+const bool compareToNLOThy=false&&(ptbintype=="NLO_SMP");
 
 //-----------------------------
 
@@ -30,14 +30,21 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
 					const int etabinint=0, 
 					const int kIterInput=5,
 					std::string inFile_MC_dir  = "02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_unf_0.0eta3.0_unf/",
-					std::string inFile_MC_name = "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root" //"NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
+					std::string inFile_MC_name = "Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root", //"NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
+					std::string bintype="eta"
 					){
   
   //const int kIterInput=5 ){//, //const int etabinint=0){
 
   // thy spectra  
-  std::string NLOMCtitle_str="Truth PY8";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top.
-  
+  std::string NLOMCtitle_str="Truth PY8";//this is for the Toy NLO used specifically. the TH1s below are pure theory, no toy procedure on top. 
+  bool dopseudorapbins=false; bool dorapbins=false;
+  if(bintype=="eta"){dopseudorapbins=true; dorapbins=!dopseudorapbins;}
+  else if(bintype=="y"){dopseudorapbins=false; dorapbins=!dopseudorapbins;}
+  else assert(false);
+
+
+ 
   std::string CT10NPs ="" ; 
   TFile*fNLO_CT10nlo=TFile::Open(fNLOFile_R04_CT10nlo.c_str());
   TH1D* CT10nlo  = (TH1D*) fNLO_CT10nlo->Get(("h0100"+std::to_string(etabinint+1)+"00").c_str());
@@ -150,28 +157,28 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   std::string RandEtaRange_plotTitle=" "+radius;//+" 20eta20";// R4 20eta20
   std::string etabin_str="";
   if(etabinint==0){
-    etabin_str="00eta05";
-    //RandEtaRange+="_00_eta_05";  
+    if(bintype=="eta")etabin_str="00eta05";
+    else if(bintype=="y")etabin_str="00y05";
   }
   else if(etabinint==1){
-    etabin_str="05eta10";
-    //RandEtaRange+="_05_eta_10";  
+    if(bintype=="eta")    etabin_str="05eta10";
+    else if(bintype=="y")etabin_str="05y10";
   }
   else if(etabinint==2){
-    etabin_str="10eta15";
-    //RandEtaRange+="_10_eta_15";  
+    if(bintype=="eta")    etabin_str="10eta15";
+    else if(bintype=="y")etabin_str="10y15";
   }
   else if(etabinint==3){
-    etabin_str="15eta20";
-    //RandEtaRange+="_15_eta_20";  
+    if(bintype=="eta")    etabin_str="15eta20";
+    else if(bintype=="y")etabin_str="15y20";
   }
   else if(etabinint==4){
-    etabin_str="20eta25";
-    //RandEtaRange+="_20_eta_25";  
+    if(bintype=="eta")    etabin_str="20eta25";
+    else if(bintype=="y")etabin_str="20y25";
   }
   else if(etabinint==5){
-    etabin_str="25eta30";
-    //RandEtaRange+="_25_eta_30";  
+    if(bintype=="eta")    etabin_str="25eta30";
+    else if(bintype=="y")etabin_str="25y30";
   }
   RandEtaRange_plotTitle+=etabin_str;  
   if(debugMode)std::cout<<"etabin_str string is = "<<etabin_str<<std::endl;
@@ -225,7 +232,10 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   // ---------- gen, NLO truth spectra
   std::string genHistTitle="hpp_mcclosure_gen";
   if(doJetID)genHistTitle+="_wJetID";
-  genHistTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  if(dopseudorapbins)
+    genHistTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  else if(dorapbins)
+    genHistTitle+=RandEtaRange+"_ybin"+std::to_string(etabinint);
   
 
 
@@ -264,7 +274,10 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   std::string th2basetitle="hpp_mcclosure_matrix";
   std::string TH2_title=th2basetitle;//"_ynew_th2"
   if(doJetID)TH2_title+="_wJetID";
-  TH2_title+=RandEtaRange+"_bin"+std::to_string(etabinint);  
+  if(dopseudorapbins)
+    TH2_title+=RandEtaRange+"_bin"+std::to_string(etabinint);  
+  else if(dorapbins)
+    TH2_title+=RandEtaRange+"_ybin"+std::to_string(etabinint);  
 
   //get the response matrix made by readforests
   TH2D* hmat = (TH2D*)fpp_MC->Get( TH2_title.c_str() );
@@ -320,15 +333,26 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   // ---------- reco, measured same-side spectra used to create response matrix, and for "sameside" unfolding test
   std::string histTitle2="hpp_mcclosure_reco";
   if(doJetID) histTitle2+="_wJetID";
-  histTitle2+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  if(dopseudorapbins)
+    histTitle2+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  else if(dorapbins)
+    histTitle2+=RandEtaRange+"_ybin"+std::to_string(etabinint);
 
+  //std::cout<<"histTitle2="<<histTitle2<<std::endl;
   TH1D*  hrec_sameside = (TH1D*)fpp_MC->Get( histTitle2.c_str() ); 
+  if(debugMode)hrec_sameside->Print("base");
+
+  //assert(false);
+  //std::cout<<"MCscaling="<<MCscaling<<std::endl;
   hrec_sameside->Scale(1./MCscaling);
+  //std::cout<<"MCscaling="<<etaBinWidth<<std::endl;
   hrec_sameside->Scale(etaBinWidth);//cause of the way the thy hists are made
+  //assert(false);
 
   if(debugWrite)hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
-  
+  //assert(false);
+
   histTitle2+="_clone";
   TH1D *hrec_sameside_rebin = (TH1D*)hrec_sameside->Clone( (histTitle2).c_str() );
   if(debugWrite)hrec_sameside_rebin->Write( histTitle2.c_str() );
@@ -352,9 +376,6 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   hrec_sameside_rebin->SetLineColor(kBlue-3);     
   hrec_sameside_rebin->SetMarkerSize(1.02);     
   
-
-
-
   
   // reco/gen response hist
   std::string histTitle3="hpp_mcclosure_reco_sameside_response_rebin"+RandEtaRange+"_bin"+std::to_string(etabinint);
@@ -405,7 +426,12 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   // ---------- reco, measured spectra to unfold
   std::string histTitle="hpp_mcclosure_reco_test";
   if(doJetID)histTitle+="_wJetID";
-  histTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  if(dopseudorapbins)
+    histTitle+=RandEtaRange+"_bin"+std::to_string(etabinint);
+  else if(dorapbins)
+    histTitle+=RandEtaRange+"_ybin"+std::to_string(etabinint);
+  
+  std::cout<<"histTitle="<<histTitle<<std::endl;
   
   TH1D*  hrec = (TH1D*)fpp_MC->Get( histTitle.c_str() ); 
   if(debugWrite)hrec->Write();
@@ -427,7 +453,6 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   hrec_rebin = (TH1D*)hrec_rebin->Rebin( nbins_pt_reco, (histTitle).c_str() , boundaries_pt_reco);
   if(doBiasTest)
     addLinearBias((TH1F*) hrec_rebin);
-  //  assert(false);
 
   if(debugWrite)hrec_rebin->Write(histTitle.c_str());   
   if(debugMode)hrec_rebin->Print("base");  
@@ -445,28 +470,31 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   hrec_rebin->SetLineColor(kBlue);     
   hrec_rebin->SetMarkerSize(1.02);     
 
+  std::string covmattitle="hpp_mcclosure_covmat_test_wJetID_";
+  if(dopseudorapbins)
+    covmattitle+="etabin_"+std::to_string(etabinint);
+  else if(dorapbins)
+    covmattitle+="ybin_"+std::to_string(etabinint);
+ 
   TH2D* hrec_covmat=NULL;  TH2D* hrec_covmat_rebin=NULL;
-  if(setMCCovMat){
-    if(debugMode)std::cout<<"getting covariance matrix from MC file"<<std::endl;    
-    hrec_covmat=(TH2D*)fpp_MC->Get( ("hpp_mcclosure_covmat_test_wJetID_etabin_"+std::to_string(etabinint)).c_str());
-    
-    hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
-    
-    if(debugMode)std::cout<<"rebinning covariance matrix from MC file"<<std::endl;    
-    hrec_covmat_rebin=(TH2D*) reBinTH2(hrec_covmat_rebin, 
-				       ((std::string)hrec_covmat_rebin->GetName()+"_rebin").c_str(), 
-				       (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
-				       (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
-    
-    if(debugMode)std::cout<<"scaling covariance matrix from MC file"<<std::endl;    
-    //hrec_covmat_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
-    if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
+  if(debugMode)std::cout<<"getting covariance matrix from MC file"<<std::endl;    
+  hrec_covmat=(TH2D*)fpp_MC->Get( covmattitle.c_str());  
+  hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
+  
+  if(debugMode)std::cout<<"rebinning covariance matrix from MC file"<<std::endl;    
+  hrec_covmat_rebin=(TH2D*) reBinTH2(hrec_covmat_rebin, 
+				     ((std::string)hrec_covmat_rebin->GetName()+"_rebin").c_str(), 
+				     (double*) boundaries_pt_reco_mat, nbins_pt_reco_mat,
+				     (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
+  
+  if(debugMode)std::cout<<"scaling covariance matrix from MC file"<<std::endl;    
+  if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
     
     //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+  if(setMCCovMat)
     for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
-      hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );
-  }  
-
+      hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) ); 
+  
   
   
   // ----- unfolding setup+use below here
@@ -1412,27 +1440,25 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
       canvForPrint->Print(outPdfFile.c_str());           
     }
     
-    if(setMCCovMat){
-
-      // rebinned covariance matrix from mc readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
-      canvForPrint->cd();
-      canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(1);
-      canvForPrint->SetLogz(1);
-      
-      matStylePrint( (TH2D*)hrec_covmat, ("MC Covariance Matrix"), canvForPrint, outPdfFile, true);        
-      //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
-      
-      
-      // rebinned covariance matrix from mc readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
-      canvForPrint->cd();
-      canvForPrint->SetLogx(1);
-      canvForPrint->SetLogy(1);
-      canvForPrint->SetLogz(1);
-      
-      matStylePrint( (TH2D*)hrec_covmat_rebin, ("Rebin+Scaled MC Covariance Matrix"), canvForPrint, outPdfFile, true);        
-      //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
-    }
+    // rebinned covariance matrix from mc readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
+    canvForPrint->cd();
+    canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(1);
+    canvForPrint->SetLogz(1);
+    
+    matStylePrint( (TH2D*)hrec_covmat, ("MC Covariance Matrix"), canvForPrint, outPdfFile, true);        
+    //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
+    
+    
+    // rebinned covariance matrix from mc readforests---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
+    canvForPrint->cd();
+    canvForPrint->SetLogx(1);
+    canvForPrint->SetLogy(1);
+    canvForPrint->SetLogz(1);
+    
+    matStylePrint( (TH2D*)hrec_covmat_rebin, ("Rebin+Scaled MC Covariance Matrix"), canvForPrint, outPdfFile, true);        
+    //canv_covmat=(TCanvas*)canvForPrint->DrawClone(); 
+    
 
     // covariance matrix from bayes unf ---------------      //always use simp bins for covmat to avoid log scaling the x/y axes
     canvForPrint->cd();
@@ -1707,10 +1733,10 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   
   // input mc ------------------
   hrec_rebin->SetTitle( "MC Meas.");  hrec_rebin->Write("MC_meas");
-  if(setMCCovMat) hrec_covmat->SetTitle ( "MC Meas. Cov. Mat."); 
-  if(setMCCovMat) hrec_covmat->Write( "MC_covmat");
-  if(setMCCovMat) hrec_covmat_rebin->SetTitle ( "MC Meas. Cov. Mat. Rebinned"); 
-  if(setMCCovMat) hrec_covmat_rebin->Write( "MC_covmat_rebin");
+  hrec_covmat->SetTitle ( "MC Meas. Cov. Mat."); 
+  hrec_covmat->Write( "MC_covmat");
+  hrec_covmat_rebin->SetTitle ( "MC Meas. Cov. Mat. Rebinned"); 
+  hrec_covmat_rebin->Write( "MC_covmat_rebin");
   
   // input PY8 ---------------------
   hgen->SetTitle("PY8 Truth Orig");  hgen->Write("MC_truth_orig");
@@ -1858,18 +1884,19 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
 
-  if (argc!=5){
+  if (argc!=6){
     std::cout<<"error!"<<std::endl;
-    std::cout<<" do ./bayesUnfoldMCSpectra_etabin.exe <baseName> <inFile_MC_dir> <inFile_MC_name>"<<std::endl;
+    std::cout<<" do ./bayesUnfoldMCSpectra_etabin.exe <baseName> <etabinint> <kiterinput> <inFile_MC_dir> <inFile_MC_name> <bintype>"<<std::endl;
     return rStatus;
   }
   else {
     
     rStatus=bayesUnfoldMCSpectra_etabin(  (std::string)argv[1] , 
 					  (const int)std::atoi(argv[2]),//0, 
-					  4, 
+					  3, 
 					  (std::string)argv[3], 
-					  (std::string)argv[4] );
+					  (std::string)argv[4],
+					  (std::string)argv[5] );
     std::cout<<std::endl<<"done!"<<std::endl<<" return status: "<<rStatus<<std::endl<<std::endl;
     return rStatus;
   }

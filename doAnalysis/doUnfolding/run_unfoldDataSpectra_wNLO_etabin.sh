@@ -31,7 +31,7 @@ OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_defSMPbins2_withjety_semifi
 #OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_SMPbins_withjety_semifinalv3_REBIN_NODATACOVMAT_murmufpt1"
 
 applyNPcorrs=1
-dosystunf=1
+dosystunf=0
 #declare -a sysarr=("JEC" "JER" "PDF")
 #declare -a sysarropt=("" "" "updown")
 #etabinStart=0
@@ -40,7 +40,7 @@ dosystunf=1
 declare -a sysarr=("JER")
 declare -a sysarropt=("")
 etabinStart=0
-etabinEnd=4
+etabinEnd=1
 ###debugsettings
 sysarrlen=${#sysarr[@]}
 for (( j=${etabinStart}; j<${etabinEnd}; j++ ));

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 
-dojetQAPlots=0                            
+dojetQAPlots=1                            
 dojetTrigQAPlots=0   
-dojetTrigEff=1
+dojetTrigEff=0
 dojetIDQAPlots=0
 dojetMultPlots=0   #old
 scpOutput=0
@@ -49,13 +49,16 @@ then
     #source run_printPlots_jetPlots.sh "4" "11.21.19_outputCondor" "11-21-19" "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"    "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_11.21.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"    
     #scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_11.21.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh_jetPlots.*"
 
-    ### SEMIFINAL V2
-    source run_printPlots_jetPlots.sh "4" "11.26.19_outputCondor" "11-26-19" "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2"                   "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2"    
-    scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_jetPlots.*"
-    ### SEMIFINAL V2 LOWHLT40THRESH
-    source run_printPlots_jetPlots.sh "4" "11.26.19_outputCondor" "11-26-19" "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"    "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"    
-    scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh_jetPlots.*"
+    #### SEMIFINAL V2
+    #source run_printPlots_jetPlots.sh "4" "11.26.19_outputCondor" "11-26-19" "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2"                   "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2"    
+    #scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_jetPlots.*"
+    #### SEMIFINAL V2 LOWHLT40THRESH
+    #source run_printPlots_jetPlots.sh "4" "11.26.19_outputCondor" "11-26-19" "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"    "06.25.19_outputCondor" "06-25-19" "0.0eta2.0_semifinal"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"    
+    #scp2Serin "output/ak4PF_HPtJetTrig_semiOffPy8_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh_jetPlots.*"
 
+
+    ### SEMIFINAL V3, 03.18.20 outputCondor results #ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_semifinalv3/ #ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv3/
+    source run_printPlots_jetPlots.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_semifinalv3"  "00eta20_03.18.20_semifinalv3"    
 
     ##############################################
     

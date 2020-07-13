@@ -278,31 +278,33 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1D *hMCJetQA_genrecphi[nbins_abseta][2]={};
   TH1D *hMCJetQA_gendrjt[nbins_abseta][2]={};
   //these hists *derived* from info in forests (except jet mass), for positive jet id onl
-  TH1D *hJetQA_jtptybins[nbins_abseta]={};//angle from beamline, 0 -- >pi
-  TH1D *hJetQA_jttheta[nbins_abseta]={};//angle from beamline, 0 -- >pi
-  TH1D *hJetQA_jtpz[nbins_abseta]={};//z-component momentum
-  TH1D *hJetQA_jtp[nbins_abseta]={};//momentum magnitude
-  TH1D *hJetQA_jtE[nbins_abseta]={};//energy
-  TH1D *hJetQA_jtEt[nbins_abseta]={};//transverse energy
-  TH1D *hJetQA_jtm[nbins_abseta]={};//mass
-  TH1D *hJetQA_jtmt[nbins_abseta]={};//transverse mass
-  TH1D *hJetQA_jty[nbins_abseta]={};//rapidity (NOT pseudorapidity)
+  TH1D *hJetQA_jtptybins[nbins_abseta][2]={};//angle from beamline, 0 -- >pi
+  TH1D *hJetQA_jttheta[nbins_abseta][2]={};//angle from beamline, 0 -- >pi
+  TH1D *hJetQA_jtpz[nbins_abseta][2]={};//z-component momentum
+  TH1D *hJetQA_jtp[nbins_abseta][2]={};//momentum magnitude
+  TH1D *hJetQA_jtE[nbins_abseta][2]={};//energy
+  TH1D *hJetQA_jtEt[nbins_abseta][2]={};//transverse energy
+  TH1D *hJetQA_jtm[nbins_abseta][2]={};//mass
+  TH1D *hJetQA_jtmt[nbins_abseta][2]={};//transverse mass
+  TH1D *hJetQA_jty[nbins_abseta][2]={};//rapidity (NOT pseudorapidity)
   TH2D* hJetQA_jteta_jty=NULL;  
   if(fillMCJetQAHists){
     //these hists *derived* from info in forests (except jet mass), for positive jet id only
-    for(int k = 0; k<nbins_abseta; ++k){      
-      hJetQA_jtptybins[k]     = new TH1D( Form("hJetQA_1wJetID_jtptybins_ybin%d"    , k) , ";p_{T}^{Jet} [GeV];" , 1500 ,0.     ,1500.);       
-      hJetQA_jttheta[k] = new TH1D( Form("hJetQA_1wJetID_jttheta_etabin%d", k) , ";#theta^{Jet} [rad];"      , 200  ,0.     ,TMath::Pi());       
-      hJetQA_jtpz[k]    = new TH1D( Form("hJetQA_1wJetID_jtpz_etabin%d"   , k) , ";p_{z}^{Jet} [GeV];"       , 3000 ,-1500. ,1500.);      
-      hJetQA_jtp[k]     = new TH1D( Form("hJetQA_1wJetID_jtp_etabin%d"    , k) , ";#||{#bf{p^{Jet}}} [GeV];" , 1500 ,0.     ,1500.);       
-      hJetQA_jtE[k]     = new TH1D( Form("hJetQA_1wJetID_jtE_etabin%d"    , k) , ";E^{Jet} [GeV];"           , 1500 ,0.     ,1500.);       
-      hJetQA_jtEt[k]    = new TH1D( Form("hJetQA_1wJetID_jtEt_etabin%d"   , k) , ";E_{T}^{Jet} [GeV];"       , 1500 ,0.     ,1500.);       
-      hJetQA_jtm[k]     = new TH1D( Form("hJetQA_1wJetID_jtm_etabin%d"    , k) , ";m^{Jet} [GeV];"           , 1500 ,0.     ,1500.);       
-      hJetQA_jtmt[k]    = new TH1D( Form("hJetQA_1wJetID_jtmt_etabin%d"   , k) , ";m_{T}^{Jet};"             , 1500 ,0.     ,1500.);       
-      hJetQA_jty[k]     = new TH1D( Form("hJetQA_1wJetID_jty_etabin%d"    , k) , ";y^{Jet};"                 , 102  ,-5.1   ,5.1);       
+    hJetQA_jteta_jty = new TH2D( "hJetQA_1wJetID_jteta_jty_etabin" , ";#eta^{Jet};y^{Jet}" , 55  ,0. ,5.5,
+  		                                                                             55  ,0. ,5.5 );       
+    for(int i=0; i<2; i++){
+      for(int k = 0; k<nbins_absy; ++k){      
+	hJetQA_jtptybins[k][i]     = new TH1D( Form("hJetQA_%dwJetID_jtpt_ybin%d" , i , k) , ";p_{T}^{Jet} [GeV];" , 1500 ,0.     ,1500.);       
+	hJetQA_jttheta[k][i]       = new TH1D( Form("hJetQA_%dwJetID_jttheta_ybin%d"   , i , k) , ";#theta^{Jet} [rad];"      , 200  ,0.     ,TMath::Pi());
+	hJetQA_jtpz[k][i]          = new TH1D( Form("hJetQA_%dwJetID_jtpz_ybin%d"      , i , k) , ";p_{z}^{Jet} [GeV];"       , 3000 ,-1500. ,1500.);      
+	hJetQA_jtp[k][i]           = new TH1D( Form("hJetQA_%dwJetID_jtp_ybin%d"       , i , k) , ";#||{#bf{p^{Jet}}} [GeV];" , 1500 ,0.     ,1500.);       
+	hJetQA_jtE[k][i]           = new TH1D( Form("hJetQA_%dwJetID_jtE_ybin%d"       , i , k) , ";E^{Jet} [GeV];"           , 1500 ,0.     ,1500.);       
+	hJetQA_jtEt[k][i]          = new TH1D( Form("hJetQA_%dwJetID_jtEt_ybin%d"      , i , k) , ";E_{T}^{Jet} [GeV];"       , 1500 ,0.     ,1500.);       
+	hJetQA_jtm[k][i]           = new TH1D( Form("hJetQA_%dwJetID_jtm_ybin%d"       , i , k) , ";m^{Jet} [GeV];"           , 1500 ,0.     ,1500.);       
+	hJetQA_jtmt[k][i]          = new TH1D( Form("hJetQA_%dwJetID_jtmt_ybin%d"      , i , k) , ";m_{T}^{Jet};"             , 1500 ,0.     ,1500.);       
+	hJetQA_jty[k][i]           = new TH1D( Form("hJetQA_%dwJetID_jty_ybin%d"       , i , k) , ";y^{Jet};"                 , 102  ,-5.1   ,5.1);       
+      }
     }
-    hJetQA_jteta_jty = new TH2D( "hJetQA_1wJetID_jteta_jty_etabin" , ";#eta^{Jet};y^{Jet}" , 22  ,-5.5 ,5.5,
-  		                                                                             22  ,-5.5 ,5.5 );       
 
     for(int j = 0; j<N_vars; ++j){	
       for(int k = 0; k<nbins_abseta; ++k){
@@ -427,8 +429,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   float neSum_F[1000];  float neMax_F[1000];
   
   //MC jet variables
-  ind genmatchind_I[1000]
-    float pthat_F;  int subid_F[1000];    int refparton_F[1000];
+  //ind genmatchind_I[1000];
+  float pthat_F;  int subid_F[1000];    int refparton_F[1000];
   float refpt_F[1000];  float refeta_F[1000];  float refphi_F[1000];  
   float refdrjt_F[1000];
 
@@ -632,7 +634,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     // grab vzweight
     double vzWeight=1.;
     //if(doVzWeights ){//TEMPORARY
-    if(doVzWeights && false){
+    if(doVzWeights && true){
       if(!(fabs(vz_F)>24.)) vzWeight=cpuVzWeight_poly(vz_F);
       //vzWeight=cpuVzWeight_gauss(vz_F);
       //vzWeight=cpuVzWeight_bins(vz_F);
@@ -815,16 +817,104 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	  passesJetID=(bool)jetID_32eta47( jtpt, 
 					   phSum_F[jet], useTightJetID);
 	
-	int theEtaBin=-1;
-	for(int etabin=0;etabin<nbins_abseta;++etabin){
-	  if( absetabins[etabin]<=absreceta  && 		
-	      absreceta<absetabins[etabin+1]    ) {	    
-	    theEtaBin=etabin;	    
+	//if(recomatchindex_I.at(jet)<0){
+	//  std::cerr<<std::endl;
+	//  std::cerr<<"//////////////////////////////////////////////"<<std::endl;
+	//    std::cerr<<"////////////// !!! WARNING !!! ///////////////"<<std::endl;
+	//    std::cerr<<"reco jet w/ nonnegative subid has a negative recomatchindex!!!"<<std::endl;
+	//    std::cerr<<"---------DETAILS--------"<<std::endl;
+	//    std::cerr<<std::endl<<"_______ nEvt="<<nEvt<<" ________"<<std::endl;
+	//    std::cerr<<"ngen_I="<<ngen_I<<std::endl;
+	//    for(int gjet=0; gjet<ngen_I; ++gjet){
+	//      std::cerr<<"// genmatchindex_I["<<gjet<<"]="<<genmatchindex_I[gjet]<<std::endl;
+	//      std::cerr<<"genpt_F["<<gjet<<"]="<<genpt_F[gjet]<<std::endl;
+	//    }
+	//    std::cerr<<std::endl;
+	//    std::cerr<<"nref_I="<<nref_I<<std::endl;
+	//    for(int kjet=0;kjet<nref_I;++kjet){
+	//      std::cerr<<"// recomatchindex_I["<<kjet<<"]="<<recomatchindex_I.at(kjet)<<std::endl;
+	//      std::cerr<<"subid_I["<<kjet<<"]="<<subid_I[kjet]<<std::endl;
+	//      std::cerr<<"refpt["<<kjet<<"]="<<refpt_F[kjet]<<std::endl;
+	//      if(recomatchindex_I[kjet]!=-1){
+	//	std::cerr<<"genpt["<<recomatchindex_I[kjet]<<"]="<<genpt_F[recomatchindex_I[kjet]]<<std::endl;
+	//	std::cerr<<"GJetAk04JetPt["<<recomatchindex_I[kjet]<<"]="<<GjetPt->at(recomatchindex_I[kjet])<<std::endl;
+	//      }
+	//    }
+	//    badgenjetcount++;
+	//    continue;
+	//}
+	
+	//float genjttheta=2.*atan(exp(-1.*geneta));
+	//float genjtpz=genpt/tan(genjttheta);
+	//float genjtE=GjetE->at(recomatchindex_I.at(jet));
+	//float genjty=0.5*log((genjtE+genjtpz)/(genjtE-genjtpz));//experimentalist version
+	//float absgenjty=fabs(genjty);		
+	
+	//std::cout<<std::endl;
+	float jttheta_F=2.*atan(exp(-1.*eta_F[jet]));
+	//std::cout<<"jttheta["<<jet<<"]="<<jttheta_F*180./TMath::Pi()<<" degrees"<<std::endl;
+	//std::cout<<"jtpt   ["<<jet<<"]="<<pt_F[jet]<<std::endl;
+	float jtpz_F=pt_F[jet]/tan(jttheta_F);
+	float jtp_F=sqrt(pt_F[jet]*pt_F[jet] + jtpz_F*jtpz_F);
+	float jtE_F=sqrt(jtp_F*jtp_F + m_F[jet]*m_F[jet]);
+	float jtEt_F=jtE_F*sin(jttheta_F);
+	float jtmt_F=m_F[jet]*sin(jttheta_F);
+	//std::cout<<"jtpz   ["<<jet<<"]="<<jtpz_F<<std::endl;
+	//std::cout<<"jtp    ["<<jet<<"]="<<jtp_F<<std::endl;
+	//std::cout<<"jtm    ["<<jet<<"]="<<m_F[jet]<<std::endl;
+	//std::cout<<"jtmt   ["<<jet<<"]="<<jtmt_F<<std::endl;
+	//std::cout<<"jtE    ["<<jet<<"]="<<jtE_F<<std::endl;
+	//std::cout<<"jtEt   ["<<jet<<"]="<<jtEt_F<<std::endl;
+	//std::cout<<"--------------------------------------------"<<std::endl;
+	//std::cout<<"jteta  ["<<jet<<"]="<<eta_F[jet]<<std::endl;
+	float jty_F=0.5*log((jtE_F+jtpz_F)/(jtE_F-jtpz_F));//experimentalist version
+	//std::cout<<"jty    ["<<jet<<"]="<<jty_F<<std::endl;
+	//float jty2_F=pt_F[jet]*sinh(eta_F[jet]);
+	//jty2_F+=sqrt(m_F[jet]*m_F[jet]+(pt_F[jet]*pt_F[jet]*cosh(eta_F[jet])*cosh(eta_F[jet])));
+	//jty2_F/=sqrt(m_F[jet]*m_F[jet]+pt_F[jet]*pt_F[jet]);
+	//jty2_F=log(jty2_F);//completely equiv to v1 above
+	//std::cout<<"jty v2 ["<<jet<<"]="<<jty2_F<<std::endl;	      
+
+	
+	//int theYBin=-1;
+	//for(int ybin=0;ybin<nbins_absy;ybin++)
+	//  if( absybins[ybin]<=absjty  && 		
+	//      absjty<absybins[ybin+1]    	      ) {	    
+	//    theYBin=ybin;
+	//    break;	  }       
+
+	// get rapidity bin
+	float absjty=fabs(jty_F);
+	int theYBin=-1;	
+	for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
+	  if( absjty>=absetabins[rapbin]  && 		
+	      absjty<absetabins[rapbin+1]    	      ) {	    
+	    theYBin=rapbin;
 	    break;
 	  }
-	}//rap bin loop
-
-
+	
+	
+	int theEtaBin=-1;
+	for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
+	  if( absetabins[rapbin]<=absreceta  && 		
+	      absreceta<absetabins[rapbin+1]    	      ) {	    
+	    theEtaBin=rapbin;
+	    break;	  }       	
+	
+	//int theGENEtaBin=-1;
+	//for(int rapbin=0;rapbin<nbins_abseta;rapbin++)
+	//  if( absetabins[rapbin]<=absgeneta  && 		
+	//      absgeneta<absetabins[rapbin+1]    	      ) {	    
+	//    theGENEtaBin=rapbin;
+	//    break;	  }     
+	//
+	//
+	//if(useJERScaleFactors){
+	//  if(theYBin<4&&theYBin>=0){
+	//    smearPY8wJERScaleFactor(JER_sigmu[theYBin],genpt, &recpt);
+	//  }
+	  
+	  
 	if(fillMCJetJECQAHists && passesJetID ){
 	  hjtpt[theEtaBin]->Fill(jtpt,weight_eS);//spectra
 	  hL2L3Res_rawpt[theEtaBin]->Fill(L2L3Res_rawpt,weight_eS);
@@ -859,60 +949,25 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 	      evt_leadJetPt_wCuts=jtpt;      
 	    
 	  }
+
+	  
 	  
 	  /////   JETQA   ///// 
 	  if(fillMCJetQAHists	 ){
 	    
-	    if(jtid==1){
-	      //std::cout<<std::endl;
-	      float jttheta_F=2.*atan(exp(-1.*eta_F[jet]));
-	      //std::cout<<"jttheta["<<jet<<"]="<<jttheta_F*180./TMath::Pi()<<" degrees"<<std::endl;
-	      //std::cout<<"jtpt   ["<<jet<<"]="<<pt_F[jet]<<std::endl;
-	      float jtpz_F=pt_F[jet]/tan(jttheta_F);
-	      float jtp_F=sqrt(pt_F[jet]*pt_F[jet] + jtpz_F*jtpz_F);
-	      float jtE_F=sqrt(jtp_F*jtp_F + m_F[jet]*m_F[jet]);
-	      float jtEt_F=jtE_F*sin(jttheta_F);
-	      float jtmt_F=m_F[jet]*sin(jttheta_F);
-	      //std::cout<<"jtpz   ["<<jet<<"]="<<jtpz_F<<std::endl;
-	      //std::cout<<"jtp    ["<<jet<<"]="<<jtp_F<<std::endl;
-	      //std::cout<<"jtm    ["<<jet<<"]="<<m_F[jet]<<std::endl;
-	      //std::cout<<"jtmt   ["<<jet<<"]="<<jtmt_F<<std::endl;
-	      //std::cout<<"jtE    ["<<jet<<"]="<<jtE_F<<std::endl;
-	      //std::cout<<"jtEt   ["<<jet<<"]="<<jtEt_F<<std::endl;
-	      //std::cout<<"--------------------------------------------"<<std::endl;
-	      //std::cout<<"jteta  ["<<jet<<"]="<<eta_F[jet]<<std::endl;
-	      float jty_F=0.5*log((jtE_F+jtpz_F)/(jtE_F-jtpz_F));//experimentalist version
-	      //std::cout<<"jty    ["<<jet<<"]="<<jty_F<<std::endl;
-	      //float jty2_F=pt_F[jet]*sinh(eta_F[jet]);
-	      //jty2_F+=sqrt(m_F[jet]*m_F[jet]+(pt_F[jet]*pt_F[jet]*cosh(eta_F[jet])*cosh(eta_F[jet])));
-	      //jty2_F/=sqrt(m_F[jet]*m_F[jet]+pt_F[jet]*pt_F[jet]);
-	      //jty2_F=log(jty2_F);//completely equiv to v1 above
-	      //std::cout<<"jty v2 ["<<jet<<"]="<<jty2_F<<std::endl;	      
-
-	      // get rapidity bin
-	      float absjty=fabs(jty_F);
-	      int theRapBin=-1;	
-	      for(int rapbin=0;rapbin<nbins_abseta;++rapbin)
-	      	if( absjty>=absetabins[rapbin]  && 		
-	      	    absjty<absetabins[rapbin+1]    	      ) {	    
-	      	  theRapBin=rapbin;
-	      	  break;
-	      	}
-	      if(theRapBin!=-1){
-	      	hJetQA_jtptybins[theRapBin]->Fill(pt_F[jet],weight_eS);
-	      }
-	      
-	      
-	      hJetQA_jttheta[theEtaBin] ->Fill(jttheta_F,weight_eS);
-	      hJetQA_jtpz[theEtaBin]    ->Fill(jtpz_F,weight_eS);
-	      hJetQA_jtp[theEtaBin]     ->Fill(jtp_F,weight_eS);
-	      hJetQA_jtE[theEtaBin]     ->Fill(jtE_F,weight_eS);
-	      hJetQA_jtEt[theEtaBin]    ->Fill(jtEt_F,weight_eS);
-	      hJetQA_jtm[theEtaBin]     ->Fill(m_F[jet],weight_eS);
-	      hJetQA_jtmt[theEtaBin]    ->Fill(jtmt_F,weight_eS);
-	      hJetQA_jty[theEtaBin]     ->Fill(jty_F,weight_eS);
-	      hJetQA_jteta_jty          ->Fill(fabs(eta_F[jet]),fabs(jty_F),weight_eS);
-	    }
+	    
+	    
+	    hJetQA_jtptybins[theYBin][jtid]->Fill(pt_F[jet],weight_eS);
+	    hJetQA_jttheta[theYBin][jtid] ->Fill(jttheta_F,weight_eS);
+	    hJetQA_jtpz[theYBin][jtid]    ->Fill(jtpz_F,weight_eS);
+	    hJetQA_jtp[theYBin][jtid]     ->Fill(jtp_F,weight_eS);
+	    hJetQA_jtE[theYBin][jtid]     ->Fill(jtE_F,weight_eS);
+	    hJetQA_jtEt[theYBin][jtid]    ->Fill(jtEt_F,weight_eS);
+	    hJetQA_jtm[theYBin][jtid]     ->Fill(m_F[jet],weight_eS);
+	    hJetQA_jtmt[theYBin][jtid]    ->Fill(jtmt_F,weight_eS);
+	    hJetQA_jty[theYBin][jtid]     ->Fill(jty_F,weight_eS);
+	    if(jtid==1)hJetQA_jteta_jty          ->Fill(fabs(eta_F[jet]),fabs(jty_F),weight_eS);
+	    
 	  
 
 

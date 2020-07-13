@@ -545,12 +545,12 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   std::cout<<"jtetaLoCut_str = "<<jtetaLoCut_str<<std::endl;  
   
   std::string jetEtaCutString;
-  if(etabin==0) jetEtaCutString = "0.0 < #||{y} < 0.5";
-  if(etabin==1) jetEtaCutString = "0.5 < #||{y} < 1.0";
-  if(etabin==2) jetEtaCutString = "1.0 < #||{y} < 1.5";
-  if(etabin==3) jetEtaCutString = "1.5 < #||{y} < 2.0";
-  if(etabin==4) jetEtaCutString = "2.0 < #||{y} < 2.5";
-  if(etabin==5) jetEtaCutString = "2.5 < #||{y} < 3.0";
+  if(etabin==0) jetEtaCutString = "0.0 < #||{#eta} < 0.5";
+  if(etabin==1) jetEtaCutString = "0.5 < #||{#eta} < 1.0";
+  if(etabin==2) jetEtaCutString = "1.0 < #||{#eta} < 1.5";
+  if(etabin==3) jetEtaCutString = "1.5 < #||{#eta} < 2.0";
+  if(etabin==4) jetEtaCutString = "2.0 < #||{#eta} < 2.5";
+  if(etabin==5) jetEtaCutString = "2.5 < #||{#eta} < 3.0";
   std::cout<<"jetEtaCutString="<<jetEtaCutString<<std::endl;
   
   float etaBinWidth=1.;
@@ -735,7 +735,8 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
   
   if(funcDebug) std::cout<<"creating temporary canvas for printing Jet plots..."<<std::endl;
   TCanvas *temp_canvJet = new TCanvas("tempEvt", "temp Jet Canv withLog", CANVX, CANVY); //This is for the Jet QA Evt plots without logs
-  temp_canvJet->cd();
+  temp_canvJet->Divide(2);
+  temp_canvJet->cd(1);
   
     
   TPad *jetpad1 = new TPad("jetpad1", "Overlay Pad", 0.0, 0.30, 1.0, 1.0);

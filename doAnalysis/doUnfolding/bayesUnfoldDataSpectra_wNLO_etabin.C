@@ -962,8 +962,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
   TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());
   for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(CT14nloerr->GetBinContent(i)/100.));
+  std::cout<<"CT14nlo->GetBinContent(5)="<<CT14nlo->GetBinContent(5)<<std::endl;
   if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
 					 CT14nlo, &CT14NPs, etabinint);
+  std::cout<<"after NP corr: CT14nlo->GetBinContent(5)="<<CT14nlo->GetBinContent(5)<<std::endl;
+  assert(false);
 
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  

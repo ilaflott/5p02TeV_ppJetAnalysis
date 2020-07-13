@@ -2499,7 +2499,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       fout->cd();
     }
     else if(systunftype=="JER"){
-      TDirectory* fout_JERsys_dir=fout->mkdir("JECsys");
+      TDirectory* fout_JERsys_dir=fout->mkdir("JERsys");
       fout_JERsys_dir->cd();
       hgen_resp_JERsysup_rebin->Write("MC_truth_resp_JERsysup_rebin");
       hrec_sameside_JERsysup->Write("MC_meas_JERsysup");

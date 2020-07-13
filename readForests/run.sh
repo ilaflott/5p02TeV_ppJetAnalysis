@@ -8,9 +8,9 @@ subm_ppData_jetPlots=0
 subm_ppData_jetTrigEff=0
 subm_ppData_makeNTuple=0
 
-subm_ppMC_jetPlots=0
+subm_ppMC_jetPlots=1
 subm_ppMC_JERS=0
-subm_ppMC_unf=1
+subm_ppMC_unf=0
 subm_ppMC_MCEff=0
 
 sleep_between_subm=0
@@ -65,7 +65,7 @@ if [[ $subm_ppMC_jetPlots -eq 1 ]]
 then
     echo "...ppMC jetPlots..."
     rootcompile readForests_ppMC_jetPlots.C
-    source run_readForests_jetPlots.sh 4 "0.0" "2.0" "ppMC"
+    source run_readForests_jetPlots.sh 4 "0.0" "2.5" "ppMC"
     if [[ $sleep_between_subm -eq 1 ]]
 	then
 	sleep ${Nmin}m

@@ -1,10 +1,10 @@
 #!/bin/bash
 
 
-dojetQAPlots=1                            
+dojetQAPlots=1
 dojetTrigQAPlots=0   
 dojetTrigEff=0
-dojetIDQAPlots=0
+dojetIDQAPlots=1
 dojetMultPlots=0   #old
 scpOutput=0
 
@@ -249,17 +249,17 @@ then
     #source run_printPlots_jetIDPlots.sh "4" "08.06.19_outputCondor" "08-06-19"  "0.0eta2.0_useTupel_withLumiCorr"  "00eta20_08.06.19_useTupel_withLumiCorr_semifinal" "ppData"
     #scp2Serin "output/ak4PF_HPtJetTrig_00eta20_08.06.19_useTupel_withLumiCorr_semifinal_jetIDPlots.*"
 
-    source run_printPlots_jetIDPlots.sh "4" "11.26.19_outputCondor" "11-26-19"  "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2"     "ppData"
-    scp2Serin "output/ak4PF_HPtJetTrig_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_jetIDPlots.*"    
-
-    source run_printPlots_jetIDPlots.sh "4" "11.26.19_outputCondor" "11-26-19"  "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"     "ppData"
-    scp2Serin "output/ak4PF_HPtJetTrig_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh_jetIDPlots.*"    
-
-
-
-
-    source run_printPlots_jetIDPlots.sh "4" "06.25.19_outputCondor" "06-25-19"  "0.0eta2.0_semifinal"  "00eta20_06.25.19_SMPbins_semifinal" "ppMC"
-    scp2Serin "output/ak4PF_Py8_CUETP8M1_00eta20_06.25.19_SMPbins_semifinal_jetIDPlots.*"
+    #source run_printPlots_jetIDPlots.sh "4" "11.26.19_outputCondor" "11-26-19"  "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2"     "ppData"
+    #scp2Serin "output/ak4PF_HPtJetTrig_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_jetIDPlots.*"    
+    #
+    #source run_printPlots_jetIDPlots.sh "4" "11.26.19_outputCondor" "11-26-19"  "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"     "ppData"
+    #scp2Serin "output/ak4PF_HPtJetTrig_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh_jetIDPlots.*"    
+    
+    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_SMPbins_withjety_semifinalv3"  "00eta20_03.18.20_semifinalv3"     "ppData"
+    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_semifinalv3"  "00eta20_03.18.20_semifinalv3"     "ppMC"
+    
+    #source run_printPlots_jetIDPlots.sh "4" "06.25.19_outputCondor" "06-25-19"  "0.0eta2.0_semifinal"  "00eta20_06.25.19_SMPbins_semifinal" "ppMC"
+    #scp2Serin "output/ak4PF_Py8_CUETP8M1_00eta20_06.25.19_SMPbins_semifinal_jetIDPlots.*"
 
     #source run_printPlots_jetIDPlots.sh "4" "08.19.19_outputCondor" "08-19-19" "0.0eta2.0_noDRCut_semifinal"  "00eta20_08.19.19_SMPbins_noDRCut_semifinal"    "ppMC"
     #scp2Serin "output/ak4PF_Py8_CUETP8M1_00eta20_08.19.19_SMPbins_noDRCut_semifinal_jetIDPlots.*"

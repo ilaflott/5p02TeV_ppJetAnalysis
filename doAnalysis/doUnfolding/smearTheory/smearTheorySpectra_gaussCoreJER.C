@@ -9,13 +9,14 @@ const bool printBaseDebug=true;
 
 //const int nEvents=1e+09;  ///10x typical
 //const int nEvents=1e+08;  ///typical
-const int nEvents=1e+07;  /// debug nevents
-//const int nEvents=1e+06;  /// debug nevents
+//const int nEvents=1e+07;  /// debug nevents
+const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 
 std::string ddxsec_yax="#frac{d^{2}#sigma}{dp_{T}dy} [nb/GeV]";
 
-const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
+//const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
+const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV_fromJohn.root";
 //const std::string JERCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta20_08.07.18.root";
 const std::string in_JERFile_default="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_MCJEC_00eta20_08.07.18.root";
 
@@ -68,7 +69,9 @@ int smearTheorySpectra_gaussCoreJER( std::string in_NLOfileString, const bool us
   std::cout<<"opening NP corr file + fits! " << std::endl;
   TFile* fin_NP=TFile::Open(NPCorrFile.c_str());  
   std::string NPCorrFits_str;
-  if(NPCorrFile.find("nnlo")!=std::string::npos)
+  if(true)
+    NPCorrFits_str="f";
+  else if(NPCorrFile.find("nnlo")!=std::string::npos)
     NPCorrFits_str="fNPC_POWPY8_R4_etabin";
   else//raghavs suggestion to use POWPY8 for NNLO thy.
     NPCorrFits_str="fNPC_HerwigEE4C_R4_etabin";
@@ -76,9 +79,13 @@ int smearTheorySpectra_gaussCoreJER( std::string in_NLOfileString, const bool us
   
   /////////////// Get NP fit functions
   TF1 *fNP_y0 = (TF1*)fin_NP->Get((NPCorrFits_str+"0").c_str());
+  fNP_y0->Print("base");
   TF1 *fNP_y1 = (TF1*)fin_NP->Get((NPCorrFits_str+"1").c_str());
+  fNP_y1->Print("base");
   TF1 *fNP_y2 = (TF1*)fin_NP->Get((NPCorrFits_str+"2").c_str());
+  fNP_y2->Print("base");
   TF1 *fNP_y3 = (TF1*)fin_NP->Get((NPCorrFits_str+"3").c_str());
+  fNP_y3->Print("base");
   if(!fin_NP ||
      !fNP_y0 || !fNP_y1 || !fNP_y2 || !fNP_y3 )
     {std::cout<<"error, NP file and/or fits not found."<<std::endl; assert(false);}

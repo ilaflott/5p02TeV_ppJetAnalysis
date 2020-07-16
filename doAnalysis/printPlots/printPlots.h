@@ -33,6 +33,7 @@
 // plotting
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TPad.h>
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 #include <TLegend.h>
@@ -61,6 +62,7 @@ const int CANVX=1000;
 const int CANVY=800;
 
 #include "printPlots_jetPlots.h"    
+//#include "printPlots_jetPlots_beforeDoingStupidStuff_07.13.20.h"    
 //#include "printPlots_jetTrigPlots.h"
 #include "printPlots_jetTrigEff.h"
 #include "printPlots_jetIDPlots.h"

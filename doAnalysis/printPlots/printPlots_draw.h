@@ -56,7 +56,8 @@ const float tupeljetQAxmax[N_tupelvars]={
 100.//  "NeuMult"
 };
 
-const int var_xAx_reBin[]={                                   
+const int var_xAx_reBin[]={   
+  10, 10, 5, 5,     //recojtpt ybins, recojt energy, recojt mass, recojet y
   10, 10,     //reco/rawjtpt  
   //  10, 10, 10,    //no Res, L2Res, L3Res jtpt
   
@@ -82,6 +83,7 @@ const int var_xAx_reBin[]={
 };
 
 const float jetQAxmax[]={
+  (1000.),  (1500.),  (300.),  (4.5), //recojtpt ybins, recojt energy, recojt mass, recojet y
   (1000. ), (1000.),             //reco/rawjtpt  
   //  (1000. ), (1000.), (1000.), //jtpt forRes, L2Res, L3Res
 
@@ -108,6 +110,7 @@ const float jetQAxmax[]={
 
 
 const float jetQAxmin[]={
+  (50.),  (50.),  (0.),  (-5.), //recojtpt ybins, recojt energy, recojt mass, recojet y
   (50. ), (50.  ) ,           //reco/rawjtpt  
   //  (50. ), (50.  ) ,         (50.  ) ,        //jtpt forRes, L2Res, L3 Res
 
@@ -305,6 +308,33 @@ void ratioHistStyle(TH1* theRatio , std::string h_XAx_Title, std::string h_YAx_T
   return;
 }
 
+
+void nojetIDHistStyle(TH1* h){
+  //marker
+  h->SetMarkerStyle(kFullDotLarge);
+  h->SetMarkerSize(theDataMarkerSize);
+  h->SetMarkerColor(theDataMarkerColor);
+  
+  //line
+  h->SetLineColor(theDataLineColor);
+  return;
+}
+
+void jetIDHistStyle(TH1* h){
+  //marker
+  h->SetMarkerColorAlpha(theMCMarkerColor,0.);
+  //h->SetMarkerStyle(kFullDotLarge);
+  //h->SetMarkerSize(theMCMarkerSize);
+  
+  //line
+  h->SetLineColorAlpha(theMCLineColor,1.0);
+
+  //fill
+  h->SetFillStyle(3357);
+  h->SetFillColorAlpha(theMCLineColor, 0.3);
+   
+  return;
+}
 
 void jetIDratioHistStyle(TH1* theRatio , std::string h_XAx_Title, std::string h_YAx_Title=AUAxTitle){
   

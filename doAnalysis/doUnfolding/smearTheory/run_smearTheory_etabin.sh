@@ -60,10 +60,12 @@ then
     ##OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_noJERscales_${Fittypestr}_gaussSmear_TEST_murmufpt1_${etabinstr}.root    
     ##OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_DEBUG_JERSF1.0_wREDRAW_plots/
     ##OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_DEBUG_JERSF1.0_wREDRAW_${etabinstr}.root    
-    OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_plots/
-    OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_${etabinstr}.root    
+    #OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_plots/
+    #OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_${etabinstr}.root    
     #OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_plots/
     #OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_${etabinstr}.root    
+    OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_JohnNPs_plots/
+    OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_JohnNPs_${etabinstr}.root    
     JERDIR=/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/
     JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
     FULLJERFILEPATH=${JERDIR}${JERFILE}

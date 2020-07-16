@@ -83,8 +83,12 @@ TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
     Double_t NPval=fNP->Eval(bincent);    
     Double_t binval  = xsec->GetBinContent(i);
     Double_t binerr = xsec->GetBinError(i);
+    if(funcDebug)std::cout<<"for i="<<i<<", ptBin center "<<bincent <<std::endl;
+    if(funcDebug)std::cout<<"binval = "<<binval<<" +/- "<<binerr<<std::endl; 
+    if(funcDebug)std::cout<<"NPval ="<<NPval<<std::endl;
     binval*= NPval;
     binerr*= NPval;
+    if(funcDebug)std::cout<<"now NPval*binval = "<<binval<<" +/- "<<binerr<<std::endl; 
     xsec_wNP->SetBinContent(i,binval);
     xsec_wNP->SetBinError(i,binerr);
   }

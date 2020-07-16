@@ -1,3 +1,4 @@
+const int Netabins=4;
 #include "printPlots.h"
 
 
@@ -16,7 +17,7 @@ const bool drawJetRapBinsPlot=false;//, drawGENJetRapBinsPlot=true;
 
 const bool doJetIDPlots=true;
 const bool useMB=false;
-const int Netabins=4;
+const int NetabinstoDraw=4;
 const bool print_incjetana_tupelequiv=false;
 
 // the macro ------------------------
@@ -222,7 +223,7 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
     
     //TH1s
     for(int j=0;j<N_vars;j++){ 
-      for(int etabin=0; etabin<Netabins; etabin++){
+      //for(int etabin=0; etabin<Netabins; etabin++){
 	
 	//continue;
 	
@@ -230,11 +231,29 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	if(debugMode)std::cout<<std::endl<<" var ="<<var[j]<<", j="<<j<<std::endl;
 	
 	//constituent/dijet skips
-	bool skipConstitPlot= (!drawJetConstituentPlots && j>=jetConstits_varStart && j<dijet_varStart);
-	bool skipDijetPlot= (!drawDijetPlots && j>=dijet_varStart);
+	//bool skipConstitPlot= (!drawJetConstituentPlots && j>=jetConstits_varStart && j<dijet_varStart);
+	//bool skipDijetPlot= (!drawDijetPlots && j>=dijet_varStart);
 	
 	//skip plot
-	bool skipPlot=skipConstitPlot||skipDijetPlot;
+	//bool skipPlot=skipConstitPlot||skipDijetPlot;
+	bool skipPlot=false;
+
+	//these are the variables I use for the jet ID, so these variables + the jet distributions themselves are what i make the jet qa+jet id plots for.
+	//float neSum, float phSum, float chSum, float eSum, float muSum,
+	//int numConst, int chMult, bool isTight=false
+	if     ( j<jetConstits_varStart)skipPlot=false;
+	else if( var[j]=="neSum" || 
+		 var[j]=="phSum" || 
+		 var[j]=="chSum" || 
+		 var[j]=="eSum"  || 
+		 var[j]=="muSum" || 
+		 var[j]=="numConst" || 
+		 var[j]=="chMult"     )skipPlot=false;
+	else                           skipPlot=true;
+	//if((var[j]).find("Hard")!=std::string::npos) skipPlot=true;
+	//if((var[j]).find("Max")!=std::string::npos) skipPlot=true;
+	
+	
 	if(skipPlot) {
 	  if(debugMode)std::cout<<"skipping jet plot for "<<var[j]<<std::endl;
 	  continue;}
@@ -244,13 +263,39 @@ int printPlots_jetPlots(const std::string input_ppData_condorDir , const std::st
 	//  printJetQAHist_jtpt_SMPTrigCombo( (TFile*) finData , (TFile*) finMC   ,   (int)etabin, (long double)theLumi/intgrtdLumi,
 	//				    (std::string) thePDFFileName  , (std::string) fullJetType, (TFile*) fout );      
 	//}
-	std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_etabin"+std::to_string(etabin);          
-	printJetQAHist( (TFile*) finData , (TFile*) finMC   ,  (int) j, (bool)doJetIDPlots, (int)etabin, 
-			(std::string) inHistName , (std::string) thePDFFileName  , (std::string) fullJetType, 
-			(long double) theLumi  , (TFile*) fout );      
+	//std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_etabin"+std::to_string(NetabinstoDraw);          
 
+	
+	if((var[j]=="jtpt" && j==0)
+	   ||var[j]=="jtE"||var[j]=="jtm"){
+	  std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_ybin";          
+	  std::cout<<"inHistName="<<inHistName<<std::endl;
+	  printJetQAHist( (TFile*) finData , (TFile*) finMC   ,  (int) j, (bool)doJetIDPlots, (int)NetabinstoDraw, 
+			  (std::string) inHistName , (std::string) thePDFFileName  , (std::string) fullJetType, 
+			  (long double) theLumi  , (TFile*) fout );      	
+	}
+	else if(var[j]=="jty"){	  
+	  std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_ybin";          
+	  printJetQAEtaHist((TFile*) finData , (TFile*) finMC   ,  (int) j, (bool)doJetIDPlots, (int)NetabinstoDraw, 
+	  		    (std::string) inHistName , (std::string) thePDFFileName  , (std::string) fullJetType, 
+	  		    (long double) theLumi  , (TFile*) fout );      	
+	  
+	}
+	else if(var[j]=="jteta" ){
+	  std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_etabin";          
+	  printJetQAEtaHist((TFile*) finData , (TFile*) finMC   ,  (int) j, (bool)doJetIDPlots, (int)NetabinstoDraw, 
+			    (std::string) inHistName , (std::string) thePDFFileName  , (std::string) fullJetType, 
+			    (long double) theLumi  , (TFile*) fout );      	
+	}	
+	else{
+	  std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_etabin";          
+	  printJetQAHist( (TFile*) finData , (TFile*) finMC   ,  (int) j, (bool)doJetIDPlots, (int)NetabinstoDraw, 
+			  (std::string) inHistName , (std::string) thePDFFileName  , (std::string) fullJetType, 
+			  (long double) theLumi  , (TFile*) fout );      	
+	}
+	
 	//break;
-      }//loop over etabins
+	//}//loop over etabins
     }//loop over variables  
   }//drawJetQAPlots
   

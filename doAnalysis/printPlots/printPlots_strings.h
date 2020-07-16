@@ -42,12 +42,13 @@ const std::string PDStatsString_2="#bf{CMS} #it{Work In Progress}               
 
 // variable names for QA Plots
 const std::string var[]={
-  //jets, 0-3, 4 vars tot
-  "jtpt"  , "rawpt" ,
+  //jets, 0-7, 8 vars tot
+  "jtpt", "jtE","jtm", "jty",
+  "jtpt"  , "rawpt" , 
   //"jtpt_forRes", "jtpt_L2Res", "jtpt_L3Res",  //jets, 0-6, 7 vars tot
   "jteta" , "jtphi" ,
 
-  //jet constituents, 4-30, 27 vars tot
+  //jet constituents, 8-34, 27 vars tot
   "trkN", "trkSum", "trkMax", //trk
   "trkHardN", "trkHardSum",
 
@@ -63,13 +64,13 @@ const std::string var[]={
 
   "neuMult", "chMult", "numConst",
 
-  // dijets, 31-35=5 vars
+  // dijets, 35-39=5 vars
   "Aj" , "xj" , "dphi",    //JERS might not like me
   "leadJetPt", "subleadJetPt"  
 };
 const int N_vars=sizeof(var)/sizeof(std::string);
 const int jetQA_varStart=0;
-const int jetQA_Nvars=4;//const int jetQA_Nvars=7;
+const int jetQA_Nvars=8;//const int jetQA_Nvars=7;
 
 const int jetConstits_varStart=jetQA_varStart+jetQA_Nvars;
 const int jetConstits_Nvars=27;
@@ -156,6 +157,7 @@ const std::string tupelvar_incjetanaequiv[]={
 
 
 const std::string var_xAx_Titles[] = {   
+  "Jet p_{T}^{RECO} (GeV)", "Jet E^{RECO} (GeV)", "Jet M^{RECO} (GeV)", "Jet y^{RECO} (GeV)",
   "Jet p_{T}^{RECO} (GeV)" ,  "Jet p_{T}^{RAW} (GeV)",  
 //  "Jet p_{T}^{RECO} (GeV) no Residuals" , 
 //  "Jet p_{T}^{RECO} (GeV) L2 Residuals" , 

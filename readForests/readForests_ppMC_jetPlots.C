@@ -14,7 +14,7 @@ const bool fillMCTupelJetQAHists=false&&useTupel;
 
 const bool fillMCJetJECQAHists=false;
 const bool fillMCDijetHists=false;//hardly used options
-const bool useTightJetID=true;
+const bool useTightJetID=false;
 
 
 

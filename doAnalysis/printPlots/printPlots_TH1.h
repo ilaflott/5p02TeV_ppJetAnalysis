@@ -111,3 +111,22 @@ void fracSubtracted(TH1F* theRatio){
   //  assert(false);
   return;
 }
+
+
+
+
+
+float getnonzeromin(TH1* th1){
+  float nonzeromin=1.e+40;
+  int nbinsx=th1->GetNbinsX();
+  for(int i=1;i<=nbinsx;i++){
+    float content=th1->GetBinContent(i);
+    if(!(content>0.)&&!(content<0.))//check for zero
+      continue;
+    else if(content < nonzeromin)//check that new content is less than current minium
+      nonzeromin=content;
+    else continue;//if the content is greater than current minimum
+  }
+  return nonzeromin;
+
+}

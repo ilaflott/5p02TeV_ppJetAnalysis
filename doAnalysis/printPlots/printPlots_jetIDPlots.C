@@ -1,3 +1,4 @@
+const int Netabins=4;
 #include "printPlots.h"
 
 
@@ -8,11 +9,11 @@ const bool debugMode=true, doEventCounts=false;
 const bool drawJetIDPlots=true;
 const bool drawJetConstituentPlots=true, drawDijetPlots=false;
 
-const bool drawJetQAPlots=false;
-const bool drawTupelJetQAPlots=true&&!drawJetQAPlots;
+const bool drawJetQAPlots=true;
+const bool drawTupelJetQAPlots=false&&!drawJetQAPlots;
+const int NetabinstoDraw=4;
 //bool useMB=false;
-const int Netabins=4;
-const bool print_incjetana_tupelequiv=true;
+const bool print_incjetana_tupelequiv=false;
 
 //int printPlots_jetIDPlots(const std::string input_condorDir ,
 int printPlots_jetIDPlots(const std::string input_condorDir_jetID , 
@@ -118,6 +119,7 @@ int printPlots_jetIDPlots(const std::string input_condorDir_jetID ,
   // just for opening the pdf
   TCanvas *temp_canvOpen = new TCanvas("temp", "temp", 1000, 800);  
   temp_canvOpen->Print( open_thePDFFileName.c_str() );  
+  temp_canvOpen->Print( thePDFFileName.c_str() );  //this page intentionally left blank
   temp_canvOpen->Close();
   
   
@@ -142,7 +144,7 @@ int printPlots_jetIDPlots(const std::string input_condorDir_jetID ,
   // jet ID plots ----------------------
   if(drawJetIDPlots){
     std::cout<<" drawing jet ID Plots..."<<std::endl;
-
+    
     //std::string jetIDInt;
     //if(doJetIDPlots)jetIDInt="1";
     //else jetIDInt="0";
@@ -153,26 +155,71 @@ int printPlots_jetIDPlots(const std::string input_condorDir_jetID ,
 	std::cout<<std::endl;
 	if(debugMode)std::cout<<std::endl<<" var ="<<var[j]<<", j="<<j<<std::endl;
 	
-      //constituent/dijet skips
-	bool skipConstitPlot= (!drawJetConstituentPlots && j>=jetConstits_varStart && j<dijet_varStart);
-	bool skipDijetPlot= (!drawDijetPlots && j>=dijet_varStart);
+	//constituent/dijet skips
+	//bool skipConstitPlot= (!drawJetConstituentPlots && j>=jetConstits_varStart && j<dijet_varStart);
+	//bool skipDijetPlot= (!drawDijetPlots && j>=dijet_varStart);
 	
 	//skip plot
-	bool skipPlot=skipConstitPlot||skipDijetPlot;
+	bool skipPlot=false;
+	//bool skipPlot=skipConstitPlot||skipDijetPlot;
+	//if((var[j]).find("Hard")!=std::string::npos) skipPlot=true;
+	//if((var[j]).find("Max")!=std::string::npos) skipPlot=true;
+	//these are the variables I use for the jet ID, so these variables + the jet distributions themselves are what i make the jet qa+jet id plots for.
+	//float neSum, float phSum, float chSum, float eSum, float muSum,
+	//int numConst, int chMult, bool isTight=false
+	if     ( j<jetConstits_varStart)skipPlot=false;
+	else if( var[j]=="neSum" || 
+		 var[j]=="phSum" || 
+		 var[j]=="chSum" || 
+		 var[j]=="eSum"  || 
+		 var[j]=="muSum" || 
+		 var[j]=="numConst" || 
+		 var[j]=="chMult"     )skipPlot=false;
+	else                           skipPlot=true;
+	//if((var[j]).find("Hard")!=std::string::npos) skipPlot=true;
+	//if((var[j]).find("Max")!=std::string::npos) skipPlot=true;
+	//loose criteria
+	//neSum/jetIDpt    < 0.99 &&
+	//phSum/jetIDpt    < 0.99 &&
+	//numConst         > 1    &&
+	//muSum/jetIDpt    < 0.80 &&
+	//chSum/jetIDpt    > 0.   &&
+	//chMult           > 0    &&
+	//eSum/jetIDpt     < 0.99
+
+	////tight criteria
+	//neSum/jetIDpt    < 0.90 &&
+        //phSum/jetIDpt    < 0.90 &&
+	//numConst         > 1    &&
+        //muSum/jetIDpt    < 0.80 &&
+	//chSum/jetIDpt    > 0.   &&
+	//chMult           > 0    &&
+        //eSum/jetIDpt     < 0.90
+
+
+
+
+
 	if(skipPlot) std::cout<<"skipping jet plot for "<<var[j]<<std::endl;
 	if(skipPlot) continue;
 	
-	//printPlot
-	//std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j];
-	//      printJetIDHist( (TFile*) fin , (int) j, (bool) isData,
-	//		      (std::string) thePDFFileName  , 
-	//		      (std::string) fullJetType, (long double) theLumi  );
-	//	printJetIDHist( (TFile*) fin_jetID , (TFile*) fin_nojetID , 
-	printJetIDHist( (TFile*) fin_jetID , //NULL, 
-			(int) j, (bool) isData,
-			(std::string) thePDFFileName  , 
-			(std::string) fullJetType, (long double) theLumi,  
-			(TFile*) fout);
+	if(var[j]=="jty"||var[j]=="jteta"){	  
+	  //continue;
+	  //std::string inHistName="hJetQA_"+jetIDInt+"wJetID_"+var[j]+"_ybin";          
+	  printJetIDEtaHist( (TFile*) fin_jetID , //NULL, 
+	  		  (int) j, (bool) isData,(int)NetabinstoDraw,
+	  		  (std::string) thePDFFileName  , 
+	  		  (std::string) fullJetType, (long double) theLumi,  
+	  		  (TFile*) fout);
+	}
+	else {
+	  printJetIDHist( (TFile*) fin_jetID , //NULL, 
+			  (int) j, (bool) isData,(int)NetabinstoDraw, 
+			  (std::string) thePDFFileName  , 
+			  (std::string) fullJetType, (long double) theLumi,  
+			  (TFile*) fout);
+	}	
+	
       }
     }
 

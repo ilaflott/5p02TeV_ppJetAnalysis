@@ -85,3 +85,6 @@ doAnalysis/doUnfolding/smearTheory/PY8_06.25.19_sigma_semifinal_noJERscales_spl3
 doAnalysis/doUnfolding/smearTheory/PY8_06.25.19_sigmu_semifinal_noJERscales_spl3wgts_gaussSmear_NLO_plots/
 doAnalysis/printPlots/code_notintuse/
 doAnalysis/printPlots/old_output/
+doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/reFitNPCs/reFitNPCs_backup.C
+doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/reFitNPCs/reFitNPCs_whatIEndedUpUsing.C
+doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/reFitNPCs/NLOpNP_InclusiveJets5TeV_fromJohn_refit.root2

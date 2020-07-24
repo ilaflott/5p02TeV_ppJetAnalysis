@@ -971,7 +971,7 @@ TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true, s
   return thyHist;
 }
 
-void applyNPCorr_etabin(std::string nlofile_str="", TH1D* hnlo=NULL, std::string* NPsstr=NULL, int etabinint=0){
+void applyNPCorr_etabin(std::string nlofile_str="", TH1D* hnlo=NULL, std::string* NPsstr=NULL, int etabinint=0, std::string sysdirec=""){
   bool funcDebug=true;
   
   //open NP file
@@ -981,16 +981,20 @@ void applyNPCorr_etabin(std::string nlofile_str="", TH1D* hnlo=NULL, std::string
   
   //set NP TF1 name + NP desc str if not null
   std::string NPCorrName="";  
-  if(nlofile_str.find("nnlo")!=std::string::npos){    //if nnpdf nnlo, then use these nps
+  if(NPCorr_filename.find("fromJohn")!=std::string::npos){
+    NPCorrName="f"+std::to_string(etabinint)+sysdirec;
+    if(NPsstr)(*NPsstr)=" #otimes PY8";
+  }
+  else if(nlofile_str.find("nnlo")!=std::string::npos){    //if nnpdf nnlo, then use these nps
     //    NPCorrName="fNPC_POWPY8_R4_etabin";
     //if(NPsstr)(*NPsstr)=" #otimes POW+PY8";  
-    NPCorrName="fNPC_HerwigEE5C_R4_etabin";
+    NPCorrName="fNPC_HerwigEE5C_R4_etabin"+std::to_string(etabinint);
     if(NPsstr)(*NPsstr)=" #otimes HERWIG EE5C";  
   }
   else{    
-    NPCorrName="fNPC_HerwigEE4C_R4_etabin";
+    NPCorrName="fNPC_HerwigEE4C_R4_etabin"+std::to_string(etabinint);
     if(NPsstr)(*NPsstr)=" #otimes HERWIG EE4C";  }  
-  NPCorrName+=std::to_string(etabinint);
+  //NPCorrName+=
   
   //grab the TF1
   TF1* fNPCorr=(TF1*)NPCorrFile->Get(NPCorrName.c_str());

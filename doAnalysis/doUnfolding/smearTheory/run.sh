@@ -28,11 +28,13 @@ then
     #nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
     ##this didn't have the scale var spectra in it, just the errors
     #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v2"
-    ##this does have the scale var spectra in it ## IN PROGRESS
+    #this does have the scale var spectra in it ## IN PROGRESS
     #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v3"
-    #this does have the scale var spectra in it ## TO DO
+    ##this does have the scale var spectra in it ## TO DO
     nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3"
-    
+
+    #outdescstr="gaussSmear_murmufpt_JohnNPs"    
+    outdescstr="gaussSmear_murmufpt1_JohnNPs"
 
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"
@@ -45,7 +47,7 @@ then
     #descstr="06.25.19_sigmu_semifinal" 
     #descstr="06.25.19_sigmu_semifinal" 
     #descstr="06.25.19_sigma_semifinal" 
-    descstr="03.18.20_sigmu_geny"
+    jerdescstr="03.18.20_sigmu_geny"
     
     #fittypestr="modLog"
     #fittypestr="7TeV"
@@ -53,6 +55,7 @@ then
     #fittypestr="spl3wgts_extv2"
     ##fittypestr="spl3wgts_extv1"
     ##fittypestr="spl3wgts_extv3"
+
     
     scpoutput=0
     scpafterlast=0
@@ -70,7 +73,7 @@ then
 	fi
 	
 	echo "etabin_i=${etabin_i}"
-	source run_smearTheory_etabin.sh $etabin_i   $nlofstr $nlofshortstr $jerfstr $descstr $fittypestr $scpoutput
+	source run_smearTheory_etabin.sh $etabin_i   $nlofstr $nlofshortstr $jerfstr $jerdescstr $fittypestr $scpoutput $outdescstr
 	etabin_i=$(($etabin_i + 1))
 	
     done

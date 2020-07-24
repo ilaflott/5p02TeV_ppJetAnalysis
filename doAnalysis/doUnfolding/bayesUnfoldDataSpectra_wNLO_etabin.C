@@ -9,9 +9,9 @@ const bool doBiasTest=false;
 const bool setDataCovMat=true;
 const bool usePseudoRapBins=false;
 const bool useRapBins=true&&!usePseudoRapBins;
-//const std::string ptbintype="merged_SMP";
+const std::string ptbintype="merged_SMP";
 //const std::string ptbintype="default_SMP";
-const std::string ptbintype="default2_SMP";
+//const std::string ptbintype="default2_SMP";
 //-----------------------------
 
 //RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovToy;//if using this one, amek sure doToyErrs in header is set to true
@@ -63,11 +63,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   // STRINGS -----------
   std::string sysunfdir="";
   if(doSystUnf){
-    if(systUnfType=="JER") sysunfdir="JERsysdir/";
+    if(     systUnfType=="JER") sysunfdir="JERsysdir/";
     else if(systUnfType=="JEC") sysunfdir="JECsysdir/";
-    else if(systUnfType=="NP")sysunfdir="NPsysdir/";
-    else if(systUnfType=="PDF")sysunfdir="PDFsysdir/";
-
+    else if(systUnfType=="NP" ) sysunfdir="NPsys"+systSubType+"dir/";
+    else if(systUnfType=="PDF") sysunfdir="PDFsysdir/";
     else assert(false);
   }
   
@@ -961,17 +960,35 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   else assert(false);
   TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
   TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());
+  TH1D* CT14nlo_NPsysup=NULL, *CT14nlo_NPsysdown=NULL;
   for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(CT14nloerr->GetBinContent(i)/100.));
-  std::cout<<"CT14nlo->GetBinContent(5)="<<CT14nlo->GetBinContent(5)<<std::endl;
-  if(applyNPCorrs)    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
-					 CT14nlo, &CT14NPs, etabinint);
-  std::cout<<"after NP corr: CT14nlo->GetBinContent(5)="<<CT14nlo->GetBinContent(5)<<std::endl;
-  assert(false);
+  //std::cout<<"CT14nlo->GetBinContent(5)="<<CT14nlo->GetBinContent(5)<<std::endl; 
+  if(applyNPCorrs) {
+    if(systUnfType=="NP" && systSubType=="updown"){
+      CT14nlo_NPsysup  =(TH1D*)CT14nlo->Clone(((std::string)CT14nlo->GetName()+"_NPsysup"  ).c_str());
+      applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
+			 CT14nlo_NPsysup, &CT14NPs, etabinint,"_up");      
+      CT14nlo_NPsysup->Scale(1./1000.);
+
+      
+      CT14nlo_NPsysdown=(TH1D*)CT14nlo->Clone(((std::string)CT14nlo->GetName()+"_NPsysdown").c_str());
+      applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
+			 CT14nlo_NPsysdown, &CT14NPs, etabinint,"_down");                  
+      CT14nlo_NPsysdown->Scale(1./1000.);
+  
+    }
+    
+    applyNPCorr_etabin(fNLOFile_R04_CT14nlo,
+		       CT14nlo, &CT14NPs, etabinint);
+  }
+  //std::cout<<"after NP corr: CT14nlo->GetBinContent(5)="<<CT14nlo->GetBinContent(5)<<std::endl;
 
   CT14nlo->SetMarkerSize(0);
   CT14nlo->SetLineColor(kGreen);  
   CT14nlo->Scale(1./1000.);
 
+
+  
   TH1D* CT14nlo_scale6err_up  =(TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"09").c_str());//6 pt scale errors
   TH1D* CT14nlo_scale6err_down=(TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"08").c_str());
 
@@ -990,12 +1007,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 										  )); 
     CT14nlo_np_scale6_down->SetBinError(i, 1.e-30);
   }
-
+  
   //rebin here, because errors etc. should be set before rebinning, because the errors are inscribed as histograms. 6 pt scale errors after rebinning may not be right; look into...
   multiplyBinWidth(CT14nlo);
   CT14nlo=(TH1D*)CT14nlo->Rebin(nbins_pt_gen,((std::string)CT14nlo->GetName()+"_rebin").c_str(),boundaries_pt_gen);
   divideBinWidth(CT14nlo);
-
+  
   multiplyBinWidth(CT14nlo_np_scale6_up);
   CT14nlo_np_scale6_up=(TH1D*)CT14nlo_np_scale6_up->Rebin(nbins_pt_gen,((std::string)CT14nlo_np_scale6_up->GetName()+"_rebin").c_str(),boundaries_pt_gen);
   divideBinWidth(CT14nlo_np_scale6_up);  
@@ -1005,6 +1022,15 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   CT14nlo_np_scale6_down=(TH1D*)CT14nlo_np_scale6_down->Rebin(nbins_pt_gen,((std::string)CT14nlo_np_scale6_down->GetName()+"_rebin").c_str(),boundaries_pt_gen);
   divideBinWidth(CT14nlo_np_scale6_down);  
 
+  if(systUnfType=="NP"&&systSubType=="updown"){
+    multiplyBinWidth(CT14nlo_NPsysup);
+    CT14nlo_NPsysup=(TH1D*)CT14nlo_NPsysup->Rebin(nbins_pt_gen,((std::string)CT14nlo_NPsysup->GetName()+"_rebin").c_str(),boundaries_pt_gen);
+    divideBinWidth(CT14nlo_NPsysup);
+
+    multiplyBinWidth(CT14nlo_NPsysdown);
+    CT14nlo_NPsysdown=(TH1D*)CT14nlo_NPsysdown->Rebin(nbins_pt_gen,((std::string)CT14nlo_NPsysdown->GetName()+"_rebin").c_str(),boundaries_pt_gen);
+    divideBinWidth(CT14nlo_NPsysdown);
+  }
 
 
   
@@ -2752,6 +2778,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   HERAPDF_np_scale6_down  ->SetTitle("HERAPDF NLO Spectra 6 Pt Scale Down Err");   HERAPDF_np_scale6_down  ->Write();
   MMHTnlo_np_scale6_down  ->SetTitle("MMHT NLO Spectra 6 Pt Scale Down Err");      MMHTnlo_np_scale6_down  ->Write();
   NNPDFnnlo_np_scale6_down->SetTitle("NNPDF NNLO Spectra 6 Pt Scale Down Err");    NNPDFnnlo_np_scale6_down->Write();
+  
+  if(systUnfType=="NP"&&systSubType=="updown"){
+    CT14nlo_NPsysup->SetTitle("CT14 NLO #otimes NP sysup Spectra"); CT14nlo_NPsysup->Write("NLO_CT14_NLO_NPsysup_R04_jtpt");
+    CT14nlo_NPsysdown->SetTitle("CT14 NLO #otimes NP sysdown Spectra"); CT14nlo_NPsysdown->Write("NLO_CT14_NLO_NPsysdown_R04_jtpt");
+  }
   
   // output hists -------------
   hfak->SetTitle("NLO Meas. Fakes");hfak->Write("MC_meas_fakes");

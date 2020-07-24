@@ -19,4 +19,5 @@ const std::string fNLOFile_R04_NNPDFnnlo        = fNLOJetsSpectra_dir+"/R04/fnl5
 //const std::string fNLOFile_R04_CT14nnlo  	  = fNLOJetsSpectra_dir+"/R04/fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v2.root";
 
 
-const std::string NPCorr_filename               = "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
+//const std::string NPCorr_filename               = "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV.root";
+const std::string NPCorr_filename               = "/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/doUnfolding/smearTheory/NPCorr5TeV/NLOpNP_InclusiveJets5TeV_fromJohn.root";

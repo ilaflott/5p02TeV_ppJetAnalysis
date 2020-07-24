@@ -1,19 +1,20 @@
 #!/bin/bash
 
-NARGS=7
+NARGS=8
 if [[ "$#" -eq $NARGS ]]
 then
     etaBin=$1
     NLOfilestr=$2
     NLOfileshortstr=$3
     JERfilestr=$4
-    descstr=$5
+    jerdescstr=$5
     Fittypestr=$6
     scp2Serin=$7
+    outdescst=$8
 else
     echo ""
     echo "error! usage is:"
-    echo "source run_smearTheory_etabin.sh <etaBin>  <NLOfilestr> <NLOfileshortstr> <JERfilestr> <descstr> <Fittypestr> <scp2Serin>"
+    echo "source run_smearTheory_etabin.sh <etaBin>  <NLOfilestr> <NLOfileshortstr> <JERfilestr> <jerdescstr> <Fittypestr> <scp2Serin> <outdescstr> "
     echo ""
     return
 fi
@@ -64,12 +65,12 @@ then
     #OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_${etabinstr}.root    
     #OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_plots/
     #OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_${etabinstr}.root    
-    OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_JohnNPs_plots/
-    OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_JohnNPs_${etabinstr}.root    
+    OUTDIR=${NLOfileshortstr}_NLO_v3_${jerdescstr}_${Fittypestr}_${outdescstr}_plots/
+    OUTFILE=${NLOfileshortstr}_NLO_v3_${jerdescstr}_${Fittypestr}_${outdescstr}_${etabinstr}.root    
     JERDIR=/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/
-    JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
+    JERFILE=${JERfilestr}${etabinstr}_${jerdescstr}.root
     FULLJERFILEPATH=${JERDIR}${JERFILE}
-    JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf    
+    JERPDFFILE=${JERfilestr}${etabinstr}_${jerdescstr}.pdf    
     FULLJERPDFFILEPATH=${JERDIR}${JERPDFFILE}
 
     #return     #DEBUG
@@ -80,7 +81,6 @@ then
     echo "FULLJERFILEPATH=${FULLJERFILEPATH}"
     echo ""
 
-    
     ## USAGE
     # ./smearTheorySpectra_gaussCoreJER_etabin.exe <NLOfilestr> <useSplineWeights> <fitType_str> <JERFILE> <etabin> <outputfile>
     ./smearTheorySpectra_gaussCoreJER_etabin.exe "${NLOfilestr}"  "${Fittypestr}"  "${FULLJERFILEPATH}"  "${etaBin}"  "${OUTFILE}"

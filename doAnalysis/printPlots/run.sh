@@ -1,11 +1,12 @@
 #!/bin/bash
 
 
-dojetQAPlots=1
+dojetQAPlots=0
 dojetTrigQAPlots=0   
 dojetTrigEff=0
-dojetIDQAPlots=1
+dojetIDQAPlots=0
 dojetMultPlots=0   #old
+doevtCounts=1
 scpOutput=0
 
 
@@ -290,6 +291,29 @@ fi
 
 
 
+if [[ $doevtCounts -eq 1 ]]
+then
+    
+    echo ""
+    echo "compiling printPlots_evtCounts.C"
+    echo ""
+    
+    rootcompile printPlots_evtCounts.C
+    
+    ##############################################
+    
+    echo ""
+    echo "done compiling. Running!"
+    echo ""    
+
+    source run_printPlots_evtCounts.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withgenjety_wJERSFs_semifinalv3"  "00eta20_03.18.20_semifinalv3_Jet80_LowJets_PY8"    
+
+    echo ""
+    echo "done running evtCounts!"
+    echo ""
+
+
+fi
 
 
 

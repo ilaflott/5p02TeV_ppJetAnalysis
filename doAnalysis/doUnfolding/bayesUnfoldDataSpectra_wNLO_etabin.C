@@ -6,10 +6,11 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-const bool setDataCovMat=true;
+const bool setDataCovMat=false;
 const bool usePseudoRapBins=false;
 const bool useRapBins=true&&!usePseudoRapBins;
-const std::string ptbintype="merged_SMP";
+//const std::string ptbintype="merged_SMP";
+const std::string ptbintype="john2";
 //const std::string ptbintype="default_SMP";
 //const std::string ptbintype="default2_SMP";
 //-----------------------------
@@ -955,7 +956,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
   std::string CT14NPs ="" ; 
   TFile*fNLO_CT14nlo=NULL;
-  if(inFile_MC_name.find("murmufpt1")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo2.c_str());
+  if(inFile_MC_name.find("murmufHTp")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo3.c_str());
+  else  if     (inFile_MC_name.find("murmufpt1")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo2.c_str());
   else  if     (inFile_MC_name.find("murmufpt")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
   else assert(false);
   TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());

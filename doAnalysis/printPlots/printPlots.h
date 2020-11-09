@@ -51,6 +51,8 @@
 #include <TH2F.h>
 #include <TF1.h>
 
+const int Netabins=4;
+
 // custom
 #include "printPlots_strings.h" //const strings, string methods, etc.
 #include "printPlots_binsNconsts.h" //variable binning arrays, consts [e.g. int. luminosity]

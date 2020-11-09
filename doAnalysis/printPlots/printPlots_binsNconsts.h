@@ -84,6 +84,16 @@ std::string absetabins_str[]={
   "3.0"//, 3.2,  
   //  4.7
 };
+std::string absetabins_TEXsafe_str[]={
+  "00", 
+  "05",  
+  "10", 
+  "15",  
+  "20", 
+  "25",  
+  "30"//, 3.2,  
+  //  4.7
+};
 const int nbins_abseta = sizeof(absetabins)/sizeof(Double_t)-1;
 
 

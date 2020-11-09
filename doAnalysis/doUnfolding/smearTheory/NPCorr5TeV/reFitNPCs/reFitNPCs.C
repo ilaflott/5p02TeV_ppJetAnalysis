@@ -36,12 +36,14 @@
 #include <TStyle.h>
 #include <TROOT.h>
 // histos
+#include <TF1.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TF1.h>
+#include <TH1D.h>
+#include <TH2D.h>
 //
 #include <TVirtualFitter.h>
 #include <Minuit2/Minuit2Minimizer.h>
@@ -61,6 +63,47 @@ const std::string absy_str[]={
   "1.5 < #||{y} < 2.0"
 };
 const int Nybins=4;
+
+
+TF1 *fNP_bin0_nu;
+TF1 *fNP_bin0_old;
+double ratiofunc_bin0(double *xx, double *){
+  double val1=fNP_bin0_nu->Eval(xx[0]);
+  double val2=fNP_bin0_old->Eval(xx[0]);
+  return (
+          val1/val2
+          );
+}
+
+TF1 *fNP_bin1_nu;
+TF1 *fNP_bin1_old;
+double ratiofunc_bin1(double *xx, double *){
+  double val1=fNP_bin1_nu->Eval(xx[0]);
+  double val2=fNP_bin1_old->Eval(xx[0]);
+  return (
+          val1/val2
+          );
+}
+TF1 *fNP_bin2_nu;
+TF1 *fNP_bin2_old;
+double ratiofunc_bin2(double *xx, double *){
+  double val1=fNP_bin2_nu->Eval(xx[0]);
+  double val2=fNP_bin2_old->Eval(xx[0]);
+  return (
+          val1/val2
+          );
+}
+TF1 *fNP_bin3_nu;
+TF1 *fNP_bin3_old;
+double ratiofunc_bin3(double *xx, double *){
+  double val1=fNP_bin3_nu->Eval(xx[0]);
+  double val2=fNP_bin3_old->Eval(xx[0]);
+  return (
+          val1/val2
+          );
+}
+
+
 
 TPaveText* makePaveText(float x1, float y1, float x2, float y2, std::string text){
   TPaveText* pavetxt=new TPaveText(x1, y1,
@@ -122,18 +165,20 @@ std::vector<std::vector<double>>SMP_ptbins={
 const float yaxmax=1.08;
 const float yaxmin=0.80;
 void reFitPYTHIA8NPCs(){
-
+  
+  std::cout<<"reFitting PYTHIA8 NPCs from John's File"<<std::endl;
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111);
   gROOT->ForceStyle();
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04);
-  ROOT::Math::MinimizerOptions::SetDefaultPrintLevel(100);
+  //ROOT::Math::MinimizerOptions::SetDefaultPrintLevel(100);
   ROOT::Math::MinimizerOptions opt;
   opt.Print();
   
   TFile* fin=TFile::Open("NLOpNP_InclusiveJets5TeV_PYTHIA8_fromJohn.root","READ");
   TH1* data[Nybins]={};
+  TH1* styleth1[Nybins]={};
   
   TFile* fout=TFile::Open("NLOpNP_InclusiveJets5TeV_PYTHIA8_fromJohn_refit.root","RECREATE");
   TF1* nufits[Nybins]={};
@@ -141,10 +186,16 @@ void reFitPYTHIA8NPCs(){
   TF1* nufits_down[Nybins]={};
   std::string fitfunc="[0]+[1]*pow(x,[2])";
 
+  TF1* oldfits[Nybins]={};
+  TF1* nuovoldfits[Nybins]={};
+  TH1D* h_nuovoldfits[Nybins]={};
+
+
   for(int i=0; i<Nybins; i++){
     
+    
     data[i]=(TH1*)fin->Get(("h"+std::to_string(i)).c_str());
-
+    
     //int lowestbin=7;//even higher confidence, even worse error bars
     //int lowestbin=6;//about the same as 5
     //int lowestbin=5;//higher confidence, worse error band
@@ -165,35 +216,34 @@ void reFitPYTHIA8NPCs(){
     std::vector<double>ptbins;
     for(int j=1;j<=(data[i]->GetNbinsX()-binstocut);j++){
       if(j<lowestbin){
-	std::cout<<"bin j="<<j<<" below lowest pt bin to use, continue."<<std::endl;
+	//std::cout<<"bin j="<<j<<" below lowest pt bin to use, continue."<<std::endl;
 	continue;
       }
       else if(data[i]->GetBinContent(j)>0.){
 	xmax=data[i]->GetBinLowEdge(j)+data[i]->GetBinWidth(j);
 	ptbins.push_back(data[i]->GetBinLowEdge(j));
-	std::cout<<"ptbins.at("<<j-lowestbin<<")="<<ptbins.at(j-lowestbin)<<std::endl;
+	//std::cout<<"ptbins.at("<<j-lowestbin<<")="<<ptbins.at(j-lowestbin)<<std::endl;
       }
       else {
-	std::cout<<"bin "<<data[i]->GetBinLowEdge(j)<<" < pt < " << data[i]->GetBinLowEdge(j) +data[i]->GetBinWidth(j)<< " has no bin content, continue."<<std::endl;
+	//std::cout<<"bin "<<data[i]->GetBinLowEdge(j)<<" < pt < " << data[i]->GetBinLowEdge(j) +data[i]->GetBinWidth(j)<< " has no bin content, continue."<<std::endl;
 	continue;
       }
     }
     ptbins.push_back(xmax);
-    std::cout<<"ptbins.at("<<ptbins.size()-1<<")="<<ptbins.at(ptbins.size()-1)<<std::endl;  
+    //std::cout<<"ptbins.at("<<ptbins.size()-1<<")="<<ptbins.at(ptbins.size()-1)<<std::endl;  
     data[i]=(TH1*)data[i]->TH1::Rebin( (ptbins.size()-1) ,((std::string)data[i]->GetName()+"_rebin").c_str(),(Double_t*)ptbins.data());
     
-
-
     
     
     //this worked pretty good!
+    //nufits[i]=new TF1(("f"+std::to_string(i)).c_str(),fitfunc.c_str(), xmin,xmax);
     nufits[i]=new TF1(("f"+std::to_string(i)).c_str(),fitfunc.c_str(), xmin,xmax);
     nufits[i]->SetParameter(0, 1.0);
     nufits[i]->SetParameter(1,-0.1);
     nufits[i]->SetParameter(2,-0.1);
-    std::cout<<"par0 init="<<nufits[i]->GetParameter(0)<<std::endl;
-    std::cout<<"par1 init="<<nufits[i]->GetParameter(1)<<std::endl;
-    std::cout<<"par2 init="<<nufits[i]->GetParameter(2)<<std::endl;
+    //std::cout<<"par0 init="<<nufits[i]->GetParameter(0)<<std::endl;
+    //std::cout<<"par1 init="<<nufits[i]->GetParameter(1)<<std::endl;
+    //std::cout<<"par2 init="<<nufits[i]->GetParameter(2)<<std::endl;
     nufits[i]->SetParLimits(0,   0.5,2.);
     nufits[i]->SetParLimits(1,-100000.,0.);
     nufits[i]->SetParLimits(2,-100000.,0.);
@@ -201,8 +251,104 @@ void reFitPYTHIA8NPCs(){
 
     TFitResultPtr resultptr=(TFitResultPtr)(data[i]->Fit(nufits[i],"RES"));
     resultptr=(TFitResultPtr)(data[i]->Fit(nufits[i],"MRES"));
-    resultptr->Print("V");
+    //resultptr->Print("V");
+    
+    //for comparison
+    oldfits[i]=  (TF1*)fin->Get(("f"+std::to_string(i)).c_str())
+;    oldfits[i]->SetName(("f"+std::to_string(i)+"_oldPY8").c_str());
+    double oldxmin, oldxmax;
+    oldfits[i]->GetRange(oldxmin, oldxmax);
+    double ratxmin, ratxmax;
+    if(oldxmin>xmin)ratxmin=oldxmin;
+    else            ratxmin=xmin;
+    if(oldxmax<xmax)ratxmax=oldxmax;
+    else            ratxmax=xmax;
+    std::cout<<"   xmin,    xmax="<<xmin<<", "<<xmax<<std::endl;
+    std::cout<<"oldxmin, oldxmax="<<oldxmin<<", "<<oldxmax<<std::endl;
+    std::cout<<"ratxmin, ratxmax="<<ratxmin<<", "<<ratxmax<<std::endl;
 
+    int spotcheckpt=100;
+    std::cout<<std::endl;
+    std::cout<<"     nufits["<<i<<"]->Eval("<<spotcheckpt<<")="<<     nufits[i]->Eval((double)spotcheckpt)<<std::endl;
+    std::cout<<"    oldfits["<<i<<"]->Eval("<<spotcheckpt<<")="<<    oldfits[i]->Eval((double)spotcheckpt)<<std::endl;
+    std::cout<<"       ratio of nu/old #'s     ="<<nufits[i]->Eval((double)spotcheckpt)/oldfits[i]->Eval((double)spotcheckpt)<<std::endl;
+    std::cout<<std::endl;      
+    if(     i==0){
+      fNP_bin0_old=(TF1*)oldfits[i]->Clone("fNP_bin0_old");      
+      fNP_bin0_old->SetRange(ratxmin,ratxmax);    
+      fNP_bin0_nu=(TF1*)nufits[i]->Clone("fNP_bin0_nu");      
+      fNP_bin0_nu->SetRange(ratxmin,ratxmax);    
+      nuovoldfits[i]=new TF1( "ratiofunc_PYTHIA8_nuovold_bin0", ratiofunc_bin0 ,ratxmin,ratxmax);
+      std::cout<<"fNP_bin0_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin0_nu ->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"fNP_bin0_old->Eval("<<spotcheckpt<<") ="<< fNP_bin0_old->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin0_nu ->Eval((double)spotcheckpt))/(fNP_bin0_old ->Eval((double)spotcheckpt))<<std::endl;
+    }
+    else if(i==1){
+      fNP_bin1_old=(TF1*)oldfits[i]->Clone("fNP_bin1_old");
+      fNP_bin1_old->SetRange(ratxmin,ratxmax);    
+      fNP_bin1_nu=(TF1*)nufits[i]->Clone("fNP_bin1_nu");
+      fNP_bin1_nu->SetRange(ratxmin,ratxmax);    
+      nuovoldfits[i]=new TF1( "ratiofunc_PYTHIA8_nuovold_bin1", ratiofunc_bin1 ,ratxmin,ratxmax);
+      std::cout<<"fNP_bin1_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin1_nu ->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"fNP_bin1_old->Eval("<<spotcheckpt<<") ="<< fNP_bin1_old->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin1_nu ->Eval((double)spotcheckpt))/(fNP_bin1_old ->Eval((double)spotcheckpt))<<std::endl;
+    }
+    else if(i==2){
+      fNP_bin2_old=(TF1*)oldfits[i]->Clone("fNP_bin2_old");
+      fNP_bin2_old->SetRange(ratxmin,ratxmax);    
+      fNP_bin2_nu=(TF1*)nufits[i]->Clone("fNP_bin2_nu");
+      fNP_bin2_nu->SetRange(ratxmin,ratxmax);    
+      nuovoldfits[i]=new TF1( "ratiofunc_PYTHIA8_nuovold_bin2", ratiofunc_bin2 ,ratxmin,ratxmax);
+      std::cout<<"fNP_bin2_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin2_nu ->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"fNP_bin2_old->Eval("<<spotcheckpt<<") ="<< fNP_bin2_old->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin2_nu ->Eval((double)spotcheckpt))/(fNP_bin2_old ->Eval((double)spotcheckpt))<<std::endl;
+    }    
+    else if(i==3){
+      fNP_bin3_old=(TF1*)oldfits[i]->Clone("fNP_bin3_old");
+      fNP_bin3_old->SetRange(ratxmin,ratxmax);    
+      fNP_bin3_nu=(TF1*)nufits[i]->Clone("fNP_bin3_nu");
+      fNP_bin3_nu->SetRange(ratxmin,ratxmax);        
+      nuovoldfits[i]=new TF1( "ratiofunc_PYTHIA8_nuovold_bin3", ratiofunc_bin3 ,ratxmin,ratxmax);
+      std::cout<<"fNP_bin3_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin3_nu ->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"fNP_bin3_old->Eval("<<spotcheckpt<<") ="<< fNP_bin3_old->Eval((double)spotcheckpt) <<std::endl;
+      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin3_nu ->Eval((double)spotcheckpt))/(fNP_bin3_old ->Eval((double)spotcheckpt))<<std::endl;
+    }
+    else assert(false);
+    std::cout<<"nuovoldfits["<<i<<"]->Eval("<<spotcheckpt<<")="<<nuovoldfits[i]->Eval((double)spotcheckpt)<<std::endl;
+    std::cout<<std::endl;
+
+    //this is a stupid way to do this. ROOT wouldn't play nice though, so this is the way this is getting done this time.
+    h_nuovoldfits[i]=new TH1D( ("h_PYTHIA8_nuovoldfits_bin"+std::to_string(i)).c_str(),
+			       ("bin"+std::to_string(i)).c_str(),			      
+			       1000,ratxmin,ratxmax);
+    for(int k=1; k<=h_nuovoldfits[i]->GetNbinsX();k++){
+      double val=       nuovoldfits[i]->Eval(
+					     h_nuovoldfits[i]->GetBinCenter(k)
+					     )      ;
+      h_nuovoldfits[i]->SetBinContent(k,
+				      val
+				      );
+      h_nuovoldfits[i]->SetBinError(k,
+				  0.
+				    );
+      //std::cout<<"h_nuovoldfits["<<i<<"]->GetBinContent("<<k<<")="<<h_nuovoldfits[i]->GetBinContent(k)<<std::endl;
+      //std::cout<<"bin center="<<h_nuovoldfits[i]->GetBinCenter(k)<<std::endl;
+      //std::cout<<"val="<<val<<std::endl;
+    }
+
+    //another sanity check
+    //nuovoldfits[i]->Print("");
+    
+    //nuovoldfits[i]=new TF1(("fnuovold_PYTHIA_"+std::to_string(i)).c_str(),ratiofunc.c_str(), xmin,xmax);
+    //nuovoldfits[i]->SetParameter(0,nufits[i]->GetParameter(0));
+    //nuovoldfits[i]->SetParameter(1,nufits[i]->GetParameter(1));
+    //nuovoldfits[i]->SetParameter(2,nufits[i]->GetParameter(2));
+    //nuovoldfits[i]->SetParameter(3,oldfits[i]->GetParameter(0));
+    //nuovoldfits[i]->SetParameter(4,oldfits[i]->GetParameter(1));
+    //nuovoldfits[i]->SetParameter(5,oldfits[i]->GetParameter(2));
+    
+
+    bool errcalcDebug=false;
     // NOTE TO JOHN: All of this stuff involving the parameters and putting together a new formula string was to try to do 
     // a genuine error calculation that accounted for correlations between the variables.
     // this ended up convoluted and complicated and not worth it, since the error band it created was even *more* optimistic 
@@ -261,29 +407,29 @@ void reFitPYTHIA8NPCs(){
     std::string dfdA="(1.)";
     std::string dfdB="(pow(x,"+parC_str+"))";
     std::string dfdC="("+parB_str+"*log(x)*pow(x,"+parC_str+"))";
-    std::cout<<"dfdA = "<< dfdA<<std::endl<<std::endl;		 
-    std::cout<<"dfdB = "<< dfdB<<std::endl<<std::endl;		 
-    std::cout<<"dfdC = "<< dfdC<<std::endl<<std::endl<<std::endl;
+    if(errcalcDebug)std::cout<<"dfdA = "<< dfdA<<std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<<"dfdB = "<< dfdB<<std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<<"dfdC = "<< dfdC<<std::endl<<std::endl<<std::endl;
     std::string dfdA_dfdB="("+dfdA+"*"+dfdB+")";
     std::string dfdB_dfdC="("+dfdB+"*"+dfdC+")";
     std::string dfdC_dfdA="("+dfdC+"*"+dfdA+")";
-    std::cout<<"dfdA_dfdB = "<< dfdA_dfdB<<std::endl<<std::endl;		 
-    std::cout<<"dfdB_dfdC = "<< dfdB_dfdC<<std::endl<<std::endl;		 
-    std::cout<<"dfdC_dfdA = "<< dfdC_dfdA<<std::endl<<std::endl<<std::endl;
+    if(errcalcDebug)std::cout<<"dfdA_dfdB = "<< dfdA_dfdB<<std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<<"dfdB_dfdC = "<< dfdB_dfdC<<std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<<"dfdC_dfdA = "<< dfdC_dfdA<<std::endl<<std::endl<<std::endl;
     
     std::string delA_dfdA_sq="pow(("+dfdA+"*"+parAerr_str+"),2)";
     std::string delB_dfdB_sq="pow(("+dfdB+"*"+parBerr_str+"),2)";
     std::string delC_dfdC_sq="pow(("+dfdC+"*"+parCerr_str+"),2)";
-    std::cout<< "delA_dfdA_sq=" << delA_dfdA_sq<< std::endl<<std::endl;		 
-    std::cout<< "delB_dfdB_sq=" << delB_dfdB_sq<< std::endl<<std::endl;		 
-    std::cout<< "delC_dfdC_sq=" << delC_dfdC_sq<< std::endl<<std::endl<<std::endl;
+    if(errcalcDebug)std::cout<< "delA_dfdA_sq=" << delA_dfdA_sq<< std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<< "delB_dfdB_sq=" << delB_dfdB_sq<< std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<< "delC_dfdC_sq=" << delC_dfdC_sq<< std::endl<<std::endl<<std::endl;
     
     std::string dfdA_dfdB_ABcov="(2.*"+dfdA+"*"+dfdB+"*"+parABcov_str+")";
     std::string dfdB_dfdC_BCcov="(2.*"+dfdB+"*"+dfdC+"*"+parBCcov_str+")";
     std::string dfdC_dfdA_CAcov="(2.*"+dfdC+"*"+dfdA+"*"+parCAcov_str+")";
-    std::cout<< "dfdA_dfdB_ABcov=" << dfdA_dfdB_ABcov<< std::endl<<std::endl;		 
-    std::cout<< "dfdB_dfdC_BCcov=" << dfdB_dfdC_BCcov<< std::endl<<std::endl;		 
-    std::cout<< "dfdC_dfdA_CAcov=" << dfdC_dfdA_CAcov<< std::endl<<std::endl<<std::endl;
+    if(errcalcDebug)std::cout<< "dfdA_dfdB_ABcov=" << dfdA_dfdB_ABcov<< std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<< "dfdB_dfdC_BCcov=" << dfdB_dfdC_BCcov<< std::endl<<std::endl;		 
+    if(errcalcDebug)std::cout<< "dfdC_dfdA_CAcov=" << dfdC_dfdA_CAcov<< std::endl<<std::endl<<std::endl;
     //assert(false);
     
     //this approach seems to underestimate the error pretty hard, unless i've made an error somewhere (possible...)
@@ -294,7 +440,7 @@ void reFitPYTHIA8NPCs(){
       dfdA_dfdB_ABcov+"+"+
       dfdB_dfdC_BCcov+"+"+
       dfdC_dfdA_CAcov+")";
-    std::cout<<"totalerr_str="<<totalerr_str<<std::endl;
+    if(errcalcDebug)std::cout<<"totalerr_str="<<totalerr_str<<std::endl;
 
     
     //nufits_up[i]=new TF1(("f"+std::to_string(i)+"_up").c_str(), (fitfunc+"+"+totalerr_str).c_str(),xmin,xmax);
@@ -324,9 +470,9 @@ void reFitPYTHIA8NPCs(){
     nufits_down[i]->SetLineStyle(8);
     
     // sanity check
-    std::cout<<"nufits_up[i]  ->Eval(100)="<< nufits_up[i]  ->Eval(100.)<<std::endl;
-    std::cout<<"nufits[i]     ->Eval(100)="<< nufits[i]     ->Eval(100.)<<std::endl;
-    std::cout<<"nufits_down[i]->Eval(100)="<< nufits_down[i]->Eval(100.)<<std::endl;
+    //std::cout<<"nufits_up[i]  ->Eval(100)="<< nufits_up[i]  ->Eval(100.)<<std::endl;
+    //std::cout<<"nufits[i]     ->Eval(100)="<< nufits[i]     ->Eval(100.)<<std::endl;
+    //std::cout<<"nufits_down[i]->Eval(100)="<< nufits_down[i]->Eval(100.)<<std::endl;
     
     //if(fitfailed)std::cout<<"WARNING FIT FAILED!!!!"<<std::endl;
     //else         std::cout<<"FIT SUCCESSFUL!!!!!"<<std::endl;
@@ -339,16 +485,21 @@ void reFitPYTHIA8NPCs(){
     data[i]->GetXaxis()->SetNoExponent(true);
     data[i]->GetXaxis()->SetTitle("Jet p_{T} (GeV)");      
     data[i]->GetYaxis()->SetTitle("Correction Factor");      
+    data[i]->GetYaxis()->CenterTitle(true);
     //data[i]->SetMinimum(0.90);
     //data[i]->SetMaximum(1.05);
     data[i]->SetMinimum(yaxmin);
     data[i]->SetMaximum(yaxmax);
-
+    
     nufits[i]->SetLineColorAlpha(kRed,0.8);
     nufits[i]->SetLineWidth(1);
-
-  }
     
+    styleth1[i]=(TH1*)data[i]->Clone(("PYTHIA8styleth1"+std::to_string(i)).c_str());
+    styleth1[i]->Reset("ICES");
+    styleth1[i]->SetTitle(("PYTHIA8 NP Comparison, "+absy_str[i] ).c_str());
+    styleth1[i]->GetYaxis()->SetTitle("(Ian Fit)/(John Fit)");
+  }
+  
   TCanvas *canv=new TCanvas("PYTHIA8canv", "PYTHIA8canv", 1200, 900);
   canv->Divide(2,2);
   for(int i=0; i<Nybins;i++){
@@ -386,6 +537,50 @@ void reFitPYTHIA8NPCs(){
     one->Draw();
   }  
   canv->SaveAs( ("NLOpNP_InclusiveJets5TeV_PYTHIA8_fromJohn_refit.pdf"));
+
+  TCanvas *ratiocanv=new TCanvas("PYTHIA8ratiocanv", "PYTHIA8ratiocanv", 1200, 900);
+  ratiocanv->Divide(2,2);
+  for(int i=0; i<Nybins;i++){
+    h_nuovoldfits[i]->SetLineWidth(1);
+    h_nuovoldfits[i]->SetMaximum(1.08);
+    h_nuovoldfits[i]->SetMinimum(0.80);
+    h_nuovoldfits[i]->SetTitle(("Ratio of PYTHIA8 NPs, "+absy_str[i]).c_str());
+    h_nuovoldfits[i]->GetXaxis()->SetNoExponent(true);
+    h_nuovoldfits[i]->GetXaxis()->SetMoreLogLabels(true);
+    h_nuovoldfits[i]->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
+    h_nuovoldfits[i]->GetYaxis()->SetTitle("Ian's Fit/John's Fit");
+    h_nuovoldfits[i]->GetYaxis()->CenterTitle(true);
+    int xmin=(int)  h_nuovoldfits[i]->GetBinLowEdge(1);
+    int xmax=(int) (h_nuovoldfits[i]->GetBinLowEdge(h_nuovoldfits[i]->GetNbinsX()) +
+		    h_nuovoldfits[i]->GetBinWidth(h_nuovoldfits[i]->GetNbinsX())
+		    );
+
+    std::string jtptlo=std::to_string( (
+					xmin
+					)
+				       );
+    std::string jtpthi=std::to_string( (
+					xmax
+					)
+				       );
+    std::string ptrange= jtptlo+ " GeV < Jet p_{T} < "+jtpthi + " GeV";
+    TPaveText* tex_ptrange=makePaveText( 0.15, 0.7, 0.50, 0.85, ptrange  );
+    
+    TLine * one = new TLine(xmin, 1., xmax, 1.);
+    one ->SetLineColor(kBlack);
+    one ->SetLineWidth(1);
+    one ->SetLineStyle(8);    
+    
+    ratiocanv->cd(i+1)->SetLogx(1);
+    ratiocanv->cd(i+1)->SetLogy(0);
+    ratiocanv->cd(i+1);        
+    //styleth1[i]->DrawClone("HIST");
+    //nuovoldfits[i]->Draw("SAME");//this doesn't work. don't know why, don't care anymore. not worth it. You win, ROOT
+    h_nuovoldfits[i]->Draw("HIST ][");
+    tex_ptrange->Draw();
+    one->Draw();
+  } 
+  ratiocanv->SaveAs( ("ratio_PYTHIA8_fromJohn_v_PYTHIA8_refit.pdf"));
   
   fout->cd();
   canv->Write();
@@ -396,29 +591,55 @@ void reFitPYTHIA8NPCs(){
     data[i]->Write(("h"+std::to_string(i)).c_str());
   }
   fout->Close();
+  fin->Close();
+//  for(int i=0; i<Nybins; i++){
+//    if     (i==0)fNP_bin0_old->Delete();
+//    else if(i==1)fNP_bin1_old->Delete();
+//    else if(i==2)fNP_bin2_old->Delete();
+//    else if(i==3)fNP_bin3_old->Delete();
+//    if     (i==0)fNP_bin0_nu->Delete();
+//    else if(i==1)fNP_bin1_nu->Delete();
+//    else if(i==2)fNP_bin2_nu->Delete();
+//    else if(i==3)fNP_bin3_nu->Delete();
+//    else assert(false);
+//  }
 
+  fNP_bin0_nu->Delete();
+  fNP_bin1_nu->Delete();
+  fNP_bin2_nu->Delete();
+  fNP_bin3_nu->Delete();
+  fNP_bin0_old->Delete();
+  fNP_bin1_old->Delete();
+  fNP_bin2_old->Delete();
+  fNP_bin3_old->Delete();
 
   return;
 }
 
 void reFitHERWIGNPCs(){
+  std::cout<<"reFitting HERWIG NPCs from John's File"<<std::endl;
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111);
   gROOT->ForceStyle();
   TVirtualFitter::SetDefaultFitter("Minuit2");
   ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-04);
-  ROOT::Math::MinimizerOptions::SetDefaultPrintLevel(100);
+  //ROOT::Math::MinimizerOptions::SetDefaultPrintLevel(100);
   ROOT::Math::MinimizerOptions opt;
   opt.Print();
-  
+
+  std::cout<<"!!!!OPENING JOHNS FILE!!!!"<<std::endl;  
   TFile* fin=TFile::Open("NLOpNP_InclusiveJets5TeV_HERWIG_fromJohn.root","READ");
   TH1* data[Nybins]={};
-  
+
   TFile* fout=TFile::Open("NLOpNP_InclusiveJets5TeV_HERWIG_fromJohn_refit.root","RECREATE");
   TF1* nufits[Nybins]={};
   TF1* nufits_up[Nybins]={};
   TF1* nufits_down[Nybins]={};
   std::string fitfunc="[0]+[1]*pow(x,[2])";
+
+  //TF1* oldfits[Nybins]={};
+  //TF1* nuovoldfits[Nybins]={};
+  //TH1D* h_nuovoldfits[Nybins]={};
 
   for(int i=0; i<Nybins; i++){
     
@@ -446,16 +667,16 @@ void reFitHERWIGNPCs(){
     std::vector<double>ptbins;
     for(int j=1;j<=(data[i]->GetNbinsX()-binstocut);j++){
       if(j<lowestbin){
-	std::cout<<"bin j="<<j<<" below lowest pt bin to use, continue."<<std::endl;
+	//std::cout<<"bin j="<<j<<" below lowest pt bin to use, continue."<<std::endl;
 	continue;
       }
       else if(data[i]->GetBinContent(j)>0.){
 	xmax=data[i]->GetBinLowEdge(j)+data[i]->GetBinWidth(j);
 	ptbins.push_back(data[i]->GetBinLowEdge(j));
-	std::cout<<"ptbins.at("<<j-lowestbin<<")="<<ptbins.at(j-lowestbin)<<std::endl;
+	//std::cout<<"ptbins.at("<<j-lowestbin<<")="<<ptbins.at(j-lowestbin)<<std::endl;
       }
       else {
-	std::cout<<"bin "<<data[i]->GetBinLowEdge(j)<<" < pt < " << data[i]->GetBinLowEdge(j) +data[i]->GetBinWidth(j)<< " has no bin content, continue."<<std::endl;
+	//std::cout<<"bin "<<data[i]->GetBinLowEdge(j)<<" < pt < " << data[i]->GetBinLowEdge(j) +data[i]->GetBinWidth(j)<< " has no bin content, continue."<<std::endl;
 	continue;
       }
     }
@@ -486,7 +707,94 @@ void reFitHERWIGNPCs(){
 
     TFitResultPtr resultptr=(TFitResultPtr)(data[i]->Fit(nufits[i],"RES"));
     resultptr=(TFitResultPtr)(data[i]->Fit(nufits[i],"MRES"));
-    resultptr->Print("V");
+    //resultptr->Print("V");
+    
+    ////for comparison
+    //std::cout<<"!!!!GETTING OLD HERWIG FIT FROM JOHNS FILE!!!!!"<<std::endl;
+    //oldfits[i]=  (TF1*)fin->Get(("f"+std::to_string(i)).c_str());
+    ////    oldfits[i]->SetName(("f"+std::to_string(i)+"_oldHERWIG").c_str());
+    //double oldxmin, oldxmax;
+    //oldfits[i]->GetRange(oldxmin, oldxmax);
+    //double ratxmin, ratxmax;
+    //if(oldxmin>xmin)ratxmin=oldxmin;
+    //else            ratxmin=xmin;
+    //if(oldxmax<xmax)ratxmax=oldxmax;
+    //else            ratxmax=xmax;
+    //std::cout<<"   xmin,    xmax="<<xmin<<", "<<xmax<<std::endl;
+    //std::cout<<"oldxmin, oldxmax="<<oldxmin<<", "<<oldxmax<<std::endl;
+    //std::cout<<"ratxmin, ratxmax="<<ratxmin<<", "<<ratxmax<<std::endl;
+    //
+    //int spotcheckpt=500;
+    //std::cout<<std::endl;
+    //std::cout<<"     nufits["<<i<<"]->Eval("<<spotcheckpt<<")="<<     nufits[i]->Eval((double)spotcheckpt)<<std::endl;
+    //std::cout<<"    oldfits["<<i<<"]->Eval("<<spotcheckpt<<")="<<    oldfits[i]->Eval((double)spotcheckpt)<<std::endl;
+    //std::cout<<"       ratio of nu/old #'s     ="<<nufits[i]->Eval((double)spotcheckpt)/oldfits[i]->Eval((double)spotcheckpt)<<std::endl;
+    //std::cout<<std::endl;      
+//    if(     i==0){
+//      fNP_bin0_old=(TF1*)oldfits[i]->Clone("fNP_bin0_old");      
+//      fNP_bin0_old->SetRange(ratxmin,ratxmax);    
+//      fNP_bin0_nu=(TF1*)nufits[i]->Clone("fNP_bin0_nu");      
+//      fNP_bin0_nu->SetRange(ratxmin,ratxmax);    
+//      nuovoldfits[i]=new TF1( "ratiofunc_HERWIG_nuovold_bin0", ratiofunc_bin0 ,ratxmin,ratxmax);
+//      std::cout<<"fNP_bin0_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin0_nu ->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"fNP_bin0_old->Eval("<<spotcheckpt<<") ="<< fNP_bin0_old->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin0_nu ->Eval((double)spotcheckpt))/(fNP_bin0_old ->Eval((double)spotcheckpt))<<std::endl;
+//    }
+//    else if(i==1){
+//      fNP_bin1_old=(TF1*)oldfits[i]->Clone("fNP_bin1_old");
+//      fNP_bin1_old->SetRange(ratxmin,ratxmax);    
+//      fNP_bin1_nu=(TF1*)nufits[i]->Clone("fNP_bin1_nu");
+//      fNP_bin1_nu->SetRange(ratxmin,ratxmax);    
+//      nuovoldfits[i]=new TF1( "ratiofunc_HERWIG_nuovold_bin1", ratiofunc_bin1 ,ratxmin,ratxmax);
+//      std::cout<<"fNP_bin1_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin1_nu ->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"fNP_bin1_old->Eval("<<spotcheckpt<<") ="<< fNP_bin1_old->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin1_nu ->Eval((double)spotcheckpt))/(fNP_bin1_old ->Eval((double)spotcheckpt))<<std::endl;
+//    }
+//    else if(i==2){
+//      fNP_bin2_old=(TF1*)oldfits[i]->Clone("fNP_bin2_old");
+//      fNP_bin2_old->SetRange(ratxmin,ratxmax);    
+//      fNP_bin2_nu=(TF1*)nufits[i]->Clone("fNP_bin2_nu");
+//      fNP_bin2_nu->SetRange(ratxmin,ratxmax);    
+//      nuovoldfits[i]=new TF1( "ratiofunc_HERWIG_nuovold_bin2", ratiofunc_bin2 ,ratxmin,ratxmax);
+//      std::cout<<"fNP_bin2_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin2_nu ->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"fNP_bin2_old->Eval("<<spotcheckpt<<") ="<< fNP_bin2_old->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin2_nu ->Eval((double)spotcheckpt))/(fNP_bin2_old ->Eval((double)spotcheckpt))<<std::endl;
+//    }    
+//    else if(i==3){
+//      fNP_bin3_old=(TF1*)oldfits[i]->Clone("fNP_bin3_old");
+//      fNP_bin3_old->SetRange(ratxmin,ratxmax);    
+//      fNP_bin3_nu=(TF1*)nufits[i]->Clone("fNP_bin3_nu");
+//      fNP_bin3_nu->SetRange(ratxmin,ratxmax);        
+//      nuovoldfits[i]=new TF1( "ratiofunc_HERWIG_nuovold_bin3", ratiofunc_bin3 ,ratxmin,ratxmax);
+//      std::cout<<"fNP_bin3_nu ->Eval("<<spotcheckpt<<") ="<< fNP_bin3_nu ->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"fNP_bin3_old->Eval("<<spotcheckpt<<") ="<< fNP_bin3_old->Eval((double)spotcheckpt) <<std::endl;
+//      std::cout<<"ratio of nu/old #'s     ="<< (fNP_bin3_nu ->Eval((double)spotcheckpt))/(fNP_bin3_old ->Eval((double)spotcheckpt))<<std::endl;
+//    }
+//    else assert(false);
+//    std::cout<<"nuovoldfits["<<i<<"]->Eval("<<spotcheckpt<<")="<<nuovoldfits[i]->Eval((double)spotcheckpt)<<std::endl;
+//    std::cout<<std::endl;
+//
+//    //this is a stupid way to do this. ROOT wouldn't play nice though, so this is the way this is getting done this time.
+//    h_nuovoldfits[i]=new TH1D( ("h_HERWIG_nuovoldfits_bin"+std::to_string(i)).c_str(),
+//			       ("bin"+std::to_string(i)).c_str(),			      
+//			       1000,ratxmin,ratxmax);
+//    for(int k=1; k<=h_nuovoldfits[i]->GetNbinsX();k++){
+//      double val=       nuovoldfits[i]->Eval(
+//					     h_nuovoldfits[i]->GetBinCenter(k)
+//					     )      ;
+//      h_nuovoldfits[i]->SetBinContent(k,
+//				      val
+//				      );
+//      h_nuovoldfits[i]->SetBinError(k,
+//				  0.
+//				    );
+//      //std::cout<<"h_nuovoldfits["<<i<<"]->GetBinContent("<<k<<")="<<h_nuovoldfits[i]->GetBinContent(k)<<std::endl;
+//      //std::cout<<"bin center="<<h_nuovoldfits[i]->GetBinCenter(k)<<std::endl;
+//      //std::cout<<"val="<<val<<std::endl;
+//    }
+
+
+
 
     // NOTE TO JOHN: All of this stuff involving the parameters and putting together a new formula string was to try to do 
     // a genuine error calculation that accounted for correlations between the variables.
@@ -666,6 +974,50 @@ void reFitHERWIGNPCs(){
     one->Draw();
   }  
   canv->SaveAs( ("NLOpNP_InclusiveJets5TeV_HERWIG_fromJohn_refit.pdf"));
+
+//  TCanvas *ratiocanv=new TCanvas("HERWIGratiocanv", "HERWIGratiocanv", 1200, 900);
+//  ratiocanv->Divide(2,2);
+//  for(int i=0; i<Nybins;i++){
+//    h_nuovoldfits[i]->SetLineWidth(1);
+//    h_nuovoldfits[i]->SetMaximum(1.08);
+//    h_nuovoldfits[i]->SetMinimum(0.80);
+//    h_nuovoldfits[i]->SetTitle(("Ratio of HERWIG NPs, "+absy_str[i]).c_str());
+//    h_nuovoldfits[i]->GetXaxis()->SetNoExponent(true);
+//    h_nuovoldfits[i]->GetXaxis()->SetMoreLogLabels(true);
+//    h_nuovoldfits[i]->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
+//    h_nuovoldfits[i]->GetYaxis()->SetTitle("Ian's Fit/John's Fit");
+//    h_nuovoldfits[i]->GetYaxis()->CenterTitle(true);
+//    int xmin=(int)  h_nuovoldfits[i]->GetBinLowEdge(1);
+//    int xmax=(int) (h_nuovoldfits[i]->GetBinLowEdge(h_nuovoldfits[i]->GetNbinsX()) +
+//		    h_nuovoldfits[i]->GetBinWidth(h_nuovoldfits[i]->GetNbinsX())
+//		    );
+//
+//    std::string jtptlo=std::to_string( (
+//					xmin
+//					)
+//				       );
+//    std::string jtpthi=std::to_string( (
+//					xmax
+//					)
+//				       );
+//    std::string ptrange= jtptlo+ " GeV < Jet p_{T} < "+jtpthi + " GeV";
+//    TPaveText* tex_ptrange=makePaveText( 0.15, 0.7, 0.50, 0.85, ptrange  );
+//    
+//    TLine * one = new TLine(xmin, 1., xmax, 1.);
+//    one ->SetLineColor(kBlack);
+//    one ->SetLineWidth(1);
+//    one ->SetLineStyle(8);    
+//    
+//    ratiocanv->cd(i+1)->SetLogx(1);
+//    ratiocanv->cd(i+1)->SetLogy(0);
+//    ratiocanv->cd(i+1);        
+//    //styleth1[i]->DrawClone("HIST");
+//    //nuovoldfits[i]->Draw("SAME");//this doesn't work. don't know why, don't care anymore. not worth it. You win, ROOT
+//    h_nuovoldfits[i]->Draw("HIST ][");
+//    tex_ptrange->Draw();
+//    one->Draw();
+//  } 
+//  ratiocanv->SaveAs( ("ratio_HERWIG_fromJohn_v_HERWIG_refit.pdf"));
   
   fout->cd();
   canv->Write();
@@ -675,8 +1027,19 @@ void reFitHERWIGNPCs(){
     nufits_down[i]->Write();
     data[i]->Write(("h"+std::to_string(i)).c_str());
   }
-  fout->Close();
   
+  fout->Close();
+  fin->Close();
+
+  //fNP_bin0_nu->Delete();
+  //fNP_bin1_nu->Delete();
+  //fNP_bin2_nu->Delete();
+  //fNP_bin3_nu->Delete();
+  //fNP_bin0_old->Delete();
+  //fNP_bin1_old->Delete();
+  //fNP_bin2_old->Delete();
+  //fNP_bin3_old->Delete();
+
   return;
 }
 
@@ -919,8 +1282,8 @@ void makeOneNPCFile(){
 }
 
 void reFitNPCs(){
-  //reFitPYTHIA8NPCs();
-  //reFitHERWIGNPCs();
+  reFitPYTHIA8NPCs();
+  reFitHERWIGNPCs();
   makeOneNPCFile();
   return;
 }

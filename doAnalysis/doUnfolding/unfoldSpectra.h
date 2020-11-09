@@ -340,6 +340,10 @@ double* setBinning_etabin(int etabinint=0, std::string type="SMP", int* nbins=NU
     binarray=(double*)(john_ptbins[etabinint].data());
     *(nbins)=(int)(john_ptbins[etabinint].size()-1);
   }
+  else if(type=="john2"){//for comparison with john OLD
+    binarray=(double*)(john_ptbins2[etabinint].data());
+    *(nbins)=(int)(john_ptbins2[etabinint].size()-1);
+  }
   else if(type=="chris"){//for comparison with chris OLD
     binarray=(double*)(chris_ptbins[etabinint].data());
     *(nbins)=(int)(chris_ptbins[etabinint].size()-1);
@@ -974,16 +978,19 @@ TH1* makeThyHist_00eta20_v2(std::string filename, bool applyNPCorrFactor=true, s
 void applyNPCorr_etabin(std::string nlofile_str="", TH1D* hnlo=NULL, std::string* NPsstr=NULL, int etabinint=0, std::string sysdirec=""){
   bool funcDebug=true;
   
+  
   //open NP file
   TFile* NPCorrFile=NULL;
   NPCorrFile=(TFile*)TFile::Open(NPCorr_filename.c_str());
-  if(!NPCorrFile)assert(false);
+  if(NPCorrFile->IsZombie())assert(false);
   
   //set NP TF1 name + NP desc str if not null
   std::string NPCorrName="";  
   if(NPCorr_filename.find("fromJohn")!=std::string::npos){
-    NPCorrName="f"+std::to_string(etabinint)+sysdirec;
-    if(NPsstr)(*NPsstr)=" #otimes PY8";
+    //NPCorrName="f"+std::to_string(etabinint)+sysdirec;
+    NPCorrName="fNPC_AVG_R4_etabin"+std::to_string(etabinint)+sysdirec;
+    //if(NPsstr)(*NPsstr)=" #otimes PY8";
+    if(NPsstr)(*NPsstr)=" #otimes AVG(PY8,HWG)";
   }
   else if(nlofile_str.find("nnlo")!=std::string::npos){    //if nnpdf nnlo, then use these nps
     //    NPCorrName="fNPC_POWPY8_R4_etabin";
@@ -995,15 +1002,19 @@ void applyNPCorr_etabin(std::string nlofile_str="", TH1D* hnlo=NULL, std::string
     NPCorrName="fNPC_HerwigEE4C_R4_etabin"+std::to_string(etabinint);
     if(NPsstr)(*NPsstr)=" #otimes HERWIG EE4C";  }  
   //NPCorrName+=
+
+  //apply the NP to the vals+errs in hnlo
   
   //grab the TF1
   TF1* fNPCorr=(TF1*)NPCorrFile->Get(NPCorrName.c_str());
+  if(funcDebug)std::cout<<"NPCorr_filename is: " << NPCorr_filename<<std::endl;
+  if(funcDebug)std::cout<<"contents of the file are..."<<std::endl;
+  if(funcDebug)NPCorrFile->ls();
+  if(funcDebug)std::cout<<"NP Fit Obj Name is: " << NPCorrName<<std::endl;
+  if(funcDebug)std::cout<<"hnlo Name is: " << hnlo->GetName()<<std::endl;
+  if(funcDebug)std::cout<<"fNPCorr->GetName()="<< fNPCorr->GetName() <<std::endl;
   if(!fNPCorr)assert(false);
   
-  //apply the NP to the vals+errs in hnlo
-  if(funcDebug)std::cout<<"NP Fit Obj Name is: " << fNPCorr->GetName()<<std::endl;
-  if(funcDebug)std::cout<<"hnlo Name is: " << hnlo->GetName()<<std::endl;
-
   int nbins=hnlo->GetNbinsX();
   for(int j=1;j<=nbins;j++){
     double hnlo_NPcorrval=(hnlo->GetBinContent(j))*(fNPCorr->Eval(hnlo->GetBinCenter(j)));

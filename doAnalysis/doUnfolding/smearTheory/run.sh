@@ -20,21 +20,23 @@ then
     rooUnfoldCompile smearTheorySpectra_gaussCoreJER_etabin.C
     
     
-    ### INPUTS FOR run_smearTheory_etabin
+    ##### INPUTS FOR run_smearTheory_etabin
+
+    ### Raghav's NLO in eta bins
     #nlofstr="fnl5020_LO2_R04Jets_modify_CT10nlo_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_CT14nlo_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_HERAPDF15NLO_ALPHAS_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
-    ##this didn't have the scale var spectra in it, just the errors
-    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v2"
-    #this does have the scale var spectra in it ## IN PROGRESS
-    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v3"
-    ##this does have the scale var spectra in it ## TO DO
-    nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3"
 
-    #outdescstr="gaussSmear_murmufpt_JohnNPs"    
-    outdescstr="gaussSmear_murmufpt1_JohnNPs"
+    ### Joao's NLO in y bins
+    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v3"
+    nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3"
+    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQHTp_v3"
+    
+    #outdescstr="gaussSmear_murmufpt_JohnNPs_semifinalv3"    
+    outdescstr="gaussSmear_murmufpt1_JohnNPs_semifinalv3"
+    #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv3"
 
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"
@@ -55,13 +57,14 @@ then
     #fittypestr="spl3wgts_extv2"
     ##fittypestr="spl3wgts_extv1"
     ##fittypestr="spl3wgts_extv3"
+ 
+    ##### END INPUTS FOR run_smearTheory_etabin   
 
-    
     scpoutput=0
     scpafterlast=0
     etabin_i=0
-    #Netabins=4 
-    Netabins=4 ##debug; runs first etabin only
+    Netabins=4 
+    #Netabins=1 ##debug; runs first etabin only
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]

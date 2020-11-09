@@ -60,9 +60,9 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
   TH1F* theRatio[Netabins]={};
   std::string inHistName="hJetQA_JetIDEff_"+var[j];
   if(isybin)
-    inHistName+="_"+absetabins_str[0]+"y"+absetabins_str[NetabinstoDraw];
+    inHistName+="_"+absetabins_TEXsafe_str[0]+"y"+absetabins_TEXsafe_str[NetabinstoDraw];
   else
-    inHistName+="_"+absetabins_str[0]+"eta"+absetabins_str[NetabinstoDraw];
+    inHistName+="_"+absetabins_TEXsafe_str[0]+"eta"+absetabins_TEXsafe_str[NetabinstoDraw];
   
   for(int etabin=0; etabin<NetabinstoDraw;etabin++){
 
@@ -657,10 +657,11 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
   // print to PDF file
   temp_canvJet->Print( thePDFFileName.c_str() );
   
-  if(fout){
+  if(fout){    
     fout->cd();
+    std::cout<<"writing hist: "<<inHistName+"_canv"<<std::endl;
     TCanvas* outcanv=(TCanvas*)temp_canvJet->DrawClone();
-    outcanv->SetTitle((inHistName+" Canvas").c_str());
+    outcanv->SetTitle((inHistName+" Canvas").c_str());    
     outcanv->Write((inHistName+"_canv").c_str());    
   }
   
@@ -713,9 +714,9 @@ void printJetIDEtaHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
   bool isybin=(var[j]=="jty");
   std::string inHistName="hJetQA_JetIDEff_"+var[j];
   if(isybin)
-    inHistName+="_"+absetabins_str[0]+"y"+absetabins_str[NetabinstoDraw];
+    inHistName+="_"+absetabins_TEXsafe_str[0]+"y"+absetabins_TEXsafe_str[NetabinstoDraw];
   else
-    inHistName+="_"+absetabins_str[0]+"eta"+absetabins_str[NetabinstoDraw];
+    inHistName+="_"+absetabins_TEXsafe_str[0]+"eta"+absetabins_TEXsafe_str[NetabinstoDraw];
   
   TH1F* theNoJetIDHist[Netabins]={};
   TH1F* theJetIDHist[Netabins]={};

@@ -930,11 +930,20 @@ TH1D* makePDFsys_wPDFerr(TH1D* thy, TH1D* thyerrs, std::string updown_str="sysup
 }
 
 
+double getnonzeromin(TH1* th1){
+  double nonzeromin=1.e+40;
+  int nbinsx=th1->GetNbinsX();
+  for(int i=1;i<=nbinsx;i++){
+    double content=th1->GetBinContent(i);
+    if(!(content>0.)&&!(content<0.))//check for zero
+      continue;
+    else if(content < nonzeromin)//check that new content is less than current minium
+      nonzeromin=content;
+    else continue;//if the content is greater than current minimum
+  }
+  return nonzeromin;
 
-
-
-
-
+}
 
 //int getRandomSeed(){
 //  bool funcDebug=true;  

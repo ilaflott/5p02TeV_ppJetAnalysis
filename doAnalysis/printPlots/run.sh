@@ -3,10 +3,10 @@
 
 dojetQAPlots=0
 dojetTrigQAPlots=0   
-dojetTrigEff=0
+dojetTrigEff=1
 dojetIDQAPlots=0
 dojetMultPlots=0   #old
-doevtCounts=1
+doevtCounts=0
 scpOutput=0
 
 
@@ -159,7 +159,7 @@ then
     ##SEMIFINAL V2 LOWHLT40 THRESH
     source run_printPlots_jetTrigEff.sh "4" "11.26.19_outputCondor" "11-26-19" "0.0eta5.1_semifinalv2_LowHLT40Thresh" "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh" "00eta51_11.26.19_HLT80Eff_useHLT60Ref_semifinalv2_LowHLT40Thresh" "HLT80" "HLT60"
     source run_printPlots_jetTrigEff.sh "4" "11.26.19_outputCondor" "11-26-19" "0.0eta5.1_semifinalv2_LowHLT40Thresh" "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh" "00eta51_11.26.19_HLT60Eff_useHLT40Ref_semifinalv2_LowHLT40Thresh" "HLT60" "HLT40"
-    scp2Serin "output/ak4PF_HPtJetTrig_00eta51_11.26.19_HLT??Eff_useHLT??Ref_semifinalv2_LowHLT40Thresh_jetTrigEff.*"
+    #scp2Serin "output/ak4PF_HPtJetTrig_00eta51_11.26.19_HLT??Eff_useHLT??Ref_semifinalv2_LowHLT40Thresh_jetTrigEff.*"
 
 
 

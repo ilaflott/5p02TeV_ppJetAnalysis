@@ -14,29 +14,21 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 
 FITTYPE="sigmu"
 DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv3"
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt_"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_noJERscales_SMPbins_withjety_ptLo56_semifinalv3_REBIN_NODATACOVMAT_murmufpt_TEST"
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt1_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt1_"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_noJERscales_SMPbins_withjety_ptLo56_semifinalv3_REBIN_NODATACOVMAT_murmufpt1_TEST"
 
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_SMPbins_withjety_semifinalv3_REBIN_NODATACOVMAT_murmufpt"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_defSMPbins_withjety_semifinalv3_wDATACOVMAT_murmufpt"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_defSMPbins2_withjety_semifinalv3_wDATACOVMAT_murmufpt"
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_SMPbins_withjety_semifinalv3_REBIN_NODATACOVMAT_murmufpt1"
+#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv3_plots/"
+#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv3_"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufHTp_JohnNPs"
+##OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufHTp_JohnNPs"
 
-THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_plots/"
-THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_"
-OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufpt_JohnNPs"
+THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_plots/"
+THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufpt_JohnNPs"
+OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufpt_JohnNPs"
 
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_"
+#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_semifinalv3_plots/"
+#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_semifinalv3_"
 #OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufpt1_JohnNPs"
+##OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufpt1_JohnNPs"
 
 applyNPcorrs=1
 dosystunf=1
@@ -44,12 +36,12 @@ declare -a sysarr=("JEC" "JER" "PDF" "NP")
 declare -a sysarropt=("" "" "updown" "updown")
 etabinStart=0
 etabinEnd=4
-##### DEBUG SETTINGS
-#declare -a sysarr=("NP")
-#declare -a sysarropt=("updown")
+###### DEBUG SETTINGS
+#declare -a sysarr=("JEC")
+#declare -a sysarropt=("")
 #etabinStart=0
-#etabinEnd=4
-##### DEBUG SETTINGS
+#etabinEnd=1
+###### DEBUG SETTINGS
 sysarrlen=${#sysarr[@]}
 for (( j=${etabinStart}; j<${etabinEnd}; j++ ));
 do
@@ -259,3 +251,23 @@ return
 #THYDIR="smearTheory/NNPDF_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_NLO_plots/"
 #THYFILESTR="NNPDF_06.25.19_${FITTYPE}_semifinal_noJERscales_spl3wgts_gaussSmear_"
 #OUTPUTTAG="08.06.19_Bayes_NNPDF_NLO_${FITTYPE}_noJERscales_withLumiCorr_JOHNbins_semifinal"
+
+
+
+
+#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt_plots/"
+#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt_"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_noJERscales_SMPbins_withjety_ptLo56_semifinalv3_REBIN_NODATACOVMAT_murmufpt_TEST"
+#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt1_plots/"
+#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_noJERscales_spl3wgts_gaussSmear_TEST_murmufpt1_"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_noJERscales_SMPbins_withjety_ptLo56_semifinalv3_REBIN_NODATACOVMAT_murmufpt1_TEST"
+
+#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_plots/"
+#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_SMPbins_withjety_semifinalv3_REBIN_NODATACOVMAT_murmufpt"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_defSMPbins_withjety_semifinalv3_wDATACOVMAT_murmufpt"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_defSMPbins2_withjety_semifinalv3_wDATACOVMAT_murmufpt"
+#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_plots/"
+#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_SMPbins_withjety_semifinalv3_REBIN_NODATACOVMAT_murmufpt1"
+

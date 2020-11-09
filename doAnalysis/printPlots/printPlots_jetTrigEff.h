@@ -693,16 +693,18 @@ void printTrigPtHist( TFile* finLowJets , TFile* finJet80 , TFile* fin ,
   else canvname+=etarng;
   TCanvas *temp_canvJetTrig = new TCanvas(canvname.c_str(),canvname.c_str() , TRGEFF_CANVX,TRGEFF_CANVY);
   temp_canvJetTrig->cd();
-
-  TPad *jetpad_spectra = new TPad(("jetpad_spectra_"+trigType).c_str(), "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
-  TPad *jetpad_ratio = new TPad(  ("jetpad_ratio_"  +trigType).c_str(), "Ratio Pad", 0.0, 0.05, 1.0, 0.3);  
+  temp_canvJetTrig->SetLogx(1);
+  temp_canvJetTrig->SetLogy(1);
+  
+  //TPad *jetpad_spectra = new TPad(("jetpad_spectra_"+trigType).c_str(), "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
+  //TPad *jetpad_ratio = new TPad(  ("jetpad_ratio_"  +trigType).c_str(), "Ratio Pad", 0.0, 0.05, 1.0, 0.3);  
   if(funcDebug)std::cout<<"setupJetTrigSpectraRatioCanvas"<<std::endl;
-  setupJetTrigSpectraRatioCanvas(temp_canvJetTrig, jetpad_spectra,  jetpad_ratio);
+  //setupJetTrigSpectraRatioCanvas(temp_canvJetTrig, jetpad_spectra,  jetpad_ratio);
   
 
 
   //DRAW SPECTRA
-  jetpad_spectra->cd();
+  //jetpad_spectra->cd();
   
   TH1D* stylehist = (TH1D*)HLTCombo_trgPt->Clone(("styleonly_"+trigType).c_str());
   stylehist->Reset("ICES");
@@ -718,9 +720,9 @@ void printTrigPtHist( TFile* finLowJets , TFile* finJet80 , TFile* fin ,
   else if(trigType=="incl")h_Title="Lead Trigger Jet p_{T} for HLT40/60/80";      
   
   stylehist->SetTitle(h_Title.c_str());
-  //stylehist->GetXaxis()->SetTitle("Lead Trigger Jet p_{T} [GeV]");
-  //stylehist->GetYaxis()->SetTitle(AUAxTitle.c_str());
-  stylehist->GetYaxis()->SetTitle(ddcrossSectionAxTitle.c_str());
+  stylehist->GetXaxis()->SetTitle("Lead Trigger Jet p_{T} [GeV]");
+  stylehist->GetYaxis()->SetTitle(AUAxTitle.c_str());
+  //stylehist->GetYaxis()->SetTitle(ddcrossSectionAxTitle.c_str());
   
   stylehist->DrawClone();
 
@@ -752,49 +754,53 @@ void printTrigPtHist( TFile* finLowJets , TFile* finJet80 , TFile* fin ,
   JetTrigLegend->Draw(); //spectra legend
 
   //END DRAW SPECTRA
-  
-  TH1D* HLT40_trgPt_ratio=(TH1D*)HLT40_trgPt->Clone("HLT40_trgPt_ratio");
-  TH1D* HLT60_trgPt_ratio=(TH1D*)HLT60_trgPt->Clone("HLT60_trgPt_ratio");
-  TH1D* HLT80_trgPt_ratio=(TH1D*)HLT80_trgPt->Clone("HLT80_trgPt_ratio");
-  TH1D* theDenominator =(TH1D*)HLTCombo_trgPt->Clone("trgPt_denom");
-  
-  HLT40_trgPt_ratio->Divide(theDenominator);
-  HLT60_trgPt_ratio->Divide(theDenominator);
-  HLT80_trgPt_ratio->Divide(theDenominator);
-  
-  trigRatioHistStyle(HLT40_trgPt_ratio, 1);            
-  trigRatioHistStyle(HLT60_trgPt_ratio, 2);            
-  trigRatioHistStyle(HLT80_trgPt_ratio, 3);            
-  trigRatioHistStyle(theDenominator,0);            
-  
 
-  //DRAW RATIO
-  jetpad_ratio->cd();
 
-  TH1D* stylehist_ratio = (TH1D*)HLT80_trgPt_ratio->Clone(("styleonly_ratio_"+trigType).c_str());
-  stylehist_ratio->Reset("ICES");
-  stylehist_ratio->SetAxisRange(35.,1000.,"X");          
-  stylehist_ratio->SetAxisRange(0.0,1.3,"Y");
-  stylehist_ratio->GetXaxis()->SetNoExponent(true);
-  stylehist_ratio->GetXaxis()->SetMoreLogLabels(true);  
-  stylehist_ratio->GetXaxis()->SetTitle("Lead Trigger Jet p_{T} [GeV]");
-  stylehist_ratio->GetYaxis()->SetTitle("Ratio to HLT Combo");
-  stylehist_ratio->GetYaxis()->CenterTitle(true);
-  stylehist_ratio->SetTitle("");
-
-  //float min=stylehist_ratio->GetBinLowEdge(1);
-  //float max=stylehist_ratio->GetBinLowEdge(stylehist_ratio->GetNbinsX())+stylehist_ratio->GetBinWidth(stylehist_ratio->GetNbinsX());
-  //TLine* lineAtOne          = new TLine(min,1.0,max,1.0);
-  //TLine* lineAtOne          = new TLine(ptbins_debug[0],1.0,ptbins_debug[nbins_pt_debug],1.0);
-  TLine* lineAtOne          = new TLine(35.,1.0,1000.,1.0);
-  lineAtOne->SetLineColor(12);          
-  lineAtOne->SetLineStyle(2);
-  
-  stylehist_ratio->DrawClone();
-  HLT40_trgPt_ratio->DrawClone("HIST ][ SAME");
-  HLT60_trgPt_ratio->DrawClone("HIST ][ SAME");
-  HLT80_trgPt_ratio->DrawClone("HIST ][ SAME");  
-  lineAtOne->Draw("same");  
+//  //DRAW RATIO
+//  
+//  TH1D* HLT40_trgPt_ratio=(TH1D*)HLT40_trgPt->Clone("HLT40_trgPt_ratio");
+//  TH1D* HLT60_trgPt_ratio=(TH1D*)HLT60_trgPt->Clone("HLT60_trgPt_ratio");
+//  TH1D* HLT80_trgPt_ratio=(TH1D*)HLT80_trgPt->Clone("HLT80_trgPt_ratio");
+//  TH1D* theDenominator =(TH1D*)HLTCombo_trgPt->Clone("trgPt_denom");
+//  
+//  HLT40_trgPt_ratio->Divide(theDenominator);
+//  HLT60_trgPt_ratio->Divide(theDenominator);
+//  HLT80_trgPt_ratio->Divide(theDenominator);
+//  
+//  trigRatioHistStyle(HLT40_trgPt_ratio, 1);            
+//  trigRatioHistStyle(HLT60_trgPt_ratio, 2);            
+//  trigRatioHistStyle(HLT80_trgPt_ratio, 3);            
+//  trigRatioHistStyle(theDenominator,0);            
+//  
+//
+//  jetpad_ratio->cd();
+//
+//  TH1D* stylehist_ratio = (TH1D*)HLT80_trgPt_ratio->Clone(("styleonly_ratio_"+trigType).c_str());
+//  stylehist_ratio->Reset("ICES");
+//  stylehist_ratio->SetAxisRange(35.,1000.,"X");          
+//  stylehist_ratio->SetAxisRange(0.0,1.3,"Y");
+//  stylehist_ratio->GetXaxis()->SetNoExponent(true);
+//  stylehist_ratio->GetXaxis()->SetMoreLogLabels(true);  
+//  stylehist_ratio->GetXaxis()->SetTitle("Lead Trigger Jet p_{T} [GeV]");
+//  stylehist_ratio->GetYaxis()->SetTitle("Ratio to HLT Combo");
+//  stylehist_ratio->GetYaxis()->CenterTitle(true);
+//  stylehist_ratio->SetTitle("");
+//
+//  //float min=stylehist_ratio->GetBinLowEdge(1);
+//  //float max=stylehist_ratio->GetBinLowEdge(stylehist_ratio->GetNbinsX())+stylehist_ratio->GetBinWidth(stylehist_ratio->GetNbinsX());
+//  //TLine* lineAtOne          = new TLine(min,1.0,max,1.0);
+//  //TLine* lineAtOne          = new TLine(ptbins_debug[0],1.0,ptbins_debug[nbins_pt_debug],1.0);
+//  TLine* lineAtOne          = new TLine(35.,1.0,1000.,1.0);
+//  lineAtOne->SetLineColor(12);          
+//  lineAtOne->SetLineStyle(2);
+//  
+//  stylehist_ratio->DrawClone();
+//  HLT40_trgPt_ratio->DrawClone("HIST ][ SAME");
+//  HLT60_trgPt_ratio->DrawClone("HIST ][ SAME");
+//  HLT80_trgPt_ratio->DrawClone("HIST ][ SAME");  
+//  lineAtOne->Draw("same");  
+//
+//  //END DARW RATIO
   
   temp_canvJetTrig->Print(thePDFFileName.c_str());
   fout->cd();
@@ -904,16 +910,18 @@ void printJetTrigHist_wRatio( TFile* finLowJets , TFile* finJet80 , TFile* fin ,
   
   TCanvas *temp_canvJetTrig = new TCanvas(canvname.c_str(),canvname.c_str() , TRGEFF_CANVX,TRGEFF_CANVY);
   temp_canvJetTrig->cd();
-
-  TPad *jetpad_spectra = new TPad(("jetpad_spectra_"+trigType).c_str(), "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
-  TPad *jetpad_ratio = new TPad(  ("jetpad_ratio_"  +trigType).c_str(), "Ratio Pad", 0.0, 0.05, 1.0, 0.3);  
-  if(funcDebug)std::cout<<"setupJetTrigSpectraRatioCanvas"<<std::endl;
-  setupJetTrigSpectraRatioCanvas(temp_canvJetTrig, jetpad_spectra,  jetpad_ratio);
+  temp_canvJetTrig->SetLogx(1);
+  temp_canvJetTrig->SetLogy(1);
+  
+  //TPad *jetpad_spectra = new TPad(("jetpad_spectra_"+trigType).c_str(), "Overlay Pad", 0.0, 0.30, 1.0, 1.0);
+  //TPad *jetpad_ratio = new TPad(  ("jetpad_ratio_"  +trigType).c_str(), "Ratio Pad", 0.0, 0.05, 1.0, 0.3);  
+  //if(funcDebug)std::cout<<"setupJetTrigSpectraRatioCanvas"<<std::endl;
+  //setupJetTrigSpectraRatioCanvas(temp_canvJetTrig, jetpad_spectra,  jetpad_ratio);
   
 
 
   //DRAW SPECTRA
-  jetpad_spectra->cd();
+  //jetpad_spectra->cd();
   
   TH1D* stylehist = (TH1D*)HLTCombo_jetPt->Clone(("styleonly_"+trigType).c_str());
   stylehist->Reset("ICES");
@@ -929,9 +937,9 @@ void printJetTrigHist_wRatio( TFile* finLowJets , TFile* finJet80 , TFile* fin ,
   else if(trigType=="incl")h_Title="Inclusive Jet p_{T} for HLT40/60/80";      
   
   stylehist->SetTitle(h_Title.c_str());
-  //stylehist->GetXaxis()->SetTitle("Lead Trigger Jet p_{T} [GeV]");
-  //stylehist->GetYaxis()->SetTitle(AUAxTitle.c_str());
-  stylehist->GetYaxis()->SetTitle(ddcrossSectionAxTitle.c_str());
+  stylehist->GetXaxis()->SetTitle("Inclusive Jet p_{T} [GeV]");
+  stylehist->GetYaxis()->SetTitle(AUAxTitle.c_str());
+  //stylehist->GetYaxis()->SetTitle(ddcrossSectionAxTitle.c_str());
   
   stylehist->DrawClone();
   
@@ -963,49 +971,50 @@ void printJetTrigHist_wRatio( TFile* finLowJets , TFile* finJet80 , TFile* fin ,
 
   //END DRAW SPECTRA
   
-  TH1D* HLT40_jetPt_ratio=(TH1D*)HLT40_jetPt->Clone("HLT40_jetPt_ratio");
-  TH1D* HLT60_jetPt_ratio=(TH1D*)HLT60_jetPt->Clone("HLT60_jetPt_ratio");
-  TH1D* HLT80_jetPt_ratio=(TH1D*)HLT80_jetPt->Clone("HLT80_jetPt_ratio");
-  TH1D* theDenominator =(TH1D*)HLTCombo_jetPt->Clone("jetPt_denom");
-  
-  HLT40_jetPt_ratio->Divide(theDenominator);
-  HLT60_jetPt_ratio->Divide(theDenominator);
-  HLT80_jetPt_ratio->Divide(theDenominator);
-  
-  trigRatioHistStyle(HLT40_jetPt_ratio, 1);            
-  trigRatioHistStyle(HLT60_jetPt_ratio, 2);            
-  trigRatioHistStyle(HLT80_jetPt_ratio, 3);            
-  trigRatioHistStyle(theDenominator,0);            
-  
-
-  //DRAW RATIO
-  jetpad_ratio->cd();
-
-  TH1D* stylehist_ratio = (TH1D*)HLT80_jetPt_ratio->Clone(("styleonly_ratio_"+trigType).c_str());
-  stylehist_ratio->Reset("ICES");
-  //stylehist_ratio->SetAxisRange(35.,1000.,"X");          
-  stylehist_ratio->SetAxisRange(ptlo,pthi,"X");          
-  stylehist_ratio->SetAxisRange(0.0,1.3,"Y");
-  stylehist_ratio->GetXaxis()->SetNoExponent(true);
-  stylehist_ratio->GetXaxis()->SetMoreLogLabels(true);  
-  stylehist_ratio->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
-  stylehist_ratio->GetYaxis()->SetTitle("Ratio to HLT Combo");
-  stylehist_ratio->GetYaxis()->CenterTitle(true);
-  stylehist_ratio->SetTitle("");
-
-  //float min=stylehist_ratio->GetBinLowEdge(1);
-  //float max=stylehist_ratio->GetBinLowEdge(stylehist_ratio->GetNbinsX())+stylehist_ratio->GetBinWidth(stylehist_ratio->GetNbinsX());
-  //TLine* lineAtOne          = new TLine(min,1.0,max,1.0);
-  //TLine* lineAtOne          = new TLine(ptbins_debug[0],1.0,ptbins_debug[nbins_pt_debug],1.0);
-  TLine* lineAtOne          = new TLine(ptlo,1.0,pthi,1.0);
-  lineAtOne->SetLineColor(12);          
-  lineAtOne->SetLineStyle(2);
-  
-  stylehist_ratio->DrawClone();
-  HLT40_jetPt_ratio->DrawClone("HIST ][ SAME");
-  HLT60_jetPt_ratio->DrawClone("HIST ][ SAME");
-  HLT80_jetPt_ratio->DrawClone("HIST ][ SAME");  
-  lineAtOne->Draw("same");  
+  ////DRAW RATIO
+  //TH1D* HLT40_jetPt_ratio=(TH1D*)HLT40_jetPt->Clone("HLT40_jetPt_ratio");
+  //TH1D* HLT60_jetPt_ratio=(TH1D*)HLT60_jetPt->Clone("HLT60_jetPt_ratio");
+  //TH1D* HLT80_jetPt_ratio=(TH1D*)HLT80_jetPt->Clone("HLT80_jetPt_ratio");
+  //TH1D* theDenominator =(TH1D*)HLTCombo_jetPt->Clone("jetPt_denom");
+  //
+  //HLT40_jetPt_ratio->Divide(theDenominator);
+  //HLT60_jetPt_ratio->Divide(theDenominator);
+  //HLT80_jetPt_ratio->Divide(theDenominator);
+  //
+  //trigRatioHistStyle(HLT40_jetPt_ratio, 1);            
+  //trigRatioHistStyle(HLT60_jetPt_ratio, 2);            
+  //trigRatioHistStyle(HLT80_jetPt_ratio, 3);            
+  //trigRatioHistStyle(theDenominator,0);            
+  //
+  //jetpad_ratio->cd();
+  //
+  //TH1D* stylehist_ratio = (TH1D*)HLT80_jetPt_ratio->Clone(("styleonly_ratio_"+trigType).c_str());
+  //stylehist_ratio->Reset("ICES");
+  ////stylehist_ratio->SetAxisRange(35.,1000.,"X");          
+  //stylehist_ratio->SetAxisRange(ptlo,pthi,"X");          
+  //stylehist_ratio->SetAxisRange(0.0,1.3,"Y");
+  //stylehist_ratio->GetXaxis()->SetNoExponent(true);
+  //stylehist_ratio->GetXaxis()->SetMoreLogLabels(true);  
+  //stylehist_ratio->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
+  //stylehist_ratio->GetYaxis()->SetTitle("Ratio to HLT Combo");
+  //stylehist_ratio->GetYaxis()->CenterTitle(true);
+  //stylehist_ratio->SetTitle("");
+  //
+  ////float min=stylehist_ratio->GetBinLowEdge(1);
+  ////float max=stylehist_ratio->GetBinLowEdge(stylehist_ratio->GetNbinsX())+stylehist_ratio->GetBinWidth(stylehist_ratio->GetNbinsX());
+  ////TLine* lineAtOne          = new TLine(min,1.0,max,1.0);
+  ////TLine* lineAtOne          = new TLine(ptbins_debug[0],1.0,ptbins_debug[nbins_pt_debug],1.0);
+  //TLine* lineAtOne          = new TLine(ptlo,1.0,pthi,1.0);
+  //lineAtOne->SetLineColor(12);          
+  //lineAtOne->SetLineStyle(2);
+  //
+  //stylehist_ratio->DrawClone();
+  //HLT40_jetPt_ratio->DrawClone("HIST ][ SAME");
+  //HLT60_jetPt_ratio->DrawClone("HIST ][ SAME");
+  //HLT80_jetPt_ratio->DrawClone("HIST ][ SAME");  
+  //lineAtOne->Draw("same");  
+  //
+  ////END DRAW RATIO
   
   temp_canvJetTrig->Print(thePDFFileName.c_str());
   fout->cd();

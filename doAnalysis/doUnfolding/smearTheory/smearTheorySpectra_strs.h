@@ -20,6 +20,7 @@ const std::string NNPDFDESCTXT="NNPDF30";
 //PDF file strings + descriptive text, these are from Joao, in |y| bins
 const std::string _CT14NNLOFILESTR ="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v3";
 const std::string _CT14NNLOFILESTR2="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3";
+const std::string _CT14NNLOFILESTR3="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQHTp_v3";
 const std::string _CT14NNLODESCTXT ="CT14NNLO";
 
 
@@ -33,6 +34,7 @@ const std::string POWPY8CT_NPS = "NPC_POWPY8CTEQ_R4";  //NLO
 const std::string HERWGEE4_NPS_TXT = "Herwig EE4C R4";  //LO
 const std::string HERWGEE5_NPS_TXT = "Herwig EE5C R4";  //LO
 const std::string _PYTHIA8_NPS_TXT = "PYTHIA8 R4";      //LO
+const std::string _AVERAGE_NPS_TXT = "AVG(PY8+HWG) R4";      //LO
 const std::string _POW_PY8_NPS_TXT = "POW+PY8 R4";  //NLO
 const std::string POWPY8CT_NPS_TXT = "POW+PY8 CTEQ R4";  //NLO
 

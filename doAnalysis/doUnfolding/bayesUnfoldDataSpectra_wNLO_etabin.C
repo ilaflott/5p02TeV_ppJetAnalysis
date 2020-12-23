@@ -6,11 +6,11 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-const bool setDataCovMat=false;
+const bool setDataCovMat=true;
 const bool usePseudoRapBins=false;
 const bool useRapBins=true&&!usePseudoRapBins;
-//const std::string ptbintype="merged_SMP";
-const std::string ptbintype="john2";
+const std::string ptbintype="merged_SMP";
+//const std::string ptbintype="john2";
 //const std::string ptbintype="default_SMP";
 //const std::string ptbintype="default2_SMP";
 //-----------------------------
@@ -846,20 +846,31 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 	hrec_JECsysup_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysup_rebin->GetBinContent(i,i)) );
     }
     
+
     
     //SYSDOWN
     std::string JECsysdownhistTitle="hJetQA";
     if(doJetID)JECsysdownhistTitle+="_1wJetID";
     else assert(false);
 
+    //    //FOR semifinalv3 only: jtpy was supposed to be jtpt, for semifinalv4 and beyond, this typo is fixed.
+    //    if(usePseudoRapBins)
+    //      JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
+    //    else if(useRapBins)
+    //      JECsysdownhistTitle+="_jtpy_JEC_sysdown_ybin"+std::to_string(etabinint);  //FIX ME 04/09/2020
+
     if(usePseudoRapBins)
       JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
     else if(useRapBins)
-      JECsysdownhistTitle+="_jtpy_JEC_sysdown_ybin"+std::to_string(etabinint);  //FIX ME 04/09/2020
-    
+      JECsysdownhistTitle+="_jtpt_JEC_sysdown_ybin"+std::to_string(etabinint);  
+
+
     hrec_JECsysdown = (TH1D*)fpp_Data->Get( JECsysdownhistTitle.c_str() ); 
     if(debugWrite)hrec->Write();
     if(debugMode)hrec->Print("base");
+
+    //assert(false);    
+    
     
     JECsysdownhistTitle+="_divBylumietabin";    
     hrec_JECsysdown->Scale(1./effIntgrtdLumi); // lumi
@@ -905,17 +916,22 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 						  (double*) boundaries_pt_gen_mat, nbins_pt_gen_mat  );  
     
     if(debugMode)std::cout<<"scaling covariance matrix from data file"<<std::endl;    
+
     hrec_covmat_JECsysdown_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
     if(debugWrite)hrec_covmat_JECsysdown_rebin->Write(TH2_title.c_str());
+
     
     //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
     if(setDataCovMat){
       for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
 	hrec_JECsysdown_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysdown_rebin->GetBinContent(i,i)) );
     }
+
+
   }  
   
   
+
   
   
   // thy spectra  

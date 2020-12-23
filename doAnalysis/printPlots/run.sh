@@ -3,10 +3,10 @@
 
 dojetQAPlots=0
 dojetTrigQAPlots=0   
-dojetTrigEff=1
+dojetTrigEff=0
 dojetIDQAPlots=0
 dojetMultPlots=0   #old
-doevtCounts=0
+doevtCounts=1
 scpOutput=0
 
 
@@ -256,8 +256,11 @@ then
     #source run_printPlots_jetIDPlots.sh "4" "11.26.19_outputCondor" "11-26-19"  "0.0eta2.0_SMPbins_JECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"  "00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh"     "ppData"
     #scp2Serin "output/ak4PF_HPtJetTrig_00eta20_11.26.19_SMPbins_wJECsysv2_withLumiCorr_semifinalv2_LowHLT40Thresh_jetIDPlots.*"    
     
-    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_SMPbins_withjety_semifinalv3"  "00eta20_03.18.20_semifinalv3"     "ppData"
-    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_semifinalv3"  "00eta20_03.18.20_semifinalv3"     "ppMC"
+#    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_SMPbins_withjety_semifinalv3"  "00eta20_03.18.20_semifinalv3"     "ppData"
+#    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_SMPbins_withjety_semifinalv4"  "00eta20_03.18.20_semifinalv4"     "ppData"
+#    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_SMPbins_withjety_semifinalv4"  "00eta20_03.18.20_jet80PD_semifinalv4"     "ppData"
+    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_SMPbins_withjety_semifinalv4"  "00eta20_03.18.20_lowjetsPD_semifinalv4"     "ppData"
+#    source run_printPlots_jetIDPlots.sh "4" "03.18.20_outputCondor" "03-18-20"  "0.0eta2.5_semifinalv3"  "00eta20_03.18.20_semifinalv4"     "ppMC"
     
     #source run_printPlots_jetIDPlots.sh "4" "06.25.19_outputCondor" "06-25-19"  "0.0eta2.0_semifinal"  "00eta20_06.25.19_SMPbins_semifinal" "ppMC"
     #scp2Serin "output/ak4PF_Py8_CUETP8M1_00eta20_06.25.19_SMPbins_semifinal_jetIDPlots.*"
@@ -306,7 +309,7 @@ then
     echo "done compiling. Running!"
     echo ""    
 
-    source run_printPlots_evtCounts.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withgenjety_wJERSFs_semifinalv3"  "00eta20_03.18.20_semifinalv3_Jet80_LowJets_PY8"    
+    source run_printPlots_evtCounts.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wMETFrac0p3_JetID_semifinalv4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withgenjety_wJERSFs_semifinalv3"  "00eta20_03.18.20_semifinalv3_Jet80_LowJets_PY8"    
 
     echo ""
     echo "done running evtCounts!"

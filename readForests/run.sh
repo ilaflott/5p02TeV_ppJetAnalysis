@@ -4,11 +4,11 @@
 ## busy cluster (check w/ 'condor_q --allusers') --> use larger # of files per job --> longer run time but overall kinder during busy hours
 ## not-busy cluster --> can use smaller # of files per job --> shorter run time but occupies more cluster machines
 
-subm_ppData_jetPlots=0
+subm_ppData_jetPlots=1
 subm_ppData_jetTrigEff=0
 subm_ppData_makeNTuple=0
 
-subm_ppMC_jetPlots=1
+subm_ppMC_jetPlots=0
 subm_ppMC_JERS=0
 subm_ppMC_unf=0
 subm_ppMC_MCEff=0
@@ -137,7 +137,7 @@ if [[ $subm_ppData_findEvt -eq 1 ]]
 then
     echo "...ppData findEvt..."
     rootcompile readForests_ppData_findEvt.C
-    source run_readForests_findEvt.sh 4 "0.0" "0.1"  # "ppData"
+    source run_readForests_findEvt.sh 4 "0.0" "2.5"  # "ppData"
 fi
 
 askCondor 1000 10

@@ -58,7 +58,7 @@ void debugcout(int debugInt=0){
 
 
 TH1D* applyNPtoxsec(TH1D* xsec, TF1* fNP){
-  const bool funcDebug=true;
+  const bool funcDebug=false;
   
   if(funcDebug)std::cout<<"pre NP Corr, xsec mean along x axis is = " << xsec->GetMean(1) << std::endl;
   xsec->Print("base");

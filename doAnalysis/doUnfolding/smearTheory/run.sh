@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-smeartheory=1
-smearPY8=0
+smeartheory=0
+smearPY8=1
 
 
 
@@ -104,7 +104,11 @@ then
     #nlofstr="fnl5020_LO2_R04Jets_modify_MMHT2014nlo68cl_HS"
     #nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
     #py8fstr="02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
-    py8fstr="06.25.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-25-19_unf_0.0eta2.0_semifinal/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    #py8fstr="06.25.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-25-19_unf_0.0eta2.0_semifinal/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    py8fstr="03.18.20_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_unf_0.0eta2.5_SMPbins_withgenjety_semifinalv3/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    
+    
+    outdescstr="gaussSmear_semifinalv4.2"
     
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"
@@ -113,11 +117,13 @@ then
     #nlofshortstr="NNPDF"
     py8fshortstr="PY8"
     
-    jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
+    #jerfstr="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/ak4PF_PY8JER_"
+    jerfstr="ak4PF_PY8JER_"
     #descstr="03.14.19_sigmu"
     #descstr="03.14.19_sigma"
-    descstr="06.25.19_sigmu_semifinal"
+    #descstr="06.25.19_sigmu_semifinal"
     #descstr="06.25.19_sigma_semifinal"
+    jerdescstr="03.18.20_sigmu_geny"
     
     #fittypestr="modLog"
     #fittypestr="7TeV"
@@ -129,7 +135,7 @@ then
     scpoutput=0
     scpafterlast=1
     etabin_i=0
-    Netabins=4 
+    Netabins=4
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]
@@ -141,7 +147,7 @@ then
 	fi
 	
 	echo "etabin_i=${etabin_i}"
-	source run_smearPY8_etabin.sh $etabin_i   $py8fstr $py8fshortstr $jerfstr $descstr $fittypestr $scpoutput
+	source run_smearPY8_etabin.sh $etabin_i   $py8fstr $py8fshortstr $jerfstr $jerdescstr $fittypestr $scpoutput $outdescstr
 	etabin_i=$(($etabin_i + 1))
 	
     done

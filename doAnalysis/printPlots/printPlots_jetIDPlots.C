@@ -1,4 +1,4 @@
-const int Netabins=4;
+//const int Netabins=4;
 #include "printPlots.h"
 
 
@@ -57,8 +57,11 @@ int printPlots_jetIDPlots(const std::string input_condorDir_jetID ,
   }
   if(useMB)
     input_ppData_Filename=input_ppData_Filename_MB;
-  else
+  else{
     input_ppData_Filename=input_ppData_Filename_noMB;
+    //input_ppData_Filename="HighPtJet80_ak4PF-allFiles.root";// jet80 PD only
+    input_ppData_Filename="HighPtLowerJets_ak4PF-allFiles.root";// lowerjets PD only
+  }
   std::cout<<"input_ppData_Filename="<<input_ppData_Filename<<std::endl;
   //assert(false);
 
@@ -174,7 +177,9 @@ int printPlots_jetIDPlots(const std::string input_condorDir_jetID ,
 		 var[j]=="eSum"  || 
 		 var[j]=="muSum" || 
 		 var[j]=="numConst" || 
-		 var[j]=="chMult"     )skipPlot=false;
+		 var[j]=="chMult"   ||
+		 var[j]=="neMax"    || 
+		 var[j]=="eMax"     )skipPlot=false;
 	else                           skipPlot=true;
 	//if((var[j]).find("Hard")!=std::string::npos) skipPlot=true;
 	//if((var[j]).find("Max")!=std::string::npos) skipPlot=true;

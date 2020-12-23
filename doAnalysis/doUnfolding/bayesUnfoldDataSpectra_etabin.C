@@ -6,7 +6,7 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-const bool setDataCovMat=false;
+const bool setDataCovMat=true;
 const bool doJetID=true     ;
 const bool useSimpBins=false;
 //const bool doJECsys=true;
@@ -626,10 +626,17 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       std::string JECsysdownhistTitle="hJetQA";
       if(doJetID)JECsysdownhistTitle+="_1wJetID";
       else assert(false);
+
+      // FOR SEMIFINALV3 ONLY: jtpt --> should be jtpt (is typo). for semifinalv4 and beyond, this is fixed.
+      //      if(dopseudorapbins)
+      //	JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
+      //      else if(dorapbins)//TYPO: SHOULD BE 'jtpt', IS 'jtpy', FIX ME SOMEDAY
+      //	JECsysdownhistTitle+="_jtpy_JEC_sysdown_ybin"+std::to_string(etabinint);  
+      
       if(dopseudorapbins)
 	JECsysdownhistTitle+="_jtpt_JEC_sysdown_etabin"+std::to_string(etabinint);  
       else if(dorapbins)//TYPO: SHOULD BE 'jtpt', IS 'jtpy', FIX ME SOMEDAY
-      JECsysdownhistTitle+="_jtpy_JEC_sysdown_ybin"+std::to_string(etabinint);  
+	JECsysdownhistTitle+="_jtpt_JEC_sysdown_ybin"+std::to_string(etabinint);  
       
       if(debugMode)std::cout<<"JECsysdownhistTitle="<<JECsysdownhistTitle<<std::endl;
       hrec_JECsysdown = (TH1D*)fpp_Data->Get( JECsysdownhistTitle.c_str() ); 

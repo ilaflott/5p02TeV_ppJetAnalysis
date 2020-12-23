@@ -1,19 +1,20 @@
 #!/bin/bash
 
-NARGS=7
+NARGS=8
 if [[ "$#" -eq $NARGS ]]
 then
     etaBin=$1
     PY8filestr=$2
     PY8fileshortstr=$3
     JERfilestr=$4
-    descstr=$5
+    jerdescstr=$5
     Fittypestr=$6
-    cp2Serin=$7
+    scp2Serin=$7
+    outdescstr=$8
 else
     echo ""
     echo "error! usage is:"
-    echo "source run_smearPY8_etabin.sh <etaBin>  <PY8filestr> <PY8fileshortstr> <JERfilestr> <descstr> <Fittypestr> <cp2Serin>"
+    echo "source run_smearPY8_etabin.sh <etaBin>  <PY8filestr> <PY8fileshortstr> <JERfilestr> <jerdescstr> <Fittypestr> <csp2Serin> <outdescstr>"
     echo ""
     return
 fi
@@ -51,29 +52,27 @@ then
     echo "etabinstr=${etabinstr}"
     echo ""
     
-    OUTDIR=${PY8fileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_NLO_plots/
-    OUTFILE=${PY8fileshortstr}_${descstr}_noJERscales_${Fittypestr}_gaussSmear_${etabinstr}.root     
-    JERFILE=${JERfilestr}${etabinstr}_${descstr}.root
-    JERPDFFILE=${JERfilestr}${etabinstr}_${descstr}.pdf
-    #JERFILE=${JERfilestr}${etabinstr}_semifinal.root
-    #JERPDFFILE=${JERfilestr}${etabinstr}_semifinal.pdf
-    
-    echo ""
-    echo "OUTDIR =${OUTDIR}"
-    echo "OUTFILE=${OUTFILE}"
-    echo "JERFILE=${JERFILE}"
-    echo "JERPDFFILE=${JERPDFFILE}"
-    echo ""    
-    
-    #return     #DEBUG
+    #OUTDIR=${NLOfileshortstr}_NLO_v3_${jerdescstr}_${Fittypestr}_${outdescstr}_plots/
+    #OUTFILE=${NLOfileshortstr}_NLO_v3_${jerdescstr}_${Fittypestr}_${outdescstr}_${etabinstr}.root    
+    OUTDIR=${PY8fileshortstr}_${jerdescstr}_noJERscales_${Fittypestr}_${outdescstr}_plots/
+    OUTFILE=${PY8fileshortstr}_${jerdescstr}_noJERscales_${Fittypestr}_${outdescstr}_${etabinstr}.root     
+    JERDIR=/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/
+    JERFILE=${JERfilestr}${etabinstr}_${jerdescstr}.root
+    FULLJERFILEPATH=${JERDIR}${JERFILE}
+    JERPDFFILE=${JERfilestr}${etabinstr}_${jerdescstr}.pdf    
+    FULLJERPDFFILEPATH=${JERDIR}${JERPDFFILE}
     
     echo ""
     echo "RUN PY8 smearing"
-    echo ""
+    echo "OUTDIR =${OUTDIR}"
+    echo "OUTFILE=${OUTFILE}"
+    #echo "JERFILE=${JERFILE}"
+    #echo "JERPDFFILE=${JERPDFFILE}"
+    echo ""        
     
     ## USAGE
     ## ./smearPY8Spectra_gaussCoreJER_etabin.exe <PY8filestr> <useSplineWeights> <fitType_str> <JERFILE> <etabin> <outputfile>
-    ./smearPY8Spectra_gaussCoreJER_etabin.exe "${PY8filestr}"  "${Fittypestr}"  "${JERFILE}"  "${etaBin}"  "${OUTFILE}"    
+    ./smearPY8Spectra_gaussCoreJER_etabin.exe "${PY8filestr}"  "${Fittypestr}"  "${FULLJERFILEPATH}"  "${etaBin}"  "${OUTFILE}"    
     
     echo "" 
     echo "DONE PY8 smearing."
@@ -93,16 +92,30 @@ then
     fi
     
     echo ""
-    echo "moving $OUTFILE to $OUTDIR"
-    echo ""
+    echo "copying code to $OUTDIR"
+    echo ""    
     
     cp smearPY8Spectra_gaussCoreJER_etabin.C $OUTDIR/.
     cp smearTheorySpectra.h $OUTDIR/.
-    cp $OUTFILE $OUTDIR/.
-    cp $JERFILE $OUTDIR/.
-    cp $JERPDFFILE $OUTDIR/.
 
-    # return    #DEBUG
+
+    echo ""
+    echo "moving $OUTFILE to $OUTDIR"
+    echo ""
+
+    mv $OUTFILE $OUTDIR/.
+
+
+    echo ""
+    echo "JERDIR=${JERDIR}"
+    echo "JERFILE=${JERFILE}"
+    echo "FULLJERFILEPATH=${FULLJERFILEPATH}"
+    cp $FULLJERFILEPATH $OUTDIR/.
+    echo ""
+    echo "JERPDFFILE=${JERPDFFILE}"
+    echo "FULLJERPDFFILEPATH=${FULLJERPDFFILEPATH}"
+    cp $FULLJERPDFFILEPATH $OUTDIR/.
+    echo ""
     
     echo ""
     echo "writing plots in $OUTFILE to $OUTDIR"

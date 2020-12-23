@@ -29,12 +29,10 @@ echo ""
 echo "done submitting ppData jetPlots Jet80 job(s)"
 echo ""
 
-
-
 source condorSubmit_readForests.sh readForests_ppData_findEvt -1 20 0 filelists/5p02TeV_HighPtLowerJets_forests.txt ${R} PF 0 ${etaLo} ${etaHi}
 
-echo ""
-echo "done submitting ppData jetPlots LowerJets job(s)"
-echo ""
+#echo ""
+#echo "done submitting ppData jetPlots LowerJets job(s)"
+#echo ""
 
 return

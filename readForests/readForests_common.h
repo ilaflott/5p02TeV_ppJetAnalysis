@@ -31,6 +31,16 @@
 #include <TH1F.h>
 #include <TH2F.h>
 
+// PF cand inv. masses for computing things
+//PFCand particle ID=0 ---> unknown/dummy
+//const double chpimass       = ; //PFCand particle ID=1
+//const double emass          = 0.510998950e-03; //PFCand particle ID=2
+//const double mumass         = ; //PFCand particle ID=3
+//const double phmass         = ; //PFCand particle ID=4
+//const double nepimass       = ; //PFCand particle ID=5
+//const double hfhadmass      = ; //PFCand particle ID=6
+//const double hfegammamass   = ; //PFCand particle ID=7
+
 
 void divideBinWidth(TH1 *h){
   h->Sumw2();
@@ -243,6 +253,7 @@ const std::string dataTreeNames[]={
   "skimanalysis/HltTree",   
   "ppTrack/trackTree",
   "hltanalysis/HltTree",
+  "pfcandAnalyzer/pfTree",
   "tupel/EventTree",  
   "hltobject/", 
   "hltobject/", 
@@ -606,7 +617,8 @@ bool jetID_00eta24(float jetIDpt,
 	muSum/jetIDpt    < 0.80 &&
 	chSum/jetIDpt    > 0.   && 
 	chMult           > 0    &&
-	eSum/jetIDpt     < 0.90    ) passesJetID=true;	      
+	eSum/jetIDpt     < 0.80    ) passesJetID=true;	      //0.80 used for more recent 13 TeV tight LepVeto criteria
+    //eSum/jetIDpt     < 0.90    ) passesJetID=true;	      //2015 13 tev tight lepVeto criteria
   }  
   else{
     if( neSum/jetIDpt    < 0.99 &&
@@ -621,6 +633,38 @@ bool jetID_00eta24(float jetIDpt,
     std::cout<<" passesJetID="<<passesJetID<<std::endl;
   return passesJetID;
 }
+
+bool jetID_00eta24_TEST(float jetIDpt, 
+			float neSum, float phSum, float chSum, float eSum, float muSum,
+			int numConst, int chMult, float eMax, bool isTight=false){
+  bool funcDebug=jetIDDebug;
+  if(funcDebug)
+    std::cout<<"jetID_00eta24 called.";
+  bool passesJetID=false;
+  if(isTight){
+    if( neSum/jetIDpt    < 0.90 &&
+	phSum/jetIDpt    < 0.90 &&
+	numConst         > 1    &&      
+	muSum/jetIDpt    < 0.80 &&
+	chSum/jetIDpt    > 0.   && 
+	chMult           > 0    &&
+	eSum/jetIDpt     < 0.90    ) passesJetID=true;	      
+  }  
+  else{
+    if( neSum/jetIDpt    < 0.99 &&
+	phSum/jetIDpt    < 0.99 &&
+	numConst         > 1    &&      
+	muSum/jetIDpt    < 0.80 &&
+	chSum/jetIDpt    > 0.   && 
+	chMult           > 0    &&
+	eMax/jetIDpt     < 0.89 &&
+	eSum/jetIDpt     < 0.99    ) passesJetID=true;	      
+  }
+  if(funcDebug)
+    std::cout<<" passesJetID="<<passesJetID<<std::endl;
+  return passesJetID;
+}
+
 
 bool jetID_24eta27(float jetIDpt,
 		   float neSum, float phSum, float muSum, 
@@ -856,8 +900,32 @@ double cpuVzWeight_poly(float vz_F){
 
 //takes in a TH2, fills it with the contents of the TH1 according to the rules of an outerproduct
 //binning of a axes of TH2 assumed symmetric. binning of TH1 assumed equivalent to binning of each axis of TH2
-inline void fillCovMatrix(TH2D* covmat=NULL, TH1D* hist=NULL, int nbins=-1, double weight=0.){
+inline void fillCovMatrix(TH2D* covmat=NULL, TH1D* hist=NULL,  int nbins=-1, double weight=0.){
   //bool funcDebug=true;
+  for(int i=1; i<=nbins; i++){
+    double val_i=hist->GetBinContent(i);
+    if(!(val_i>0.))continue;
+    double center_i=hist->GetBinCenter(i);
+    for(int j=i; j<=nbins; j++) {
+      if(i!=j) { //if(i!=j){
+	double val_j=hist->GetBinContent(j);
+	if( !(val_j>0) ) continue;
+	double center_j=hist->GetBinCenter(j);
+	covmat->Fill(center_i, center_j, weight*weight*val_i*val_j);
+	covmat->Fill(center_j, center_i, weight*weight*val_i*val_j);      }      //covmat->SetBinContent(i,j,val_i*val_j);      }       
+      else{// (i==j){	
+	covmat->Fill(center_i, center_i, weight*weight*val_i*val_i);}      //covmat->SetBinContent(i,j, val_i*val_i);            }      
+    }	
+  }
+  return;
+}
+
+
+
+
+inline void fillCovMatrix(TH2D* covmat=NULL, TH1D* hist=NULL,  double weight=0.){
+  //bool funcDebug=true;
+  int nbins=hist->GetNbinsX();
   for(int i=1; i<=nbins; i++){
     double val_i=hist->GetBinContent(i);
     if(!(val_i>0.))continue;

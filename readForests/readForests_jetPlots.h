@@ -1,8 +1,10 @@
 // custom
 #include "readForests_common.h"
+#include "readForests_covmatptbins.h"
 #include "readForests_JEC_v12_ak4PF_75X_data_Run2_v13.h" //these are the JECs 5 TeV pp uses
 #include "readForests_JEC_v12_ak4PF_74X_dataRun2_HLT_ppAt5TeV_v0.h" //another set of slightly older 5 TeV JECs for comparison
 #include "readForests_JEC_Fall15_25nsV2_DATA_Uncertainties.h" //uncertainties from 13 TeV, Run Era 2015D (Fall)
+#include "readForests_detsegments.h"
 
 //// FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------
@@ -28,7 +30,7 @@ const bool defDebugMode=true;
 const float defEtaCutLo=0.0, defEtaCutHi=2.5;//really absetacut, don't use negative numbers
 
 int readForests_ppData_jetPlots( std::string inFilelist=defDataInFilelist, 
-				 int startfile=18, int endfile=21,
+				 int startfile=34, int endfile=39,
 				 int radius=defRadius, std::string jetType=defJetType, 
 				 bool debugMode=defDebugMode,
 				 std::string outfile=defDataOutputName, 

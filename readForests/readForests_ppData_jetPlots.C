@@ -9,10 +9,10 @@ const bool useIncJetAnalyzer=true;// leave me on almost always
 const bool fillDataJetQAHists=true; // leave me on almost always
 
 const bool fillDataJetTrigQAHists=true; // leave me on almost always
-const bool fillDataJetCovMatrix=true; // leave me on almost always
+const bool fillDataJetCovMatrix=false; // leave me on almost always
 
 const bool fillDataJetJECQAHists=false;//expensive computationally, use only if needed (i.e. if someone asks about JECs + wants QA)
-const bool fillDataJetJECUncHists=true&&fillDataJetQAHists;// leave me on almost always
+const bool fillDataJetJECUncHists=false&&fillDataJetQAHists;// leave me on almost always
 const bool useLinIntForJECUnc=true;
 
 const bool fillDataDijetHists=false;// leave me off almost always
@@ -24,6 +24,8 @@ const bool useTupel=true&&!useIncJetAnalyzer;// leave me off almost always
 const bool fillDataTupelJetQAHists=true&&useTupel&&!fillDataJetQAHists;// leave me off almost always
 const bool useTightJetID=false;
 
+const bool usePFCandAnalyzer=true;
+
 //const std::string trgCombType="Calo"; // almost never used
 const std::string trgCombType="PF"; // almost always used
 
@@ -31,8 +33,14 @@ const bool deepDebug=false; //put to true only if in trouble...
 
 //lumi in Jet80/LowerJets PDs according to brilcalc, accounting for event selection efficiency [inv picobarns]
 const long double effMBLumi     =(1.);//placeholder for now
-const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;
-const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape] + vzcut
+//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut
+//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut + PFMETfracCut
+//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape] + vzcut + PFMETfracCut
+//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -90,20 +98,21 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   std::string trees[N_dataTrees];
   trees[0]=jetTreeName;
   for(int i=1;i<N_dataTrees;++i){
-    if(i<6){
+    if(i<7){
       trees[i]=dataTreeNames[i];
       if(debugMode){
-	if(!useTupel&&i==5)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<" [NOT BEING USED THIS JOB]"<<std::endl;  
+	if(!useTupel&&i==6)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<" [NOT BEING USED THIS JOB]"<<std::endl;  
+	else if(!usePFCandAnalyzer&&i==5)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<" [NOT BEING USED THIS JOB]"<<std::endl;  
 	else std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
       }
     }
     else{
       if(trgCombType=="PF"){
-	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-6]+"_v";
+	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-7]+"_v";
 	if(debugMode)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
       }
       else if(trgCombType=="Calo"){
-	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-6]+"_v";
+	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-7]+"_v";
 	if(debugMode)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
       }
       else assert(false);      
@@ -115,13 +124,14 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   // declare TChains for each tree + friend them
   TChain* jetpp[N_dataTrees];
   for(int t = 0;t<N_dataTrees;++t)  { 
-    if(!useTupel && t==5)continue;
+    if(!usePFCandAnalyzer && t==5) continue;
+    else if(!useTupel && t==6) continue;
     jetpp[t] = new TChain( trees[t].data() );
     if(t>0){
       jetpp[0]->AddFriend( jetpp[t] );      
     }    
   }
-  
+
   // open filelist, add files, including startfile+endfile, to chains
   std::cout<<"opening filelist: "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
@@ -141,7 +151,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     std::cout<<", to each TChain in array"<<std::endl;
     for(int t = 0;t<N_dataTrees;++t) {
-      if(!useTupel && t==5)continue;
+      if(!usePFCandAnalyzer && t==5) continue;
+      if(!useTupel && t==6)continue;
       filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
       if(debugMode)
 	jetpp[t]->TChain::Lookup(true);
@@ -150,6 +161,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   }
   assert(filesAdded);//avoid segfault later
   
+
 
   // Declare the output file, declare hists after for easy write
   std::cout<<"opening output file "<<outfile<<std::endl;
@@ -173,6 +185,7 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   TH1D *h_NEvents_read     = new TH1D("NEvents_read"     , "NEvents read",    2,0.,2.); // # events looped over
   TH1D *h_NEvents_skimCut  = new TH1D("NEvents_skimCut"  , "NEvents read post skimCut",  2,0.,2.); // # events passing skim cut
   TH1D *h_NEvents_vzCut    = new TH1D("NEvents_vzCut"    , "NEvents read post vzCut AND skimCut", 2,0.,2.); // # events passing vz cut & skim cut
+  TH1D *h_NEvents_PFMETfracCut    = new TH1D("NEvents_PFMETfracCut"    , "NEvents read post vzCut AND skimCut AND PFMETfracCut", 2,0.,2.); // # events passing vz cut & skim cut & PFMETfracCut
   
   TH1D *h_NEvents_trigd_incl_L1J28 = new TH1D("NEvents_trigs_incl_L1J28", "NEvents post quality, firing L1J28 bit",       2,0.,2.);//fills only if L1 bit fires        
   TH1D *h_NEvents_trigd_incl_HLT40 = new TH1D("NEvents_trigs_incl_HLT40", "NEvents post quality, firing HLT40 bit",       2,0.,2.);//fills only if HLT bit fires       
@@ -625,6 +638,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   TH1D   *hpp_IncHLT60trgPt_leadobj =NULL, *hpp_IncHLT60trgEta =NULL ;
   TH1D   *hpp_IncHLT80trgPt_leadobj =NULL, *hpp_IncHLT80trgEta =NULL ;
 
+  TH2D  *hpp_IncHLT40trgEtaPhi=NULL,*hpp_IncHLT40trgEtaPhi_allobj=NULL,*hpp_IncHLT40trgEtaPhi_leadobj=NULL;
+  TH2D  *hpp_IncHLT60trgEtaPhi=NULL,*hpp_IncHLT60trgEtaPhi_allobj=NULL,*hpp_IncHLT60trgEtaPhi_leadobj=NULL;
+  TH2D  *hpp_IncHLT80trgEtaPhi=NULL,*hpp_IncHLT80trgEtaPhi_allobj=NULL,*hpp_IncHLT80trgEtaPhi_leadobj=NULL;
+
   if(fillDataJetTrigQAHists){
 
     //FULL EXCLUSION CRITERIA APPLIED
@@ -653,11 +670,24 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     hpp_IncHLT40trgPt_leadobj   =new TH1D(  "IncHLT40trgPt_leadobj",  "lead trig jet object for HLT40;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
     hpp_IncHLT60trgPt_leadobj   =new TH1D(  "IncHLT60trgPt_leadobj",  "lead trig jet object for HLT60;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
     hpp_IncHLT80trgPt_leadobj   =new TH1D(  "IncHLT80trgPt_leadobj",  "lead trig jet object for HLT80;Lead Trig Jet Obj p_{T};N_{jets}" , 2000,0,2000);
-
+    
     hpp_IncHLT40trgEta   = new TH1D( "IncHLT40_trgEta"  , "inc trgEta for HLT40   ", 102, -5.1, 5.1 ); 
     hpp_IncHLT60trgEta   = new TH1D( "IncHLT60_trgEta"  , "inc trgEta for HLT60   ", 102, -5.1, 5.1 ); 
     hpp_IncHLT80trgEta   = new TH1D( "IncHLT80_trgEta"  , "inc trgEta for HLT80   ", 102, -5.1, 5.1 ); 
+    
+    hpp_IncHLT40trgEtaPhi  = new TH2D( "IncHLT40trgEtaPhi"  , "HLTak4PFJet40;Trg. Obj. #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    hpp_IncHLT60trgEtaPhi  = new TH2D( "IncHLT60trgEtaPhi"  , "HLTak4PFJet60;Trg. Obj. #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    hpp_IncHLT80trgEtaPhi  = new TH2D( "IncHLT80trgEtaPhi"  , "HLTak4PFJet80;Trg. Obj. #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
 
+    hpp_IncHLT40trgEtaPhi_leadobj  = new TH2D( "IncHLT40trgEtaPhi_leadobj"  , "HLTak4PFJet40;Lead Trg. Obj. #eta;Lead Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    hpp_IncHLT60trgEtaPhi_leadobj  = new TH2D( "IncHLT60trgEtaPhi_leadobj"  , "HLTak4PFJet60;Lead Trg. Obj. #eta;Lead Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    hpp_IncHLT80trgEtaPhi_leadobj  = new TH2D( "IncHLT80trgEtaPhi_leadobj"  , "HLTak4PFJet80;Lead Trg. Obj. #eta;Lead Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+
+    hpp_IncHLT40trgEtaPhi_allobj  = new TH2D( "IncHLT40trgEtaPhi_allobj"  , "HLTak4PFJet40 All Objects;Trg. Obj. #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    hpp_IncHLT60trgEtaPhi_allobj  = new TH2D( "IncHLT60trgEtaPhi_allobj"  , "HLTak4PFJet60 All Objects;Trg. Obj. #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    hpp_IncHLT80trgEtaPhi_allobj  = new TH2D( "IncHLT80trgEtaPhi_allobj"  , "HLTak4PFJet80 All Objects;Trg. Obj. #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    
+    
   }
 
 
@@ -859,6 +889,9 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   
   if(fillDataJetCovMatrix){
     for(int i=0;i<nbins_abseta;i++){
+      int     nbins_pt_covmat=-1;
+      double* boundaries_pt_covmat=setBinning_etabin(i,  &nbins_pt_covmat);      
+
       std::string covmat_eta_title="Data Jet Covariance Matrix, "+absetabins_str[i]+" < #||{#eta} < "+absetabins_str[i+1];    
       if(debugMode)std::cout<<"covmat_eta_title =" << covmat_eta_title<< std::endl;      
       std::string covmat_eta_name="hpp_covmat_";
@@ -866,8 +899,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       covmat_eta_name+="wJetID_";
       covmat_eta_name+="etabin_"+std::to_string(i);      
       if(debugMode)std::cout<<"covmat_eta_name  =" << covmat_eta_name << std::endl;      
-      hpp_covmat_eta_arr[i]=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
-      hpp_covmat_eta_arr_helpers[i]=new TH1D(("covmat_helper_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+      hpp_covmat_eta_arr[i]=new TH2D(covmat_eta_name.c_str(), covmat_eta_title.c_str(), nbins_pt_covmat, boundaries_pt_covmat, nbins_pt_covmat, boundaries_pt_covmat);     
+      hpp_covmat_eta_arr_helpers[i]=new TH1D(("covmat_helper_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt_covmat, boundaries_pt_covmat);      
 
       if(fillDataJetJECUncHists){
 	std::string covmat_eta_name_JEC_sysup="hpp_covmat_";
@@ -875,20 +908,23 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	covmat_eta_name_JEC_sysup+="wJetID_JEC_sysup_";
 	covmat_eta_name_JEC_sysup+="etabin_"+std::to_string(i);      
 	if(debugMode)std::cout<<"covmat_eta_name_JEC_sysup  =" << covmat_eta_name_JEC_sysup << std::endl;      
-	hpp_covmat_eta_arr_JEC_sysup[i]=new TH2D((covmat_eta_name_JEC_sysup).c_str(), ("JEC sysup "+covmat_eta_title).c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
-	hpp_covmat_eta_arr_helpers_JEC_sysup[i]=new TH1D(("covmat_helper_JEC_sysup_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+	hpp_covmat_eta_arr_JEC_sysup[i]=new TH2D((covmat_eta_name_JEC_sysup).c_str(), ("JEC sysup "+covmat_eta_title).c_str(), nbins_pt_covmat, boundaries_pt_covmat, nbins_pt_covmat, boundaries_pt_covmat);     
+	hpp_covmat_eta_arr_helpers_JEC_sysup[i]=new TH1D(("covmat_helper_JEC_sysup_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt_covmat, boundaries_pt_covmat);      
 
 	std::string covmat_eta_name_JEC_sysdown="hpp_covmat_";
 	//if(fillDataJetIDHists)covmat_eta_name+="wJetID_";
 	covmat_eta_name_JEC_sysdown+="wJetID_JEC_sysdown_";
 	covmat_eta_name_JEC_sysdown+="etabin_"+std::to_string(i);      
 	if(debugMode)std::cout<<"covmat_eta_name_JEC_sysdown  =" << covmat_eta_name_JEC_sysdown << std::endl;      
-	hpp_covmat_eta_arr_JEC_sysdown[i]=new TH2D((covmat_eta_name_JEC_sysdown).c_str(), ("JEC sysdown "+covmat_eta_title).c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
-	hpp_covmat_eta_arr_helpers_JEC_sysdown[i]=new TH1D(("covmat_helper_JEC_sysdown_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+	hpp_covmat_eta_arr_JEC_sysdown[i]=new TH2D((covmat_eta_name_JEC_sysdown).c_str(), ("JEC sysdown "+covmat_eta_title).c_str(), nbins_pt_covmat, boundaries_pt_covmat, nbins_pt_covmat, boundaries_pt_covmat);     
+	hpp_covmat_eta_arr_helpers_JEC_sysdown[i]=new TH1D(("covmat_helper_JEC_sysdown_etabin"+std::to_string(i)).c_str(), "helper only", nbins_pt_covmat, boundaries_pt_covmat);      
       }
     }//nbinsabseta
     
     for(int i=0;i<nbins_absy;i++){
+      int     nbins_pt_covmat=-1;
+      double* boundaries_pt_covmat=setBinning_etabin(i,  &nbins_pt_covmat);
+
       std::string covmat_y_title="Data Jet Covariance Matrix, "+absybins_str[i]+" < #||{y} < "+absybins_str[i+1];    
       if(debugMode)std::cout<<"covmat_y_title =" << covmat_y_title<< std::endl;      
       std::string covmat_y_name="hpp_covmat_";
@@ -896,8 +932,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       covmat_y_name+="wJetID_";
       covmat_y_name+="ybin_"+std::to_string(i);      
       if(debugMode)std::cout<<"covmat_y_name  =" << covmat_y_name << std::endl;      
-      hpp_covmat_y_arr[i]=new TH2D(covmat_y_name.c_str(), covmat_y_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
-      hpp_covmat_y_arr_helpers[i]=new TH1D(("covmat_helper_ybin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+      hpp_covmat_y_arr[i]=new TH2D(covmat_y_name.c_str(), covmat_y_title.c_str(), nbins_pt_covmat, boundaries_pt_covmat, nbins_pt_covmat, boundaries_pt_covmat);     
+      hpp_covmat_y_arr_helpers[i]=new TH1D(("covmat_helper_ybin"+std::to_string(i)).c_str(), "helper only", nbins_pt_covmat, boundaries_pt_covmat);      
 
       if(fillDataJetJECUncHists){
 	std::string covmat_y_name_JEC_sysup="hpp_covmat_";
@@ -905,21 +941,74 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	covmat_y_name_JEC_sysup+="wJetID_JEC_sysup_";
 	covmat_y_name_JEC_sysup+="ybin_"+std::to_string(i);      
 	if(debugMode)std::cout<<"covmat_y_name_JEC_sysup  =" << covmat_y_name_JEC_sysup << std::endl;      
-	hpp_covmat_y_arr_JEC_sysup[i]=new TH2D((covmat_y_name_JEC_sysup).c_str(), ("JEC sysup "+covmat_y_title).c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
-	hpp_covmat_y_arr_helpers_JEC_sysup[i]=new TH1D(("covmat_helper_JEC_sysup_ybin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+	hpp_covmat_y_arr_JEC_sysup[i]=new TH2D((covmat_y_name_JEC_sysup).c_str(), ("JEC sysup "+covmat_y_title).c_str(), nbins_pt_covmat, boundaries_pt_covmat, nbins_pt_covmat, boundaries_pt_covmat);     
+	hpp_covmat_y_arr_helpers_JEC_sysup[i]=new TH1D(("covmat_helper_JEC_sysup_ybin"+std::to_string(i)).c_str(), "helper only", nbins_pt_covmat, boundaries_pt_covmat);      
 
 	std::string covmat_y_name_JEC_sysdown="hpp_covmat_";
 	//if(fillDataJetIDHists)covmat_y_name+="wJetID_";
 	covmat_y_name_JEC_sysdown+="wJetID_JEC_sysdown_";
 	covmat_y_name_JEC_sysdown+="ybin_"+std::to_string(i);      
 	if(debugMode)std::cout<<"covmat_y_name_JEC_sysdown  =" << covmat_y_name_JEC_sysdown << std::endl;      
-	hpp_covmat_y_arr_JEC_sysdown[i]=new TH2D((covmat_y_name_JEC_sysdown).c_str(), ("JEC sysdown "+covmat_y_title).c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
-	hpp_covmat_y_arr_helpers_JEC_sysdown[i]=new TH1D(("covmat_helper_JEC_sysdown_ybin"+std::to_string(i)).c_str(), "helper only", nbins_pt, ptbins);      
+	hpp_covmat_y_arr_JEC_sysdown[i]=new TH2D((covmat_y_name_JEC_sysdown).c_str(), ("JEC sysdown "+covmat_y_title).c_str(), nbins_pt_covmat, boundaries_pt_covmat, nbins_pt_covmat, boundaries_pt_covmat);     
+	hpp_covmat_y_arr_helpers_JEC_sysdown[i]=new TH1D(("covmat_helper_JEC_sysdown_ybin"+std::to_string(i)).c_str(), "helper only", nbins_pt_covmat, boundaries_pt_covmat);      
       }//JEC Unc specific	
     }//nbins absy
-
-
+    
+    
   }//fill datajetcovmatrix
+  
+  
+  
+  //BEGIN particle-flow tree relevant histograms only here
+  TH1D *h_nPFpart   = NULL;
+  TH1D *h_pfpt      = NULL, *h_pfeta     = NULL,*h_pfphi     = NULL, *h_pfE=NULL;
+  TH1D *h_pfEt =NULL, *h_pftheta=NULL;
+  
+  TH1D *h_sumpfpt_x = NULL, *h_sumpfpt_y = NULL, *h_sumpfEt = NULL;
+  TH1D *h_sumpfpt   = NULL, *h_sqrtsumpfEt   = NULL, *h_PFMETfrac=NULL, *h_PFMETsig=NULL;  
+  if(usePFCandAnalyzer){
+    //per-event values i read directly from the trees
+    h_nPFpart   =new TH1D ("h_nPFpart",";N_{evt}^{PF cand};A.U.",2000,0,2000);						   
+
+    //per-particle values i read directly from the trees
+    h_pfpt      =new TH1D ("h_pfpt",";p_{T}^{PF cand} [GeV];A.U.",2000.,0.,2000.);					   
+    h_pfeta     =new TH1D ("h_pfeta",";#eta^{PF cand};A.U.", 120 ,-6.0, 6.0);						   
+    h_pfphi     =new TH1D ("h_pfphi",";#phi^{PF cand};A.U.", ((int) (2.*TMath::Pi()*10.)) ,-1.*TMath::Pi(),TMath::Pi());
+    h_pfE       =new TH1D ("h_pfE",";E^{PF cand} [GeV];A.U.",2000.,0.,2000.);					   	   
+    
+    //per-particle values i compute
+    h_pfEt       =new TH1D ("h_pfEt",";E_{T}^{PF cand} [GeV];A.U.",2000.,0.,2000.);					   	   
+    h_pftheta    =new TH1D ("h_pftheta",";#theta^{PF Cand};A.U.",((int) (2.*TMath::Pi()*10.)) ,-1.*TMath::Pi(),TMath::Pi());
+
+    //per-event values i compute
+    h_sumpfpt_x =new TH1D ("h_sumpfpt_x",";#Sigma p_{x}^{PF cand};A.U.",2000.,-1000.,1000.);				   
+    h_sumpfpt_y =new TH1D ("h_sumpfpt_y",";#Sigma p_{y}^{PF cand};A.U.",2000.,-1000.,1000.);				   
+    h_sumpfEt   =new TH1D ("h_sumpfEt",";#Sigma E_{T}^{PF cand};A.U.",2000.,0.,2000.);				   
+
+    h_sumpfpt   =new TH1D ("h_sumpfpt",";#left| #Sigma #vec{p_{T}}^{PF cand} #right| = PF #slash{E}_{T};A.U.",2000.,0.,2000.);           
+
+    h_sqrtsumpfEt   =new TH1D ("h_sqrtsumpfEt",";#sqrt{#Sigma E_{T}^{PF cand}};A.U.",2000.,0.,2000.);				   
+    
+    h_PFMETfrac= new TH1D("h_PFMETfrac", ";PF #slash{E}_{T} / #Sigma E_{T}^{PF cand};A.U.", 200, 0., 2.);
+    
+    h_PFMETsig=new TH1D("h_PFMETsig", ";PF #slash{E}_{T} / #sqrt{#Sigma E_{T}^{PF cand}};A.U.", 1000, 0., 10.);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //END particle-flow tree relevant histograms only here
   
   // EVENT LOOP + PREP
   // declare variables/arrays + set branch address for each input tree
@@ -1006,12 +1095,51 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   jetpp[1]->SetBranchAddress("lumi",&lumi_I);
 
 
+
+
   // skimanalysis
   int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I,puvertexFilter_I;
-  jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
-  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
-  jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
-  jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
+  int pHBHENoiseFilterRun2Loose_I,    pHBHENoiseFilterRun1_I,    pHBHENoiseFilterRun2Tight_I;
+  int pHBHEIsoNoiseFilter_I;
+  //jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
+  //jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
+  //jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
+  //jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
+
+
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResult"         ,&pHBHENoiseFilter_I);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun1"     ,&pHBHENoiseFilterRun1_I);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilterRun2Loose_I);//what i have been using
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Tight",&pHBHENoiseFilterRun2Tight_I);
+  
+  jetpp[2]->SetBranchAddress("HBHEIsoNoiseFilterResult",&pHBHEIsoNoiseFilter_I);//only option
+  jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter"  ,&pprimaryvertexFilter_I);//only option, what i have been using
+  jetpp[2]->SetBranchAddress("pBeamScrapingFilter"     ,&pBeamScrapingFilter_I);//only option, what i have been using
+  
+  //jetpp[2]->SetBranchAddress("pVertexFilterCutG",&puvertexFilter_I);
+  //jetpp[2]->SetBranchAddress("pVertexFilterCutGloose",&puvertexFilter_I);
+  jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);//not actually using, but what i have been setting the branch to
+  //jetpp[2]->SetBranchAddress("pVertexFilterCutGplus",&puvertexFilter_I);
+  //jetpp[2]->SetBranchAddress("pVertexFilterCutE",&puvertexFilter_I);
+  //jetpp[2]->SetBranchAddress("pVertexFilterCutEandG",&puvertexFilter_I);
+
+//  // skimanalysis
+//  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I,puvertexFilter_I;//, pHBHEIsoNoiseFilter_I;
+//  //jetpp[2]->SetBranchAddress("HBHENoiseFilterResult",&pHBHENoiseFilter_I);
+//  //jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun1",&pHBHENoiseFilter_I);
+//  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);//what i have been using
+//  //jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Tight",&pHBHENoiseFilter_I);
+//  
+//  //jetpp[2]->SetBranchAddress("HBHEIsoNoiseFilterResult",&pHBHEIsoNoiseFilter_I);//only option
+//  jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);//only option, what i have been using
+//  jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);//only option, what i have been using
+//  
+//  //jetpp[2]->SetBranchAddress("pVertexFilterCutG",&puvertexFilter_I);
+//  //jetpp[2]->SetBranchAddress("pVertexFilterCutGloose",&puvertexFilter_I);
+//  jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);//not actually using, but what i have been setting the branch to
+//  //jetpp[2]->SetBranchAddress("pVertexFilterCutGplus",&puvertexFilter_I);
+//  //jetpp[2]->SetBranchAddress("pVertexFilterCutE",&puvertexFilter_I);
+//  //jetpp[2]->SetBranchAddress("pVertexFilterCutEandG",&puvertexFilter_I);
   
 
   // ppTrack/trackTree
@@ -1181,52 +1309,81 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   jetpp[4]->SetBranchAddress("HLT_AK4PFJet110_Eta5p1_v1", &PFJet110_I);
   jetpp[4]->SetBranchAddress("HLT_AK4PFJet120_Eta5p1_v1", &PFJet120_I);
   
+  //pfcandAnalyzer/pfTree
+  Int_t nPFpart_I;  
+  std::vector<Float_t> *pfpt, *pfphi, *pfeta, *pfE;
+  Float_t pfptArr[2000], pfphiArr[2000], pfetaArr[2000], pfEArr[2000];
+  
+  if(usePFCandAnalyzer){
+    if(debugMode)std::cout<<"using PFCandAnalyzer. Setting branch addresses!"<<std::endl;
+    jetpp[5]->SetBranchAddress( "nPFpart", &nPFpart_I);
+    if(filelistIsJet80){
+      if(debugMode)std::cout<<"filelistIsJet80, pointing branches to std::vector<Float_t>!"<<std::endl;
+      jetpp[5]->SetBranchAddress( "pfPt"     , &pfpt );
+      jetpp[5]->SetBranchAddress( "pfEta"    , &pfeta);
+      jetpp[5]->SetBranchAddress( "pfPhi"    , &pfphi);    
+      jetpp[5]->SetBranchAddress( "pfEnergy" , &pfE);    
+    }
+    else if(filelistIsLowerJets){
+      if(debugMode)std::cout<<"filelistIsLowerJets, pointing branches to Float_t* (a.k.a. Float_t array)"<<std::endl;
+      jetpp[5]->SetBranchAddress( "pfPt"   , &pfptArr );
+      jetpp[5]->SetBranchAddress( "pfEta"  , &pfetaArr);
+      jetpp[5]->SetBranchAddress( "pfPhi"  , &pfphiArr);    
+      jetpp[5]->SetBranchAddress( "pfEnergy"  , &pfEArr);    
+    }
+    else assert(false);
+  }
 
 
   
   
-
   //tupel/EventTree
   std::vector<float> *jetPt, *jetEta, *jetPhi, *jetE, *jetID, *jetRawPt, *jetRawE;
   std::vector<float> *jetHfHadE, *jetHfEmE, *jetChHadFrac, *jetNeutralHadAndHfFrac, *jetChEmFrac, *jetNeutralEmFrac, *jetChMult, *jetConstCnt;  
   if(useTupel){
     if(deepDebug)std::cout<<"setting branch addresses for tupel/EventTree"<<std::endl;
-
-    jetpp[5]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
-    jetpp[5]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
-    jetpp[5]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
-    jetpp[5]->SetBranchAddress( "JetAk04E",                   &jetE                   );
-    jetpp[5]->SetBranchAddress( "JetAk04Id",                  &jetID                  );
-    jetpp[5]->SetBranchAddress( "JetAk04RawPt",               &jetRawPt               );
-    jetpp[5]->SetBranchAddress( "JetAk04RawE",                &jetRawE                );
-    jetpp[5]->SetBranchAddress( "JetAk04HfHadE",              &jetHfHadE              );
-    jetpp[5]->SetBranchAddress( "JetAk04HfEmE",               &jetHfEmE               );
     
-    jetpp[5]->SetBranchAddress( "JetAk04ChHadFrac",           &jetChHadFrac           );
-    jetpp[5]->SetBranchAddress( "JetAk04NeutralHadAndHfFrac", &jetNeutralHadAndHfFrac );
-    jetpp[5]->SetBranchAddress( "JetAk04ChEmFrac",            &jetChEmFrac            );
-    jetpp[5]->SetBranchAddress( "JetAk04NeutralEmFrac",       &jetNeutralEmFrac       );
-    jetpp[5]->SetBranchAddress( "JetAk04ChMult",              &jetChMult              );
-    jetpp[5]->SetBranchAddress( "JetAk04ConstCnt",            &jetConstCnt            );
+    jetpp[6]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
+    jetpp[6]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
+    jetpp[6]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
+    jetpp[6]->SetBranchAddress( "JetAk04E",                   &jetE                   );
+    jetpp[6]->SetBranchAddress( "JetAk04Id",                  &jetID                  );
+    jetpp[6]->SetBranchAddress( "JetAk04RawPt",               &jetRawPt               );
+    jetpp[6]->SetBranchAddress( "JetAk04RawE",                &jetRawE                );
+    jetpp[6]->SetBranchAddress( "JetAk04HfHadE",              &jetHfHadE              );
+    jetpp[6]->SetBranchAddress( "JetAk04HfEmE",               &jetHfEmE               );
+    
+    jetpp[6]->SetBranchAddress( "JetAk04ChHadFrac",           &jetChHadFrac           );
+    jetpp[6]->SetBranchAddress( "JetAk04NeutralHadAndHfFrac", &jetNeutralHadAndHfFrac );
+    jetpp[6]->SetBranchAddress( "JetAk04ChEmFrac",            &jetChEmFrac            );
+    jetpp[6]->SetBranchAddress( "JetAk04NeutralEmFrac",       &jetNeutralEmFrac       );
+    jetpp[6]->SetBranchAddress( "JetAk04ChMult",              &jetChMult              );
+    jetpp[6]->SetBranchAddress( "JetAk04ConstCnt",            &jetConstCnt            );
   }
   
-
+  
   
 
-
+  
   
   //ONE HLT path ONE tree ONE trig obj pt branch
   std::vector<double>  *trgObjpt_40, *trgObjpt_60, *trgObjpt_80, *trgObjpt_100;
-  jetpp[6]->SetBranchAddress("pt",&trgObjpt_40);
-  jetpp[7]->SetBranchAddress("pt",&trgObjpt_60);  
-  jetpp[8]->SetBranchAddress("pt",&trgObjpt_80);  
-  jetpp[9]->SetBranchAddress("pt",&trgObjpt_100);
+  jetpp[7] ->SetBranchAddress("pt",&trgObjpt_40);
+  jetpp[8] ->SetBranchAddress("pt",&trgObjpt_60);  
+  jetpp[9] ->SetBranchAddress("pt",&trgObjpt_80);  
+  jetpp[10]->SetBranchAddress("pt",&trgObjpt_100);
   
   std::vector<double>  *trgObjeta_40, *trgObjeta_60, *trgObjeta_80, *trgObjeta_100;
-  jetpp[6]->SetBranchAddress("eta",&trgObjeta_40);
-  jetpp[7]->SetBranchAddress("eta",&trgObjeta_60);  
-  jetpp[8]->SetBranchAddress("eta",&trgObjeta_80);  
-  jetpp[9]->SetBranchAddress("eta",&trgObjeta_100);
+  jetpp[7] ->SetBranchAddress("eta",&trgObjeta_40);
+  jetpp[8] ->SetBranchAddress("eta",&trgObjeta_60);  
+  jetpp[9] ->SetBranchAddress("eta",&trgObjeta_80);  
+  jetpp[10]->SetBranchAddress("eta",&trgObjeta_100);
+
+  std::vector<double>  *trgObjphi_40, *trgObjphi_60, *trgObjphi_80;//, *trgObjphi_100;
+  jetpp[7] ->SetBranchAddress("phi",&trgObjphi_40);
+  jetpp[8] ->SetBranchAddress("phi",&trgObjphi_60);  
+  jetpp[9] ->SetBranchAddress("phi",&trgObjphi_80);  
+  //  jetpp[10]->SetBranchAddress("phi",&trgObjphi_100);
   
 
   
@@ -1332,6 +1489,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     //grab an entry    
     jetpp[0]->GetEntry(nEvt);
+    //assert(false);
+
     
     if(doRunExclStudy){
       bool inGoodRunList=false;
@@ -1376,18 +1535,95 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     }
 
     h_NEvents_read->Fill(0.);    //h_NEvents_read->Fill(1.,weight_eS);            
-
+    
     
     // skim/HiEvtAnalysis criteria
-    if( pHBHENoiseFilter_I    ==0    || 
+    if( pHBHENoiseFilterRun2Loose_I    ==0    || 
+	pHBHEIsoNoiseFilter_I    ==0    || 
 	pBeamScrapingFilter_I ==0 || 
 	pprimaryvertexFilter_I==0  )  continue;  
     h_NEvents_skimCut->Fill(0.); 
     
     if( fabs(vz_F)>24. )     continue;
     h_NEvents_vzCut->Fill(0.); 
+
+
+
+
+
+
+
+
+    if(usePFCandAnalyzer){
+      //PFCANDLOOP
+      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+      
+      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+      //h_nPFpart->Fill(nPFpart_I,weight_eS);
+      
+      for(Int_t part=0;part<nPFpart_I;part++){
+	
+	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+	if(filelistIsJet80){	  
+	  pfpt_part =pfpt ->at(part);	  
+	  pfeta_part=pfeta->at(part);	  
+	  pfphi_part=pfphi->at(part);	  
+	  pfE_part=pfE->at(part);	}
+	else if (filelistIsLowerJets){
+	  pfpt_part  = pfptArr[part];	  
+	  pfeta_part =pfetaArr[part];	  
+	  pfphi_part =pfphiArr[part];	  	
+	  pfE_part  =pfEArr[part];	}
+	else assert(false);
+	
+	//h_pfpt ->Fill(pfpt_part ,weight_eS);
+	//h_pfeta->Fill(pfeta_part,weight_eS);
+	//h_pfphi->Fill(pfphi_part,weight_eS);
+	//h_pfE->Fill(pfE_part,weight_eS);
+	
+	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+	//h_pftheta->Fill(pftheta_part,weight_eS);
+	
+	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+	//h_pfEt->Fill(pfEt_part,weight_eS);
+	
+	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+	sumpfEt+=pfEt_part;
+      }
+      
+      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+      //Float_t sqrtsumpfEt=sqrt(sumpfEt);
+      Float_t PFMETfrac=sumpfpt/sumpfEt;
+      //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+      
+      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      h_NEvents_PFMETfracCut->Fill(0.);
+      
+      //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+      //h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+      //h_sumpfEt->Fill(sumpfEt,weight_eS);
+
+      //h_sumpfpt->Fill(sumpfpt,weight_eS);
+      //h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      //h_PFMETsig->Fill(PFMETsig,weight_eS);
+      //assert(false);
+    }
     
 
+
+
+
+
+
+
+    
+    
     bool MBtrgDec= ( (bool) ( MB_HF1ORp5_I * mb_l1s_I ) ) && useMBevts;
     int  MBtrgPscl= MB_HF1ORp5_p_I * mb_l1s_ps_I;    
     
@@ -1443,51 +1679,95 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 
     double HLT40maxTrgPt=-1.,  HLT60maxTrgPt=-1.,  HLT80maxTrgPt=-1.,  HLT100maxTrgPt=-1.; 
     double HLT40maxTrgEta=-1.,  HLT60maxTrgEta=-1.,  HLT80maxTrgEta=-1., HLT100maxTrgEta=-1.; 
+    double HLT40maxTrgPhi=-1.,  HLT60maxTrgPhi=-1.,  HLT80maxTrgPhi=-1.;//, HLT100maxTrgPhi=-1.; 
     unsigned int trgObj40_size=trgObjpt_40->size(), trgObj60_size=trgObjpt_60->size();
     unsigned int trgObj80_size=trgObjpt_80->size(), trgObj100_size=trgObjpt_100->size();   
+
+
     if(trgDec[3]&&useHLT100){
       for(unsigned int itt=0; itt<trgObj100_size; ++itt){
 	double trgpt=trgObjpt_100->at(itt);
 	double trgeta=trgObjeta_100->at(itt);
+	//double trgphi=trgObjphi_100->at(itt);
 	if(trgpt > HLT100maxTrgPt){
 	  HLT100maxTrgPt=trgpt;
-	  HLT100maxTrgEta=trgeta;	}
+	  HLT100maxTrgEta=trgeta;	
+	  //HLT100maxTrgPhi=trgphi;	
+	}
       }
     }
     
 
+    if(!trgDec[2])
+      for(unsigned int itt=0; itt<trgObj80_size; ++itt){	
+	//double trgpt=trgObjpt_80->at(itt);
+	double trgeta=trgObjeta_80->at(itt);
+	double trgphi=trgObjphi_80->at(itt);	
+	hpp_IncHLT80trgEtaPhi_allobj->Fill(trgeta,trgphi);
+      }
+    
+    
     if(trgDec[2]){
       for(unsigned int itt=0; itt<trgObj80_size; ++itt){	
 	double trgpt=trgObjpt_80->at(itt);
 	double trgeta=trgObjeta_80->at(itt);
+	double trgphi=trgObjphi_80->at(itt);	
+	hpp_IncHLT80trgEtaPhi->Fill(trgeta,trgphi);
 	if(trgpt > HLT80maxTrgPt){
 	  HLT80maxTrgPt=trgpt;
-	  HLT80maxTrgEta=trgeta;	}
+	  HLT80maxTrgEta=trgeta;	
+	  HLT80maxTrgPhi=trgphi;	
+	}
       }
     }
+    
+    
+    if(!trgDec[1])
+      for(unsigned int itt=0; itt<trgObj60_size; ++itt){	
+	//double trgpt=trgObjpt_60->at(itt);
+	double trgeta=trgObjeta_60->at(itt);
+	double trgphi=trgObjphi_60->at(itt);	
+	hpp_IncHLT60trgEtaPhi_allobj->Fill(trgeta,trgphi);
+      }
     
     if(trgDec[1]) {
       for(unsigned int itt=0; itt<trgObj60_size; ++itt){
 	double trgpt=trgObjpt_60->at(itt);
 	double trgeta=trgObjeta_60->at(itt);
+	double trgphi=trgObjphi_60->at(itt);	
+	hpp_IncHLT60trgEtaPhi->Fill(trgeta,trgphi);
 	if(trgpt > HLT60maxTrgPt){	  
 	  HLT60maxTrgPt=trgpt;
-	  HLT60maxTrgEta=trgeta;	}    
+	  HLT60maxTrgEta=trgeta;
+	  HLT60maxTrgPhi=trgphi;	
+	}    
       }
     }
+    
+    
+    
+    if(!trgDec[0])
+      for(unsigned int itt=0; itt<trgObj40_size; ++itt){	
+	//double trgpt=trgObjpt_40->at(itt);
+	double trgeta=trgObjeta_40->at(itt);
+	double trgphi=trgObjphi_40->at(itt);	
+	hpp_IncHLT40trgEtaPhi_allobj->Fill(trgeta,trgphi);
+      }
     
     if(trgDec[0])  {
       for(unsigned int itt=0; itt<trgObj40_size; ++itt)	{
 	double trgpt=trgObjpt_40->at(itt);
 	double trgeta=trgObjeta_40->at(itt);
+	double trgphi=trgObjphi_40->at(itt);	
+	hpp_IncHLT40trgEtaPhi->Fill(trgeta,trgphi);
 	if(trgpt > HLT40maxTrgPt){
 	  HLT40maxTrgPt=trgpt;
-	  HLT40maxTrgEta=trgeta;	}
+	  HLT40maxTrgEta=trgeta;	
+	  HLT40maxTrgPhi=trgphi;	
+	}
       }
     }
-
-
-
+    
     
     double trgPt=-1., trgEta=-999.;//for lead obj from final trigger decision path
     double weight_eS=0.;
@@ -1614,6 +1894,12 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if( trgDec[0] )  hpp_IncHLT40trgPt_leadobj-> Fill(HLT40maxTrgPt , (double)trgPscl[0]);      	
       if( trgDec[1] )  hpp_IncHLT60trgPt_leadobj-> Fill(HLT60maxTrgPt , (double)trgPscl[1]);
       if( trgDec[2] )  hpp_IncHLT80trgPt_leadobj-> Fill(HLT80maxTrgPt , (double)trgPscl[2]);
+      
+      if(HLT40maxTrgPt>0.) hpp_IncHLT40trgEtaPhi_leadobj->Fill(HLT40maxTrgEta,HLT40maxTrgPhi);
+      if(HLT60maxTrgPt>0.) hpp_IncHLT60trgEtaPhi_leadobj->Fill(HLT60maxTrgEta,HLT60maxTrgPhi);
+      if(HLT80maxTrgPt>0.) hpp_IncHLT80trgEtaPhi_leadobj->Fill(HLT80maxTrgEta,HLT80maxTrgPhi);
+    
+
 
     }
     
@@ -1669,6 +1955,77 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
     
     //if the histograms are just be filled w/ zero weight entries... fugghetabouit! skip it! whatsamattayou??!
     if(!firedTrigger)continue;
+
+    
+
+
+
+
+
+
+
+    if(usePFCandAnalyzer){
+      //PFCANDLOOP
+      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+      
+      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+      h_nPFpart->Fill(nPFpart_I,weight_eS);
+      
+      for(Int_t part=0;part<nPFpart_I;part++){
+	
+	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+	if(filelistIsJet80){	  
+	  pfpt_part =pfpt ->at(part);	  
+	  pfeta_part=pfeta->at(part);	  
+	  pfphi_part=pfphi->at(part);	  
+	  pfE_part=pfE->at(part);	}
+	else if (filelistIsLowerJets){
+	  pfpt_part  = pfptArr[part];	  
+	  pfeta_part =pfetaArr[part];	  
+	  pfphi_part =pfphiArr[part];	  	
+	  pfE_part  =pfEArr[part];	}
+	else assert(false);
+	
+	h_pfpt ->Fill(pfpt_part ,weight_eS);
+	h_pfeta->Fill(pfeta_part,weight_eS);
+	h_pfphi->Fill(pfphi_part,weight_eS);
+	h_pfE->Fill(pfE_part,weight_eS);
+	
+	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+	h_pftheta->Fill(pftheta_part,weight_eS);
+	
+	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+	h_pfEt->Fill(pfEt_part,weight_eS);
+	
+	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+	sumpfEt+=pfEt_part;
+      }
+      
+      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+      Float_t sqrtsumpfEt=sqrt(sumpfEt);
+      Float_t PFMETfrac=sumpfpt/sumpfEt;
+      Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+      
+      //if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      //h_NEvents_PFMETfracCut->Fill(0.);
+      
+      h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+      h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+      h_sumpfEt->Fill(sumpfEt,weight_eS);
+
+      h_sumpfpt->Fill(sumpfpt,weight_eS);
+      h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+      h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      h_PFMETsig->Fill(PFMETsig,weight_eS);
+      //assert(false);
+    }
+
+
     
     // JET LOOP 
     // for Aj/xj computation
@@ -1800,10 +2157,22 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	bool passesJetID=false;
 	//float jetIDpt=jtpt;//ala HIN jetID, jtpt is corrected w/ L2/L3 residuals
 	
-	if (!(absreceta > 2.4)) 
+	if (!(absreceta > 2.4))  //this is the usual jetID, loose based on 2015 13 TeV criteria 
 	  passesJetID=(bool)jetID_00eta24( jtpt, 
 					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
 					   numConst,  chMult,useTightJetID);
+//	if (!(absreceta > 2.4))  //this is the usual jetID, tight based on 2015 13 TeV criteia
+//	  passesJetID=(bool)jetID_00eta24( jtpt, 
+//					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+//					   numConst,  chMult, true);
+//	if (!(absreceta > 2.4))  //this is the usual loose pseudo-2015-13 TeV jetID, w/ eMax/jtpt<0.89. It works well
+//	  passesJetID=(bool)jetID_00eta24_TEST( jtpt, 
+//						neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+//						numConst,  chMult, eMax_F[jet], useTightJetID);
+//	if (!(absreceta > 2.4))  //this is the usual loose pseudo-2015-13 TeV jetID, w/ eSum/jtpt<0.89. It's largely the same as using the eMax criteria
+//	  passesJetID=(bool)jetID_00eta24_TEST( jtpt, 
+//						neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+//						numConst,  chMult, eSum_F[jet], useTightJetID);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  passesJetID=(bool) jetID_24eta27( jtpt,
 					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
@@ -1815,6 +2184,10 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	else  
 	  passesJetID=(bool)jetID_32eta47( jtpt, 
 					   phSum_F[jet],useTightJetID);
+	
+	
+	//if(isinhotspot(receta,recphi))
+	//  continue;	  
 	
 	
 	// get pseudorapidity bin
@@ -2069,6 +2442,41 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
 	    
 	    int ind=0;
 	    hJetQA_jtptybins[theYBin][jtid]->Fill(jtpt,weight_eS);
+	    
+	    ////TEMP DO NOT LEAVE ME IN THERE UNCOMMENTED//
+	    //if(jtpt>500. && 
+	    //   theYBin==2 && 
+	    //   jtid== 1){
+	    //  //run/evt/lumi = 262326/51/70062486
+	    //  std::cout<<"I FOUND THE JET!!!!"<<std::endl;
+	    //  std::cout<<"run/lumi/evt = "<< run_I<<"/"<<lumi_I<<"/"<<evt_I<<std::endl;
+	    //  std::cout<<"jtpt="<<jtpt<<std::endl;
+	    //  std::cout<<"jty="<<jty<<std::endl;
+	    //  std::cout<<"recphi="<<recphi<<std::endl;
+	    //  std::cout<<"receta="<<receta<<std::endl;
+	    //  std::cout<<"is40="<<is40<<std::endl;
+	    //  std::cout<<"trgPscl[0]="<<trgPscl[0]<<std::endl;	      
+	    //  std::cout<<"# const.     = " <<numConst<<std::endl;	      
+	    //  std::cout<<"# chg const. = " <<chMult<<std::endl;
+	    //  std::cout<<"     chg had frac. ="<<chSum_F[jet]/jtpt<<std::endl;
+	    //  std::cout<<" MAX chg had frac. ="<<chMax_F[jet]/jtpt<<std::endl;
+	    //  std::cout<<"    electron frac. ="<<eSum_F[jet]/jtpt<<std::endl;
+	    //  std::cout<<"MAX electron frac. ="<<eMax_F[jet]/jtpt<<std::endl;
+	    //  std::cout<<"        muon frac. ="<<muSum_F[jet]/jtpt<<std::endl;	      
+	    //  std::cout<<"    MAX muon frac. ="<<muMax_F[jet]/jtpt<<std::endl;	      
+	    //  std::cout<<"# neu const. = " <<neuMult<<std::endl;	    	    	   	    
+	    //  std::cout<<"     neu had frac. ="<<neSum_F[jet]/jtpt<<std::endl;
+	    //  std::cout<<" MAX neu had frac. ="<<neMax_F[jet]/jtpt<<std::endl;
+	    //  std::cout<<"      photon frac. ="<<phSum_F[jet]/jtpt<<std::endl;	      
+	    //  std::cout<<"  MAX photon frac. ="<<phMax_F[jet]/jtpt<<std::endl;	      
+	    //  std::cout<<"# tracks     = " <<trkN_I[jet]<<std::endl;
+	    //  std::cout<<"       track frac. ="<<trkSum_F[jet]/jtpt<<std::endl;
+	    //  std::cout<<"   MAX track frac. ="<<trkMax_F[jet]/jtpt<<std::endl;	    	      
+	    //  assert(false);
+	    //}
+	    ////TEMP DO NOT LEAVE ME IN THERE UNCOMMENTED//
+
+
 	    hJetQA_jttheta[theYBin][jtid] ->Fill(jttheta,weight_eS);
 	    hJetQA_jtpz[theYBin][jtid]    ->Fill(jtpz,weight_eS);
 	    hJetQA_jtp[theYBin][jtid]     ->Fill(jtp,weight_eS);
@@ -2337,7 +2745,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
       for(int i=0; i<nbins_abseta; i++){
 	if(etabin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
-	  fillCovMatrix( (TH2D*)hpp_covmat_eta_arr[i], (TH1D*)hpp_covmat_eta_arr_helpers[i], nbins_pt , (double) weight_eS);
+	  //fillCovMatrix( (TH2D*)hpp_covmat_eta_arr[i], (TH1D*)hpp_covmat_eta_arr_helpers[i], nbins_pt , (double) weight_eS);
+	  fillCovMatrix( (TH2D*)hpp_covmat_eta_arr[i], (TH1D*)hpp_covmat_eta_arr_helpers[i],  (double) weight_eS);
 	  hpp_covmat_eta_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
 	}//end normal etabin hlelper	  
 	etabin_bool_helper[i]=false;	
@@ -2346,9 +2755,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(fillDataJetJECUncHists){
 	for(int i=0; i<nbins_abseta; i++){
 	  if(JEC_etabin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
-	    fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysup[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysup[i], nbins_pt , (double) weight_eS);
+	    //fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysup[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysup[i], nbins_pt , (double) weight_eS);
+	    fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysup[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysup[i], (double) weight_eS);
 	    hpp_covmat_eta_arr_helpers_JEC_sysup[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  	    
-	    fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysdown[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysdown[i], nbins_pt , (double) weight_eS);
+	    //fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysdown[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysdown[i], nbins_pt , (double) weight_eS);
+	    fillCovMatrix( (TH2D*)hpp_covmat_eta_arr_JEC_sysdown[i], (TH1D*)hpp_covmat_eta_arr_helpers_JEC_sysdown[i],  (double) weight_eS);
 	    hpp_covmat_eta_arr_helpers_JEC_sysdown[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  	    
 	  }//end JECUnc specific etabin helper
 	  JEC_etabin_bool_helper[i]=false;
@@ -2357,7 +2768,8 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       
       for(int i=0; i<nbins_absy; i++){
 	if(ybin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
-	  fillCovMatrix( (TH2D*)hpp_covmat_y_arr[i], (TH1D*)hpp_covmat_y_arr_helpers[i], nbins_pt , (double) weight_eS);
+	  //fillCovMatrix( (TH2D*)hpp_covmat_y_arr[i], (TH1D*)hpp_covmat_y_arr_helpers[i], nbins_pt , (double) weight_eS);
+	  fillCovMatrix( (TH2D*)hpp_covmat_y_arr[i], (TH1D*)hpp_covmat_y_arr_helpers[i],  (double) weight_eS);
 	  hpp_covmat_y_arr_helpers[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
 	}//end normal etabin hlelper	  
 	ybin_bool_helper[i]=false;	
@@ -2366,9 +2778,11 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       if(fillDataJetJECUncHists){
 	for(int i=0; i<nbins_absy; i++){
 	  if(JEC_ybin_bool_helper[i]){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
-	    fillCovMatrix( (TH2D*)hpp_covmat_y_arr_JEC_sysup[i], (TH1D*)hpp_covmat_y_arr_helpers_JEC_sysup[i], nbins_pt , (double) weight_eS);
+	    //fillCovMatrix( (TH2D*)hpp_covmat_y_arr_JEC_sysup[i], (TH1D*)hpp_covmat_y_arr_helpers_JEC_sysup[i], nbins_pt , (double) weight_eS);
+	    fillCovMatrix( (TH2D*)hpp_covmat_y_arr_JEC_sysup[i], (TH1D*)hpp_covmat_y_arr_helpers_JEC_sysup[i],  (double) weight_eS);
 	    hpp_covmat_y_arr_helpers_JEC_sysup[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  	    
-	    fillCovMatrix( (TH2D*)hpp_covmat_y_arr_JEC_sysdown[i], (TH1D*)hpp_covmat_y_arr_helpers_JEC_sysdown[i], nbins_pt , (double) weight_eS);
+	    //fillCovMatrix( (TH2D*)hpp_covmat_y_arr_JEC_sysdown[i], (TH1D*)hpp_covmat_y_arr_helpers_JEC_sysdown[i], nbins_pt , (double) weight_eS);
+	    fillCovMatrix( (TH2D*)hpp_covmat_y_arr_JEC_sysdown[i], (TH1D*)hpp_covmat_y_arr_helpers_JEC_sysdown[i],  (double) weight_eS);
 	    hpp_covmat_y_arr_helpers_JEC_sysdown[i]->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  	    
 	  }//end JECUnc specific etabin helper
 	  JEC_ybin_bool_helper[i]=false;
@@ -2394,8 +2808,9 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
   if(filelistIsLowerJets)std::cout<<"------------------- HighPtLowerJets --------------------" <<std::endl;
   std::cout<<"in trees of file(s) opened      = " << NEvents_allFiles<<std::endl; 
   std::cout<<"# evts read in files            = " << h_NEvents_read->GetBinContent(1)    << std::endl;  
-  std::cout<<"# events meeting skim cuts      = " << h_NEvents_skimCut->GetBinContent(1) << std::endl;
-  std::cout<<"# events meeting skim + vz cuts = " << h_NEvents_vzCut->GetBinContent(1)   << std::endl; 
+  std::cout<<"# events meeting      skim + prev. cuts = " << h_NEvents_skimCut->GetBinContent(1) << std::endl;
+  std::cout<<"# events meeting        vz + prev. cuts = " << h_NEvents_vzCut->GetBinContent(1)   << std::endl; 
+  std::cout<<"# events meeting PFMETFrac + prev. cuts = " << h_NEvents_PFMETfracCut->GetBinContent(1)   << std::endl; 
 
   std::cout<<std::endl<<"----------------- TRIGGER EVENT COUNTS -----------------"<<std::endl;  
   if(filelistIsJet80){

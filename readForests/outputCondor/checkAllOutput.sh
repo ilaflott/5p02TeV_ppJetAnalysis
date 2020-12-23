@@ -4,7 +4,7 @@ expression=${1}
 #dirarray=($(ls -d ${PWD}/*/))
 if [[ $# -eq 0 ]]
 then
-    dirarray=($(ls -d */))
+    dirarray=($(ls -d pp*/))
 elif [[ $# -eq 1 ]]
 then
     dirarray=($(ls -d ${expression}/))

@@ -135,11 +135,11 @@ then
     NLOROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${OUTFILE}\", ${etaBin})"
     root -l -b -q "${NLOROOTEXC}"
 
-    echo ""
-    echo "writing plots in $JERFILE to $OUTDIR"
-    echo ""
-    JERROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${JERFILE}\", ${etaBin})"
-    root -l -b -q "${JERROOTEXC}"
+    #echo ""
+    #echo "writing plots in $JERFILE to $OUTDIR"
+    #echo ""
+    #JERROOTEXC="quickCheck_gausSmThy_etabin.C++( \"${OUTDIR}\", \"${JERFILE}\", ${etaBin})"
+    #root -l -b -q "${JERROOTEXC}"
 
     echo ""
     echo "scp2Serin"

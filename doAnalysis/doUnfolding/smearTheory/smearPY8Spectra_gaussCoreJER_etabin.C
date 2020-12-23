@@ -3,7 +3,7 @@
 //const std::string SPLINE_STR="spline";
 //const std::string FIT_STR="fit";
 const int CANVX=1200, CANVY=1000;
-const int xsecorder=1;//0--> LO, 1--> NLO, 2--> NNLO... etc.
+const int xsecorder=1;//0--> NNLO, 1--> NLO, 2--> LO... etc.
 
 const bool printBaseDebug=true;
 const bool useHistSigmaFit=false;
@@ -22,20 +22,24 @@ const int nEvents=1e+08;  ///typical
 
 //const std::string NPCorrFits_str =HERWGEE4_NPS;    //LO, reasonable par errs
 //const std::string NPCorrFits_text=HERWGEE4_NPS_TXT;
-const std::string NPCorrFits_str =HERWGEE5_NPS;    //LO, reasonable par errs
-const std::string NPCorrFits_text=HERWGEE5_NPS_TXT;
+//const std::string NPCorrFits_str =HERWGEE5_NPS;    //LO, reasonable par errs
+//const std::string NPCorrFits_text=HERWGEE5_NPS_TXT;
 //const std::string NPCorrFits_str =_PYTHIA8_NPS;    //LO, reasonable par errs
 //const std::string NPCorrFits_text=_PYTHIA8_NPS_TXT;
 //const std::string NPCorrFits_str =_POW_PY8_NPS;    //NLO, unusable par errs
 //const std::string NPCorrFits_text=_POW_PY8_NPS_TXT;
 //const std::string NPCorrFits_str =POWPY8CT_NPS;    //NLO, bad par errs
 //const std::string NPCorrFits_text=POWPY8CT_NPS_TXT;
+std::string NPCorrFits_str ="f";    //LO, reasonable par errs
+//std::string NPCorrFits_text=_PYTHIA8_NPS_TXT;
+std::string NPCorrFits_text=_AVERAGE_NPS_TXT;
+
 
 //SYSTEMATICS
 //JER
-const bool doJERsys=true;
+const bool doJERsys=false;
 //NPCs
-const bool doNPsys=true;//involves making a new thy hist, therefore, also a sep spline fit
+const bool doNPsys=false;//involves making a new thy hist, therefore, also a sep spline fit
 //NP systs v1, using HERWIG EE4C/PYTHIA8 NPs for unfolding, shifting NP fit params up/down by 1 sigma
 const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
 const std::string NPsys1_CorrFits_str =HERWGEE4_NPS;
@@ -53,11 +57,11 @@ const std::string NPsys2_CorrFits_text=_PYTHIA8_NPS_TXT;
 //const std::string NPsys2_CorrFits_text=POWPY8CT_NPS_TXT;
 
 //PDFs
-const bool doPDFsys=true; //involves making a new thy hist, therefore, also a sep spline fit
+const bool doPDFsys=false; //involves making a new thy hist, therefore, also a sep spline fit
 //PDF systs v1; using CT14/HERA pdfs for unfolding, using the 6 pt scale uncertainty + PDF unc w/ err fact == 1
 const float PDFerrfact=1.0;
-const std::string in_NLOFile_PDFsys1=_CT14FILESTR;
-std::string PDFsys1_text=_CT14DESCTXT;
+const std::string in_NLOFile_PDFsys1=_CT14NNLOFILESTR;
+std::string PDFsys1_text=_CT14NNLODESCTXT;
 const std::string in_NLOFile_PDFsys2=NNPDFFILESTR;
 std::string PDFsys2_text=NNPDFDESCTXT;
 //const std::string in_NLOFile_PDFsys2=_HERAFILESTR;
@@ -161,40 +165,45 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   if(printBaseDebug)theory_PDFsys2->Print("base");  
 
   TH1D* theory_PDFsys1_rebin=NULL, *theory_PDFsys2_rebin=NULL; //NO NPCs  
-  if(etabin==0 || etabin==1){//get rid of last bin
-    theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->TH1::Rebin(n_thybins_incl, 
-							   ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
-    theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->TH1::Rebin(n_thybins_incl, 
-							   ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
-  else {
-    theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->Clone(  ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str());
-    theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->Clone(  ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str());  }
+  //if(etabin==0 || etabin==1){//get rid of last bin
+  // theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->TH1::Rebin(n_thybins_incl, 
+  //							 ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); 
+  // theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->TH1::Rebin(n_thybins_incl, 
+  //							 ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str() ,     thyBins_incl ); }
+  //else {
+  theory_PDFsys1_rebin=(TH1D*)theory_PDFsys1->Clone(  ( ( (std::string) theory_PDFsys1->GetName() ) +"_rebin").c_str());
+  theory_PDFsys2_rebin=(TH1D*)theory_PDFsys2->Clone(  ( ( (std::string) theory_PDFsys2->GetName() ) +"_rebin").c_str());  //}
   
   for(int i=1; i<=theory_PDFsys1_rebin->GetNbinsX(); i++) 
     std::cout<<"theory_PDFsys1_rebin->GetBinLowEdge("<<i<<")="<<theory_PDFsys1_rebin->GetBinLowEdge(i)<<std::endl;
   
+  int n_thybins=-1;
+  double* thybins=setBinning_etabin(etabin, &n_thybins);
+  
   // rebin in the bins of |y|=0 - 1.0 hists to get rid of last bin, then use the next few lines to assign the correct higher pt bins for the given |y| bin.
   // TO DO
-  int n_thybins=theory_PDFsys1_rebin->GetNbinsX();
-  std::cout<<"n_thybins="<<n_thybins<<std::endl;
-  std::cout<<"n_thybins+1="<<n_thybins+1<<std::endl;
-  std::cout<<std::endl;
-  double thybins[n_thybins+1]={0.};//+1 because this array represents the bin edges, not the bins themselves
-  for(int i=0; i<(n_thybins+1); i++){
-    if(i==n_thybins)
-      thybins[n_thybins]=theory_PDFsys1_rebin->GetBinLowEdge(i)+theory_PDFsys1_rebin->GetBinWidth(i);
-    else{
-      thybins[i]=theory_PDFsys1_rebin->GetBinLowEdge(i+1);      
-    }
-    std::cout<<"thybins["<<i<<"]="<<thybins[i]<<std::endl;
-  }
+  //int n_thybins=theory_PDFsys1_rebin->GetNbinsX();
+  //std::cout<<"n_thybins="<<n_thybins<<std::endl;
+  //std::cout<<"n_thybins+1="<<n_thybins+1<<std::endl;
+  //std::cout<<std::endl;
+  //double thybins[n_thybins+1]={0.};//+1 because this array represents the bin edges, not the bins themselves
+  //for(int i=0; i<(n_thybins+1); i++){
+  //  if(i==n_thybins)
+  //    thybins[n_thybins]=theory_PDFsys1_rebin->GetBinLowEdge(i)+theory_PDFsys1_rebin->GetBinWidth(i);
+  //  else{
+  //    thybins[i]=theory_PDFsys1_rebin->GetBinLowEdge(i+1);      
+  //  }
+  //  std::cout<<"thybins["<<i<<"]="<<thybins[i]<<std::endl;
+  //}
   //assert(false);
   
   /////////////// Get NP fit functions
-  TF1 *fNP = (TF1*)fin_NP->Get(("f"+NPCorrFits_str+"_etabin"+std::to_string(etabin)).c_str());
+  TF1 *fNP =NULL;//= (TF1*)fin_NP->Get(("f"+NPCorrFits_str+"_etabin"+std::to_string(etabin)).c_str());
+  fNP=(TF1*)fin_NP->Get(("fNPC_AVG_R4_etabin"+std::to_string(etabin)).c_str());
   if(!fNP){
     std::cout<<"error, NP fit(s) not found."<<std::endl; assert(false);}
-  TH1F *NPDataPoints= (TH1F*)fin_NP->Get( (NPCorrFits_str+"_etabin"+std::to_string(etabin)).c_str() );  
+  
+  TH1F *NPDataPoints=(TH1F*)fin_NP->Get( ("hNPC_PYTHIA8_R4_etabin"+std::to_string(etabin)).c_str() );  
   TF1* fNP_sysup=NULL, *fNP_sysdown=NULL;
   
   TF1 *fNP_sys1=NULL;
@@ -245,7 +254,8 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     std::cout<<"error, JER file not found or not open."<<std::endl; assert(false); }
   
 
-  std::string PY8name="hpp_gen_wJetID_R4_20_eta_20_bin"+std::to_string(etabin);
+  //std::string PY8name="hpp_gen_wJetID_R4_20_eta_20_bin"+std::to_string(etabin);
+  std::string PY8name="hpp_gen_wJetID_R4_20_eta_20_ybin"+std::to_string(etabin);
   std::string PY8orderstring="LO";
   //PY8_text+=", "+PY8orderstring + " QCD,";
 
@@ -309,7 +319,7 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   
   //set theory calculation errors to that of the PDF errs
   //if(setThyPDFErrors)    
-  //  for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theory->GetBinContent(i)*(theoryPDFPoserr->GetBinContent(i))/100.);    
+  //for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theory->GetBinContent(i)*(theoryPDFPoserr->GetBinContent(i))/100.);    
   
   std::cout<<"done making "<<orderstring<<" hist."<<std::endl;
   //assert(false);
@@ -675,7 +685,7 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   hJER->GetXaxis()->SetMoreLogLabels(true);
   if(useHistSigmaFit)hJER->SetLineColor(kBlue-7);
   else hJER->SetLineColor(kMagenta-2);
-  
+
   TH1D* hJER_sysup=NULL , *hJER_sysdown=NULL;
   if(doJERsys) hJER_sysup   = (TH1D*)( (TH1D*)fJER_sysup->GetHistogram() )->Clone(("hJER_sysup_"+std::to_string(etabin)).c_str());
   if(doJERsys) hJER_sysdown = (TH1D*)( (TH1D*)fJER_sysdown->GetHistogram() )->Clone(("hJER_sysdown_"+std::to_string(etabin)).c_str());  
@@ -705,6 +715,7 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
 
   
   /////////////// plots to to check NPs 
+  std::cout<<"plotting NPs!"<<  std::endl;  
   // 2x2 canv of |y| bins
   TLine* lineatone=new TLine(thybins[0],1.,thybins[n_thybins],1.); lineatone->SetLineStyle(7);
   TCanvas *plot_NP = new TCanvas("plot_NP", ("plot y"+std::to_string(etabin)+" NPs").c_str(),1200,1000);
@@ -745,6 +756,7 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     hNP_sys1_ratio_sysdown->Divide(hNP_sys2);
   }
   
+
   hNP->SetTitle( (NPCorrFits_text+" NPCs, "+absetarange_str+";Jet p_{T};NP Corr. Factor" ).c_str() );
   hNP->GetXaxis()->SetNoExponent(true);
   hNP->GetXaxis()->SetMoreLogLabels(true);
@@ -756,6 +768,7 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     hNP_sysup->DrawClone("HIST ][ SAME");
     hNP_sysdown->DrawClone("HIST ][ SAME");}
   
+
   TLegend* NPleg=new TLegend(0.15,0.75,0.45,0.85, "", "NDC");
   NPleg->SetFillStyle(0); NPleg->SetBorderSize(0);
   NPleg->AddEntry(NPDataPoints,(NPCorrFits_text).c_str(),"lp");
@@ -764,9 +777,10 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   NPleg->Draw();
   lineatone->SetX2( hNP->GetBinLowEdge(hNP->GetNbinsX())+ hNP->GetBinWidth(hNP->GetNbinsX()) );
   lineatone->DrawClone();
+  
   //-----------------------------------  
   
-  
+
 
   
   
@@ -1896,7 +1910,7 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   for(int i=1; i<=smeared_rnd_NP->GetNbinsX(); i++) 
     std::cout<<"smeared_rnd_NP->GetBinLowEdge("<<i<<")="<<smeared_rnd_NP->GetBinLowEdge(i)<<std::endl;
   NP_true_smeared_rat->Divide(NP_true_smeared_rat,smeared_rnd_NP,1.,1.,"B");     
-  //assert(false);
+  
   
   
   TH1D *NP_true_smeared_test_rat=(TH1D*)theory_rnd_NP->Clone("NP_true_smeared_test_rat"); 
@@ -2830,7 +2844,7 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   
   outf->Write();
 
-  std::cout<<"readForests_ppData_jetPlots finished."<<std::endl;  timer.Stop();
+  //std::cout<<"readForests_ppData_jetPlots finished."<<std::endl;  timer.Stop();
   //std::cout<<"CPU  time  = "<<  (Float_t)timer.CpuTime()/60 << "min "<<  std::endl;
   //std::cout<<"Real time  = "<<  (Float_t)timer.RealTime()/60 << "min "<< std::endl;
   

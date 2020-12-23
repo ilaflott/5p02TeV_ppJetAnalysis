@@ -13,35 +13,39 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 ####CT14NNLO_03.18.20_sigmu_geny_noJERscales_spl3wgts_gaussSmear_TEST_plots
 
 FITTYPE="sigmu"
-DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv3"
+#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv3"
+#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv4"
+#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_eMaxJetID_semifinalv4"
+DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_2k17tightJetID_semifinalv4"
 
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv3_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv3_"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufHTp_JohnNPs"
-##OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufHTp_JohnNPs"
+THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv3_plots/"
+THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv3_"
+OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_2k17tightJetID_semifinalv4_murmufHTp_JohnNPs"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufHTp_JohnNPs"
 
-THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_plots/"
-THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_"
+#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_plots/"
+#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_"
 #OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufpt_JohnNPs"
-OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufpt_JohnNPs"
+#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufpt_JohnNPs"
 
 #THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_semifinalv3_plots/"
 #THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_semifinalv3_"
 #OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufpt1_JohnNPs"
 ##OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufpt1_JohnNPs"
 
+
 applyNPcorrs=1
 dosystunf=1
-declare -a sysarr=("JEC" "JER" "PDF" "NP")
-declare -a sysarropt=("" "" "updown" "updown")
+###### DEBUG SETTINGS
+declare -a sysarr=("JEC" "JER")
+declare -a sysarropt=("" "updown")
 etabinStart=0
 etabinEnd=4
-###### DEBUG SETTINGS
-#declare -a sysarr=("JEC")
-#declare -a sysarropt=("")
+####### USUAL SETTINGS
+#declare -a sysarr=("JEC" "JER" "PDF" "NP")
+#declare -a sysarropt=("" "" "updown" "updown")
 #etabinStart=0
-#etabinEnd=1
-###### DEBUG SETTINGS
+#etabinEnd=4
 sysarrlen=${#sysarr[@]}
 for (( j=${etabinStart}; j<${etabinEnd}; j++ ));
 do

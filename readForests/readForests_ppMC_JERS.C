@@ -520,10 +520,14 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       // 13 TeV JetID criterion
       bool passesJetID=false; //int jtID=0;
       if(fillMCJetIDHists) 	{
+//	if (!(absreceta > 2.4)) 
+//	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
+//					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+//					   numConst,  chMult, useTightJetID);
 	if (!(absreceta > 2.4)) 
 	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
 					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult, useTightJetID);
+					   numConst,  chMult, true);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  passesJetID=(bool) jetID_24eta27( jetIDpt,
 					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],

@@ -387,6 +387,24 @@ std::vector<std::vector<double>> merged_SMP_ptbins{
       //592.}//empty, bin in data here     
       //638.}//limit of NLO smearing      
       //686.}//last entry in data spectra
+//  {//15eta20 JOHNS SUGGESTIION
+//    //43.,       49.,       
+//    //43., 49., 
+//    56.,      
+//    64.,       74.,       84.,       97.,       114.,
+//    133.,      153.,      174.,      196.,      220.,      245.,
+//      272., 
+//      300.,   
+//      //330.,     
+//      362.,      
+//      //395.,  
+//      430.,
+//      //468.,      
+//      //507.}//,      
+//      //548.,      
+//      592.}//empty, bin in data here     
+//      //638.}//limit of NLO smearing      
+//      //686.}//last entry in data spectra
 
   //  {//20eta25
   //    43.,       49.,       56.,      

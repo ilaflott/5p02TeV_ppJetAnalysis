@@ -16,7 +16,7 @@ const bool fillMCJetJECQAHists=false;
 const bool fillMCDijetHists=false;//hardly used options
 const bool useTightJetID=false;
 
-
+const bool usePFCandAnalyzer=true;
 
 //// readForests_ppMC_jetPlots
 // ---------------------------------------------------------------------------------------------------------------
@@ -65,7 +65,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   // declare TChains for each tree + friend  
   TChain* jetpp[N_MCTrees]={};
   for(int t = 0;t<N_MCTrees;++t)  {     
-    if(!useTupel && t==4)continue;
+    if(!usePFCandAnalyzer && t==4)continue;
+    if(!useTupel && t==5)continue;
     jetpp[t] = new TChain( trees[t].data() );
     if(t>0)jetpp[0]->AddFriend( jetpp[t] );  
   }
@@ -90,7 +91,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     
     std::cout<<", to each TChain in array"<<std::endl;
     for(int t = 0;t<N_MCTrees;++t) {
-      if(!useTupel &&t==4)continue;
+      if(!usePFCandAnalyzer && t==4)continue;
+      if(!useTupel &&t==5)continue;
       filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
     }
     lastFileAdded=filename_Forest;
@@ -129,6 +131,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   TH1D *h_NEvents_read     = new TH1D("NEvents_read"    , "NEvents read",    2,0.,2.);
   TH1D *h_NEvents_skimCut  = new TH1D("NEvents_skimCut" , "NEvents read post skimCut",  2,0.,2.);
   TH1D *h_NEvents_vzCut    = new TH1D("NEvents_vzCut"   , "NEvents read post vzCut AND skimCut", 2,0.,2.);
+  TH1D *h_NEvents_PFMETfracCut    = new TH1D("NEvents_PFMETfracCut"    , "NEvents read post vzCut AND skimCut AND PFMETfracCut", 2,0.,2.); // # events passing vz cut & skim cut & PFMETfracCut
   
   /////   EVENT QA HISTS   ///// 
   TH1D *hVr=NULL, *hWVr=NULL;
@@ -397,6 +400,49 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     }    
   }
   //assert(false);
+
+
+
+
+  //BEGIN particle-flow tree relevant histograms only here
+  TH1D *h_nPFpart   = NULL;
+  TH1D *h_pfpt      = NULL, *h_pfeta     = NULL,*h_pfphi     = NULL, *h_pfE=NULL;
+  TH1D *h_pfEt =NULL, *h_pftheta=NULL;
+  
+  TH1D *h_sumpfpt_x = NULL, *h_sumpfpt_y = NULL, *h_sumpfEt = NULL;
+  TH1D *h_sumpfpt   = NULL, *h_sqrtsumpfEt   = NULL, *h_PFMETfrac=NULL, *h_PFMETsig=NULL;
+  if(usePFCandAnalyzer){
+    //per-event values i read directly from the trees
+    h_nPFpart   =new TH1D ("h_nPFpart",";N_{evt}^{PF cand};A.U.",2000,0,2000);						   
+
+    //per-particle values i read directly from the trees
+    h_pfpt      =new TH1D ("h_pfpt",";p_{T}^{PF cand} [GeV];A.U.",2000.,0.,2000.);					   
+    h_pfeta     =new TH1D ("h_pfeta",";#eta^{PF cand};A.U.", 120 ,-6.0, 6.0);						   
+    h_pfphi     =new TH1D ("h_pfphi",";#phi^{PF cand};A.U.", ((int) (2.*TMath::Pi()*10.)) ,-1.*TMath::Pi(),TMath::Pi());
+    h_pfE       =new TH1D ("h_pfE",";E^{PF cand} [GeV];A.U.",2000.,0.,2000.);					   	   
+    
+    //per-particle values i compute
+    h_pfEt       =new TH1D ("h_pfEt",";E_{T}^{PF cand} [GeV];A.U.",2000.,0.,2000.);					   	   
+    h_pftheta    =new TH1D ("h_pftheta",";#theta^{PF Cand};A.U.",((int) (2.*TMath::Pi()*10.)) ,-1.*TMath::Pi(),TMath::Pi());
+
+    //per-event values i compute
+    h_sumpfpt_x =new TH1D ("h_sumpfpt_x",";#Sigma p_{x}^{PF cand};A.U.",2000.,-1000.,1000.);				   
+    h_sumpfpt_y =new TH1D ("h_sumpfpt_y",";#Sigma p_{y}^{PF cand};A.U.",2000.,-1000.,1000.);				   
+    h_sumpfEt   =new TH1D ("h_sumpfEt",";#Sigma E_{T}^{PF cand};A.U.",2000.,0.,2000.);				   
+
+    h_sumpfpt   =new TH1D ("h_sumpfpt",";#left| #Sigma #vec{p_{T}}^{PF cand} #right| = PF #slash{E}_{T};A.U.",2000.,0.,2000.);           
+
+    h_sqrtsumpfEt   =new TH1D ("h_sqrtsumpfEt",";#sqrt{#Sigma E_{T}^{PF cand}};A.U.",2000.,0.,2000.);				   
+    
+    h_PFMETfrac= new TH1D("h_PFMETfrac", ";PF #slash{E}_{T} / #Sigma E_{T}^{PF cand};A.U.", 200, 0., 2.);
+    
+    h_PFMETsig=new TH1D("h_PFMETsig", ";PF #slash{E}_{T} / #sqrt{#Sigma E_{T}^{PF cand}};A.U.", 1000, 0., 10.);
+  }
+
+
+
+
+
   
   
   
@@ -501,9 +547,11 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
   
   // skimanalysis
-  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I, puvertexFilter_I;
+  int pBeamScrapingFilter_I, pHBHENoiseFilterRun2Loose_I, pprimaryvertexFilter_I, puvertexFilter_I;
+  int pHBHEIsoNoiseFilter_I;
+  jetpp[2]->SetBranchAddress("HBHEIsoNoiseFilterResult",&pHBHEIsoNoiseFilter_I);//only option
   jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
-  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilterRun2Loose_I);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
   
@@ -527,6 +575,21 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   jetpp[3]->SetBranchAddress("zVtx",&zVtx_F);  
 
 
+  //pfcandAnalyzer/pfTree
+  Int_t nPFpart_I;  
+  //std::vector<Float_t> *pfpt, *pfphi, *pfeta, *pfE;
+  Float_t pfptArr[2000], pfphiArr[2000], pfetaArr[2000], pfEArr[2000];
+  
+  if(usePFCandAnalyzer){
+    if(debugMode)std::cout<<"using PFCandAnalyzer. Setting branch addresses!"<<std::endl;
+    jetpp[4]->SetBranchAddress( "nPFpart", &nPFpart_I);
+    if(debugMode)std::cout<<"filelistIsLowerJets, pointing branches to Float_t* (a.k.a. Float_t array)"<<std::endl;
+    jetpp[4]->SetBranchAddress( "pfPt"   , &pfptArr );
+    jetpp[4]->SetBranchAddress( "pfEta"  , &pfetaArr);
+    jetpp[4]->SetBranchAddress( "pfPhi"  , &pfphiArr);    
+    jetpp[4]->SetBranchAddress( "pfEnergy"  , &pfEArr);    
+  }
+  
 
 
   //tupel/EventTree
@@ -534,31 +597,31 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   std::vector<float> *jetPt, *jetEta, *jetPhi, *jetE, *jetID, *jetRawPt, *jetRawE;
   std::vector<float> *jetHfHadE, *jetHfEmE, *jetChHadFrac, *jetNeutralHadAndHfFrac, *jetChEmFrac, *jetNeutralEmFrac, *jetChMult, *jetConstCnt;  
   if(useTupel){
-    jetpp[4]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
-    jetpp[4]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
-    jetpp[4]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
-    jetpp[4]->SetBranchAddress( "JetAk04E",                   &jetE                   );
-    jetpp[4]->SetBranchAddress( "JetAk04Id",                  &jetID                  );
-    jetpp[4]->SetBranchAddress( "JetAk04RawPt",               &jetRawPt               );
-    jetpp[4]->SetBranchAddress( "JetAk04RawE",                &jetRawE                );
-    jetpp[4]->SetBranchAddress( "JetAk04HfHadE",              &jetHfHadE              );
-    jetpp[4]->SetBranchAddress( "JetAk04HfEmE",               &jetHfEmE               );
-    jetpp[4]->SetBranchAddress( "JetAk04ChHadFrac",           &jetChHadFrac           );
-    jetpp[4]->SetBranchAddress( "JetAk04NeutralHadAndHfFrac", &jetNeutralHadAndHfFrac );
-    jetpp[4]->SetBranchAddress( "JetAk04ChEmFrac",            &jetChEmFrac            );
-    jetpp[4]->SetBranchAddress( "JetAk04NeutralEmFrac",       &jetNeutralEmFrac       );
-    jetpp[4]->SetBranchAddress( "JetAk04ChMult",              &jetChMult              );
-    jetpp[4]->SetBranchAddress( "JetAk04ConstCnt",            &jetConstCnt            );
+    jetpp[5]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
+    jetpp[5]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
+    jetpp[5]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
+    jetpp[5]->SetBranchAddress( "JetAk04E",                   &jetE                   );
+    jetpp[5]->SetBranchAddress( "JetAk04Id",                  &jetID                  );
+    jetpp[5]->SetBranchAddress( "JetAk04RawPt",               &jetRawPt               );
+    jetpp[5]->SetBranchAddress( "JetAk04RawE",                &jetRawE                );
+    jetpp[5]->SetBranchAddress( "JetAk04HfHadE",              &jetHfHadE              );
+    jetpp[5]->SetBranchAddress( "JetAk04HfEmE",               &jetHfEmE               );
+    jetpp[5]->SetBranchAddress( "JetAk04ChHadFrac",           &jetChHadFrac           );
+    jetpp[5]->SetBranchAddress( "JetAk04NeutralHadAndHfFrac", &jetNeutralHadAndHfFrac );
+    jetpp[5]->SetBranchAddress( "JetAk04ChEmFrac",            &jetChEmFrac            );
+    jetpp[5]->SetBranchAddress( "JetAk04NeutralEmFrac",       &jetNeutralEmFrac       );
+    jetpp[5]->SetBranchAddress( "JetAk04ChMult",              &jetChMult              );
+    jetpp[5]->SetBranchAddress( "JetAk04ConstCnt",            &jetConstCnt            );
   }
   //MC/GEN jet vars in tupel tree only
   std::vector<int> *GjetIdx;
   std::vector<float> *GjetPt, *GjetEta, *GjetPhi, *GjetE; 
   if(useTupel){
-    jetpp[4]->SetBranchAddress( "JetAk04GenJet",   &GjetIdx );
-    jetpp[4]->SetBranchAddress( "GJetAk04Pt",      &GjetPt );
-    jetpp[4]->SetBranchAddress( "GJetAk04Eta",     &GjetEta );
-    jetpp[4]->SetBranchAddress( "GJetAk04Phi",     &GjetPhi );
-    jetpp[4]->SetBranchAddress( "GJetAk04E",       &GjetE );
+    jetpp[5]->SetBranchAddress( "JetAk04GenJet",   &GjetIdx );
+    jetpp[5]->SetBranchAddress( "GJetAk04Pt",      &GjetPt );
+    jetpp[5]->SetBranchAddress( "GJetAk04Eta",     &GjetEta );
+    jetpp[5]->SetBranchAddress( "GJetAk04Phi",     &GjetPhi );
+    jetpp[5]->SetBranchAddress( "GJetAk04E",       &GjetE );
   }
   
 
@@ -654,7 +717,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     h_NEvents_read->Fill(0.); h_NEvents_read->Fill(1.,weight_eS);    
     
     // skim/HiEvtAnalysis criteria
-    if( pHBHENoiseFilter_I==0     || 
+    if( pHBHENoiseFilterRun2Loose_I==0     || 
+	pHBHEIsoNoiseFilter_I    ==0    || 
         pBeamScrapingFilter_I==0  || 
         pprimaryvertexFilter_I==0 )continue;
     //|| //puvertexFilter_I==0  	) continue;            
@@ -662,6 +726,68 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     
     if( fabs(vz_F)>24.              ) continue;   
     h_NEvents_vzCut->Fill(0.);    h_NEvents_vzCut->Fill(1.,weight_eS);
+
+
+
+
+
+    if(usePFCandAnalyzer){
+      //PFCANDLOOP
+      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+      
+      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+      //h_nPFpart->Fill(nPFpart_I,weight_eS);
+      
+      for(Int_t part=0;part<nPFpart_I;part++){
+	
+	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+	pfpt_part  = pfptArr[part];	  
+	pfeta_part =pfetaArr[part];	  
+	pfphi_part =pfphiArr[part];	  	
+	pfE_part  =pfEArr[part];	
+	
+	//h_pfpt ->Fill(pfpt_part ,weight_eS);
+	//h_pfeta->Fill(pfeta_part,weight_eS);
+	//h_pfphi->Fill(pfphi_part,weight_eS);
+	//h_pfE->Fill(pfE_part,weight_eS);
+	
+	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+	//h_pftheta->Fill(pftheta_part,weight_eS);
+	
+	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+	//h_pfEt->Fill(pfEt_part,weight_eS);
+	
+	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+	sumpfEt+=pfEt_part;
+      }
+      
+      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+      //Float_t sqrtsumpfEt=sqrt(sumpfEt);
+      Float_t PFMETfrac=sumpfpt/sumpfEt;
+      //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+      
+      h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      h_NEvents_PFMETfracCut->Fill(0.);
+      
+      //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+      //h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+      //h_sumpfEt->Fill(sumpfEt,weight_eS);
+
+      //h_sumpfpt->Fill(sumpfpt,weight_eS);
+      //h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      //h_PFMETsig->Fill(PFMETsig,weight_eS);
+      //assert(false);
+    }
+    
+
+
     
     
     
@@ -689,6 +815,67 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       hNref->Fill(nref_I, 1.);
       hWNref->Fill(nref_I, weight_eS);
     }
+
+
+
+    if(usePFCandAnalyzer){
+      //PFCANDLOOP
+      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+      
+      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+      h_nPFpart->Fill(nPFpart_I,weight_eS);
+      
+      for(Int_t part=0;part<nPFpart_I;part++){
+	
+	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+	pfpt_part  = pfptArr[part];	  
+	pfeta_part =pfetaArr[part];	  
+	pfphi_part =pfphiArr[part];	  	
+	pfE_part  =pfEArr[part];	
+	
+	h_pfpt ->Fill(pfpt_part ,weight_eS);
+	h_pfeta->Fill(pfeta_part,weight_eS);
+	h_pfphi->Fill(pfphi_part,weight_eS);
+	h_pfE->Fill(pfE_part,weight_eS);
+	
+	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+	h_pftheta->Fill(pftheta_part,weight_eS);
+	
+	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+	h_pfEt->Fill(pfEt_part,weight_eS);
+	
+	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+	sumpfEt+=pfEt_part;
+      }
+      
+      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+      Float_t sqrtsumpfEt=sqrt(sumpfEt);
+      //Float_t PFMETfrac=sumpfpt/sumpfEt;
+      Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+      
+      //if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      //h_NEvents_PFMETfracCut->Fill(0.);
+      
+      h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+      h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+      h_sumpfEt->Fill(sumpfEt,weight_eS);
+
+      h_sumpfpt->Fill(sumpfpt,weight_eS);
+      h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      h_PFMETsig->Fill(PFMETsig,weight_eS);
+      //assert(false);
+    }
+
+
+
+
+
     
     // JET LOOP 
     // for Aj/xj computation
@@ -1241,12 +1428,12 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   std::cout<<"# of Events (criteria/description) = count / pthat*vz weighted count" <<std::endl;
   std::cout<<std::endl;
   
-  std::cout<<"# evts passing w cut applied = count / xsec weighted count" <<std::endl;
-  std::cout<<"in file(s) opened            = " << NEvents_allFiles<<std::endl; 
-  std::cout<<"looped over                  = " <<h_NEvents->GetBinContent(1)          << " / " << h_NEvents->GetBinContent(2)<<std::endl; 
-  std::cout<<"read                         = " << h_NEvents_read->GetBinContent(1)    << " / " << h_NEvents_read->GetBinContent(2)<<std::endl;
-  std::cout<<"skimCuts  = read - !skim     = " << h_NEvents_skimCut->GetBinContent(1) << " / " << h_NEvents_skimCut->GetBinContent(2) << std::endl;//same
-  std::cout<<"vzCuts    = skimCuts - !vz   = " << h_NEvents_vzCut->GetBinContent(1)   << " / " << h_NEvents_vzCut->GetBinContent(2)   << std::endl; //same
+  std::cout<<"# evts passing w cut applied = count" <<std::endl;
+  std::cout<<"in trees of file(s) opened      = " << NEvents_allFiles<<std::endl; 
+  std::cout<<"# evts read in files            = " << h_NEvents_read->GetBinContent(1)    << std::endl;  
+  std::cout<<"# events meeting      skim + prev. cuts = " << h_NEvents_skimCut->GetBinContent(1) << std::endl;
+  std::cout<<"# events meeting        vz + prev. cuts = " << h_NEvents_vzCut->GetBinContent(1)   << std::endl; 
+  std::cout<<"# events meeting PFMETFrac + prev. cuts = " << h_NEvents_PFMETfracCut->GetBinContent(1)   << std::endl; 
   std::cout << std::endl;
 
 

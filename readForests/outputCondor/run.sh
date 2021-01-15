@@ -19,13 +19,46 @@ echo ""
 #DD="26"
 #YY="19"
 
-MM="03"
-DD="18"
-YY="20"
+#MM="03"
+#DD="18"
+#YY="20"
 
 #MM="12"
 #DD="02"
 #YY="20"
+
+MM="01"
+DD="05"
+YY="21"
+
+
+
+
+#mv                ppData_HighPtJet80_ak4PFJets_01-06-21_jetTrigEff_0.0eta5.1                 ppData_HighPtJet80_ak4PFJets_01-05-21_jetTrigEff_0.0eta5.1
+#mv            ppData_HighPtLowerJets_ak4PFJets_01-06-21_jetTrigEff_0.0eta5.1             ppData_HighPtLowerJets_ak4PFJets_01-05-21_jetTrigEff_0.0eta5.1
+#mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_01-07-21_JERS_0.0eta2.5        ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_01-05-21_JERS_0.0eta2.5      
+
+
+
+
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetTrigEff_0.0eta5.1" "ppData" "wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "unf_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+
+
+
+
+
+
+
+
+
+
+
 
 
 #mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-26-20_JERS_0.0eta2.5/ ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_JERS_0.0eta2.5/ 
@@ -33,6 +66,7 @@ YY="20"
 #mv ppData_HighPtLowerJets_ak4PFJets_11-20-20_jetPlots_0.0eta2.5_1 ppData_HighPtLowerJets_ak4PFJets_03-18-20_jetPlots_0.0eta2.5
 #mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-20-20_jetPlots_0.0eta2.0 ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-19-20_jetPlots_0.0eta2.0
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppMC" "semifinal_novzweights"
+
 
 
 
@@ -52,8 +86,8 @@ YY="20"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wHotSpotMask_JetID_semifinalv4"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wMETFrac0p3Cut_JetID_semifinalv4"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wHBHEIsoNoiseCut_JetID_semifinalv4"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_JetID_semifinalv4"
-#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppMC" "jety_v_jeteta_check"
+
+
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.0" "ppData" "JOHNbins_withJECsys_withLumiCorr_semifinal"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta1.0" "ppData" "lumiRunStudy_diffDupeSkip"
 

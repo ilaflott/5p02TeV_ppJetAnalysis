@@ -9,6 +9,10 @@ const int jetIDint=(int)fillMCJetIDHists;
 
 const bool verbose=false;
 const bool useTightJetID=false;
+
+const bool usePFCandAnalyzer=true;
+//const bool useTupel=true;
+
 //// readForests_ppMC_JERS
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,  
@@ -41,44 +45,52 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   // form jetTreeName
   std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
   if(debugMode)std::cout<<"looking at jetTree "<<jetTreeName<<std::endl;
-  
+
   // initialize tree name array
   std::string trees[N_MCTrees];
-  trees[0]=jetTreeName;
-  if(debugMode)std::cout<<"tree name: "<<trees[0]<<std::endl;
-  for(int i=1;i<N_MCTrees;++i){
-    trees[i]=MCTreeNames[i];
-    if(debugMode)std::cout<<"tree name: "<<trees[i]<<std::endl;
-  }
-  
+  trees[0]=jetTreeName; //trees[1]=CaloJetTreeName;
+  for(int i=1;i<N_MCTrees;++i)trees[i]=MCTreeNames[i];
+
   // declare TChains for each tree + friend  
   TChain* jetpp[N_MCTrees]={};
-  for(int t = 0;t<N_MCTrees;++t)  { 
+  for(int t = 0;t<N_MCTrees;++t)  {     
+    if(!usePFCandAnalyzer && t==4)continue;
+    //if(!useTupel && t==5)continue;
     jetpp[t] = new TChain( trees[t].data() );
-    if(t>0)jetpp[0]->AddFriend( jetpp[t] );  }
-    
+    if(t>0)jetpp[0]->AddFriend( jetpp[t] );  
+  }
+  
+  
   // open filelist
   std::cout<<"opening filelist: "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
   std::string filename_Forest;  
-  std::string lastFileAdded=""; bool filesAdded=false; 
-
-  for(int ifile = 0; ifile<=endfile; ++ifile){    
+  std::string lastFileAdded=""; bool filesAdded=false; //Int_t filesCount=0;
+  for(int ifile = 0; ifile<=endfile; ++ifile){
+    
     // grab a filename, check startfile and end of filelist condition
     instr_Forest>>filename_Forest; 
     if(ifile<startfile){ lastFileAdded=filename_Forest; 
       continue; }
     if(filename_Forest==lastFileAdded){ std::cout<<"end of filelist!"<<std::endl; 
-      break; }    
+      break; }
+    
     std::cout<<"adding file #"<<ifile; 
-    if(debugMode)std::cout<<", "<<filename_Forest;     
+    if(debugMode)std::cout<<", "<<filename_Forest; 
+    
     std::cout<<", to each TChain in array"<<std::endl;
-    for(int t = 0;t<N_MCTrees;++t) filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
+    for(int t = 0;t<N_MCTrees;++t) {
+      if(!usePFCandAnalyzer && t==4)continue;
+      //if(!useTupel &&t==5)continue;
+      filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
+    }
     lastFileAdded=filename_Forest;
-  }//end file loop  
+  }//end file loop
+  
   if(debugMode)std::cout<<"filesAdded="<<filesAdded<<std::endl;
   assert(filesAdded);//avoid segfault later
-  
+
+    
   // Declare the output file, declare hists after for easy write
   std::cout<<"opening output file "<<outfile<<std::endl;
   TFile *fout = new TFile(outfile.c_str(),"RECREATE");
@@ -339,11 +351,29 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   jetpp[1]->SetBranchAddress("vy",&vy_F);
   
   // skimanalysis
-  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I, puvertexFilter_I;
+  int pBeamScrapingFilter_I, pHBHENoiseFilterRun2Loose_I, pprimaryvertexFilter_I, puvertexFilter_I;
+  int pHBHEIsoNoiseFilter_I;
+  jetpp[2]->SetBranchAddress("HBHEIsoNoiseFilterResult",&pHBHEIsoNoiseFilter_I);//only option
   jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
-  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilterRun2Loose_I);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);  
+
+
+  //pfcandAnalyzer/pfTree
+  Int_t nPFpart_I;  
+  //std::vector<Float_t> *pfpt, *pfphi, *pfeta, *pfE;
+  Float_t pfptArr[2000], pfphiArr[2000], pfetaArr[2000], pfEArr[2000];
+  
+  if(usePFCandAnalyzer){
+    if(debugMode)std::cout<<"using PFCandAnalyzer. Setting branch addresses!"<<std::endl;
+    jetpp[4]->SetBranchAddress( "nPFpart", &nPFpart_I);
+    if(debugMode)std::cout<<"filelistIsLowerJets, pointing branches to Float_t* (a.k.a. Float_t array)"<<std::endl;
+    jetpp[4]->SetBranchAddress( "pfPt"   , &pfptArr );
+    jetpp[4]->SetBranchAddress( "pfEta"  , &pfetaArr);
+    jetpp[4]->SetBranchAddress( "pfPhi"  , &pfphiArr);    
+    jetpp[4]->SetBranchAddress( "pfEnergy"  , &pfEArr);    
+  }
 
   //tupel/EventTree (for calculating genjet rapidity for AK4 only [R=0.3 jet info absent])
   std::vector<float> *jetPt, *jetEta, *jetPhi, *jetE;// *jetID, *jetRawPt, *jetRawE;
@@ -351,14 +381,14 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   //std::vector<float> *jetHfHadE, *jetHfEmE, *jetChHadFrac, *jetNeutralHadAndHfFrac, *jetChEmFrac, *jetNeutralEmFrac, *jetChMult, *jetConstCnt;  
   if(debugMode)std::cout<<"setting branch addresses for tupel/EventTree"<<std::endl;
   
-  jetpp[4]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
-  jetpp[4]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
-  jetpp[4]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
-  jetpp[4]->SetBranchAddress( "JetAk04E",                   &jetE                   );
-  jetpp[4]->SetBranchAddress( "GJetAk04Pt",                 &GjetPt                  );
-  jetpp[4]->SetBranchAddress( "GJetAk04Eta",                &GjetEta                 );
-  jetpp[4]->SetBranchAddress( "GJetAk04Phi",                &GjetPhi                 );
-  jetpp[4]->SetBranchAddress( "GJetAk04E",                  &GjetE                   );
+  jetpp[5]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
+  jetpp[5]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
+  jetpp[5]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
+  jetpp[5]->SetBranchAddress( "JetAk04E",                   &jetE                   );
+  jetpp[5]->SetBranchAddress( "GJetAk04Pt",                 &GjetPt                  );
+  jetpp[5]->SetBranchAddress( "GJetAk04Eta",                &GjetEta                 );
+  jetpp[5]->SetBranchAddress( "GJetAk04Phi",                &GjetPhi                 );
+  jetpp[5]->SetBranchAddress( "GJetAk04E",                  &GjetE                   );
 
   
   // event count from files
@@ -387,13 +417,70 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     h_NEvents_read->Fill(1);
     
     // skim/HiEvtAnalysis criteria
-    if( pHBHENoiseFilter_I==0     || 
+    if( pHBHENoiseFilterRun2Loose_I==0     || 
+	pHBHEIsoNoiseFilter_I    ==0    || 
         pBeamScrapingFilter_I==0  || 
         pprimaryvertexFilter_I==0  ) continue;    
     h_NEvents_skimCut->Fill(1);    
 
     if( fabs(vz_F)>24.              ) continue;
     h_NEvents_vzCut->Fill(1);
+
+
+    if(usePFCandAnalyzer){
+      //PFCANDLOOP
+      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+      
+      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+      //h_nPFpart->Fill(nPFpart_I,weight_eS);
+      
+      for(Int_t part=0;part<nPFpart_I;part++){
+	
+	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+	pfpt_part  = pfptArr[part];	  
+	pfeta_part =pfetaArr[part];	  
+	pfphi_part =pfphiArr[part];	  	
+	pfE_part  =pfEArr[part];	
+	
+	//h_pfpt ->Fill(pfpt_part ,weight_eS);
+	//h_pfeta->Fill(pfeta_part,weight_eS);
+	//h_pfphi->Fill(pfphi_part,weight_eS);
+	//h_pfE->Fill(pfE_part,weight_eS);
+	
+	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+	//h_pftheta->Fill(pftheta_part,weight_eS);
+	
+	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+	//h_pfEt->Fill(pfEt_part,weight_eS);
+	
+	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+	sumpfEt+=pfEt_part;
+      }
+      
+      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+      //Float_t sqrtsumpfEt=sqrt(sumpfEt);
+      Float_t PFMETfrac=sumpfpt/sumpfEt;
+      //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+      
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      //h_NEvents_PFMETfracCut->Fill(0.);
+      
+      //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+      //h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+      //h_sumpfEt->Fill(sumpfEt,weight_eS);
+
+      //h_sumpfpt->Fill(sumpfpt,weight_eS);
+      //h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      //h_PFMETsig->Fill(PFMETsig,weight_eS);
+      //assert(false);
+    }
     
     // grab vzweight
     double vzWeight=1.;
@@ -520,14 +607,14 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       // 13 TeV JetID criterion
       bool passesJetID=false; //int jtID=0;
       if(fillMCJetIDHists) 	{
-//	if (!(absreceta > 2.4)) 
-//	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
-//					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-//					   numConst,  chMult, useTightJetID);
 	if (!(absreceta > 2.4)) 
 	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
 					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult, true);
+					   numConst,  chMult, useTightJetID);
+//	if (!(absreceta > 2.4)) 
+//	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
+//					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+//					   numConst,  chMult, true);
 	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
 	  passesJetID=(bool) jetID_24eta27( jetIDpt,
 					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],

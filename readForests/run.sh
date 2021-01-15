@@ -4,13 +4,13 @@
 ## busy cluster (check w/ 'condor_q --allusers') --> use larger # of files per job --> longer run time but overall kinder during busy hours
 ## not-busy cluster --> can use smaller # of files per job --> shorter run time but occupies more cluster machines
 
-subm_ppData_jetPlots=1
+subm_ppData_jetPlots=0
 subm_ppData_jetTrigEff=0
 subm_ppData_makeNTuple=0
 
 subm_ppMC_jetPlots=0
 subm_ppMC_JERS=0
-subm_ppMC_unf=0
+subm_ppMC_unf=1
 subm_ppMC_MCEff=0
 
 sleep_between_subm=0

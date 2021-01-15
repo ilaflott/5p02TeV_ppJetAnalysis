@@ -101,6 +101,7 @@ int printPlots_evtCounts(const std::string input_ppData_condorDir , const std::s
   h_NEvents_Jet80_read   ->SetName("NEvents_Jet80_read"   );
   h_NEvents_Jet80_skimCut->SetName("NEvents_Jet80_skimCut");
   h_NEvents_Jet80_vzCut  ->SetName("NEvents_Jet80_vzCut"  );
+  h_NEvents_Jet80_PFMETfracCut  ->SetName("NEvents_Jet80_PFMETfracCut"  );  
   h_NEvents_Jet80_is80   ->SetName("NEvents_Jet80_is80"   );
 
   std::cout<<std::endl;
@@ -123,6 +124,7 @@ int printPlots_evtCounts(const std::string input_ppData_condorDir , const std::s
   h_NEvents_LowJets_read   ->SetName("NEvents_LowJets_read"   );
   h_NEvents_LowJets_skimCut->SetName("NEvents_LowJets_skimCut");
   h_NEvents_LowJets_vzCut  ->SetName("NEvents_LowJets_vzCut"  );
+  h_NEvents_LowJets_PFMETfracCut  ->SetName("NEvents_LowJets_PFMETfracCut"  );
   h_NEvents_LowJets_is40   ->SetName("NEvents_LowJets_is40"   );
   h_NEvents_LowJets_is60   ->SetName("NEvents_LowJets_is60"   );
   std::cout<<std::endl;
@@ -130,9 +132,9 @@ int printPlots_evtCounts(const std::string input_ppData_condorDir , const std::s
   std::cout<<"# Events ............................................ in Dataset: "<< h_NEvents_LowJets_read->GetBinContent(1)<<std::endl;
   std::cout<<"# Events after HBHENoise, BeamScraping, and PV  quality  filters: "<< h_NEvents_LowJets_skimCut->GetBinContent(1)<<std::endl;
   std::cout<<"# Events after ..................................|vz|< 24 cm cut: "<< h_NEvents_LowJets_vzCut->GetBinContent(1)<<std::endl;
-  std::cout<<"               Evt. Selection Efficiency 1 =        NEvents_vzCut/NEvents = "<< h_NEvents_Jet80_vzCut->GetBinContent(1)/h_NEvents_Jet80_read->GetBinContent(1)<<std::endl;
-  std::cout<<"# Events after ..................................PFMETfrac < 0.3: "<< h_NEvents_Jet80_PFMETfracCut->GetBinContent(1)<<std::endl;
-  std::cout<<"               Evt. Selection Efficiency 2 = NEvents_PFMETfracCut/NEvents = "<< h_NEvents_Jet80_PFMETfracCut->GetBinContent(1)/h_NEvents_Jet80_read->GetBinContent(1)<<std::endl;
+  std::cout<<"               Evt. Selection Efficiency 1 =        NEvents_vzCut/NEvents = "<< h_NEvents_LowJets_vzCut->GetBinContent(1)/h_NEvents_LowJets_read->GetBinContent(1)<<std::endl;
+  std::cout<<"# Events after ..................................PFMETfrac < 0.3: "<< h_NEvents_LowJets_PFMETfracCut->GetBinContent(1)<<std::endl;
+  std::cout<<"               Evt. Selection Efficiency 2 = NEvents_PFMETfracCut/NEvents = "<< h_NEvents_LowJets_PFMETfracCut->GetBinContent(1)/h_NEvents_LowJets_read->GetBinContent(1)<<std::endl;
   std::cout<<"# Events after ...... passing trigger jet req for HLT60 or HLT40: "<< h_NEvents_LowJets_is40 ->GetBinContent(1)+h_NEvents_LowJets_is60 ->GetBinContent(1)<<std::endl;
   std::cout<<"# Events ......................... passing trigger jet req for HLT40 only: "<< h_NEvents_LowJets_is40 ->GetBinContent(1)<<std::endl;
   std::cout<<"# Events ......................... passing trigger jet req for HLT60 only: "<< h_NEvents_LowJets_is60 ->GetBinContent(1)<<std::endl;
@@ -155,11 +157,13 @@ int printPlots_evtCounts(const std::string input_ppData_condorDir , const std::s
   h_NEvents_Jet80_read   ->Write();
   h_NEvents_Jet80_skimCut->Write();  
   h_NEvents_Jet80_vzCut  ->Write();  
+  h_NEvents_Jet80_PFMETfracCut  ->Write();  
   h_NEvents_Jet80_is80   ->Write();
 
   h_NEvents_LowJets_read   ->Write();
   h_NEvents_LowJets_skimCut->Write();
   h_NEvents_LowJets_vzCut  ->Write();
+  h_NEvents_LowJets_PFMETfracCut  ->Write();  
   h_NEvents_LowJets_is40   ->Write();
   h_NEvents_LowJets_is60   ->Write();
 

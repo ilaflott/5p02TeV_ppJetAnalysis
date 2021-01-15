@@ -1,4 +1,4 @@
-const int Netabins=4;
+//const int Netabins=4;
 #include "printPlots.h"
 
 

@@ -65,8 +65,8 @@ then
     #OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt1_${etabinstr}.root    
     #OUTDIR=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_plots/
     #OUTFILE=${NLOfileshortstr}_NLO_v3_${descstr}_${Fittypestr}_gaussSmear_murmufpt_${etabinstr}.root    
-    OUTDIR=${NLOfileshortstr}_NLO_v3_${jerdescstr}_${Fittypestr}_${outdescstr}_plots/
-    OUTFILE=${NLOfileshortstr}_NLO_v3_${jerdescstr}_${Fittypestr}_${outdescstr}_${etabinstr}.root    
+    OUTDIR=${NLOfileshortstr}_NLO_${jerdescstr}_${Fittypestr}_${outdescstr}_plots/
+    OUTFILE=${NLOfileshortstr}_NLO_${jerdescstr}_${Fittypestr}_${outdescstr}_${etabinstr}.root    
     JERDIR=/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/src/doAnalysis/printPlots_JERS/output/
     JERFILE=${JERfilestr}${etabinstr}_${jerdescstr}.root
     FULLJERFILEPATH=${JERDIR}${JERFILE}

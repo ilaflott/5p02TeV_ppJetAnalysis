@@ -137,10 +137,10 @@ cp ${filelistIn} "${logFileDir}"
 #echo ""
 #echo "COPYING JER FILES, REMEMBER TO FIX ME FOR OTHER READFORESTS JOBS IN THE FUTURE IAN!!!!"
 #echo ""
-#cp ak4PF_PY8JER_00eta05_03.18.20_sigmu_geny.root "${logFileDir}"
-#cp ak4PF_PY8JER_05eta10_03.18.20_sigmu_geny.root "${logFileDir}"
-#cp ak4PF_PY8JER_10eta15_03.18.20_sigmu_geny.root "${logFileDir}"
-#cp ak4PF_PY8JER_15eta20_03.18.20_sigmu_geny.root "${logFileDir}"
+cp ak4PF_PY8JER_00eta05_03.18.20_sigmu_geny.root "${logFileDir}"
+cp ak4PF_PY8JER_05eta10_03.18.20_sigmu_geny.root "${logFileDir}"
+cp ak4PF_PY8JER_10eta15_03.18.20_sigmu_geny.root "${logFileDir}"
+cp ak4PF_PY8JER_15eta20_03.18.20_sigmu_geny.root "${logFileDir}"
 #ls ${logFileDir}
 #return
 
@@ -157,10 +157,11 @@ readForestsCode3=${readForestsCode2%_*}
 #    cp JECDataDriven.tar.gz "${logFileDir}"   
 #    cp residualMCTruth.tar.gz "${logFileDir}"   
 #else
-transferInputFileList="${filelist},${readForestsExe}"
-#transferInputFileList="${filelist},${readForestsExe},ak4PF_PY8JER_00eta05_03.18.20_sigmu_geny.root,ak4PF_PY8JER_05eta10_03.18.20_sigmu_geny.root,ak4PF_PY8JER_10eta15_03.18.20_sigmu_geny.root,ak4PF_PY8JER_15eta20_03.18.20_sigmu_geny.root"
+#transferInputFileList="${filelist},${readForestsExe}"
+transferInputFileList="${filelist},${readForestsExe},ak4PF_PY8JER_00eta05_03.18.20_sigmu_geny.root,ak4PF_PY8JER_05eta10_03.18.20_sigmu_geny.root,ak4PF_PY8JER_10eta15_03.18.20_sigmu_geny.root,ak4PF_PY8JER_15eta20_03.18.20_sigmu_geny.root"
 #fi
 #echo "transferInputFileList=$transferInputFileList"
+#return
 cd ${logFileDir}
 
 

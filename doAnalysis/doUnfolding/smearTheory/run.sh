@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-smeartheory=0
-smearPY8=1
+smeartheory=1
+smearPY8=0
 
 
 
@@ -31,12 +31,25 @@ then
 
     ### Joao's NLO in y bins
     #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v3"
-    nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3"
+    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v3"
     #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQHTp_v3"
-    
+
     #outdescstr="gaussSmear_murmufpt_JohnNPs_semifinalv3"    
-    outdescstr="gaussSmear_murmufpt1_JohnNPs_semifinalv3"
+    #outdescstr="gaussSmear_murmufpt1_JohnNPs_semifinalv3"
     #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv3"
+
+    ### Klaus's NLO in y bins
+    nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v4"
+    #nlofstr="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQHTp_v4"
+    #nlofstr="fnl5020_R04Jets_ybins_NNPDF30_nnlo_as_0121_murEQmufEQpt_v4"
+    #nlofstr="fnl5020_R04Jets_ybins_NNPDF30_nnlo_as_0121_murEQmufEQHTp_v4"
+    #nlofstr="fnl5020_R04Jets_ybins_NNPDF31_nnlo_as_0120_murEQmufEQpt_v4"
+    #nlofstr="fnl5020_R04Jets_ybins_NNPDF31_nnlo_as_0120_murEQmufEQHTp_v4"
+    #nlofstr="fnl5020_R04Jets_ybins_NNPDF31_nnlo_as_0122_murEQmufEQpt_v4"
+    #nlofstr="fnl5020_R04Jets_ybins_NNPDF31_nnlo_as_0122_murEQmufEQHTp_v4"
+    
+    outdescstr="gaussSmear_murmufpt_JohnNPs_semifinalv4"    
+    #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4"
 
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"

@@ -9,10 +9,10 @@ const bool useIncJetAnalyzer=true;// leave me on almost always
 const bool fillDataJetQAHists=true; // leave me on almost always
 
 const bool fillDataJetTrigQAHists=true; // leave me on almost always
-const bool fillDataJetCovMatrix=false; // leave me on almost always
+const bool fillDataJetCovMatrix=true; // leave me on almost always
 
 const bool fillDataJetJECQAHists=false;//expensive computationally, use only if needed (i.e. if someone asks about JECs + wants QA)
-const bool fillDataJetJECUncHists=false&&fillDataJetQAHists;// leave me on almost always
+const bool fillDataJetJECUncHists=true&&fillDataJetQAHists;// leave me on almost always
 const bool useLinIntForJECUnc=true;
 
 const bool fillDataDijetHists=false;// leave me off almost always
@@ -35,12 +35,12 @@ const bool deepDebug=false; //put to true only if in trouble...
 const long double effMBLumi     =(1.);//placeholder for now
 //const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape] + vzcut
 //const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
-//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut
-//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
-//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut + PFMETfracCut
-//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
-//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape] + vzcut + PFMETfracCut
-//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+//const long double effJet80Lumi  =( * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape] + vzcut + PFMETfracCut
+//const long double effLowJetsLumi=( * 27.108290680) ;
+//const long double effJet80Lumi  =(0.996080 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut
+//const long double effLowJetsLumi=(0.997251 * 27.108290680) ;
+const long double effJet80Lumi  =(0.993674 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut + PFMETfracCut
+const long double effLowJetsLumi=(0.994089 * 27.108290680) ;
 
 //// readForests_ppData_jetPlots
 // ---------------------------------------------------------------------------------------------------------------

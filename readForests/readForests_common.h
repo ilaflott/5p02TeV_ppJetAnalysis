@@ -269,6 +269,7 @@ const std::string MCTreeNames[]={
   "hiEvtAnalyzer/HiTree", 
   "skimanalysis/HltTree",
   "ppTrack/trackTree",
+  "pfcandAnalyzer/pfTree",
   "tupel/EventTree"
   // "hltanalysis/HltTree",
   // "hltobject/"+Calo_HLTBitStrings[0]+"_v" ,
@@ -286,12 +287,12 @@ const float absetabins[]={
   0.5,
   1.0, 
   1.5,
-  2.0,2.5//,2.7//,3.0//5.1//, 
-  //2.5,
-  //3.0, 
-  //3.2,
-  //4.7
-  //5.1
+  2.0,//2.5//,2.7//,3.0//5.1//, 
+  2.5//,
+//  3.0, //if doing jetTrigEff, make sure to use a larger # of eta bins
+//  3.2,
+//  4.7,
+//  5.1 
 };
 const int nbins_abseta=sizeof(absetabins)/sizeof(float)-1;//this is the # of bins in a root histo
 //const int nbins_abseta=sizeof(absetabins)/sizeof(float); //this is the # of elements in the array
@@ -302,12 +303,12 @@ std::string absetabins_str[]={
   "0.5",
   "1.0", 
   "1.5",
-  "2.0","2.5"//,"2.7"//,"3.0"//"5.1"//, 
-  //"2.5",
-  //"3.0",
-  //"3.2",
-  //"4.7",
-  //"5.1"
+  "2.0",//"2.5"//,"2.7"//,"3.0"//"5.1"//, 
+  "2.5"//,
+//  "3.0", //if doing jetTrigEff, make sure to use a larger # of eta bins
+//  "3.2",
+//  "4.7",
+//  "5.1"
 };
 
 

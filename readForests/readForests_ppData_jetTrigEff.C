@@ -15,12 +15,21 @@ const bool useMBevts=false; // leave me off until Ian says to use me
 const std::string trgCombType="PF"; // almost always used
 
 const bool deepDebug=false; //put to true only if in trouble...
+//const bool deepDebug=true; //put to true only if in trouble...
 
 //lumi in Jet80/LowerJets PDs according to brilcalc, accounting for event selection efficiency [inv picobarns]
-const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;
-const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+//const long double effJet80Lumi  =(0.9974435 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape] + vzcut
+//const long double effLowJetsLumi=(0.9984391 * 27.108290680) ;
+//const long double effJet80Lumi  =( * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape] + vzcut + PFMETfracCut
+//const long double effLowJetsLumi=( * 27.108290680) ;
+//const long double effJet80Lumi  =(0.996080 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut
+//const long double effLowJetsLumi=(0.997251 * 27.108290680) ;
+const long double effJet80Lumi  =(0.993674 * 27.385867785) ;//w/ skim cuts [PVqual, HBHENoise, beamscrape, HBHEIsoNoise] + vzcut + PFMETfracCut
+const long double effLowJetsLumi=(0.994089 * 27.108290680) ;
 const bool useTightJetID=false;
 
+const bool usePFCandAnalyzer=true;
+const bool useTupel=false;
 //// readForests_ppData_jetTrigEff
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int endfile , 
@@ -75,19 +84,21 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
   std::string trees[N_dataTrees];
   trees[0]=jetTreeName;
   for(int i=1;i<N_dataTrees;++i){
-    if(i<6){
+    if(i<7){
       trees[i]=dataTreeNames[i];
       if(debugMode){
-	std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
+	if(!useTupel&&i==6)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<" [NOT BEING USED THIS JOB]"<<std::endl;  
+	else if(!usePFCandAnalyzer&&i==5)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<" [NOT BEING USED THIS JOB]"<<std::endl;  
+	else std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
       }
     }
     else{
       if(trgCombType=="PF"){
-	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-6]+"_v";
+	trees[i]=dataTreeNames[i]+PF_HLTBitStrings[i-7]+"_v";
 	if(debugMode)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
       }
       else if(trgCombType=="Calo"){
-	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-6]+"_v";
+	trees[i]=dataTreeNames[i]+Calo_HLTBitStrings[i-7]+"_v";
 	if(debugMode)std::cout<<"trees[i="<<i<<"]="<<trees[i]<<std::endl;  
       }
       else assert(false);      
@@ -95,17 +106,18 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
   }
   //if(debugMode)for(int i=0;i<N_dataTrees;++i)
   //assert(false);
-
+  
   // declare TChains for each tree + friend them
   TChain* jetpp[N_dataTrees];
   for(int t = 0;t<N_dataTrees;++t)  { 
-    if(t==5)continue;//skip defining the tupel tree for this macro
+    if(!usePFCandAnalyzer && t==5) continue;
+    else if(!useTupel && t==6) continue;
     jetpp[t] = new TChain( trees[t].data() );
     if(t>0){
       jetpp[0]->AddFriend( jetpp[t] );      
     }    
   }
-  
+
   // open filelist, add files, including startfile+endfile, to chains
   std::cout<<"opening filelist: "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
@@ -125,7 +137,8 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     
     std::cout<<", to each TChain in array"<<std::endl;
     for(int t = 0;t<N_dataTrees;++t) {
-      if(t==5) continue;//skip adding tupel tree to TChain
+      if(!usePFCandAnalyzer && t==5) continue;
+      if(!useTupel && t==6)continue;
       filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
       if(debugMode)
 	jetpp[t]->TChain::Lookup(true);
@@ -133,7 +146,6 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     lastFileAdded=filename_Forest;  
   }
   assert(filesAdded);//avoid segfault later
-  
 
   // Declare the output file, declare hists after for easy write
   std::cout<<"opening output file "<<outfile<<std::endl;
@@ -970,15 +982,17 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
   jetpp[1]->SetBranchAddress("run",&run_I);
   jetpp[1]->SetBranchAddress("lumi",&lumi_I);
 
-
+  
   // skimanalysis
-  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I,puvertexFilter_I;
+  int pBeamScrapingFilter_I, pHBHENoiseFilterRun2Loose_I, pprimaryvertexFilter_I,puvertexFilter_I;
+  int pHBHEIsoNoiseFilter_I;
   jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
-  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilterRun2Loose_I);//what i have been using
+  jetpp[2]->SetBranchAddress("HBHEIsoNoiseFilterResult",&pHBHEIsoNoiseFilter_I);//only option
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);
   
-
+  
   // ppTrack/trackTree
   //vtxs
   int nVtx_I;
@@ -1163,9 +1177,33 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
   jetpp[4]->SetBranchAddress("HLT_AK4PFJet120_Eta5p1_v1", &PFJet120_I);
   
 
+  
+  
+  //pfcandAnalyzer/pfTree
+  Int_t nPFpart_I;  
+  std::vector<Float_t> *pfpt, *pfphi, *pfeta, *pfE;
+  Float_t pfptArr[2000], pfphiArr[2000], pfetaArr[2000], pfEArr[2000];
+  
+  if(usePFCandAnalyzer){
+    if(debugMode)std::cout<<"using PFCandAnalyzer. Setting branch addresses!"<<std::endl;
+    jetpp[5]->SetBranchAddress( "nPFpart", &nPFpart_I);
+    if(filelistIsJet80){
+      if(debugMode)std::cout<<"filelistIsJet80, pointing branches to std::vector<Float_t>!"<<std::endl;
+      jetpp[5]->SetBranchAddress( "pfPt"     , &pfpt );
+      jetpp[5]->SetBranchAddress( "pfEta"    , &pfeta);
+      jetpp[5]->SetBranchAddress( "pfPhi"    , &pfphi);    
+      jetpp[5]->SetBranchAddress( "pfEnergy" , &pfE);    
+    }
+    else if(filelistIsLowerJets){
+      if(debugMode)std::cout<<"filelistIsLowerJets, pointing branches to Float_t* (a.k.a. Float_t array)"<<std::endl;
+      jetpp[5]->SetBranchAddress( "pfPt"   , &pfptArr );
+      jetpp[5]->SetBranchAddress( "pfEta"  , &pfetaArr);
+      jetpp[5]->SetBranchAddress( "pfPhi"  , &pfphiArr);    
+      jetpp[5]->SetBranchAddress( "pfEnergy"  , &pfEArr);    
+    }
+    else assert(false);
+  }
 
-  
-  
 
   
 
@@ -1173,16 +1211,16 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
   
   //ONE HLT path ONE tree ONE trig obj pt branch
   std::vector<double>  *trgObjpt_40, *trgObjpt_60, *trgObjpt_80, *trgObjpt_100;
-  jetpp[6]->SetBranchAddress("pt",&trgObjpt_40);
-  jetpp[7]->SetBranchAddress("pt",&trgObjpt_60);  
-  jetpp[8]->SetBranchAddress("pt",&trgObjpt_80);  
-  jetpp[9]->SetBranchAddress("pt",&trgObjpt_100);
+  jetpp[7] ->SetBranchAddress("pt",&trgObjpt_40);
+  jetpp[8] ->SetBranchAddress("pt",&trgObjpt_60);  
+  jetpp[9] ->SetBranchAddress("pt",&trgObjpt_80);  
+  jetpp[10]->SetBranchAddress("pt",&trgObjpt_100);
   
   std::vector<double>  *trgObjeta_40, *trgObjeta_60, *trgObjeta_80, *trgObjeta_100;
-  jetpp[6]->SetBranchAddress("eta",&trgObjeta_40);
-  jetpp[7]->SetBranchAddress("eta",&trgObjeta_60);  
-  jetpp[8]->SetBranchAddress("eta",&trgObjeta_80);  
-  jetpp[9]->SetBranchAddress("eta",&trgObjeta_100);
+  jetpp[7]->SetBranchAddress("eta",&trgObjeta_40);
+  jetpp[8]->SetBranchAddress("eta",&trgObjeta_60);  
+  jetpp[9]->SetBranchAddress("eta",&trgObjeta_80);  
+  jetpp[10]->SetBranchAddress("eta",&trgObjeta_100);
   
 
   
@@ -1232,21 +1270,94 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     //grab an entry    
     jetpp[0]->GetEntry(nEvt);
     
-
-
     
     h_NEvents_read->Fill(0.);    //h_NEvents_read->Fill(1.,weight_eS);        
     
+
     // skim/HiEvtAnalysis criteria
-    if( pHBHENoiseFilter_I    ==0    || 
+    if( pHBHENoiseFilterRun2Loose_I    ==0    || 
+	pHBHEIsoNoiseFilter_I    ==0    || 
 	pBeamScrapingFilter_I ==0 || 
 	pprimaryvertexFilter_I==0  )  continue;  
-    h_NEvents_skimCut->Fill(0.);  //h_NEvents_skimCut->Fill(1.,weight_eS); 
+    h_NEvents_skimCut->Fill(0.); 
+
     
     if( fabs(vz_F)>24. )     continue;
     h_NEvents_vzCut->Fill(0.); //h_NEvents_vzCut->Fill(1.,weight_eS);    
-    
 
+
+
+
+
+
+
+
+    if(usePFCandAnalyzer){
+      //PFCANDLOOP
+      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+      
+      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+      //h_nPFpart->Fill(nPFpart_I,weight_eS);
+      
+      for(Int_t part=0;part<nPFpart_I;part++){
+	
+	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+	if(filelistIsJet80){	  
+	  pfpt_part =pfpt ->at(part);	  
+	  pfeta_part=pfeta->at(part);	  
+	  pfphi_part=pfphi->at(part);	  
+	  pfE_part=pfE->at(part);	}
+	else if (filelistIsLowerJets){
+	  pfpt_part  = pfptArr[part];	  
+	  pfeta_part =pfetaArr[part];	  
+	  pfphi_part =pfphiArr[part];	  	
+	  pfE_part  =pfEArr[part];	}
+	else assert(false);
+	
+	//h_pfpt ->Fill(pfpt_part ,weight_eS);
+	//h_pfeta->Fill(pfeta_part,weight_eS);
+	//h_pfphi->Fill(pfphi_part,weight_eS);
+	//h_pfE->Fill(pfE_part,weight_eS);
+	
+	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+	//h_pftheta->Fill(pftheta_part,weight_eS);
+	
+	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+	//h_pfEt->Fill(pfEt_part,weight_eS);
+	
+	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+	sumpfEt+=pfEt_part;
+      }
+      
+      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+      //Float_t sqrtsumpfEt=sqrt(sumpfEt);
+      Float_t PFMETfrac=sumpfpt/sumpfEt;
+      //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+      
+      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      //h_NEvents_PFMETfracCut->Fill(0.);
+      
+      //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+      //h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+      //h_sumpfEt->Fill(sumpfEt,weight_eS);
+
+      //h_sumpfpt->Fill(sumpfpt,weight_eS);
+      //h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      //h_PFMETsig->Fill(PFMETsig,weight_eS);
+      //assert(false);
+    }
+    
+    
+    
+    
+    
+    
     bool MBtrgDec= ( (bool) ( MB_HF1ORp5_I * mb_l1s_I ) ) && useMBevts;
     int  MBtrgPscl= MB_HF1ORp5_p_I * mb_l1s_ps_I;    
     
@@ -1391,7 +1502,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     }
     
     
-
+    
     
     //if(debugMode) std::cout<<"weight_eS="<<weight_eS<<std::endl;    
     bool firedJetTrigger=(is40 || is60 || is80 || is100 );
@@ -1733,6 +1844,9 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 
     }
     
+    
+
+    
     //if the histograms are just be filled w/ zero weight entries... fugghetabouit! skip it! whatsamattayou??!
     //if(!firedTrigger)continue;//doesn't matter if a trigger is fired exclusively for this macro; i want something very specific 
     
@@ -1867,7 +1981,8 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    
 	  }//end jtid==1 specific. 	  
 	  if(deepDebug)std::cout<<"jtid="<<jtid<<std::endl;
-
+	  
+	  
 	  
 	  
 	  
@@ -1921,7 +2036,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	      } 
 	    }
 	    
-	    
+
 	    if(jtid==1){
 	      //TRIGGER EFFICIENCY HISTS
 	      //for measuring trigger eff. of HLT80 --------
@@ -1987,21 +2102,32 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    
 	  }//end fill data jettrig qa hists	
 	    
-	    
-
+	  
 	  
 	  if(fillDataJetQAHists){
 	    
 	    int ind=0;
 	    //if(jtpt>jetQAPtCut){//second jet pt cut
 	    
+	    if(deepDebug){
+	      std::cout<<"  theRapBin="<<  theRapBin<<std::endl;
+	      std::cout<<"       jtid="<<       jtid<<std::endl;
+	      std::cout<<"       jtpt="<<       jtpt<<std::endl;
+	      std::cout<<" eta_F[jet]="<< eta_F[jet]<<std::endl;
+	      assert(false);	    	    
+	    }
+	    
+
 	    
 	    //jets	
 	    hJetQA_jtptEntries[theRapBin][jtid]->Fill(jtpt,1.);	  	
 	    hJetQA[theRapBin][ind][jtid]->Fill(jtpt, weight_eS); ind++;
+
+
 	    hJetQA[theRapBin][ind][jtid]->Fill(rawpt_F[jet], weight_eS); ind++;	    	    
 	    hJetQA[theRapBin][ind][jtid]->Fill(eta_F[jet], weight_eS); ind++;
 	    hJetQA[theRapBin][ind][jtid]->Fill(phi_F[jet], weight_eS); ind++;
+	    
 
 
 	    //tracks
@@ -2047,7 +2173,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	    hJetQA[theRapBin][ind][jtid]->Fill(numConst, weight_eS); ind++; //HIN NUMCONST ~= SMP CONSTCNT	      			      
 	    //}
 
-	    
+
 	    
 	    //this dijet routine probably wont work since the rapidity bin changes. CAUTION!
 	    //looking for the first two good jets that meet the criteria specified
@@ -2095,10 +2221,10 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
 	}//end jtid loop
 
       }//end incjetanalyzer jet loop
-
-
+      
+      
     }//end if useIncJetAnalyzer
-
+    
 
     
     
@@ -2110,7 +2236,7 @@ int readForests_ppData_jetTrigEff( std::string inFilelist , int startfile , int 
     }
     
 
-    
+    //assert(false);
   }//end event loop
     
 

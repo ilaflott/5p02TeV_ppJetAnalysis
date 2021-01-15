@@ -11,6 +11,8 @@ const int jetIDint=(int)fillMCJetIDHists;
 const bool useJERScaleFactors=true;
 
 const bool usegenetabins=true;//
+
+const bool usePFCandAnalyzer=true;
 const bool useTightJetID=false;
 const bool verbose=false;
 
@@ -54,32 +56,42 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   
   // declare TChains for each tree + friend  
   TChain* jetpp[N_MCTrees]={};
-  for(int t = 0;t<N_MCTrees;++t)  { 
+  for(int t = 0;t<N_MCTrees;++t)  {     
+    if(!usePFCandAnalyzer && t==4)continue;
+    //if(!useTupel && t==5)continue;
     jetpp[t] = new TChain( trees[t].data() );
-    if(t>0)jetpp[0]->AddFriend( jetpp[t] );  }
-    
+    if(t>0)jetpp[0]->AddFriend( jetpp[t] );  
+  }
+
+  
   // open filelist
   std::cout<<"opening filelist: "<<inFilelist<<std::endl;
   std::ifstream instr_Forest(inFilelist.c_str(),std::ifstream::in);
   std::string filename_Forest;  
-  std::string lastFileAdded=""; bool filesAdded=false; 
-
-  for(int ifile = 0; ifile<=endfile; ++ifile){    
+  std::string lastFileAdded=""; bool filesAdded=false; //Int_t filesCount=0;
+  for(int ifile = 0; ifile<=endfile; ++ifile){
+    
     // grab a filename, check startfile and end of filelist condition
     instr_Forest>>filename_Forest; 
     if(ifile<startfile){ lastFileAdded=filename_Forest; 
       continue; }
     if(filename_Forest==lastFileAdded){ std::cout<<"end of filelist!"<<std::endl; 
-      break; }    
+      break; }
+    
     std::cout<<"adding file #"<<ifile; 
-    if(debugMode)std::cout<<", "<<filename_Forest;     
+    if(debugMode)std::cout<<", "<<filename_Forest; 
+    
     std::cout<<", to each TChain in array"<<std::endl;
-    for(int t = 0;t<N_MCTrees;++t) filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
+    for(int t = 0;t<N_MCTrees;++t) {
+      if(!usePFCandAnalyzer && t==4)continue;
+      //if(!useTupel &&t==5)continue;
+      filesAdded=jetpp[t]->AddFile(filename_Forest.c_str()); 
+    }
     lastFileAdded=filename_Forest;
-  }//end file loop  
+  }//end file loop
+  
   if(debugMode)std::cout<<"filesAdded="<<filesAdded<<std::endl;
   assert(filesAdded);//avoid segfault later
-
 
   // EXTRA JER SCALE FACTOR SMEARING FITS
   //[0]+[1]/(pow(x,[2])+[3]*x)
@@ -481,12 +493,31 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   jetpp[1]->SetBranchAddress("vx",&vx_F);
   jetpp[1]->SetBranchAddress("vy",&vy_F);
   
+
   // skimanalysis
-  int pBeamScrapingFilter_I, pHBHENoiseFilter_I, pprimaryvertexFilter_I, puvertexFilter_I;
+  int pBeamScrapingFilter_I, pHBHENoiseFilterRun2Loose_I, pprimaryvertexFilter_I, puvertexFilter_I;
+  int pHBHEIsoNoiseFilter_I;
+  jetpp[2]->SetBranchAddress("HBHEIsoNoiseFilterResult",&pHBHEIsoNoiseFilter_I);//only option
   jetpp[2]->SetBranchAddress("pBeamScrapingFilter",&pBeamScrapingFilter_I);
-  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_I);
+  jetpp[2]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilterRun2Loose_I);
   jetpp[2]->SetBranchAddress("pPAprimaryVertexFilter",&pprimaryvertexFilter_I);
   jetpp[2]->SetBranchAddress("pVertexFilterCutGtight",&puvertexFilter_I);  
+
+
+  //pfcandAnalyzer/pfTree
+  Int_t nPFpart_I;  
+  //std::vector<Float_t> *pfpt, *pfphi, *pfeta, *pfE;
+  Float_t pfptArr[2000], pfphiArr[2000], pfetaArr[2000], pfEArr[2000];
+  
+  if(usePFCandAnalyzer){
+    if(debugMode)std::cout<<"using PFCandAnalyzer. Setting branch addresses!"<<std::endl;
+    jetpp[4]->SetBranchAddress( "nPFpart", &nPFpart_I);
+    if(debugMode)std::cout<<"filelistIsLowerJets, pointing branches to Float_t* (a.k.a. Float_t array)"<<std::endl;
+    jetpp[4]->SetBranchAddress( "pfPt"   , &pfptArr );
+    jetpp[4]->SetBranchAddress( "pfEta"  , &pfetaArr);
+    jetpp[4]->SetBranchAddress( "pfPhi"  , &pfphiArr);    
+    jetpp[4]->SetBranchAddress( "pfEnergy"  , &pfEArr);    
+  }
 
 
 
@@ -496,14 +527,14 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   //std::vector<float> *jetHfHadE, *jetHfEmE, *jetChHadFrac, *jetNeutralHadAndHfFrac, *jetChEmFrac, *jetNeutralEmFrac, *jetChMult, *jetConstCnt;  
   if(debugMode)std::cout<<"setting branch addresses for tupel/EventTree"<<std::endl;
   
-  jetpp[4]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
-  jetpp[4]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
-  jetpp[4]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
-  jetpp[4]->SetBranchAddress( "JetAk04E",                   &jetE                   );
-  jetpp[4]->SetBranchAddress( "GJetAk04Pt",                 &GjetPt                  );
-  jetpp[4]->SetBranchAddress( "GJetAk04Eta",                &GjetEta                 );
-  jetpp[4]->SetBranchAddress( "GJetAk04Phi",                &GjetPhi                 );
-  jetpp[4]->SetBranchAddress( "GJetAk04E",                  &GjetE                   );
+  jetpp[5]->SetBranchAddress( "JetAk04Pt",                  &jetPt                  );
+  jetpp[5]->SetBranchAddress( "JetAk04Eta",                 &jetEta                 );
+  jetpp[5]->SetBranchAddress( "JetAk04Phi",                 &jetPhi                 );
+  jetpp[5]->SetBranchAddress( "JetAk04E",                   &jetE                   );
+  jetpp[5]->SetBranchAddress( "GJetAk04Pt",                 &GjetPt                  );
+  jetpp[5]->SetBranchAddress( "GJetAk04Eta",                &GjetEta                 );
+  jetpp[5]->SetBranchAddress( "GJetAk04Phi",                &GjetPhi                 );
+  jetpp[5]->SetBranchAddress( "GJetAk04E",                  &GjetE                   );
 
   
   // event count from files
@@ -554,13 +585,74 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     h_NEvents_read->Fill(1);
     
     // skim/HiEvtAnalysis criteria
-    if( pHBHENoiseFilter_I==0     || 
+    if( pHBHENoiseFilterRun2Loose_I==0     || 
+	pHBHEIsoNoiseFilter_I    ==0    || 
         pBeamScrapingFilter_I==0  || 
         pprimaryvertexFilter_I==0  ) continue;    
     h_NEvents_skimCut->Fill(1);    
 
     if( fabs(vz_F)>24.              ) continue;
     h_NEvents_vzCut->Fill(1);
+
+
+
+
+
+    if(usePFCandAnalyzer){
+      //PFCANDLOOP
+      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+      
+      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+      //h_nPFpart->Fill(nPFpart_I,weight_eS);
+      
+      for(Int_t part=0;part<nPFpart_I;part++){
+	
+	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+	pfpt_part  = pfptArr[part];	  
+	pfeta_part =pfetaArr[part];	  
+	pfphi_part =pfphiArr[part];	  	
+	pfE_part  =pfEArr[part];	
+	
+	//h_pfpt ->Fill(pfpt_part ,weight_eS);
+	//h_pfeta->Fill(pfeta_part,weight_eS);
+	//h_pfphi->Fill(pfphi_part,weight_eS);
+	//h_pfE->Fill(pfE_part,weight_eS);
+	
+	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+	//h_pftheta->Fill(pftheta_part,weight_eS);
+	
+	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+	//h_pfEt->Fill(pfEt_part,weight_eS);
+	
+	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+	sumpfEt+=pfEt_part;
+      }
+      
+      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+      //Float_t sqrtsumpfEt=sqrt(sumpfEt);
+      Float_t PFMETfrac=sumpfpt/sumpfEt;
+      //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+      
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      //h_NEvents_PFMETfracCut->Fill(0.);
+      
+      //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+      //h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+      //h_sumpfEt->Fill(sumpfEt,weight_eS);
+
+      //h_sumpfpt->Fill(sumpfpt,weight_eS);
+      //h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      //h_PFMETsig->Fill(PFMETsig,weight_eS);
+      //assert(false);
+    }
+
     
     //eventAccepted=true;
     //if(debugMode && eventAccepted)
@@ -791,13 +883,13 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float recpt_SFdown=-1.;
       float recpt_SFup=-1.;
       if(useJERScaleFactors){
-	if(theYBin<4&&theYBin>=0){
+	if(theGENYBin<4&&theGENYBin>=0){
 	  recpt_SFdown=recpt;//b.c. SF=1.1 +/- .1 -> (1.0 , 1.1, 1.2)
 	  //std::cout<<std::endl<<"genpt="<<genpt<<std::endl;
 	  //std::cout<<"theYBin="<<theYBin<<std::endl;
 	  //std::cout<<"WAS: recpt="<<recpt<<std::endl;
 	  //std::cout<<"WAS: recpt/genpt="<<recpt/genpt<<std::endl;
-	  smearPY8wJERScaleFactor(JER_sigmu[theYBin],genpt, &recpt);
+	  smearPY8wJERScaleFactor(JER_sigmu[theGENYBin],genpt, &recpt);
 	  recpt_SFup=genpt*(((recpt/genpt-1.)/1.1*1.2)+1.);//b.c. algebra
 	  //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
 	  //std::cout<<"NOW: recpt="<<recpt<<std::endl;
@@ -807,6 +899,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	}
 	else {
 	  //have to do this since i'm running w/ abseta<2.5 and i don't have a JER fit for that region
+	  //h_check_JERScaleFactorSmearing->Fill(recpt,weight_eS);
 	  recpt_SFdown=recpt;
 	  recpt_SFup=recpt;
 	}

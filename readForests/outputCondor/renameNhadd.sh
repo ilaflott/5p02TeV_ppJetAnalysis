@@ -11,7 +11,7 @@ function hadd_ppMC_allInDir(){
     fi
     echo "in dir $PWD"
     R=$1
-    hadd Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PF-allFiles.root ./*.root
+    hadd Py8_CUETP8M1_QCDjetAllPtBins_ak${R}PF-allFiles.root ./ppMC*.root
     return
 }
 
@@ -25,17 +25,17 @@ function hadd_ppData_allInDir(){
 	minbiasdir=$4	
 	echo "hadd'ing MinBias, Jet80, and LowerJets output"
 	#return
-	hadd MinBias_ak${R}PF-allFiles.root         ./${minbiasdir}*.root
-	hadd HighPtJet80_ak${R}PF-allFiles.root     ./${jet80dir}*.root
-	hadd HighPtLowerJets_ak${R}PF-allFiles.root ./${lowjetsdir}*.root
+	hadd MinBias_ak${R}PF-allFiles.root         ./${minbiasdir}ppData*.root
+	hadd HighPtJet80_ak${R}PF-allFiles.root     ./${jet80dir}ppData*.root
+	hadd HighPtLowerJets_ak${R}PF-allFiles.root ./${lowjetsdir}ppData*.root
 	hadd HighPtJetTrig_noMB_ak${R}PF-allFiles.root HighPtJet80_ak${R}PF-allFiles.root HighPtLowerJets_ak${R}PF-allFiles.root
 	hadd HighPtJetTrig_ak${R}PF-allFiles.root MinBias_ak${R}PF-allFiles.root HighPtLowerJets_ak${R}PF-allFiles.root HighPtJet80_ak${R}PF-allFiles.root
     elif [[ $# -eq 3 ]] 
     then
 	echo "hadd'ing Jet80 and LowerJets output"
 	#return
-	hadd HighPtJet80_ak${R}PF-allFiles.root     ./${jet80dir}*.root
-	hadd HighPtLowerJets_ak${R}PF-allFiles.root ./${lowjetsdir}*.root
+	hadd HighPtJet80_ak${R}PF-allFiles.root     ./${jet80dir}ppData*.root
+	hadd HighPtLowerJets_ak${R}PF-allFiles.root ./${lowjetsdir}ppData*.root
 	hadd HighPtJetTrig_noMB_ak${R}PF-allFiles.root HighPtJet80_ak${R}PF-allFiles.root HighPtLowerJets_ak${R}PF-allFiles.root
     else
         echo "error. usage is ..."

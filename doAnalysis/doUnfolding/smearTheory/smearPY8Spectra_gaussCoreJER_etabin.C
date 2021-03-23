@@ -11,9 +11,8 @@ const bool useJERscaleFactors=false;//note; alters JER syst. as well.
 const bool setThyPDFErrors=true;
 
 
-//const int nEvents=1e+09;  ///10x typical
-const int nEvents=1e+08;  ///typical
-//const int nEvents=5e+07;  /// debug nevents
+const int nEvents=1e+09;  ///new typical
+//const int nEvents=1e+08;  ///typical
 //const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
@@ -37,7 +36,7 @@ std::string NPCorrFits_text=_AVERAGE_NPS_TXT;
 
 //SYSTEMATICS
 //JER
-const bool doJERsys=false;
+const bool doJERsys=true;
 //NPCs
 const bool doNPsys=false;//involves making a new thy hist, therefore, also a sep spline fit
 //NP systs v1, using HERWIG EE4C/PYTHIA8 NPs for unfolding, shifting NP fit params up/down by 1 sigma
@@ -1325,7 +1324,16 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
 		    smeared_rnd, 
 		    smeared_rnd_test, 
 		    (TH2D*)response_th2); }  
-
+  
+  TH1D *theory_rnd_NP       = (TH1D*)theory_rnd->Clone("theory_rnd_NP"      );  
+  TH1D *smeared_rnd_NP      = (TH1D*)smeared_rnd->Clone("smeared_rnd_NP"     );
+  TH1D *smeared_rnd_NP_test = (TH1D*)smeared_rnd_test->Clone("smeared_rnd_NP_test");
+  TH2D* response_NP_th2     = (TH2D*)response_th2->Clone("response_NP_th2"    );
+  
+  
+  
+  
+  
   divideBinWidth(theory_rnd);  //for normalization only.
   divideBinWidth(smeared_rnd); 
   divideBinWidth(smeared_rnd_test); 
@@ -1460,6 +1468,12 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   TH1D *smeared_rnd_JERsysup_test = NULL   , *smeared_rnd_JERsysdown_test = NULL;
   TH2D *   response_JERsysup_th2     = NULL, *   response_JERsysdown_th2     = NULL;
 
+  TH1D * theory_rnd_NP_JERsysup       = NULL  ,* theory_rnd_NP_JERsysdown       = NULL  ;
+  TH1D *smeared_rnd_NP_JERsysup      = NULL   ,*smeared_rnd_NP_JERsysdown      = NULL   ;
+  TH1D *smeared_rnd_NP_JERsysup_test = NULL   ,*smeared_rnd_NP_JERsysdown_test = NULL   ;
+  TH2D *   response_NP_JERsysup_th2     = NULL,*   response_NP_JERsysdown_th2     = NULL;
+
+
   if(doJERsys){
     //shift JER up
     theory_rnd_JERsysup       = new TH1D("theory_rnd_JERsysup","theory_rnd_JERsysup",             n_thybins    , thybins);   
@@ -1499,6 +1513,12 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     //		      smeared_rnd_JERsysup_test, 
     //		      (TH2D*)response_JERsysup_th2); }  
 
+
+     theory_rnd_NP_JERsysup      = (TH1D*)  theory_rnd_JERsysup->Clone(      "theory_rnd_NP_JERsysup"      );  
+    smeared_rnd_NP_JERsysup      = (TH1D*) smeared_rnd_JERsysup->Clone(     "smeared_rnd_NP_JERsysup"     );
+    smeared_rnd_NP_JERsysup_test = (TH1D*) smeared_rnd_JERsysup_test->Clone("smeared_rnd_NP_JERsysup_test");
+       response_NP_JERsysup_th2  = (TH2D*)response_JERsysup_th2->Clone(        "response_NP_JERsysup_th2"    );
+    
     divideBinWidth(theory_rnd_JERsysup);  //for normalization only.
     divideBinWidth(smeared_rnd_JERsysup); 
     divideBinWidth(smeared_rnd_JERsysup_test); 
@@ -1553,6 +1573,13 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
 //		      smeared_rnd_JERsysdown, 
 //		      smeared_rnd_JERsysdown_test, 
 //		      (TH2D*)response_JERsysdown_th2); }  
+
+
+     theory_rnd_NP_JERsysdown      = (TH1D*)  theory_rnd_JERsysdown->Clone(      "theory_rnd_NP_JERsysdown"      );  
+    smeared_rnd_NP_JERsysdown      = (TH1D*) smeared_rnd_JERsysdown->Clone(     "smeared_rnd_NP_JERsysdown"     );
+    smeared_rnd_NP_JERsysdown_test = (TH1D*) smeared_rnd_JERsysdown_test->Clone("smeared_rnd_NP_JERsysdown_test");
+       response_NP_JERsysdown_th2  = (TH2D*)response_JERsysdown_th2->Clone(        "response_NP_JERsysdown_th2"    );
+
 
     divideBinWidth(theory_rnd_JERsysdown);  //for normalization only.
     divideBinWidth(smeared_rnd_JERsysdown); 
@@ -1800,43 +1827,45 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
   //////////////////////  START production of Smeared NLO+NP spectra  /////////////////////////
   //-----------------------------------------------------------------------------------------//
   std::cout<<"creating TH1 for toy NP+"+PY8orderstring+" spectra generation"<<std::endl<<std::endl;
-  TH1D *theory_rnd_NP    = new TH1D("theory_rnd_NP","theory_rnd_NP", n_thybins, thybins);   
-  TH1D *smeared_rnd_NP = new TH1D("smeared_rnd_NP","smeared_rnd_NP", n_thybins, thybins);     
-  TH1D *smeared_rnd_NP_test = new TH1D("smeared_rnd_NP_test","smeared_rnd_NP_test", n_thybins, thybins);     
-  TH2D* response_NP_th2=new TH2D("response_NP_th2","response_NP_th2",
-				     (Int_t)n_thybins, (Double_t*)thybins,
-				     (Int_t)n_thybins, (Double_t*)thybins);
+//  TH1D *theory_rnd_NP       = new TH1D("theory_rnd_NP"      ,"theory_rnd_NP", n_thybins, thybins);   
+//  TH1D *smeared_rnd_NP      = new TH1D("smeared_rnd_NP"     ,"smeared_rnd_NP", n_thybins, thybins);     
+//  TH1D *smeared_rnd_NP_test = new TH1D("smeared_rnd_NP_test","smeared_rnd_NP_test", n_thybins, thybins);     
+//  TH2D* response_NP_th2     = new TH2D("response_NP_th2"    ,"response_NP_th2",
+//				     (Int_t)n_thybins, (Double_t*)thybins,
+//				     (Int_t)n_thybins, (Double_t*)thybins);
   
   //----------------------------------------------------------------------------------------------------------------//
-  std::cout<<"making rnd_NP toy MC hists"<<std::endl;        
-  if(useSplineWeights){
-    makeToySpectra(theory_NP_rebin, 
-		   (TSpline3*)spline3_NP, 
-		   (TF1*)fJER, 
-		   nEvents, 
-		   theory_rnd_NP, 
-		   smeared_rnd_NP, 
-		   smeared_rnd_NP_test, 
-		   (TH2D*) response_NP_th2, 	
-		   (TF1*) spline3_NP_ext); }		    //
-  else if(useFitWeights&&useModLogFit){
-    makeToySpectra(theory_NP_rebin, 
-		   (TF1*) logFit_NP_4Toy,//(TF1*)modLog4Fit_NP,
-		   (TF1*)fJER, 
-		   nEvents, 
-		   theory_rnd_NP, 
-		   smeared_rnd_NP, 
-		   smeared_rnd_NP_test, 
-		   (TH2D*) response_NP_th2);}
-  else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
-    makeToySpectra( (TH1D*)theory_NP_rebin, 
-		    (TF1*)_7TeVFitA_NP,// (TF1*)_7TeVFitB_NP, //
-		    (TF1*)fJER, 
-		    nEvents, 
-		    theory_rnd_NP, 
-		    smeared_rnd_NP, 
-		    smeared_rnd_NP_test, 
-		    (TH2D*)response_NP_th2); }  
+  if(false){
+    std::cout<<"making rnd_NP toy MC hists"<<std::endl;        
+    if(useSplineWeights){
+      makeToySpectra(theory_NP_rebin, 
+		     (TSpline3*)spline3_NP, 
+		     (TF1*)fJER, 
+		     nEvents, 
+		     theory_rnd_NP, 
+		     smeared_rnd_NP, 
+		     smeared_rnd_NP_test, 
+		     (TH2D*) response_NP_th2, 	
+		     (TF1*) spline3_NP_ext); }		    //
+    else if(useFitWeights&&useModLogFit){
+      makeToySpectra(theory_NP_rebin, 
+		     (TF1*) logFit_NP_4Toy,//(TF1*)modLog4Fit_NP,
+		     (TF1*)fJER, 
+		     nEvents, 
+		     theory_rnd_NP, 
+		     smeared_rnd_NP, 
+		     smeared_rnd_NP_test, 
+		     (TH2D*) response_NP_th2);}
+    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+      makeToySpectra( (TH1D*)theory_NP_rebin, 
+		      (TF1*)_7TeVFitA_NP,// (TF1*)_7TeVFitB_NP, //
+		      (TF1*)fJER, 
+		      nEvents, 
+		      theory_rnd_NP, 
+		      smeared_rnd_NP, 
+		      smeared_rnd_NP_test, 
+		      (TH2D*)response_NP_th2); }  
+  }
 
   //----------------------------------------------------------------------------------------------------------------//
   
@@ -1970,49 +1999,48 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
 
   
   //--------------------------------------------------------------------------------------------------------//
-  TH1D * theory_rnd_NP_JERsysup       = NULL  ,* theory_rnd_NP_JERsysdown       = NULL  ;
-  TH1D *smeared_rnd_NP_JERsysup      = NULL   ,*smeared_rnd_NP_JERsysdown      = NULL   ;
-  TH1D *smeared_rnd_NP_JERsysup_test = NULL   ,*smeared_rnd_NP_JERsysdown_test = NULL   ;
-  TH2D *   response_NP_JERsysup_th2     = NULL,*   response_NP_JERsysdown_th2     = NULL;
-				 
+  
   if(doJERsys){
-    //shift JER up
-    theory_rnd_NP_JERsysup       = new TH1D("theory_rnd_NP_JERsysup","theory_rnd_NP_JERsysup",             n_thybins    , thybins);   
-    smeared_rnd_NP_JERsysup      = new TH1D("smeared_rnd_NP_JERsysup","smeared_rnd_NP_JERsysup",           n_thybins, thybins);   
-    smeared_rnd_NP_JERsysup_test = new TH1D("smeared_rnd_NP_JERsysup_test","smeared_rnd_NP_JERsysup_test", n_thybins, thybins);       
-    response_NP_JERsysup_th2=new TH2D("response_NP_JERsysup_th2","response_NP_JERsysup_th2",
-				   (Int_t)n_thybins, (Double_t*)thybins,
-				   (Int_t)n_thybins, (Double_t*)thybins);  
+    //    //shift JER up
+    //    theory_rnd_NP_JERsysup       = new TH1D("theory_rnd_NP_JERsysup","theory_rnd_NP_JERsysup",             n_thybins    , thybins);   
+    //    smeared_rnd_NP_JERsysup      = new TH1D("smeared_rnd_NP_JERsysup","smeared_rnd_NP_JERsysup",           n_thybins, thybins);   
+    //    smeared_rnd_NP_JERsysup_test = new TH1D("smeared_rnd_NP_JERsysup_test","smeared_rnd_NP_JERsysup_test", n_thybins, thybins);       
+    //    response_NP_JERsysup_th2=new TH2D("response_NP_JERsysup_th2","response_NP_JERsysup_th2",
+    //				      (Int_t)n_thybins, (Double_t*)thybins,
+    //				      (Int_t)n_thybins, (Double_t*)thybins);  
     
-    std::cout<<"making rnd_NP_JERsysup toy MC hists"<<std::endl;
-    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
-      makeToySpectra( (TH1D*)theory_NP_rebin, 
-		      (TSpline3*)spline3_NP, 
-		      (TF1*)fJER_sysup, 
-		      nEvents, 
-		      theory_rnd_NP_JERsysup, 
-		      smeared_rnd_NP_JERsysup, 
-		      smeared_rnd_NP_JERsysup_test, 
-		      (TH2D*)response_NP_JERsysup_th2,
-		      NULL); }//		    NULL); }
-    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
-    //      makeToySpectra( (TH1D*)theory_rebin, 
-    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
-    //		      (TF1*)fJER_sysup, 
-    //		      nEvents, 
-    //		      theory_rnd_NP_JERsysup, 
-    //		      smeared_rnd_NP_JERsysup, 
-    //		      smeared_rnd_NP_JERsysup_test, 
-    //		      (TH2D*)response_NP_JERsysup_th2); }  
-    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
-    //      makeToySpectra( (TH1D*)theory_rebin, 
-    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
-    //		      (TF1*)fJER_sysup, 
-    //		      nEvents, 
-    //		      theory_rnd_NP_JERsysup, 
-    //		      smeared_rnd_NP_JERsysup, 
-    //		      smeared_rnd_NP_JERsysup_test, 
-    //		      (TH2D*)response_NP_JERsysup_th2); }  
+    if(false){
+      
+      std::cout<<"making rnd_NP_JERsysup toy MC hists"<<std::endl;
+      if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+	makeToySpectra( (TH1D*)theory_NP_rebin, 
+			(TSpline3*)spline3_NP, 
+			(TF1*)fJER_sysup, 
+			nEvents, 
+			theory_rnd_NP_JERsysup, 
+			smeared_rnd_NP_JERsysup, 
+			smeared_rnd_NP_JERsysup_test, 
+			(TH2D*)response_NP_JERsysup_th2,
+			NULL); }//		    NULL); }
+      //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+      //      makeToySpectra( (TH1D*)theory_rebin, 
+      //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+      //		      (TF1*)fJER_sysup, 
+      //		      nEvents, 
+      //		      theory_rnd_NP_JERsysup, 
+      //		      smeared_rnd_NP_JERsysup, 
+      //		      smeared_rnd_NP_JERsysup_test, 
+      //		      (TH2D*)response_NP_JERsysup_th2); }  
+      //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+      //      makeToySpectra( (TH1D*)theory_rebin, 
+      //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+      //		      (TF1*)fJER_sysup, 
+      //		      nEvents, 
+      //		      theory_rnd_NP_JERsysup, 
+      //		      smeared_rnd_NP_JERsysup, 
+      //		      smeared_rnd_NP_JERsysup_test, 
+      //		      (TH2D*)response_NP_JERsysup_th2); }  
+    }
   
     divideBinWidth(theory_rnd_NP_JERsysup);  //for normalization only.
     divideBinWidth(smeared_rnd_NP_JERsysup); 
@@ -2030,44 +2058,45 @@ int smearPY8Spectra_gaussCoreJER_etabin( std::string in_PY8fileString=in_PY8File
     smeared_rnd_NP_JERsysup_test->SetLineColor(kBlue-5);    
 
 
-    //shift JER down
-    theory_rnd_NP_JERsysdown       = new TH1D("theory_rnd_NP_JERsysdown","theory_rnd_NP_JERsysdown",             n_thybins    , thybins);   
-    smeared_rnd_NP_JERsysdown      = new TH1D("smeared_rnd_NP_JERsysdown","smeared_rnd_NP_JERsysdown",           n_thybins, thybins);   
-    smeared_rnd_NP_JERsysdown_test = new TH1D("smeared_rnd_NP_JERsysdown_test","smeared_rnd_NP_JERsysdown_test", n_thybins, thybins);       
-    response_NP_JERsysdown_th2=new TH2D("response_NP_JERsysdown_th2","response_NP_JERsysdown_th2",
-				   (Int_t)n_thybins, (Double_t*)thybins,
-				   (Int_t)n_thybins, (Double_t*)thybins);  
+////shift JER down
+//theory_rnd_NP_JERsysdown       = new TH1D("theory_rnd_NP_JERsysdown","theory_rnd_NP_JERsysdown",             n_thybins    , thybins);   
+//smeared_rnd_NP_JERsysdown      = new TH1D("smeared_rnd_NP_JERsysdown","smeared_rnd_NP_JERsysdown",           n_thybins, thybins);   
+//smeared_rnd_NP_JERsysdown_test = new TH1D("smeared_rnd_NP_JERsysdown_test","smeared_rnd_NP_JERsysdown_test", n_thybins, thybins);       
+//response_NP_JERsysdown_th2=new TH2D("response_NP_JERsysdown_th2","response_NP_JERsysdown_th2",
+//				   (Int_t)n_thybins, (Double_t*)thybins,
+//				   (Int_t)n_thybins, (Double_t*)thybins);  
     
-    std::cout<<"making rnd_NP_JERsysdown toy MC hists"<<std::endl;
-    if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
-      makeToySpectra( (TH1D*)theory_NP_rebin, 
-		      (TSpline3*)spline3_NP, 
-		      (TF1*)fJER_sysdown, 
-		      nEvents, 
-		      theory_rnd_NP_JERsysdown, 
-		      smeared_rnd_NP_JERsysdown, 
-		      smeared_rnd_NP_JERsysdown_test, 
-		      (TH2D*)response_NP_JERsysdown_th2,
-		      NULL); }//		    NULL); }
-    //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
-    //      makeToySpectra( (TH1D*)theory_NP_rebin, 
-    //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
-    //		      (TF1*)fJER_sysdown, 
-    //		      nEvents, 
-    //		      theory_rnd_NP_JERsysdown, 
-    //		      smeared_rnd_NP_JERsysdown, 
-    //		      smeared_rnd_NP_JERsysdown_test, 
-    //		      (TH2D*)response_NP_JERsysdown_th2); }  
-    //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
-    //      makeToySpectra( (TH1D*)theory_NP_rebin, 
-    //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
-    //		      (TF1*)fJER_sysdown, 
-    //		      nEvents, 
-    //		      theory_rnd_NP_JERsysdown, 
-    //		      smeared_rnd_NP_JERsysdown, 
-    //		      smeared_rnd_NP_JERsysdown_test, 
-    //		      (TH2D*)response_NP_JERsysdown_th2); }  
-  
+    if(false){
+      std::cout<<"making rnd_NP_JERsysdown toy MC hists"<<std::endl;
+      if(useSplineWeights){//spline fit w/o ext up to ptmax of 686 works well, w/ ext up to 1000 works about same w/ more ad-hoc-ness...
+	makeToySpectra( (TH1D*)theory_NP_rebin, 
+			(TSpline3*)spline3_NP, 
+			(TF1*)fJER_sysdown, 
+			nEvents, 
+			theory_rnd_NP_JERsysdown, 
+			smeared_rnd_NP_JERsysdown, 
+			smeared_rnd_NP_JERsysdown_test, 
+			(TH2D*)response_NP_JERsysdown_th2,
+			NULL); }//		    NULL); }
+      //    else if(useFitWeights&&useModLogFit){//looks like modlog4Fit wins!
+      //      makeToySpectra( (TH1D*)theory_NP_rebin, 
+      //		      (TF1*)logFit_4Toy, //		    (TF1*)modLog4Fit, // (TF1*)modLog3Fit, // 		    
+      //		      (TF1*)fJER_sysdown, 
+      //		      nEvents, 
+      //		      theory_rnd_NP_JERsysdown, 
+      //		      smeared_rnd_NP_JERsysdown, 
+      //		      smeared_rnd_NP_JERsysdown_test, 
+      //		      (TH2D*)response_NP_JERsysdown_th2); }  
+      //    else if(useFitWeights&&use7TeVFit){//must decide between A and B TO DO
+      //      makeToySpectra( (TH1D*)theory_NP_rebin, 
+      //		      (TF1*)_7TeVFitA,// (TF1*)_7TeVFitB, //
+      //		      (TF1*)fJER_sysdown, 
+      //		      nEvents, 
+      //		      theory_rnd_NP_JERsysdown, 
+      //		      smeared_rnd_NP_JERsysdown, 
+      //		      smeared_rnd_NP_JERsysdown_test, 
+      //		      (TH2D*)response_NP_JERsysdown_th2); }  
+    }
     divideBinWidth(theory_rnd_NP_JERsysdown);  //for normalization only.
     divideBinWidth(smeared_rnd_NP_JERsysdown); 
     divideBinWidth(smeared_rnd_NP_JERsysdown_test); 

@@ -4,9 +4,9 @@
 dojetQAPlots=0
 dojetTrigQAPlots=0   
 dojetTrigEff=0
-dojetIDQAPlots=0
+dojetIDQAPlots=1
 dojetMultPlots=0   #old
-doevtCounts=1
+doevtCounts=0
 scpOutput=0
 
 
@@ -284,7 +284,7 @@ then
     #scp2Serin "output/ak4PF_Py8_CUETP8M1_00eta10_08.19.19_SMPbins_noDRCut_semifinal_jetIDPlots.*"
 
     source run_printPlots_jetIDPlots.sh "4" "01.05.21_outputCondor" "01-05-21"  "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"  "00eta20_01.05.21_semifinalv4"     "ppData"
-    source run_printPlots_jetIDPlots.sh "4" "01.05.21_outputCondor" "01-05-21"  "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"  "00eta20_01.05.21_semifinalv4"     "ppMC"
+    #    source run_printPlots_jetIDPlots.sh "4" "01.05.21_outputCondor" "01-05-21"  "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"  "00eta20_01.05.21_semifinalv4"     "ppMC"
     
     ##############################################
     

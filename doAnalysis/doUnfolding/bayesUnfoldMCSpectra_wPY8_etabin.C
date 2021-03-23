@@ -6,7 +6,7 @@ const bool debugMode=true, debugWrite=false;
 const bool drawRespMatrix=true;
 const bool dokIterQA=true;
 const bool doBiasTest=false;
-const bool setDataCovMat=true;
+const bool setDataCovMat=false;
 const bool usePseudoRapBins=false;
 const bool useRapBins=true&&!usePseudoRapBins;
 const std::string ptbintype="merged_SMP";
@@ -25,19 +25,21 @@ RooUnfold::ErrorTreatment errorTreatment=RooUnfold::kCovariance;
 //const bool drawLumisyst=true;
 
 // CODE --------------------------------------------------
-int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-06-19_jetPlots_0.0eta2.0",  
+int bayesUnfoldMCSpectra_wPY8_etabin(	std::string inFile_Data_dir= "01.06.19_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-06-19_jetPlots_0.0eta2.0",  
 					std::string baseName="Bayes_test" , 
-				       const int etabinint=0,const int kIterInput=5,
+					const int etabinint=0,
+					const int kIterInput=5,
 					std::string inFile_MC_dir  = "smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/", 
 					std::string inFile_MC_name ="NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_", 
 					const bool doSystUnf=false,
 					std::string systUnfType="",
 					std::string systSubType="",
-					const bool applyNPCorrs=true,
+					const bool applyNPCorrs=false,
 					const bool doJetID=true     , 
 					const bool useSimpBins=false){//, 
+
   //const int kIterInput=5 ){//, //const int etabinint=0){
-  std::cout<<"----------------- running bayesUnfoldDataSpectra_wNLO_etabin -----------------"<<std::endl;
+  std::cout<<"----------------- running bayesUnfoldMCSpectra_wPY8_etabin -----------------"<<std::endl;
   if(debugMode)std::cout<<std::endl<<"debugMode is ON"<<std::endl<<std::endl; 
   
   // BINNING -----------  
@@ -55,7 +57,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   if(doSystUnf)std::cout<<"doing systematic errors for "<<systUnfType + " " + systSubType << std::endl;
   if(applyNPCorrs)std::cout<<"applying NP corrections"<<std::endl;
   
-
+  std::cout<<"applyNPCorrs="<<applyNPCorrs<<std::endl;
+  std::cout<<"(int)applyNPCorrs="<<(int)applyNPCorrs<<std::endl;
+  //assert(false);
   
   gStyle->SetOptStat(0);
   gROOT->ForceStyle();
@@ -114,8 +118,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   
   
   // INFILE NAME(S) -----------
-  //const std::string inFile_MC_name="/Py8_CUETP8M1_QCDjetAllPtBins_"+fullJetType+"-allFiles.root";
-  const std::string inFile_Data_name="/HighPtJetTrig_noMB_ak4PF-allFiles.root";
+  const std::string inFile_Data_name="/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root";
+  //const std::string inFile_Data_name="/HighPtJetTrig_noMB_ak4PF-allFiles.root";
   
   // OUTPUT FILE, NAME(S) -----------
   std::string outFileName=unfoldDataSpectra_outdir+fullJetType;
@@ -678,21 +682,22 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   //for output
   if(debugWrite)fout->cd();    
   
-  TH1D* hJetQA_jtptEntries=(TH1D*)fpp_Data->Get(("hJetQA_1wJetID_jtptEntries_etabin"+std::to_string(etabinint)).c_str());
+  TH1D* hJetQA_jtptEntries=NULL;//(TH1D*)fpp_Data->Get(("hJetQA_1wJetID_jtptEntries_etabin"+std::to_string(etabinint)).c_str());
   if(hJetQA_jtptEntries){
     hJetQA_jtptEntries = (TH1D*)hJetQA_jtptEntries->Rebin(nbins_pt_reco, hJetQA_jtptEntries->GetTitle(), boundaries_pt_reco);  
   }
   
   // ---------- reco, measured spectra to unfold
   //std::string histTitle="hJetSpectraRap";
-  std::string histTitle="hJetQA";
-  if(doJetID)histTitle+="_1wJetID";
-  else histTitle+="_0wJetID";
-  //else histTitle+="_0wJetID";
+  //std::string histTitle="hpp_reco_wJetID_R4_20_eta_20";//JERsysdown == extra smearing w/ JERSF == 1.0 == no extra smearing == native PYTHIA8 JER
+  std::string histTitle="hpp_reco_wJetID_R4_20_eta_20_JERsysdown";//JERsysdown == extra smearing w/ JERSF == 1.0 == no extra smearing == native PYTHIA8 JER
+  //    if(doJetID)histTitle+="_1wJetID";
+  //  else histTitle+="_0wJetID";
+  //  //else histTitle+="_0wJetID";
   if(usePseudoRapBins)
-    histTitle+="_jtpt_etabin"+std::to_string(etabinint);
+    histTitle+="_etabin"+std::to_string(etabinint);
   else if(useRapBins)    
-    histTitle+="_jtpt_ybin"+std::to_string(etabinint);
+    histTitle+="_ybin"+std::to_string(etabinint);
   
   TH1D*  hrec = (TH1D*)fpp_Data->Get( histTitle.c_str() ); //errs = sqrt (sum sq weights)/lumi
   if(debugWrite)hrec->Write();
@@ -701,7 +706,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   histTitle+="_divBylumietabin";
   double effIntgrtdLumi=computeEffLumi(fpp_Data);
   effIntgrtdLumi=1.e+03;//TEMPORARY?!
-  hrec->Scale(1./effIntgrtdLumi); // lumi
+  //hrec->Scale(1./effIntgrtdLumi); // lumi
   if(debugWrite)hrec->Write( (histTitle).c_str() );
   if(debugMode)hrec->Print("base");
   
@@ -732,14 +737,51 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   hrec_rebin->SetMarkerColor(kBlue);     
   hrec_rebin->SetLineColor(kBlue);     
   hrec_rebin->SetMarkerSize(1.02);     
+  
+  std::string histTitle_GEN="hpp_gen_wJetID_R4_20_eta_20";
+  if(usePseudoRapBins)
+    histTitle_GEN+="_etabin"+std::to_string(etabinint);
+  else if(useRapBins)    
+    histTitle_GEN+="_ybin"+std::to_string(etabinint);
+  
+  TH1D* hrec_GEN_PY8=(TH1D*)fpp_Data->Get(histTitle_GEN.c_str());
+
+  histTitle_GEN+="_clone";
+  TH1D *hrec_GEN_PY8_rebin = (TH1D*)hrec_GEN_PY8->Clone( (histTitle_GEN).c_str() );
+  if(debugWrite)hrec_rebin->Write(histTitle_GEN.c_str());
+  if(debugMode)hrec_rebin->Print("base");
+  
+  std::cout<<"rebinning hrec_GEN_PY8..."<<std::endl;
+  histTitle_GEN+="_rebins";
+  hrec_GEN_PY8_rebin = (TH1D*)hrec_GEN_PY8_rebin->Rebin( nbins_pt_reco, (histTitle_GEN).c_str() , boundaries_pt_reco);//errs = sqrt (sum sq weights)/lumi
+  //divideBinWidth(hrec_GEN_PY8_rebin);
+  
+  if(debugWrite)hrec_GEN_PY8_rebin->Write(histTitle_GEN.c_str());   
+  if(debugMode)hrec_GEN_PY8_rebin->Print("base");  
+  
+  if(clearOverUnderflows){
+    histTitle_GEN+="_noOverUnderFlows";
+    TH1clearOverUnderflows((TH1*)hrec_GEN_PY8_rebin);
+    if(debugWrite)hrec_GEN_PY8_rebin->Write(histTitle_GEN.c_str());
+    if(debugMode)hrec_GEN_PY8_rebin->Print("base");  
+  }
+  
+  //cosmetics
+  hrec_GEN_PY8_rebin->SetMarkerStyle(kOpenCircle);
+  hrec_GEN_PY8_rebin->SetMarkerColor(kMagenta);     
+  hrec_GEN_PY8_rebin->SetLineColor(kMagenta);     
+  hrec_GEN_PY8_rebin->SetMarkerSize(1.02);     
+  
+  
+  
 
   TH2D* hrec_covmat=NULL;  TH2D* hrec_covmat_rebin=NULL;
   //if(setDataCovMat){
   if(debugMode)std::cout<<"getting covariance matrix from data file"<<std::endl;    
-  if(usePseudoRapBins)
-    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_etabin_"+std::to_string(etabinint)).c_str());
+  if(usePseudoRapBins)//hpp_mcclosure_covmat_test_wJetID_ybin_0
+    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_mcclosure_covmat_test_wJetID_etabin_"+std::to_string(etabinint)).c_str());
   else if(useRapBins)
-    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_covmat_wJetID_ybin_"+std::to_string(etabinint)).c_str());
+    hrec_covmat=(TH2D*)fpp_Data->Get( ("hpp_mcclosure_covmat_test_wJetID_ybin_"+std::to_string(etabinint)).c_str());
   
   hrec_covmat_rebin=(TH2D*)hrec_covmat->Clone ( ((std::string)hrec_covmat->GetName()+"_clone").c_str());
   
@@ -756,13 +798,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
                                                                 // lumi included at readForests step now
   if(debugWrite)hrec_covmat_rebin->Write(TH2_title.c_str());
   
-  if(setDataCovMat){
-    //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
-    for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
-      hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );//errs(i) = sqrt(covmat(i,i)) 
-  }
-
-
+  //if(setDataCovMat){
+  //  //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+  //  for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+  //    hrec_rebin->SetBinError(i, sqrt(hrec_covmat_rebin->GetBinContent(i,i)) );//errs(i) = sqrt(covmat(i,i)) 
+  //}
+  
 
 
   // ---------- reco, measured spectra, JEC sysup/down, to unfold
@@ -772,7 +813,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   TH1D*  hrec_JECsysdown = NULL, * hrec_JECsysdown_rebin=NULL;
   TH2D*  hrec_covmat_JECsysdown=NULL;  TH2D* hrec_covmat_JECsysdown_rebin=NULL;
 
-  if(systUnfType=="JEC"){
+  if(doSystUnf && systUnfType=="JEC"){
 
     //SYSUP
     std::string JECsysuphistTitle="hJetQA";
@@ -840,13 +881,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     hrec_covmat_JECsysup_rebin->Scale(1./(effIntgrtdLumi*effIntgrtdLumi)); // lumi
     if(debugWrite)hrec_covmat_JECsysup_rebin->Write(TH2_title.c_str());
     
-    if(setDataCovMat){      
-      //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
-      for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
-	hrec_JECsysup_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysup_rebin->GetBinContent(i,i)) );
-    }
+    //if(setDataCovMat){      
+    //  //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+    //  for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+    //	hrec_JECsysup_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysup_rebin->GetBinContent(i,i)) );
+    //}
     
-
+    
     
     //SYSDOWN
     std::string JECsysdownhistTitle="hJetQA";
@@ -921,16 +962,18 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     if(debugWrite)hrec_covmat_JECsysdown_rebin->Write(TH2_title.c_str());
 
     
-
-    if(setDataCovMat){    //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
-      for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
-	hrec_JECsysdown_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysdown_rebin->GetBinContent(i,i)) );
-    }
-
-
-  }  
+    //set the errors on the measured histogram to the square root of the diagonals of the calculated covariance matrix
+    //if(setDataCovMat){
+    //  for(int i=1; i<= (hrec_rebin->GetNbinsX());i++)
+    //	hrec_JECsysdown_rebin->SetBinError(i, sqrt(hrec_covmat_JECsysdown_rebin->GetBinContent(i,i)) );
+    //}
+    
+    
+  }
   
   
+  
+  //assert(false);
 
   
   
@@ -972,14 +1015,14 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
   std::string CT14NPs ="" ; 
   TFile*fNLO_CT14nlo=NULL;
-  if(inFile_MC_name.find("murmufHTp")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo3.c_str());
+  if(true)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo3.c_str());
   else  if     (inFile_MC_name.find("murmufpt1")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo2.c_str());
   else  if     (inFile_MC_name.find("murmufpt")!=std::string::npos)fNLO_CT14nlo=TFile::Open(fNLOFile_R04_CT14nlo.c_str());
   else assert(false);
   TH1D* CT14nlo  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"00").c_str());
   TH1D* CT14nloerr  = (TH1D*) fNLO_CT14nlo->Get(("h1100"+std::to_string(etabinint+1)+"02").c_str());
   TH1D* CT14nlo_NPsysup=NULL, *CT14nlo_NPsysdown=NULL;
-  //for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(CT14nloerr->GetBinContent(i)/100.));
+  for(int i=1; i<=CT14nlo->GetNbinsX(); i++)CT14nlo->SetBinError(i, CT14nlo->GetBinContent(i)*(CT14nloerr->GetBinContent(i)/100.));
   //std::cout<<"CT14nlo->GetBinContent(5)="<<CT14nlo->GetBinContent(5)<<std::endl; 
   if(applyNPCorrs) {
     if(systUnfType=="NP" && systSubType=="updown"){
@@ -1517,6 +1560,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   h_genratio_ssmeas->SetTitle( "JER Smeared NLO/Toy NLO Truth" );
   h_genratio_ssmeas->Divide(hgen_rebin_ratiobin);
   if(debugMode)h_genratio_ssmeas->Print("base");
+
+  TH1D *h_genratio_GEN_PY8 = (TH1D*)hrec_GEN_PY8_rebin->Clone( "ppMC_Gen_Ratio4_GEN_PY8" );
+  h_genratio_GEN_PY8->SetTitle( "GEN PY8/Toy GEN PY8 Truth" );
+  h_genratio_GEN_PY8->Divide(hgen_rebin_ratiobin);
+  if(debugMode)h_genratio_GEN_PY8->Print("base");
   
   
 
@@ -1535,6 +1583,11 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   h_recratio_ssgen->SetTitle( "Toy NLO Truth/RECO Data" );
   h_recratio_ssgen->Divide(hrec_rebin);
   if(debugMode)h_recratio_ssgen->Print("base");
+
+  TH1D *h_recratio_GEN_PY8 = (TH1D*)hrec_GEN_PY8_rebin->Clone("ppData_Meas_Ratio_GEN_PY8");
+  h_recratio_GEN_PY8->SetTitle("GEN PY8/RECO Data");
+  h_recratio_GEN_PY8->Divide(hrec_rebin);
+  
 
   // ---------------- FAKE CORRECTION -----------------
   //Double_t fac=(hrec_rebin->Integral()/hrec_sameside_rebin->Integral());
@@ -1779,6 +1832,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   if(debugWrite)hrec_rebin->Write(histTitle.c_str());
   if(debugMode)hrec_rebin->Print("base");  
 
+
+  // -- DATA RECO -- //  
+  hrec_GEN_PY8_rebin->Scale(1./etaBinWidth); // |y| bin width
+  divideBinWidth(hrec_GEN_PY8_rebin); 
+  if(debugMode) hrec_GEN_PY8_rebin->Print("base");  
+
   // -- DATA RECO + FAKES -- //  
   histTitle+="_fakecorr";
   hrec_rebin_fakecorr->Scale(1./etaBinWidth); // |y| bin width
@@ -1807,6 +1866,9 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
   // ---------------- THY RATIOS (THY / DATA) ----------------- //
   // must be after the binwidth divisions + normalization (the thy hists are made this way by default)
+  TH1D* h_thyratio_GEN_PY8  =(TH1D*)hrec_GEN_PY8_rebin  ->Clone("");
+  h_thyratio_GEN_PY8->Divide(hunf);
+  if(debugMode)h_thyratio_GEN_PY8->Print("base");
   
   TH1D* h_thyratio_CT10nlo  =(TH1D*)CT10nlo  ->Clone("");
   //h_thyratio_CT10nlo = (TH1D*)h_thyratio_CT10nlo->Rebin(nbins_pt_gen,"pp_CT10Thy_Ratio_rebin",boundaries_pt_gen);
@@ -1843,6 +1905,12 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   h_thyratio_mctruth->SetTitle("Toy NLO Truth/Data Unf.");
   h_thyratio_mctruth->Divide(hunf);
   if(debugMode)h_thyratio_mctruth->Print("base");
+
+  TH1D* h_thyratio_meas=(TH1D*)hrec_rebin->Clone("");
+  h_thyratio_meas=(TH1D*)h_thyratio_meas->Rebin(nbins_pt_gen,"pp_DataMeas_Ratio_rebin",boundaries_pt_gen);
+  h_thyratio_meas->SetTitle("Data Meas./Data Unf.");
+  h_thyratio_meas->Divide(hunf);
+  if(debugMode)h_thyratio_meas->Print("base");
   
   
 
@@ -1948,15 +2016,17 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     hgen_rebin->DrawClone("P E SAME");                 
     hunf->DrawClone("P E SAME");     //          hunf->DrawClone("P E");               //debug
     hrec_sameside_rebin->DrawClone("P E SAME");           
+    hrec_GEN_PY8_rebin->DrawClone("P E SAME");
     
     //assert(false);
     
     
     TLegend* legend_in1 = new TLegend( 0.55,0.7,0.9,0.9 );
-    legend_in1->AddEntry(hunf,                "Data Unf." ,  "lp");
-    legend_in1->AddEntry(hrec_rebin,          "Data Meas." , "lp");	
-    legend_in1->AddEntry(hrec_sameside_rebin, ("Smeared "+NLOMCtitle_str).c_str()  ,  "lp");	 
-    legend_in1->AddEntry(hgen_rebin,          ("Toy "+NLOMCtitle_str+" Truth").c_str()   , "lp");
+    legend_in1->AddEntry(hunf,                "RECO PY8 Unf." ,  "lp");
+    legend_in1->AddEntry(hrec_rebin,          "RECO PY8" , "lp");	
+    legend_in1->AddEntry(hrec_sameside_rebin, "JER-Smeared GEN PY8"  ,  "lp");	 
+    legend_in1->AddEntry(hgen_rebin,          "Toy GEN PY8"   , "lp");
+    legend_in1->AddEntry(hrec_GEN_PY8_rebin,  "GEN PY8" , "lp");
     //if(drawJERsyst)legend_in1->AddEntry(hunf_JERsysterr, "JER syst.", "f");
 
     legend_in1->SetBorderSize(0);
@@ -1979,23 +2049,23 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     setupRatioHist(h_genratio_ssmeas , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_genratio_oppfold, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    h_genratio_oppunf->SetTitle(("Toy NLO Truth Ratio"+methodString+descString).c_str());
-    h_genratio_oppunf->GetYaxis()->SetTitle("Ratio w/ Toy NLO Truth");    
-    
-
+    h_genratio_oppunf->SetTitle(("Toy GEN PY8 Ratio"+methodString+descString).c_str());
+    h_genratio_oppunf->GetYaxis()->SetTitle("Ratio to Toy GEN PY8");            
     
     // FIX ME
     h_genratio_oppunf->DrawClone("P E");            //data unf/mc truth
     h_genratio_oppmeas->DrawClone("P E SAME");      // data meas/mc truth
     h_genratio_ssmeas->DrawClone("P E SAME");       // mc meas/mc truth
+    h_genratio_GEN_PY8->DrawClone("P E SAME");
     //h_genratio_oppfold->DrawClone("P E SAME");
     
     // FIX ME
     TLegend* legend2 = new TLegend( 0.55,0.75,0.95,0.9 );
     
-    legend2->AddEntry(h_genratio_oppunf,  "Data Unf." ,  "lp");
-    legend2->AddEntry(h_genratio_oppmeas, "Data Meas." , "lp"); 
-    legend2->AddEntry(h_genratio_ssmeas, ("Smeared "+NLOMCtitle_str).c_str(), "lp");
+    legend2->AddEntry(h_genratio_oppunf,  "RECO PY8 Unf." ,  "lp");
+    legend2->AddEntry(h_genratio_oppmeas, "RECO PY8" , "lp"); 
+    legend2->AddEntry(h_genratio_GEN_PY8,"GEN PY8","lp");
+    legend2->AddEntry(h_genratio_ssmeas, "JER-smeared GEN PY8", "lp");
     //legend2->AddEntry(h_genratio_oppfold, "Data Fold(Unf.)", "lp");
     legend2->SetBorderSize(0);
     legend2->SetFillStyle(0);
@@ -2017,14 +2087,15 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     
     //h_recratio_oppunf->SetTitle("Bayesian, Ratios w/ Data Meas. Spectra");
     //h_recratio_oppunf->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
-    h_recratio_ssmeas->SetTitle(("Data Meas. Ratio"+methodString+descString).c_str());
-    h_recratio_ssmeas->GetYaxis()->SetTitle("Ratio w/ Data Meas.");
+    h_recratio_ssmeas->SetTitle(("Ratio to RECO PY8"+methodString+descString).c_str());
+    h_recratio_ssmeas->GetYaxis()->SetTitle("Ratio to RECO PY8");
     
     setupRatioHist(h_recratio_ssmeas , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
     setupRatioHist(h_recratio_oppunf , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
     setupRatioHist(h_recratio_ssgen  , useSimpBins, boundaries_pt_reco_mat, nbins_pt_reco_mat);    
     
     h_recratio_ssmeas->DrawClone("P E");
+    h_recratio_GEN_PY8->DrawClone("P E SAME");
     h_recratio_oppunf->DrawClone("P E SAME");
     h_recratio_ssgen->DrawClone("P E SAME");
     ////h_recratio_ssunf->DrawClone("P E SAME");
@@ -2032,9 +2103,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     //h_recratio_ssfold->DrawClone("P E SAME");
     
     TLegend* legend4 = new TLegend( 0.55,0.75,0.9,0.9);
-    legend4->AddEntry(h_recratio_oppunf,  "Data Unf.", "lp");
-    legend4->AddEntry(h_recratio_ssmeas, ("Smeared "+NLOMCtitle_str).c_str()  ,  "lp");	 
-    legend4->AddEntry(h_recratio_ssgen,  ("Toy "+NLOMCtitle_str+" Truth").c_str()   , "lp");
+    legend4->AddEntry(h_recratio_oppunf,  "RECO PY8 Unf.", "lp");
+    legend4->AddEntry(h_recratio_GEN_PY8,  "GEN PY8"   , "lp");
+    legend4->AddEntry(h_recratio_ssmeas, "JER-Smeared GEN PY8" ,  "lp");	 
+    legend4->AddEntry(h_recratio_ssgen,  "Toy GEN PY8 Truth"   , "lp");
     ////legend4->AddEntry(h_recratio_ssunf, NULL, "p");
     //legend4->AddEntry(h_recratio_oppfold, "Data Fold(Unf.)", "lp");
     //legend4->AddEntry(h_recratio_ssfold, "PY8 Fold(Unf.)", "p");    
@@ -2235,22 +2307,29 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     setupRatioHist(h_thyratio_CT14nlo , useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_NNPDFnnlo, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     setupRatioHist(h_thyratio_mctruth, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
+    setupRatioHist(h_thyratio_GEN_PY8, useSimpBins, boundaries_pt_gen_mat, nbins_pt_gen_mat);
     
-    if(applyNPCorrs) h_thyratio_CT10nlo->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
-    else h_thyratio_CT10nlo->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+    if(applyNPCorrs) h_thyratio_CT14nlo->SetTitle(("NLO+NPs, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
+    else h_thyratio_CT14nlo->SetTitle(("NLO, Ratios w/ Unf. Data"+methodString+descString).c_str()); 
     
-    h_thyratio_CT10nlo->GetYaxis()->SetTitle("Thy / Unf. Data");
+    h_thyratio_GEN_PY8->SetTitle("Ratio to Unf. RECO PY8");
+    h_thyratio_GEN_PY8->GetYaxis()->SetTitle("Ratio to Unf. RECO PY8");
     
     //h_thyratio_CT10nlo ->DrawClone( "][HIST E ");      
-    h_thyratio_CT14nlo ->DrawClone( "][HIST E"); 
+    //h_thyratio_CT14nlo ->DrawClone( "][HIST E"); 
     //h_thyratio_NNPDFnnlo->DrawClone("][HIST E SAME"); 
-    h_thyratio_mctruth->DrawClone("P E SAME");     
+    //h_thyratio_mctruth->DrawClone("P E SAME");     
+    h_thyratio_GEN_PY8->DrawClone("P E");
+    h_thyratio_meas->DrawClone("P E SAME");
     
-    TLegend* legendthyrat = new TLegend( 0.1,0.7,0.5,0.9 );
+    TLegend* legendthyrat = new TLegend( 0.25,0.7,0.5,0.9 );
     //legendthyrat->AddEntry(h_thyratio_CT10nlo ,    ("CT10 PDF NLO"    +CT10NPs).c_str(),    "l");
-    legendthyrat->AddEntry(h_thyratio_CT14nlo ,    ("CT14 PDF NLO"    +CT14NPs).c_str(),    "l"); 
+    legendthyrat->AddEntry(h_thyratio_GEN_PY8 , "GEN PY8", "lp");
+    legendthyrat->AddEntry(h_thyratio_meas , "RECO PY8", "lp");
+				     
+    //legendthyrat->AddEntry(h_thyratio_CT14nlo ,    ("CT14 PDF NLO"    +CT14NPs).c_str(),    "l"); 
     //legendthyrat->AddEntry(h_thyratio_NNPDFnnlo,   ("NNPDF NNLO"      +NNPDFNPs).c_str(),       "l");
-    legendthyrat->AddEntry(h_thyratio_mctruth, ("Toy "+NLOMCtitle_str+" Truth").c_str(),       "lp");    
+    //legendthyrat->AddEntry(h_thyratio_mctruth, ("Toy "+NLOMCtitle_str+" Truth").c_str(),       "lp");    
     legendthyrat->SetBorderSize(0);
     legendthyrat->SetFillStyle(0);
     legendthyrat->Draw();
@@ -2930,7 +3009,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     for(int ki=0; ki<nKiterMax;ki++) hpearson_bayes[ki]->Write();
     fout->cd();//return to base dir of file
   }
-
+  
+  hrec_GEN_PY8->Write();
+  hrec_GEN_PY8_rebin->Write();
+  h_thyratio_GEN_PY8->Write();
 
 
   
@@ -2997,10 +3079,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  
-  int rStatus = -1;  
+  int rStatus = -1; 
+  std::cout<<"argc="<<argc<<std::endl;
 
   if (argc==9){   
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
+    //    std::cout<<"argc=9"<<std::endl;
+    std::cout<<"(std::string)argv[8]="<<(std::string)argv[8]<<std::endl;
+    rStatus=bayesUnfoldMCSpectra_wPY8_etabin( 
 					       (std::string)argv[1] ,
 					       (std::string)argv[2] , 
 					       (const int)(std::atoi(argv[3])), 					       //0, 
@@ -3009,10 +3094,15 @@ int main(int argc, char* argv[]){
 					       (std::string)argv[5], 
 					       (bool)((int)std::atoi(argv[6])),
 					       (std::string)argv[7]  ,
-					       (std::string)argv[8] );    
+					       (std::string)argv[8] ,
+					       false );    
   }
   else if (argc==10){
-    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
+    //std::cout<<"argc=10"<<std::endl;
+    std::cout<<"argv[9]="<<std::endl;
+    std::cout<<"std::atoi(argv[9])="<<std::atoi(argv[9])<<std::endl;
+    
+    rStatus=bayesUnfoldMCSpectra_wPY8_etabin( 
 					       (std::string)argv[1] , //infile data dir
 					       (std::string)argv[2] , //basename
 					       (const int)(std::atoi(argv[3])),  //etabinint					       //0, 
@@ -3026,7 +3116,7 @@ int main(int argc, char* argv[]){
 						);    
   }
   else {
-    //std::cout<<"do ./bayesUnfoldDataSpectra_wNLO_etabin.exe <etabinint> <targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
+    //std::cout<<"do ./bayesUnfoldMCSpectra_wPY8_etabin.exe <etabinint> <targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
     std::cout<<"wrong # of args. exit"<<std::endl;
     return rStatus;
   }
@@ -3161,43 +3251,43 @@ int main(int argc, char* argv[]){
 
 //  if( argc!=10 ){
 //    std::cout<<"argc!=9 error, argc=="<<argc<<std::endl;
-//    std::cout<<"do ./bayesUnfoldDataSpectra_wNLO_etabin.exe <etabinint ><targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
+//    std::cout<<"do ./bayesUnfoldMCSpectra_wPY8_etabin.exe <etabinint ><targDataDir> <targMCDir> <targMCName> <baseOutputName> <applyNPCorrs> <doJetID> <useSimpleBins> <kIterInput>"<<std::endl;
 //    return rStatus;  }  
 //  if(argc==10){
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (int) std::atoi(argv[1]) ,  (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], (const std::string)argv[6], 
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (int) std::atoi(argv[1]) ,  (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], (const std::string)argv[6], 
 //						(int)std::atoi(argv[6]),
 //						(int)std::atoi(argv[7]) , (int)std::atoi(argv[8]), (const int)std::atoi(argv[9]) );}//, (const int) std::atoi(argv[9]) );   }
-//rStatus=bayesUnfoldDataSpectra_wNLO_etabin(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], 
+//rStatus=bayesUnfoldMCSpectra_wPY8_etabin(  (const std::string)argv[1], (const std::string)argv[2], (const std::string)argv[3], (const std::string)argv[4], 
 //						 (int)std::atoi(argv[5]),
 //						 (int)std::atoi(argv[6]) , (int)std::atoi(argv[7]), (const int)std::atoi(argv[8]) , (const int) std::atoi(argv[9]) );   
 //  if(argc==2){
-//     rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,15,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//     rStatus=bayesUnfoldMCSpectra_wPY8_etabin(0,15,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin(1,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin(2,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin(3,10,"Bayes_NNPDF","smearTheory/NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_plots/","NNPDF_NNLO_01.10.19_spl3wgts_gaussSmear_");
 //    
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(0,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(1,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(2,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
-//    rStatus=bayesUnfoldDataSpectra_wNLO_etabin(3,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin(0,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin(1,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin(2,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
+//    rStatus=bayesUnfoldMCSpectra_wPY8_etabin(3,10,"Bayes_CT14","smearTheory/CT14_NLO_01.10.19_spl3wgts_gaussSmear_plots/","CT14_NLO_01.10.19_spl3wgts_gaussSmear_");
   //}
   //if (argc==3){
-  //  rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5);    
-  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
-  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
-  //  //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
-  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
-  //  //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
+  //  rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 0, 5);    
+  //  //rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
+  //  //rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
+  //  //rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
+  //  //    rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
+  //  //    rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
   //}
   //  if (argc==8){
 
 
 
-    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
-    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
-    //rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
-    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
-    //    rStatus=bayesUnfoldDataSpectra_wNLO_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
+    //rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 1, 5);    
+    //rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 2, 5);    
+    //rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 3, 5);    
+    //    rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 4, 5);    
+    //    rStatus=bayesUnfoldMCSpectra_wPY8_etabin( (std::string)argv[1] ,(std::string)argv[2], 5, 5);    
 
 
 

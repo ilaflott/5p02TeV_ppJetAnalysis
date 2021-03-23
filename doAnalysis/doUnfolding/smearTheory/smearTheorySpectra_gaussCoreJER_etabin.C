@@ -8,11 +8,11 @@ const int xsecorder=1;//0--> order of calculation (i.e. NLO or NNLO depending on
 const bool printBaseDebug=true;
 const bool useHistSigmaFit=false;
 const bool useJERscaleFactors=true;//note; alters JER syst. as well.
-const bool setThyPDFErrors=true;
 
 
-//const int nEvents=1e+09;  ///10x typical
-const int nEvents=1e+08;  ///typical
+
+const int nEvents=1e+09;  ///new typical (smaller rel stat unc)
+//const int nEvents=1e+08;  ///typical
 //const int nEvents=5e+07;  /// debug nevents
 //const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
@@ -46,7 +46,7 @@ const std::string NPsys1_CorrFits_text=HERWGEE4_NPS_TXT;
 const std::string NPsys2_CorrFits_str =_PYTHIA8_NPS;
 const std::string NPsys2_CorrFits_text=_PYTHIA8_NPS_TXT;
 //NP sys v2, shifting the NP fits up/down by 1 sigma or using the upper/lower fits from john that he made himself (how???)
-const bool doNPsysupdown=true;//involves making a new thy hist, therefore, also a sep spline fit
+const bool doNPsysupdown=false;//involves making a new thy hist, therefore, also a sep spline fit
 const float NPerrfact=1.0;//# sigma to shift NP fit params by. 
 
 //NP systs v1, using POW+PY8/POW+PY8 CTEQ NPs for unfolding, shifting NP fit params up/down by 2 sigma
@@ -63,7 +63,7 @@ const std::string in_NLOFile_PDFsys1=_CT14FILESTR;
 std::string PDFsys1_text=_CT14DESCTXT;
 const std::string in_NLOFile_PDFsys2=NNPDFFILESTR;
 std::string PDFsys2_text=NNPDFDESCTXT;
-const bool doPDFsysupdown=true; //involves making a new thy hist utilizing scale errs, therefore, also a sep spline fit
+const bool doPDFsysupdown=false; //involves making a new thy hist utilizing scale errs, therefore, also a sep spline fit
 const float PDFerrfact=1.0;
 //const std::string in_NLOFile_PDFsys2=_HERAFILESTR;
 //std::string PDFsys2_text=_HERADESCTXT;
@@ -312,10 +312,6 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory6PtScalePoserr->Scale(1.e+02);//rel. err. to % err.
   if(printBaseDebug)  theory6PtScalePoserr->Print("Base"); 
   
-  //set theory calculation errors to that of the PDF errs
-  if(setThyPDFErrors)    
-    for(int i=1; i<=theory->GetNbinsX(); i++) theory->SetBinError(i,theory->GetBinContent(i)*(theoryPDFPoserr->GetBinContent(i))/100.);    
-  
   std::cout<<"done making "<<orderstring<<" hist."<<std::endl;
   //assert(false);
   //-----------------------------------
@@ -341,6 +337,18 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   TH1D* theory_NP_rebin=(TH1D*)theory_NP->TH1::Rebin(n_thybins, 
 						     ( ( (std::string) theory_NP->GetName() ) +"_rebin").c_str() ,     thybins ); 
   theory_NP_rebin->SetLineColor(kCyan+4);    
+  
+  
+  TH1D* theoryRelStaterr=(TH1D*)theory->Clone( ("h"+std::to_string(xsecorder)+"100"+std::to_string(etabin+1)+"03").c_str());
+  for(int i=1; i<=theoryRelStaterr->GetNbinsX();i++){
+    float val=theoryRelStaterr->GetBinContent(i);
+    float valerr=theoryRelStaterr->GetBinError(i);
+    theoryRelStaterr->SetBinContent(i, (valerr/val)*100.);//in units of % for easy interpretation.
+    theoryRelStaterr->SetBinError(i, 0.);    
+  }
+  
+
+
 
   
   
@@ -809,31 +817,31 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   //PREP FOR BOTH POS AND NEG SCALE ERR PLOTS
 
 
-  float scaleerrmin=1000.;
+  float scaleerrmin=10000000000.;
   float scaleerrmax=-1.;
 
 
   theory6PtScaleNegerr->Scale(-1.);
   //theory2PtScaleNegerr->Scale(-1.);
   theoryPDFNegerr     ->Scale(-1.);
-
+  
   //if(theory6PtScaleNegerr->GetMinimum()<scaleerrmin)scaleerrmin=theory6PtScaleNegerr->GetMinimum();
   //if(theoryPDFNegerr->GetMinimum()<scaleerrmin)scaleerrmin=theoryPDFNegerr->GetMinimum();
   if(getnonzeromin(theory6PtScaleNegerr)<scaleerrmin)scaleerrmin=getnonzeromin(theory6PtScaleNegerr);
   if(getnonzeromin(theoryPDFNegerr     )<scaleerrmin)scaleerrmin=getnonzeromin(theoryPDFNegerr     );
-  
-  if(theory6PtScaleNegerr->GetMaximum()>scaleerrmax)scaleerrmax=theory6PtScaleNegerr->GetMaximum();
-  if(theoryPDFNegerr->GetMaximum()>scaleerrmax)scaleerrmax=theoryPDFNegerr->GetMaximum();
+  if(getnonzeromin(theoryRelStaterr    )<scaleerrmin)scaleerrmin=getnonzeromin(theoryRelStaterr    );
+  if(getnonzeromin(theory6PtScalePoserr)<scaleerrmin)scaleerrmin=getnonzeromin(theory6PtScalePoserr);
+  if(getnonzeromin(theoryPDFPoserr     )<scaleerrmin)scaleerrmin=getnonzeromin(theoryPDFPoserr     );
+  scaleerrmin*=0.1;
   
   //if(theory6PtScalePoserr->GetMinimum()<scaleerrmin)scaleerrmin=theory6PtScalePoserr->GetMinimum();
   //if(theoryPDFPoserr->GetMinimum()<scaleerrmin)scaleerrmin=theoryPDFPoserr->GetMinimum();
-  if(getnonzeromin(theory6PtScalePoserr)<scaleerrmin)scaleerrmin=getnonzeromin(theory6PtScalePoserr);
-  if(getnonzeromin(theoryPDFPoserr     )<scaleerrmin)scaleerrmin=getnonzeromin(theoryPDFPoserr     );
   
   if(theory6PtScalePoserr->GetMaximum()>scaleerrmax)scaleerrmax=theory6PtScalePoserr->GetMaximum();
-  if(theoryPDFPoserr->GetMaximum()>scaleerrmax)scaleerrmax=theoryPDFPoserr->GetMaximum();  
-
-  scaleerrmin*=0.1;
+  if(theoryPDFPoserr     ->GetMaximum()>scaleerrmax)scaleerrmax=theoryPDFPoserr     ->GetMaximum();  
+  if(theory6PtScaleNegerr->GetMaximum()>scaleerrmax)scaleerrmax=theory6PtScaleNegerr->GetMaximum();
+  if(theoryPDFNegerr     ->GetMaximum()>scaleerrmax)scaleerrmax=theoryPDFNegerr     ->GetMaximum();
+  if(theoryRelStaterr    ->GetMaximum()>scaleerrmax)scaleerrmax=theoryRelStaterr    ->GetMaximum();
   scaleerrmax*=10.;
   
   std::cout<<"scaleerrmin="<<scaleerrmin<<std::endl;
@@ -857,27 +865,27 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory6PtScaleNegerr->GetXaxis()->SetNoExponent(true);
   theory6PtScaleNegerr->GetXaxis()->SetMoreLogLabels(true);
   
-  std::cout<<std::endl;
-  for(int i=1; i<=(theory6PtScaleNegerr->GetNbinsX());i++)
-    std::cout<<"theory6PtScaleNegerr->GetBinContent("<<i<<")="<<theory6PtScaleNegerr->GetBinContent(i)<<std::endl;
-  std::cout<<std::endl;
-  for(int i=1; i<=(theoryPDFNegerr->GetNbinsX());i++)
-    std::cout<<"theoryPDFNegerr->GetBinContent("<<i<<")="<<theoryPDFNegerr->GetBinContent(i)<<std::endl;
+//  std::cout<<std::endl;
+//  for(int i=1; i<=(theory6PtScaleNegerr->GetNbinsX());i++)
+//    std::cout<<"theory6PtScaleNegerr->GetBinContent("<<i<<")="<<theory6PtScaleNegerr->GetBinContent(i)<<std::endl;
+//  std::cout<<std::endl;
+//  for(int i=1; i<=(theoryPDFNegerr->GetNbinsX());i++)
+//    std::cout<<"theoryPDFNegerr->GetBinContent("<<i<<")="<<theoryPDFNegerr->GetBinContent(i)<<std::endl;
 
   TLegend* negerrsleg=new TLegend(0.1,0.7,0.4,0.9);
   negerrsleg->SetBorderSize(0.);
   negerrsleg->SetFillStyle(0);  
   negerrsleg->AddEntry( theory6PtScaleNegerr, "6 Pt. Scale Error (Asymm.)" , "l");
   //negerrsleg->AddEntry( theory2PtScaleNegerr, "2 Pt. Scale Error (Asymm.)" , "l");
-  negerrsleg->AddEntry( theoryPDFNegerr     , "PDF Error (Symm.)" , "l");
-  
+  negerrsleg->AddEntry( theoryPDFNegerr     , "PDF Error (Asymm.)" , "l");
+  negerrsleg->AddEntry( theoryRelStaterr    , "Stat. Unc. (Symm.)" , "l");
   
   plot_xsecNegErrs->cd();  
 
   theory6PtScaleNegerr->DrawClone("HIST");
   //theory2PtScaleNegerr->DrawClone("HIST SAME");
   theoryPDFNegerr     ->DrawClone("HIST SAME");
-  
+  theoryRelStaterr    ->DrawClone("HIST SAME");
   
   negerrsleg->Draw();
   
@@ -923,18 +931,20 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   poserrsleg->SetFillStyle(0);  
   poserrsleg->AddEntry( theory6PtScalePoserr, "6 Pt. Scale Error(Asymm.)" , "l");
   //poserrsleg->AddEntry( theory2PtScalePoserr, "2 Pt. Scale Error(Asymm.)" , "l");
-  poserrsleg->AddEntry( theoryPDFPoserr     , "PDF Error (Symm.)" , "l");  
-  
+  poserrsleg->AddEntry( theoryPDFPoserr     , "PDF Error (ASymm.)" , "l");  
+  poserrsleg->AddEntry( theoryRelStaterr    , "Stat. Unc. (Symm.)" , "l");  
   plot_xsecPosErrs->cd();
   
   theory6PtScalePoserr->DrawClone("HIST");
   //theory2PtScalePoserr->DrawClone("HIST SAME");  
   theoryPDFPoserr     ->DrawClone("HIST SAME");
+  theoryRelStaterr->DrawClone("HIST SAME");
   
   poserrsleg->Draw();
 
   theory6PtScalePoserr->SetTitle(_6ptposerrs_oldtitle.c_str());
   
+
  
   
 
@@ -1379,6 +1389,24 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 		    smeared_rnd_test, 
 		    (TH2D*)response_th2); }  
 
+  TH1D* theory_rnd_RelStaterr=(TH1D*)theory_rnd->Clone("theory_rnd_relStaterr");
+  for(int i=1; i<=theory_rnd->GetNbinsX();i++){
+    float val=theory_rnd->GetBinContent(i);
+    float valerr=theory_rnd->GetBinError(i);
+    theory_rnd_RelStaterr->SetBinContent(i, valerr/val*100.);//units of %
+    theory_rnd_RelStaterr->SetBinError(i, 0.);
+  }
+  theory_rnd_RelStaterr->SetTitle("Rel Stat Unc. for Toy Theory");
+
+  TH1D* smeared_rnd_RelStaterr=(TH1D*)smeared_rnd->Clone("smeared_rnd_relStaterr");
+  for(int i=1; i<=smeared_rnd->GetNbinsX();i++){
+    float val=smeared_rnd->GetBinContent(i);
+    float valerr=smeared_rnd->GetBinError(i);
+    smeared_rnd_RelStaterr->SetBinContent(i, valerr/val*100.);//units of %
+    smeared_rnd_RelStaterr->SetBinError(i, 0.);
+  }
+  smeared_rnd_RelStaterr->SetTitle("Rel Stat Unc. for Smeared Toy Theory");
+  
   divideBinWidth(theory_rnd);  //for normalization only.
   divideBinWidth(smeared_rnd); 
   divideBinWidth(smeared_rnd_test); 
@@ -2522,6 +2550,54 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   
 
 
+  //--------------------------------------------
+  //POSITIVE SCALE ERRS
+  TCanvas *plot_xsecStatErrs = new TCanvas("plot_xsecStatErrs", "plot xsec Stat Errors",1200,1000);
+  plot_xsecStatErrs->cd()->SetLogx(1);
+  plot_xsecStatErrs->cd()->SetLogy(1);
+  
+  //theoryRelStaterr->SetLineColor(kRed);       
+  theory_rnd_RelStaterr->SetLineColor(kMagenta);
+  smeared_rnd_RelStaterr->SetLineColor(kBlue);
+
+  theoryRelStaterr->SetTitle(("Theory "+orderstring+" #sigma_{Jet} Stat Errors;Jet p_{T} [GeV]; Rel. Errors [%]").c_str());
+  theoryRelStaterr->GetXaxis()->SetTitle("Jet p_{T} [GeV]");
+  theoryRelStaterr->GetYaxis()->SetTitle("Error [%]");
+  
+  float staterrmin=100000000000000000.;
+  if(getnonzeromin(theoryRelStaterr)<staterrmin)staterrmin=getnonzeromin(theoryRelStaterr);
+  if(getnonzeromin(theory_rnd_RelStaterr)<staterrmin)staterrmin=getnonzeromin(theory_rnd_RelStaterr);
+  if(getnonzeromin(smeared_rnd_RelStaterr)<staterrmin)staterrmin=getnonzeromin(smeared_rnd_RelStaterr);
+  staterrmin*=0.1;
+  
+  
+  float staterrmax=-1.; 
+  if(theoryRelStaterr->GetMaximum()>staterrmax)staterrmax=theoryRelStaterr->GetMaximum();
+  if(theory_rnd_RelStaterr->GetMaximum()>staterrmax)staterrmax=theory_rnd_RelStaterr->GetMaximum();  
+  if(smeared_rnd_RelStaterr->GetMaximum()>staterrmax)staterrmax=smeared_rnd_RelStaterr->GetMaximum(); 
+  staterrmax*=10.;
+  
+  theoryRelStaterr->SetMinimum(staterrmin);
+  theoryRelStaterr->SetMaximum(staterrmax);
+  theoryRelStaterr->GetXaxis()->SetNoExponent(true);
+  theoryRelStaterr->GetXaxis()->SetMoreLogLabels(true);  
+
+  TLegend* staterrsleg=new TLegend(0.1,0.7,0.4,0.9);
+  staterrsleg->SetBorderSize(0.);
+  staterrsleg->SetFillStyle(0);  
+  staterrsleg->AddEntry( theoryRelStaterr      , "Theory Stat. Unc." , "l");
+  staterrsleg->AddEntry( theory_rnd_RelStaterr , "Toy Theory Stat. Unc" , "l");  
+  staterrsleg->AddEntry( smeared_rnd_RelStaterr, "Toy Smeared Stat. Unc." , "l");  
+  plot_xsecStatErrs->cd();
+  
+  theoryRelStaterr->DrawClone("HIST");
+  theory_rnd_RelStaterr->DrawClone("HIST SAME");
+  smeared_rnd_RelStaterr->DrawClone("HIST SAME");
+  
+  staterrsleg->Draw();
+  
+  
+  
   
   
   // compare the toy mc truth w/ the original thy hist
@@ -2587,6 +2663,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
   // WRITE CANVASES
   plot_NLOxsec->Write();
+  plot_xsecStatErrs->Write();
   plot_xsecPosErrs->Write();
   plot_xsecNegErrs->Write();
   plot_NP->Write(("plot_"+NPCorrFits_str).c_str());
@@ -2597,6 +2674,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_response_NP_th2->Write();    
   plot_true_rnd_rat->Write();
   plot_JER->Write();//CANV
+
   if(useSplineWeights)plot_splines->Write();  
   else if(useFitWeights && useModLogFit) { 
     plot_logfits->Write();  
@@ -2648,8 +2726,13 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   theory->Write();  
   theory_NP->Write();      
 
+
   // PDF ERR HISTS
+  theoryRelStaterr->Write();
+  theory_rnd_RelStaterr->Write();
+  smeared_rnd_RelStaterr->Write();
   theoryPDFPoserr     ->Write();
+
   //theory2PtScalePoserr->Write();
   theory6PtScalePoserr->Write();
   

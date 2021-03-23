@@ -411,6 +411,8 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
   
   TH1D *h_sumpfpt_x = NULL, *h_sumpfpt_y = NULL, *h_sumpfEt = NULL;
   TH1D *h_sumpfpt   = NULL, *h_sqrtsumpfEt   = NULL, *h_PFMETfrac=NULL, *h_PFMETsig=NULL;
+
+  TH1D *h_sumpfEt_precut = NULL, *h_PFMETfrac_precut=NULL, *h_sumpfpt_precut   = NULL;
   if(usePFCandAnalyzer){
     //per-event values i read directly from the trees
     h_nPFpart   =new TH1D ("h_nPFpart",";N_{evt}^{PF cand};A.U.",2000,0,2000);						   
@@ -437,6 +439,13 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
     h_PFMETfrac= new TH1D("h_PFMETfrac", ";PF #slash{E}_{T} / #Sigma E_{T}^{PF cand};A.U.", 200, 0., 2.);
     
     h_PFMETsig=new TH1D("h_PFMETsig", ";PF #slash{E}_{T} / #sqrt{#Sigma E_{T}^{PF cand}};A.U.", 1000, 0., 10.);
+
+
+    //same hists as respective ones above, but before the PFMETfraction cut
+    h_sumpfEt_precut   =new TH1D ("h_sumpfEt_precut",";#Sigma E_{T}^{PF cand};A.U.",2000.,0.,2000.);				   
+    h_sumpfpt_precut   =new TH1D ("h_sumpfpt_precut",";#left| #Sigma #vec{p_{T}}^{PF cand} #right| = PF #slash{E}_{T};A.U.",2000.,0.,2000.);           
+    h_PFMETfrac_precut= new TH1D("h_PFMETfrac_precut", ";PF #slash{E}_{T} / #Sigma E_{T}^{PF cand};A.U.", 200, 0., 2.);
+
   }
 
 
@@ -731,60 +740,60 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
 
 
-    if(usePFCandAnalyzer){
-      //PFCANDLOOP
-      //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
-      
-      Float_t sumpfpt_x=0.,sumpfpt_y=0.;
-      Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
-      //h_nPFpart->Fill(nPFpart_I,weight_eS);
-      
-      for(Int_t part=0;part<nPFpart_I;part++){
-	
-	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
-	pfpt_part  = pfptArr[part];	  
-	pfeta_part =pfetaArr[part];	  
-	pfphi_part =pfphiArr[part];	  	
-	pfE_part  =pfEArr[part];	
-	
-	//h_pfpt ->Fill(pfpt_part ,weight_eS);
-	//h_pfeta->Fill(pfeta_part,weight_eS);
-	//h_pfphi->Fill(pfphi_part,weight_eS);
-	//h_pfE->Fill(pfE_part,weight_eS);
-	
-	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
-	//h_pftheta->Fill(pftheta_part,weight_eS);
-	
-	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
-	//h_pfEt->Fill(pfEt_part,weight_eS);
-	
-	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
-	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
-	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
-	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
-	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
-	sumpfEt+=pfEt_part;
-      }
-      
-      Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
-      //Float_t sqrtsumpfEt=sqrt(sumpfEt);
-      Float_t PFMETfrac=sumpfpt/sumpfEt;
-      //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
-      
-      h_PFMETfrac->Fill(PFMETfrac,weight_eS);
-      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
-      h_NEvents_PFMETfracCut->Fill(0.);
-      
-      //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
-      //h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
-      //h_sumpfEt->Fill(sumpfEt,weight_eS);
-
-      //h_sumpfpt->Fill(sumpfpt,weight_eS);
-      //h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
-      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
-      //h_PFMETsig->Fill(PFMETsig,weight_eS);
-      //assert(false);
-    }
+    //if(usePFCandAnalyzer){
+    //  //PFCANDLOOP
+    //  //std::cout<<std::endl<<"nPFpart_I="<<nPFpart_I<<std::endl;
+    //  
+    //  Float_t sumpfpt_x=0.,sumpfpt_y=0.;
+    //  Float_t sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
+    //  //h_nPFpart->Fill(nPFpart_I,weight_eS);
+    //  
+    //  for(Int_t part=0;part<nPFpart_I;part++){
+    //	
+    //	Float_t pfpt_part,pfeta_part,pfphi_part, pfE_part;
+    //	pfpt_part  = pfptArr[part];	  
+    //	pfeta_part =pfetaArr[part];	  
+    //	pfphi_part =pfphiArr[part];	  	
+    //	pfE_part  =pfEArr[part];	
+    //	
+    //	//h_pfpt ->Fill(pfpt_part ,weight_eS);
+    //	//h_pfeta->Fill(pfeta_part,weight_eS);
+    //	//h_pfphi->Fill(pfphi_part,weight_eS);
+    //	//h_pfE->Fill(pfE_part,weight_eS);
+    //	
+    //	Float_t pftheta_part=2.*atan(exp(-1.*pfeta_part));
+    //	//h_pftheta->Fill(pftheta_part,weight_eS);
+    //	
+    //	Float_t pfEt_part=pfE_part*TMath::Sin(pftheta_part);		
+    //	//h_pfEt->Fill(pfEt_part,weight_eS);
+    //	
+    //	//std::cout<<"pfpt->at("<<part<<")=" << pfpt_part<<std::endl;
+    //	//std::cout<<"pfphi->at("<<part<<")="<<pfphi_part<<std::endl;
+    //	//std::cout<<"pfeta->at("<<part<<")="<<pfeta_part<<std::endl;
+    //	sumpfpt_x+=pfpt_part*TMath::Cos(pfphi_part);
+    //	sumpfpt_y+=pfpt_part*TMath::Sin(pfphi_part);
+    //	sumpfEt+=pfEt_part;
+    //  }
+    //  
+    //  Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
+    //  //Float_t sqrtsumpfEt=sqrt(sumpfEt);
+    //  Float_t PFMETfrac=sumpfpt/sumpfEt;
+    //  //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+    //  
+    //  h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+    //  if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+    //  h_NEvents_PFMETfracCut->Fill(0.);
+    //  
+    //  //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
+    //  //h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
+    //  //h_sumpfEt->Fill(sumpfEt,weight_eS);
+    //
+    //  //h_sumpfpt->Fill(sumpfpt,weight_eS);
+    //  //h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
+    //  //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+    //  //h_PFMETsig->Fill(PFMETsig,weight_eS);
+    //  //assert(false);
+    //}
     
 
 
@@ -855,11 +864,15 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
       
       Float_t sumpfpt=sqrt(sumpfpt_x*sumpfpt_x + sumpfpt_y*sumpfpt_y );
       Float_t sqrtsumpfEt=sqrt(sumpfEt);
-      //Float_t PFMETfrac=sumpfpt/sumpfEt;
+      Float_t PFMETfrac=sumpfpt/sumpfEt;
       Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
+
+      h_sumpfpt_precut->Fill(sumpfpt,weight_eS);
+      h_sumpfEt_precut->Fill(sumpfEt,weight_eS);
+      h_PFMETfrac_precut->Fill(PFMETfrac,weight_eS);
       
-      //if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
-      //h_NEvents_PFMETfracCut->Fill(0.);
+      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      h_NEvents_PFMETfracCut->Fill(0.);
       
       h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
       h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
@@ -867,7 +880,7 @@ int readForests_ppMC_jetPlots(std::string inFilelist , int startfile , int endfi
 
       h_sumpfpt->Fill(sumpfpt,weight_eS);
       h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
-      //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
+      h_PFMETfrac->Fill(PFMETfrac,weight_eS);
       h_PFMETsig->Fill(PFMETsig,weight_eS);
       //assert(false);
     }

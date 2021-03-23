@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-smeartheory=1
-smearPY8=0
+smeartheory=0
+smearPY8=1
 
 
 
@@ -76,7 +76,7 @@ then
     scpoutput=0
     scpafterlast=0
     etabin_i=0
-    Netabins=4 
+    Netabins=4
     #Netabins=1 ##debug; runs first etabin only
     while [ $etabin_i -lt $Netabins ]
     do
@@ -118,10 +118,10 @@ then
     #nlofstr="fnl5020_LO2_R04Jets_modify_NNPDF30_nnlo_as_0121_MC"
     #py8fstr="02.18.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_02-18-19_JERS_0.0eta3.0_unf/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
     #py8fstr="06.25.19_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_06-25-19_unf_0.0eta2.0_semifinal/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
-    py8fstr="03.18.20_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_unf_0.0eta2.5_SMPbins_withgenjety_semifinalv3/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    #py8fstr="03.18.20_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_unf_0.0eta2.5_SMPbins_withgenjety_semifinalv3/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
+    py8fstr="01.05.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_01-05-21_unf_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4/Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
     
-    
-    outdescstr="gaussSmear_semifinalv4.2"
+    outdescstr="gaussSmear_semifinalv4"
     
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"

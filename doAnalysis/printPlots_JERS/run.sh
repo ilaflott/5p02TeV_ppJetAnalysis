@@ -16,10 +16,10 @@ echo ""
 FITTYPE="sigmu"
 
 
-source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "00eta05_01.05.21_${FITTYPE}_geny" "1" "0" "0" "$FITTYPE" "geny"
-source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "05eta10_01.05.21_${FITTYPE}_geny" "1" "0" "1" "$FITTYPE" "geny"
-source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "10eta15_01.05.21_${FITTYPE}_geny" "1" "0" "2" "$FITTYPE" "geny"
-source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "15eta20_01.05.21_${FITTYPE}_geny" "1" "0" "3" "$FITTYPE" "geny"
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "00eta05_01.05.21_${FITTYPE}_geny" "1" "0" "0" "$FITTYPE" "geny"
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "05eta10_01.05.21_${FITTYPE}_geny" "1" "0" "1" "$FITTYPE" "geny"
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "10eta15_01.05.21_${FITTYPE}_geny" "1" "0" "2" "$FITTYPE" "geny"
+#source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "15eta20_01.05.21_${FITTYPE}_geny" "1" "0" "3" "$FITTYPE" "geny"
 
 
 ###ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_JERS_0.0eta2.5_SMPbins_withjety_semifinalv3
@@ -28,10 +28,10 @@ source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21"
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "10eta15_03.18.20_${FITTYPE}_recy" "1" "0" "2" "$FITTYPE" "y"
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "15eta20_03.18.20_${FITTYPE}_recy" "1" "0" "3" "$FITTYPE" "y"
 																					
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "00eta05_03.18.20_${FITTYPE}_geny" "1" "0" "0" "$FITTYPE" "geny"
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "05eta10_03.18.20_${FITTYPE}_geny" "1" "0" "1" "$FITTYPE" "geny"
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "10eta15_03.18.20_${FITTYPE}_geny" "1" "0" "2" "$FITTYPE" "geny"
-#source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "15eta20_03.18.20_${FITTYPE}_geny" "1" "0" "3" "$FITTYPE" "geny"
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "00eta05_03.18.20_${FITTYPE}_geny" "1" "0" "0" "$FITTYPE" "geny"
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "05eta10_03.18.20_${FITTYPE}_geny" "1" "0" "1" "$FITTYPE" "geny"
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "10eta15_03.18.20_${FITTYPE}_geny" "1" "0" "2" "$FITTYPE" "geny"
+source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "15eta20_03.18.20_${FITTYPE}_geny" "1" "0" "3" "$FITTYPE" "geny"
 
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "00eta05_03.18.20_${FITTYPE}_receta" "1" "0" "0" "$FITTYPE" "eta"
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "03.18.20_outputCondor" "03-18-20" "0.0eta2.5_SMPbins_withjety_semifinalv3" "05eta10_03.18.20_${FITTYPE}_receta" "1" "0" "1" "$FITTYPE" "eta"

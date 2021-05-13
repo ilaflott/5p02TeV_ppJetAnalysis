@@ -216,6 +216,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   TH1D *hpp_mcclosure_reco_y[nbins_abseta]={};         
   TH2D *hpp_mcclosure_matrix_y[nbins_abseta]={};         
   TH1D *hpp_mcclosure_reco_test_y[nbins_abseta]={};   
+
+  //to explore |y| bin migrations sizes
+  TH2D* hpp_matrix_jetyresp=NULL;
+  TH2D* hpp_matrix_jetyresp_0p1bins=NULL;
   
   if(fillMCUnfoldingHists){
     
@@ -223,6 +227,15 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 				   "mcclosure_gen" , "mcclosure_reco" , "mcclosure_matrix" , 
 				   "mcclosure_gen_test" , "mcclosure_reco_test" , "mcclosure_matrix_test"     }; 
     const int nUnfTitles=sizeof(hUnfTitleArray)/sizeof(std::string);    
+    
+                                                           //title ; x axis name ; y axis name 
+    hpp_matrix_jetyresp=new TH2D( "hpp_matrix_jetyresp", "hpp_matrix_jetyresp;y_{GEN};y_{RECO}", 
+				  12, -3.0, 3.0,           //xaxis
+				  12, -3.0, 3.0	    );     //y axis
+
+    hpp_matrix_jetyresp_0p1bins=new TH2D( "hpp_matrix_jetyresp_0p1bins", "hpp_matrix_jetyresp_0p1bins;y_{GEN};y_{RECO}", 
+					  60, -3.0, 3.0,           //xaxis
+					  60, -3.0, 3.0	    );     //y axis
     
     //    for(int jtID=0;jtID<2;jtID++){
     
@@ -911,7 +924,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	hpp_gen->Fill(genpt, weight_eS);
 	hpp_reco->Fill(recpt, weight_eS);
 	hpp_matrix->Fill(recpt, genpt, weight_eS);	
-
+	
+	hpp_matrix_jetyresp       ->Fill( jty , genjty, weight_eS);
+	hpp_matrix_jetyresp_0p1bins->Fill( jty , genjty, weight_eS);
+	
 	if(mcclosureInt%2 == 0){
 	  incrementClosureInt=true;
 	  hpp_mcclosure_reco_test->Fill(recpt, weight_eS);      	

@@ -347,7 +347,7 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
       jetpad2[etabin]->SetLogy(0);  
     }
     jetpad2[etabin]->Draw();
-  
+    
 
   
     // variable specific draw orders, canv, etc.
@@ -403,7 +403,29 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
       theRatio[etabin]->GetXaxis()->SetMoreLogLabels(true);
       theRatio[etabin]->GetXaxis()->SetNoExponent(true);        
       theRatio[etabin]->Divide(theNoJetIDHist[etabin]);    
-      theRatio[etabin]->Draw("L P E");
+      
+      if( isJetSpectra ){
+	//float ymin=getnonzeromin(theRatio[etabin]);
+	//theRatio[etabin]->SetMinimum(ymin*0.99);
+	//theRatio[etabin]->SetMinimum(ymin);
+	theRatio[etabin]->SetMinimum(0.99);
+	//float ymax=getmaxcontent(theRatio[etabin]);
+	theRatio[etabin]->SetMaximum(1.001);      
+	
+	int Nbins=theRatio[etabin]->GetNbinsX();
+	assert(theRatio[etabin]->GetNbinsX()       == theJetIDHist[etabin]->GetNbinsX());
+	assert(theNoJetIDHist[etabin]->GetNbinsX() == theJetIDHist[etabin]->GetNbinsX());
+	for(int p=1; p<=Nbins;p++){
+	  float currenterr=theRatio[etabin]->GetBinError(p);
+	  float covarerr_sq=2.*theJetIDHist[etabin]->GetBinContent(p)*theJetIDHist[etabin]->GetBinError(p)*theNoJetIDHist[etabin]->GetBinError(p)/
+	    pow(theNoJetIDHist[etabin]->GetBinContent(p),3.);
+	  float correcterr=sqrt(pow(currenterr,2.)-covarerr_sq);
+	  theRatio[etabin]->SetBinError(p, correcterr);
+	  
+	}
+      }
+      
+      theRatio[etabin]->Draw("HIST ][");
       
       TLine* lineAtOne          = new TLine(ptbins_debug[0],1.0,ptbins_debug[nbins_pt_debug],1.0); 
       lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);

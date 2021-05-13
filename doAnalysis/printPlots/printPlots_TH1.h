@@ -114,6 +114,33 @@ void fracSubtracted(TH1F* theRatio){
 
 
 
+//template<typename T>
+//void showMinMax() {
+//  std::cout << "min: " << numeric_limits<T>::min() << std::endl;
+//  std::cout << "max: " << numeric_limits<T>::max() << std::endl;
+//  std::cout << std::endl;
+//  return;
+//}
+
+
+
+
+float getmaxcontent(TH1* th1){
+  
+  //std::cout << "float: " << std::endl;
+  //showMinMax<float>;
+  
+  float maxcontent=-1.e+40;
+  int nbinsx=th1->GetNbinsX();
+  for(int i=1;i<=nbinsx;i++){
+    float content=th1->GetBinContent(i);
+    if(content > maxcontent)//check that new content is less than current minium
+      maxcontent=content;    
+    else continue;//if the content is greater than current minimum
+  }
+  return maxcontent;  
+}
+
 
 
 float getnonzeromin(TH1* th1){

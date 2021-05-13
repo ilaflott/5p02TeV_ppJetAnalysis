@@ -27,8 +27,12 @@ echo ""
 #DD="02"
 #YY="20"
 
-MM="01"
-DD="05"
+#MM="01"
+#DD="05"
+#YY="21"
+
+MM="05"
+DD="08"
 YY="21"
 
 
@@ -42,14 +46,15 @@ YY="21"
 
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_PFMETplotsOnly_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_PFMETplotsOnly_semifinalv4"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetTrigEff_0.0eta5.1" "ppData" "wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_PFMETplotsOnly_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_PFMETplotsOnly_semifinalv4"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "unf_0.0eta2.5" "ppMC" "SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "unf_0.0eta3.0" "ppMC" "SMPbins_withjetyrespmat_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 
 
 

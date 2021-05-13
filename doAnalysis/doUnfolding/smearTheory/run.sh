@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-smeartheory=0
-smearPY8=1
+smeartheory=1
+smearPY8=0
 
 
 
@@ -48,7 +48,8 @@ then
     #nlofstr="fnl5020_R04Jets_ybins_NNPDF31_nnlo_as_0122_murEQmufEQpt_v4"
     #nlofstr="fnl5020_R04Jets_ybins_NNPDF31_nnlo_as_0122_murEQmufEQHTp_v4"
     
-    outdescstr="gaussSmear_murmufpt_JohnNPs_semifinalv4"    
+    #outdescstr="gaussSmear_murmufpt_JohnNPs_semifinalv4"    
+    outdescstr="gaussSmear_murmufpt_JohnNPs_semifinalv4_smeartests"    
     #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4"
 
     #nlofshortstr="CT10"
@@ -75,7 +76,7 @@ then
 
     scpoutput=0
     scpafterlast=0
-    etabin_i=0
+    etabin_i=1
     Netabins=4
     #Netabins=1 ##debug; runs first etabin only
     while [ $etabin_i -lt $Netabins ]

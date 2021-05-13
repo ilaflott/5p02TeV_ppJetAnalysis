@@ -22,7 +22,7 @@ int readForests_ppMC_unf( std::string inFilelist=defMCInFilelist,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,
-			   float jtEtaCutLo=0., float jtEtaCutHi=2.0      );
+			   float jtEtaCutLo=0., float jtEtaCutHi=3.0      );
 
 ////UNF CUTS: DO NOT CHANGE FOR NOW (6/25/19)
 const float jtPtCut        = 43.;

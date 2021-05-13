@@ -51,3 +51,9 @@ const std::string NPCorrFile="/home/ilaflott/5p02TeV_ppJetAnalysis/CMSSW_7_5_8/s
 const std::string in_NLOFile_default=NNPDFFILESTR;
 const std::string in_PY8File_default=_PY8_FILESTR;
 
+std::string ybin_str_arr[]={
+  "0.0_to_0.5",
+  "0.5_to_1.0",
+  "1.0_to_1.5",
+  "1.5_to_2.0"
+};

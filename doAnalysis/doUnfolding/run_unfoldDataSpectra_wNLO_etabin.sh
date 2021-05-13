@@ -18,13 +18,13 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 #DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_2k17tightJetID_semifinalv4"
 DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 
-THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_plots/"
-THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_"
-OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
+#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_plots/"
+#THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_"
+#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
 
-#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_plots/"
-#THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_"
-#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufpt_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
+THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_plots/"
+THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_"
+OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufpt_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
 
 #OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_2k17tightJetID_semifinalv4_murmufHTp_JohnNPs"
 #OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufHTp_JohnNPs"

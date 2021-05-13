@@ -376,11 +376,11 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
       std::cout<<"no input hist named " <<  inputHistName<< ", continue..."<<std::endl;
       continue;}          
     else if(hrsp[ip]->GetEntries()<50){
+      std::cout<<"inputHistName="<<inputHistName<<std::endl;
       std::cout<<"#entries= " <<  hrsp[ip]->GetEntries()<< ", too few, continue..."<<std::endl;
       continue;	      }
     
     //set name for later
-    
     hrsp[ip]->SetName(("hJER_1wJetID_"+bintype+"_"+
 		       absetabins_str[absetabin]+"_to_"+absetabins_str[absetabin+1]+
 		       "_genpt_"+std::to_string(ptbin_ip) + "_to_" + std::to_string(ptbin_ip1) ).c_str());
@@ -408,7 +408,10 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
 						     rebin_hrsp_arr));
     hrsp_ip_rebin->TH1::ResetStats();//reset stats after rebinning; root won't do it automatically...
     if(debugMode)hrsp_ip_rebin->Print("base");
+    std::cout<<"now writing histname "<<hrsp[ip]->GetName()<<std::endl;    
+    fout_ptbin_JER->cd();
     hrsp[ip]->Write();
+    rootfout->cd();
     
     if(ip<fit_ptlo_bin )continue;
     if(ip>=fit_pthi_bin )continue;

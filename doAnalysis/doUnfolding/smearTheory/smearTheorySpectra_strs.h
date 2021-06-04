@@ -18,9 +18,14 @@ const std::string _MMHTDESCTXT="MMHT14";
 const std::string NNPDFDESCTXT="NNPDF30";
 
 //PDF file strings + descriptive text, these are from Joao, in |y| bins
-const std::string _CT14NNLOFILESTR ="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v4";
+//const std::string _CT14NNLOFILESTR ="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v4";
 const std::string _CT14NNLOFILESTR2="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt1_v4";
-const std::string _CT14NNLOFILESTR3="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQHTp_v4";
+//const std::string _CT14NNLOFILESTR3="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQHTp_v4";
+//const std::string _CT14NNLODESCTXT ="CT14NNLO";
+
+const std::string _CT14NNLOFILESTR ="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQpt_v5";
+//const std::string _CT14NNLOFILESTR2="fnl5020_R04Jets_ybins_CT14nlo_murEQmufEQpt1_v5";
+const std::string _CT14NNLOFILESTR3="fnl5020_R04Jets_ybins_CT14nnlo_murEQmufEQHTp_v5";
 const std::string _CT14NNLODESCTXT ="CT14NNLO";
 
 

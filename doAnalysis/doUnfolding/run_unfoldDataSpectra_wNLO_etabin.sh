@@ -10,39 +10,20 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 ############# NNPDF NLO + HERWIG EE5C LO NPCs ###############
 
 
-####CT14NNLO_03.18.20_sigmu_geny_noJERscales_spl3wgts_gaussSmear_TEST_plots
-
-#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv3"
-#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv4"
-#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_eMaxJetID_semifinalv4"
-#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_2k17tightJetID_semifinalv4"
+####TESTS FOR NEW SMEAR THEORY OUTPUT
 DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
-
-#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_plots/"
-#THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_"
-#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
-
-THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_plots/"
-THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_"
-OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufpt_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
-
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_2k17tightJetID_semifinalv4_murmufHTp_JohnNPs"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufHTp_JohnNPs"
-
-
-
-
-
-
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv3_"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufpt_JohnNPs"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufpt_JohnNPs"
-
-#THYDIR="smearTheory/CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_semifinalv3_plots/"
-#THYFILESTR="CT14NNLO_NLO_v3_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt1_JohnNPs_semifinalv3_"
-#OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_mergedSMPbins_semifinalv3_murmufpt1_JohnNPs"
-##OUTPUTTAG="03.18.20_Bayes_CT14NNLO_NLO_v3_${FITTYPE}_johnbins2_semifinalv3_murmufpt1_JohnNPs"
+THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_noresid_plots/"
+THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_noresid_"
+OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_smeartests_wJERhistsmear_noresid"
+#CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_noresid_plots/
+#####USED FOR PREAPPROVAL
+#DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+##THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_plots/"
+##THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_"
+##OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
+#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_plots/"
+#THYFILESTR="CT14NNLO_NLO_03.18.20_${FITTYPE}_geny_spl3wgts_gaussSmear_murmufpt_JohnNPs_semifinalv4_"
+#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufpt_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
 
 
 etabinStart=0
@@ -52,6 +33,7 @@ dosystunf=1
 declare -a sysarr=("JEC" "JER")
 declare -a sysarropt=("" "")
 sysarrlen=${#sysarr[@]}
+#sysarrlen=1
 
 #etabinStart=0
 #etabinEnd=1

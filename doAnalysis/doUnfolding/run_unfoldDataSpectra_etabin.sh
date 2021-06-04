@@ -7,21 +7,14 @@ rooUnfoldCompile bayesUnfoldDataSpectra_etabin.C
 ############ FULL GEN + RECO PY8 ###############
 
 
-####WITH JEC SYS V2, WITH LUMI CORR, SMP BINS PT LO 56, LOWHLT40THRESH
-#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv3"
-#DATADIR="03.18.20_outputCondor/ppData_HighPtJetTrig_ak4PFJets_03-18-20_jetPlots_0.0eta2.5_SMPbins_withjety_semifinalv4"
+####THIS WAS USED FOR PREAPPROVAL
 DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 
-#MCDIR="03.18.20_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_unf_0.0eta2.5_SMPbins_withjety_semifinalv3/"
-#MCDIR="03.18.20_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_unf_0.0eta2.5_SMPbins_withgenjety_semifinalv3/"
-#MCDIR="03.18.20_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_03-18-20_unf_0.0eta2.5_SMPbins_withgenjety_wJERSFs_semifinalv3/"
+####THIS WAS USED FOR PREAPPROVAL
 MCDIR="01.05.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_01-05-21_unf_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4/"
 MCFILESTR="Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
 
-#OUTPUTTAG="Bayes_PY8_FullRECO_03.18.20_SMPbins_withJECsysv2_SMPbins_ptLo56_withLumiCorr_semifinalv3"
-#OUTPUTTAG="03.18.20_Bayes_PY8_FullRECO_SMPbins_withJECsysv2_withgenjety_SMPbins_semifinalv3"
-#OUTPUTTAG="03.18.20_Bayes_PY8_FullRECO_SMPbins_withgenjety_wJERSFs_SMPbins_semifinalv3"
-#OUTPUTTAG="03.18.20_Bayes_PY8_FullRECO_SMPbins_withgenjety_wJERSFs_SMPbins_semifinalv4"
+####PREAPPROVAL 
 OUTPUTTAG="01.05.21_Bayes_PY8_FullRECO_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
 
 dosystunf=1

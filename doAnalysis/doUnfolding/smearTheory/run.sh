@@ -52,7 +52,7 @@ then
     #outdescstr="gaussSmear_murmufpt_JohnNPs_semifinalv4"    
     #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_noresid" #done
     #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_wresid" #done
-    #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_noresid"
+    #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_noresid" #done 
     outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_wresid"
 
     #nlofshortstr="CT10"

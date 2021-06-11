@@ -3012,11 +3012,26 @@ int main(int argc, char* argv[]){
 					       (std::string)argv[8] );    
   }
   else if (argc==10){
+    const int etabinin=(const int)(std::atoi(argv[3]));
+    int numiters=3;
+
+    ////noJERhistsmearing, w/residuals
+    //if     (etabinin==0) numiters=3;
+    //else if(etabinin==1) numiters=3;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=2;
+
+    //wJERhistsmearing, w/residuals
+    if     (etabinin==0) numiters=5;
+    else if(etabinin==1) numiters=5;
+    else if(etabinin==2) numiters=4;
+    else if(etabinin==3) numiters=3;
+
     rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
 					       (std::string)argv[1] , //infile data dir
 					       (std::string)argv[2] , //basename
-					       (const int)(std::atoi(argv[3])),  //etabinint					       //0, 
-					       3,  //kiterinput
+					       etabinin, //(const int)(std::atoi(argv[3])),  //etabinint					       //0, 
+					       numiters,  //kiterinput
 					       (std::string)argv[4], //infile mc dir 
 					       (std::string)argv[5],  // infile mc name
 					       (bool)((int)std::atoi(argv[6])), // do syst unf

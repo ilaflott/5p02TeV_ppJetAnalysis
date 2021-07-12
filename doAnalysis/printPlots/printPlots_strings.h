@@ -39,6 +39,8 @@ const std::string promptRecoPDString="pp 2015 promptReco, Jet80+LowerJets";
 const std::string PDStatsString="L_{int} = 27.4 pb^{-1}, #sqrt{s} = 5.02 TeV";
 //const std::string PDStatsString_2="27.4 pb^{-1}, #sqrt{s} = 5.02 TeV, #it{CMS Work In Progress}";
 const std::string PDStatsString_2="#bf{CMS} #it{Work In Progress}                                             27.4 pb^{-1} (5.02 TeV)";
+const std::string PDStatsString_3="#bf{CMS} #it{Preliminary}               27.4 pb^{-1} (5.02 TeV)";
+const std::string PDStatsString_4="#bf{CMS} #it{Simulation}                  (5.02 TeV)";
 
 // variable names for QA Plots
 const std::string var[]={

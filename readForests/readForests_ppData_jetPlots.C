@@ -25,6 +25,11 @@ const bool fillDataTupelJetQAHists=true&&useTupel&&!fillDataJetQAHists;// leave 
 const bool useTightJetID=false;
 
 const bool usePFCandAnalyzer=true;
+const float PFMETfracMAX=0.2;//currently running
+//const float PFMETfracMAX=0.3;//default
+//const float PFMETfracMAX=0.5;//need to run
+const bool usetype1PFMETcut=false&&usePFCandAnalyzer;
+
 
 //const std::string trgCombType="Calo"; // almost never used
 const std::string trgCombType="PF"; // almost always used
@@ -2032,67 +2037,79 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       h_sumpfEt_precut->Fill(sumpfEt,weight_eS);
       h_PFMETfrac_precut->Fill(PFMETfrac,weight_eS);
 
+      if(!usetype1PFMETcut)
+	if(PFMETfrac>PFMETfracMAX)continue;
+
 
       //https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#Type_I_Correction
       Float_t CTtype1sumpfpt_x=0.,CTtype1sumpfpt_y=0.;
       Float_t CTtype1sumpfEt=0.;//scalar sum of PF Et, not a vector sum.
       
-      for(int jet = 0; jet<nref_I; ++jet){
-
-	Float_t jtpt   = pt_F[jet]; //this will be the jetpt pulled from the forest
-	Float_t recphi = phi_F[jet];
-	Float_t rawpt  = rawpt_F[jet];      
-
-	CTtype1sumpfpt_x+=(rawpt-jtpt)*TMath::Cos(recphi);
-	CTtype1sumpfpt_y+=(rawpt-jtpt)*TMath::Sin(recphi);
-
-	Float_t receta = eta_F[jet];
-	Float_t jtm    = m_F[jet];//pretty sure this is a raw-level quantity. 
-	Float_t jttheta=2.*atan(exp(-1.*receta));
-	Float_t jtpz=jtpt/tan(jttheta);
-	Float_t jtp=sqrt(jtpt*jtpt + jtpz*jtpz);
-	Float_t jtE=sqrt(jtp*jtp + jtm*jtm);
-	Float_t jtEt=jtE*sin(jttheta);
-
-	float rawpz=rawpt/tan(jttheta);
-	//float rawEt_guess =jtEt*(rawpt/jtpt);
-	//float rawEt_guess2=sqrt(rawpt*rawpt+rawpz*rawpz+jtm*jtm)*sin(jttheta);//since jtm is RAW, this should be the real raw Et
-	float rawEt=sqrt(rawpt*rawpt+rawpz*rawpz+jtm*jtm)*sin(jttheta);
+      if(usetype1PFMETcut){
 	
-	//std::cout<<"                            jtEt ="<<jtEt<<std::endl;
-	//std::cout<<"       compare with: rawEt_guess ="<<rawEt_guess<<std::endl;
-	//std::cout<<"       compare with: rawEt_guess2="<<rawEt_guess2<<std::endl;
+	for(int jet = 0; jet<nref_I; ++jet){
+	  
+	  Float_t jtpt   = pt_F[jet]; //this will be the jetpt pulled from the forest
+	  Float_t recphi = phi_F[jet];
+	  Float_t rawpt  = rawpt_F[jet];      
+	  
+	  CTtype1sumpfpt_x+=(rawpt-jtpt)*TMath::Cos(recphi);
+	  CTtype1sumpfpt_y+=(rawpt-jtpt)*TMath::Sin(recphi);
+	  
+	  Float_t receta = eta_F[jet];
+	  Float_t jtm    = m_F[jet];//pretty sure this is a raw-level quantity. 
+	  Float_t jttheta=2.*atan(exp(-1.*receta));
+	  Float_t jtpz=jtpt/tan(jttheta);
+	  Float_t jtp=sqrt(jtpt*jtpt + jtpz*jtpz);
+	  Float_t jtE=sqrt(jtp*jtp + jtm*jtm);
+	  Float_t jtEt=jtE*sin(jttheta);
+	  
+	  float rawpz=rawpt/tan(jttheta);
+	  //float rawEt_guess =jtEt*(rawpt/jtpt);
+	  //float rawEt_guess2=sqrt(rawpt*rawpt+rawpz*rawpz+jtm*jtm)*sin(jttheta);//since jtm is RAW, this should be the real raw Et
+	  float rawEt=sqrt(rawpt*rawpt+rawpz*rawpz+jtm*jtm)*sin(jttheta);
+	  
+	  //std::cout<<"                            jtEt ="<<jtEt<<std::endl;
+	  //std::cout<<"       compare with: rawEt_guess ="<<rawEt_guess<<std::endl;
+	  //std::cout<<"       compare with: rawEt_guess2="<<rawEt_guess2<<std::endl;
+	  
+	  
+	  //CTtype1sumpfEt+=rawpt-jtpt; //probably should use the energy of the jet, not the momentum. 
+	  //CTtype1sumpfEt+=jtEt*(rawpt/jtpt)-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
+	  //CTtype1sumpfEt+=rawEt_guess-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
+	  //CTtype1sumpfEt+=rawEt_guess2-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
+	  CTtype1sumpfEt+=rawEt-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
+	  
+	}
 	
+	Float_t type1sumpfpt=sqrt( pow(sumpfpt_x-CTtype1sumpfpt_x,2) +pow(sumpfpt_y-CTtype1sumpfpt_y,2) );
+	Float_t type1sumpfEt=sumpfEt - CTtype1sumpfEt;
+	//Float_t type1sqrtsumpfEt=sqrt(type1sumpfEt);
+	Float_t type1PFMETfrac=type1sumpfpt/type1sumpfEt;
+	//Float_t type1PFMETsig=type1sumpfpt/sqrttype1sumpfEt;
+	
+	h_type1sumpfpt_precut->Fill(type1sumpfpt,weight_eS);
+	h_type1sumpfEt_precut->Fill(type1sumpfEt,weight_eS);
+	h_type1PFMETfrac_precut->Fill(type1PFMETfrac,weight_eS);
+	
+	
+	//std::cout<<"                   sumptpt="<<sumpfpt<<std::endl;     
+	//std::cout<<"compare with: type1sumpfpt="<<type1sumpfpt<<std::endl;     
+	//std::cout<<"                   sqrtsumpfEt="<<sqrtsumpfEt<<std::endl;
+	//std::cout<<"compare with: type1sqrtsumpfEt="<<type1sqrtsumpfEt<<std::endl;
+	//std::cout<<"                   PFMETfrac="<<PFMETfrac<<std::endl;
+	//std::cout<<"compare with: type1PFMETfrac="<<type1PFMETfrac<<std::endl;
+	//std::cout<<std::endl;
+	
+	//if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+	if(type1PFMETfrac>PFMETfracMAX)continue;//giving this a shot. see how it goes...
 
-	//CTtype1sumpfEt+=rawpt-jtpt; //probably should use the energy of the jet, not the momentum. 
-	//CTtype1sumpfEt+=jtEt*(rawpt/jtpt)-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
-	//CTtype1sumpfEt+=rawEt_guess-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
-	//CTtype1sumpfEt+=rawEt_guess2-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
-	CTtype1sumpfEt+=rawEt-jtEt; //i'm unsure if this is the right approach because of the jtm terms in jtE. lets try and see...
-	
+	h_type1sumpfpt->Fill(type1sumpfpt,weight_eS);
+	h_type1sumpfEt->Fill(type1sumpfEt,weight_eS);
+	h_type1PFMETfrac->Fill(type1PFMETfrac,weight_eS);
       }
-      
-      Float_t type1sumpfpt=sqrt( pow(sumpfpt_x-CTtype1sumpfpt_x,2) +pow(sumpfpt_y-CTtype1sumpfpt_y,2) );
-      Float_t type1sumpfEt=sumpfEt - CTtype1sumpfEt;
-      //Float_t type1sqrtsumpfEt=sqrt(type1sumpfEt);
-      Float_t type1PFMETfrac=type1sumpfpt/type1sumpfEt;
-      //Float_t type1PFMETsig=type1sumpfpt/sqrttype1sumpfEt;
 
-      h_type1sumpfpt_precut->Fill(type1sumpfpt,weight_eS);
-      h_type1sumpfEt_precut->Fill(type1sumpfEt,weight_eS);
-      h_type1PFMETfrac_precut->Fill(type1PFMETfrac,weight_eS);
-      
-      
-      //std::cout<<"                   sumptpt="<<sumpfpt<<std::endl;     
-      //std::cout<<"compare with: type1sumpfpt="<<type1sumpfpt<<std::endl;     
-      //std::cout<<"                   sqrtsumpfEt="<<sqrtsumpfEt<<std::endl;
-      //std::cout<<"compare with: type1sqrtsumpfEt="<<type1sqrtsumpfEt<<std::endl;
-      //std::cout<<"                   PFMETfrac="<<PFMETfrac<<std::endl;
-      //std::cout<<"compare with: type1PFMETfrac="<<type1PFMETfrac<<std::endl;
-      //std::cout<<std::endl;
-      
-      //if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
-      if(type1PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+
 
       h_NEvents_PFMETfracCut->Fill(0.);
       
@@ -2100,16 +2117,12 @@ int readForests_ppData_jetPlots( std::string inFilelist , int startfile , int en
       h_sumpfpt_y->Fill(sumpfpt_y,weight_eS);
       h_sqrtsumpfEt->Fill(sqrtsumpfEt,weight_eS);
       h_PFMETsig->Fill(PFMETsig,weight_eS);
-
+      
       h_sumpfpt->Fill(sumpfpt,weight_eS);      
       h_sumpfEt->Fill(sumpfEt,weight_eS);
       h_PFMETfrac->Fill(PFMETfrac,weight_eS);
-
-      h_type1sumpfpt->Fill(type1sumpfpt,weight_eS);
-      h_type1sumpfEt->Fill(type1sumpfEt,weight_eS);
-      h_type1PFMETfrac->Fill(type1PFMETfrac,weight_eS);
-
       
+
     }
 
    

@@ -8,13 +8,29 @@ rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 
 
 ############# NNPDF NLO + HERWIG EE5C LO NPCs ###############
-
-
-####TESTS FOR NEW SMEAR THEORY OUTPUT
+#####GAUSS CORE BASED ON CRYSTAL BALL FIT PARAMS SMEARING [GAUSS ALWAYS CENTERED AT 1]
 DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
-THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_wresid_plots/"
-THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_wresid_"
-OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_smeartests_wJERhistsmear_wresid"
+THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid_plots/"
+THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid_"
+OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid"
+
+#####GAUSS CORE BASED ON CRYSTAL BALL FIT PARAMS SMEARING
+#DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gauscrysballsmear_wJERhistsmear_wresid_plots/"
+#THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gauscrysballsmear_wJERhistsmear_wresid_"
+#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_gauscrysballsmear_wJERhistsmear_wresid"
+
+#####NEW CRYSTAL BALL FIT SMEARING
+#DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_crysballsmear_wJERhistsmear_wresid_plots/"
+#THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_crysballsmear_wJERhistsmear_wresid_"
+#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_crysballsmear_wJERhistsmear_wresid"
+
+#####TESTS FOR NEW SMEAR THEORY OUTPUT
+#DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_wresid_plots/"
+#THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_wresid_"
+#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_smeartests_wJERhistsmear_wresid"
 #CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_noresid_plots/
 #####USED FOR PREAPPROVAL
 #DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
@@ -33,7 +49,7 @@ dosystunf=1
 declare -a sysarr=("JEC" "JER")
 declare -a sysarropt=("" "")
 sysarrlen=${#sysarr[@]}
-#sysarrlen=1
+#sysarrlen=2
 
 #etabinStart=0
 #etabinEnd=1

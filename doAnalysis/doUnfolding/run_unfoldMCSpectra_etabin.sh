@@ -13,7 +13,7 @@ MCDIR="01.05.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_01-05-2
 MCFILESTR="Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
 OUTPUTTAG="01.05.21_Bayes_Closure_PY8_FullRECO_withgenjety_SMPbins_semifinalv4"
 etabinStart=0
-etabinEnd=4
+etabinEnd=1
 for (( j=${etabinStart}; j<${etabinEnd}; j++ ));
 do
     ./bayesUnfoldMCSpectra_etabin.exe ${OUTPUTTAG}  $j  ${MCDIR} ${MCFILESTR} "y"

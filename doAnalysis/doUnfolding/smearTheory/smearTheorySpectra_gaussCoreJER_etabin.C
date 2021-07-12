@@ -6,19 +6,20 @@ const int CANVX=1200, CANVY=1000;
 const int xsecorder=1;//in my fastNLO "convention", 0 would be the highest order available, 1 is the next lowest, and beyond that is even lower. 
                       //in real fastNLO convention, 0 is the highest order available, 1 is LO, 2 is NLO .... X is [(X-1)*N]LO etc. 
 
-const bool useJERscaleFactors=true;//note; alters JER syst. as well.
-const bool useJERhistsForSmearing=true;//if this is false, the JER v. gen pT fit will be used
+const bool useJERscaleFactors=false;//note; alters JER syst. as well.
+const bool useJERhistsForSmearing=false;//if this is false, the JER v. gen pT fit will be used. if true, it uses the JER hist in a given pT bin directly to throw random #'s
+const bool useJERfitsForSmearing=true;//if true, this uses the JER fit of the JER hist in a given pT bin directly to throw random #'s (currently only for crystal ball fit files)
 const bool applyResidualToyMCcorr=true;
-
+const bool tryopening_fJER_func=(!useJERhistsForSmearing)&&(!useJERfitsForSmearing);
 
 const bool printBaseDebug=true;
 const bool useHistSigmaFit=false;
 
 
 //const int nEvents=1e+09;  ///new typical (smaller rel stat unc)
-const int nEvents=1e+08;  ///typical
+//const int nEvents=1e+08;  ///typical
 //const int nEvents=5e+07;  /// debug nevents
-//const int nEvents=1e+07;  /// debug nevents
+const int nEvents=1e+07;  /// debug nevents
 //const int nEvents=1e+06;  /// debug nevents
 //const int nEvents=1e+05;  /// debug nevents
 
@@ -27,7 +28,7 @@ std::string NPCorrFits_text=_AVERAGE_NPS_TXT;
 
 //SYSTEMATICS
 //JER
-const bool doJERsys=true;
+const bool doJERsys=false;
 
 //NPCs
 const bool doNPsys12=false;//involves making a new thy hist, therefore, also a sep spline fit
@@ -586,55 +587,66 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   //fJER_default->SetMaximum(0.25);
   
   TF1 *fJER = NULL;
-  if(useHistSigmaFit)
-    fJER=(TF1*)fin_JER->Get("SigmaFit_h");
-  else
-    fJER=(TF1*)fin_JER->Get("SigmaFit_f");
-  if(!fJER){
-    std::cout<<"error, JER fit not open or not found!."<<std::endl; assert(false);}
-
-  fJER->SetLineColor(kRed);
-  fJER->SetMinimum(0.); //do i need to set min/max really?
-  fJER->SetMaximum(0.25);
-  std::cout<<std::endl;
-
-  //JER systematics
   TF1* fJER_sysup=NULL, * fJER_sysdown=NULL;
-  if(doJERsys){
-    std::string jersysup_name="SigmaFit_sysup_";
-    if(useHistSigmaFit)jersysup_name+="h";
-    else jersysup_name+="f";    
-    //fJER_sysup=(TF1*)fin_JER->Get(jersysup_name.c_str()); //old way of JERsyst
-    fJER_sysup=(TF1*)fJER->Clone(jersysup_name.c_str());
-    std::string jersysdown_name="SigmaFit_sysdown_";
-    if(useHistSigmaFit)jersysdown_name+="h";
-    else jersysdown_name+="f";    
-    //fJER_sysdown=(TF1*)fin_JER->Get(jersysdown_name.c_str());    //old way of JERsyst
-    fJER_sysdown=(TF1*)fJER->Clone(jersysdown_name.c_str());
-  }
-  
-  if(useJERscaleFactors){
-    std::cout<<"using JER scale factors!!"<<std::endl;
-    //float par0scalefact_err= fJER->GetParameter(0)*JERscaleFacts[etabin]*sqrt( pow( ( fJER->GetParError(0)/fJER->GetParameter(0) ), 2) +
-    //										 pow( ( JERscaleFactErrs[etabin]/JERscaleFacts[etabin] ), 2) +
-    //										 );//i wanna try this out
-    fJER->SetParameter(0, fJER->GetParameter(0)*JERscaleFacts[etabin]);
-    fJER->SetParameter(1, fJER->GetParameter(1)*JERscaleFacts[etabin]);
-    if(doJERsys){
-      std::cout<<"doing JER systematics + using JER scale factors!!"<<std::endl;
+  if(tryopening_fJER_func){
+    if(useHistSigmaFit)
+      fJER=(TF1*)fin_JER->Get("SigmaFit_h");
+    else
+      fJER=(TF1*)fin_JER->Get("SigmaFit_f");
 
-      fJER_sysup->SetParameter(  0,   fJER_sysup->GetParameter(0)*( JERscaleFacts[etabin]+JERscaleFactErrs[etabin] ) );//orig            
-      fJER_sysdown->SetParameter(0, fJER_sysdown->GetParameter(0)*( JERscaleFacts[etabin]-JERscaleFactErrs[etabin] ) );//orig
-      fJER_sysup->SetParameter(  1,   fJER_sysup->GetParameter(1)*( JERscaleFacts[etabin]+JERscaleFactErrs[etabin] ) );//orig
-      fJER_sysdown->SetParameter(1, fJER_sysdown->GetParameter(1)*( JERscaleFacts[etabin]-JERscaleFactErrs[etabin] ) );//orig
+    if(!fJER){
+      std::cout<<"error, JER fit not open or not found!."<<std::endl; assert(false);}
+
+  
+    fJER->SetLineColor(kRed);
+    fJER->SetMinimum(0.); //do i need to set min/max really?
+    fJER->SetMaximum(0.25);
+    std::cout<<std::endl;
+
+
+    //JER systematics
+    if(tryopening_fJER_func&&doJERsys){
+      std::string jersysup_name="SigmaFit_sysup_";
+      if(useHistSigmaFit)jersysup_name+="h";
+      else jersysup_name+="f";    
+      //fJER_sysup=(TF1*)fin_JER->Get(jersysup_name.c_str()); //old way of JERsyst
+      fJER_sysup=(TF1*)fJER->Clone(jersysup_name.c_str());
+      std::string jersysdown_name="SigmaFit_sysdown_";
+      if(useHistSigmaFit)jersysdown_name+="h";
+      else jersysdown_name+="f";    
+      //fJER_sysdown=(TF1*)fin_JER->Get(jersysdown_name.c_str());    //old way of JERsyst
+      fJER_sysdown=(TF1*)fJER->Clone(jersysdown_name.c_str());
+
+
+      if(useJERscaleFactors){
+	std::cout<<"using JER scale factors!!"<<std::endl;
+	//float par0scalefact_err= fJER->GetParameter(0)*JERscaleFacts[etabin]*sqrt( pow( ( fJER->GetParError(0)/fJER->GetParameter(0) ), 2) +
+	//										 pow( ( JERscaleFactErrs[etabin]/JERscaleFacts[etabin] ), 2) +
+	//										 );//i wanna try this out
+	fJER->SetParameter(0, fJER->GetParameter(0)*JERscaleFacts[etabin]);
+	fJER->SetParameter(1, fJER->GetParameter(1)*JERscaleFacts[etabin]);
+	if(doJERsys){
+	  std::cout<<"doing JER systematics + using JER scale factors!!"<<std::endl;
+	  
+	  fJER_sysup->SetParameter(  0,   fJER_sysup->GetParameter(0)*( JERscaleFacts[etabin]+JERscaleFactErrs[etabin] ) );//orig            
+	  fJER_sysdown->SetParameter(0, fJER_sysdown->GetParameter(0)*( JERscaleFacts[etabin]-JERscaleFactErrs[etabin] ) );//orig
+	  fJER_sysup->SetParameter(  1,   fJER_sysup->GetParameter(1)*( JERscaleFacts[etabin]+JERscaleFactErrs[etabin] ) );//orig
+	  fJER_sysdown->SetParameter(1, fJER_sysdown->GetParameter(1)*( JERscaleFacts[etabin]-JERscaleFactErrs[etabin] ) );//orig
+	}
+      }
     }
   }
+  
+  
+  
+
 
   
   
   std::vector<TH1*>hJER_vec;
   std::vector<TH1*>hJER_toyQA_vec;
   if(useJERhistsForSmearing){
+    std::cout<<"using JER hists for smearing!!"<<std::endl;
     
     for(unsigned int i=0; i<(JER_ptbins.at(etabin).size()-1);i++){
       std::string genptlo_str=std::to_string( ( (int)JER_ptbins.at(etabin).at(i)));
@@ -647,52 +659,119 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 				);
       hJER_toyQA_vec.at(i)->Reset("ICES");
       hJER_toyQA_vec.at(i)->SetMarkerStyle(kOpenCircle);
-				
+      
     }
     //assert(false);        
   }
   
 
 
+  TFile* fin_JER_missingBins=NULL; bool use_JER_missingBinsFile=false;
+  std::vector<TF1*>fJER_vec;
+  std::vector<TH1*>fJER_toyQA_vec;
+  if(useJERfitsForSmearing){    
+    std::cout<<"using JER crystal ball fits for smearing!!"<<std::endl;
+    
+    if(in_JERFile.find("crysball_ptLo56.root")!=std::string::npos){
+      std::cout<<"special case: two lowest pT bins in different file! proceeding carefully..."<<std::endl;
+      use_JER_missingBinsFile=true;
+      std::string in_JERFile_missingBins=in_JERFile;
+      str_replace(in_JERFile_missingBins,"_ptLo56.root","_missingBins.root");
+      std::cout<<"opening missing bins file"<<in_JERFile_missingBins<<std::endl;		  
+      fin_JER_missingBins=TFile::Open(in_JERFile_missingBins.c_str(),"READ");
+    }
 
-  /////////////// plot Core p_T Resolution ////////////////////////////////////////////////////////
-  std::cout<<"plotting JER!"<<  std::endl;  
-  //TF1 is irritating to set titles for+blah... so use this  
-  TH1D * hJER = (TH1D*)( (TH1D*)fJER->GetHistogram() )->Clone(("hJER_"+std::to_string(etabin)).c_str());
-  if(!useHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
-  else if(useHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma from Fit").c_str());
-  hJER->GetXaxis()->SetNoExponent(true);
-  hJER->GetXaxis()->SetMoreLogLabels(true);
-  if(useHistSigmaFit)hJER->SetLineColor(kBlue-7);
-  else hJER->SetLineColor(kMagenta-2);
-  
-  TH1D* hJER_sysup=NULL , *hJER_sysdown=NULL;
-  if(doJERsys) hJER_sysup   = (TH1D*)( (TH1D*)fJER_sysup->GetHistogram() )->Clone(("hJER_sysup_"+std::to_string(etabin)).c_str());
-  if(doJERsys) hJER_sysdown = (TH1D*)( (TH1D*)fJER_sysdown->GetHistogram() )->Clone(("hJER_sysdown_"+std::to_string(etabin)).c_str());  
-  
-  //-----------------------------------  
-  TCanvas *plot_JER = new TCanvas("plot_JER", "plot JER",900,600);
-  plot_JER->cd()->SetLogx(1);
-  plot_JER->cd();  
-  hJER->SetAxisRange(0.02,0.20,"Y");
+    
 
-  hJER->DrawClone("HIST E ][");    
-  if(doJERsys)hJER_sysup->DrawClone("HIST E SAME ][");
-  if(doJERsys)hJER_sysdown->DrawClone("HIST E SAME ][");
-  //-----------------------------------
+    for(unsigned int i=0; i<(JER_ptbins.at(etabin).size()-1);i++){
 
-  //TO DO REPLACE ME W/TEXT SAYING SAME THING
-  TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
-  leg->SetFillStyle(0);
-  leg->SetBorderSize(0.);
-  leg->AddEntry(hJER, "PY8 CUETP8M1 JER", "l");  
-  if(doJERsys)leg->AddEntry(hJER_sysup, "Upper/Lower Unc.", "l");  
-  leg->AddEntry((TObject*)0,"ak4PF Jets", "");
-  if(useJERscaleFactors)leg->AddEntry((TObject*)0, "8 TeV JER Scale Factors Applied", "");
-  //leg->AddEntry((TObject*)0,"0<|y|<2.0", "");   
-  leg->Draw();
-  //-----------------------------------
+      float rand_x=((float)i+1.)/((float)(JER_ptbins.at(etabin).size()-1))*1. + 1.;//debug
+
+      std::string genptlo_str=std::to_string( ( (int)JER_ptbins.at(etabin).at(i)));
+      std::string genpthi_str=std::to_string( ( (int)JER_ptbins.at(etabin).at(i+1)));
+      std::string inJERTF1Name="fit_"+etabin_altstr_arr[etabin]+"_"+genptlo_str+"_to_"+genpthi_str;
+      if(use_JER_missingBinsFile && i<2){
+	std::cout<<"warning! getting hist from missing bins file instead!!!"<<std::endl;
+	std::cout<<"opening inJERTF1Name="<<inJERTF1Name<<std::endl;
+	TF1* forcloning= (TF1*)(
+				((TF1*)fin_JER_missingBins->Get( (inJERTF1Name).c_str()))
+				->Clone( (inJERTF1Name+"_clone").c_str() )
+				);
+	TF1 testthefit= *(forcloning);
+	std::cout<<"testing eval..."<<std::endl;//nogood
+	std::cout<<"testthefit.Eval("<<rand_x<<") = " << testthefit.Eval(rand_x) <<std::endl;
+
+	//std::cout<<"testing eval..."<<std::endl;//nogood
+	//std::cout<<"forcloning->Eval("<<rand_x<<") = " << forcloning->Eval(rand_x) <<std::endl;
+	assert(false);
+	
+	//fJER_vec.push_back((TF1*)fin_JER_missingBins->Get( (inJERTF1Name).c_str()));
+	fJER_vec.push_back(forcloning);
+      }
+      else{
+	std::cout<<"opening inJERTF1Name="<<inJERTF1Name<<std::endl;      
+	fJER_vec.push_back((TF1*)fin_JER->Get( (inJERTF1Name).c_str()));
+      }
+      
+      std::cout<<"testing GetName on hist just opened."<<std::endl;//fine
+      std::cout<<"fJER_vec.at(" << i<<")->GetName() = " << fJER_vec.at(i)->GetName() <<std::endl;
+      //std::cout<<"testing eval..."<<std::endl;//nogood
+      //std::cout<<"fJER_vec.at(" << i<<")->Eval("<<rand_x<<") = " << fJER_vec.at(i)->Eval(rand_x) <<std::endl;
+
+      TH1D* fJER_toyQAhist_bini=new TH1D( (inJERTF1Name+"_toyQA").c_str(),
+					(inJERTF1Name+"_toyQA").c_str(),
+					200, 0., 2. );
+					//200 , 0.0 , 2.0 );
+      fJER_toyQA_vec.push_back( fJER_toyQAhist_bini);
+      fJER_toyQA_vec.at(i)->SetMarkerStyle(kOpenCircle);
+    }
+    assert(false);
+  }
   
+
+  TH1D* hJER=NULL, *hJER_sysup=NULL, *hJER_sysdown=NULL;
+  TCanvas* plot_JER=NULL;
+
+  
+  if(tryopening_fJER_func){
+    /////////////// plot Core p_T Resolution ////////////////////////////////////////////////////////
+    std::cout<<"plotting JER!"<<  std::endl;  
+    //TF1 is irritating to set titles for+blah... so use this  
+    hJER = (TH1D*)( (TH1D*)fJER->GetHistogram() )->Clone(("hJER_"+std::to_string(etabin)).c_str());
+    if(!useHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma / #mu from Fit").c_str());
+    else if(useHistSigmaFit)hJER->SetTitle(("Gauss Core JER Fit, "+absetarange_str+"; Jet p_{T} ; #sigma from Fit").c_str());
+    hJER->GetXaxis()->SetNoExponent(true);
+    hJER->GetXaxis()->SetMoreLogLabels(true);
+    if(useHistSigmaFit)hJER->SetLineColor(kBlue-7);
+    else hJER->SetLineColor(kMagenta-2);
+    
+    if(doJERsys) hJER_sysup   = (TH1D*)( (TH1D*)fJER_sysup->GetHistogram() )->Clone(("hJER_sysup_"+std::to_string(etabin)).c_str());
+    if(doJERsys) hJER_sysdown = (TH1D*)( (TH1D*)fJER_sysdown->GetHistogram() )->Clone(("hJER_sysdown_"+std::to_string(etabin)).c_str());  
+  
+    //-----------------------------------  
+    plot_JER = new TCanvas("plot_JER", "plot JER",900,600);
+    plot_JER->cd()->SetLogx(1);
+    plot_JER->cd();  
+    hJER->SetAxisRange(0.02,0.20,"Y");
+
+    hJER->DrawClone("HIST E ][");    
+    if(doJERsys)hJER_sysup->DrawClone("HIST E SAME ][");
+    if(doJERsys)hJER_sysdown->DrawClone("HIST E SAME ][");
+    //-----------------------------------
+    
+    //TO DO REPLACE ME W/TEXT SAYING SAME THING
+    TLegend *leg=new TLegend(0.53,0.50,0.85,0.85);
+    leg->SetFillStyle(0);
+    leg->SetBorderSize(0.);
+    leg->AddEntry(hJER, "PY8 CUETP8M1 JER", "l");  
+    if(doJERsys)leg->AddEntry(hJER_sysup, "Upper/Lower Unc.", "l");  
+    leg->AddEntry((TObject*)0,"ak4PF Jets", "");
+    if(useJERscaleFactors)leg->AddEntry((TObject*)0, "8 TeV JER Scale Factors Applied", "");
+    //leg->AddEntry((TObject*)0,"0<|y|<2.0", "");   
+    leg->Draw();
+    //-----------------------------------
+  }
+    
   /////////////// plots to to check NPs 
   // 2x2 canv of |y| bins
   TLine* lineatone=new TLine(thybins[0],1.,thybins[n_thybins],1.); lineatone->SetLineStyle(7);
@@ -1372,6 +1451,15 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 			       nEvents, etabin,
 			       theory_rnd, smeared_rnd, smeared_rnd_test, 
 			       (TH2D*)response_th2, false);
+    else if(useJERfitsForSmearing)
+      makeToySpectra_JERfits( (TH1D*)theory_rebin, (TSpline3*)spline3, 
+			      true, (std::vector<TF1*>)fJER_vec, (std::vector<TH1*>)fJER_toyQA_vec,
+			      false, (TF1*) NULL, //no NPs yet. 
+			      false, (TH1*) NULL, //i need to make this spectra first to get the residual correction histogram
+			      JERSF,
+			      nEvents, etabin,
+			      theory_rnd, smeared_rnd, smeared_rnd_test, 
+			      (TH2D*)response_th2, false);
     else 
       makeToySpectra_v2( (TH1D*)theory_rebin, (TSpline3*)spline3, 
 			 (TF1*)fJER,
@@ -1923,6 +2011,15 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 			       nEvents, etabin,
 			       theory_rnd_NP, smeared_rnd_NP, smeared_rnd_NP_test, 
 			       (TH2D*)response_NP_th2, true);
+    else if(useJERfitsForSmearing)
+      makeToySpectra_JERfits( (TH1D*)theory_rebin, (TSpline3*)spline3, 
+			      false, (std::vector<TF1*>)fJER_vec, (std::vector<TH1*>)fJER_toyQA_vec,
+			      true, (TF1*) fNP, //no NPs yet. 
+			      applyResidualToyMCcorr, (TH1*) theory_ratio_rnd, //i need to make this spectra first to get the residual correction histogram
+			      JERSF,
+			      nEvents, etabin,
+			      theory_rnd_NP, smeared_rnd_NP, smeared_rnd_NP_test, 
+			      (TH2D*)response_NP_th2, true);
     else 
       makeToySpectra_v2( (TH1D*)theory_rebin, (TSpline3*)spline3, 
 			 (TF1*)fJER,
@@ -2071,6 +2168,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
 
   // RESPONSE MATRIX PLOT
+  std::cout<<"drawing response matrix"<<std::endl;
   TCanvas* plot_response_NP_th2=new TCanvas("plot_response_NP_th2","plot response NP th2",1200, 1000);
   plot_response_NP_th2->cd()->SetLogx(1);
   plot_response_NP_th2->cd()->SetLogy(1);
@@ -2722,6 +2820,7 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
 
 
   outf->cd();
+  std::cout<<"writing to file"<<std::endl;
 
   // WRITE CANVASES
   plot_NLOxsec->Write();
@@ -2735,8 +2834,8 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   plot_NP_true_smeared_rat->Write( );
   plot_response_NP_th2->Write();    
   plot_true_rnd_rat->Write();
-  plot_JER->Write();//CANV
-
+  if(tryopening_fJER_func)plot_JER->Write();//CANV
+  
   if(useSplineWeights)plot_splines->Write();  
   else if(useFitWeights && useModLogFit) { 
     plot_logfits->Write();  
@@ -2790,9 +2889,11 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
     _7TeVFitB_NP->Write();  }
   
   
-  // JET ENERGY RESOLUTION FITs
-  fJER->Write();//FIT
-  hJER->Write();//FIT  
+  if(tryopening_fJER_func){
+    // JET ENERGY RESOLUTION FITs
+    fJER->Write();//FIT
+    hJER->Write();//FIT  
+  }
 
   // NP FITS 
   fNP->Write();  
@@ -2846,36 +2947,36 @@ int smearTheorySpectra_gaussCoreJER_etabin( std::string in_NLOfileString=in_NLOF
   //JER syst toy mc
   TDirectory* JERsysdir=outf->mkdir("JERsysdir");
   JERsysdir->cd();
-  fJER->Write();//FIT
-  hJER->Write();
+  if(tryopening_fJER_func){
+    fJER->Write();//FIT
+    hJER->Write();
+    
+    if(doJERsys){
+      fJER_sysup->Write();
+      hJER_sysup->Write();
+      fJER_sysdown->Write(); 
+      hJER_sysdown->Write(); 
+      
+      //theory_rnd_JERsysup->Write();
+      //smeared_rnd_JERsysup->Write();
+      //smeared_rnd_JERsysup_test->Write();
+      //response_JERsysup_th2->Write();  
+      //theory_rnd_JERsysdown->Write();
+      //smeared_rnd_JERsysdown->Write();
+      //smeared_rnd_JERsysdown_test->Write();
+      //response_JERsysdown_th2->Write();  
+      
+      theory_rnd_NP_JERsysup->Write();
+      smeared_rnd_NP_JERsysup->Write();
+      smeared_rnd_NP_JERsysup_test->Write();
+      response_NP_JERsysup_th2->Write();  
+      theory_rnd_NP_JERsysdown->Write();
+      smeared_rnd_NP_JERsysdown->Write();
+      smeared_rnd_NP_JERsysdown_test->Write();
+      response_NP_JERsysdown_th2->Write();  
 
-
-
-  if(doJERsys){
-    fJER_sysup->Write();
-    hJER_sysup->Write();
-    fJER_sysdown->Write(); 
-    hJER_sysdown->Write(); 
-
-    //theory_rnd_JERsysup->Write();
-    //smeared_rnd_JERsysup->Write();
-    //smeared_rnd_JERsysup_test->Write();
-    //response_JERsysup_th2->Write();  
-    //theory_rnd_JERsysdown->Write();
-    //smeared_rnd_JERsysdown->Write();
-    //smeared_rnd_JERsysdown_test->Write();
-    //response_JERsysdown_th2->Write();  
-
-    theory_rnd_NP_JERsysup->Write();
-    smeared_rnd_NP_JERsysup->Write();
-    smeared_rnd_NP_JERsysup_test->Write();
-    response_NP_JERsysup_th2->Write();  
-    theory_rnd_NP_JERsysdown->Write();
-    smeared_rnd_NP_JERsysdown->Write();
-    smeared_rnd_NP_JERsysdown_test->Write();
-    response_NP_JERsysdown_th2->Write();  
-
-    outf->cd();
+      outf->cd();
+    }
   }
 
   //PDF syst toy mc

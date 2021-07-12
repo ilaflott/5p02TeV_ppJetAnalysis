@@ -208,7 +208,10 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
 
     
     // TITLES
-    std::string h_Title = PDStatsString_2; //for APS DNP
+    //std::string h_Title = PDStatsString_2; //for APS DNP
+    std::string h_Title="";
+    if(isData)h_Title=PDStatsString_3;
+    else      h_Title=PDStatsString_4;
     std::string h_XAx_Title= var_xAx_Titles[j];
     //std::string h_YAx_Title= dcrossSectionAxTitle;
     //std::string h_YAx_Title= AUAxTitle;//for APS DNP
@@ -277,14 +280,16 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
 
     
     // TITLES
-    std::string h_Title = PDStatsString_2; //for APS DNP
+    std::string h_Title = "";//PDStatsString_2; //for APS DNP
+    if(isData) h_Title=PDStatsString_3;
+    else       h_Title=PDStatsString_4;
     std::string h_XAx_Title= var_xAx_Titles[j];
     //std::string h_YAx_Title= dcrossSectionAxTitle;
     //std::string h_YAx_Title= AUAxTitle;//for APS DNP
     std::string h_YAx_Title= ddcrossSectionAxTitle;//for APS DNP
     if((var[j]=="jtm"||var[j]=="jtE"||var[j]=="jty"||var[j]=="jteta" || var[j]=="jtphi" || isConstitHist) )h_YAx_Title=AUAxTitle;
     
-    std::string jetEtaCutString=absetabins_str[etabin]+" <#||{";
+    std::string jetEtaCutString=absetabins_str[etabin]+" < #||{";
     if(isybin) jetEtaCutString+="y";
     else       jetEtaCutString+="#eta";
     jetEtaCutString+="} < "+absetabins_str[etabin+1];
@@ -372,26 +377,29 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
       theNoJetIDHist[etabin]->Draw("HIST E"); 
       theJetIDHist[etabin]->Draw("HIST E SAME "); 
       
+      TLatex *t1=NULL, *t2=NULL, *t3=NULL;
+      float t1Loc1=0.50, t1Loc2=0.87;
+      if(etabin==0){
+	t1= makeTLatex(  t1Loc1  , t1Loc2 ,  fullJetType+" Jets" );    t1->Draw(); t1Loc2-=0.06;
+	t2= makeTLatex( (t1Loc1) , t1Loc2 , (jetCutString)      );    t2->Draw(); t1Loc2-=0.06;
+	if(!isData){t3= makeTLatex( (t1Loc1) , t1Loc2 , (genJetCutString)   );    t3->Draw(); }
+      }
       
-      float t1Loc1=0.50, t1Loc2=0.84;
-      TLatex* t1= makeTLatex(  t1Loc1  , t1Loc2 ,  fullJetType+"Jets" );    t1->Draw(); t1Loc2-=0.05;
-      TLatex *t2= makeTLatex( (t1Loc1) , t1Loc2 , (jetCutString)      );    t2->Draw(); t1Loc2-=0.05;
-      if(!isData){
-      TLatex *t3= makeTLatex( (t1Loc1) , t1Loc2 , (genJetCutString)   );    t3->Draw(); t1Loc2-=0.05; }
-      TLatex *t4= makeTLatex( (t1Loc1) , t1Loc2 , (jetEtaCutString)   );    t4->Draw();	    
-      //if(doJetIDPlots){
-      //	TLatex *t5= makeTLatex( (t1Loc1), (t1Loc2-.20), "Jet ID Applied" );      t5->Draw();	}
-      
-      float legx1=0.70, legx2=0.89;
-      float legy1=0.77, legy2=0.89;
+      std::string dataormc="";
+      if(isData)dataormc+="Data";
+      else      dataormc+="Pythia8";
+      TLatex* t0= makeTLatex( 0.71 , 0.87, (jetEtaCutString)   );  t0->Draw();
+      float legx1=0.71, legx2=0.95;
+      float legy1=0.70, legy2=0.85;
+      if(isData){ legy1=.69; legy2=0.86;
+	          legx1=.70; legx2=0.96;      }//no idea why this is necessary 
       TLegend* theJetQALeg=new TLegend(legx1,legy1,legx2,legy2, NULL,"brNDC");	  
       theJetQALeg->SetFillStyle(0);
       theJetQALeg->SetBorderSize(0.);
-      std::string legdesc="";
-      if(isData)legdesc="Data ";
-      else      legdesc="PY8 MC ";
-      theJetQALeg->AddEntry(theNoJetIDHist[etabin],(legdesc + "No Jet ID").c_str(),"lp");
-      theJetQALeg->AddEntry(theJetIDHist[etabin],  (legdesc + "With Jet ID").c_str()  ,"lpf");
+      //theJetQALeg->SetHeader((dataormc).c_str());
+      theJetQALeg->AddEntry((TObject*)0,(dataormc).c_str(),"");
+      theJetQALeg->AddEntry(theNoJetIDHist[etabin],("No Jet ID"),"lp");
+      theJetQALeg->AddEntry(theJetIDHist[etabin],  ("With Jet ID"),"lpf");
       theJetQALeg->Draw(); 
       
       
@@ -400,7 +408,7 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
       
       //TH1F* theDenom=(TH1F*)theNoJetIDHist[etabin]->Clone(("DataHistClone4Ratio_"+var[j]).c_str());
       
-      theRatio[etabin]->GetXaxis()->SetMoreLogLabels(true);
+      //theRatio[etabin]->GetXaxis()->SetMoreLogLabels(true);
       theRatio[etabin]->GetXaxis()->SetNoExponent(true);        
       theRatio[etabin]->Divide(theNoJetIDHist[etabin]);    
       
@@ -408,24 +416,25 @@ void printJetIDHist( TFile* fin, int j, bool isData, int NetabinstoDraw,
 	//float ymin=getnonzeromin(theRatio[etabin]);
 	//theRatio[etabin]->SetMinimum(ymin*0.99);
 	//theRatio[etabin]->SetMinimum(ymin);
-	theRatio[etabin]->SetMinimum(0.99);
+	theRatio[etabin]->SetMinimum(0.994);
 	//float ymax=getmaxcontent(theRatio[etabin]);
-	theRatio[etabin]->SetMaximum(1.001);      
+	theRatio[etabin]->SetMaximum(1.003);      
 	
 	int Nbins=theRatio[etabin]->GetNbinsX();
 	assert(theRatio[etabin]->GetNbinsX()       == theJetIDHist[etabin]->GetNbinsX());
 	assert(theNoJetIDHist[etabin]->GetNbinsX() == theJetIDHist[etabin]->GetNbinsX());
 	for(int p=1; p<=Nbins;p++){
-	  float currenterr=theRatio[etabin]->GetBinError(p);
-	  float covarerr_sq=2.*theJetIDHist[etabin]->GetBinContent(p)*theJetIDHist[etabin]->GetBinError(p)*theNoJetIDHist[etabin]->GetBinError(p)/
-	    pow(theNoJetIDHist[etabin]->GetBinContent(p),3.);
-	  float correcterr=sqrt(pow(currenterr,2.)-covarerr_sq);
-	  theRatio[etabin]->SetBinError(p, correcterr);
+	//  float currenterr=theRatio[etabin]->GetBinError(p);
+	//  float covarerr_sq=2.*theJetIDHist[etabin]->GetBinContent(p)*theJetIDHist[etabin]->GetBinError(p)*theNoJetIDHist[etabin]->GetBinError(p)/
+	//    pow(theNoJetIDHist[etabin]->GetBinContent(p),3.);
+	//  float correcterr=sqrt(pow(currenterr,2.)-covarerr_sq);
+	//  //theRatio[etabin]->SetBinError(p, correcterr);
+	  theRatio[etabin]->SetBinError(p, 1.e-30);
 	  
 	}
       }
       
-      theRatio[etabin]->Draw("HIST ][");
+      theRatio[etabin]->Draw("HIST E ][");
       
       TLine* lineAtOne          = new TLine(ptbins_debug[0],1.0,ptbins_debug[nbins_pt_debug],1.0); 
       lineAtOne->SetLineColor(12);          lineAtOne->SetLineStyle(2);

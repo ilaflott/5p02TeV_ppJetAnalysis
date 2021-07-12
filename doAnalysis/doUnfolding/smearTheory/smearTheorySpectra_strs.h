@@ -62,3 +62,21 @@ std::string ybin_str_arr[]={
   "1.0_to_1.5",
   "1.5_to_2.0"
 };
+
+
+std::string etabin_altstr_arr[]={
+  "00eta05",
+  "15eta10",
+  "10eta15",
+  "15eta20"
+};
+
+
+bool str_replace(std::string& str, const std::string& from, const std::string& to) {
+  //bool str_replace(std::string str, const std::string from, const std::string to) {
+  size_t start_pos = str.find(from);
+  if(start_pos == std::string::npos)
+    return false;
+  str.replace(start_pos, from.length(), to);
+  return true;
+}

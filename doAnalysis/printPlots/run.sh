@@ -3,8 +3,8 @@
 
 dojetQAPlots=0
 dojetTrigQAPlots=0   
-dojetTrigEff=0
-dojetIDQAPlots=1
+dojetTrigEff=1
+dojetIDQAPlots=0
 dojetMultPlots=0   #old
 doevtCounts=0
 scpOutput=0

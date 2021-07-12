@@ -1776,6 +1776,7 @@ int bayesUnfoldMCSpectra_etabin(	std::string baseName="Bayes_test" ,
   // output ratio comparisons -------------
   // gen ratios (denom=mc truth)
   h_genratio_oppunf ->SetTitle("MC Unf./PY8 Truth");h_genratio_oppunf ->Write("ratio_MC_unf_MC_truth");  //mc unf/mc truth	   
+  h_genratio_ssunf ->SetTitle("MC Unf./PY8 Truth");h_genratio_ssunf ->Write("ratio_MC_unf_MC_truth2");  //mc unf/mc truth	   
   h_genratio_oppfold->SetTitle("MC Fold(Unf.)/PY8 Truth");h_genratio_oppfold->Write("ratio_MC_fold_MC_truth"); //mc fold(unf)/mc truth 
   h_genratio_oppmeas->SetTitle("MC Meas./PY8 Truth");h_genratio_oppmeas->Write("ratio_MC_meas_MC_truth"); //mc meas/mc truth	   
   h_genratio_ssmeas ->SetTitle("PY8 Meas./PY8 Truth");h_genratio_ssmeas ->Write("ratio_MC_meas_MC_truth");  //mc meas/mc truth        
@@ -1890,10 +1891,18 @@ int main(int argc, char* argv[]){
     return rStatus;
   }
   else {
-    
+
+
+    int usethisnumofiter=-1;
+    int etabin_=			  (int)std::atoi(argv[2]);
+    if(     etabin_==0)usethisnumofiter=5;
+    else if(etabin_==1)usethisnumofiter=5;
+    else if(etabin_==2)usethisnumofiter=5;
+    else if(etabin_==3)usethisnumofiter=4;
+
     rStatus=bayesUnfoldMCSpectra_etabin(  (std::string)argv[1] , 
-					  (const int)std::atoi(argv[2]),//0, 
-					  3, 
+					  etabin_,
+					  usethisnumofiter, 
 					  (std::string)argv[3], 
 					  (std::string)argv[4],
 					  (std::string)argv[5] );

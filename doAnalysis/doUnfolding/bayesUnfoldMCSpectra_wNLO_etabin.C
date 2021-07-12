@@ -1748,6 +1748,7 @@ int bayesUnfoldMCSpectra_wNLO_etabin(	std::string baseName="Bayes_test" ,
   // output ratio comparisons -------------
   // gen ratios (denom=mc truth)
   h_genratio_oppunf ->SetTitle("Data Unf./PY8 Truth");h_genratio_oppunf ->Write("ratio_Data_unf_MC_truth");  //data unf/mc truth	   
+  h_genratio_ssunf ->SetTitle("Data Unf./same-side PY8 Truth");h_genratio_ssunf ->Write("ratio_Data_unf_MC_truth2");  //data unf/mc truth	   
   h_genratio_oppfold->SetTitle("Fold Test Toy NLO/PY8 Truth");h_genratio_oppfold->Write("ratio_Data_fold_MC_truth"); //data fold(unf)/mc truth 
   h_genratio_oppmeas->SetTitle("Data Meas./PY8 Truth");h_genratio_oppmeas->Write("ratio_Data_meas_MC_truth"); //data meas/mc truth	   
   h_genratio_ssmeas ->SetTitle("PY8 Meas./PY8 Truth");h_genratio_ssmeas ->Write("ratio_MC_meas_MC_truth");  //mc meas/mc truth        

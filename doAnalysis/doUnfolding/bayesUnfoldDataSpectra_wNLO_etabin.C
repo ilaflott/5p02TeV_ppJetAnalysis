@@ -158,6 +158,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   std::cout<<"NLO file name : "<< (inFile_MC_name)<<std::endl;   std::cout<<std::endl<<std::endl;  
   TFile *fpp_MC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
   if(fpp_MC->IsZombie())assert(false);
+  //assert(false);//fine
 
   // ---------- open MC "response" matrix 
   std::string th2basetitle="response";
@@ -168,6 +169,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   hmat->Scale(1./NLOMCscaling);//05/09/18
   if(debugWrite)hmat->Write(TH2_title.c_str());
   if(debugMode)hmat->Print("base");
+
 
   // ---------- gen, NLO truth spectra
   std::string genHistTitle="theory_rnd";//"hpp_mcclosure_gen"
@@ -214,7 +216,8 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   }
 
 
-  
+
+
   int     nbins_pt_gen=-1;
   double* boundaries_pt_gen=setBinning_etabin(etabinint, ptbintype, &nbins_pt_gen);  
   int     nbins_pt_reco=-1;
@@ -244,7 +247,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   hgen_rebin->SetMarkerColor(kMagenta);
   hgen_rebin->SetLineColor(kMagenta);
   hgen_rebin->SetMarkerSize(1.02);     	
-
+  
   //sys
   TH1D* hgen_sysup=NULL, *hgen_sysdown=NULL;
   TH1D* hgen_sysup_rebin=NULL,  *hgen_sysdown_rebin=NULL;  
@@ -330,7 +333,6 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
     hgen_sysdown_rebin->SetMarkerSize(0.);
     hgen_sysdown_rebin->SetLineColor(hgen_rebin->GetLineColor()+2);
   }
-  
   
   // rebinned matrix ---------------
   TH2_title+="_clone";
@@ -3000,11 +3002,18 @@ int main(int argc, char* argv[]){
   int rStatus = -1;  
 
   if (argc==9){   
+    const int etabinin=(const int)(std::atoi(argv[3]));
+    int numiters=3;
+    if     (etabinin==0) numiters=5;
+    else if(etabinin==1) numiters=5;
+    else if(etabinin==2) numiters=5;
+    else if(etabinin==3) numiters=4;
+
     rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
 					       (std::string)argv[1] ,
 					       (std::string)argv[2] , 
 					       (const int)(std::atoi(argv[3])), 					       //0, 
-					       3, 
+					       numiters, 
 					       (std::string)argv[4], 
 					       (std::string)argv[5], 
 					       (bool)((int)std::atoi(argv[6])),

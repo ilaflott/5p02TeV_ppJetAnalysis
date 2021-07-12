@@ -312,7 +312,7 @@ void ratioHistStyle(TH1* theRatio , std::string h_XAx_Title, std::string h_YAx_T
 void nojetIDHistStyle(TH1* h){
   //marker
   h->SetMarkerStyle(kFullDotLarge);
-  h->SetMarkerSize(theDataMarkerSize);
+  //h->SetMarkerSize(theDataMarkerSize);
   h->SetMarkerColor(theDataMarkerColor);
   
   //line

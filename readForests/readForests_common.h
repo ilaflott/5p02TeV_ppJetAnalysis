@@ -618,7 +618,7 @@ bool jetID_00eta24(float jetIDpt,
 	muSum/jetIDpt    < 0.80 &&
 	chSum/jetIDpt    > 0.   && 
 	chMult           > 0    &&
-	eSum/jetIDpt     < 0.80    ) passesJetID=true;	      //0.80 used for more recent 13 TeV tight LepVeto criteria
+	eSum/jetIDpt     < 0.90    ) passesJetID=true;	      //0.80 used for more recent 13 TeV tight LepVeto criteria
     //eSum/jetIDpt     < 0.90    ) passesJetID=true;	      //2015 13 tev tight lepVeto criteria
   }  
   else{

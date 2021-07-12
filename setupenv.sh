@@ -9,6 +9,10 @@
 source /condor/HTCondor/current/condor.sh
 source /osg/current/setup.sh
 
+##picking a newer version of ROOT6... doesn't seem to work
+#export PATH=$PATH:/cms/base/root/root-6.14.06/bin
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cms/base/root/root-6.14.06/lib
+
 echo "setting environment variables"
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 export SCRAM_ARCH=slc6_amd64_gcc491
@@ -16,14 +20,16 @@ export SCRAM_ARCH=slc6_amd64_gcc491
 echo "sourcing cmssetup defaults"
 source $VO_CMS_SW_DIR/cmsset_default.sh
 
-
-
 ##other env variables, no need to output to screen
 #export CMSSW_GIT_REFERENCE=$VO_CMS_SW_DIR/cmssw.git
 #export CVMFS_758=${VO_CMS_SW_DIR}/${SCRAM_ARCH}/cms/cmssw/CMSSW_7_5_8/src/
 
 echo 'cmsenv'
 cmsenv
+
+
+
+
 
 ##setup new git version
 #export PATH=/cms/base/git-2.9.5/bin:${PATH}

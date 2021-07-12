@@ -53,7 +53,7 @@ then
     #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_noresid" #done
     #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_wresid" #done
     #outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_noresid" #done 
-    outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_wJERhistsmear_wresid"
+    outdescstr="gaussSmear_murmufHTp_JohnNPs_semifinalv4_crysballsmear_wJERhistsmear_wresid"
 
     #nlofshortstr="CT10"
     #nlofshortstr="CT14"
@@ -66,7 +66,8 @@ then
     #descstr="06.25.19_sigmu_semifinal" 
     #descstr="06.25.19_sigmu_semifinal" 
     #descstr="06.25.19_sigma_semifinal" 
-    jerdescstr="03.18.20_sigmu_geny"
+    #jerdescstr="03.18.20_sigmu_geny"
+    jerdescstr="03.18.20_sigmu_geny_crysball_ptLo56"
     
     #fittypestr="modLog"
     #fittypestr="7TeV"
@@ -80,8 +81,8 @@ then
     scpoutput=0
     scpafterlast=0
     etabin_i=0
-    Netabins=4
-    #Netabins=1 ##debug; runs first etabin only
+    #Netabins=4
+    Netabins=1 ##debug; runs first etabin only
     while [ $etabin_i -lt $Netabins ]
     do
 	if [[ $scpafterlast -eq 1 ]]

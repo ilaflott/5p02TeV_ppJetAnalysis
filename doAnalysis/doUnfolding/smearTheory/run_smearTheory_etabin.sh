@@ -89,6 +89,8 @@ then
     echo "DONE NLO smearing."
     echo ""
 
+    return
+
     if [[ -d "${OUTDIR}" ]]
     then	
 	echo "WARNING $OUTDIR exists!"
@@ -100,7 +102,7 @@ then
     
 
 
-
+    
 
     echo ""
     echo "copying code to $OUTDIR"

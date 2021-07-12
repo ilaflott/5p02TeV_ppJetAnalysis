@@ -709,7 +709,7 @@ void printJetQAHist( TFile* finData , TFile* finMC, int j, bool doJetIDPlots, in
     theRatio[etabin]->SetLineColor( theMCLineColor );
     
     //yaxis, range, title, labels
-    theRatio[etabin]->SetAxisRange(0.25,1.75,"Y");  
+    theRatio[etabin]->SetAxisRange(0.90,1.60,"Y");  
     theRatio[etabin]->GetYaxis()->CenterTitle(true);
     theRatio[etabin]->GetYaxis()->SetTitleSize(17);
     theRatio[etabin]->GetYaxis()->SetTitleFont(43);

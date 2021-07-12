@@ -1106,6 +1106,195 @@ void makeToySpectra_JERhists(TH1D* hthy=NULL, TSpline3 * weights=NULL,
 
 
 
+void makeToySpectra_JERfits(TH1D* hthy=NULL, TSpline3 * weights=NULL, 
+			    bool fillJERtoyQA=false, std::vector<TF1*> fJER_vec={},  std::vector<TH1*> fJER_toyQA_vec={},
+			     bool applyNP=false,    TF1* fNP=NULL,
+			     bool applyresid=false, TH1* resid=NULL,//theory divided by toy(spline(NLO)). use when applying NP
+			     float JERSF=0.,
+			     int nevts=100, int ybin=0,
+			     TH1D* hthy_toyMC=NULL, TH1D* hsmeared_toyMC=NULL, TH1D* hsmeared_toyMC_test=NULL, 
+			     TH2D* resp=NULL, bool maketestside=false	    ){
+
+  std::cout<<"running makeToySpectra_JERfits for "<<hthy_toyMC->GetName()<<std::endl;
+
+  bool funcDebug=false;
+
+  int NJERfits=(int)fJER_vec.size();
+  //if(funcDebug){
+  //  std::cout<<"double checking fJER_vec."<<std::endl;
+  //  for(int i=0; i<NJERfits; i++)
+  //    std::cout<<"fJER_vec.at(" << i<<")->GetName() = " << fJER_vec.at(i)->GetName() <<std::endl;
+  //}
+  
+  int tenth_nEvents=nevts/10;
+  
+  srand((unsigned)time(0));  
+  
+  UInt_t rnd_seed=rand();
+  if(funcDebug)std::cout<<"rnd_seed="<<rnd_seed<<std::endl;
+  TRandom3 *rnd = new TRandom3(rnd_seed);
+  
+  //srand((unsigned)time(0));
+  UInt_t rnd_test_seed=rand();
+  if(funcDebug)std::cout<<"rnd_test_seed="<<rnd_test_seed<<std::endl;
+  TRandom3 *rnd_test = new TRandom3(rnd_test_seed);
+ 
+  int nbins=hthy->GetNbinsX();
+  double ptmin_thy=hthy->GetBinLowEdge(1);
+  double ptmax_thy=hthy->GetBinLowEdge(nbins) + hthy->GetBinWidth(nbins);
+  double ptmin_smeared=ptmin_thy, ptmax_smeared=ptmax_thy;  
+  int respcount=0, misscount=0, fakecount=0;
+  
+  double* JER_pTbins=(double*)JER_ptbins[ybin].data();  
+
+  std::vector<double> ptbins_resid; int nresidbins=-1.;
+  if(applyresid){
+    nresidbins=resid->GetNbinsX();
+    for(int i=1; i<=nresidbins;i++)
+      ptbins_resid.push_back(resid->GetBinLowEdge(i));    
+    ptbins_resid.push_back(resid->GetBinLowEdge(nresidbins)+resid->GetBinWidth(nresidbins));
+    
+    if(funcDebug && true){
+      for(int i=0; i<=nresidbins; i++){
+	std::cout<<"sanity check: ptbins_resid.at("<<i<<")="<<ptbins_resid.at(i)<<std::endl;	
+      }
+    }    
+  }
+  
+  for(int i=0;i<nevts;++i){      
+    
+    if(i%tenth_nEvents==0)
+      std::cout<<"throwing random #'s for event # "<<i<<std::endl;
+    
+    double ptTrue  = rnd->Uniform(ptmin_thy,ptmax_thy);
+    //std::cout<<"sanity check: ptTrue       ="<<ptTrue<<std::endl;
+    
+    //get the genpt bin of ptTrue, according to the fJER vector
+    int JERgenptbin=-1;    //this will tell us which JER distribution to use from the vector. start at -1, because i want to pick 0 for the lowest pT bin JER hist
+    
+    for(int j=0; NJERfits;j++)
+      if(ptTrue>JER_pTbins[j]) JERgenptbin++;
+      else break;
+ 
+    //std::cout<<"sanity check: JERgenptbin  ="<< JERgenptbin<<std::endl;
+    //std::cout<<"sanity check: NJERfits    ="<< NJERfits << std::endl;
+    //std::cout<<"sanity check: JER_pTbins["<< JERgenptbin  <<"]="<< JER_pTbins[JERgenptbin] << std::endl;
+    //std::cout<<"sanity check: JER_pTbins["<< JERgenptbin+1<<"]="<< JER_pTbins[JERgenptbin+1] << std::endl;
+    
+    assert(JERgenptbin>=0);//should never happen.
+    assert(JERgenptbin<NJERfits);//should never happen
+
+    double rndsmearfactor= ((TF1*)fJER_vec.at(JERgenptbin))->TF1::GetRandom();
+    double rndsmearfactor_wJERSF=((1.+JERSF)*rndsmearfactor)-JERSF;//apply JER scale factor; *diff* from 1 should be inflated by 10%.
+    
+    //std::cout<<"rndsmearfactor             ="<<rndsmearfactor<<std::endl;
+    
+    double ptSmeared=ptTrue*rndsmearfactor_wJERSF;
+    //std::cout<<"ptSmeared                  ="<<ptSmeared<<std::endl;
+    //std::cout<<std::endl;
+
+    double pt_w =  weights->Eval(ptTrue);    
+    
+    if(fillJERtoyQA)
+      fJER_toyQA_vec.at(JERgenptbin)->Fill(rndsmearfactor, pt_w);//without scale factor. b.c. the PYTHIA8 resolution doesn't have data effects    
+
+    if(applyNP) pt_w*=fNP->Eval(ptTrue);
+
+    int residbin_p=0;
+    if(applyresid)for(int p=0;p<=nresidbins;p++)
+		    if(ptTrue>ptbins_resid[p]) continue;
+		    else { pt_w*=resid->GetBinContent(p); residbin_p=p; break;}    
+
+    if(funcDebug && applyresid && true && i%1000==0 ){
+      std::cout<<"sanity check: ptTrue        ="<<ptTrue<<std::endl;
+      std::cout<<"sanity check: residbin_p    ="<<residbin_p<<std::endl;
+      std::cout<<"sanity check: bincontent    ="<<resid->GetBinContent(residbin_p)<<std::endl;
+      std::cout<<"sanity check: bin low edge  ="<<resid->GetBinLowEdge(residbin_p)<<std::endl;
+      std::cout<<"sanity check: bin high edge ="<<resid->GetBinLowEdge(residbin_p)+resid->GetBinWidth(residbin_p)<<std::endl;
+    }
+
+    
+    if(funcDebug && false){
+      std::cout<<"sanity check: ptTrue       ="<<ptTrue<<std::endl;
+      std::cout<<"sanity check: JERgenptbin  ="<< JERgenptbin<<std::endl;
+      std::cout<<"sanity check: JER_pTbins["<< JERgenptbin  <<"]="<< JER_pTbins[JERgenptbin] << std::endl;
+      std::cout<<"sanity check: JER_pTbins["<< JERgenptbin+1<<"]="<< JER_pTbins[JERgenptbin+1] << std::endl;
+      std::cout<<"rndsmearfactor             ="<<rndsmearfactor<<std::endl;
+      std::cout<<"rndsmearfactor_wJERSF      ="<<rndsmearfactor_wJERSF<<std::endl;
+      std::cout<<"ptSmeared                  ="<<ptSmeared<<std::endl;
+      std::cout<<std::endl;
+    }
+    
+    bool in_smearpt_range=(  ( ptSmeared>ptmin_smeared ) && ( ptSmeared<ptmax_smeared )  );
+    bool in_trupt_range=(  ( ptTrue>ptmin_thy )        && ( ptTrue<ptmax_thy )  )  ;
+    bool fillresp=in_smearpt_range&&in_trupt_range;
+
+    
+      
+    if(fillresp){
+      resp->Fill(ptSmeared,ptTrue,pt_w);
+      hthy_toyMC    -> Fill(ptTrue,pt_w);
+      hsmeared_toyMC -> Fill(ptSmeared,pt_w);      
+      respcount++;
+    }
+    else if(in_trupt_range){//not in smear pt range but in truept range
+      //      resp->Miss(ptTrue,pt_w);                                        
+      hthy_toyMC    -> Fill(ptTrue,pt_w);
+      misscount++;
+    }
+    else if(in_smearpt_range){//shouldnt get filled by construction. ptTrue always pulled s.t. in_trupt_range is true. if in_smearpt_range is true, so it in_trupt_range
+      //      resp->Fake(ptSmeared,pt_w);                                        
+      hsmeared_toyMC    -> Fill(ptSmeared,pt_w);
+      fakecount++;
+    }
+    
+    if(maketestside){
+      //----------------- test-side sample
+      double ptTrue_test  = rnd_test->Uniform(ptmin_thy,ptmax_thy);
+      int JERgenptbin_test=-1;   
+      for(unsigned int j=0; NJERfits;j++)
+	if(ptTrue_test>JER_pTbins[j]) JERgenptbin_test++;
+	else break;
+      
+      assert(JERgenptbin_test>=0);//should never happen.
+      assert(JERgenptbin_test<NJERfits);//should never happen
+      
+      //    if(funcDebug){
+      //      std::cout<<"sanity check: ptTrue_test       ="<<ptTrue_test<<std::endl;
+      //      std::cout<<"sanity check: JERgenptbin_test="<< JERgenptbin_test<<std::endl;
+      //      std::cout<<"sanity check: JER_pTbins["<< JERgenptbin_test  <<")="<< JER_pTbins[JERgenptbin_test] << std::endl;
+      //      std::cout<<"sanity check: JER_pTbins["<< JERgenptbin_test+1<<")="<< JER_pTbins[JERgenptbin_test+1] << std::endl;
+      //    }
+      
+      double rndsmearfactor_test= ((TF1*)fJER_vec.at(JERgenptbin_test))->TF1::GetRandom();
+      double rndsmearfactor_wJERSF_test=((1.+JERSF)*rndsmearfactor_test)-JERSF;//apply JER scale factor; *diff* from 1 should be inflated by 10%.
+      double ptSmeared_test=ptTrue_test*rndsmearfactor_wJERSF_test;
+      
+      double pt_w_test =  weights->Eval(ptTrue_test); 
+      if(applyNP) pt_w_test*=fNP->Eval(ptTrue_test);
+      if(applyresid)for(int p=0;p<=nresidbins;p++)
+		      if(ptTrue_test>ptbins_resid[p]) continue;
+		      else { pt_w_test*=resid->GetBinContent(p); break;}
+      
+      bool in_test_smearpt_range=(  ( ptSmeared_test>ptmin_smeared ) && ( ptSmeared_test<ptmax_smeared )  );
+      if(in_test_smearpt_range)
+	hsmeared_toyMC_test->Fill(ptSmeared_test,pt_w_test);
+    }
+
+  }
+  
+  std::cout<<"done making toy spectra: "<< resp->GetName()<<std::endl;  
+  std::cout<<"smear summary;"<<std::endl;
+  std::cout<<"nEvents="<<nevts<<std::endl;
+  std::cout<<"response_count="<<respcount<<std::endl;
+  std::cout<<"miss_count="<<misscount<<std::endl;
+  std::cout<<"fake_count="<<fakecount<<std::endl;
+  
+  return;
+}  
+
+
+
 
 //BACKUP/PLACEHOLDER FOR NOW [same as makeToySpectra_old, but cleaned up]
 void makeToySpectra(TH1D* hthy, 

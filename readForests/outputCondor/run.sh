@@ -35,8 +35,8 @@ echo ""
 #DD="08"
 #YY="21"
 
-MM="06"
-DD="14"
+MM="07"
+DD="22"
 YY="21"
 
 
@@ -61,7 +61,17 @@ YY="21"
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "unf_0.0eta3.0" "ppMC" "SMPbins_withjetyrespmat_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 
 #source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppData" "SMPbins_wtype1PFMETFrac0p3_semifinalv4"
-source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppMC" "SMPbins_wtype1PFMETFrac0p3_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "jetPlots_0.0eta2.5" "ppMC" "SMPbins_wtype1PFMETFrac0p3_semifinalv4"
+
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_wPFMETFrac_genbinsonly_semifinalv4"
+
+mv ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_08-16-21_JERS_0.0eta2.5 ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-22-21_JERS_0.0eta2.5
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_wPFMETFrac0p5_wgenDR0p2_genbinsonly_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_wPFMET_GENRECOmatchREDOwDR0p2_genbinsonly_semifinalv4"
+#source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_wPFMET_Nvtxeq1_evtvr0p1_GENRECOmatchREDOwDR0p2_genbinsonly_semifinalv4"
+source renameNhadd.sh 4 "${MM}-${DD}-${YY}" "${MM}.${DD}.${YY}" "JERS_0.0eta2.5" "ppMC" "SMPbins_wPFMET_novzwgt_Nvtxeq1_evtvr0p1_GENRECOmatchREDOwDR0p2_genbinsonly_semifinalv4"
+return
+
 
 
 

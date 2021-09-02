@@ -244,6 +244,38 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   std::cout<<"NLO file name : "<< (inFile_MC_name)<<std::endl;   std::cout<<std::endl<<std::endl;  
   TFile *fpp_MC = TFile::Open( (inFile_MC_dir+inFile_MC_name).c_str());
 
+
+  //unmatched GEN jets, AKA unmatched misses
+  TH1D* unmatched_missed_GEN_jets=(TH1D*)fpp_MC->Get( (
+						"unmatched_misses_hpp_gen_wJetID_R4_20_eta_20_ybin"+std::to_string(etabinint)
+						).c_str() );
+  unmatched_missed_GEN_jets->Scale(1./MCscaling);
+  
+  TH1D* unmatched_missed_GEN_jets_rebin=(TH1D*)unmatched_missed_GEN_jets->Clone( (
+								    (std::string)unmatched_missed_GEN_jets->GetName()+"_clone"
+								    ).c_str());
+  unmatched_missed_GEN_jets_rebin = (TH1D*)unmatched_missed_GEN_jets_rebin->Rebin( nbins_pt_gen, ((std::string)unmatched_missed_GEN_jets->GetName()+"_rebin").c_str() , 
+								     boundaries_pt_gen);
+  unmatched_missed_GEN_jets_rebin->SetLineColor(kBlack);
+  unmatched_missed_GEN_jets_rebin->SetMarkerColor(kBlack);
+  unmatched_missed_GEN_jets_rebin->SetMarkerStyle(kFullDotLarge);
+
+
+  //matched GEN jets, AKA matched misses
+  TH1D* matched_missed_GEN_jets=(TH1D*)fpp_MC->Get( (
+						"matched_misses_hpp_gen_wJetID_R4_20_eta_20_ybin"+std::to_string(etabinint)
+						).c_str() );
+  matched_missed_GEN_jets->Scale(1./MCscaling);
+  
+  TH1D* matched_missed_GEN_jets_rebin=(TH1D*)matched_missed_GEN_jets->Clone( (
+								    (std::string)matched_missed_GEN_jets->GetName()+"_clone"
+								    ).c_str());
+  matched_missed_GEN_jets_rebin = (TH1D*)matched_missed_GEN_jets_rebin->Rebin( nbins_pt_gen, ((std::string)unmatched_missed_GEN_jets->GetName()+"_rebin").c_str() , 
+								     boundaries_pt_gen);
+  matched_missed_GEN_jets_rebin->SetLineColor(kBlack);
+  matched_missed_GEN_jets_rebin->SetMarkerColor(kBlack);
+  matched_missed_GEN_jets_rebin->SetMarkerStyle(kOpenCircle);
+
   // ---------- gen, NLO truth spectra
   std::string genHistTitle="hpp_gen";
   if(doJetID)genHistTitle+="_wJetID";
@@ -256,16 +288,16 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       genHistTitle+=RandEtaRange+"_ybin"+std::to_string(etabinint);
   }
   
-
-
+  
+  
   TH1D* hgen = (TH1D*)fpp_MC->Get( genHistTitle.c_str() );
   hgen->Scale(1./MCscaling);//05/09/18
   //hgen->Scale(etaBinWidth);
-
   if(debugWrite)hgen->Write(genHistTitle.c_str());
   if(debugMode)hgen->Print("base");    
-  
-  //assert(false);
+
+  hgen->Add(unmatched_missed_GEN_jets);//07.13.21
+  hgen->Add(matched_missed_GEN_jets);//07.23.21
   
   genHistTitle+="_clone";
   TH1D* hgen_rebin = (TH1D*)hgen->Clone( (genHistTitle).c_str() );
@@ -348,11 +380,41 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   TH2_title+="_wseterrs";
   if(debugWrite)hmat_rebin->Write(TH2_title.c_str());
   if(debugMode)hmat_rebin->Print("base");
-
-
+  
 
   
-    
+  
+  
+  //unmatched RECO jets AKA unamtched fakes
+  TH1D* unmatched_fake_RECO_jets=(TH1D*)fpp_MC->Get( (
+						 "unmatched_fakes_hpp_reco_wJetID_R4_20_eta_20_ybin"+std::to_string(etabinint)
+						 ).c_str() );
+  unmatched_fake_RECO_jets->Scale(1./MCscaling);
+  
+  TH1D* unmatched_fake_RECO_jets_rebin=(TH1D*)unmatched_fake_RECO_jets->Clone( (
+								      (std::string)unmatched_fake_RECO_jets->GetName()+"_clone"
+								      ).c_str());
+  unmatched_fake_RECO_jets_rebin = (TH1D*)unmatched_fake_RECO_jets_rebin->Rebin( nbins_pt_reco, ((std::string)unmatched_fake_RECO_jets->GetName()+"_rebin").c_str() , 
+								       boundaries_pt_reco);
+  unmatched_fake_RECO_jets_rebin->SetLineColor(kGreen);
+  unmatched_fake_RECO_jets_rebin->SetMarkerColor(kGreen);
+  unmatched_fake_RECO_jets_rebin->SetMarkerStyle(kFullDotLarge);
+
+  //matched RECO jets AKA unamtched fakes
+  TH1D* matched_fake_RECO_jets=(TH1D*)fpp_MC->Get( (
+						 "matched_fakes_hpp_reco_wJetID_R4_20_eta_20_ybin"+std::to_string(etabinint)
+						 ).c_str() );
+  matched_fake_RECO_jets->Scale(1./MCscaling);
+  
+  TH1D* matched_fake_RECO_jets_rebin=(TH1D*)matched_fake_RECO_jets->Clone( (
+								      (std::string)matched_fake_RECO_jets->GetName()+"_clone"
+								      ).c_str());
+  matched_fake_RECO_jets_rebin = (TH1D*)matched_fake_RECO_jets_rebin->Rebin( nbins_pt_reco, ((std::string)matched_fake_RECO_jets->GetName()+"_rebin").c_str() , 
+								       boundaries_pt_reco);
+  matched_fake_RECO_jets_rebin->SetLineColor(kGreen);
+  matched_fake_RECO_jets_rebin->SetMarkerColor(kGreen);
+  matched_fake_RECO_jets_rebin->SetMarkerStyle(kFullDotLarge);
+  
   // ---------- reco, measured same-side spectra used to create response matrix, and for "sameside" unfolding test
   std::string histTitle2="hpp_reco";
   if(doJetID) histTitle2+="_wJetID";
@@ -368,9 +430,11 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   TH1D*  hrec_sameside = (TH1D*)fpp_MC->Get( histTitle2.c_str() ); 
   hrec_sameside->Scale(1./MCscaling);
   //hrec_sameside->Scale(etaBinWidth);//cause of the way the thy hists are made
-
   if(debugWrite)hrec_sameside->Write(histTitle2.c_str());
   if(debugMode)hrec_sameside->Print("base");
+
+  hrec_sameside->Add(unmatched_fake_RECO_jets);//07.13.21
+  hrec_sameside->Add(matched_fake_RECO_jets);//07.23.21
   
   histTitle2+="_clone";
   TH1D *hrec_sameside_rebin = (TH1D*)hrec_sameside->Clone( (histTitle2).c_str() );
@@ -394,10 +458,11 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   hrec_sameside_rebin->SetMarkerColor(kBlue-3);     
   hrec_sameside_rebin->SetLineColor(kBlue-3);     
   hrec_sameside_rebin->SetMarkerSize(1.02);     
+
+
+  TH1D* myfakeshist =(TH1D*)makeFakesHist(hmat_rebin, hrec_sameside_rebin);
+  TH1D* mymisseshist=(TH1D*)makeMissesHist(hmat_rebin, hgen_rebin);
   
-
-
-
   
   // reco/gen response hist
   std::string histTitle3="hpp_rec_sameside_response_rebin"+RandEtaRange+"_bin"+std::to_string(etabinint);
@@ -1164,7 +1229,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   TH2D* hcovmatabsval_bayes[nKiterMax]={};
   TH2D* hpearson_bayes[nKiterMax]={};
   
-  int kIter_step=5;
+  int kIter_step=1;
   int kIter_start=1;//kIterInput-kIterRange;
   int kIter_end=kIter_start+kIter_step*8;//kIterInput+kIterRange;
   TH1D *hchi2iter=NULL;
@@ -1360,6 +1425,25 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   if(debugWrite)hfold_fakecorr->Write();
   if(debugMode) hfold_fakecorr->Print("base");  
 
+
+ 
+  // -- FAKES FROM PT CUT -- //
+  myfakeshist->Scale(1./etaBinWidth);
+  divideBinWidth(myfakeshist);
+ 
+  // -- UNMATCHED RECO JETS -- // (FAKES)
+  unmatched_fake_RECO_jets_rebin->Scale(1./etaBinWidth);
+  divideBinWidth(unmatched_fake_RECO_jets_rebin);  
+
+  // -- MISSES FROM PT CUT -- //
+  mymisseshist->Scale(1./etaBinWidth);
+  divideBinWidth(mymisseshist);
+
+  // -- UNMATCHED GEN JETS -- // (MISSES)
+  unmatched_missed_GEN_jets_rebin->Scale(1./etaBinWidth);
+  divideBinWidth(unmatched_missed_GEN_jets_rebin);
+  
+  
   // ---------------- THY RATIOS (THY / DATA) ----------------- //
   // must be after the binwidth divisions + normalization (the thy hists are made this way by default)
   
@@ -1669,16 +1753,34 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     setupSpectraHist(hgen_resp_rebin          , useSimpBins);
     setupSpectraHist(hfak                     , useSimpBins);
     
+    //hfak->SetLineColorAlpha( kGreen, 0.);
+    //hfak->SetMarkerColorAlpha( kGreen, 0.);
+
     //histograms given to roo_resp + the fakes histo made from these spectra + response matrix projection
     hfak->SetTitle( (NLOMCtitle_str+" Only, Kinematic Fakes Spectra").c_str());
     hfak->SetMaximum(2.*(hrec_sameside_resp_rebin->GetMaximum()));
-
+    
     hfak->DrawClone("P E");           
+    //unmatched_fake_RECO_jets_rebin->DrawClone("P E SAME" )  ;
+
+    mymisseshist->DrawClone("P E SAME");
+    //unmatched_missed_GEN_jets_rebin->DrawClone("P E SAME" );
+    //    myfakeshist->DrawClone("P E SAME");
+
     hrec_sameside_resp_rebin->DrawClone("P E SAME");           
     hgen_resp_rebin->DrawClone("P E SAME");                 
-
+    
     TLegend* legend_resp = new TLegend( 0.65,0.75,0.9,0.9 );
-    legend_resp->AddEntry(hfak,          "PY8 LO MC Kinematic Fakes" , "lp");    
+    //legend_resp->AddEntry(hfak,          "RECO PY8 Fakes (no unmatched)" , "lp");    
+    //legend_resp->AddEntry(mymisseshist, "GEN PY8 Misses (no unmatched)", "lp");
+
+    legend_resp->AddEntry(hfak,          "RECO PY8 Fakes (with unmatched)" , "lp");    
+    //legend_resp->AddEntry(unmatched_fake_RECO_jets_rebin, "RECO PY8 Fakes (unmatched only)", "lp");
+    
+    legend_resp->AddEntry(mymisseshist, "GEN PY8 Misses (with unmatched)", "lp");
+    //legend_resp->AddEntry(unmatched_missed_GEN_jets_rebin, "GEN PY8 Misses (unmatched only)", "lp");
+    
+    //legend_resp->AddEntry(myfakeshist, "RECO PY8 Fakes (pT Cut only)", "lp" );
     legend_resp->AddEntry(hgen_resp_rebin,          "GEN PY8 LO MC Response" , "lp");
     legend_resp->AddEntry(hrec_sameside_resp_rebin, "RECO PY8 LO MC Response" , "lp");    
     legend_resp->SetBorderSize(0);
@@ -2379,7 +2481,14 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   // output hists -------------
   hfak->SetTitle("PY8 Meas. Fakes");hfak->Write("MC_meas_fakes");
+  myfakeshist->SetTitle("My PY8 Meas. Fakes");myfakeshist->Write("my_MC_meas_fakes");
+  unmatched_fake_RECO_jets_rebin->SetTitle("My PY8 Meas. Fakes (unmatched)"); unmatched_fake_RECO_jets_rebin->Write("my_MC_meas_unmatched_fakes");
+  matched_fake_RECO_jets_rebin->SetTitle("My PY8 Meas. Fakes (matched)"); matched_fake_RECO_jets_rebin->Write("my_MC_meas_matched_fakes");
+  mymisseshist->SetTitle("My PY8 Truth Misses");mymisseshist->Write("my_MC_truth_misses");
+  unmatched_missed_GEN_jets_rebin->SetTitle("My PY8 Truth Misses (unmatched)"); unmatched_missed_GEN_jets_rebin->Write("my_MC_truth_unmatched_misses");
+  matched_missed_GEN_jets_rebin->SetTitle("My PY8 Truth Misses (matched)"); matched_missed_GEN_jets_rebin->Write("my_MC_truth_matched_misses");
   
+    
   hunf->SetTitle(("Data Unf. kIter="+std::to_string(kIterInput)).c_str() );hunf->Write("Data_unf");      
   hfold->SetTitle(("Data Fold(Unf.) kIter="+std::to_string(kIterInput)).c_str() ); hfold->Write("Data_fold");        
   hfold_fakecorr->SetTitle(("Data Fold(Unf.) + Fakes, kIter="+std::to_string(kIterInput)).c_str() ); hfold_fakecorr->Write("Data_foldfakcorr");        
@@ -2573,12 +2682,29 @@ int main(int argc, char* argv[]){
     return rStatus;
   }
   else {
+
+    const int etabinin=(const int)(std::atoi(argv[3]));
+    int numiters=3;
     
+    
+    ////old PY8, new PY8, AND new PY8 w/o unmatched jets
+    //if     (etabinin==0) numiters=4;
+    //else if(etabinin==1) numiters=5;
+    //else if(etabinin==2) numiters=6;
+    //else if(etabinin==3) numiters=2;
+
+    //new PY8 w/ unmatched AND matched jets (GEN and RECO)
+    if     (etabinin==0) numiters=2;
+    else if(etabinin==1) numiters=2;
+    else if(etabinin==2) numiters=3;
+    else if(etabinin==3) numiters=2;
+
+
     rStatus=bayesUnfoldDataSpectra_etabin( 
 					  (std::string)argv[1] ,
 					  (std::string)argv[2] , 
 					  (const int)std::atoi(argv[3]),//0, 
-					  4, 
+					  numiters, 
 					  (std::string)argv[4], 
 					  (std::string)argv[5],
 					  (std::string)argv[6],

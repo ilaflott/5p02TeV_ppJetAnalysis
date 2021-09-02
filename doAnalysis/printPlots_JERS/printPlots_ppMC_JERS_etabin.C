@@ -35,6 +35,8 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
   else if (bintype=="y"  )std::cout<<"fitting JER as a function of reco jet rapidity."      <<std::endl;
   else if (bintype=="eta")std::cout<<"fitting JER as a function of reco jet pseudorapidity."<<std::endl;
   else assert(false);
+  
+  std::cout<<"absetabin=="<<absetabin<<std::endl;
 
   //if(absetabin!=-1) doabsetabinJER=true;
   if(draw_MCEff)std::cout<<"draw_MCEff is true but still not drawing them in this macro because that's stupid. "<<std::endl;
@@ -102,7 +104,11 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
   if(!useconstxrange){
     if      (bintype=="eta" || bintype=="geneta") fgaus_width_arr = setWidthArr_eta(absetabin, &nwidths);
     else if (bintype=="y"   || bintype=="geny"  ) fgaus_width_arr = setWidthArr_y  (absetabin, &nwidths);
-    assert(N_JERfits==nwidths);
+    if(N_JERfits!=nwidths){
+      std::cout<<"error! N_JERfits="<<N_JERfits<<std::endl;
+      std::cout<<"error! nwidths="<<nwidths<<std::endl;
+      assert(false);
+    }     
   }
 
   // fit + fit settings
@@ -365,7 +371,11 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
   int width_arr_ind=0;
 
   for(int ip=0; ip<nbins_pt_debug; ip++){    
+    
+
     int ptbin_ip=(int)ptbins_debug[ip], ptbin_ip1=(int)ptbins_debug[ip+1];      
+    
+    
     
     std::string inputHistName="";
     inputHistName="hJER_"+doJetID+"wJetID_"+bintype+"bin"+std::to_string(absetabin)+"_"+std::to_string(ptbin_ip)+"ptbin"+std::to_string(ptbin_ip1);      
@@ -386,12 +396,12 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
 		       "_genpt_"+std::to_string(ptbin_ip) + "_to_" + std::to_string(ptbin_ip1) ).c_str());
     
     //FYI debug
-    if(debugMode)std::cout<<std::endl;  
-    if(debugMode)std::cout<<"________________________________"<<std::endl;  
-    if(debugMode)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
-    if(debugMode)std::cout<<"hist title = "<<hrsp[ip]->GetTitle()<<std::endl;
-    if(debugMode)hrsp[ip]->Print("base");          
-    if(debugMode)std::cout<<std::endl;  
+    if(debugMode||true)std::cout<<std::endl;  
+    if(debugMode||true)std::cout<<"________________________________"<<std::endl;  
+    if(debugMode||true)std::cout<<"pt range for bin: "<<ptbin_ip<<" - "<<ptbin_ip1<< " GeV "<<std::endl;    
+    if(debugMode||true)std::cout<<"hist title = "<<hrsp[ip]->GetTitle()<<std::endl;
+    if(debugMode||true)hrsp[ip]->Print("base");          
+    if(debugMode||true)std::cout<<std::endl;  
     
     //rebin if desired
     if(rebinJER&&rebinFactor>1.)
@@ -742,15 +752,16 @@ int printPlots_ppMC_JERS_etabin(std::string inFile_MC_dir,const std::string outp
   
   
   //float xmin=ptbins_debug[0], xmax=ptbins_debug[fit_pthi_bin];
-  float xmin=ptbins_debug[fit_ptlo_bin-1], xmax=ptbins_debug[fit_pthi_bin];
+  //float xmin=ptbins_debug[fit_ptlo_bin-1], xmax=ptbins_debug[fit_pthi_bin];
+  float xmin=ptbins_debug[fit_ptlo_bin], xmax=ptbins_debug[fit_pthi_bin];
   if(debugMode){
     std::cout<<"xmin="<<xmin<<std::endl;
     std::cout<<"xmax="<<xmax<<std::endl;    }
   
-  TLine* lineAtOne=new TLine(xmin,1.,ptbins_debug[fit_pthi_bin+1],1.);    
+  TLine* lineAtOne=new TLine(xmin,1.,ptbins_debug[fit_pthi_bin],1.);    
   lineAtOne->SetLineStyle(2);  
   lineAtOne->SetLineColor(kBlack);
-  TLine* lineAtTen=new TLine(xmin,10.,ptbins_debug[fit_pthi_bin+1],10.);    
+  TLine* lineAtTen=new TLine(xmin,10.,ptbins_debug[fit_pthi_bin],10.);    
   lineAtTen->SetLineStyle(2);  
   lineAtTen->SetLineColor(kBlack);
   

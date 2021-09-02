@@ -18,18 +18,20 @@ const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBin
 const std::string defMCOutputName="readForests_ppMC_defOut_JERS.root";
 
 int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, 
-			   int startfile=10, int endfile=21,
+			   int startfile=4990, int endfile=5020,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,
 			   float jtEtaCutLo=0., float jtEtaCutHi=2.0      );
 
 ////CUTS: DO NOT CHANGE FOR NOW (6/25/19)
-const float jtPtCut        = 28.;
-const float jtPtCut_Hi     = 1410.;
-const float genJetPtCut    = 28.;
-const float genJetPtCut_Hi = 1410.;
-const float gendrCut       = 999.;//0.1;
+const float jtPtCut        = 10.;//28.;
+const float jtPtCut_Hi     = 9999.;//1410.;
+const float genJetPtCut    = 3.;//this is to avoid issues w//28.;
+const float genJetPtCut_Hi = 9999.;//1410.;
+const float gendrCut       = 999.;
+//const float gendrCut       = 0.2;
+//const float gendrCut       = 0.1;
 const int genptBin1Low = 56 , genptBin1High = 64 ;	 
 const int genptBin2Low = 64 , genptBin2High  = 74 ;
 

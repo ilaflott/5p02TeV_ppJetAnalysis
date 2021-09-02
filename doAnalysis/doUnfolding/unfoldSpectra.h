@@ -135,9 +135,9 @@ const bool fillRespHists      =true;
 const bool trimRespMat=false&&fillRespHists;//only reason to do this is to adjust fake/misses correction. only will be done if fillRespHists is true.
 
 // settings that don't really get used
-const bool doOverUnderflows   =false;//leave false almost always
-const bool clearOverUnderflows=true; 
-const bool zeroBins=false; //leave false almost always
+const bool doOverUnderflows   =false;//leave false almost always.
+const bool clearOverUnderflows=true; //leave me true almost always. 
+const bool zeroBins=false; //leave false almost always.
 //const bool normalizedMCMatrix=false;   
 
 // -----------------------------------------------------------------------------------------------------------------------

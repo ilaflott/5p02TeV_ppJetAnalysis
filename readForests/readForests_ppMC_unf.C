@@ -177,15 +177,15 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 
   /////  UNFOLDING   /////
   //to unfold ppData 
-  TH1D *hpp_gen=NULL;    
-  TH1D *hpp_reco=NULL; 
-  TH2D *hpp_matrix=NULL; 
-  
+  //TH1D *hpp_gen=NULL;    
+  //TH1D *hpp_reco=NULL; 
+  //TH2D *hpp_matrix=NULL; 
+
   //to test MC sample consistency in unfolding
-  TH1D *hpp_mcclosure_gen=NULL;      //the first three are for the "truth" response matrix
-  TH1D *hpp_mcclosure_reco=NULL;         
-  TH2D *hpp_mcclosure_matrix=NULL;         
-  TH1D *hpp_mcclosure_reco_test=NULL;   
+  //TH1D *hpp_mcclosure_gen=NULL;      //the first three are for the "truth" response matrix
+  //TH1D *hpp_mcclosure_reco=NULL;         
+  //TH2D *hpp_mcclosure_matrix=NULL;         
+  //TH1D *hpp_mcclosure_reco_test=NULL;   
   
   //to unfold ppData 
   TH1D *hpp_gen_eta[nbins_abseta]={};    
@@ -196,6 +196,13 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   TH1D *hpp_reco_y[nbins_abseta]={}; 
   TH2D *hpp_matrix_y[nbins_abseta]={}; 
 
+  //unmatched fakes+misses
+  TH1D *hpp_unmatched_misses_y[nbins_abseta]={};
+  TH1D *hpp_matched_misses_y[nbins_abseta]={};
+  TH1D *hpp_unmatched_fakes_y[nbins_abseta]={};
+  TH1D *hpp_matched_fakes_y[nbins_abseta]={};
+
+  //JERsys
   TH1D *hpp_reco_y_JERsysup[nbins_abseta]={}; 
   TH2D *hpp_matrix_y_JERsysup[nbins_abseta]={}; 
 
@@ -249,115 +256,125 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       hTitle+="_R"+std::to_string(radius)+"_"+etaWidth;      
       
       if(hUnfTitleArray[k]=="gen")	{
-	hpp_gen    = new TH1D( hTitle.c_str(), "MC genpt for unf data", 2500,0,2500);
+	//hpp_gen    = new TH1D( hTitle.c_str(), "MC genpt for unf data", 2000,0,2000);
 	if(fillMCUnfJetSpectraRapHists){
 	  
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_gen_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-				       ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+				       ("MC gen pt for unf data bin"+std::to_string(j)).c_str(), 2000,0,2000);	  
 	  
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_gen_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-				     ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+				     ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000);	  
+	  
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_unmatched_misses_y[j] = new TH1D( ("unmatched_misses_"+hTitle+"_ybin"+std::to_string(j)).c_str(), 
+					("unmatched missed MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000);	  
+
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_matched_misses_y[j] = new TH1D( ("matched_misses_"+hTitle+"_ybin"+std::to_string(j)).c_str(), 
+					("matched missed MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000);	  
 	  //if(useJERScaleFactors)
 	  //  for(int j=0;j<nbins_abseta;j++)
 	  //    hpp_gen_y_JERsysup[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)+"_JERsysup").c_str(), 
-	  //			       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+	  //			       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000);	  
 	  //if(useJERScaleFactors)
 	  //  for(int j=0;j<nbins_abseta;j++)
 	  //    hpp_gen_y_JERsysdown[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)+"_JERsysdown").c_str(), 
-	  //			       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500);	  
+	  //			       ("MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000);	  
 	}
       }
       else if(hUnfTitleArray[k]=="reco")	{	  
-	hpp_reco    = new TH1D( hTitle.c_str(), 
-				"MC recopt for unf data", 2500,0,2500);
+	//hpp_reco    = new TH1D( hTitle.c_str(), "MC recopt for unf data", 2000,0,2000);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_reco_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-					("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+					("MC reco pt for unf data bin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
 
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_reco_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-				      ("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+				      ("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
+
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_unmatched_fakes_y[j] = new TH1D( ("unmatched_fakes_"+hTitle+"_ybin"+std::to_string(j)).c_str(), 
+				      ("unmatched fake MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
+
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_matched_fakes_y[j] = new TH1D( ("matched_fakes_"+hTitle+"_ybin"+std::to_string(j)).c_str(), 
+				      ("matched fake MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
 	  
 	  if(useJERScaleFactors){
 	    for(int j=0;j<nbins_abseta;j++)
 	      hpp_reco_y_JERsysup[j] = new TH1D( (hTitle+"_JERsysup_ybin"+std::to_string(j)).c_str(), 
-						 ("MC reco pt JERsysup for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+						 ("MC reco pt JERsysup for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
 	    for(int j=0;j<nbins_abseta;j++)
 	      hpp_reco_y_JERsysdown[j] = new TH1D( (hTitle+"_JERsysdown_ybin"+std::to_string(j)).c_str(), 
-						   ("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500); 	  
+						   ("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
 	  }
 	}
       }
       else if(hUnfTitleArray[k]=="matrix")	{
-	hpp_matrix    = new TH2D( hTitle.c_str(), 
-				  "MC gentpt v. recopt for unf data", 2500, 0,2500, 2500, 0,2500);
+	//hpp_matrix    = new TH2D( hTitle.c_str(), "MC gentpt v. recopt for unf data", 2500, 0,2500, 2500, 0,2500);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_matrix_eta[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-					  ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+					  ("MC genpt v. recopt for unf data bin"+std::to_string(j)).c_str(), 2000,0,2000,2000,0,2000);  
 	  
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_matrix_y[j] = new TH2D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-					("MC genpt v. recopt for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+					("MC genpt v. recopt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000,2000,0,2000);  
 	  if(useJERScaleFactors){
 	    for(int j=0;j<nbins_abseta;j++)
 	      hpp_matrix_y_JERsysup[j] = new TH2D( (hTitle+"_JERsysup_ybin"+std::to_string(j)).c_str(), 
-						   ("MC genpt v. recopt JERsysup for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+						   ("MC genpt v. recopt JERsysup for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000,2000,0,2000);  
 	    for(int j=0;j<nbins_abseta;j++)
 	      hpp_matrix_y_JERsysdown[j] = new TH2D( (hTitle+"_JERsysdown_ybin"+std::to_string(j)).c_str(), 
-						     ("MC genpt v. recopt JERsysdown for unf data ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+						     ("MC genpt v. recopt JERsysdown for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000,2000,0,2000);  
 	  }
 	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_gen") {
-	hpp_mcclosure_gen    = new TH1D( hTitle.c_str(), 
-					 "genpt for mcclosure same side", 2500,0,2500);
+	//hpp_mcclosure_gen    = new TH1D( hTitle.c_str(), "genpt for mcclosure same side", 2000,0,2000);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_gen_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						 ("MC gen pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);
+						 ("MC gen pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2000,0,2000);
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_gen_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-					       ("MC gen pt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2500,0,2500);
+					       ("MC gen pt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2000,0,2000);
 	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_reco")	{
-	hpp_mcclosure_reco    = new TH1D( hTitle.c_str(), 
-					  "recopt for mcclosure same side", 2500,0,2500);
+	//hpp_mcclosure_reco    = new TH1D( hTitle.c_str(),  "recopt for mcclosure same side", 2000,0,2000);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_reco_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						  ("MC reco pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500);   
+						  ("MC reco pt for mcclosure same side bin"+std::to_string(j)).c_str(), 2000,0,2000);   
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_reco_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-						("MC reco pt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2500,0,2500);   
+						("MC reco pt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2000,0,2000);   
 	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_matrix")	{
-	hpp_mcclosure_matrix    = new TH2D( hTitle.c_str(), 
-					    "genpt v. recopt for mcclosure same side", 2500, 0,2500, 2500, 0,2500);
+	//hpp_mcclosure_matrix    = new TH2D( hTitle.c_str(), "genpt v. recopt for mcclosure same side", 2500, 0,2500, 2500, 0,2500);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_matrix_eta[j] = new TH2D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						    ("MC genpt v. recopt for mcclosure same side bin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+						    ("MC genpt v. recopt for mcclosure same side bin"+std::to_string(j)).c_str(), 2000,0,2000,2000,0,2000);  
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_matrix_y[j] = new TH2D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-						  ("MC genpt v. recopt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2500,0,2500,2500,0,2500);  
+						  ("MC genpt v. recopt for mcclosure same side ybin"+std::to_string(j)).c_str(), 2000,0,2000,2000,0,2000);  
 	}
       }
       else if(hUnfTitleArray[k]=="mcclosure_reco_test")	{
-	hpp_mcclosure_reco_test    = new TH1D( hTitle.c_str(), 
-					       "recopt for mcclosure opp side test", 2500,0,2500);
+	//hpp_mcclosure_reco_test    = new TH1D( hTitle.c_str(), "recopt for mcclosure opp side test", 2000,0,2000);
 	if(fillMCUnfJetSpectraRapHists){
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_reco_test_eta[j] = new TH1D( (hTitle+"_bin"+std::to_string(j)).c_str(), 
-						       ("MC reco pt for mcclosure opp side test bin"+std::to_string(j)).c_str(), 2500,0,2500);   
+						       ("MC reco pt for mcclosure opp side test bin"+std::to_string(j)).c_str(), 2000,0,2000);   
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_mcclosure_reco_test_y[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)).c_str(), 
-						       ("MC reco pt for mcclosure opp side test ybin"+std::to_string(j)).c_str(), 2500,0,2500);   
+						       ("MC reco pt for mcclosure opp side test ybin"+std::to_string(j)).c_str(), 2000,0,2000);   
 	}
       }
       else continue;
@@ -366,9 +383,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   
   
 
-  TH2D* hpp_mcclosure_covmat_test=NULL;
-  TH1D* hpp_mcclosure_covmat_test_helper=NULL;
-  bool bool_helper=false;
+  //TH2D* hpp_mcclosure_covmat_test=NULL;
+  //TH1D* hpp_mcclosure_covmat_test_helper=NULL;
+  //bool bool_helper=false;
   
   TH2D* hpp_mcclosure_covmat_test_eta_arr[nbins_abseta]={};
   TH1D* hpp_mcclosure_covmat_test_eta_arr_helpers[nbins_abseta]={};
@@ -379,13 +396,13 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   bool ybin_bool_helper[nbins_abseta]={0};
   
   if(fillMCJetCovMatrix && fillMCJetIDHists){
-    std::string covmat_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[0]+" < #||{#eta} < "+absetabins_str[nbins_abseta];    
-    if(debugMode)std::cout<<"covmat_title =" << covmat_title<< std::endl;      
-    std::string covmat_name="hpp_mcclosure_covmat_test_";
-    covmat_name+="wJetID";
-    if(debugMode)std::cout<<"covmat_name  =" << covmat_name << std::endl;      
-    hpp_mcclosure_covmat_test=new TH2D(covmat_name.c_str(), covmat_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
-    hpp_mcclosure_covmat_test_helper=new TH1D( "mcclosure_covmat_test_helper", "helper only", nbins_pt, ptbins);      
+    //std::string covmat_title="MCClosure, Test PY8 Jet Covariance Matrix, "+absetabins_str[0]+" < #||{#eta} < "+absetabins_str[nbins_abseta];    
+    //if(debugMode)std::cout<<"covmat_title =" << covmat_title<< std::endl;      
+    //std::string covmat_name="hpp_mcclosure_covmat_test_";
+    //covmat_name+="wJetID";
+    //if(debugMode)std::cout<<"covmat_name  =" << covmat_name << std::endl;      
+    //hpp_mcclosure_covmat_test=new TH2D(covmat_name.c_str(), covmat_title.c_str(), nbins_pt, ptbins, nbins_pt, ptbins);     
+    //hpp_mcclosure_covmat_test_helper=new TH1D( "mcclosure_covmat_test_helper", "helper only", nbins_pt, ptbins);      
     
     if(fillMCUnfJetSpectraRapHists){
       for(int i=0;i<nbins_abseta;i++){
@@ -444,7 +461,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   float refdrjt_F[1000];
   //MC gen jet variables
   int ngen_I;  int genmatchindex_I[1000];
-  float genpt_F[1000];
+  float genpt_F[1000];  float geneta_F[1000];  float genphi_F[1000];
 
   //jets
   jetpp[0]->SetBranchAddress("nref",&nref_I);
@@ -495,6 +512,8 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   jetpp[0]->SetBranchAddress( "ngen" , &ngen_I );
   jetpp[0]->SetBranchAddress( "genmatchindex", &genmatchindex_I);
   jetpp[0]->SetBranchAddress( "genpt" , &genpt_F);
+  jetpp[0]->SetBranchAddress( "geneta" , &geneta_F);
+  jetpp[0]->SetBranchAddress( "genphi" , &genphi_F);
   
   // HiEvtAnalyzer
   ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I; 
@@ -581,7 +600,8 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   int mcclosureInt_y_arr[nbins_abseta]={0};
   bool incrementClosureInt_y_arr[nbins_abseta]={0};
   //bool eventAccepted=false;
-  
+
+  //int tempdebugcount=0;
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
     //eventAccepted=false;
     
@@ -593,7 +613,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       incrementClosureInt_y_arr[i]=false;
       
     
-    if(nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
+    if(nEvt%10000==0)
+      std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
+    
     jetpp[0]->GetEntry(nEvt);    
     h_NEvents_read->Fill(1);
     
@@ -722,12 +744,63 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	 (genmatchindex_I[gjet]<nref_I)) recomatchindex_I[genmatchindex_I[gjet]]=gjet;
     }
     
+    
+    //make misses hist
+    for(int gjet=0; gjet<ngen_I;gjet++){
+
+      if(!(genmatchindex_I[gjet]<0))//if genmatchind is >= 0, skip the (matched) gen jet. 
+	continue;
+      
+      float genpt   = genpt_F[gjet];
+      float geneta  = geneta_F[gjet];
+      float absgeneta  = fabs(geneta);
+      
+      bool  inGENpTRange= ( (genJetPtCut <= genpt    ) && (genpt     < genJetPtCut_Hi) );
+      bool inGENetaRange= ( (jtEtaCutLo <= absgeneta ) && (absgeneta < jtEtaCutHi    ) );
+      
+      if(!inGENpTRange || !inGENetaRange) //if not in these ranges, it's irrelevant. skip.
+	continue;
+      
+      int ind=-1;
+      for(unsigned int k=0;k<GjetPt->size();k++)
+	if(  fabs( GjetPt ->at(k) - genpt  ) < 0.0001 && 
+	     fabs( GjetEta->at(k) - geneta ) < 0.0001 ){//cant use reco-level match to call the reco jet in the tupel tree. "poorman's matching". 
+	  ind = k; break; }
+      
+      if(ind<0)//if i can't find the corresponding gen jet to get the info needed for rapidity in the tupel tree, skip.
+	continue;
+      
+      float gentheta=2.*atan(exp(-1.*geneta));
+      float genpz=genpt/tan(gentheta);
+      float genE=GjetE->at(ind);
+      float geny=0.5*log((genE+genpz)/(genE-genpz));//experimentalist version
+      float gjety=geny;
+      float absgjety=fabs(gjety);
+      
+      int themissedYBin=-1;
+      for(int ybin=0;ybin<nbins_absy;ybin++){
+	if( absybins[ybin]<=absgjety  && 		
+	    absgjety<absybins[ybin+1]    	      ) {	    
+	  themissedYBin=ybin; break;	  
+	}       
+      }
+      
+      if(themissedYBin>=0)
+	hpp_unmatched_misses_y[themissedYBin]->Fill(genpt_F[gjet], weight_eS);	
+
+      continue;
+    }      
+    
+    
     // for event counting + avoiding duplicate fills in dijet hists
     bool hNEvts_withJets_Filled=false;
     bool hNEvts_withJets_kmatCut1_Filled=false, hNEvts_withJets_kmatCut2_Filled=false; 
     //bool jetAccepted=false;
+
     for(int jet = 0; jet<nref_I; ++jet){
-      //jetAccepted=false;
+      
+      //std::cout<<"grabbing Jet # = "<<jet<<std::endl;
+      
       // event+jet counting
       h_NJets->Fill(1);
       if(!hNEvts_withJets_Filled){
@@ -737,13 +810,13 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
       float recpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
       float receta = eta_F[jet];
+      float absreceta = fabs(receta);	
       float jtm=m_F[jet];
-      
+
       int chMult  = chN_I[jet] + eN_I[jet] + muN_I[jet] ;
       int neuMult = neN_I[jet] + phN_I[jet] ;
       int numConst  = chMult + neuMult;
       
-      float absreceta = fabs(receta);	
       float jttheta=2.*atan(exp(-1.*receta));
       float jtpz=jtpt/tan(jttheta);
       float jtp=sqrt(jtpt*jtpt + jtpz*jtpz);
@@ -751,73 +824,60 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float jty=0.5*log((jtE+jtpz)/(jtE-jtpz));//experimentalist version
       float absjty=fabs(jty);
       
+      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
+
+      bool inRECOpTRange = ( (jtPtCut    <  recpt     ) && ( recpt     < jtPtCut_Hi ) );
+      bool inRECOetaRange= ( (jtEtaCutLo <= absreceta ) && ( absreceta < jtEtaCutHi ) );
+      bool passesJetID=false; //int jtID=0;
+
+      //some jets with eta>2.4 will be subjected to this wrongly, but our measurements are fore eta<2.0, so it doesn't matter
+      if(absjty<2.4)
+	passesJetID=(bool)jetID_00eta24( jetIDpt, 
+					 neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+					 numConst,  chMult, useTightJetID);
+      else continue;
+      
+      
+      //if the RECO jet is not matched ot a GEN jet, but passes all the kinematic cuts, it's a "fake" jet. 
+      if( subid_I[jet]!=0) {
+	if(!inRECOpTRange)continue;
+	else if(!inRECOetaRange)continue;	
+	else if(!passesJetID)continue;
+	
+	int thefakeYBin=-1;//this should not end up w/ -1 as final value b.c. of the absreceta cuts immediately above	
+	for(int ybin=0;ybin<nbins_absy;ybin++) 
+	  if( absybins[ybin]<=absjty  && 		
+	                      absjty<absybins[ybin+1]    	      ) {	    
+	    thefakeYBin=ybin; break;	  }       
+
+	if(thefakeYBin>=0)
+	  hpp_unmatched_fakes_y[thefakeYBin]->Fill(jetIDpt,weight_eS);
+	
+	continue;
+      }//end unmatched conditional
+
+
+
+
       float genpt   = refpt_F[jet];
       //float genphi  = refphi_F[jet];
       float geneta  = refeta_F[jet];
       float absgeneta  = fabs(geneta);
-      float gendrjt = refdrjt_F[jet];
+      //float gendrjt = refdrjt_F[jet];
 
-      
-      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
-      
-      
-      if( subid_I[jet]!=0 ) {
-	//if(debugMode)std::cout<<"jet not matched!"<<std::endl;
-	continue;//matching gen-reco
-      }
-      else if ( !(recpt > jtPtCut)    ) {
-	//if(debugMode)std::cout<<"recpt="<<recpt<<", too low!"<<std::endl;
-	continue;        //low recopt cut          
-      }
-      else if ( !(recpt < jtPtCut_Hi)    ){ 
-	//if(debugMode)std::cout<<"recpt too high!"<<std::endl;
-	continue;}     //high recopt cut
-      else if ( !(genpt > genJetPtCut) ) {
-	//if(debugMode)std::cout<<"genpt too low!"<<std::endl;
-	continue;}       //low genpt cut
-      else if ( !(genpt < genJetPtCut_Hi) ) {
-	//if(debugMode)std::cout<<"genpt too high!"<<std::endl;
-	continue;}   //high genpt cut
-      else if ( absreceta < jtEtaCutLo ) {
-	//if(debugMode)std::cout<<"absreceta too low!"<<std::endl;
-	continue;} // lower abseta cut 
-      else if (!(absreceta < jtEtaCutHi)){
-	//if(debugMode)std::cout<<"absreceta too high!"<<std::endl;
-	continue;} // higher abseta cut
-      else if ( gendrjt > gendrCut ) {
-	//if(debugMode)std::cout<<"gendrjt too high!"<<std::endl;
-	continue;}       //delta-r cut, proxy for gen-reco matching quality
-      
-      // jet/event counts
-      h_NJets_kmatCut1->Fill(1);
-      if(!hNEvts_withJets_kmatCut1_Filled){
-	h_NEvents_withJets_kmatCut1->Fill(1);
-	hNEvts_withJets_kmatCut1_Filled=true;      }      
-      
-      
-      // 13 TeV JetID criterion
-      bool passesJetID=false; //int jtID=0;
-      if(fillMCJetIDHists) 	{
-	if (!(absreceta > 2.4)) 
-	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
-					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult, useTightJetID);
-	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
-	  passesJetID=(bool) jetID_24eta27( jetIDpt,
-					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
-					    numConst, useTightJetID);
-	else if( !(absreceta>3.0) && absreceta>2.7 )
-	  passesJetID=(bool) jetID_27eta30( jetIDpt,
-					    neSum_F[jet],  phSum_F[jet], 
-					    neuMult, useTightJetID);
-	else  
-	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
-					   phSum_F[jet], useTightJetID);
-	if(!passesJetID) continue;
-      }
+      //only matched jets make it here. grab matched gen quantities 
+      //need to compute absgenjty in this case, early.
+      float genjttheta=2.*atan(exp(-1.*geneta));
+      float genjtpz=genpt/tan(genjttheta);
 
-      
-      if(recomatchindex_I.at(jet)<0){
+      if(recomatchindex_I.at(jet)<0 && genpt<=15.)//the ref jets (gen jets matched to RECO jets that were written in the order of highest-to-lowest in matched RECO jet pT) have a minimum pT cut of 10 GeV.
+	continue;                                //the gen jets (gen jets written regardless of matching, in order of highest-to-lowest in GEN jet pT) have a minimum pT cut of 15 GeV.
+                                                 //so if i match a RECO jet to a GEN jet that has a pT lower than 15 GeV, it won't be in the gen jet branches, and so i won't be able to determine the gen jet's rapidity, because that jet is also not in the tupel tree. 
+      else if(recomatchindex_I.at(jet)<0 && genpt>15.){ //if this statement fires, it's possible i misunderstand something about the cuts described in the comments immediately above this line. 
+	std::cout<<"i am here about do to some more stuff."<<std::endl; 
+	std::cout<<"recomatchindex_I.size()="<<recomatchindex_I.size()<<std::endl;
+	std::cout<<"recomatchindex_I.at("<<jet<<")="<<recomatchindex_I.at(jet)<<std::endl;
+	std::cout<<"GjetE->size()="<<GjetE->size()<<std::endl;
 	std::cerr<<std::endl;
 	std::cerr<<"//////////////////////////////////////////////"<<std::endl;
 	std::cerr<<"////////////// !!! WARNING !!! ///////////////"<<std::endl;
@@ -835,25 +895,153 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  std::cerr<<"// recomatchindex_I["<<kjet<<"]="<<recomatchindex_I.at(kjet)<<std::endl;
 	  std::cerr<<"subid_I["<<kjet<<"]="<<subid_I[kjet]<<std::endl;
 	  std::cerr<<"refpt["<<kjet<<"]="<<refpt_F[kjet]<<std::endl;
+	  std::cerr<<"pt_F["<<kjet<<"]="<<pt_F[kjet]<<std::endl;
 	  if(recomatchindex_I[kjet]!=-1){
 	    std::cerr<<"genpt["<<recomatchindex_I[kjet]<<"]="<<genpt_F[recomatchindex_I[kjet]]<<std::endl;
 	    std::cerr<<"GJetAk04JetPt["<<recomatchindex_I[kjet]<<"]="<<GjetPt->at(recomatchindex_I[kjet])<<std::endl;
 	  }
-	}
+	  }
 	badgenjetcount++;
+	std::cout<<"i am here having done some stuff."<<std::endl; 
+	assert(false);
+	std::cout<<"GjetE->at("<<recomatchindex_I.at(jet) << ")="<<GjetE->at(recomatchindex_I.at(jet))<<std::endl;
 	continue;
       }
       
-      float genjttheta=2.*atan(exp(-1.*geneta));
-      float genjtpz=genpt/tan(genjttheta);
       float genjtE=GjetE->at(recomatchindex_I.at(jet));
       float genjty=0.5*log((genjtE+genjtpz)/(genjtE-genjtpz));//experimentalist version
       float absgenjty=fabs(genjty);
+
+      bool  inGENpTRange= ( (genJetPtCut <= genpt    ) && (genpt     < genJetPtCut_Hi) );
+      bool inGENetaRange= ( (jtEtaCutLo <= absgeneta ) && (absgeneta < jtEtaCutHi    ) );
+
+      if(!inGENetaRange && !inRECOetaRange) //irrelevant matched jet; will not contribute to the unfolded spectra
+	continue;
+
+      else if(!inRECOpTRange && !inGENpTRange) //irrelevant matched jet; will not contribute to the unfolded spectra
+      	continue;
       
-      //jetAccepted=true;
-      //eventAccepted=true;
-      //if(debugMode&&jetAccepted&&eventAccepted)std::cout<<"nEvt="<<nEvt<<", jet="<<jet<<", jet accepted. filling hists"<<std::endl;
+      else if(!inRECOpTRange && inGENpTRange){//matched miss condition
+	if(!inGENetaRange)continue;
+	
+	//std::cout<<"i am a matched-miss here."<<std::endl;
+
+	int themissYBin=-1;  
+	for(int ybin=0;ybin<nbins_absy;ybin++)
+	  if( absybins[ybin]<=absgenjty  && 		
+	      absgenjty<absybins[ybin+1]    	      ) {	    
+	    themissYBin=ybin;
+	    break;	  }       
+	
+      	//fill matched miss
+	if(themissYBin>=0)
+	  hpp_matched_misses_y[themissYBin]->Fill(genpt,weight_eS);
+
+	continue;
+      }//end miss condition
+
+      else if(inRECOpTRange && !inGENpTRange){//fake condition
+	if(!inRECOetaRange)continue;
+	else if(!passesJetID)continue;
+	
+	//std::cout<<"i am a matched-fake here."<<std::endl; 
+	
+	int thefakeGENYBin=-1;	//this should not end up w/ -1 as final value b.c. of the absreceta cuts immediately above
+	for(int ybin=0;ybin<nbins_absy;ybin++)
+	  if( absybins[ybin]<=absgenjty  && 		
+	                      absgenjty<absybins[ybin+1]    	      ) {	    
+	    thefakeGENYBin=ybin;
+	    break;	  }  
+
+	if(     thefakeGENYBin<0)//this case shouldn't really be an issue; early cuts means the bin should always be nonnegative. 
+	  continue;
+	else if(thefakeGENYBin>3)
+	  thefakeGENYBin=3; //this is a bad way of going about this, but if the GEN jet is in 2.0<|y|<2.5, it's likely close enough to that 2.0 boundary because RECO-GEN y-migrations are VERY small. 
+
+	
+	//unsigned int ncrysballbins=(crysball_ptbins.at(theGENYBin).size()-1);
+	//int crysballpTbin=-1;
+	//for(unsigned int p=0; p<ncrysballbins; p++)//so this won't work. so i'm just going to base it on the resolution of the lowest pT bin we have. see how that goes...
+	//  if( crysball_ptbins.at(theGENYBin).at(p) < genpt &&
+	//      genpt <= crysball_ptbins.at(theGENYBin).at(p+1)){
+	//    crysballpTbin=p; break;
+	//  }
+
+	float mean=crysball_means.at(thefakeGENYBin).at(0);
+	float smrfactor_wJERSF= (recpt/genpt - mean)*1.1 + mean;
+	recpt=genpt*smrfactor_wJERSF;
+	
+	int thefakeYBin=-1;	//this should not end up w/ -1 as final value b.c. of the absreceta cuts immediately above
+	for(int ybin=0;ybin<nbins_absy;ybin++)
+	  if( absybins[ybin]<=absjty  && 		
+	                      absjty<absybins[ybin+1]    	      ) {	    
+	    thefakeYBin=ybin;
+	    break;	  }       
+
+	//fill matched fake
+	if(thefakeYBin>=0)
+	  hpp_matched_fakes_y[thefakeYBin]->Fill(jetIDpt,weight_eS);
+		
+	continue;
+      }//end fake condition
+
       
+      //if we make it here, we are a matched jet that meets all kinematic requirements.
+      //i.e. inGENpTRange&&inGENetaRange&&inRECOpTRange&&inRECOetaRange evaluates to true. 
+
+
+
+      // jet/event counts
+      h_NJets_kmatCut1->Fill(1);
+      if(!hNEvts_withJets_kmatCut1_Filled){
+	h_NEvents_withJets_kmatCut1->Fill(1);
+	hNEvts_withJets_kmatCut1_Filled=true;      }      
+      
+            
+      // 13 TeV JetID criterion
+      //bool passesJetID=false; //int jtID=0;
+      if(fillMCJetIDHists) 	{
+	if (!(absreceta > 2.4)) 
+	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
+					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+					   numConst,  chMult, useTightJetID);
+	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
+	  passesJetID=(bool) jetID_24eta27( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
+					    numConst, useTightJetID);
+	else if( !(absreceta>3.0) && absreceta>2.7 )
+	  passesJetID=(bool) jetID_27eta30( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    neuMult, useTightJetID);
+	else  
+	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
+					   phSum_F[jet], useTightJetID);
+
+	if(!passesJetID) {
+
+	  //std::cout<<"i am a matched-miss here."<<std::endl;
+
+	  //PY8 is signal model. if a RECO jet is being rejected, the matched GEN jet is missed. so fill misses hist as usual. 
+	  int themissYBin=-1;  
+	  for(int ybin=0;ybin<nbins_absy;ybin++)
+	    if( absybins[ybin]<=absgenjty  && 		
+		                absgenjty<absybins[ybin+1]    	      ) {	    
+	      themissYBin=ybin;
+	      break;	  }     
+  
+	  if(themissYBin>=0)
+	    hpp_matched_misses_y[themissYBin]->Fill(genpt,weight_eS);
+
+	  continue;
+	}
+      }
+      
+
+      
+
+      //if we make it here, we are a matched jet that meets all kinematic requirements, AND the RECO jet passes jetID
+      //i.e. inGENpTRange&&inGENetaRange&&inRECOpTRange&&inRECOetaRange evaluates to true. 
+
       h_NJets_kmatCut2->Fill(1);
       if(!hNEvts_withJets_kmatCut2_Filled){
 	h_NEvents_withJets_kmatCut2->Fill(1);
@@ -897,18 +1085,70 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float recpt_SFup=-1.;
       if(useJERScaleFactors){
 	if(theGENYBin<4&&theGENYBin>=0){
+
 	  recpt_SFdown=recpt;//b.c. SF=1.1 +/- .1 -> (1.0 , 1.1, 1.2)
+
 	  //std::cout<<std::endl<<"genpt="<<genpt<<std::endl;
-	  //std::cout<<"theYBin="<<theYBin<<std::endl;
+	  //std::cout<<"fabs(genjty)="<<fabs(genjty)<<std::endl;
+	  //std::cout<<"theGENYBin="<<theGENYBin<<std::endl;
 	  //std::cout<<"WAS: recpt="<<recpt<<std::endl;
 	  //std::cout<<"WAS: recpt/genpt="<<recpt/genpt<<std::endl;
-	  smearPY8wJERScaleFactor(JER_sigmu[theGENYBin],genpt, &recpt);
-	  recpt_SFup=genpt*(((recpt/genpt-1.)/1.1*1.2)+1.);//b.c. algebra
-	  //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
-	  //std::cout<<"NOW: recpt="<<recpt<<std::endl;
-	  //std::cout<<"NOW: recpt_SFup="<<recpt_SFup<<std::endl;
-	  //if(recpt/genpt<1.)assert(false);
-	  //if(nEvt>100)assert(false);
+	  //for(int y=0; y<4; y++){
+	  //assert( (crysball_ptbins.at(y).size()-1) == (crysball_means.at(y).size()) );
+	  //std::cout<<"crysball_ptbins.at("<<y<<").size()="<< crysball_ptbins.at(y).size() <<std::endl;
+	  //std::cout<<"crysball_means.at("<<y<<").size()="<<crysball_means.at(y).size()  <<std::endl;
+	  //}	  
+	  unsigned int ncrysballbins=(crysball_ptbins.at(theGENYBin).size()-1);
+	  int crysballpTbin=-1;
+	  for(unsigned int p=0; p<ncrysballbins; p++)
+	    if( crysball_ptbins.at(theGENYBin).at(p) < genpt &&
+                                        	       genpt <= crysball_ptbins.at(theGENYBin).at(p+1)){
+	      crysballpTbin=p; break;
+	    }
+	  //std::cout<<" genpt should be between "<< (int)crysball_ptbins.at(theGENYBin).at(crysballpTbin) 
+	  //	   <<" GeV and " << (int)crysball_ptbins.at(theGENYBin).at(crysballpTbin+1)<<std::endl; 
+	  if(crysballpTbin<0){//if the jet is beyond the reach of the JER fits; probably not gonna matter? look into this when there is time.
+	    recpt_SFdown=recpt; recpt=recpt; recpt_SFup=recpt; }
+	  else {
+	    
+	    float mean=crysball_means.at(theGENYBin).at(crysballpTbin);
+	    //std::cout<<"mean being used is: "<<mean<<std::endl;
+	    //float smrfactor=recpt/genpt;
+	    float smrfactor_wJERSF= (recpt/genpt - mean)*1.1 + mean;
+	    float smrfactor_wJERSF_SFup= (recpt/genpt - mean)*1.2 +mean;
+	    
+	    //std::cout<<" smrfactor            ="<<smrfactor            <<std::endl;
+	    //std::cout<<" smrfactor_wJERSF     ="<<smrfactor_wJERSF     <<std::endl;
+	    //std::cout<<" smrfactor_wJERSF_SFup="<<smrfactor_wJERSF_SFup<<std::endl;
+	    
+	    recpt_SFup=genpt*smrfactor_wJERSF_SFup;
+	    recpt    =genpt*smrfactor_wJERSF;
+	    
+	    //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
+	    //std::cout<<"NOW: recpt="<<recpt<<std::endl;
+	    //std::cout<<"NOW: recpt_SFup="<<recpt_SFup<<std::endl;
+
+	    
+	    /* JERSF APPLICATION OLD CODE
+	       recpt_SFdown=recpt;//b.c. SF=1.1 +/- .1 -> (1.0 , 1.1, 1.2)
+	       //std::cout<<std::endl<<"genpt="<<genpt<<std::endl;
+	       //std::cout<<"theYBin="<<theYBin<<std::endl;
+	       //std::cout<<"WAS: recpt="<<recpt<<std::endl;
+	       //std::cout<<"WAS: recpt/genpt="<<recpt/genpt<<std::endl;
+	       smearPY8wJERScaleFactor(JER_sigmu[theGENYBin],genpt, &recpt);
+	       recpt_SFup=genpt*(((recpt/genpt-1.)/1.1*1.2)+1.);//b.c. algebra
+	       //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
+	       //std::cout<<"NOW: recpt="<<recpt<<std::endl;
+	       //std::cout<<"NOW: recpt_SFup="<<recpt_SFup<<std::endl;
+	       //if(recpt/genpt<1.)assert(false);
+	       //if(nEvt>100)assert(false);
+	       */
+	    
+	    
+	    
+	    
+	    
+	  }
 	}
 	else {
 	  //have to do this since i'm running w/ abseta<2.5 and i don't have a JER fit for that region
@@ -921,26 +1161,26 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       /////   UNFOLDING   ///// 
       if(fillMCUnfoldingHists){
 	
-	hpp_gen->Fill(genpt, weight_eS);
-	hpp_reco->Fill(recpt, weight_eS);
-	hpp_matrix->Fill(recpt, genpt, weight_eS);	
+	//hpp_gen->Fill(genpt, weight_eS);
+	//hpp_reco->Fill(recpt, weight_eS);
+	//hpp_matrix->Fill(recpt, genpt, weight_eS);	
 	
 	hpp_matrix_jetyresp       ->Fill( jty , genjty, weight_eS);
 	hpp_matrix_jetyresp_0p1bins->Fill( jty , genjty, weight_eS);
 	
-	if(mcclosureInt%2 == 0){
-	  incrementClosureInt=true;
-	  hpp_mcclosure_reco_test->Fill(recpt, weight_eS);      	
-	  if(fillMCJetCovMatrix){	    
-	    bool_helper=true;
-	    hpp_mcclosure_covmat_test_helper->Fill(recpt); }	  
-	}
-	else {
-	  incrementClosureInt=true;
-	  hpp_mcclosure_gen->Fill(genpt, weight_eS);
-	  hpp_mcclosure_reco->Fill(recpt, weight_eS); 	
-	  hpp_mcclosure_matrix->Fill(recpt, genpt, weight_eS);	
-	}	  
+	//if(mcclosureInt%2 == 0){
+	//  incrementClosureInt=true;
+	//  hpp_mcclosure_reco_test->Fill(recpt, weight_eS);      	
+	//  if(fillMCJetCovMatrix){	    
+	//    bool_helper=true;
+	//    hpp_mcclosure_covmat_test_helper->Fill(recpt); }	  
+	//}
+	//else {
+	//  incrementClosureInt=true;
+	//  hpp_mcclosure_gen->Fill(genpt, weight_eS);
+	//  hpp_mcclosure_reco->Fill(recpt, weight_eS); 	
+	//  hpp_mcclosure_matrix->Fill(recpt, genpt, weight_eS);	
+	//}	  
 	
 
 	//fill jetspectraRapHists
@@ -1017,11 +1257,11 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     
     if(fillMCJetCovMatrix&&fillMCJetIDHists){
       
-      if(bool_helper){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
-	fillCovMatrix( (TH2D*)hpp_mcclosure_covmat_test, (TH1D*)hpp_mcclosure_covmat_test_helper, nbins_pt , (double) weight_eS);
-	hpp_mcclosure_covmat_test_helper->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
-      }//end bool_helper
-      bool_helper=false;	
+      //if(bool_helper){//don't undergo expensive covmatrix calc if the etabin wasn't filled.
+      //fillCovMatrix( (TH2D*)hpp_mcclosure_covmat_test, (TH1D*)hpp_mcclosure_covmat_test_helper, nbins_pt , (double) weight_eS);
+      //hpp_mcclosure_covmat_test_helper->Reset();//reset contents of TH1 without resetting binning, min/max, etc....	  
+      //}//end bool_helper
+      //bool_helper=false;	
       
       if(fillMCUnfJetSpectraRapHists){
 	for(int i=0; i<nbins_abseta; i++){

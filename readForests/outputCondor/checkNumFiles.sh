@@ -12,8 +12,16 @@ then
     #do
 	#cat $i | wc -l
 #	numLines=($(ls ${i}/*.root | wc -l))
+
     numLines=($(ls ${targdir}/*.root | wc -l))
     errnumLines=($(ls ${targdir}/*.err | wc -l))
+    if [[ -f "${targdir}/ak4PF_PY8JER_05eta10_03.18.20_sigmu_geny.root" ]]
+    then
+	#echo "numLines=$numLines"
+	numLines=$((numLines-4))
+	#echo "numLines=$numLines"
+	#return
+    fi
     echo "dir = $targdir"
     echo "has ${numLines} root files"	
     echo "and ${errnumLines} err files"	

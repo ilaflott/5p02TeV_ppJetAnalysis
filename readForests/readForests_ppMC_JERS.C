@@ -13,6 +13,9 @@ const bool useTightJetID=false;
 const bool usePFCandAnalyzer=true;
 //const bool useTupel=true;
 
+const bool REDOjetMatching=true;
+const float deltaR_req4Match=0.2;
+
 //// readForests_ppMC_JERS
 // ---------------------------------------------------------------------------------------------------------------
 int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,  
@@ -32,7 +35,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   std::cout<<"reading files #'s "<< startfile << " to " << endfile<<std::endl;
   std::cout<<"radius = " << radius;
   std::cout<<", jetType = " << jetType<<std::endl;
-
+  
   
   std::cout<<"///////////////////"<<std::endl<<std::endl;
   
@@ -45,12 +48,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   // form jetTreeName
   std::string jetTreeName="ak"+std::to_string(radius)+jetType+"JetAnalyzer/t";
   if(debugMode)std::cout<<"looking at jetTree "<<jetTreeName<<std::endl;
-
+  
   // initialize tree name array
   std::string trees[N_MCTrees];
   trees[0]=jetTreeName; //trees[1]=CaloJetTreeName;
   for(int i=1;i<N_MCTrees;++i)trees[i]=MCTreeNames[i];
-
+  
   // declare TChains for each tree + friend  
   TChain* jetpp[N_MCTrees]={};
   for(int t = 0;t<N_MCTrees;++t)  {     
@@ -166,9 +169,9 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   
   //all eta in bins of genpt
   TH1D * hJER[nbins_pt]={};       // rec/gen , bins of gen pt
-  TH1D * hJER_abseta[nbins_pt][nbins_abseta]={};       // rec/gen , bins of gen pt, receta
+  //TH1D * hJER_abseta[nbins_pt][nbins_abseta]={};       // rec/gen , bins of gen pt, receta
   TH1D * hJER_absgeneta[nbins_pt][nbins_abseta]={};       // rec/gen , bins of gen pt, geneta
-  TH1D * hJER_absy[nbins_pt][nbins_absy]={};       // rec/gen , bins of gen pt, recy
+  //TH1D * hJER_absy[nbins_pt][nbins_absy]={};       // rec/gen , bins of gen pt, recy
   TH1D * hJER_absgeny[nbins_pt][nbins_absy]={};       // rec/gen , bins of gen pt, geny
 
   if(fillJERSHists){   
@@ -207,17 +210,17 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       hJER[bin] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
     }//ptbin loop 
     
-    for(int j=0;j<nbins_abseta;++j){
-      for(int bin = 0; bin<nbins_pt; ++bin) {      	  
-	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
-	std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];	  
-	std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_etabin"+std::to_string(j)+"_"+ptbins_i+"ptbin"+ptbins_ip1;
-	if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
-	std::string hDescJER="rec/gen pt, "+absetabins_i+"<|#eta|<"+absetabins_ip1+", "+ptbins_i+"<genpt<"+ptbins_ip1;	  
-	if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
-	hJER_abseta[bin][j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
-      }//ptbin loop
-    }//etabin loop
+    //for(int j=0;j<nbins_abseta;++j){
+    //  for(int bin = 0; bin<nbins_pt; ++bin) {      	  
+    //	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
+    //	std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];	  
+    //	std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_etabin"+std::to_string(j)+"_"+ptbins_i+"ptbin"+ptbins_ip1;
+    //	if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
+    //	std::string hDescJER="rec/gen pt, "+absetabins_i+"<|#eta|<"+absetabins_ip1+", "+ptbins_i+"<genpt<"+ptbins_ip1;	  
+    //	if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
+    //	hJER_abseta[bin][j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
+    //  }//ptbin loop
+    //}//etabin loop
 
     for(int j=0;j<nbins_abseta;++j){
       for(int bin = 0; bin<nbins_pt; ++bin) {      	  
@@ -231,17 +234,17 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       }//ptbin loop
     }//etabin loop
     
-    for(int j=0;j<nbins_absy;++j){
-      for(int bin = 0; bin<nbins_pt; ++bin) {      	  
-	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
-	std::string absybins_i=absybins_str[j];	std::string absybins_ip1=absybins_str[j+1];	  
-	std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_ybin"+std::to_string(j)+"_"+ptbins_i+"ptbin"+ptbins_ip1;
-	if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
-	std::string hDescJER="rec/gen pt, "+absybins_i+"<|y|<"+absybins_ip1+", "+ptbins_i+"<genpt<"+ptbins_ip1;	  
-	if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
-	hJER_absy[bin][j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
-      }//ptbin loop
-    }//etabin loop        
+    //for(int j=0;j<nbins_absy;++j){
+    //  for(int bin = 0; bin<nbins_pt; ++bin) {      	  
+    //	std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );	std::string ptbins_ip1=std::to_string( ( (int)ptbins[bin+1]) );
+    //	std::string absybins_i=absybins_str[j];	std::string absybins_ip1=absybins_str[j+1];	  
+    //	std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_ybin"+std::to_string(j)+"_"+ptbins_i+"ptbin"+ptbins_ip1;
+    //	if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
+    //	std::string hDescJER="rec/gen pt, "+absybins_i+"<|y|<"+absybins_ip1+", "+ptbins_i+"<genpt<"+ptbins_ip1;	  
+    //	if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
+    //	hJER_absy[bin][j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 200,0.,2.); 
+    //  }//ptbin loop
+    //}//etabin loop        
     
     for(int j=0;j<nbins_absy;++j){
       for(int bin = 0; bin<nbins_pt; ++bin) {      	  
@@ -289,7 +292,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   float refdrjt_F[1000];
   //MC gen jet variables
   int ngen_I;  int genmatchindex_I[1000];
-  float genpt_F[1000];
+  float genpt_F[1000];  float geneta_F[1000];  float genphi_F[1000];
   //evt pthat used to generate jets, MC specific
   jetpp[0]->SetBranchAddress( "pthat"   , &pthat_F);
   //jets
@@ -340,6 +343,8 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   jetpp[0]->SetBranchAddress( "ngen" , &ngen_I );
   jetpp[0]->SetBranchAddress( "genmatchindex", &genmatchindex_I);
   jetpp[0]->SetBranchAddress( "genpt" , &genpt_F);
+  jetpp[0]->SetBranchAddress( "geneta" , &geneta_F);
+  jetpp[0]->SetBranchAddress( "genphi" , &genphi_F);
   // HiEvtAnalyzer
   ULong64_t evt_I;   UInt_t run_I;   UInt_t lumi_I; 
   float vz_F,vx_F,vy_F;
@@ -378,6 +383,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   //tupel/EventTree (for calculating genjet rapidity for AK4 only [R=0.3 jet info absent])
   std::vector<float> *jetPt, *jetEta, *jetPhi, *jetE;// *jetID, *jetRawPt, *jetRawE;
   std::vector<float> *GjetPt, *GjetEta, *GjetPhi, *GjetE;// *jetID, *jetRawPt, *jetRawE;
+  int evtvtxCnt_I;
   //std::vector<float> *jetHfHadE, *jetHfEmE, *jetChHadFrac, *jetNeutralHadAndHfFrac, *jetChEmFrac, *jetNeutralEmFrac, *jetChMult, *jetConstCnt;  
   if(debugMode)std::cout<<"setting branch addresses for tupel/EventTree"<<std::endl;
   
@@ -389,7 +395,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   jetpp[5]->SetBranchAddress( "GJetAk04Eta",                &GjetEta                 );
   jetpp[5]->SetBranchAddress( "GJetAk04Phi",                &GjetPhi                 );
   jetpp[5]->SetBranchAddress( "GJetAk04E",                  &GjetE                   );
-
+  jetpp[5]->SetBranchAddress("EvtVtxCnt",      &evtvtxCnt_I);
   
   // event count from files
   UInt_t NEvents_jetAnalyzr=jetpp[0]->GetEntries();   // preskim event count from files
@@ -426,6 +432,8 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     if( fabs(vz_F)>24.              ) continue;
     h_NEvents_vzCut->Fill(1);
 
+    if( sqrt( pow(vx_F,2) + pow(vy_F,2) ) > 0.1) continue;//DONT FORGET I AM HERE
+    if(evtvtxCnt_I>1)continue;//DONT FORGET I AM HERE
 
     if(usePFCandAnalyzer){
       //PFCANDLOOP
@@ -469,6 +477,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       
       //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
       if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      //if(PFMETfrac>0.5)continue;//giving this a shot. see how it goes...
       //h_NEvents_PFMETfracCut->Fill(0.);
       
       //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
@@ -484,7 +493,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     
     // grab vzweight
     double vzWeight=1.;
-    if(doVzWeights){
+    if(doVzWeights&&false){
       //std::cout<<"vzWeight was:"<<vzWeight<<std::endl;
       vzWeight=cpuVzWeight_poly(vz_F);
     }
@@ -546,10 +555,429 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     //	  std::cout<<"GJetAk04JetPt["<<recomatchindex_I[jet]<<"]="<<GjetPt->at(recomatchindex_I[jet])<<std::endl;
     //	}
     //}
-    
-    //if(nEvt==500)assert(false);
 
-    for(int jet = 0; jet<nref_I; ++jet){
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    /*
+
+    std::vector<bool> refjetIsSorted;  //will have length of nref_I    
+    std::vector<double> refpt_sorted, refeta_sorted, refphi_sorted; //these have length of #of matched GEN jet
+    std::vector<double> refy_sorted;
+    
+    std::vector<bool> refjetIsMatched; std::vector<int> refjetIsMatchedTo; 
+    std::vector<bool> recjetIsMatched  ;       //length of nref_I
+    std::vector<int> recjetIsMatchedTo; 
+    if(REDOjetMatching){
+      //if(nEvt>10000)assert(false);
+
+
+      //I SHOULD BE USING INFO FROM THE TUPEL TREE
+      //PROBABLY NEED TO DO SOME REWRITING OF ALL OF THIS
+
+      //first, copy+reorder the refpt/refeta/refphi array from highest --> lowest in pT
+      refjetIsSorted.assign(nref_I, false);
+      int Nsorted=0, NsortAttempts=0;
+      //std::cout<<"about to start do-while loop"<<std::endl;
+      do{//sort
+	//std::cout<<std::endl<<"now in do-while loop"<<std::endl;
+	float maxjtpt=-1.;
+	int maxjtpt_ind=-1;
+	for(int jet=0; jet<nref_I; ++jet){//jet loop for 1 sort iteration
+	  //std::cout<<"(in sort loop) checking jet#"<<jet<<" with pt="<<refpt_F[jet]<<std::endl;
+
+	  if(refjetIsSorted.at(jet) || refpt_F[jet]<0.){
+	    //std::cout<<"refjet is already sorted into array. moving on."<<std::endl;
+	    continue;
+	  }
+	  else if(refpt_F[jet]>maxjtpt){
+	    //std::cout<<"higher refpt found! was jet #"<< maxjtpt_ind<<" and pt was "<<maxjtpt;
+	    maxjtpt=refpt_F[jet];
+	    maxjtpt_ind=jet;
+	    //std::cout<<", now is jet #"<<maxjtpt_ind<<" and pt is " <<maxjtpt<<std::endl;
+	  }
+
+	}//end jet loop for 1 sort iteration
+	//std::cout<<"done with sort-loop in do-while statement. maxjtpt_ind="<<maxjtpt_ind<<", maxjtpt="<<maxjtpt<<std::endl;
+	
+	if(maxjtpt_ind>=0){//we found a highest jet pT!
+	  //std::cout<<"highest pT jet found!"<<std::endl;
+	  refpt_sorted.push_back(refpt_F[maxjtpt_ind]);
+	  //std::cout<<"checking std::vector element assignment: refpt_sorted.at(0)="<<refpt_sorted.at(0)<<std::endl;
+	  refeta_sorted.push_back(refeta_F[maxjtpt_ind]);
+	  refphi_sorted.push_back(refphi_F[maxjtpt_ind]);
+	  refjetIsSorted.at(maxjtpt_ind)=true;
+	  Nsorted++;
+	}
+	
+	NsortAttempts++;//every iteration finds the highest pt jet.
+      }//end do sort
+      while(NsortAttempts<nref_I);
+
+      //TODO
+
+
+
+
+      
+      //here; i need to look for gen jets in the genjet arrays (GEN jets that went unmatched)
+      //i expect the impact from this to be largest as *very* low pT, decreasing to negligible elsewhere.
+      //so i will finish and debug the other steps first, and double back to this next.
+      bool insertedagenjet=false; bool foundunmatchedgenjet=false;
+      for(int gjet=0;gjet<ngen_I;++gjet){
+	if(genmatchindex_I[gjet]>=0)continue;//already matched, so already written to the refjet array.
+	else{
+	  if(!foundunmatchedgenjet)
+	    std::cout<<"nEvt="<<nEvt<<", FOUND UNMATCHED GENJET(S)"<<std::endl;//assert(false);
+	  foundunmatchedgenjet=true;
+	  std::cout<<"genpt/eta/phi_F["<<gjet<<"]="<<genpt_F[gjet]<<"/"<<geneta_F[gjet]<<"/"<<genphi_F[gjet]<<std::endl;
+	  for(int refjet=0;refjet<Nsorted;++refjet){
+	    std::cout<<"refjet="<<refjet<<std::endl;
+  
+	    if(refpt_sorted.at(refjet)<genpt_F[gjet]){//if it's not the lowest pTjet, and IT IS BIGGER than this ref pT, insert. 
+	      if(!insertedagenjet){
+		std::cout<<std::endl<<"------------BEFORE LOOKING FOR MISSED GEN JETS--------------------------"<<std::endl;
+		for(int jet=0; jet<Nsorted; ++jet){
+		  std::cout<<"sorted refpt/eta/phi["<<jet<<"]="<< refpt_sorted.at(jet)  << " / " << 
+		    refeta_sorted.at(jet) << " / " << 
+		    refphi_sorted.at(jet) << std::endl;
+		}
+		std::cout<<std::endl;
+	      }
+	      refpt_sorted .insert( refpt_sorted.begin()+refjet, genpt_F[gjet]);
+	      refeta_sorted.insert(refeta_sorted.begin()+refjet, geneta_F[gjet]);
+	      refphi_sorted.insert(refphi_sorted.begin()+refjet, genphi_F[gjet]);
+	      Nsorted++;
+	      insertedagenjet=true;
+	      break;	    }//end finding a valid unmatched genjet to redo the matching with	    
+
+	    else if(refjet==(Nsorted-1)){//boundary case; if the unmatched genjet is the lowest pT jet of any put in array so far.
+	      if(!insertedagenjet){
+		std::cout<<std::endl<<"------------BEFORE LOOKING FOR MISSED GEN JETS--------------------------"<<std::endl;
+		for(int jet=0; jet<Nsorted; ++jet){
+		  std::cout<<"sorted refpt/eta/phi["<<jet<<"]="<< refpt_sorted.at(jet)  << " / " << 
+		    refeta_sorted.at(jet) << " / " << 
+		    refphi_sorted.at(jet) << std::endl;
+		}
+		std::cout<<std::endl;
+	      }
+	      refpt_sorted .push_back( genpt_F[gjet]);
+	      refeta_sorted.push_back( geneta_F[gjet]);
+	      refphi_sorted.push_back( genphi_F[gjet]);
+	      Nsorted++;
+	      insertedagenjet=true;
+	      break;//necessary because the size of the array increases by 1, so the for-loop condition won't fire.
+	    }//end boundary case
+	    //else if(refpt_sorted.at(refjet)>genpt_F[gjet]){//if it's not the lowest pT jet, and it's not bigger than this ref pT, move on.
+	    //  continue;
+	    //}	
+
+	    
+
+	  }//end refjet loop for inserting a valid genjet into the array.
+	  
+	  
+
+
+	}
+      }//end genjet loop looking for unmatched genjets
+      
+
+	if(insertedagenjet){
+	std::cout<<std::endl<<"------------AFTER FINDING AT LEAST 1 MISSED GEN JET--------------------------"<<std::endl;
+	for(int jet=0; jet<Nsorted; ++jet){
+	  std::cout<<"sorted refpt/eta/phi["<<jet<<"]="<< refpt_sorted.at(jet)  << " / " << 
+	  refeta_sorted.at(jet) << " / " << 
+	  refphi_sorted.at(jet) << std::endl;
+	  }
+	  std::cout<<std::endl;
+	  }
+
+      //TODO END INSERTING MISSED GEN JETS
+
+
+
+
+      ////BEGIN DEBUG this test was fine.
+      //std::cout<<std::endl<<"--------------------------------------"<<std::endl;
+      //for(int jet=0; jet<Nsorted; ++jet){
+      //	std::cout<<"sorted refpt/eta/phi["<<jet<<"]="<< refpt_sorted.at(jet)  << " / " << 
+      //	                                                refeta_sorted.at(jet) << " / " << 
+      //                                         	        refphi_sorted.at(jet) << std::endl;
+      //}
+      //std::cout<<std::endl;
+      //for(int jet=0; jet<nref_I; ++jet){
+      //	std::cout<<"original order: refpt/eta/phi["<<jet<<"]="<< refpt_F[jet]  << " / " << 
+      //	                                                                    refeta_F[jet] << " / " << 
+      //                                         	                            refphi_F[jet] << std::endl;
+      //}
+      //if(nEvt>100)assert(false);
+      //END DEBUG
+ 
+
+      //if(nEvt>0)assert(false);
+      
+      //std::cout<<std::endl;
+      //std::cout<<"-------------------------------------"<<std::endl;
+      //std::cout<<"redoing jet matching for nEvt="<<nEvt<<std::endl;
+      //std::cout<<"-------------------------------------"<<std::endl;
+      
+
+      
+      //third, create a boolean array for the gen AND reco jets, each entry initialized to false (not matched yet)
+      refjetIsMatched.assign(Nsorted, false);
+      refjetIsMatchedTo.assign(Nsorted, -1);
+      
+
+      recjetIsMatched.assign(nref_I, false);
+      recjetIsMatchedTo.assign(nref_I, -1);
+      
+      for(int refjet=0; refjet<Nsorted; ++refjet){	//GEN jet loop
+	float mindeltaR=10;
+	int mindeltaR_ind=-1;
+	//std::cout<<"trying to match refjet #"<<refjet<<", refpt/refeta/refphi="<<refpt_sorted.at(refjet)<<"/"<<refeta_sorted.at(refjet)<<"/"<<refphi_sorted.at(refjet)<<std::endl;
+	for(int jet=0; jet<nref_I;++jet){ //RECO jet loop
+	  
+	  //std::cout<<"recjetIsMatched.at("<< jet<<")="<<recjetIsMatched.at(jet)<<std::endl;		  
+	  if(recjetIsMatched.at(jet))//if already matched, move on
+	    continue;
+
+	  float absdeltaeta=fabs(eta_F[jet]-refeta_sorted.at(refjet));	
+	  //std::cout<<"absdeltaeta="<<absdeltaeta <<std::endl;
+	  if(absdeltaeta>0.4)//if deltaeta bigger than 0.4, won't work, move on
+	    continue;
+
+	  float absdeltaphi=fabs(deltaphi(phi_F[jet],refphi_sorted.at(refjet)));
+	  //std::cout<<"absdeltaphi="<<absdeltaphi <<std::endl;
+	  if(absdeltaphi>0.4){//if deltaphi bigger than 0.4, won't work, move on
+	    //std::cout<<"phi_F["<<jet<<"]="<<phi_F[jet]<<" AND refphi_sorted.at("<<refjet<<")"<<refphi_sorted.at(refjet)<<std::endl;
+	    continue;
+	  }
+
+	  float deltaR=sqrt(pow(absdeltaeta,2.)+pow(absdeltaphi,2.));
+	  //std::cout<<"deltaR="<<deltaR <<std::endl;
+	  if(deltaR>0.4)//obvious...
+	    continue;
+	  
+
+	  if(deltaR<mindeltaR){//if it's the smallest deltaR found yet; note that down
+	    mindeltaR_ind=jet;//index of the RECO jet matched to the GEN jet
+	    mindeltaR=deltaR;
+	  }
+	  else if(deltaR==mindeltaR){
+	    //std::cout<<"can't believe i happened! make sure you account for this case somehow."<<std::endl;
+	    assert(false);
+	  }
+
+	}//end loop over RECO jets
+
+	
+	if(mindeltaR_ind>=0){
+	  refjetIsMatched.at(refjet)=true;
+	  refjetIsMatchedTo.at(refjet)=mindeltaR_ind;
+	  recjetIsMatched.at(mindeltaR_ind)=true;
+	  recjetIsMatchedTo.at(mindeltaR_ind)=refjet;
+	  //std::cout<<"BEST MATCH IS JET#"<<refjetIsMatchedTo.at(refjet)<<"! recpt/receta/recphi="<<pt_F[refjetIsMatchedTo.at(refjet)]
+	  //	   <<"/"<<eta_F[refjetIsMatchedTo.at(refjet)]<<"/"<<phi_F[refjetIsMatchedTo.at(refjet)]<<std::endl;
+	}
+	else{
+	  //std::cout<<"THIS REF JET HAS NO MATCH"<<std::endl;
+	}
+	
+      }//end loop over GEN jets
+
+
+      if(insertedagenjet){
+	//here i am going to check the jet collection + matches
+	std::cout<<std::endl<<"ORIGINAL GENRECO MATCHING"<<std::endl;
+	for(int jet=0; jet<nref_I;++jet){
+	  if(subid_I[jet]!=0)continue;
+	  std::cout<<"                        pt/eta/phi["<<jet<<"]="<<pt_F[jet]<<"/"<<eta_F[jet]<<"/"<<phi_F[jet]<<std::endl;
+	  std::cout<<"WAS MATCHED TO refpt/refeta/refphi["<<jet<<"]="<<refpt_F[jet]<<"/"<<refeta_F[jet]<<"/"<<refphi_F[jet]<<std::endl;
+	}
+	
+	//std::cout<<std::endl<<"MY GENRECO MATCHING"<<std::endl;
+	for(int jet=0; jet<nref_I;++jet){
+	  if(!recjetIsMatched.at(jet))continue;
+	  int matchind=recjetIsMatchedTo.at(jet);
+	  std::cout<<"                                    pt/eta/phi["<<jet<<"]="<<pt_F[jet]<<"/"<<eta_F[jet]<<"/"<<phi_F[jet]<<std::endl;
+	  if(matchind>=0)
+	    std::cout<<"IS NOW MATCHED TO (sorted) refpt/refeta/refphi["<< matchind<<"]="<< refpt_sorted.at(matchind)<<"/"<< refeta_sorted.at(matchind)<<"/"<< refphi_sorted.at(matchind)<<std::endl;
+	  else
+	    std::cout<<"IS UNMATCHED."<<std::endl;
+	}
+      }
+    
+
+    }//end redoing the jet matching
+      */
+      
+
+
+    std::vector<bool> GENjetIsMatched; std::vector<int> GENjetIsMatchedTo;
+    std::vector<bool> RECOjetIsMatched; std::vector<int> RECOjetIsMatchedTo;
+    unsigned int nGENjets =GjetPt->size();
+    unsigned int nRECOjets= jetPt->size();
+    bool printout=false; int printoutcount=0;
+    if(REDOjetMatching){
+            //third, create a boolean array for the gen AND reco jets, each entry initialized to false (not matched yet)
+      GENjetIsMatched.assign(nGENjets, false);
+      GENjetIsMatchedTo.assign(nGENjets, -1);      
+
+      RECOjetIsMatched.assign(nRECOjets, false);
+      RECOjetIsMatchedTo.assign(nRECOjets, -1);
+      
+      for(unsigned int GENjet=0; GENjet<nGENjets; ++GENjet){	//GEN jet loop
+
+	float mindeltaR=10;
+	int mindeltaR_ind=-1;
+	//std::cout<<"trying to match GENjet #"<<GENjet<<", GENpt/GENeta/GENphi="<<GENpt_sorted.at(GENjet)<<"/"<<GENeta_sorted.at(GENjet)<<"/"<<GENphi_sorted.at(GENjet)<<std::endl;
+	for(unsigned int jet=0; jet<nRECOjets;++jet){ //RECO jet loop
+	  
+	  //std::cout<<"recjetIsMatched.at("<< jet<<")="<<recjetIsMatched.at(jet)<<std::endl;		  
+	  if(RECOjetIsMatched.at(jet))//if already matched, move on
+	    continue;
+
+	  float absdeltaeta=fabs(jetEta->at(jet)-GjetEta->at(GENjet));	
+	  //std::cout<<"absdeltaeta="<<absdeltaeta <<std::endl;
+	  if(absdeltaeta>deltaR_req4Match)//if deltaeta bigger than 0.4, won't work, move on
+	    continue;
+	  
+	  float absdeltaphi=fabs(deltaphi(jetPhi->at(jet), GjetPhi->at(GENjet)));
+	  //std::cout<<"absdeltaphi="<<absdeltaphi <<std::endl;
+	  if(absdeltaphi>deltaR_req4Match){//if deltaphi bigger than 0.4, won't work, move on
+	    //std::cout<<"phi_F["<<jet<<"]="<<phi_F[jet]<<" AND refphi_sorted.at("<<refjet<<")"<<refphi_sorted.at(refjet)<<std::endl;
+	    continue;
+	  }
+
+	  float deltaR=sqrt(pow(absdeltaeta,2.)+pow(absdeltaphi,2.));
+	  //std::cout<<"deltaR="<<deltaR <<std::endl;
+	  if(deltaR>deltaR_req4Match)//obvious...
+	    continue;
+	  
+
+	  if(deltaR<mindeltaR){//if it's the smallest deltaR found yet; note that down
+	    mindeltaR_ind=jet;//index of the RECO jet matched to the GEN jet
+	    mindeltaR=deltaR;
+	  }
+	  else if(deltaR==mindeltaR){
+	    //std::cout<<"can't believe i happened! make sure you account for this case somehow."<<std::endl;
+	    assert(false);
+	  }
+
+	}//end loop over RECO jets
+
+	
+	if(mindeltaR_ind>=0){
+	  GENjetIsMatched.at(GENjet)=true;
+	  GENjetIsMatchedTo.at(GENjet)=mindeltaR_ind;
+	  RECOjetIsMatched.at(mindeltaR_ind)=true;
+	  RECOjetIsMatchedTo.at(mindeltaR_ind)=GENjet;
+	  if(GjetPt->at(GENjet)>15.){
+	    if(genmatchindex_I[GENjet]!=mindeltaR_ind)
+	      if(mindeltaR_ind<nref_I)//so the difference in the jet matching will actually get printed out
+		{       	  
+		  if(false)std::cout<<"genmatchindex_I["<<GENjet<<"]="<<genmatchindex_I[GENjet]<<" BUT mindeltaR_ind = "<< mindeltaR_ind<<std::endl;
+		  printout=true;
+		}
+	  }
+
+	  //std::cout<<"BEST MATCH IS JET#"<<refjetIsMatchedTo.at(refjet)<<"! recpt/receta/recphi="<<pt_F[refjetIsMatchedTo.at(refjet)]
+	  //	   <<"/"<<eta_F[refjetIsMatchedTo.at(refjet)]<<"/"<<phi_F[refjetIsMatchedTo.at(refjet)]<<std::endl;
+	}
+	else{
+	  //std::cout<<"THIS REF JET HAS NO MATCH"<<std::endl;
+	}
+	
+      }//end loop over GEN jets
+
+
+      
+      
+      if(printout&&false){
+	
+	std::cout<<"nEvt="<<nEvt<<", GENRECO MATCHING COMPARISON PRINTOUT"<<std::endl;
+	for(int jet=0; jet<nref_I;++jet){
+
+	  int matchind=RECOjetIsMatchedTo.at(jet);//from new matching
+	  bool resultIsDiff=false;
+	  if(subid_I[jet]<0&&matchind<0)continue;
+	  else if(subid_I[jet]<0 && matchind>=0)resultIsDiff=false;
+	  else if(subid_I[jet]>=0 && matchind<0)resultIsDiff=false;//ok this is actually true but i dont want to print right now
+	  else{
+	    float refpt=refpt_F[jet], refeta=refeta_F[jet];//, refphi=refphi_F[jet];
+	    float Gjetpt=GjetPt->at(matchind), Gjeteta=GjetEta->at(matchind);//, GjetPhi=Gjetphi->at(matchind);
+	    if((Gjetpt-refpt)<0.00001 && (Gjeteta-refeta)<0.00001)continue;
+	    else {
+	      if(Gjetpt>43. || refpt >43. || pt_F[jet]>43.)//cause i dont care at SUPER low pT...
+		resultIsDiff=true;
+	      else continue;
+	    }
+	  }
+	  
+	  if(!resultIsDiff)continue;
+
+	  std::cout<<"                        pt/eta/phi["<<jet<<"] = "<<pt_F[jet]<<"/"<<eta_F[jet]<<"/"<<phi_F[jet]<<std::endl;
+
+	    
+	  if(subid_I[jet]==0){
+	    std::cout<<"   WAS MATCHED TO    refpt/refeta/refphi["<<jet<<"] = "<<refpt_F[jet]<<"/"<<refeta_F[jet]<<"/"<<refphi_F[jet]<<std::endl;
+	    if(matchind>=0)
+	      std::cout<<"IS NOW MATCHED TO GjetPt/GjetEta/GjetPhi["<< matchind<<"] = "<< GjetPt->at(matchind)<<"/"<< GjetEta->at(matchind)<<"/"<< GjetPhi->at(matchind)<<std::endl;
+	    else
+	      std::cout<<"IS UNMATCHED."<<std::endl;	    
+	  }
+	  else {
+	    std::cout<<"WAS UNMATCHED."<<std::endl;
+	    if(matchind>=0)
+	      std::cout<<"IS NOW MATCHED TO GjetPt/GjetEta/GjetPhi["<< matchind<<"] = "<< GjetPt->at(matchind)<<"/"<< GjetEta->at(matchind)<<"/"<< GjetPhi->at(matchind)<<std::endl;
+	    else
+	      std::cout<<"IS UNMATCHED."<<std::endl;	    
+	  }
+	  
+	  std::cout<<std::endl;
+	  printoutcount++;
+
+	}
+	std::cout<<std::endl;
+	
+	
+	
+	////std::cout<<std::endl<<"MY GENRECO MATCHING"<<std::endl;
+	//for(unsigned int jet=0; jet<nRECOjets;++jet){
+	//  if(!RECOjetIsMatched.at(jet))continue;
+	//  int matchind=RECOjetIsMatchedTo.at(jet);
+	//  std::cout<<"                           pt/eta/phi["<<jet<<"]="<<jetPt->at(jet)<<"/"<<jetEta->at(jet)<<"/"<<jetPhi->at(jet)<<std::endl;
+	//}
+	//if(printoutcount>100)assert(false);
+      }
+      
+
+
+
+    }//end redoing jet matching
+
+
+
+
+
+
+
+
+    
+
+    for(int jet = 0; jet<nref_I; ++jet){ //main jet loop
       
       //float rawpt=rawpt_F[jet];      	
       float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
@@ -568,16 +996,40 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       float jtpz=jtpt/tan(jttheta);
       float jtp=sqrt(jtpt*jtpt + jtpz*jtpz);
       float jtE=sqrt(jtp*jtp + jtm*jtm);
+      //std::cout<<"jtE="<<jtE<< ", jtenergy="<<jtenergy<<", jtp="<<jtpt<<std::endl;
+
       float jty=0.5*log((jtE+jtpz)/(jtE-jtpz));//experimentalist version
       float absjty=fabs(jty);
       //float jtEt=jtE*sin(jttheta);
       //float jtmt=jtm*sin(jttheta);	
       
-      float genpt   = refpt_F[jet];
-      //float genphi  = refphi_F[jet];
-      float geneta  = refeta_F[jet];
-      float absgeneta  = fabs(geneta);
-      float gendrjt = refdrjt_F[jet];
+      float genpt;//   = refpt_F[jet];    
+      //float genphi;//  = refphi_F[jet];   
+      float geneta;//  = refeta_F[jet];   
+      float absgeneta;//  = fabs(geneta); 
+      float gendrjt;// = refdrjt_F[jet];  
+
+
+      if(REDOjetMatching){
+	if(!RECOjetIsMatched.at(jet)) continue;//redone gen-reco matching
+	else{
+	  genpt   = GjetPt->at(RECOjetIsMatchedTo.at(jet));   
+	  //genphi  = GjetPhi->at(RECOjetIsMatchedTo.at(jet));   
+	  geneta  = GjetEta->at(RECOjetIsMatchedTo.at(jet));   
+	  absgeneta  = fabs(geneta); 
+	  gendrjt    = -1.;//refdrjt_F[jet];  	
+	}
+      }
+      else{
+	if( subid_I[jet]!=0 ) continue;//matching gen-reco
+	else{
+	  genpt   = refpt_F[jet];    
+	  //genphi  = refphi_F[jet];   
+	  geneta  = refeta_F[jet];   
+	  absgeneta  = fabs(geneta); 
+	  gendrjt = refdrjt_F[jet];  
+	}
+      }
       
       // event+jet counting
       h_NJets->Fill(1);
@@ -585,7 +1037,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	h_NEvents_withJets->Fill(1);
 	hNEvts_withJets_Filled=true;      }      
       
-      if( subid_I[jet]!=0 ) continue;//matching gen-reco
+      
       else if ( !(recpt > jtPtCut)    ) continue;        //low recopt cut          
       else if ( !(recpt < jtPtCut_Hi)    ) continue;     //high recopt cut
       else if ( !(genpt > genJetPtCut) ) continue;       //low genpt cut
@@ -667,43 +1119,49 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       //	  }
       //}
       
-      if(recomatchindex_I.at(jet)<0){
-	std::cerr<<std::endl;
-	std::cerr<<"//////////////////////////////////////////////"<<std::endl;
-	std::cerr<<"////////////// !!! WARNING !!! ///////////////"<<std::endl;
-	std::cerr<<"reco jet w/ nonnegative subid has a negative recomatchindex!!!"<<std::endl;
-	std::cerr<<"---------DETAILS--------"<<std::endl;
-	std::cerr<<std::endl<<"_______ nEvt="<<nEvt<<" ________"<<std::endl;
-	std::cerr<<"ngen_I="<<ngen_I<<std::endl;
-	for(int gjet=0; gjet<ngen_I; ++gjet){
-	  std::cerr<<"// genmatchindex_I["<<gjet<<"]="<<genmatchindex_I[gjet]<<std::endl;
-	  std::cerr<<"genpt_F["<<gjet<<"]="<<genpt_F[gjet]<<std::endl;
-	}
-	std::cerr<<std::endl;
-	std::cerr<<"nref_I="<<nref_I<<std::endl;
-	for(int kjet=0;kjet<nref_I;++kjet){
-	  std::cerr<<"// recomatchindex_I["<<kjet<<"]="<<recomatchindex_I.at(kjet)<<std::endl;
-	  std::cerr<<"subid_I["<<kjet<<"]="<<subid_I[kjet]<<std::endl;
-	  std::cerr<<"refpt["<<kjet<<"]="<<refpt_F[kjet]<<std::endl;
-	  if(recomatchindex_I[kjet]!=-1){
-	    std::cerr<<"genpt["<<recomatchindex_I[kjet]<<"]="<<genpt_F[recomatchindex_I[kjet]]<<std::endl;
-	    std::cerr<<"GJetAk04JetPt["<<recomatchindex_I[kjet]<<"]="<<GjetPt->at(recomatchindex_I[kjet])<<std::endl;
+      //this only ever happens because the gen jets in the RECO tree have a low pT cut of 10 GeV but in the GEN tree have a low pT cut of 15 GeV.  
+      //so sometimes, the matched GEN jet can be found in the RECO tree, but not in the GEN tree.
+
+      if(refpt_F[jet]>15.)
+	if(recomatchindex_I.at(jet)<0){
+	  
+	  std::cerr<<std::endl;
+	  std::cerr<<"//////////////////////////////////////////////"<<std::endl;
+	  std::cerr<<"////////////// !!! WARNING !!! ///////////////"<<std::endl;
+	  std::cerr<<"reco jet w/ nonnegative subid has a negative recomatchindex!!!"<<std::endl;
+	  std::cerr<<"---------DETAILS--------"<<std::endl;
+	  std::cerr<<std::endl<<"_______ nEvt="<<nEvt<<" ________"<<std::endl;
+	  std::cerr<<"ngen_I="<<ngen_I<<std::endl;
+	  for(int gjet=0; gjet<ngen_I; ++gjet){
+	    std::cerr<<"// genmatchindex_I["<<gjet<<"]="<<genmatchindex_I[gjet]<<std::endl;
+	    std::cerr<<"genpt_F["<<gjet<<"]="<<genpt_F[gjet]<<std::endl;
 	  }
+	  std::cerr<<std::endl;
+	  std::cerr<<"nref_I="<<nref_I<<std::endl;
+	  for(int kjet=0;kjet<nref_I;++kjet){
+	    std::cerr<<"// recomatchindex_I["<<kjet<<"]="<<recomatchindex_I.at(kjet)<<std::endl;
+	    std::cerr<<"subid_I["<<kjet<<"]="<<subid_I[kjet]<<std::endl;
+	    std::cerr<<"refpt["<<kjet<<"]="<<refpt_F[kjet]<<std::endl;
+	    if(recomatchindex_I[kjet]!=-1){
+	      std::cerr<<"genpt["<<recomatchindex_I[kjet]<<"]="<<genpt_F[recomatchindex_I[kjet]]<<std::endl;
+	      std::cerr<<"GJetAk04JetPt["<<recomatchindex_I[kjet]<<"]="<<GjetPt->at(recomatchindex_I[kjet])<<std::endl;
+	    }
+	  }
+	  badgenjetcount++;
+	  continue;
 	}
-	badgenjetcount++;
-	continue;
-      }
 
       float genjttheta=2.*atan(exp(-1.*geneta));
       float genjtpz=genpt/tan(genjttheta);
-      float genjtE=GjetE->at(recomatchindex_I.at(jet));
+      float genjtE;
+      if(REDOjetMatching)
+	genjtE=GjetE->at(RECOjetIsMatchedTo.at(jet));
+      else 
+	genjtE=GjetE->at(recomatchindex_I.at(jet));
       float genjty=0.5*log((genjtE+genjtpz)/(genjtE-genjtpz));//experimentalist version
       float absgenjty=fabs(genjty);
       
-      
 
-
-      
       h_NJets_kmatCut2->Fill(1);
       if(!hNEvts_withJets_kmatCut2_Filled){
 	h_NEvents_withJets_kmatCut2->Fill(1);
@@ -724,12 +1182,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  theGENYBin=ybin;
 	  break;	  }       	
       
-      int theEtaBin=-1;
-      for(int etabin=0;etabin<nbins_abseta;etabin++)
-	if( absetabins[etabin]<=absreceta  && 		
-	    absreceta<absetabins[etabin+1]    	      ) {	    
-	  theEtaBin=etabin;
-	  break;	  }       	
+      //int theEtaBin=-1;
+      //for(int etabin=0;etabin<nbins_abseta;etabin++)
+      //if( absetabins[etabin]<=absreceta  && 		
+      //    absreceta<absetabins[etabin+1]    	      ) {	    
+      //  theEtaBin=etabin;
+      //  break;	  }       	
       
       int theGENEtaBin=-1;
       for(int etabin=0;etabin<nbins_abseta;etabin++)
@@ -821,22 +1279,19 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if( (ptbin!=-1) ){	
 	  hJER[ptbin]->Fill( (float)(recpt/genpt), weight_eS); 	  	  
 	  if(theYBin!=-1)hJER_jtptQA[theYBin]->Fill(recpt,weight_eS);      
-	  if(theEtaBin!=-1)hJER_genptQA[theEtaBin]->Fill(genpt,weight_eS);      
+	  if(theGENYBin!=-1)hJER_genptQA[theGENYBin]->Fill(genpt,weight_eS);      
 	  hJER_genetaQA->Fill(geneta,weight_eS);      
 	  hJER_jtetaQA->Fill(receta,weight_eS);      
 	  hJER_jtyQA->Fill(jty,weight_eS);      
-	  if( (theEtaBin!=-1) ) hJER_abseta[ptbin][theEtaBin]->Fill( (float)(recpt/genpt), weight_eS);         // genpt bin, receta bin
+	  //if( (theEtaBin!=-1) ) hJER_abseta[ptbin][theEtaBin]->Fill( (float)(recpt/genpt), weight_eS);         // genpt bin, receta bin
 	  if( (theGENEtaBin!=-1) ) hJER_absgeneta[ptbin][theGENEtaBin]->Fill( (float)(recpt/genpt), weight_eS);// genpt bin, geneta bin
-	  if(   (theYBin!=-1) ) hJER_absy[ptbin][theYBin]->Fill(     (float)(recpt/genpt), weight_eS);         // genpt bin, recy bin
+	  //if(   (theYBin!=-1) ) hJER_absy[ptbin][theYBin]->Fill(     (float)(recpt/genpt), weight_eS);         // genpt bin, recy bin
 	  if( (theGENYBin!=-1) ) hJER_absgeny[ptbin][theGENYBin]->Fill((float)(recpt/genpt), weight_eS);       // genpt bin, geny bin
-
-
 	}
+	else continue;
 	
-      }
-
+      }//fill JERS hists      
     }//end jet loop
-
   }//end event loop
   
   std::cout<<std::endl;
@@ -880,7 +1335,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   
   return 0;
-}
+  }
 
 // end readForests_ppMC_JERS
 								 

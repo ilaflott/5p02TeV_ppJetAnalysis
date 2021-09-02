@@ -11,10 +11,53 @@ rootcompile printPlots_ppMC_JERS_etabin.C
 echo ""
 echo "done compiling. Running!"
 echo ""
+
+declare -a ybinstrARR=( "00eta05" "05eta10" "10eta15" "15eta20" )
+ybinstrARRlen=${#ybinstrARR[@]}
+
 ##### echo "source run_printPlots_ppMC_JERS_etabin.sh <R> <condorDir> <date_output> <descIn> <descOut> <JERplots> <MCeffplots> <absetabin> <fitquant>"
 
 FITTYPE="sigmu"
+JETR="4"
+MM="07"
+DD="22"
+YY="21"
+MMDDYY="${MM}-${DD}-${YY}"
+CONDORDIR="${MM}.${DD}.${YY}_outputCondor"
+#INDESC="0.0eta2.5_SMPbins_noPFMETFrac_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMETFrac_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMETFrac0p5_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMETFrac0p5_genDR0p2_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMETFrac_genDR0p2_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMETFrac_genDR0p1_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMET_GENRECOmatchREDO_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMET_GENRECOmatchREDOwDR0p2_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMET_evtvr0p1_GENRECOmatchREDOwDR0p2_genbinsonly_semifinalv4"
+#INDESC="0.0eta2.5_SMPbins_wPFMET_Nvtxeq1_evtvr0p1_GENRECOmatchREDOwDR0p2_genbinsonly_semifinalv4"
+INDESC="0.0eta2.5_SMPbins_wPFMET_novzwgt_Nvtxeq1_evtvr0p1_GENRECOmatchREDOwDR0p2_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_noPFMET_minlopTcuts_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_minlopTcuts_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMETFrac0p5_minlopTcuts_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMETFrac0p5_genDR0p2_minlopTcuts_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_minlopTcuts_genDR0p2_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_minlopTcuts_genDR0p1_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_GENRECOmatchREDO_minlopTcuts_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_GENRECOmatchREDOwDR0p2_minlopTcuts_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_evtvr0p1_GENRECOmatchREDOwDR0p2_minlopTcuts_genbinsonly_semifinalv4"
+#OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_Nvtxeq1_evtvr0p1_GENRECOmatchREDOwDR0p2_minlopTcuts_genbinsonly_semifinalv4"
+OUTDESC="${MM}.${DD}.${YY}_${FITTYPE}_wPFMET_novzwgt_Nvtxeq1_evtvr0p1_GENRECOmatchREDOwDR0p2_minlopTcuts_genbinsonly_semifinalv4"
 
+BINTYPE="geny"
+
+ybinStart=0
+ybinEnd=4
+for (( YBIN=${ybinStart}; YBIN<${ybinEnd}; YBIN++ ));
+do
+    source run_printPlots_ppMC_JERS_etabin.sh $JETR $CONDORDIR $MMDDYY $INDESC ${ybinstrARR[YBIN]}_$OUTDESC "1" "0" "$YBIN" $FITTYPE $BINTYPE
+done
+
+
+return
 
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "00eta05_01.05.21_${FITTYPE}_geny" "1" "0" "0" "$FITTYPE" "geny"
 #source run_printPlots_ppMC_JERS_etabin.sh "4" "01.05.21_outputCondor" "01-05-21" "0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_tightJetID_semifinalv4" "05eta10_01.05.21_${FITTYPE}_geny" "1" "0" "1" "$FITTYPE" "geny"

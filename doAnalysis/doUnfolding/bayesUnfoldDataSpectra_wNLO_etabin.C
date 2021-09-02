@@ -160,6 +160,13 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   if(fpp_MC->IsZombie())assert(false);
   //assert(false);//fine
 
+
+  ////AKA the fakes. 
+  //TH1D* unmatched_RECO_jets=(TH1D*)fpp_MC->Get( ("").c_str() );
+  //unmatched_RECO_jets->Scale(1./
+  //TH1D* mymisseshist=(TH1D*)makeMissesHist(hmat_rebin, hgen_rebin);
+
+
   // ---------- open MC "response" matrix 
   std::string th2basetitle="response";
   std::string TH2_title=th2basetitle;//"_ynew_th2"
@@ -3004,10 +3011,38 @@ int main(int argc, char* argv[]){
   if (argc==9){   
     const int etabinin=(const int)(std::atoi(argv[3]));
     int numiters=3;
-    if     (etabinin==0) numiters=5;
-    else if(etabinin==1) numiters=5;
-    else if(etabinin==2) numiters=5;
+
+    ////noJERhistsmearing, w/residuals
+    //if     (etabinin==0) numiters=3;
+    //else if(etabinin==1) numiters=3;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=2;
+
+    ////wJERhistsmearing, w/residuals
+    //if     (etabinin==0) numiters=5;
+    //else if(etabinin==1) numiters=5;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=3;
+
+    ////crysball smear
+    //if     (etabinin==0) numiters=5;
+    //else if(etabinin==1) numiters=5;
+    //else if(etabinin==2) numiters=5;
+    //else if(etabinin==3) numiters=4;
+
+    ////gauscrysballsmear smear //MY PERSONAL FAVORITE <333
+    //if     (etabinin==0) numiters=2;
+    //else if(etabinin==1) numiters=3;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=4;
+
+    //gausAt1crysball smear
+    if     (etabinin==0) numiters=3;
+    else if(etabinin==1) numiters=4;
+    else if(etabinin==2) numiters=4;
     else if(etabinin==3) numiters=4;
+
+
 
     rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
 					       (std::string)argv[1] ,
@@ -3030,11 +3065,29 @@ int main(int argc, char* argv[]){
     //else if(etabinin==2) numiters=4;
     //else if(etabinin==3) numiters=2;
 
-    //wJERhistsmearing, w/residuals
-    if     (etabinin==0) numiters=5;
-    else if(etabinin==1) numiters=5;
-    else if(etabinin==2) numiters=4;
-    else if(etabinin==3) numiters=3;
+    ////wJERhistsmearing, w/residuals
+    //if     (etabinin==0) numiters=5;
+    //else if(etabinin==1) numiters=5;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=3;
+
+    ////crysball smear
+    //if     (etabinin==0) numiters=5;
+    //else if(etabinin==1) numiters=5;
+    //else if(etabinin==2) numiters=5;
+    //else if(etabinin==3) numiters=4;
+
+    ////gauscrysballsmear smear //MY PERSONAL FAVORITE <333
+    //if     (etabinin==0) numiters=2;
+    //else if(etabinin==1) numiters=3;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=4;
+
+    ////gausAt1crysball smear
+    //if     (etabinin==0) numiters=3;
+    //else if(etabinin==1) numiters=4;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=4;
 
     rStatus=bayesUnfoldDataSpectra_wNLO_etabin( 
 					       (std::string)argv[1] , //infile data dir

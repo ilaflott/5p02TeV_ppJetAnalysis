@@ -1,6 +1,7 @@
 ////////// (initializa/declara)tions //////////
 // custom
 #include "readForests_common.h"
+#include "readForests_detsegments.h"
 //#include "L2L3ResidualWFits.h"
 //#include "MCTruthResidual.h"
 
@@ -18,11 +19,11 @@ const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBin
 const std::string defMCOutputName="readForests_ppMC_defOut_JERS.root";
 
 int readForests_ppMC_JERS( std::string inFilelist=defMCInFilelist, 
-			   int startfile=4990, int endfile=5020,
+			   int startfile=800, int endfile=1000,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,
-			   float jtEtaCutLo=0., float jtEtaCutHi=2.0      );
+			   float jtEtaCutLo=0., float jtEtaCutHi=2.5      );
 
 ////CUTS: DO NOT CHANGE FOR NOW (6/25/19)
 const float jtPtCut        = 10.;//28.;

@@ -1,18 +1,99 @@
 #!/bin/bash
 
-FITTYPE="sigmu"
+FITTYPE="sigma"
+#FITTYPE="sigmu"
 
 #make_rooUnfold
 
 rooUnfoldCompile bayesUnfoldDataSpectra_wNLO_etabin.C
 
 
-############# NNPDF NLO + HERWIG EE5C LO NPCs ###############
-####GAUSS CORE BASED ON CRYSTAL BALL FIT PARAMS SMEARING [GAUSS ALWAYS CENTERED AT 1]
 DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
-THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid_plots/"
-THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid_"
-OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid"
+
+#####NEW CRYSTAL BALL FIT SMEARING
+THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_murmufHTp_JohnNPs_crysballsmear_plots/"
+THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_murmufHTp_JohnNPs_crysballsmear_"
+#OUTPUTTAG="09.27.21_Bayes_CT14NNLO_NLO_sigmu_murmufHTp_SMPbins_wJERSFs_semifinalv4_crysballsmear_wPY8MatchedFakesv4"
+OUTPUTTAG="09.27.21_Bayes_CT14NNLO_NLO_sigmu_murmufHTp_SMPbins_wJERSFs_semifinalv4_crysballsmear_NOPY8MatchedFakes"
+
+##__________________________________________________________________________________##
+###my gauss core-extracted params+ fits of them
+#THYDIR="smearTheory/CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gaussmear_plots/"
+#THYFILESTR="CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gaussmear_"
+#OUTPUTTAG="09.27.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_wJERSFs_semifinalv4_gaussmear_wPY8MatchedFakesv4"
+
+##__________________________________________________________________________________##
+#johns DSCB-extracted params+ fits of them
+#THYDIR="smearTheory/CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gauscrysballsmear_plots/"
+#THYFILESTR="CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gauscrysballsmear_"
+#OUTPUTTAG="09.27.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_wJERSFs_semifinalv4_gauscrysballsmear_wPY8MatchedFakesv4"
+
+##__________________________________________________________________________________##
+###my gauss core-extracted params+ fits of them, mean==1
+#THYDIR="smearTheory/CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gausAt1smear_plots/"
+#THYFILESTR="CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gausAt1smear_"
+#OUTPUTTAG="09.27.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_wJERSFs_semifinalv4_gausAt1smear_wPY8MatchedFakesv4"
+
+##__________________________________________________________________________________##
+##johns DSCB core-extracted params+ fits of them, mean==1
+#THYDIR="smearTheory/CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gausAt1crysballsmear_plots/"
+#THYFILESTR="CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gausAt1crysballsmear_"
+#OUTPUTTAG="09.27.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_wJERSFs_semifinalv4_gausAt1crysballsmear_wPY8MatchedFakesv4"
+
+##__________________________________________________________________________________##
+####this will be for when john is done with improving the DSCB fits; hopefully soonish
+#THYDIR="smearTheory/CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT2_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gauscrysballsmear_plots/"
+#THYFILESTR="CT14NNLO_NLO_09.27.21_${FITTYPE}_wPFMET_RECOptLo10_GENptLo3_genbinsonly_TESTFIT2_JOHNDSCB_GENYbinEQYbin_semifinalv4_spl3wgts_murmufHTp_JohnNPs_gauscrysballsmear_"
+#OUTPUTTAG="09.27.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_wJERSFs_semifinalv4_TESTFIT2_gauscrysballsmear_wPY8MatchedFakesv4"
+
+etabinStart=0
+etabinEnd=4
+applyNPcorrs=1
+dosystunf=1
+
+declare -a sysarr=("JER" "JEC")
+declare -a sysarropt=("" "")
+#declare -a sysarr=("JEC")
+#declare -a sysarropt=("")
+#declare -a sysarr=("JEC" "JER" "PDF" "NP")
+#declare -a sysarropt=("" "" "updown" "updown")
+
+sysarrlen=${#sysarr[@]}
+#sysarrlen=1
+
+#etabinStart=0
+#etabinEnd=1
+#applyNPcorrs=1
+#dosystunf=1
+
+#sysarrlen=${#sysarr[@]}
+
+for (( j=${etabinStart}; j<${etabinEnd}; j++ ));
+do
+    for (( i=0; i<${sysarrlen}; i++ ));
+    do
+	echo ""
+	echo "j=$j"
+	echo "${OUTPUTTAG}_${sysarr[i]}${sysarropt[i]}sys"
+	echo "${sysarr[i]}"
+	echo "${sysarropt[i]}"
+	./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} ${OUTPUTTAG}_${sysarr[i]}sys${sysarropt[i]} $j ${THYDIR} ${THYFILESTR} ${dosystunf} ${sysarr[i]} ${sysarropt[i]} ${applyNPcorrs}
+    done
+done
+
+return
+
+
+
+
+
+############ ------------- OLD *** BUT IMPORTANT *** ###############
+
+#####GAUSS CORE BASED ON CRYSTAL BALL FIT PARAMS SMEARING [GAUSS ALWAYS CENTERED AT 1]
+#DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
+#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid_plots/"
+#THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid_"
+#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_gausAt1crysballsmear_wJERhistsmear_wresid"
 
 #####GAUSS CORE BASED ON CRYSTAL BALL FIT PARAMS SMEARING
 #DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
@@ -20,18 +101,11 @@ OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_
 #THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_gauscrysballsmear_wJERhistsmear_wresid_"
 #OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_gauscrysballsmear_wJERhistsmear_wresid"
 
-#####NEW CRYSTAL BALL FIT SMEARING
-#DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
-#THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_crysballsmear_wJERhistsmear_wresid_plots/"
-#THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_crysball_ptLo56_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_crysballsmear_wJERhistsmear_wresid_"
-#OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_crysballsmear_wJERhistsmear_wresid"
-
 #### WITH RESIDUALS NO JER HIST SMEARING (OLD WAY, LATEST NLO IN MY BINS)
 #DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
 #THYDIR="smearTheory/CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_wresid_plots/"
 #THYFILESTR="CT14NNLO_NLO_03.18.20_sigmu_geny_spl3wgts_gaussSmear_murmufHTp_JohnNPs_semifinalv4_smeartests_noJERhistsmear_wresid_"
 #OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4_smeartests_noJERhistsmear_wresid"
-
 
 #### WITH RESIDUALS WITH JER HIST SMEARING (NEWER WAY, LATEST NLO IN MY BINS)
 #DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
@@ -50,36 +124,49 @@ OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufHTp_SMPbins_withgenjety_
 #OUTPUTTAG="01.05.21_Bayes_CT14NNLO_NLO_${FITTYPE}_murmufpt_SMPbins_withgenjety_wJERSFs_SMPbins_wPFMET0p3_semifinalv4"
 
 
-etabinStart=0
-etabinEnd=4
-applyNPcorrs=1
-dosystunf=1
-declare -a sysarr=("JEC" "JER")
-declare -a sysarropt=("" "")
-sysarrlen=${#sysarr[@]}
-#sysarrlen=2
 
-#etabinStart=0
-#etabinEnd=1
-#applyNPcorrs=1
-#dosystunf=1
-#declare -a sysarr=("JEC" "JER" "PDF" "NP")
-#declare -a sysarropt=("" "" "updown" "updown")
-#sysarrlen=${#sysarr[@]}
 
-for (( j=${etabinStart}; j<${etabinEnd}; j++ ));
-do
-    for (( i=0; i<${sysarrlen}; i++ ));
-    do
-	echo ""
-	echo "j=$j"
-	echo "${OUTPUTTAG}_${sysarr[i]}${sysarropt[i]}sys"
-	echo "${sysarr[i]}"
-	echo "${sysarropt[i]}"
-	./bayesUnfoldDataSpectra_wNLO_etabin.exe ${DATADIR} ${OUTPUTTAG}_${sysarr[i]}sys${sysarropt[i]} $j ${THYDIR} ${THYFILESTR} ${dosystunf} ${sysarr[i]} ${sysarropt[i]} ${applyNPcorrs}
-    done
-done
-return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################### OLD OLD BELOW HERE; LIKELY IRRELEVANT AND/OR DEPRECATED
+
+
+
 
 #####NNPDF_NLO_06.25.19_sigmu_noJERscales_spl3wgts_gaussSmear_NLO_plots
 #
@@ -253,7 +340,7 @@ return
 
 
 
-################### OLD
+
 
 ############# NNPDF NLO + HERWIG EE5C LO NPCs ###############
 ####NNPDF_06.25.19_sigmu_noJERscales_spl3wgts_gaussSmear_NLO_plots

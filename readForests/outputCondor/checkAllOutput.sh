@@ -1,13 +1,12 @@
 #!/bin/bash
 
-expression=${1}
 #dirarray=($(ls -d ${PWD}/*/))
-if [[ $# -eq 0 ]]
+if [[ $# -eq 1 ]]
 then
-    dirarray=($(ls -d pp*/))
-elif [[ $# -eq 1 ]]
-then
+    expression=${1}
     dirarray=($(ls -d ${expression}/))
+else
+    dirarray=($(ls -d pp*/))    
 fi
 
 for i in "${dirarray[@]}"

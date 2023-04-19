@@ -47,6 +47,8 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TF1.h>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
 // custom
 #include "printPlots_ppMC.h"
 #include "printPlots_ppData.h"
@@ -338,7 +340,7 @@ void makeJERSHists(TCanvas* pdfOutCanv, //std::string thePDFFileName,
   hrsp->SetMarkerStyle(8);    
   hrsp->SetMarkerSize(1.0);    
   
-  hrsp->SetAxisRange(0.5, 1.5, "X");
+  //hrsp->SetAxisRange(0.5, 1.5, "X");
   hrsp->GetXaxis()->SetTitle( hrsp_XAxTitle.c_str() );    
   
   hrsp->SetAxisRange(0.00001, hrsp->GetMaximum()*2., "Y");
@@ -382,4 +384,91 @@ void makeFitChi2Str(TF1* fit, std::string* chi2_str){
   if(!chi2_str)return;  
   *(chi2_str)=float2string_prec(fit->GetChisquare(), 2);    
   return;
+}
+
+
+//std::ostringstream strs;
+//strs << dbl;
+//std::string str = strs.str();
+
+
+
+
+
+std::string TF1_mufituncstr_CovMat(TFitResultPtr p, int nparams, bool diagtermsOnly){
+  std::string uncstr_formula="sqrt(";//open sqrt
+  for(int i=0; i<nparams;i++){
+    for(int j=0; j<nparams;j++){
+      //std::cout<<"p->CovMatrix("<< i<< ","<< j<<")="<<p->CovMatrix(i,j)<<"\n";
+
+      if(diagtermsOnly && i!=j)continue;
+
+      uncstr_formula+="(";
+
+      double covmat_ij=p->CovMatrix(i,j);
+      std::ostringstream strs;
+      strs << covmat_ij;
+      std::string covmat_ij_str=strs.str();
+      //uncstr_formula+=std::to_string(covmat_ij);
+      uncstr_formula+=covmat_ij_str;
+
+      if( (i+j)!=0 )
+	uncstr_formula+="*pow(log(x),"+std::to_string(i+j)+")";
+
+      uncstr_formula+=")";
+
+      if(i==j && i==(nparams-1) ) continue;//don't add + sign
+      else uncstr_formula+="+";
+
+    }
+  }
+  uncstr_formula+=")";//close sqrt
+  std::cout<<"INSIDE MUFITUNCSTR FUNCTION!!\n";
+  std::cout<<uncstr_formula<<"\n";
+  std::cout<<"/end MUFITUNCSTR FUNCTION!!\n";
+  return uncstr_formula;
+  
+}
+
+
+
+std::string TF1_sigmafituncstr_CovMat(TFitResultPtr p, int nparams){//, bool diagtermsOnly){
+  std::string uncstr_formula="sqrt(";//open sqrt
+  //unlike the mufit unc calculation, here i need the par values themselves, and so 
+
+  std::string derivs[4];
+  derivs[0]="1.";
+  derivs[1]="pow( (pow(x,[2])+[3]*x), -1.)";
+  derivs[2]="-1.*[1]*pow(x,[3])*pow( (pow(x,[2])+[3]*x), -2.)*log(x)";
+  derivs[3]="-1.*[1]*x*pow( (pow(x,[2])+[3]*x), -2.)";
+  
+  assert(nparams==4);//just in case stuff changes... always could!
+  
+  for(int i=0; i<nparams;i++){
+    for(int j=0; j<nparams;j++){
+      //std::cout<<"p->CovMatrix("<< i<< ","<< j<<")="<<p->CovMatrix(i,j)<<"\n";
+      
+      uncstr_formula+="(";
+      
+      double covmat_ij=p->CovMatrix(i,j);
+      std::ostringstream strs;
+      strs << covmat_ij;
+      std::string covmat_ij_str=strs.str();
+      uncstr_formula+=covmat_ij_str;
+
+      uncstr_formula+="*("+derivs[i]+")*("+derivs[j]+")";
+
+      uncstr_formula+=")";
+
+      if(i==j && i==(nparams-1) ) continue;//don't add + sign at the end to prep for next term, end of long expression!
+      else uncstr_formula+="+";
+
+    }
+  }
+  uncstr_formula+=")";//close sqrt
+  std::cout<<"INSIDE SIGMAFITUNCSTR FUNCTION!!\n";
+  std::cout<<uncstr_formula<<"\n";
+  std::cout<<"/end INSIDE SIGMAFITUNCSTR FUNCTION!!\n";
+  return uncstr_formula;
+  
 }

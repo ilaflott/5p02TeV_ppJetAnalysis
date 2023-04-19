@@ -201,6 +201,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   TH1D *hpp_matched_misses_y[nbins_abseta]={};
   TH1D *hpp_unmatched_fakes_y[nbins_abseta]={};
   TH1D *hpp_matched_fakes_y[nbins_abseta]={};
+  TH1D *hpp_evtsel_misses_y[nbins_abseta]={};
 
   //JERsys
   TH1D *hpp_reco_y_JERsysup[nbins_abseta]={}; 
@@ -208,6 +209,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 
   TH1D *hpp_reco_y_JERsysdown[nbins_abseta]={}; 
   TH2D *hpp_matrix_y_JERsysdown[nbins_abseta]={}; 
+
+  TH1D *hpp_matched_fakes_y_JERsysup[nbins_abseta]={};
+  TH1D *hpp_matched_fakes_y_JERsysdown[nbins_abseta]={};
   
   //TH1D *hpp_gen_geneta[nbins_abseta]={};    
   //TH1D *hpp_reco_geneta[nbins_abseta]={}; 
@@ -274,6 +278,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  for(int j=0;j<nbins_abseta;j++)
 	    hpp_matched_misses_y[j] = new TH1D( ("matched_misses_"+hTitle+"_ybin"+std::to_string(j)).c_str(), 
 					("matched missed MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000);	  
+
+	  for(int j=0;j<nbins_abseta;j++)
+	    hpp_evtsel_misses_y[j] = new TH1D( ("evtsel_misses_"+hTitle+"_ybin"+std::to_string(j)).c_str(), 
+					("evt selection missed MC gen pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000);	  
 	  //if(useJERScaleFactors)
 	  //  for(int j=0;j<nbins_abseta;j++)
 	  //    hpp_gen_y_JERsysup[j] = new TH1D( (hTitle+"_ybin"+std::to_string(j)+"_JERsysup").c_str(), 
@@ -310,6 +318,15 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	    for(int j=0;j<nbins_abseta;j++)
 	      hpp_reco_y_JERsysdown[j] = new TH1D( (hTitle+"_JERsysdown_ybin"+std::to_string(j)).c_str(), 
 						   ("MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
+
+	    for(int j=0;j<nbins_abseta;j++)
+	      hpp_matched_fakes_y_JERsysup[j] = new TH1D( ("matched_fakes_"+hTitle+"_JERsysup_ybin"+std::to_string(j)).c_str(), 
+						 ("matched fake MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  
+
+	    for(int j=0;j<nbins_abseta;j++)
+	      hpp_matched_fakes_y_JERsysdown[j] = new TH1D( ("matched_fakes_"+hTitle+"_JERsysdown_ybin"+std::to_string(j)).c_str(), 
+						 ("matched fake MC reco pt for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000); 	  	    
+	    
 	  }
 	}
       }
@@ -330,6 +347,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	    for(int j=0;j<nbins_abseta;j++)
 	      hpp_matrix_y_JERsysdown[j] = new TH2D( (hTitle+"_JERsysdown_ybin"+std::to_string(j)).c_str(), 
 						     ("MC genpt v. recopt JERsysdown for unf data ybin"+std::to_string(j)).c_str(), 2000,0,2000,2000,0,2000);  
+	    
 	  }
 	}
       }
@@ -602,8 +620,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   //bool eventAccepted=false;
 
   //int tempdebugcount=0;
+
   for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
-    //eventAccepted=false;
+    bool rejectEvent=false;
     
     incrementClosureInt=false;
     for(int i=0; i<nbins_abseta; i++)
@@ -623,12 +642,23 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     if( pHBHENoiseFilterRun2Loose_I==0     || 
 	pHBHEIsoNoiseFilter_I    ==0    || 
         pBeamScrapingFilter_I==0  || 
-        pprimaryvertexFilter_I==0  ) continue;    
-    h_NEvents_skimCut->Fill(1);    
+        pprimaryvertexFilter_I==0  ) {
+      
+      rejectEvent=true;
+      //continue;    	
+    }
 
-    if( fabs(vz_F)>24.              ) continue;
-    h_NEvents_vzCut->Fill(1);
-
+    if(!rejectEvent)
+      h_NEvents_skimCut->Fill(1);    
+    
+    if( fabs(vz_F)>24.              ) {
+      rejectEvent=true;
+      //continue;
+    }
+    
+    if(!rejectEvent)
+      h_NEvents_vzCut->Fill(1);
+    
 
 
 
@@ -674,7 +704,12 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
       
       //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
-      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      if(PFMETfrac>0.3){
+	rejectEvent=true;
+	//continue;//giving this a shot. see how it goes...
+      }
+      //end PFMET fract cut
+
       //h_NEvents_PFMETfracCut->Fill(0.);
       
       //h_sumpfpt_x->Fill(sumpfpt_x,weight_eS);
@@ -710,6 +745,44 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
     //no trig selection, trig weight always 1
 
     double weight_eS=evtPthatWeight*trigWeight*vzWeight;              
+
+    
+    if(rejectEvent){//make eventselection-rejected misses
+      for(int gjet=0; gjet<ngen_I;gjet++){
+	float genpt   = genpt_F[gjet];
+	float geneta  = geneta_F[gjet];
+	float absgeneta  = fabs(geneta);
+	
+	bool  inGENpTRange= ( (genJetPtCut <= genpt    ) && (genpt     < genJetPtCut_Hi) );
+	bool inGENetaRange= ( (jtEtaCutLo <= absgeneta ) && (absgeneta < jtEtaCutHi    ) );
+
+	if(!inGENpTRange || !inGENetaRange) //if not in these ranges, it's irrelevant. skip.
+	  continue;
+	
+	float genE=GjetE->at(gjet);
+	float gentheta=2.*atan(exp(-1.*geneta));
+	float genpz=genpt/tan(gentheta);
+	float geny=0.5*log((genE+genpz)/(genE-genpz));//experimentalist version
+	float gjety=geny;
+	float absgjety=fabs(gjety);
+	
+	int themissedYBin=-1;
+	for(int ybin=0;ybin<nbins_absy;ybin++){
+	  if( absybins[ybin]<=absgjety  && 		
+	      absgjety<absybins[ybin+1]    	      ) {	    
+	    themissedYBin=ybin; break;	  
+	  }       
+	}
+	
+	if(themissedYBin>=0 && themissedYBin<4)
+	  hpp_evtsel_misses_y[themissedYBin]->Fill(genpt , weight_eS);		
+      }      
+    }
+
+    if(rejectEvent)
+      continue;
+    
+
     float vr_F=std::sqrt( vx_F*vx_F + vy_F*vy_F);
     //vz hists
     if(fillMCEvtQAHists){
@@ -743,9 +816,30 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       if((genmatchindex_I[gjet]!=-1) &&
 	 (genmatchindex_I[gjet]<nref_I)) recomatchindex_I[genmatchindex_I[gjet]]=gjet;
     }
+
+
+    // THIS DOES WHAT HAPPENS IN JERS WITH THE MATCHES TO GEN PT < 15 GEV
+    // COME BACK TO HERE
+    //find the matched GEN jets with gen pt < 15. 
+    for(int jet=0;jet<nref_I;jet++){
+      if(recomatchindex_I[jet] != -1)	continue;      
+      else if(subid_I[jet]!=0) continue;
+      else if(refpt_F[jet]>15.)	  continue;	
+      else{
+    	for(unsigned int p=0; p<GjetE->size();p++){
+    	  if(  ( fabs(refpt_F[jet]-GjetPt->at(p)  ) < 0.00001 ) &&
+    	       ( fabs(refeta_F[jet]-GjetEta->at(p)) < 0.00001 ) ){
+    	    recomatchindex_I.at(jet)=(int)p;
+    	    break;
+    	  }
+    	  else    continue;	    
+    	}
+      }
+    }
     
     
-    //make misses hist
+    
+    //make UNMATCHED MISSES (only down to 15 GeV -- fine; since there's no matched RECO jet)
     for(int gjet=0; gjet<ngen_I;gjet++){
 
       if(!(genmatchindex_I[gjet]<0))//if genmatchind is >= 0, skip the (matched) gen jet. 
@@ -764,7 +858,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       int ind=-1;
       for(unsigned int k=0;k<GjetPt->size();k++)
 	if(  fabs( GjetPt ->at(k) - genpt  ) < 0.0001 && 
-	     fabs( GjetEta->at(k) - geneta ) < 0.0001 ){//cant use reco-level match to call the reco jet in the tupel tree. "poorman's matching". 
+	     fabs( GjetEta->at(k) - geneta ) < 0.0001 ){//cant use reco-level match index to call the right jet in the tupel tree. poor mans matching then!
 	  ind = k; break; }
       
       if(ind<0)//if i can't find the corresponding gen jet to get the info needed for rapidity in the tupel tree, skip.
@@ -785,8 +879,8 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	}       
       }
       
-      if(themissedYBin>=0)
-	hpp_unmatched_misses_y[themissedYBin]->Fill(genpt_F[gjet], weight_eS);	
+      if(themissedYBin>=0 && themissedYBin<4)
+	hpp_unmatched_misses_y[themissedYBin]->Fill(genpt , weight_eS);	
 
       continue;
     }      
@@ -807,8 +901,10 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	h_NEvents_withJets->Fill(1);
 	hNEvts_withJets_Filled=true;      }      
 
-      float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
-      float recpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
+      float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest      
+      float jetIDpt=pt_F[jet];//this will be the jet pt we do jet ID with (what we use from the forest)
+      float recpt  = pt_F[jet]; //this will the jetpt with JERSF smearing
+
       float receta = eta_F[jet];
       float absreceta = fabs(receta);	
       float jtm=m_F[jet];
@@ -824,21 +920,19 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float jty=0.5*log((jtE+jtpz)/(jtE-jtpz));//experimentalist version
       float absjty=fabs(jty);
       
-      float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
-
       bool inRECOpTRange = ( (jtPtCut    <  recpt     ) && ( recpt     < jtPtCut_Hi ) );
       bool inRECOetaRange= ( (jtEtaCutLo <= absreceta ) && ( absreceta < jtEtaCutHi ) );
       bool passesJetID=false; //int jtID=0;
 
       //some jets with eta>2.4 will be subjected to this wrongly, but our measurements are fore eta<2.0, so it doesn't matter
-      if(absjty<2.4)
+      if(absreceta<2.4)
 	passesJetID=(bool)jetID_00eta24( jetIDpt, 
 					 neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
 					 numConst,  chMult, useTightJetID);
       else continue;
       
       
-      //if the RECO jet is not matched ot a GEN jet, but passes all the kinematic cuts, it's a "fake" jet. 
+      //UNMATCHED FAKES if the RECO jet is not matched ot a GEN jet, but passes all the kinematic cuts, it's a "fake" jet. 
       if( subid_I[jet]!=0) {
 	if(!inRECOpTRange)continue;
 	else if(!inRECOetaRange)continue;	
@@ -850,13 +944,16 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	                      absjty<absybins[ybin+1]    	      ) {	    
 	    thefakeYBin=ybin; break;	  }       
 
-	if(thefakeYBin>=0)
-	  hpp_unmatched_fakes_y[thefakeYBin]->Fill(jetIDpt,weight_eS);
+	if(thefakeYBin>=0){
+	  hpp_unmatched_fakes_y[thefakeYBin]->Fill(jtpt,weight_eS);
+	  // DO JER SYSTEMATICS VERSIONS HERE (IF YOU DECIDE ITS WORTH BOTHERING ITS SUCH A SMALL CONTRIBUTION)
+	  // ALSO DO ANY SMEARING AT ALL
+	}
 	
 	continue;
       }//end unmatched conditional
 
-
+      //unmatched objects don't make it past here
 
 
       float genpt   = refpt_F[jet];
@@ -870,7 +967,14 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float genjttheta=2.*atan(exp(-1.*geneta));
       float genjtpz=genpt/tan(genjttheta);
 
-      if(recomatchindex_I.at(jet)<0 && genpt<=15.)//the ref jets (gen jets matched to RECO jets that were written in the order of highest-to-lowest in matched RECO jet pT) have a minimum pT cut of 10 GeV.
+      bool  inGENpTRange= ( (genJetPtCut <= genpt    ) && (genpt     < genJetPtCut_Hi) );
+      bool inGENetaRange= ( (jtEtaCutLo <= absgeneta ) && (absgeneta < jtEtaCutHi    ) );
+
+      if(!inGENetaRange && !inRECOetaRange) //irrelevant matched jet; will not contribute to the unfolded spectra
+	continue;
+
+      //if(recomatchindex_I.at(jet)<0 && genpt<=15.)//the ref jets (gen jets matched to RECO jets that were written in the order of highest-to-lowest in matched RECO jet pT) have a minimum pT cut of 10 GeV.
+      if(recomatchindex_I.at(jet)<0)//the ref jets (gen jets matched to RECO jets that were written in the order of highest-to-lowest in matched RECO jet pT) have a minimum pT cut of 10 GeV.
 	continue;                                //the gen jets (gen jets written regardless of matching, in order of highest-to-lowest in GEN jet pT) have a minimum pT cut of 15 GeV.
                                                  //so if i match a RECO jet to a GEN jet that has a pT lower than 15 GeV, it won't be in the gen jet branches, and so i won't be able to determine the gen jet's rapidity, because that jet is also not in the tupel tree. 
       else if(recomatchindex_I.at(jet)<0 && genpt>15.){ //if this statement fires, it's possible i misunderstand something about the cuts described in the comments immediately above this line. 
@@ -902,9 +1006,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
 	  }
 	  }
 	badgenjetcount++;
+	std::cout<<"GjetE->at("<<recomatchindex_I.at(jet) << ")="<<GjetE->at(recomatchindex_I.at(jet))<<std::endl;
 	std::cout<<"i am here having done some stuff."<<std::endl; 
 	assert(false);
-	std::cout<<"GjetE->at("<<recomatchindex_I.at(jet) << ")="<<GjetE->at(recomatchindex_I.at(jet))<<std::endl;
 	continue;
       }
       
@@ -912,142 +1016,6 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float genjty=0.5*log((genjtE+genjtpz)/(genjtE-genjtpz));//experimentalist version
       float absgenjty=fabs(genjty);
 
-      bool  inGENpTRange= ( (genJetPtCut <= genpt    ) && (genpt     < genJetPtCut_Hi) );
-      bool inGENetaRange= ( (jtEtaCutLo <= absgeneta ) && (absgeneta < jtEtaCutHi    ) );
-
-      if(!inGENetaRange && !inRECOetaRange) //irrelevant matched jet; will not contribute to the unfolded spectra
-	continue;
-
-      else if(!inRECOpTRange && !inGENpTRange) //irrelevant matched jet; will not contribute to the unfolded spectra
-      	continue;
-      
-      else if(!inRECOpTRange && inGENpTRange){//matched miss condition
-	if(!inGENetaRange)continue;
-	
-	//std::cout<<"i am a matched-miss here."<<std::endl;
-
-	int themissYBin=-1;  
-	for(int ybin=0;ybin<nbins_absy;ybin++)
-	  if( absybins[ybin]<=absgenjty  && 		
-	      absgenjty<absybins[ybin+1]    	      ) {	    
-	    themissYBin=ybin;
-	    break;	  }       
-	
-      	//fill matched miss
-	if(themissYBin>=0)
-	  hpp_matched_misses_y[themissYBin]->Fill(genpt,weight_eS);
-
-	continue;
-      }//end miss condition
-
-      else if(inRECOpTRange && !inGENpTRange){//fake condition
-	if(!inRECOetaRange)continue;
-	else if(!passesJetID)continue;
-	
-	//std::cout<<"i am a matched-fake here."<<std::endl; 
-	
-	int thefakeGENYBin=-1;	//this should not end up w/ -1 as final value b.c. of the absreceta cuts immediately above
-	for(int ybin=0;ybin<nbins_absy;ybin++)
-	  if( absybins[ybin]<=absgenjty  && 		
-	                      absgenjty<absybins[ybin+1]    	      ) {	    
-	    thefakeGENYBin=ybin;
-	    break;	  }  
-
-	if(     thefakeGENYBin<0)//this case shouldn't really be an issue; early cuts means the bin should always be nonnegative. 
-	  continue;
-	else if(thefakeGENYBin>3)
-	  thefakeGENYBin=3; //this is a bad way of going about this, but if the GEN jet is in 2.0<|y|<2.5, it's likely close enough to that 2.0 boundary because RECO-GEN y-migrations are VERY small. 
-
-	
-	//unsigned int ncrysballbins=(crysball_ptbins.at(theGENYBin).size()-1);
-	//int crysballpTbin=-1;
-	//for(unsigned int p=0; p<ncrysballbins; p++)//so this won't work. so i'm just going to base it on the resolution of the lowest pT bin we have. see how that goes...
-	//  if( crysball_ptbins.at(theGENYBin).at(p) < genpt &&
-	//      genpt <= crysball_ptbins.at(theGENYBin).at(p+1)){
-	//    crysballpTbin=p; break;
-	//  }
-
-	float mean=crysball_means.at(thefakeGENYBin).at(0);
-	float smrfactor_wJERSF= (recpt/genpt - mean)*1.1 + mean;
-	recpt=genpt*smrfactor_wJERSF;
-	
-	int thefakeYBin=-1;	//this should not end up w/ -1 as final value b.c. of the absreceta cuts immediately above
-	for(int ybin=0;ybin<nbins_absy;ybin++)
-	  if( absybins[ybin]<=absjty  && 		
-	                      absjty<absybins[ybin+1]    	      ) {	    
-	    thefakeYBin=ybin;
-	    break;	  }       
-
-	//fill matched fake
-	if(thefakeYBin>=0)
-	  hpp_matched_fakes_y[thefakeYBin]->Fill(jetIDpt,weight_eS);
-		
-	continue;
-      }//end fake condition
-
-      
-      //if we make it here, we are a matched jet that meets all kinematic requirements.
-      //i.e. inGENpTRange&&inGENetaRange&&inRECOpTRange&&inRECOetaRange evaluates to true. 
-
-
-
-      // jet/event counts
-      h_NJets_kmatCut1->Fill(1);
-      if(!hNEvts_withJets_kmatCut1_Filled){
-	h_NEvents_withJets_kmatCut1->Fill(1);
-	hNEvts_withJets_kmatCut1_Filled=true;      }      
-      
-            
-      // 13 TeV JetID criterion
-      //bool passesJetID=false; //int jtID=0;
-      if(fillMCJetIDHists) 	{
-	if (!(absreceta > 2.4)) 
-	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
-					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
-					   numConst,  chMult, useTightJetID);
-	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
-	  passesJetID=(bool) jetID_24eta27( jetIDpt,
-					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
-					    numConst, useTightJetID);
-	else if( !(absreceta>3.0) && absreceta>2.7 )
-	  passesJetID=(bool) jetID_27eta30( jetIDpt,
-					    neSum_F[jet],  phSum_F[jet], 
-					    neuMult, useTightJetID);
-	else  
-	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
-					   phSum_F[jet], useTightJetID);
-
-	if(!passesJetID) {
-
-	  //std::cout<<"i am a matched-miss here."<<std::endl;
-
-	  //PY8 is signal model. if a RECO jet is being rejected, the matched GEN jet is missed. so fill misses hist as usual. 
-	  int themissYBin=-1;  
-	  for(int ybin=0;ybin<nbins_absy;ybin++)
-	    if( absybins[ybin]<=absgenjty  && 		
-		                absgenjty<absybins[ybin+1]    	      ) {	    
-	      themissYBin=ybin;
-	      break;	  }     
-  
-	  if(themissYBin>=0)
-	    hpp_matched_misses_y[themissYBin]->Fill(genpt,weight_eS);
-
-	  continue;
-	}
-      }
-      
-
-      
-
-      //if we make it here, we are a matched jet that meets all kinematic requirements, AND the RECO jet passes jetID
-      //i.e. inGENpTRange&&inGENetaRange&&inRECOpTRange&&inRECOetaRange evaluates to true. 
-
-      h_NJets_kmatCut2->Fill(1);
-      if(!hNEvts_withJets_kmatCut2_Filled){
-	h_NEvents_withJets_kmatCut2->Fill(1);
-	hNEvts_withJets_kmatCut2_Filled=true;      }
-      
-      
       int theYBin=-1;
       for(int ybin=0;ybin<nbins_absy;ybin++)
 	if( absybins[ybin]<=absjty  && 		
@@ -1085,19 +1053,9 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
       float recpt_SFup=-1.;
       if(useJERScaleFactors){
 	if(theGENYBin<4&&theGENYBin>=0){
-
-	  recpt_SFdown=recpt;//b.c. SF=1.1 +/- .1 -> (1.0 , 1.1, 1.2)
-
-	  //std::cout<<std::endl<<"genpt="<<genpt<<std::endl;
-	  //std::cout<<"fabs(genjty)="<<fabs(genjty)<<std::endl;
-	  //std::cout<<"theGENYBin="<<theGENYBin<<std::endl;
-	  //std::cout<<"WAS: recpt="<<recpt<<std::endl;
-	  //std::cout<<"WAS: recpt/genpt="<<recpt/genpt<<std::endl;
-	  //for(int y=0; y<4; y++){
-	  //assert( (crysball_ptbins.at(y).size()-1) == (crysball_means.at(y).size()) );
-	  //std::cout<<"crysball_ptbins.at("<<y<<").size()="<< crysball_ptbins.at(y).size() <<std::endl;
-	  //std::cout<<"crysball_means.at("<<y<<").size()="<<crysball_means.at(y).size()  <<std::endl;
-	  //}	  
+	  
+	  recpt_SFdown=jtpt;//b.c. SF=1.1 +/- .1 -> (1.0 , 1.1, 1.2)
+	  
 	  unsigned int ncrysballbins=(crysball_ptbins.at(theGENYBin).size()-1);
 	  int crysballpTbin=-1;
 	  for(unsigned int p=0; p<ncrysballbins; p++)
@@ -1105,58 +1063,140 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
                                         	       genpt <= crysball_ptbins.at(theGENYBin).at(p+1)){
 	      crysballpTbin=p; break;
 	    }
-	  //std::cout<<" genpt should be between "<< (int)crysball_ptbins.at(theGENYBin).at(crysballpTbin) 
-	  //	   <<" GeV and " << (int)crysball_ptbins.at(theGENYBin).at(crysballpTbin+1)<<std::endl; 
-	  if(crysballpTbin<0){//if the jet is beyond the reach of the JER fits; probably not gonna matter? look into this when there is time.
-	    recpt_SFdown=recpt; recpt=recpt; recpt_SFup=recpt; }
-	  else {
-	    
-	    float mean=crysball_means.at(theGENYBin).at(crysballpTbin);
-	    //std::cout<<"mean being used is: "<<mean<<std::endl;
-	    //float smrfactor=recpt/genpt;
-	    float smrfactor_wJERSF= (recpt/genpt - mean)*1.1 + mean;
-	    float smrfactor_wJERSF_SFup= (recpt/genpt - mean)*1.2 +mean;
-	    
-	    //std::cout<<" smrfactor            ="<<smrfactor            <<std::endl;
-	    //std::cout<<" smrfactor_wJERSF     ="<<smrfactor_wJERSF     <<std::endl;
-	    //std::cout<<" smrfactor_wJERSF_SFup="<<smrfactor_wJERSF_SFup<<std::endl;
-	    
-	    recpt_SFup=genpt*smrfactor_wJERSF_SFup;
-	    recpt    =genpt*smrfactor_wJERSF;
-	    
-	    //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
-	    //std::cout<<"NOW: recpt="<<recpt<<std::endl;
-	    //std::cout<<"NOW: recpt_SFup="<<recpt_SFup<<std::endl;
-
-	    
-	    /* JERSF APPLICATION OLD CODE
-	       recpt_SFdown=recpt;//b.c. SF=1.1 +/- .1 -> (1.0 , 1.1, 1.2)
-	       //std::cout<<std::endl<<"genpt="<<genpt<<std::endl;
-	       //std::cout<<"theYBin="<<theYBin<<std::endl;
-	       //std::cout<<"WAS: recpt="<<recpt<<std::endl;
-	       //std::cout<<"WAS: recpt/genpt="<<recpt/genpt<<std::endl;
-	       smearPY8wJERScaleFactor(JER_sigmu[theGENYBin],genpt, &recpt);
-	       recpt_SFup=genpt*(((recpt/genpt-1.)/1.1*1.2)+1.);//b.c. algebra
-	       //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
-	       //std::cout<<"NOW: recpt="<<recpt<<std::endl;
-	       //std::cout<<"NOW: recpt_SFup="<<recpt_SFup<<std::endl;
-	       //if(recpt/genpt<1.)assert(false);
-	       //if(nEvt>100)assert(false);
-	       */
-	    
-	    
-	    
-	    
-	    
+	  
+	  float mean=0.;
+      	  if(crysballpTbin<0){//if the jet is beyond the reach of the JER fits; probably not gonna matter? look into this when there is time.
+	    //recpt_SFdown=recpt; recpt=recpt; recpt_SFup=recpt; //RECONSIDER DOING THIS CHECK ME
+	    //mean =crysball_means.at(theGENYBin).at(0);//v2
+	    mean = 1.;//v3
 	  }
+	  else {	    
+	    mean=crysball_means.at(theGENYBin).at(crysballpTbin);	    
+	  }
+	  
+	  float smrfactor_wJERSF= (jtpt/genpt - mean)*1.1 + mean;
+	  float smrfactor_wJERSF_SFup= (jtpt/genpt - mean)*1.2 +mean;
+	  
+	  //std::cout<<" smrfactor            ="<<smrfactor            <<std::endl;
+	  //std::cout<<" smrfactor_wJERSF     ="<<smrfactor_wJERSF     <<std::endl;
+	  //std::cout<<" smrfactor_wJERSF_SFup="<<smrfactor_wJERSF_SFup<<std::endl;
+	  
+	  recpt_SFup=genpt*smrfactor_wJERSF_SFup;
+	  recpt    =genpt*smrfactor_wJERSF;
+	  
+	  //std::cout<<"NOW: recpt_SFdown="<<recpt_SFdown<<std::endl;
+	  //std::cout<<"NOW: recpt="<<recpt<<std::endl;
+	  //std::cout<<"NOW: recpt_SFup="<<recpt_SFup<<std::endl;
+	  
+	  
+	    
 	}
 	else {
 	  //have to do this since i'm running w/ abseta<2.5 and i don't have a JER fit for that region
 	  //h_check_JERScaleFactorSmearing->Fill(recpt,weight_eS);
-	  recpt_SFdown=recpt;
-	  recpt_SFup=recpt;
+	  recpt_SFdown=jtpt;
+	  recpt=jtpt;
+	  recpt_SFup=jtpt;
+	}
+	inRECOpTRange = ( (jtPtCut    <  recpt     ) && ( recpt     < jtPtCut_Hi ) );//reevaluate if it meets the pT range requirements.
+      }
+
+      
+      if(!inRECOpTRange && !inGENpTRange) //irrelevant matched jet; will not contribute to the unfolded spectra
+      	continue;
+
+      else if(theYBin!=theGENYBin){//another potential miss/fake condition! pT limits have been checked by the time we get here.
+	
+	if(theYBin>=0 && theYBin<4 && 
+	   inRECOpTRange && passesJetID){
+	  hpp_matched_fakes_y[theYBin]           ->Fill(recpt       ,weight_eS); 
+	  hpp_matched_fakes_y_JERsysup[theYBin]  ->Fill(recpt_SFup  ,weight_eS); 
+	  hpp_matched_fakes_y_JERsysdown[theYBin]->Fill(recpt_SFdown,weight_eS); 	  
+	}// MATCHED FAKE
+	
+	if(theGENYBin>=0 && theGENYBin<4 &&
+	   inGENpTRange ){
+	  hpp_matched_misses_y[theGENYBin]->Fill(genpt,weight_eS); 
+	}// MATCHED MISS
+	
+	continue;
+	
+      }
+      
+      else if(!inRECOpTRange && inGENpTRange){//MATCHED MISSES; CASE WHERE RECOJET PT IS OUT OF RANGE ONLY; JETID DECISION IRRELEVANT
+	if(!inGENetaRange)continue;
+	
+      	//fill matched miss
+	if(theGENYBin>=0 && theGENYBin<4)
+	  hpp_matched_misses_y[theGENYBin]->Fill(genpt,weight_eS);
+
+	continue;
+      }//END MATCHED MISS CONDITION
+
+      else if(inRECOpTRange && !inGENpTRange){//MATCHED FAKES
+	if(!inRECOetaRange)continue;
+	else if(!passesJetID)continue;
+	
+	//fill matched fake
+	if(theYBin>=0 && theYBin<4){
+	  //std::cout<<"jetIDpt-recpt="<<jetIDpt-recpt<<std::endl;
+	  hpp_matched_fakes_y[theYBin]           ->Fill(recpt       ,weight_eS); 
+	  hpp_matched_fakes_y_JERsysup[theYBin]  ->Fill(recpt_SFup  ,weight_eS); 
+	  hpp_matched_fakes_y_JERsysdown[theYBin]->Fill(recpt_SFdown,weight_eS); 
+	}
+		
+	continue;
+      }//end matched fake condition
+
+      
+      //if we make it here, we are a matched jet that meets all kinematic requirements.
+      //i.e. inGENpTRange&&inGENetaRange&&inRECOpTRange&&inRECOetaRange evaluates to true. 
+
+
+
+      // jet/event counts
+      h_NJets_kmatCut1->Fill(1);
+      if(!hNEvts_withJets_kmatCut1_Filled){
+	h_NEvents_withJets_kmatCut1->Fill(1);
+	hNEvts_withJets_kmatCut1_Filled=true;      }      
+      
+            
+      // 13 TeV JetID criterion
+      //bool passesJetID=false; //int jtID=0;
+      if(fillMCJetIDHists) 	{
+	if (!(absreceta > 2.4)) 
+	  passesJetID=(bool)jetID_00eta24( jetIDpt, 
+					   neSum_F[jet],  phSum_F[jet],  chSum_F[jet],  eSum_F[jet], muSum_F[jet],
+					   numConst,  chMult, useTightJetID);
+	else if ( !(absreceta>2.7) && absreceta>2.4 ) 
+	  passesJetID=(bool) jetID_24eta27( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], muSum_F[jet],
+					    numConst, useTightJetID);
+	else if( !(absreceta>3.0) && absreceta>2.7 )
+	  passesJetID=(bool) jetID_27eta30( jetIDpt,
+					    neSum_F[jet],  phSum_F[jet], 
+					    neuMult, useTightJetID);
+	else  
+	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
+					   phSum_F[jet], useTightJetID);
+
+	if(!passesJetID) {//MATCHED MISSES; CASE WHERE BOTH PT'S ARE IN RANGE BUT THE RECOJET FAILS TO PASS THE JETID
+
+	  //std::cout<<"i am a matched-miss here."<<std::endl;
+	  if(theGENYBin>=0 && theGENYBin<4)
+	    hpp_matched_misses_y[theGENYBin]->Fill(genpt,weight_eS);
+
+	  continue;
 	}
       }
+      
+      //if we make it here, we are a matched jet that meets all kinematic requirements, AND the RECO jet passes jetID
+      //i.e. inGENpTRange&&inGENetaRange&&inRECOpTRange&&inRECOetaRange evaluates to true. 
+      
+      h_NJets_kmatCut2->Fill(1);
+      if(!hNEvts_withJets_kmatCut2_Filled){
+	h_NEvents_withJets_kmatCut2->Fill(1);
+	hNEvts_withJets_kmatCut2_Filled=true;      }
       
       /////   UNFOLDING   ///// 
       if(fillMCUnfoldingHists){
@@ -1320,7 +1360,7 @@ int readForests_ppMC_unf(std::string inFilelist , int startfile , int endfile ,
   fout->Write(); 
 
 
-  std::cout<<std::endl<<"readForests_ppMC_UNF finished."<<std::endl;  timer.Stop();
+  std::cout<<std::endl<<"readForests_ppMC_unf finished."<<std::endl;  timer.Stop();
   std::cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<std::endl;
   std::cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<std::endl;
   

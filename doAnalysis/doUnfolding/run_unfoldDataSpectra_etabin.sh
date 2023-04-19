@@ -22,21 +22,30 @@ rooUnfoldCompile bayesUnfoldDataSpectra_etabin.C
 
 #### use crystal ball fit mean to apply scale factor. misses and fakes are included!
 DATADIR="01.05.21_outputCondor/ppData_HighPtJetTrig_ak4PFJets_01-05-21_jetPlots_0.0eta2.5_SMPbins_withjety_wHBHEIsoNoise_wPFMETFrac0p3_semifinalv4"
-MCDIR="07.22.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-22-21_unf_0.0eta2.5_wUnMatchedAndMatchedFakesAndBkgJets_JERSFwCrysballMu_semifinalv4/"
+#MCDIR="07.22.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-22-21_unf_0.0eta2.5_wUnMatchedAndMatchedFakesAndBkgJets_JERSFwCrysballMu_semifinalv4/"
+#MCDIR="07.22.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-22-21_unf_0.0eta2.5_wUnMatchedAndMatchedFakesAndBkgJetsv2_JERSFwCrysballMu_semifinalv4/"
+#MCDIR="07.22.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_07-22-21_unf_0.0eta2.5_wUnMatchedAndMatchedFakesAndBkgJetsv3_JERSFwCrysballMu_semifinalv4/"
+#MCDIR="09.27.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_09-27-21_unf_0.0eta2.5_SMPbins_wPFMET_RECOptLo10_GENptLo3_semifinalv4/"
+MCDIR="09.27.21_outputCondor/ppMC_Py8_CUETP8M1_QCDjetAllPtBins_ak4PFJets_09-27-21_unf_0.0eta2.5_SMPbins_wPFMET_RECOptLo10_GENptLo3_wMatchedYbinFakesAndMiss_semifinalv4/"
 MCFILESTR="Py8_CUETP8M1_QCDjetAllPtBins_ak4PF-allFiles.root"
 #OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_noExtraFakeNorMiss_semifinalv4"
 #OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_semifinalv4"
 #OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFake_semifinalv4"
 #OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedMiss_semifinalv4"
-OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMiss_semifinalv4"
+#OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMiss_semifinalv4"
+#OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv2_semifinalv4"
+#OUTPUTTAG="07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv3_semifinalv4"
+#OUTPUTTAG="09.27.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv3_semifinalv4"
+OUTPUTTAG="09.27.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv4_semifinalv4"
 
 
-dosystunf=0
-#declare -a sysarr=("JEC" "JER")
-declare -a sysarr=("JER")
+dosystunf=1
+declare -a sysarr=("JER" "JEC")
+#declare -a sysarr=("JEC")
 etabinStart=0
 etabinEnd=4
 sysarrlen=${#sysarr[@]}
+#sysarrlen=1
 for (( j=${etabinStart}; j<${etabinEnd}; j++ ));
 do
     #./bayesUnfoldDataSpectra_etabin.exe ${DATADIR} ${OUTPUTTAG}  $j  ${MCDIR} ${MCFILESTR} "y"

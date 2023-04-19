@@ -598,7 +598,11 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 
   // ---------- reco meas spectra MC, resp matrix MC, JER sysup/sysdown, to unfold
   TH1D* hgen_resp_JERsysup_rebin=NULL, *hgen_resp_JERsysdown_rebin=NULL;
+
   TH1D* hrec_sameside_JERsysup=NULL, *hrec_sameside_JERsysdown=NULL;
+  TH1D* matched_fake_RECO_jets_JERsysup=NULL, *matched_fake_RECO_jets_JERsysdown=NULL;
+  TH1D* matched_fake_RECO_jets_JERsysup_rebin=NULL, *matched_fake_RECO_jets_JERsysdown_rebin=NULL;
+
   TH1D* hrec_sameside_JERsysup_rebin=NULL, *hrec_sameside_JERsysdown_rebin=NULL;
   TH1D* hrec_sameside_resp_JERsysup_rebin=NULL, *hrec_sameside_resp_JERsysdown_rebin=NULL;
   
@@ -792,9 +796,16 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       std::string JERsysTH1basetitle="hpp_reco_wJetID_R4_20_eta_20_";//"JERsysdown_ybin0"
       std::string JERsysupTH1title=JERsysTH1basetitle+"JERsysup_ybin"+std::to_string(etabinint);
       fpp_MC->GetObject( (JERsysupTH1title).c_str() , hrec_sameside_JERsysup);          
+      
       hrec_sameside_JERsysup_rebin = (TH1D*)hrec_sameside_JERsysup->Clone( ((std::string)hrec_sameside_JERsysup->GetName()+"_clone").c_str() );
       hrec_sameside_JERsysup_rebin = (TH1D*)hrec_sameside_JERsysup_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_JERsysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+
+      fpp_MC->GetObject( ( (std::string)("matched_fakes_hpp_reco_wJetID_R4_20_eta_20_JERsysup_ybin"+std::to_string(etabinint))).c_str() , matched_fake_RECO_jets_JERsysup);
+      matched_fake_RECO_jets_JERsysup_rebin = (TH1D*)matched_fake_RECO_jets_JERsysup->Clone( ((std::string)matched_fake_RECO_jets_JERsysup->GetName()+"_clone").c_str() );
+      matched_fake_RECO_jets_JERsysup_rebin = (TH1D*)matched_fake_RECO_jets_JERsysup_rebin->Rebin(nbins_pt_gen, ((std::string)matched_fake_RECO_jets_JERsysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
       
+      hrec_sameside_JERsysup_rebin->Add(matched_fake_RECO_jets_JERsysup_rebin);      
+
       
       if(clearOverUnderflows){
 	TH1clearOverUnderflows((TH1*)hrec_sameside_JERsysup_rebin);
@@ -827,6 +838,14 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       fpp_MC->GetObject( (JERsysdownTH1title).c_str() , hrec_sameside_JERsysdown);          
       hrec_sameside_JERsysdown_rebin = (TH1D*)hrec_sameside_JERsysdown->Clone( ((std::string)hrec_sameside_JERsysdown->GetName()+"_clone").c_str() );
       hrec_sameside_JERsysdown_rebin = (TH1D*)hrec_sameside_JERsysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_JERsysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+
+      fpp_MC->GetObject( ( (std::string)("matched_fakes_hpp_reco_wJetID_R4_20_eta_20_JERsysdown_ybin"+std::to_string(etabinint))).c_str() , matched_fake_RECO_jets_JERsysdown);
+      matched_fake_RECO_jets_JERsysdown_rebin = (TH1D*)matched_fake_RECO_jets_JERsysdown->Clone( ((std::string)matched_fake_RECO_jets_JERsysdown->GetName()+"_clone").c_str() );
+      matched_fake_RECO_jets_JERsysdown_rebin = (TH1D*)matched_fake_RECO_jets_JERsysdown_rebin->Rebin(nbins_pt_gen, ((std::string)matched_fake_RECO_jets_JERsysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+      
+      hrec_sameside_JERsysdown_rebin->Add(matched_fake_RECO_jets_JERsysdown_rebin);      
+      
+
       
       if(clearOverUnderflows){
 	TH1clearOverUnderflows((TH1*)hrec_sameside_JERsysdown_rebin);
@@ -1082,6 +1101,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       divideBinWidth(hrec_sameside_JERsysup_rebin	       	);
       divideBinWidth(hgen_resp_JERsysup_rebin	       	);
       divideBinWidth(hrec_sameside_resp_JERsysup_rebin   	);
+      divideBinWidth(matched_fake_RECO_jets_JERsysup_rebin);
       
       hunf_JERsysup->SetLineColor(hunf->GetLineColor()-2);
       hunf_JERsysup->SetMarkerSize(0.);
@@ -1113,6 +1133,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
       divideBinWidth(hrec_sameside_JERsysdown_rebin	       	);
       divideBinWidth(hgen_resp_JERsysdown_rebin	       	);
       divideBinWidth(hrec_sameside_resp_JERsysdown_rebin   	);
+      divideBinWidth(matched_fake_RECO_jets_JERsysdown_rebin);
       
       hunf_JERsysdown->SetLineColor(hunf->GetLineColor()-2);
       hunf_JERsysdown->SetMarkerSize(0.);
@@ -1231,7 +1252,17 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   
   int kIter_step=1;
   int kIter_start=1;//kIterInput-kIterRange;
-  int kIter_end=kIter_start+kIter_step*8;//kIterInput+kIterRange;
+  //int kIter_end=kIter_start+kIter_step*8;//kIterInput+kIterRange;
+  int kIter_end=kIterInput;
+  if(kIterInput<9){
+    kIter_end=9;
+    kIter_start=1;
+    kIter_step=1;}
+  else{
+    kIter_start=1;
+    kIter_step=kIterInput/9;
+  }
+
   TH1D *hchi2iter=NULL;
   
   if(dokIterQA){
@@ -1435,12 +1466,20 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   unmatched_fake_RECO_jets_rebin->Scale(1./etaBinWidth);
   divideBinWidth(unmatched_fake_RECO_jets_rebin);  
 
+  // -- MATCHED RECO JETS -- // (FAKES)
+  matched_fake_RECO_jets_rebin->Scale(1./etaBinWidth);
+  divideBinWidth(matched_fake_RECO_jets_rebin);  
+
   // -- MISSES FROM PT CUT -- //
   mymisseshist->Scale(1./etaBinWidth);
   divideBinWidth(mymisseshist);
 
   // -- UNMATCHED GEN JETS -- // (MISSES)
   unmatched_missed_GEN_jets_rebin->Scale(1./etaBinWidth);
+  divideBinWidth(unmatched_missed_GEN_jets_rebin);
+
+  // -- MATCHED GEN JETS -- // (MISSES)
+  matched_missed_GEN_jets_rebin->Scale(1./etaBinWidth);
   divideBinWidth(unmatched_missed_GEN_jets_rebin);
   
   
@@ -2464,6 +2503,7 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   // input PY8 ---------------------
   hgen->SetTitle("PY8 Truth Orign");  hgen->Write("MC_truth_orig");
   hgen_rebin->SetTitle("PY8 Truth");  hgen_rebin->Write("MC_truth");
+  hrec_sameside->SetTitle("full RECO PY8 (all fakes included), Bin Width==1 GeV");  hrec_sameside->Write("forJohn_PY8_meas");
   hrec_sameside_rebin->SetTitle("PY8 Meas.");  hrec_sameside_rebin->Write("MC_meas");
   
   hmat->SetTitle("PY8 Response Matrix");  hmat->Write("MC_mat");
@@ -2480,13 +2520,17 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   NNPDFnnlo->SetTitle("NNPDF NNLO Spectra");	   NNPDFnnlo->Write("NLO_NNPDF_NLO_R04_jtpt");       
   
   // output hists -------------
-  hfak->SetTitle("PY8 Meas. Fakes");hfak->Write("MC_meas_fakes");
-  myfakeshist->SetTitle("My PY8 Meas. Fakes");myfakeshist->Write("my_MC_meas_fakes");
-  unmatched_fake_RECO_jets_rebin->SetTitle("My PY8 Meas. Fakes (unmatched)"); unmatched_fake_RECO_jets_rebin->Write("my_MC_meas_unmatched_fakes");
-  matched_fake_RECO_jets_rebin->SetTitle("My PY8 Meas. Fakes (matched)"); matched_fake_RECO_jets_rebin->Write("my_MC_meas_matched_fakes");
-  mymisseshist->SetTitle("My PY8 Truth Misses");mymisseshist->Write("my_MC_truth_misses");
-  unmatched_missed_GEN_jets_rebin->SetTitle("My PY8 Truth Misses (unmatched)"); unmatched_missed_GEN_jets_rebin->Write("my_MC_truth_unmatched_misses");
-  matched_missed_GEN_jets_rebin->SetTitle("My PY8 Truth Misses (matched)"); matched_missed_GEN_jets_rebin->Write("my_MC_truth_matched_misses");
+  hfak->SetTitle("PY8 Meas. Fakes");hfak->Write("MC_meas_fakes");//norm'd to bin width, all fakes of all kinds
+
+  myfakeshist->SetTitle("My PY8 Meas. Fakes");myfakeshist->Write("my_MC_meas_fakes"); //norm'd to bin width, all fakes of all kinds
+
+  unmatched_fake_RECO_jets_rebin->SetTitle("My PY8 Meas. Fakes (unmatched)"); unmatched_fake_RECO_jets_rebin->Write("my_MC_meas_unmatched_fakes");//norm'd to bin width
+  matched_fake_RECO_jets->SetTitle("PY8 Matched Fakes (GEN pT<43 GeV, but RECO pT>43 GeV) Bin Width==1 GeV"); matched_fake_RECO_jets->Write("forJohn_my_PY8_meas_matched_fakes");//norm'd to bin width
+  matched_fake_RECO_jets_rebin->SetTitle("My PY8 Meas. Fakes (matched)"); matched_fake_RECO_jets_rebin->Write("my_MC_meas_matched_fakes");//norm'd to bin width
+  
+  mymisseshist->SetTitle("My PY8 Truth Misses");mymisseshist->Write("my_MC_truth_misses");//norm'd to bin width, all misses of all kinds
+  unmatched_missed_GEN_jets_rebin->SetTitle("My PY8 Truth Misses (unmatched)"); unmatched_missed_GEN_jets_rebin->Write("my_MC_truth_unmatched_misses");//norm'd to bin width
+  matched_missed_GEN_jets_rebin->SetTitle("My PY8 Truth Misses (matched)"); matched_missed_GEN_jets_rebin->Write("my_MC_truth_matched_misses");//norm'd to bin width
   
     
   hunf->SetTitle(("Data Unf. kIter="+std::to_string(kIterInput)).c_str() );hunf->Write("Data_unf");      
@@ -2531,13 +2575,13 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
   }
   h_thyratio_mctruth->Write("ratio_PY8_MCTruth_Data_unf");
 
-  
+  TDirectory* fout_kiter_dir=NULL;
   if(dokIterQA){
     hkiter_hiratio->Write();
     hkiter_loratio->Write();
     hchi2iter->Write();
     
-    TDirectory* fout_kiter_dir=fout->mkdir("all_kiter_plots");
+    fout_kiter_dir=fout->mkdir("all_kiter_plots");
     fout_kiter_dir->cd();
     for(int ki=0; ki<nKiterMax;ki++) hunf_bayes[ki]->Write();
     for(int ki=0; ki<nKiterMax;ki++) hfold_bayes[ki]->Write();
@@ -2588,10 +2632,18 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
     
   }
 
+  TDirectory* fout_JECsys_dir=NULL;
+  TDirectory* fout_JERsys_dir=NULL;
   if(dosystunf){
+    std::cout<<"SAVING SYSTEMATICS UNFOLDING TO FILE \n";
     if(systunftype=="JEC"){
-      TDirectory* fout_JECsys_dir=fout->mkdir("JECsys");
+      std::cout<<".... writing JEC SYSTEMATICS to file \n";
+      fout_JECsys_dir=fout->mkdir("JECsys");
+      //fout->ls();
+      //std::cout<<"in file, before writing stuff to tdirectory; ls() gives: \n \n";
       fout_JECsys_dir->cd();
+      //std::cout<<"in dir, before writing stuff to tdirectory; ls() gives: \n \n";
+      //fout_JECsys_dir->ls();
       hrec_JECsysup->Write("Data_meas_JECsysup");
       hrec_JECsysup_rebin->Write("Data_meas_JECsysup_rebin");
       hrec_covmat_JECsysup->Write("Data_meas_covmat_JECsysup");
@@ -2612,30 +2664,55 @@ int bayesUnfoldDataSpectra_etabin(	std::string inFile_Data_dir= "01.06.19_output
 	canv_JECsysterrs_spectra->Write( "canv_JECsyserrs_spectra");
 	canv_JECsysterrs_combined->Write("canv_JECsyserrs_combined");
       }
+      //std::cout<<"in dir, after writing stuff to tdirectory; ls() gives: \n \n";
+      //fout_JECsys_dir->ls();
       fout->cd();
+      //std::cout<<"in file, after writing stuff to tdirectory; ls() gives: \n \n";
+      //fout->ls();
+      //assert(false);
     }
     else if(systunftype=="JER"){
-      TDirectory* fout_JERsys_dir=fout->mkdir("JERsys");
+      std::cout<<".... writing JER SYSTEMATICS to file \n";
+      fout_JERsys_dir=fout->mkdir("JERsys");
       fout_JERsys_dir->cd();
+
       hgen_resp_JERsysup_rebin->Write("MC_truth_resp_JERsysup_rebin");
-      hrec_sameside_JERsysup->Write("MC_meas_JERsysup");
-      hrec_sameside_JERsysup_rebin->Write("MC_meas_JERsysup_rebin");
+
+      hrec_sameside_JERsysup->SetTitle("full RECO PY8 (all fakes included), Bin Width==1 GeV, JERsys - up");      hrec_sameside_JERsysup->Write("forJohn_PY8_meas_JERsysup");
+      hrec_sameside_JERsysup_rebin->Write("MC_meas_JERsysup_rebin"); //norm'd to bin width
       hrec_sameside_resp_JERsysup_rebin->Write("MC_meas_resp_JERsysup_rebin");
+
+      matched_fake_RECO_jets_JERsysup->SetTitle("PY8 Matched Fakes (GEN pT<43 GeV, but RECO pT>43 GeV) Bin Width==1 GeV, JERsys - up"); matched_fake_RECO_jets_JERsysup->Write("forJohn_my_PY8_meas_matched_fakes_JERsysup");//norm'd to bin width
+      matched_fake_RECO_jets_JERsysup_rebin->Write("my_MC_meas_matched_fakes_JERsysup");//norm'd to bin width
+      //std::cout<<"matched_fake_RECO_jets_JERsysup_rebin->GetNbinsX()="<<matched_fake_RECO_jets_JERsysup_rebin->GetNbinsX()<<"\n";
+      //assert(false);
+
       hmat_JERsysup->Write("MC_mat_JERsysup");
       hmat_JERsysup_rebin->Write("MC_mat_rebin_JERsysup");
       hmat_JERsysup_errors->Write("MC_mat_errors_JERsysup");
+
       hunf_JERsysup->SetTitle(("Data Unf. JERsysup, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysup->Write("Data_unf_JERsysup");      
       hunf_JERsysup_ratio->SetTitle(("Data Unf. JERsysup, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysup_ratio->Write("Data_unf_JERsysup_ratio");      
 
+
       hgen_resp_JERsysdown_rebin->Write("MC_truth_resp_JERsysdown_rebin");
-      hrec_sameside_JERsysdown->Write("MC_meas_JERsysdown");
-      hrec_sameside_JERsysdown_rebin->Write("MC_meas_JERsysdown_rebin");
+
+      hrec_sameside_JERsysdown->SetTitle("full RECO PY8 (all fakes included), Bin Width==1 GeV, JERsys - down");      hrec_sameside_JERsysdown->Write("forJohn_PY8_meas_JERsysdown");
+      //hrec_sameside_JERsysdown->Write("MC_meas_JERsysdown");
+      hrec_sameside_JERsysdown_rebin->Write("MC_meas_JERsysdown_rebin");//norm'd to bin width
       hrec_sameside_resp_JERsysdown_rebin->Write("MC_meas_resp_JERsysdown_rebin");
+
+      matched_fake_RECO_jets_JERsysdown->SetTitle("PY8 Matched Fakes (GEN pT<43 GeV, but RECO pT>43 GeV) Bin Width==1 GeV, JERsys - down"); matched_fake_RECO_jets_JERsysdown->Write("forJohn_my_PY8_meas_matched_fakes_JERsysdown");//norm'd to bin width
+      matched_fake_RECO_jets_JERsysdown_rebin->Write("my_MC_meas_matched_fakes_JERsysdown");//norm'd to bin width
+
       hmat_JERsysdown->Write("MC_mat_JERsysdown");
       hmat_JERsysdown_rebin->Write("MC_mat_rebin_JERsysdown");
       hmat_JERsysdown_errors->Write("MC_mat_errors_JERsysdown");
+
       hunf_JERsysdown->SetTitle(("Data Unf. JERsysdown, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysdown->Write("Data_unf_JERsysdown");      
       hunf_JERsysdown_ratio->SetTitle(("Data Unf. JERsysdown, kIter="+std::to_string(kIterInput)).c_str() );hunf_JERsysdown_ratio->Write("Data_unf_JERsysdown_ratio");      
+
+      
 
       if(drawPDFs){
 	canv_JERsysterrs_ratio->Write(   "canv_JERsyserrs_ratio");
@@ -2687,17 +2764,25 @@ int main(int argc, char* argv[]){
     int numiters=3;
     
     
-    ////old PY8, new PY8, AND new PY8 w/o unmatched jets
+    ////old PY8, new PY8, AND new PY8 w/o unmatched fake/miss jets
     //if     (etabinin==0) numiters=4;
     //else if(etabinin==1) numiters=5;
     //else if(etabinin==2) numiters=6;
     //else if(etabinin==3) numiters=2;
 
-    //new PY8 w/ unmatched AND matched jets (GEN and RECO)
-    if     (etabinin==0) numiters=2;
-    else if(etabinin==1) numiters=2;
-    else if(etabinin==2) numiters=3;
-    else if(etabinin==3) numiters=2;
+    ////new PY8 w/ unmatched AND matched fake/miss jets (GEN and RECO)
+    //if     (etabinin==0) numiters=2;
+    //else if(etabinin==1) numiters=2;
+    //else if(etabinin==2) numiters=3;
+    //else if(etabinin==3) numiters=2;
+
+    ////new PY8 w/ unmatched AND matched fake/miss jets (GEN and RECO), AND the matched fakes are now smeared with JERSF as they should be.
+    if     (etabinin==0) numiters=1;
+    else if(etabinin==1) numiters=1;
+    else if(etabinin==2) numiters=2;
+    else if(etabinin==3) numiters=3;
+
+    //numiters=1000;
 
 
     rStatus=bayesUnfoldDataSpectra_etabin( 

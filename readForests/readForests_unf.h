@@ -19,7 +19,7 @@ const std::string defMCInFilelist="filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBin
 const std::string defMCOutputName="readForests_ppMC_defOut_unf.root";
 
 int readForests_ppMC_unf( std::string inFilelist=defMCInFilelist, 
-			  int startfile=2447, int endfile=2447,
+			  int startfile=2400, int endfile=2600,
 			   int radius=4, std::string jetType="PF",
 			   bool debugMode=true, 
 			   std::string outfile=defMCOutputName,
@@ -30,7 +30,7 @@ const float jtPtCut        = 43.;
 const float jtPtCut_Hi     = 1410.;
 const float genJetPtCut    = 43.;
 const float genJetPtCut_Hi = 1410.;
-const float gendrCut = 99.;//0.1;
+const float gendrCut = 999.;//0.1;
 // Apr 29th 2016
 // reads and writes jets from pp data forest files
 // for producing quality assurance spectra, and for unfolding later

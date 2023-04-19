@@ -27,8 +27,8 @@ echo ""
 #source  condorSubmit_readForests.sh readForests_ppMC_unf -1 200 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
 
 ### run jobs in two parts
-#source  condorSubmit_readForests.sh readForests_ppMC_unf 17 200 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
-source  condorSubmit_readForests.sh readForests_ppMC_unf 18 200 3400 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+source  condorSubmit_readForests.sh readForests_ppMC_unf 17 200 0 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
+#source  condorSubmit_readForests.sh readForests_ppMC_unf 18 200 3400 filelists/5p02TeV_Py8_CUETP8M1_QCDjetAllPtBins_forests.txt ${R} PF 0  ${etaLo} ${etaHi}
 
 echo ""
 echo "done submitting unf job(s)"

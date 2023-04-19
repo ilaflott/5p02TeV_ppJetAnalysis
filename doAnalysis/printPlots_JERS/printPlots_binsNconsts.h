@@ -54,7 +54,9 @@ const int Nbins_pthat=sizeof(pthat)/sizeof(double);
 
 // giving a TH1F an array for binning is fussy; demands root-type numbers or else it gives 
 const Double_t ptbins_debug[]={
-  //1., 5., 6., 8., 10., 12., 
+  //1., 5., 6., 8., 
+  10., 
+  12., 
   15., 
   18., 
   21., 
@@ -139,9 +141,11 @@ const int nbins_abseta = sizeof(absetabins)/sizeof(Double_t);
 
 
 
-
-const int fit_ptlo_bin_00y05=0, fit_pthi_bin_00y05=39;//fit_pthi_bin_00y05=nbins_pt_debug-7;
+const int fit_ptlo_allybins=0;
+const int fit_ptlo_bin_00y05=fit_ptlo_allybins+2, fit_pthi_bin_00y05=41;//fit_pthi_bin_00y05=nbins_pt_debug-7;
 const double fgaus_width_arr_00y05[]={
+  //0.30,//gen pt low edge =10., 
+  //0.30,//gen pt low edge =12., 
   0.30,//gen pt low edge =15., 
   0.30,//gen pt low edge =18., 
   0.30,//gen pt low edge =21., 
@@ -190,13 +194,15 @@ const int n_00y05_widths=sizeof(fgaus_width_arr_00y05)/sizeof(double);
 
 
 
-
-const int fit_ptlo_bin_05y10=0, fit_pthi_bin_05y10=38;//fit_pthi_bin_05y10=nbins_pt_debug-9;
+//fitptlobin=5 was good here
+const int fit_ptlo_bin_05y10=fit_ptlo_allybins+6, fit_pthi_bin_05y10=40;//fit_pthi_bin_05y10=nbins_pt_debug-9;
 const double fgaus_width_arr_05y10[]={
-  0.30,//gen pt low edge =15., 
-  0.30,//gen pt low edge =18., 
-  0.30,//gen pt low edge =21., 
-  0.30,//gen pt low edge =24., 
+  //0.30,//gen pt low edge =10., 
+  //0.30,//gen pt low edge =12., 
+  //0.30,//gen pt low edge =15., 
+  //0.30,//gen pt low edge =18., 
+  //0.30,//gen pt low edge =21., 
+  //0.30,//gen pt low edge =24., 
   0.30,//gen pt low edge =28.,
   0.30,//gen pt low edge =32., 
   0.30,//gen pt low edge =37.,
@@ -242,28 +248,30 @@ const int n_05y10_widths=sizeof(fgaus_width_arr_05y10)/sizeof(double);
 
 
 
-
-const int fit_ptlo_bin_10y15=0, fit_pthi_bin_10y15=34;//fit_pthi_bin_10y15=nbins_pt_debug-10;
+//fitptlobin=5 was good here
+const int fit_ptlo_bin_10y15=fit_ptlo_allybins+6, fit_pthi_bin_10y15=36;//fit_pthi_bin_10y15=nbins_pt_debug-10;
 const double fgaus_width_arr_10y15[]={
-  0.30,//gen pt low edge =15., 
-  0.30,//gen pt low edge =18., 
-  0.30,//gen pt low edge =21., 
-  0.30,//gen pt low edge =24., 
-  0.30,//gen pt low edge =28.,
-  0.30,//gen pt low edge =32., 
-  0.30,//gen pt low edge =37.,
-  0.20,//0.20,// gen pt low edge =43., //garbage bins
-  0.20,//0.20,// gen pt low edge =49., //typical gen pt cut
-  0.20,//0.20,// gen pt low edge =56., //typical recopt cut
-  0.20,//0.20,// gen pt low edge =64.,
-  0.20,//0.20,// gen pt low edge =74.,
-  0.20,//0.20,// gen pt low edge =84.,
-  0.20,//0.20,// gen pt low edge =97.,
-  0.20,//0.20,// gen pt low edge =114.,
-  0.20,//0.20,// gen pt low edge =133.,
-  0.20,//0.20,// gen pt low edge =153.,
-  0.20,//0.20,// gen pt low edge =174.,
-  0.20,//0.20,// gen pt low edge =196.,
+  //0.30,//gen pt low edge =10., 
+  //0.30,//gen pt low edge =12., 
+  //0.30,//gen pt low edge =15., 
+  //0.30,//gen pt low edge =18., 
+  //0.30,//gen pt low edge =21., 
+  //0.30,//gen pt low edge =24., 
+  0.30,//0.24,//0.30,//gen pt low edge =28.,
+  0.22,//0.18,//0.22,//0.30,//gen pt low edge =32., 
+  0.22,//0.18,//0.22,//0.30,//gen pt low edge =37.,
+  0.24,//0.18,//0.24,// gen pt low edge =43., //garbage bins
+  0.30,//0.22,// gen pt low edge =49., //typical gen pt cut
+  0.30,// gen pt low edge =56., //typical recopt cut
+  0.20,// gen pt low edge =64.,
+  0.20,// gen pt low edge =74.,
+  0.18,//0.20,// gen pt low edge =84.,
+  0.20,// gen pt low edge =97.,
+  0.20,// gen pt low edge =114.,
+  0.20,// gen pt low edge =133.,
+  0.20,// gen pt low edge =153.,
+  0.20,// gen pt low edge =174.,
+  0.20,// gen pt low edge =196.,
   0.17,//0.20,// gen pt low edge =220.,
   0.17,//0.20,// gen pt low edge =245.,
   0.17,//0.20,// gen pt low edge =272.,
@@ -276,9 +284,9 @@ const double fgaus_width_arr_10y15[]={
   0.15,//0.18,// gen pt low edge =507.,
   0.14,//0.18,// gen pt low edge =548.,
   0.12,//0.18,// gen pt low edge =592.,//fit must reach at least here for this |y| range [raghav's NLO]
-  0.11,//0.14,// gen pt low edge =638.,
-  0.11,//,0.14 //// gen pt low edge =686.,
-  0.10//,// gen pt low edge =737.,//absolute limit of data statistics [i think? confirm]
+  0.12,//0.11,//0.14,// gen pt low edge =638.,
+  0.14,//0.11,//,0.14 //// gen pt low edge =686.,
+  0.14 //0.10,//,// gen pt low edge =737.,//absolute limit of data statistics [i think? confirm]
   //0.10// gen pt low edge =790.,
   //0.10// gen pt low edge =846., limit of NLO [joao NLO]
 };
@@ -290,9 +298,11 @@ const int n_10y15_widths=sizeof(fgaus_width_arr_10y15)/sizeof(double);
 
 
 
-
-const int fit_ptlo_bin_15y20=0, fit_pthi_bin_15y20=32;//fit_pthi_bin_15y20=nbins_pt_debug-13;
+//fitptlobin=3 was good here
+const int fit_ptlo_bin_15y20=2, fit_pthi_bin_15y20=34;//fit_pthi_bin_15y20=nbins_pt_debug-13;
 const double fgaus_width_arr_15y20[]={
+  //0.30,//gen pt low edge =10., 
+  //0.30,//gen pt low edge =12., 
   0.30,//gen pt low edge =15., 
   0.30,//gen pt low edge =18., 
   0.30,//gen pt low edge =21., 
@@ -300,7 +310,6 @@ const double fgaus_width_arr_15y20[]={
   0.30,//gen pt low edge =28.,
   0.30,//gen pt low edge =32., 
   0.30,//gen pt low edge =37.,
-  //does best exist?//better//good//meh
   0.23,//0.27,//0.26,// gen pt low edge =43., //garbage bins
   0.23,//0.26,//0.25,// gen pt low edge =49., //typical gen pt cut
   0.23,//0.25,//0.24,// gen pt low edge =56., //typical recopt cut

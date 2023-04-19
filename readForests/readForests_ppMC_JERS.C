@@ -13,8 +13,8 @@ const bool useTightJetID=false;
 const bool usePFCandAnalyzer=true;
 //const bool useTupel=true;
 
-const bool REDOjetMatching=true;
-const float deltaR_req4Match=0.2;
+const bool REDOjetMatching=false;
+const float deltaR_req4Match=0.4;
 
 //// readForests_ppMC_JERS
 // ---------------------------------------------------------------------------------------------------------------
@@ -159,6 +159,10 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   // TH1D * hJEC_check[nbins_JEC_ptbins][nbins_eta]={};
   // TH1D * hJER[nbins_pt]={};  
   // TH3F * hJEC={};
+
+  //sanity check of hot/cold spots
+  TH2D * jetEtaPhi_allobj;
+  TH2D * genjetEtaPhi_allobj;
   
   //sanity jteta check
   TH1D * hJER_jtetaQA;
@@ -166,6 +170,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   TH1D * hJER_genetaQA;
   TH1D * hJER_jtptQA[nbins_abseta]={};
   TH1D * hJER_genptQA[nbins_abseta]={};
+  TH1D * hJER_ALLgenptQA[nbins_abseta]={};
   
   //all eta in bins of genpt
   TH1D * hJER[nbins_pt]={};       // rec/gen , bins of gen pt
@@ -179,7 +184,10 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     hJER_jtetaQA=new TH1D("jtEtaSanityCheckJER", "jetEta Dist Check" , 100, -6., 6.);
     hJER_jtyQA=new TH1D("jtYSanityCheckJER", "jetY Dist Check" , 100, -6., 6.);
     hJER_genetaQA=new TH1D("genEtaSanityCheckJER", "genEta Dist Check" , 100, -6., 6.);
-
+    
+    jetEtaPhi_allobj  = new TH2D( "jetEtaPhi_allobj"  , "RECO Jets;Jet #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
+    
+    genjetEtaPhi_allobj  = new TH2D( "genjetEtaPhi_allobj"  , "GEN Jets;Jet #eta;Trg. Obj. #phi", 		     Netasegments, (Double_t*)etasegments,		     72, -3.14159, 3.14159 );
 
     for(int j=0;j<nbins_abseta;++j){
       std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];	  
@@ -197,8 +205,17 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       std::string hDescJER="gen pt, "+absetabins_i+"<|#eta|<"+absetabins_ip1;
       if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
       hJER_genptQA[j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 1000,0.,1000.); 	  
+    }//etabin loop 
+
+    for(int j=0;j<nbins_abseta;++j){
+      std::string absetabins_i=absetabins_str[j];	std::string absetabins_ip1=absetabins_str[j+1];	  
+      std::string hTitleJER="hJER_"+std::to_string(jetIDint)+"wJetID"+"_ALLgenptQA_etabin"+std::to_string(j);
+      if(debugMode&&verbose)std::cout<<"hTitleJER="<<hTitleJER<<std::endl;
+      std::string hDescJER="gen pt, "+absetabins_i+"<|#eta|<"+absetabins_ip1;
+      if(debugMode&&verbose)std::cout<<"hDescJER="<<hDescJER<<std::endl;
+      hJER_ALLgenptQA[j] = new TH1D(hTitleJER.c_str(),hDescJER.c_str(), 2000,0.,2000.); 	  
     }//etabin loop
-    
+   
 
     for(int bin = 0; bin<nbins_pt; ++bin) {      
       std::string ptbins_i=std::to_string( ( (int)ptbins[bin]) );
@@ -416,24 +433,31 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
   int goodgenjetcount=0,badgenjetcount=0;  
   std::cout<<"reading "<<NEvents_read<<" events"<<std::endl;   
 
-  for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//event loop   
-    
+  //for(UInt_t nEvt = 7314; nEvt < NEvents_read; ++nEvt) {//MAIN EVENT LOOP DEBUG
+  for(UInt_t nEvt = 0; nEvt < NEvents_read; ++nEvt) {//MAIN EVENT LOOP 
+
     if(nEvt%1000==0)std::cout<<"from trees, grabbing Evt # = "<<nEvt<<std::endl;  
     jetpp[0]->GetEntry(nEvt);    
     h_NEvents_read->Fill(1);
-    
+
     // skim/HiEvtAnalysis criteria
     if( pHBHENoiseFilterRun2Loose_I==0     || 
 	pHBHEIsoNoiseFilter_I    ==0    || 
         pBeamScrapingFilter_I==0  || 
-        pprimaryvertexFilter_I==0  ) continue;    
+        pprimaryvertexFilter_I==0  ) {
+      //std::cout<<"WARNING: not skipping event that usually is skipped by event filters! \n";
+      continue;    
+    }
     h_NEvents_skimCut->Fill(1);    
 
-    if( fabs(vz_F)>24.              ) continue;
+    if( fabs(vz_F)>24.              ) {
+      //std::cout<<"WARNING: not skipping event that usually is skipped by vz cut! \n";
+      continue;
+    }
     h_NEvents_vzCut->Fill(1);
 
-    if( sqrt( pow(vx_F,2) + pow(vy_F,2) ) > 0.1) continue;//DONT FORGET I AM HERE
-    if(evtvtxCnt_I>1)continue;//DONT FORGET I AM HERE
+    //if( sqrt( pow(vx_F,2) + pow(vy_F,2) ) > 0.1) continue;//DONT FORGET I AM HERE
+    //if(evtvtxCnt_I>1)continue;//DONT FORGET I AM HERE
 
     if(usePFCandAnalyzer){
       //PFCANDLOOP
@@ -476,7 +500,10 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       //Float_t PFMETsig=sumpfpt/sqrtsumpfEt;
       
       //h_PFMETfrac->Fill(PFMETfrac,weight_eS);
-      if(PFMETfrac>0.3)continue;//giving this a shot. see how it goes...
+      if(PFMETfrac>0.3){
+	//std::cout<<"WARNING: not skipping event that usually is skipped by PFMET fraction cut! \n";
+	continue;//giving this a shot. see how it goes...
+      }
       //if(PFMETfrac>0.5)continue;//giving this a shot. see how it goes...
       //h_NEvents_PFMETfracCut->Fill(0.);
       
@@ -493,7 +520,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
     
     // grab vzweight
     double vzWeight=1.;
-    if(doVzWeights&&false){
+    if(doVzWeights){
       //std::cout<<"vzWeight was:"<<vzWeight<<std::endl;
       vzWeight=cpuVzWeight_poly(vz_F);
     }
@@ -542,7 +569,16 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       if(tempdebug)std::cout<<"genpt_F["<<gjet<<"]="<<genpt_F[gjet]<<std::endl;
       if((genmatchindex_I[gjet]!=-1) &&
 	 (genmatchindex_I[gjet]<nref_I)) recomatchindex_I[genmatchindex_I[gjet]]=gjet;
-    }
+    }//this will only contain matching information for GEN jets with pT 15 GeV and greater.
+    
+    ////finding other GEN jets needs the poorman's matching
+    //if(findOtherGENjets){
+    //  
+    //  for(int jet=0;jet<nref_I;++jet){
+    //	
+    //  }      
+    //}
+
     //if(tempdebug)std::cout<<std::endl;
     //if(tempdebug)std::cout<<"nref_I="<<nref_I<<std::endl;
     //for(int jet=0;jet<nref_I;++jet){
@@ -824,7 +860,6 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       */
       
 
-
     std::vector<bool> GENjetIsMatched; std::vector<int> GENjetIsMatchedTo;
     std::vector<bool> RECOjetIsMatched; std::vector<int> RECOjetIsMatchedTo;
     unsigned int nGENjets =GjetPt->size();
@@ -972,18 +1007,53 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 
 
 
+    for(unsigned int p=0; p<GjetE->size();p++){
+      
+      float genpt   = GjetPt->at( p);   
+      //float genphi  = GjetPhi->at(p);   
+      float geneta  = GjetEta->at(p);   
+      float genjtE  = GjetE->at(p);
+
+      float genjttheta=2.*atan(exp(-1.*geneta));
+      float genjtpz=genpt/tan(genjttheta);
+
+      float genjty=0.5*log((genjtE+genjtpz)/(genjtE-genjtpz));//experimentalist version
+      float absgenjty=fabs(genjty);
+      if(absgenjty>2.0)continue;
+
+      int theGENYBin=-1;
+      for(int ybin=0;ybin<nbins_absy;ybin++)
+	if( absybins[ybin]<=absgenjty  && 		
+	    absgenjty<absybins[ybin+1]    	      ) {	    
+	  theGENYBin=ybin;
+	  break;	  }       	
+      if(theGENYBin>3)continue;
+      else if(theGENYBin<0)continue;
+      
+      hJER_ALLgenptQA[theGENYBin]->Fill(genpt, weight_eS);
+
+
+    }
+    
+
+    
 
 
 
     
+    bool debugprintjetdetails=true;
+    for(int jet = 0; jet<nref_I; ++jet){ //MAIN JET LOOP      
 
-    for(int jet = 0; jet<nref_I; ++jet){ //main jet loop
-      
+
+
+
+
+
       //float rawpt=rawpt_F[jet];      	
       float jtpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
       float recpt  = pt_F[jet]; //this will be the jetpt pulled from the forest
       float receta = eta_F[jet];
-      //float recphi = phi_F[jet];
+      float recphi = phi_F[jet];
       float jtm=m_F[jet];
       float jetIDpt=recpt;//ala HIN jetID, recpt is corrected w/ L2/L3 residuals
       
@@ -1004,17 +1074,21 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
       //float jtmt=jtm*sin(jttheta);	
       
       float genpt;//   = refpt_F[jet];    
-      //float genphi;//  = refphi_F[jet];   
+      float genphi;//  = refphi_F[jet];   
       float geneta;//  = refeta_F[jet];   
       float absgeneta;//  = fabs(geneta); 
       float gendrjt;// = refdrjt_F[jet];  
+
+
+
+
 
 
       if(REDOjetMatching){
 	if(!RECOjetIsMatched.at(jet)) continue;//redone gen-reco matching
 	else{
 	  genpt   = GjetPt->at(RECOjetIsMatchedTo.at(jet));   
-	  //genphi  = GjetPhi->at(RECOjetIsMatchedTo.at(jet));   
+	  genphi  = GjetPhi->at(RECOjetIsMatchedTo.at(jet));   
 	  geneta  = GjetEta->at(RECOjetIsMatchedTo.at(jet));   
 	  absgeneta  = fabs(geneta); 
 	  gendrjt    = -1.;//refdrjt_F[jet];  	
@@ -1024,7 +1098,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	if( subid_I[jet]!=0 ) continue;//matching gen-reco
 	else{
 	  genpt   = refpt_F[jet];    
-	  //genphi  = refphi_F[jet];   
+	  genphi  = refphi_F[jet];   
 	  geneta  = refeta_F[jet];   
 	  absgeneta  = fabs(geneta); 
 	  gendrjt = refdrjt_F[jet];  
@@ -1038,10 +1112,22 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	hNEvts_withJets_Filled=true;      }      
       
       
-      else if ( !(recpt > jtPtCut)    ) continue;        //low recopt cut          
-      else if ( !(recpt < jtPtCut_Hi)    ) continue;     //high recopt cut
-      else if ( !(genpt > genJetPtCut) ) continue;       //low genpt cut
-      else if ( !(genpt < genJetPtCut_Hi) ) continue;   //high genpt cut
+      if ( !(recpt > jtPtCut)    ) {
+	//std::cout<<"WARNING: not skipping event that usually is skipped! \n";
+	continue;        //low recopt cut          
+      }
+      else if ( !(recpt < jtPtCut_Hi)    ) {
+	//std::cout<<"WARNING: not skipping jet that usually is skipped! )\n";
+	continue;     //high recopt cut
+      }
+      else if ( !(genpt > genJetPtCut) ) {
+	//std::cout<<"WARNING: not skipping jet that usually is skipped! \n";
+	continue;       //low genpt cut
+      }
+      else if ( !(genpt < genJetPtCut_Hi) ) {
+	//std::cout<<"WARNING: not skipping event that usually is skipped! \n";
+	continue;   //high genpt cut
+      }
       else if ( absreceta < jtEtaCutLo ) continue; // lower abseta cut 
       else if (!(absreceta < jtEtaCutHi))continue; // higher abseta cut
       else if ( gendrjt > gendrCut ) continue;       //delta-r cut, proxy for gen-reco matching quality
@@ -1053,7 +1139,8 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	h_NEvents_withJets_kmatCut1->Fill(1);
 	hNEvts_withJets_kmatCut1_Filled=true;      }      
       
-      
+
+
 
       
       // 13 TeV JetID criterion
@@ -1078,11 +1165,12 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	else  
 	  passesJetID=(bool)jetID_32eta47( jetIDpt, 
 					   phSum_F[jet], useTightJetID);
-	if(!passesJetID) continue;
+	if(!passesJetID) {
+	  //std::cout<<"WARNING: not skipping jet that usually is skipped (jetID)! \n";
+	  continue;
+	}
       }
       
-      
-
       ///// this code to check the way i read info from the tupel tree given the info in the jetanalyzer tree
       //float genE_tup   =-999.;
       //float genpt_tup  =-999.;
@@ -1128,7 +1216,8 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  std::cerr<<std::endl;
 	  std::cerr<<"//////////////////////////////////////////////"<<std::endl;
 	  std::cerr<<"////////////// !!! WARNING !!! ///////////////"<<std::endl;
-	  std::cerr<<"reco jet w/ nonnegative subid has a negative recomatchindex!!!"<<std::endl;
+	  std::cerr<<"reco jet w/ nonnegative subid and matched to GEN jet with refpt >15. GeV has a negative recomatchindex!!!"<<std::endl;
+	  std::cerr<<"THIS IS BAD!!"<<std::endl;
 	  std::cerr<<"---------DETAILS--------"<<std::endl;
 	  std::cerr<<std::endl<<"_______ nEvt="<<nEvt<<" ________"<<std::endl;
 	  std::cerr<<"ngen_I="<<ngen_I<<std::endl;
@@ -1148,25 +1237,131 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	    }
 	  }
 	  badgenjetcount++;
+	  assert(false);
 	  continue;
 	}
+      
+      
+      //if(!REDOjetMatching && !(genpt>15.) )
+      //continue;
+
+
 
       float genjttheta=2.*atan(exp(-1.*geneta));
       float genjtpz=genpt/tan(genjttheta);
-      float genjtE;
+      float genjtE=0.;
+      //bool genjtE_fromPoorManMatch=false;
+
       if(REDOjetMatching)
 	genjtE=GjetE->at(RECOjetIsMatchedTo.at(jet));
-      else 
-	genjtE=GjetE->at(recomatchindex_I.at(jet));
+      else {
+
+
+	
+	
+	if(genpt>15.){//if the pT is > 15, the matching info was in the GEN collection of the ak4PFJetAnalyzer tree, and can be used to get the GEN jet energy from the tupel tree
+	  genjtE=GjetE->at(recomatchindex_I.at(jet));
+	}
+	else{//in this case, we have a GEN jet with pT <= 15., so i need to look for the GEN jet by "poor man" approach
+
+	  if(debugprintjetdetails&&false){
+	    std::cout<<"\n__________________________________________\n";	  
+	    std::cout<<  "____collection details for this event: ___\n";	  
+	    std::cout<<  "______________ evt #"<<nEvt<<" _________________\n";
+	    std::cout<<"recomatchindex_I.size()="<<recomatchindex_I.size()<<"\n";
+	    std::cout<<"GjetE->size()="<<GjetE->size()<<"\n";
+	    
+	    std::cout<<"RECO jet collection details [MIN pT SHOULD BE 10 GeV] (#/sub id/match index/pT/eta/phi): \n";
+	    for(int p=0; p<nref_I; p++)
+	      std::cout<<p<<" / "<< subid_I[p] <<" / " << recomatchindex_I.at(p) << " / " << pt_F[p] <<" / "<< eta_F[p] << " / " << phi_F[p] << "\n";
+	    
+	    std::cout<<"REF jet collection details [MIN pT SHOULD BE 3 GeV] (#/pT/eta/phi): \n";
+	    for(int p=0; p<nref_I; p++)
+	      std::cout<<p<<" / "<< refpt_F[p] <<" / "<< refeta_F[p] << " / " << refphi_F[p] << "\n";
+	    
+	    std::cout<<"GEN jet collection details [MIN pT should be 15 GeV] (#/pT/eta/phi): \n";
+	    for(int p=0; p<ngen_I; p++)
+	      std::cout<<p<<" / "<< genpt_F[p] <<" / "<< geneta_F[p] << " / " << genphi_F[p] << "\n";
+	    
+	    std::cout<<" tupel's GEN jet collection details [MIN pT should be 3 GeV](#/pT/eta/phi): \n";
+	    for(unsigned int p=0; p<GjetE->size();p++)
+	      std::cout<<p<<" / "<< GjetPt->at(p) <<" / "<< GjetEta->at(p) << " / " << GjetPhi->at(p)<< "\n";
+	    
+	    debugprintjetdetails=false;
+	  }
+	  
+	  //std::cout<<"\n jet #"<< jet<<"'s details: \n";
+	  //std::cout<<" RECO pT="<<recpt<<", matched to GEN pT="<<genpt<<"\n";
+	  //std::cout<<"recomatchindex_I.at(jet)="<<recomatchindex_I.at(jet)<<"\n";
+	  //std::cout<<"trying to find the REF jet in the tupel tree now \n";
+	  bool foundmatch=false;
+	  for(unsigned int p=0; p<GjetE->size();p++){
+ 	    if(  ( fabs(refpt_F[jet]-GjetPt->at(p)  ) < 0.00001 ) &&
+		 ( fabs(refeta_F[jet]-GjetEta->at(p)) < 0.00001 ) ){//&&
+	      //		 ( fabs(refphi_F[jet]-GjetPhi->at(p)) < 0.000001 )  ){
+	      foundmatch=true;
+	      //genjtE_fromPoorManMatch=true;
+	      recomatchindex_I.at(jet)= (int) p; 
+	      //std::cout<<"\n Gjet # "<<p<<" IS A MATCH\n";
+	      //std::cout<< "GjetE->at(p)  =" << GjetE->at(p)  << "\n";
+	      genjtE=GjetE->at(p);
+	      //std::cout<< "fabs(refpt_F[jet]-GjetPt->at(p)  =" << fabs(refpt_F[jet]-GjetPt->at(p)  )<< "\n";
+	      //std::cout<< "fabs(refeta_F[jet]-GjetEta->at(p)=" << fabs(refeta_F[jet]-GjetEta->at(p))<< "\n";
+	      //std::cout<< "fabs(refphi_F[jet]-GjetPhi->at(p)=" << fabs(refphi_F[jet]-GjetPhi->at(p))<< "\n\n ";
+	      break;
+	    }
+	    else {
+	      foundmatch=false;
+	      //std::cout<<"Gjet # "<<p<<" NOT A MATCH\n";
+	    }
+	  }
+	  if(!foundmatch){
+	    //std::cout<<" NO MATCH FOUND!!!!\n";
+	    continue;	  
+	  }
+	  //if(recomatchindex_I.at(jet) < 0) continue;	  
+	}
+	
+	/*
+	if ( (  ((unsigned int)jet) < recomatchindex_I.size()  ) && 
+	     ( ((unsigned int)recomatchindex_I.at(jet)) < GjetE->size()) )
+	  genjtE=GjetE->at(recomatchindex_I.at(jet));
+	else{
+	  std::cout<<"PROBLEM HERE!!! \n";
+	  std::cout<<"evt #"<<nEvt<<", jet # "<<jet<<"\n";
+	  std::cout<<" this jet's details: \n";
+	  std::cout<<" RECO pT="<<recpt<<", GEN pT="<<genpt<<"\n";
+	  std::cout<<"recomatchindex_I.size()="<<recomatchindex_I.size()<<"\n";
+	  std::cout<<"GjetE->size()="<<GjetE->size()<<"\n";
+	  assert(false);
+	}
+	*/
+	
+	
+      }
+
+      //if(nEvt>=7400)assert(false);      
+
       float genjty=0.5*log((genjtE+genjtpz)/(genjtE-genjtpz));//experimentalist version
       float absgenjty=fabs(genjty);
-      
 
+
+      //if(genjtE_fromPoorManMatch){
+      //	std::cout<<"gen jet details post poorman's matching. \n";
+      //	std::cout<<"genjtE="<<genjtE<<std::endl;
+      //	std::cout<<"genjty="<<genjty<<std::endl;
+      //	std::cout<<"absgenjty="<<absgenjty<<std::endl<<std::endl;
+      //	//assert(false);
+      //}
+
+
+
+      
       h_NJets_kmatCut2->Fill(1);
       if(!hNEvts_withJets_kmatCut2_Filled){
 	h_NEvents_withJets_kmatCut2->Fill(1);
 	hNEvts_withJets_kmatCut2_Filled=true;      }
-
+      
       
       int theYBin=-1;
       for(int ybin=0;ybin<nbins_absy;ybin++)
@@ -1175,12 +1370,27 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  theYBin=ybin;
 	  break;	  }       	
       
+
+
       int theGENYBin=-1;
       for(int ybin=0;ybin<nbins_absy;ybin++)
 	if( absybins[ybin]<=absgenjty  && 		
 	    absgenjty<absybins[ybin+1]    	      ) {	    
 	  theGENYBin=ybin;
 	  break;	  }       	
+      
+      // TRYING THIS OUT -- MAY NOT WORK
+      // DEBUG
+      // WORK IN PROGRESS
+      if(theYBin!=theGENYBin) {//DONT FORGET I AM HERE
+	//std::cout<<"WARNING: not skipping jet that usually is skipped! \n";
+	continue;
+      }
+      // TRYING THIS OUT -- MAY NOT WORK
+      // DEBUG
+      // WORK IN PROGRESS
+
+
       
       //int theEtaBin=-1;
       //for(int etabin=0;etabin<nbins_abseta;etabin++)
@@ -1196,8 +1406,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  theGENEtaBin=etabin;
 	  break;	  }       	
       
-      
-      
+
       
       
       /////   JERS HISTS   ///// 
@@ -1266,6 +1475,7 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	    if(debugMode_verbose)std::cout<<"genpt="<<genpt<<" should be between"<<std::endl;
 	    if(debugMode_verbose)std::cout<<"ptbins["<<bin<<"]="<<ptbins[ptbin]<<" and ptbins["<<bin<<"]="<<ptbins[bin+1]<<std::endl;	    
 	    break;	  }       	
+
 	
 	//	int recptbin=-1;
 	//	for(int bin=0;bin<nbins_pt;bin++)
@@ -1283,12 +1493,22 @@ int readForests_ppMC_JERS(std::string inFilelist , int startfile , int endfile ,
 	  hJER_genetaQA->Fill(geneta,weight_eS);      
 	  hJER_jtetaQA->Fill(receta,weight_eS);      
 	  hJER_jtyQA->Fill(jty,weight_eS);      
+
+	  
+	  jetEtaPhi_allobj->Fill( receta, recphi, weight_eS);      
+	  genjetEtaPhi_allobj->Fill( geneta, genphi, weight_eS);      
+
+	  
+	  
 	  //if( (theEtaBin!=-1) ) hJER_abseta[ptbin][theEtaBin]->Fill( (float)(recpt/genpt), weight_eS);         // genpt bin, receta bin
 	  if( (theGENEtaBin!=-1) ) hJER_absgeneta[ptbin][theGENEtaBin]->Fill( (float)(recpt/genpt), weight_eS);// genpt bin, geneta bin
 	  //if(   (theYBin!=-1) ) hJER_absy[ptbin][theYBin]->Fill(     (float)(recpt/genpt), weight_eS);         // genpt bin, recy bin
 	  if( (theGENYBin!=-1) ) hJER_absgeny[ptbin][theGENYBin]->Fill((float)(recpt/genpt), weight_eS);       // genpt bin, geny bin
+	  
+	  
 	}
 	else continue;
+	
 	
       }//fill JERS hists      
     }//end jet loop

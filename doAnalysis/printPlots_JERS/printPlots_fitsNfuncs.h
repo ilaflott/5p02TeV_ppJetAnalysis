@@ -349,7 +349,7 @@ void MakeHistSigma(TH1F * h1,float xmin,float xmax){
   h1->SetTitle("");
   h1->GetYaxis()->SetTitle("#sigma");
   h1->GetYaxis()->SetDecimals(true);
-  h1->SetAxisRange(0.04,0.16, "Y");    
+  h1->SetAxisRange(0.04,0.20, "Y");    
 
   return;
 }

@@ -214,7 +214,7 @@ void RooUnfoldBayes::unfold()
   }
 
   //for the first iteration, PbarCi empty. it will take in the new numbers after the unfolding is applied to the initial dist/previous iteration's dist
-  TVectorD PbarCi(_nc);
+  TVectorD PbarCi(_nc); //PbarCi created here with _nc bins.
   _chi2iter= new TH1D("_chi2_iter", "chi2 between iterations", _niter, 0.5, _niter+0.5);
   
   for (Int_t kiter = 0 ; kiter < _niter; kiter++) {
@@ -347,6 +347,9 @@ void RooUnfoldBayes::unfold()
 
     // Chi2 based on Poisson errors
     //    Double_t chi2 = getChi2(PbarCi, _P0C, _nbartrue);
+    // PbarCi == latest iteration of unfolded spectra, normalized to #of events. 
+    // _P0C == prev iteration, if kiter=0, this is simply the truth histogram from roounfold response object, normlized to 1.
+    // _nbartrue == sum of #of events in PbarCi
     Double_t chi2 = getChi2(PbarCi, _P0C, _nbartrue, (TH1D*) _chi2iter, kiter);
     if (verbose()>=1) cout << "Chi^2 of change " << chi2 << endl;
     if(verbose()>=1)cout<< "sanity check in RooUnfoldBayes::unfold(); bin content of _chi2iter hist is "<<  _chi2iter->GetBinContent(kiter+1) << endl;

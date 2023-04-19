@@ -3,11 +3,11 @@
 
 
 ###unfolding with PYTHIA8
-source run_unfoldDataSpectra_etabin.sh
+#source run_unfoldDataSpectra_etabin.sh
 #source   run_unfoldMCSpectra_etabin.sh
 
 ####smeared NLO unfolding
-#source run_unfoldDataSpectra_wNLO_etabin.sh
+source run_unfoldDataSpectra_wNLO_etabin.sh
 #source   run_unfoldMCSpectra_wNLO_etabin.sh
 
 

@@ -9,6 +9,14 @@ const bool doBiasTest=false;
 const bool setDataCovMat=true;
 const bool usePseudoRapBins=false;
 const bool useRapBins=true&&!usePseudoRapBins;
+
+
+/////// UNDER CONSTRUCTION
+//use the following file(s) for the matched + smeared fake contribution.
+// output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv2_semifinalv4_JERsys_LOMC_??y??.root
+// output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv3_semifinalv4_JERsys_LOMC_??y??.root
+const bool useMatchedFakesFromPY8=false;
+
 const std::string ptbintype="merged_SMP";
 //const std::string ptbintype="john2";
 //const std::string ptbintype="default_SMP";
@@ -221,8 +229,6 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 		       1, rec_trim_nbins_hi);
     //assert(false);
   }
-
-
 
 
   int     nbins_pt_gen=-1;
@@ -517,13 +523,71 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
   hrec_sameside_rebin->SetLineColor(kBlue-3);     
   hrec_sameside_rebin->SetMarkerSize(1.02);     
 
+
+
+
+  std::string ybinstr_forpy8="";
+  if(etabinint==0)ybinstr_forpy8="00y05";
+  else if(etabinint==1)ybinstr_forpy8="05y10";
+  else if(etabinint==2)ybinstr_forpy8="10y15";
+  else if(etabinint==3)ybinstr_forpy8="15y20";
+  else assert(false);
+  //const std::string fPy8Unf_fname="output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv3_semifinalv4_JERsys_LOMC_"+ybinstr_forpy8+".root";
+  //const std::string fPy8Unf_fname="output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv2_semifinalv4_JERsys_LOMC_"+ybinstr_forpy8+".root";
+  //const std::string fPy8Unf_fname="output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_07.22.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv2_semifinalv4_JERsys_LOMC_"+ybinstr_forpy8+".root";
+  //const std::string fPy8Unf_fname="output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_09.27.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv3_semifinalv4_JERsys_LOMC_"+ybinstr_forpy8+".root";
+  const std::string fPy8Unf_fname="output/unfoldDataSpectra/ak4PFJets_wjtID_anabins_09.27.21_Bayes_PY8_FullRECO_SMPbins_JERSFwCrysballMu_wUnmatchedFakeAndMiss_wMatchedFakeAndMissv3_wYbinFakesAndMiss_semifinalv4_JERsys_LOMC_"+ybinstr_forpy8+".root";
+
+
+  
+  TFile* fPy8Unf_forMatchedFakes=NULL;
+  TH1D* hrec_sameside_rebin_fromPY8Unf=NULL;
+  TH1D* matched_fake_RECO_jets_fromPY8Unf=NULL;  
+  TH1D* matched_fake_profile_fromPY8Unf=NULL;
+  TH1D* matched_fake_RECO_jets_rebin=NULL;
+  if(useMatchedFakesFromPY8){
+    //std::cout<<" DEBUGGING: USING MATCHED FAKES FROM PYTHIA8. OPENING INPUT FILE \n";
+    
+    fPy8Unf_forMatchedFakes=TFile::Open( fPy8Unf_fname.c_str(), "READ");
+    
+    //std::cout<<" DEBUGGING: USING MATCHED FAKES FROM PYTHIA8. GETTING MATCHED FAKES HIST \n";
+    matched_fake_RECO_jets_fromPY8Unf=(TH1D*)fPy8Unf_forMatchedFakes->Get( "my_MC_meas_matched_fakes" );
+    //matched_fake_RECO_jets_fromPY8Unf->Print("BASE");
+
+    //std::cout<<" DEBUGGING: USING RECO SPECTRA FROM PYTHIA8. GETTING RECO MEAS HIST \n";
+    hrec_sameside_rebin_fromPY8Unf=(TH1D*)fPy8Unf_forMatchedFakes->Get( "MC_meas" );
+    //hrec_sameside_rebin_fromPY8Unf->Print("BASE");
+    hrec_sameside_rebin_fromPY8Unf->Add(matched_fake_RECO_jets_fromPY8Unf,-1.);//subtract the matched fake contribution; what's left is the analogous signal in the current toy NLO unfolding
+    
+    //std::cout<<" DEBUGGING: CRREATING MATCHED FAKE PROFILE FROM PYTHIA8. CLONING FAKE MATCHED JET HIST AND DIVIDING BY RECO MEAS\n";
+    matched_fake_profile_fromPY8Unf=(TH1D*)matched_fake_RECO_jets_fromPY8Unf->Clone( "matched_fake_profile_fromPY8Unf" );
+    matched_fake_profile_fromPY8Unf->Divide(hrec_sameside_rebin_fromPY8Unf);
+    
+    //std::cout<< "DEBUGGING: CREATING MATCHED FAKE SPECTRA FROM PYTHIA8, FOR THE TOY NLO UNFOLDING.\n";
+    matched_fake_RECO_jets_rebin=(TH1D*)matched_fake_profile_fromPY8Unf->Clone("my_MC_meas_matched_fakes_fromPY8");
+    matched_fake_RECO_jets_rebin->Multiply(hrec_sameside_rebin);    
+    hrec_sameside_rebin->Add(matched_fake_RECO_jets_rebin);    
+  }
+
+  //std::cout<<"DEBUGGING: MADE IT TO HERE! ASSERT FALSE \n";assert(false);
+
   TH1D* myfakeshist=(TH1D*)makeFakesHist(hmat_rebin, hrec_sameside_rebin);
   TH1D* mymisseshist=(TH1D*)makeMissesHist(hmat_rebin, hgen_rebin);
 
-  
+
+
+
+  //-------------------------------------------------------------------------
   //sys
   TH1D* hrec_sameside_sysup=NULL, *hrec_sameside_sysdown=NULL;
   TH1D* hrec_sameside_sysup_rebin=NULL,  *hrec_sameside_sysdown_rebin=NULL;  
+
+  TH1D*    hrec_sameside_rebin_fromPY8Unf_JERsysup=NULL; TH1D*    hrec_sameside_rebin_fromPY8Unf_JERsysdown=NULL;
+  TH1D* matched_fake_RECO_jets_fromPY8Unf_JERsysup=NULL; TH1D* matched_fake_RECO_jets_fromPY8Unf_JERsysdown=NULL;  
+  TH1D*   matched_fake_profile_fromPY8Unf_JERsysup=NULL; TH1D*   matched_fake_profile_fromPY8Unf_JERsysdown=NULL;
+  TH1D*      matched_fake_RECO_jets_rebin_JERsysup=NULL; TH1D*      matched_fake_RECO_jets_rebin_JERsysdown=NULL;
+
+
   if(doSystUnf&&systUnfType!="JEC"){
     if(systUnfType=="NP" && applyNPCorrs){
       //hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_"+systUnfType+"sysup").c_str() );
@@ -572,7 +636,7 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
     }
     if(systUnfType=="JER" && applyNPCorrs){
-      //hrec_sameside_sysup=(TH1D*)fpp_MC->Get( ("smeared_rnd_NP_"+systUnfType+"sysup").c_str() );
+      
       fpp_MC->GetObject( (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sysup").c_str() , hrec_sameside_sysup);    
       hrec_sameside_sysup->Scale(1./NLOMCscaling);//05/09/18
       hrec_sameside_sysup->Scale(etaBinWidth);
@@ -581,7 +645,37 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup->Clone( ((std::string)hrec_sameside_sysup->GetName()+"_clone").c_str() );
       hrec_sameside_sysup_rebin = (TH1D*)hrec_sameside_sysup_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysup_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
       
-      //hrec_sameside_sysdown=(TH1D*)fpp_MC->Get( ("smeared_rnd_NP_"+systUnfType+"sysdown").c_str() );  
+      if(useMatchedFakesFromPY8){
+	
+	//std::cout<<"DOING JERSYS UP MATCHED FAKE CORRECTION FROM PY8 \n";
+	
+	matched_fake_RECO_jets_fromPY8Unf_JERsysup=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/my_MC_meas_matched_fakes_JERsysup" );//norm'd to bin width
+	//matched_fake_RECO_jets_fromPY8Unf_JERsysup=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/my_MC_meas_matched_fakes_JERsysdown" );//norm'd to bin width
+	//std::cout<<"my_MC_meas_matched_fakes_JERsysup->GetNbinsX()="<<matched_fake_RECO_jets_fromPY8Unf_JERsysup->GetNbinsX()<<"\n";
+	
+	hrec_sameside_rebin_fromPY8Unf_JERsysup=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/MC_meas_JERsysup_rebin" );//norm'd to bin width
+	//hrec_sameside_rebin_fromPY8Unf_JERsysup=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/MC_meas_JERsysdown_rebin" );//norm'd to bin width
+	//std::cout<<"MC_meas_JERsysup_rebin->GetNbinsX()="<<hrec_sameside_rebin_fromPY8Unf_JERsysup->GetNbinsX()<<"\n";
+	hrec_sameside_rebin_fromPY8Unf_JERsysup->Add(matched_fake_RECO_jets_fromPY8Unf_JERsysup,-1.);//subtract the matched fake contribution; what's left is the analogous signal in the current toy NLO unfolding
+	
+	matched_fake_profile_fromPY8Unf_JERsysup=(TH1D*)matched_fake_RECO_jets_fromPY8Unf_JERsysup->Clone( "matched_fake_profile_fromPY8Unf_JERsysup" );
+	matched_fake_profile_fromPY8Unf_JERsysup->Divide(hrec_sameside_rebin_fromPY8Unf_JERsysup);//norm to bin width cancels out -- fine
+	
+	matched_fake_RECO_jets_rebin_JERsysup=(TH1D*)matched_fake_profile_fromPY8Unf_JERsysup->Clone("my_MC_meas_matched_fakes_fromPY8_JERsysup");
+	matched_fake_RECO_jets_rebin_JERsysup->Multiply(hrec_sameside_sysup_rebin);    
+	std::cout<<"\n PRE EXTRA FAKES: hrec_sameside_sysup_rebin->GetBinContent(1)="<<hrec_sameside_sysup_rebin->GetBinContent(1)<<"\n";
+	std::cout<<"PRE EXTRA FAKES: hrec_sameside_sysup_rebin->GetBinContent(2)="<<hrec_sameside_sysup_rebin->GetBinContent(2)<<"\n";
+	std::cout<<"PRE EXTRA FAKES: hrec_sameside_sysup_rebin->GetBinContent(3)="<<hrec_sameside_sysup_rebin->GetBinContent(3)<<"\n\n";
+	hrec_sameside_sysup_rebin->Add(matched_fake_RECO_jets_rebin_JERsysup);    
+	std::cout<<"AFT EXTRA FAKES: hrec_sameside_sysup_rebin->GetBinContent(1)="<<hrec_sameside_sysup_rebin->GetBinContent(1)<<"\n";
+	std::cout<<"AFT EXTRA FAKES: hrec_sameside_sysup_rebin->GetBinContent(2)="<<hrec_sameside_sysup_rebin->GetBinContent(2)<<"\n";
+	std::cout<<"AFT EXTRA FAKES: hrec_sameside_sysup_rebin->GetBinContent(3)="<<hrec_sameside_sysup_rebin->GetBinContent(3)<<"\n";
+      }
+      
+
+      //std::cout<<"I GET THROUGH JERSYS UP JUST FINE! \n";
+      
+      
       fpp_MC->GetObject( (sysunfdir+"smeared_rnd_NP_"+systUnfType+"sysdown").c_str() , hrec_sameside_sysdown);    
       hrec_sameside_sysdown->Scale(1./NLOMCscaling);//05/09/18
       hrec_sameside_sysdown->Scale(etaBinWidth);
@@ -589,7 +683,35 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
       
       hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown->Clone( ((std::string)hrec_sameside_sysdown->GetName()+"_clone").c_str() );
       hrec_sameside_sysdown_rebin = (TH1D*)hrec_sameside_sysdown_rebin->Rebin(nbins_pt_gen, ((std::string)hrec_sameside_sysdown_rebin->GetName()+"_rebin").c_str() , boundaries_pt_gen);
+      
+      if(useMatchedFakesFromPY8){
+	//std::cout<<"DOING JERSYS DOWN MATCHED FAKE CORRECTION FROM PY8 \n";
+	
+	matched_fake_RECO_jets_fromPY8Unf_JERsysdown=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/my_MC_meas_matched_fakes_JERsysdown" );
+	//matched_fake_RECO_jets_fromPY8Unf_JERsysdown=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/my_MC_meas_matched_fakes_JERsysup" );
+	
+	hrec_sameside_rebin_fromPY8Unf_JERsysdown=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/MC_meas_JERsysdown_rebin" );
+	//hrec_sameside_rebin_fromPY8Unf_JERsysdown=(TH1D*)fPy8Unf_forMatchedFakes->Get( "JERsys/MC_meas_JERsysup_rebin" );
+	hrec_sameside_rebin_fromPY8Unf_JERsysdown->Add(matched_fake_RECO_jets_fromPY8Unf_JERsysdown,-1.);//subtract the matched fake contribution; what's left is the analogous signal in the current toy NLO unfolding
+	
+	matched_fake_profile_fromPY8Unf_JERsysdown=(TH1D*)matched_fake_RECO_jets_fromPY8Unf_JERsysdown->Clone( "matched_fake_profile_fromPY8Unf_JERsysdown" );
+	matched_fake_profile_fromPY8Unf_JERsysdown->Divide(hrec_sameside_rebin_fromPY8Unf_JERsysdown);
+	
+	matched_fake_RECO_jets_rebin_JERsysdown=(TH1D*)matched_fake_profile_fromPY8Unf_JERsysdown->Clone("my_MC_meas_matched_fakes_fromPY8_JERsysdown");
+	matched_fake_RECO_jets_rebin_JERsysdown->Multiply(hrec_sameside_sysdown_rebin);    
+	std::cout<<"\n PRE EXTRA FAKES: hrec_sameside_sysdown_rebin->GetBinContent(1)="<<hrec_sameside_sysdown_rebin->GetBinContent(1)<<"\n";
+	std::cout<<"PRE EXTRA FAKES: hrec_sameside_sysdown_rebin->GetBinContent(2)="<<hrec_sameside_sysdown_rebin->GetBinContent(2)<<"\n";
+	std::cout<<"PRE EXTRA FAKES: hrec_sameside_sysdown_rebin->GetBinContent(3)="<<hrec_sameside_sysdown_rebin->GetBinContent(3)<<"\n\n";
+	hrec_sameside_sysdown_rebin->Add(matched_fake_RECO_jets_rebin_JERsysdown);    
+	std::cout<<"AFT EXTRA FAKES: hrec_sameside_sysdown_rebin->GetBinContent(1)="<<hrec_sameside_sysdown_rebin->GetBinContent(1)<<"\n";
+	std::cout<<"AFT EXTRA FAKES: hrec_sameside_sysdown_rebin->GetBinContent(2)="<<hrec_sameside_sysdown_rebin->GetBinContent(2)<<"\n";
+	std::cout<<"AFT EXTRA FAKES: hrec_sameside_sysdown_rebin->GetBinContent(3)="<<hrec_sameside_sysdown_rebin->GetBinContent(3)<<"\n";
+      }
+
+      //assert(false);
     }
+
+    //assert(false);
 
     if(clearOverUnderflows) TH1clearOverUnderflows((TH1*)hrec_sameside_sysup_rebin);
     hrec_sameside_sysup_rebin->SetLineColor(hrec_sameside_rebin->GetLineColor()-2);     
@@ -3007,10 +3129,10 @@ int bayesUnfoldDataSpectra_wNLO_etabin(	std::string inFile_Data_dir= "01.06.19_o
 //  steering ---------------------------------------------------------------------------------
 int main(int argc, char* argv[]){  
   int rStatus = -1;  
-
-  if (argc==9){   
     const int etabinin=(const int)(std::atoi(argv[3]));
     int numiters=3;
+
+  if (argc==9){   
 
     ////noJERhistsmearing, w/residuals
     //if     (etabinin==0) numiters=3;
@@ -3024,23 +3146,29 @@ int main(int argc, char* argv[]){
     //else if(etabinin==2) numiters=4;
     //else if(etabinin==3) numiters=3;
 
-    ////crysball smear
+    ////crysball hist? in each genpt bin smear
     //if     (etabinin==0) numiters=5;
     //else if(etabinin==1) numiters=5;
     //else if(etabinin==2) numiters=5;
     //else if(etabinin==3) numiters=4;
 
-    ////gauscrysballsmear smear //MY PERSONAL FAVORITE <333
-    //if     (etabinin==0) numiters=2;
-    //else if(etabinin==1) numiters=3;
-    //else if(etabinin==2) numiters=4;
-    //else if(etabinin==3) numiters=4;
-
-    //gausAt1crysball smear
-    if     (etabinin==0) numiters=3;
-    else if(etabinin==1) numiters=4;
+    //gauscrysballsmear smear 
+    if     (etabinin==0) numiters=2;
+    else if(etabinin==1) numiters=3;
     else if(etabinin==2) numiters=4;
     else if(etabinin==3) numiters=4;
+
+    //smearing: naive gauss core fits, using ansatz fits for mean+width 
+    if     (etabinin==0) numiters=2;
+    else if(etabinin==1) numiters=2;
+    else if(etabinin==2) numiters=2;
+    else if(etabinin==3) numiters=2;
+
+    ////gausAt1crysball smear
+    //if     (etabinin==0) numiters=3;
+    //else if(etabinin==1) numiters=4;
+    //else if(etabinin==2) numiters=4;
+    //else if(etabinin==3) numiters=4;
 
 
 
@@ -3056,8 +3184,6 @@ int main(int argc, char* argv[]){
 					       (std::string)argv[8] );    
   }
   else if (argc==10){
-    const int etabinin=(const int)(std::atoi(argv[3]));
-    int numiters=3;
 
     ////noJERhistsmearing, w/residuals
     //if     (etabinin==0) numiters=3;
